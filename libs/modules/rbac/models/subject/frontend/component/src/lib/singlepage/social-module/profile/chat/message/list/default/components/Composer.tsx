@@ -11,6 +11,7 @@ import { useChatComposer } from "../hooks/use-chat-composer";
 import { ThreadMessagesCache } from "../hooks/use-thread-messages-refetch";
 import {
   OpenRouterChatModelGroup,
+  OpenRouterReasoningOption,
   OpenRouterReasoningValue,
   SocialSkill,
 } from "../types";
@@ -62,6 +63,7 @@ interface ComposerProps {
   openRouterModelLabel: string;
   openRouterReasoning: OpenRouterReasoningValue;
   openRouterReasoningLabel: string;
+  openRouterReasoningOptions: OpenRouterReasoningOption[];
   profileSkills: SocialSkill[];
   /** Lets the shell focus the textarea (e.g. after a skill is saved). */
   registerFocusComposerTextArea: (focus: () => void) => void;
@@ -523,6 +525,7 @@ export function Composer(props: ComposerProps) {
       selectedModelLabel={props.openRouterModelLabel}
       selectedReasoning={props.openRouterReasoning}
       selectedReasoningLabel={props.openRouterReasoningLabel}
+      reasoningOptions={props.openRouterReasoningOptions}
       showReasoningControl={props.canSelectOpenRouterReasoning}
       onModelChange={props.onOpenRouterModelChange}
       onReasoningChange={props.onOpenRouterReasoningChange}

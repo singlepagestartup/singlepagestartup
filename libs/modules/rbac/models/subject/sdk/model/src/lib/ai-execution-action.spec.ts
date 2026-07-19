@@ -9,6 +9,7 @@
 import {
   AI_EXECUTION_ACTION_MAX_STEPS,
   AI_EXECUTION_ACTION_VARIANT,
+  formatAiExecutionActionStepToolName,
   parseAiExecutionActionPayload,
 } from "./ai-execution-action";
 
@@ -42,6 +43,29 @@ function createAction() {
 }
 
 describe("Given: a versioned ai-execution Social action", () => {
+  /**
+   * BDD Scenario
+   * Given: an MCP step contains the collision-safe model function namespace.
+   * When: its tool name is prepared for user-visible progress.
+   * Then: the redundant namespace and Markdown-sensitive underscores are removed.
+   */
+  it.each([
+    ["mcp__singlepagestartup__module-list", "module-list"],
+    ["mcp__singlepagestartup__model_record_count", "model-record-count"],
+    ["module-list", "module-list"],
+  ])(
+    "When: MCP name %s is displayed Then: it becomes %s",
+    (toolName, expected) => {
+      expect(
+        formatAiExecutionActionStepToolName({
+          kind: "mcp",
+          serverId: "singlepagestartup",
+          toolName,
+        }),
+      ).toBe(expected);
+    },
+  );
+
   /**
    * BDD Scenario
    * Given: every payload field is bounded and presentation-safe.

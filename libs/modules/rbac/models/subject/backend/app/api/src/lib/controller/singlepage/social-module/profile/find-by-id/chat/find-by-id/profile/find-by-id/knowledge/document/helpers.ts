@@ -3,6 +3,8 @@ import { Service } from "../../../../../../../../../../../service";
 export async function findProfileKnowledgeDocumentIds(props: {
   service: Service;
   targetSocialModuleProfileId: string;
+  limit?: number;
+  offset?: number;
 }) {
   const relations =
     await props.service.socialModule.profilesToKnowledgeModuleDocuments.find({
@@ -28,6 +30,8 @@ export async function findProfileKnowledgeDocumentIds(props: {
             },
           ],
         },
+        ...(props.limit === undefined ? {} : { limit: props.limit }),
+        ...(props.offset === undefined ? {} : { offset: props.offset }),
       },
     });
 

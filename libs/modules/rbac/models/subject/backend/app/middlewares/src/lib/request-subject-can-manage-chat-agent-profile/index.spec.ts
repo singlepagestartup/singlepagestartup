@@ -101,4 +101,56 @@ describe("Given: RBAC authorizes management of a chat AI profile", () => {
     });
     expect(service.socialModule.profilesToChats.find).toHaveBeenCalledTimes(1);
   });
+
+  /**
+   * BDD Scenario
+   * Given: an existing global skill is not yet linked to the manageable target profile.
+   * When: the link-existing route opts out of the linked-skill precondition.
+   * Then: profile and chat authorization succeeds so the handler can create the relation.
+   */
+  it("When: link-existing opts out Then: an unlinked skill reaches the handler", async () => {
+    const service = createService();
+    const app = new Hono();
+    const route =
+      "/subjects/:id/profiles/:socialModuleProfileId/chats/:socialModuleChatId/profiles/:targetSocialModuleProfileId/skills/:socialModuleSkillId";
+
+    app.post(
+      route,
+      new Middleware(service as any).init({ requireLinkedSkill: false }),
+      (c) => c.json({ ok: true }),
+    );
+
+    const response = await app.request(
+      "/subjects/subject-id/profiles/requester-profile-id/chats/chat-id/profiles/target-profile-id/skills/skill-id",
+      { method: "POST" },
+    );
+
+    expect(response.status).toBe(200);
+    expect(service.socialModule.profilesToSkills.find).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an unlinked skill id is sent to a relation-only update or unlink route.
+   * When: the default management middleware validates the target resource.
+   * Then: authorization is denied before the handler can mutate another relation.
+   */
+  it("When: a protected skill is not linked Then: access is denied", async () => {
+    const service = createService();
+    const app = new Hono();
+    const route =
+      "/subjects/:id/profiles/:socialModuleProfileId/chats/:socialModuleChatId/profiles/:targetSocialModuleProfileId/skills/:socialModuleSkillId";
+
+    app.delete(route, new Middleware(service as any).init(), (c) =>
+      c.json({ ok: true }),
+    );
+
+    const response = await app.request(
+      "/subjects/subject-id/profiles/requester-profile-id/chats/chat-id/profiles/target-profile-id/skills/skill-id",
+      { method: "DELETE" },
+    );
+
+    expect(response.status).toBe(401);
+    expect(service.socialModule.profilesToSkills.find).toHaveBeenCalledTimes(1);
+  });
 });

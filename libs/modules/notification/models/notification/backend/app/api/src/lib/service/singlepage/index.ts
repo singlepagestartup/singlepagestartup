@@ -208,17 +208,33 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           ? parseInt(props.messageId, 10)
           : props.messageId;
 
-      await bot.api.editMessageText(
-        props.chatId,
-        normalizedMessageId,
-        formattedText,
-        {
-          parse_mode: parseMode,
-          ...(inlineKeyboard
-            ? { reply_markup: { inline_keyboard: inlineKeyboard } }
-            : {}),
-        },
-      );
+      const options = {
+        parse_mode: parseMode,
+        ...(inlineKeyboard
+          ? { reply_markup: { inline_keyboard: inlineKeyboard } }
+          : {}),
+      };
+
+      try {
+        await bot.api.editMessageText(
+          props.chatId,
+          normalizedMessageId,
+          formattedText,
+          options,
+        );
+      } catch (error) {
+        if (
+          !(error instanceof Error) ||
+          !error.message.includes("there is no text in the message to edit")
+        ) {
+          throw error;
+        }
+
+        await bot.api.editMessageCaption(props.chatId, normalizedMessageId, {
+          caption: formattedText,
+          ...options,
+        });
+      }
     } catch (error) {
       if (
         error instanceof Error &&
@@ -476,6 +492,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       gif: "image/gif",
       mp4: "video/mp4",
       pdf: "application/pdf",
+      txt: "text/plain",
     };
 
     if (!ext) {
@@ -490,7 +507,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     return (
       message.includes("WEBPAGE_CURL_FAILED") ||
-      message.includes("WEBPAGE_MEDIA_EMPTY")
+      message.includes("WEBPAGE_MEDIA_EMPTY") ||
+      message.includes("failed to get HTTP URL content") ||
+      message.includes("wrong type of the web page content") ||
+      message.includes("wrong file identifier/HTTP URL specified")
     );
   }
 
@@ -666,8 +686,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     for (const attachment of attachments) {
       try {
         const response = await fetch(attachment.url, { method: "HEAD" });
-        const contentType = response.headers.get("content-type");
-        if (response.ok && contentType?.startsWith("image/")) {
+        if (response.ok) {
           validAttachments.push(attachment);
         }
       } catch (error) {
@@ -765,46 +784,104 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 })
               : captionChunks.shift() || "";
             const finalParseMode = parseMode || "MarkdownV2";
-            const mediaGroup = await this.createTelegramMediaGroup({
-              attachments: validAttachments,
-              formattedCaption,
-              finalParseMode,
-            });
-            let response;
+            let replyMarkupDelivered = false;
 
-            try {
-              response = await bot.api.sendMediaGroup(
-                entity.reciever,
-                mediaGroup as any,
-                Object.keys(mediaGroupOptions).length
-                  ? (mediaGroupOptions as any)
-                  : undefined,
-              );
-            } catch (error) {
-              if (!this.isTelegramWebpageMediaFetchFailed(error)) {
-                throw error;
+            if (validAttachments.length === 1) {
+              const attachment = validAttachments[0];
+              const mimeType = this.getMimeType(attachment.url);
+              const sendAttachment = async (uploadFile: boolean) => {
+                const media = uploadFile
+                  ? await this.createTelegramAttachmentInputFile({
+                      attachment,
+                    })
+                  : attachment.url;
+                const includeReplyMarkup =
+                  !captionChunks.length && normalizedReplyMarkup;
+                const options = {
+                  ...baseCaptionOptions,
+                  ...(formattedCaption
+                    ? {
+                        caption: formattedCaption,
+                        parse_mode: finalParseMode,
+                      }
+                    : {}),
+                  ...(includeReplyMarkup
+                    ? { reply_markup: normalizedReplyMarkup }
+                    : {}),
+                };
+
+                if (mimeType.startsWith("image/")) {
+                  return bot.api.sendPhoto(
+                    entity.reciever,
+                    media as any,
+                    options as any,
+                  );
+                }
+
+                return bot.api.sendDocument(
+                  entity.reciever,
+                  media as any,
+                  options as any,
+                );
+              };
+              let response;
+
+              try {
+                response = await sendAttachment(false);
+              } catch (error) {
+                if (!this.isTelegramWebpageMediaFetchFailed(error)) {
+                  throw error;
+                }
+
+                response = await sendAttachment(true);
               }
 
-              const uploadMediaGroup = await this.createTelegramMediaGroup({
+              sourceSystemId = String(response.message_id);
+              replyMarkupDelivered = Boolean(
+                !captionChunks.length && normalizedReplyMarkup,
+              );
+            } else {
+              const mediaGroup = await this.createTelegramMediaGroup({
                 attachments: validAttachments,
                 formattedCaption,
                 finalParseMode,
-                uploadFiles: true,
               });
+              let response;
 
-              response = await bot.api.sendMediaGroup(
-                entity.reciever,
-                uploadMediaGroup as any,
-                Object.keys(mediaGroupOptions).length
-                  ? (mediaGroupOptions as any)
-                  : undefined,
-              );
-            }
+              try {
+                response = await bot.api.sendMediaGroup(
+                  entity.reciever,
+                  mediaGroup as any,
+                  Object.keys(mediaGroupOptions).length
+                    ? (mediaGroupOptions as any)
+                    : undefined,
+                );
+              } catch (error) {
+                if (!this.isTelegramWebpageMediaFetchFailed(error)) {
+                  throw error;
+                }
 
-            if (response.length) {
-              const messageId = response[0].message_id;
+                const uploadMediaGroup = await this.createTelegramMediaGroup({
+                  attachments: validAttachments,
+                  formattedCaption,
+                  finalParseMode,
+                  uploadFiles: true,
+                });
 
-              sourceSystemId = String(messageId);
+                response = await bot.api.sendMediaGroup(
+                  entity.reciever,
+                  uploadMediaGroup as any,
+                  Object.keys(mediaGroupOptions).length
+                    ? (mediaGroupOptions as any)
+                    : undefined,
+                );
+              }
+
+              if (response.length) {
+                const messageId = response[0].message_id;
+
+                sourceSystemId = String(messageId);
+              }
             }
 
             if (captionChunks.length) {
@@ -830,7 +907,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                   nextOptions,
                 );
               }
-            } else if (normalizedReplyMarkup) {
+            } else if (normalizedReplyMarkup && !replyMarkupDelivered) {
               await bot.api.sendMessage(entity.reciever, ".", {
                 ...baseCaptionOptions,
                 reply_markup: normalizedReplyMarkup,

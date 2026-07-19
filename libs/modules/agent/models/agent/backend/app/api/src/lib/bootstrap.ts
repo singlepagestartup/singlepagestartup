@@ -20,7 +20,11 @@ import {
   type INotificationModule,
   type IRbacModule,
   type ISocialModule,
+  type ITelegramConversationRuntime,
+  type ITelegramConversationStore,
 } from "./di";
+import { TelegramConversationMemoryStore } from "./service/singlepage/telegram-conversation-store";
+import { TelegramConversationRuntime } from "./service/singlepage/telegram-conversation";
 import { Repository as SocialProfileRepository } from "@sps/social/models/profile/backend/app/api/src/lib/repository";
 import { Configuration as SocialProfileConfiguration } from "@sps/social/models/profile/backend/app/api/src/lib/configuration";
 import { Repository as SocialChatRepository } from "@sps/social/models/chat/backend/app/api/src/lib/repository";
@@ -47,6 +51,10 @@ import { Repository as SocialThreadsToMessagesRepository } from "@sps/social/rel
 import { Configuration as SocialThreadsToMessagesConfiguration } from "@sps/social/relations/threads-to-messages/backend/app/api/src/lib/configuration";
 import { Repository as SocialThreadsToActionsRepository } from "@sps/social/relations/threads-to-actions/backend/app/api/src/lib/repository";
 import { Configuration as SocialThreadsToActionsConfiguration } from "@sps/social/relations/threads-to-actions/backend/app/api/src/lib/configuration";
+import { Repository as SocialMessagesToFileStorageModuleFilesRepository } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api/src/lib/repository";
+import { Configuration as SocialMessagesToFileStorageModuleFilesConfiguration } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api/src/lib/configuration";
+import { Repository as SocialProfilesToFileStorageModuleFilesRepository } from "@sps/social/relations/profiles-to-file-storage-module-files/backend/app/api/src/lib/repository";
+import { Configuration as SocialProfilesToFileStorageModuleFilesConfiguration } from "@sps/social/relations/profiles-to-file-storage-module-files/backend/app/api/src/lib/configuration";
 import { Repository as RbacSubjectRepository } from "@sps/rbac/models/subject/backend/app/api/src/lib/repository";
 import { Configuration as RbacSubjectConfiguration } from "@sps/rbac/models/subject/backend/app/api/src/lib/configuration";
 import { Repository as RbacRoleRepository } from "@sps/rbac/models/role/backend/app/api/src/lib/repository";
@@ -96,6 +104,18 @@ import { Configuration as HostPageConfiguration } from "@sps/host/models/page/ba
 import { Service as HostPageService } from "@sps/host/models/page/backend/app/api/src/lib/service";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
+  bind<ITelegramConversationStore>(AgentDI.ITelegramConversationStore)
+    .toDynamicValue(() => new TelegramConversationMemoryStore())
+    .inSingletonScope();
+  bind<ITelegramConversationRuntime>(AgentDI.ITelegramConversationRuntime)
+    .toDynamicValue((context) => {
+      return new TelegramConversationRuntime(
+        context.container.get<ITelegramConversationStore>(
+          AgentDI.ITelegramConversationStore,
+        ),
+      );
+    })
+    .inSingletonScope();
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
@@ -158,6 +178,16 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         threadsToActions: new CRUDService<any>(
           new SocialThreadsToActionsRepository(
             new SocialThreadsToActionsConfiguration(),
+          ),
+        ),
+        profilesToFileStorageModuleFiles: new CRUDService<any>(
+          new SocialProfilesToFileStorageModuleFilesRepository(
+            new SocialProfilesToFileStorageModuleFilesConfiguration(),
+          ),
+        ),
+        messagesToFileStorageModuleFiles: new CRUDService<any>(
+          new SocialMessagesToFileStorageModuleFilesRepository(
+            new SocialMessagesToFileStorageModuleFilesConfiguration(),
           ),
         ),
       };

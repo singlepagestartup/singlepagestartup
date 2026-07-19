@@ -16,7 +16,11 @@ import { Table } from "@sps/agent/models/agent/backend/repository/database";
 import { Repository } from "../../repository";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
-import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import {
+  IModel as ISocialModuleMessage,
+  isSocialMessageExcludedFromOpenRouter,
+  withSocialMessageSystemMetadata,
+} from "@sps/social/models/message/sdk/model";
 import {
   IModel as ISocialModuleThread,
   selectPrimaryLinkedThread,
@@ -26,10 +30,14 @@ import { IModel as IRbacModuleSubject } from "@sps/rbac/models/subject/sdk/model
 import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
+import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
 import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
 import { IModel as IEcommerceModuleProductsToFileStorageFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
-import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
+import {
+  defaultSocialModulePersonalAssistantVariant,
+  IModel as IFileStorageModuleFile,
+} from "@sps/file-storage/models/file/sdk/model";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import * as jwt from "hono/jwt";
 import { blobifyFiles, logger } from "@sps/backend-utils";
@@ -43,11 +51,21 @@ import {
   type INotificationModule,
   type IRbacModule,
   type ISocialModule,
+  type ITelegramConversationRuntime,
 } from "../../di";
 import {
   type ITelegramRequiredSubscriptionChannelConfiguration,
   resolveTelegramRequiredSubscriptionChannelConfiguration,
 } from "./telegram-required-subscription-channel";
+import {
+  TELEGRAM_ASSISTANT_CALLBACK_PREFIX,
+  type ITelegramConversationKey,
+} from "./telegram-conversation";
+import {
+  TelegramAssistantConversation,
+  type ITelegramAssistantConversationContext,
+  type ITelegramAssistantConversationTransport,
+} from "./telegram-assistant-conversation";
 
 const activeSubscriptionProductsCheckoutMessage =
   "Checking out order has active subscription products.";
@@ -56,6 +74,7 @@ const openRouterTerminalMessageWrittenMarker =
 
 interface ISocialModuleTelegramMessageData {
   description: string;
+  metadata?: Record<string, unknown>;
   interaction?:
     | {
         inline_keyboard: {
@@ -93,6 +112,16 @@ export type ITelegramBotReplyContext = {
     }
 );
 
+type ITelegramConversationSourceContext = {
+  shouldReplySocialModuleProfile: ISocialModuleProfile;
+  socialModuleChat: ISocialModuleChat;
+  socialModuleThreadId?: string;
+  messageFromSocialModuleProfile: ISocialModuleProfile | null;
+} & (
+  | { socialModuleMessage: ISocialModuleMessage }
+  | { socialModuleAction: ISocialModuleAction }
+);
+
 export type TTelegramCommandTarget = "telegram-bot" | "artificial-intelligence";
 
 export type ITelegramCommandMessageContext = ITelegramBotReplyContext & {
@@ -110,6 +139,7 @@ export interface ITelegramCommandDefinition {
   command: string;
   description: string;
   target: TTelegramCommandTarget;
+  conversationId?: string;
   handleMessage?: (props: ITelegramCommandMessageContext) => Promise<unknown>;
   handleCallbackQuery?: (
     props: ITelegramCommandCallbackContext,
@@ -138,6 +168,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   hostModule: IHostModule;
   notificationModule: INotificationModule;
   fileStorageModule: IFileStorageModule;
+  telegramConversationRuntime: ITelegramConversationRuntime;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -150,6 +181,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(AgentDI.INotificationModule)
     notificationModule: INotificationModule,
     @inject(AgentDI.IFileStorageModule) fileStorageModule: IFileStorageModule,
+    @inject(AgentDI.ITelegramConversationRuntime)
+    telegramConversationRuntime: ITelegramConversationRuntime,
   ) {
     super(repository);
     this.socialModule = socialModule;
@@ -160,6 +193,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.hostModule = hostModule;
     this.notificationModule = notificationModule;
     this.fileStorageModule = fileStorageModule;
+    this.telegramConversationRuntime = telegramConversationRuntime;
   }
 
   statusMessages = telegramBotServiceMessages;
@@ -225,6 +259,32 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             },
           }),
       },
+      {
+        command: "/assistant",
+        description: "Управлять AI-ассистентом",
+        target: "telegram-bot",
+        conversationId: "assistant-profile-management",
+        handleMessage: (props) =>
+          this.telegramAssistantConversationEnter(props),
+      },
+      ...["/cancel", "/exit", "/stop"].map(
+        (command): ITelegramCommandDefinition => {
+          const descriptions: Record<string, string> = {
+            "/cancel": "Отменить текущий диалог",
+            "/exit": "Завершить текущий диалог",
+            "/stop": "Остановить текущий диалог",
+          };
+
+          return {
+            command,
+            description: descriptions[command],
+            target: "telegram-bot",
+            conversationId: "assistant-profile-management",
+            handleMessage: (props) =>
+              this.telegramAssistantConversationExit(props),
+          };
+        },
+      ),
       ...["/threads", "/thread_new", "/thread_rename", "/thread_delete"].map(
         (command): ITelegramCommandDefinition => {
           const descriptions: Record<string, string> = {
@@ -514,10 +574,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             description: props.socialModuleMessage.description,
           })
         : undefined;
+    const telegramConversationKey =
+      props.socialModuleChat.variant === "telegram" &&
+      this.telegramConversationRuntime
+        ? await this.resolveTelegramConversationKey(props)
+        : undefined;
+    const activeTelegramConversation = telegramConversationKey
+      ? await this.telegramConversationRuntime.get(telegramConversationKey)
+      : undefined;
 
     if (props.shouldReplySocialModuleProfile.slug === "telegram-bot") {
       if ("socialModuleMessage" in props) {
         if (telegramCommand?.definition.target === "telegram-bot") {
+          await this.markTelegramSystemMessage({
+            socialModuleMessage: props.socialModuleMessage,
+            source: "agent.telegram.command",
+          });
           await this.telegramBotCommandReplyMessageCreate({
             jwtToken,
             rbacModuleSubject,
@@ -529,6 +601,26 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             messageFromSocialModuleProfile:
               props.messageFromSocialModuleProfile,
           });
+        } else if (activeTelegramConversation?.editor) {
+          await this.markTelegramSystemMessage({
+            socialModuleMessage: props.socialModuleMessage,
+            source: "agent.telegram.assistant-conversation",
+          });
+          const replyContext: ITelegramBotReplyContext = {
+            ...props,
+            jwtToken,
+            rbacModuleSubject,
+          };
+          const conversationContext =
+            await this.getTelegramAssistantConversationContext({
+              ...replyContext,
+              telegramConversationKey,
+            });
+          await this.getTelegramAssistantConversation().handleMessage(
+            conversationContext,
+            props.socialModuleMessage,
+            this.getTelegramAssistantConversationTransport(replyContext),
+          );
         }
       } else if ("socialModuleAction" in props) {
         if (props.socialModuleAction.payload?.telegram?.callback_query) {
@@ -548,6 +640,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       props.shouldReplySocialModuleProfile.variant === "artificial-intelligence"
     ) {
       if ("socialModuleMessage" in props) {
+        if (activeTelegramConversation?.editor) {
+          return;
+        }
+
         if (telegramCommand?.definition.target === "telegram-bot") {
           return;
         }
@@ -676,6 +772,259 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       rbacModuleSubject: messageFromRbacModuleSubject,
       jwtToken: messageFromRbacModuleSubjectJwt,
     };
+  }
+
+  protected async telegramAssistantConversationEnter(
+    props: ITelegramCommandMessageContext,
+  ) {
+    const context = await this.getTelegramAssistantConversationContext(props);
+
+    return this.getTelegramAssistantConversation().enter(
+      context,
+      this.getTelegramAssistantConversationTransport(props),
+    );
+  }
+
+  protected async telegramAssistantConversationExit(
+    props: ITelegramCommandMessageContext,
+  ) {
+    const context = await this.getTelegramAssistantConversationContext(props);
+
+    return this.getTelegramAssistantConversation().terminate(
+      context,
+      this.getTelegramAssistantConversationTransport(props),
+    );
+  }
+
+  protected getTelegramAssistantConversation() {
+    return new TelegramAssistantConversation(this.telegramConversationRuntime);
+  }
+
+  protected async resolveTelegramConversationKey(
+    props: ITelegramConversationSourceContext,
+  ): Promise<ITelegramConversationKey | undefined> {
+    if (!RBAC_SECRET_KEY || !props.messageFromSocialModuleProfile?.id) {
+      return;
+    }
+
+    const threadId = await this.resolveThreadIdForReplyContext({
+      ...props,
+      secretKey: RBAC_SECRET_KEY,
+    });
+
+    return {
+      chatId: props.socialModuleChat.id,
+      threadId,
+      senderProfileId: props.messageFromSocialModuleProfile.id,
+    };
+  }
+
+  protected async getTelegramAssistantConversationContext(
+    props: ITelegramBotReplyContext & {
+      telegramConversationKey?: ITelegramConversationKey;
+    },
+  ): Promise<ITelegramAssistantConversationContext> {
+    if (!props.messageFromSocialModuleProfile?.id) {
+      throw new Error(
+        "Validation error. Telegram conversation sender profile is missing",
+      );
+    }
+
+    const key =
+      props.telegramConversationKey ||
+      (await this.resolveTelegramConversationKey(props));
+
+    if (!key) {
+      throw new Error(
+        "Validation error. Telegram conversation key cannot be resolved",
+      );
+    }
+
+    const requesterSubject = await this.getMessageFromRbacModuleSubject(props);
+    const requesterJwtToken = await this.signRbacModuleSubjectJwt({
+      rbacModuleSubject: requesterSubject,
+    });
+
+    return {
+      key,
+      requesterSubject,
+      requesterProfileId: props.messageFromSocialModuleProfile.id,
+      socialModuleChatId: props.socialModuleChat.id,
+      requesterJwtToken,
+    };
+  }
+
+  protected getTelegramAssistantConversationTransport(
+    props: ITelegramBotReplyContext,
+  ): ITelegramAssistantConversationTransport {
+    return {
+      create: ({ presentationMediaUrl: _presentationMediaUrl, ...data }) =>
+        this.telegramBotReplyMessageCreate({ ...props, data }),
+      update: (
+        socialModuleMessageId,
+        { presentationMediaUrl: _presentationMediaUrl, ...data },
+      ) =>
+        rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+          {
+            id: props.rbacModuleSubject.id,
+            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+            socialModuleChatId: props.socialModuleChat.id,
+            socialModuleMessageId,
+            data,
+            options: {
+              headers: { Authorization: `Bearer ${props.jwtToken}` },
+            },
+          },
+        ),
+      resolveProfileAvatar: (profileId) =>
+        this.resolveTelegramAssistantProfileAvatar(profileId),
+      resolveEditorFile: (message) =>
+        this.resolveTelegramAssistantEditorFile(message),
+    };
+  }
+
+  protected async resolveTelegramAssistantProfileAvatar(profileId: string) {
+    const relations =
+      await this.socialModule.profilesToFileStorageModuleFiles.find({
+        params: {
+          filters: {
+            and: [{ column: "profileId", method: "eq", value: profileId }],
+          },
+          orderBy: {
+            and: [
+              { column: "orderIndex", method: "desc" },
+              { column: "updatedAt", method: "desc" },
+              { column: "createdAt", method: "desc" },
+            ],
+          },
+          limit: 1,
+        },
+      });
+    const relation = relations?.[0];
+    let file = relation?.fileStorageModuleFileId
+      ? await this.fileStorageModule.file.findById({
+          id: relation.fileStorageModuleFileId,
+        })
+      : undefined;
+    let isDefault =
+      file?.variant === defaultSocialModulePersonalAssistantVariant;
+
+    if (!this.isTelegramAssistantAvatarImage(file)) {
+      const defaultFiles = await this.fileStorageModule.file.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "variant",
+                method: "eq",
+                value: defaultSocialModulePersonalAssistantVariant,
+              },
+            ],
+          },
+          orderBy: {
+            and: [
+              { column: "updatedAt", method: "desc" },
+              { column: "createdAt", method: "desc" },
+            ],
+          },
+          limit: 1,
+        },
+      });
+      file = defaultFiles?.[0];
+      isDefault = true;
+    }
+
+    if (!this.isTelegramAssistantAvatarImage(file)) {
+      return;
+    }
+
+    const url = /^https?:\/\//.test(String(file.file))
+      ? String(file.file)
+      : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`;
+    const previewFiles = await blobifyFiles({
+      files: [
+        {
+          title: file.title || file.adminTitle || file.id,
+          extension:
+            file.extension || String(file.file).split(".").pop() || "jpg",
+          type: file.mimeType || "image/jpeg",
+          url,
+        },
+      ],
+    }).catch(() => []);
+
+    return {
+      url,
+      alt: file.alt || file.adminTitle || undefined,
+      ...(previewFiles[0] ? { file: previewFiles[0] } : {}),
+      isDefault,
+    };
+  }
+
+  protected isTelegramAssistantAvatarImage(
+    file?: Partial<IFileStorageModuleFile> | null,
+  ): boolean {
+    const extension = String(
+      file?.extension || file?.file?.split("?")[0].split(".").pop() || "",
+    ).toLowerCase();
+
+    return Boolean(
+      file?.file &&
+        (String(file?.mimeType || "").startsWith("image/") ||
+          ["avif", "gif", "jpeg", "jpg", "png", "svg", "webp"].includes(
+            extension,
+          )),
+    );
+  }
+
+  protected async resolveTelegramAssistantEditorFile(
+    message: ISocialModuleMessage,
+  ) {
+    const relations =
+      await this.socialModule.messagesToFileStorageModuleFiles.find({
+        params: {
+          filters: {
+            and: [{ column: "messageId", method: "eq", value: message.id }],
+          },
+          orderBy: {
+            and: [{ column: "orderIndex", method: "desc" }],
+          },
+        },
+      });
+    const relation = relations?.find(
+      (item) => typeof item.fileStorageModuleFileId === "string",
+    );
+
+    if (!relation?.fileStorageModuleFileId) {
+      return;
+    }
+
+    const file = await this.fileStorageModule.file.findById({
+      id: relation.fileStorageModuleFileId,
+    });
+
+    if (!file?.file) {
+      return;
+    }
+
+    const url = String(file.file).includes("http")
+      ? String(file.file)
+      : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`;
+    const files = await blobifyFiles({
+      files: [
+        {
+          title: file.title || file.adminTitle || file.id,
+          extension:
+            file.extension ||
+            String(file.file).split("?")[0].split(".").pop() ||
+            "bin",
+          type: file.mimeType || "application/octet-stream",
+          url,
+        },
+      ],
+    });
+
+    return files[0];
   }
 
   protected formatTelegramThreadTitle(props: {
@@ -969,7 +1318,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
         socialModuleChatId: props.socialModuleChat.id,
         socialModuleThreadId,
-        data: props.data,
+        data: this.withSystemMessageMetadata({
+          data: props.data,
+          source: "agent.telegram.system-reply",
+        }),
         options: {
           headers: {
             Authorization: "Bearer " + props.jwtToken,
@@ -979,8 +1331,56 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
+  protected withSystemMessageMetadata<TData extends object>(props: {
+    data: TData & { metadata?: Record<string, unknown> };
+    source: string;
+  }) {
+    return {
+      ...props.data,
+      metadata: withSocialMessageSystemMetadata({
+        metadata: props.data.metadata,
+        source: props.source,
+      }),
+    };
+  }
+
+  protected async markTelegramSystemMessage(props: {
+    socialModuleMessage: ISocialModuleMessage;
+    source: string;
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+    }
+
+    if (
+      isSocialMessageExcludedFromOpenRouter(props.socialModuleMessage.metadata)
+    ) {
+      return props.socialModuleMessage;
+    }
+
+    const metadata = withSocialMessageSystemMetadata({
+      metadata: props.socialModuleMessage.metadata,
+      source: props.source,
+    });
+    const updatedMessage = await socialModuleMessageApi.update({
+      id: props.socialModuleMessage.id,
+      data: {
+        metadata,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    props.socialModuleMessage.metadata = metadata;
+
+    return updatedMessage;
+  }
+
   protected async resolveThreadIdForReplyContext(
-    props: ITelegramBotReplyContext & {
+    props: ITelegramConversationSourceContext & {
       secretKey: string;
     },
   ) {
@@ -1026,6 +1426,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     if (!callbackQueryData) {
       throw new Error("Validation error. Callback query data is missing");
+    }
+
+    if (
+      callbackQueryData.startsWith(`${TELEGRAM_ASSISTANT_CALLBACK_PREFIX}:`)
+    ) {
+      const context = await this.getTelegramAssistantConversationContext(props);
+
+      return this.getTelegramAssistantConversation().handleCallback(
+        context,
+        callbackQueryData,
+        this.getTelegramAssistantConversationTransport(props),
+      );
     }
 
     if (callbackQueryData.startsWith("command_")) {
@@ -1851,7 +2263,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
       }
 
-      if (!props.socialModuleMessage.description?.trim()) {
+      if (
+        isSocialMessageExcludedFromOpenRouter(
+          props.socialModuleMessage.metadata,
+        ) ||
+        !props.socialModuleMessage.description?.trim()
+      ) {
         return;
       }
 
@@ -1936,21 +2353,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             socialModuleThreadId,
-            data: {
-              description:
-                `${this.statusMessages.openRouterRequiredTelegamChannelSubscriptionError.ru}\n\n` +
-                `[${telegramRequiredSubscriptionChannel.name}](${telegramRequiredSubscriptionChannel.link})`,
-              interaction: {
-                inline_keyboard: [
-                  [
-                    {
-                      text: telegramRequiredSubscriptionChannel.name,
-                      url: telegramRequiredSubscriptionChannel.link,
-                    },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description:
+                  `${this.statusMessages.openRouterRequiredTelegamChannelSubscriptionError.ru}\n\n` +
+                  `[${telegramRequiredSubscriptionChannel.name}](${telegramRequiredSubscriptionChannel.link})`,
+                interaction: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: telegramRequiredSubscriptionChannel.name,
+                        url: telegramRequiredSubscriptionChannel.link,
+                      },
+                    ],
                   ],
-                ],
+                },
               },
-            },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,
@@ -1967,20 +2387,23 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             socialModuleThreadId,
-            data: {
-              description:
-                this.statusMessages.openRouterNotFoundSubscription.ru,
-              interaction: {
-                inline_keyboard: [
-                  [
-                    {
-                      text: "Premium",
-                      callback_data: "command_premium",
-                    },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description:
+                  this.statusMessages.openRouterNotFoundSubscription.ru,
+                interaction: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: "Premium",
+                        callback_data: "command_premium",
+                      },
+                    ],
                   ],
-                ],
+                },
               },
-            },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,
@@ -2042,9 +2465,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
                 socialModuleChatId: props.socialModuleChat.id,
                 socialModuleThreadId,
-                data: {
-                  description: this.statusMessages.openRouterNotEnoughTokens.ru,
-                },
+                data: this.withSystemMessageMetadata({
+                  source: "agent.openrouter.status",
+                  data: {
+                    description:
+                      this.statusMessages.openRouterNotEnoughTokens.ru,
+                  },
+                }),
                 options: {
                   headers: {
                     Authorization: "Bearer " + props.jwtToken,
@@ -2058,9 +2485,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 id: props.rbacModuleSubject.id,
                 socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
                 socialModuleChatId: props.socialModuleChat.id,
-                data: {
-                  description: this.statusMessages.openRouterNotEnoughTokens.ru,
-                },
+                data: this.withSystemMessageMetadata({
+                  source: "agent.openrouter.status",
+                  data: {
+                    description:
+                      this.statusMessages.openRouterNotEnoughTokens.ru,
+                  },
+                }),
                 options: {
                   headers: {
                     Authorization: "Bearer " + props.jwtToken,
@@ -2096,9 +2527,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             socialModuleThreadId,
-            data: {
-              description: this.statusMessages.openRouterError.ru,
-            },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description: this.statusMessages.openRouterError.ru,
+              },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,
@@ -2112,9 +2546,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             id: props.rbacModuleSubject.id,
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
-            data: {
-              description: this.statusMessages.openRouterError.ru,
-            },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description: this.statusMessages.openRouterError.ru,
+              },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,

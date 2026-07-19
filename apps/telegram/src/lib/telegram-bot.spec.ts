@@ -12,10 +12,14 @@
 
 const mockBlobifyFiles = jest.fn();
 const mockTelegramCommands = jest.fn();
+const mockTelegramMessageCreate = jest.fn();
+const mockTelegramThreadCreate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   return {
     NEXT_PUBLIC_TELEGRAM_SERVICE_URL: "https://telegram.example.com",
+    RBAC_JWT_SECRET: "jwt-secret",
+    RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS: 3600,
     RBAC_SECRET_KEY: "rbac-secret",
     TELEGRAM_SERVICE_BOT_TOKEN: "telegram-token",
     TELEGRAM_SERVICE_BOT_USERNAME: "singlepagestartup_bot",
@@ -30,6 +34,18 @@ jest.mock("@sps/agent/models/agent/sdk/server", () => {
   };
 });
 
+jest.mock("@sps/rbac/models/subject/sdk/server", () => {
+  return {
+    api: {
+      socialModuleChatFindByIdThreadCreate: (...args: unknown[]) =>
+        mockTelegramThreadCreate(...args),
+      socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate: (
+        ...args: unknown[]
+      ) => mockTelegramMessageCreate(...args),
+    },
+  };
+});
+
 jest.mock("@sps/backend-utils", () => {
   return {
     blobifyFiles: (...args: unknown[]) => mockBlobifyFiles(...args),
@@ -37,10 +53,36 @@ jest.mock("@sps/backend-utils", () => {
 });
 
 import {
+  isTelegramBotAuthoredMessage,
   isTelegramMessageAddressedToBot,
   normalizeTelegramTransportControls,
   TelegarmBot,
 } from "./telegram-bot";
+
+describe("Given: Telegram bot-authored service messages", () => {
+  /**
+   * BDD Scenario
+   * Given: Telegram emits forum_topic_created after the bot creates a command topic.
+   * When: the adapter decides whether the service message belongs to a human sender.
+   * Then: it rejects the bot-authored message before RBAC bootstrap can provision a personal AI agent for the bot.
+   */
+  it("When: the sender is a bot Then: the message is ignored", () => {
+    expect(
+      isTelegramBotAuthoredMessage({
+        from: {
+          is_bot: true,
+        },
+      }),
+    ).toBe(true);
+    expect(
+      isTelegramBotAuthoredMessage({
+        from: {
+          is_bot: false,
+        },
+      }),
+    ).toBe(false);
+  });
+});
 
 describe("Given: the Agent Telegram command catalog", () => {
   /**
@@ -102,10 +144,15 @@ describe("Given: the Agent Telegram command catalog", () => {
     expect(setMyCommands.mock.invocationCallOrder[0]).toBeLessThan(
       setWebhook.mock.invocationCallOrder[0],
     );
+    expect(bot.telegramPublishedCommands).toEqual(commands);
   });
 });
 
 describe("Given: Telegram transport controls", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   /**
    * BDD Scenario
    * Given: a private Telegram message starts with the native learn command.
@@ -213,6 +260,125 @@ describe("Given: Telegram transport controls", () => {
         description: "@knowledge Что известно?",
       }),
     ).toBe(false);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a published command is sent from the main flow without a Telegram topic.
+   * When: Telegram ingests the command.
+   * Then: the adapter creates a topic-backed Social thread and persists the command there.
+   */
+  it.each(["/start", "/assistant", "/help", "/learn Новый факт"])(
+    "When: %s is received in the main flow Then: it starts a topic",
+    async (command) => {
+      mockTelegramMessageCreate.mockResolvedValue({ id: "message-id" });
+      mockTelegramThreadCreate.mockResolvedValue({
+        id: "command-thread-id",
+        sourceSystemId: "42",
+      });
+      const bot = Object.create(TelegarmBot.prototype) as any;
+      const commandName = command.split(/\s+/)[0].slice(1);
+      bot.telegramPublishedCommands = [
+        {
+          command: commandName,
+          description: `Тред команды ${commandName}`,
+        },
+      ];
+      bot.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate = jest
+        .fn()
+        .mockResolvedValue({
+          rbacModuleSubject: { id: "subject-id" },
+          socialModuleProfile: { id: "profile-id" },
+          socialModuleChat: { id: "chat-id" },
+          socialModuleThread: { id: "default-thread-id" },
+        });
+      bot.signSubjectJwt = jest.fn().mockResolvedValue("jwt-token");
+      bot.shouldHandleIncomingMessageInChat = jest.fn().mockReturnValue(true);
+
+      await bot.handleIncomingMessage({
+        ctx: {
+          chat: { id: 1 },
+          from: { id: 2 },
+          message: { text: command },
+        },
+        data: {
+          description: command,
+          sourceSystemId: "telegram-message-id",
+        },
+      });
+
+      expect(mockTelegramThreadCreate).toHaveBeenCalledWith({
+        id: "subject-id",
+        socialModuleChatId: "chat-id",
+        data: {
+          title: `Тред команды ${commandName}`,
+        },
+        options: {
+          headers: {
+            Authorization: "Bearer jwt-token",
+          },
+        },
+      });
+      expect(mockTelegramMessageCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            description: command,
+          }),
+          socialModuleChatId: "chat-id",
+          socialModuleProfileId: "profile-id",
+          socialModuleThreadId: "command-thread-id",
+        }),
+      );
+    },
+  );
+
+  /**
+   * BDD Scenario
+   * Given: a command is sent inside an existing Telegram topic.
+   * When: Telegram ingests the command with message_thread_id.
+   * Then: no new topic is created and the command remains in the current Social thread.
+   */
+  it("When: a command is received in a topic Then: it stays in that topic", async () => {
+    mockTelegramMessageCreate.mockResolvedValue({ id: "message-id" });
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    bot.telegramPublishedCommands = [
+      {
+        command: "assistant",
+        description: "Управлять AI-ассистентом",
+      },
+    ];
+    bot.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate = jest
+      .fn()
+      .mockResolvedValue({
+        rbacModuleSubject: { id: "subject-id" },
+        socialModuleProfile: { id: "profile-id" },
+        socialModuleChat: { id: "chat-id" },
+        socialModuleThread: { id: "existing-topic-thread" },
+      });
+    bot.signSubjectJwt = jest.fn().mockResolvedValue("jwt-token");
+    bot.shouldHandleIncomingMessageInChat = jest.fn().mockReturnValue(true);
+
+    await bot.handleIncomingMessage({
+      ctx: {
+        chat: { id: 1 },
+        from: { id: 2 },
+        message: {
+          message_thread_id: 42,
+          text: "/assistant",
+        },
+      },
+      data: {
+        description: "/assistant",
+        sourceSystemId: "telegram-message-id",
+      },
+    });
+
+    expect(mockTelegramThreadCreate).not.toHaveBeenCalled();
+    expect(mockTelegramMessageCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        socialModuleThreadId: "existing-topic-thread",
+      }),
+    );
   });
 });
 

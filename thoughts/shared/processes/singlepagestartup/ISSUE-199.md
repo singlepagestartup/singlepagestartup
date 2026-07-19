@@ -1046,6 +1046,35 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   `tools/deployer/server/install_docker.yaml`,
   `tools/deployer/README.md`
 
+### Incident 44 — Telegram formatting collapsed MCP tool namespaces
+
+- **Phase**: Code Review
+- **Occurrences**: every Telegram execution summary containing a namespaced MCP
+  function name
+- **Symptom**: the visible source line looked like
+  `SinglePageStartup MCP · mcpsinglepagestartupmodule-list`; the MCP namespace,
+  server id, and tool name appeared concatenated and partially underlined.
+- **Root Cause**: the execution projection rendered the collision-safe model
+  function name `mcp__<server>__<tool>` directly. The server was already shown
+  separately, and Telegram interpreted the double underscores as formatting
+  delimiters.
+- **Fix**: add one shared presentation formatter that strips the redundant MCP
+  namespace and normalizes underscore separators to hyphens. Use it in both
+  the Telegram execution summary and the web action row while retaining the
+  original technical identifier for model routing and persisted execution
+  state.
+- **Result**: `mcp__singlepagestartup__module-list` is displayed as
+  `SinglePageStartup MCP · module-list`. All 65 RBAC suites and 275 tests pass;
+  RBAC TypeScript and formatting checks also pass.
+- **Preventive Action**: never render provider-facing collision-safe function
+  identifiers directly in user-visible transports. Derive a transport-safe
+  label from the typed execution projection and keep routing identifiers
+  unchanged.
+- **References**:
+  `libs/modules/rbac/models/subject/sdk/model/src/lib/ai-execution-action.ts`,
+  `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/execution-action.ts`,
+  `libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/social-module/profile/chat/message/list/default/components/AiExecutionActionRow.tsx`
+
 ## Reusable Learnings
 
 - For OpenRouter tool execution through MCP, keep external MCP OAuth unchanged and issue the internal short-lived MCP token from the authentication JWT of the `rbac.subject` linked to the replying profile; never reuse requester permissions, billing identity, or tool arguments to choose the execution principal.
@@ -1053,6 +1082,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Keep one canonical AI reaction endpoint. Migrate required behavior and callers before deleting a legacy endpoint so parity and cleanup are verifiable in one change set.
 - Persist AI-turn execution settings in message metadata and let message-created/action logging be the single backend trigger; reply recipients come from chat membership, and no frontend follow-up mutation, custom launch header, or query marker coordinates an agent turn.
 - Project live execution into a typed, presentation-safe action and keep raw arguments/results only in the execution context or audit boundary; never use a generic JSON action renderer for agent progress.
+- Keep collision-safe provider function names out of user-visible text; display
+  the server and tool through a shared transport-safe formatter while retaining
+  the original identifier for routing and audit state.
 - Verify the actual admin variant rendered by the host. Shared form fields may need to be wired into both legacy and admin-v2 surfaces until the legacy admin is retired.
 - For MCP runtime checks, validate the complete chain without exposing tokens: exchange status/TTL, live `tools/list`, then one read-only API-backed MCP call whose audit subject is the `rbac.subject` linked to the replying `social.profile`.
 - Keep UI/component variants separate from semantic singleton markers; a schema default such as `variant = "default"` cannot identify one canonical chat thread.

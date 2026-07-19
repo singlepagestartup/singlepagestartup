@@ -444,7 +444,25 @@ export class Handler {
     }
 
     if (!props.socialModuleMessage.description?.trim()) {
-      return false;
+      const attachmentRelations =
+        await this.service.socialModule.messagesToFileStorageModuleFiles.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "messageId",
+                  method: "eq",
+                  value: props.socialModuleMessage.id,
+                },
+              ],
+            },
+            limit: 1,
+          },
+        });
+
+      if (!attachmentRelations?.length) {
+        return false;
+      }
     }
 
     let socialModuleChat = props.socialModuleChat;

@@ -5,11 +5,13 @@ export const RBAC_AI_REACTION_REQUEST_MAX_SKILL_IDS = 50;
 
 export const rbacAiReactionReasoningValues = [
   "auto",
-  "none",
-  "low",
-  "medium",
-  "high",
+  "max",
   "xhigh",
+  "high",
+  "medium",
+  "low",
+  "minimal",
+  "none",
 ] as const;
 
 export type TRbacAiReactionReasoning =

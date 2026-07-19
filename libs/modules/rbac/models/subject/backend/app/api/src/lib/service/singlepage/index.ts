@@ -391,6 +391,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       subjectsToSocialModuleProfiles: this.subjectsToSocialModuleProfiles,
       resolvePersonalAiAgent: (personalAiAgentProps) =>
         this.telegramPersonalAiAgentEnsure(personalAiAgentProps),
+      ensureProfileManagementAccess: (accessProps) =>
+        this.socialModuleProfileKnowledgeAccessEnsure(accessProps),
     }).execute(props);
   }
 

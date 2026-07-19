@@ -16,10 +16,6 @@ import {
   webhookCallback,
   Context as GrammyContext,
 } from "grammy";
-import {
-  Conversation,
-  ConversationFlavor as GrammyConversationFlavor,
-} from "@grammyjs/conversations";
 import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
@@ -35,7 +31,7 @@ import {
   type TelegramVoiceMessageData,
 } from "./telegram-voice-message";
 
-export type TelegramBotContext = GrammyContext & GrammyConversationFlavor;
+export type TelegramBotContext = GrammyContext;
 
 type TelegramAttachmentCandidate = {
   fileId: string;
@@ -144,11 +140,21 @@ export function isTelegramMessageAddressedToBot(
   );
 }
 
+export function isTelegramBotAuthoredMessage(message?: {
+  from?: { is_bot?: boolean };
+}) {
+  return message?.from?.is_bot === true;
+}
+
 const TELEGRAM_LEARN_CHUNK_DEBOUNCE_MS = 1_500;
 
 export class TelegarmBot {
   instance: GrammyBot<TelegramBotContext>;
   webhookHandler: ReturnType<typeof webhookCallback>;
+  private telegramPublishedCommands: Array<{
+    command: string;
+    description: string;
+  }> = [];
   private mediaGroupBuffer = new Map<
     string,
     { messages: GrammyContext[]; timer: ReturnType<typeof setTimeout> }
@@ -157,14 +163,6 @@ export class TelegarmBot {
     string,
     { messages: GrammyContext[]; timer: ReturnType<typeof setTimeout> }
   >();
-  conversations: {
-    path: string;
-    handler: (
-      conversation: Conversation<any>,
-      ctx: GrammyContext & GrammyConversationFlavor,
-    ) => void;
-  }[] = [];
-
   constructor() {
     if (!TELEGRAM_SERVICE_BOT_TOKEN) {
       return;
@@ -174,16 +172,7 @@ export class TelegarmBot {
       TELEGRAM_SERVICE_BOT_TOKEN || "",
     );
 
-    this.addServiceActions();
-
     this.webhookHandler = webhookCallback(this.instance, "hono") as any;
-  }
-
-  addServiceActions() {
-    this.instance.command(["cancel", "exit", "stop"], async (ctx) => {
-      await ctx.conversation.exit();
-      await ctx.reply("Leaving.");
-    });
   }
 
   private getTelegramMessageThreadId(props: { ctx: GrammyContext }) {
@@ -194,6 +183,26 @@ export class TelegarmBot {
     }
 
     return String(messageThreadId);
+  }
+
+  private getTelegramCommandTopicTitle(props: { description: string }) {
+    const commandMatch = props.description
+      .trim()
+      .match(/^\/([a-z0-9_]+)(?=\s|$)/i);
+    const command = commandMatch?.[1]?.toLowerCase();
+
+    if (!command) {
+      return;
+    }
+
+    const publishedCommand = this.telegramPublishedCommands?.find(
+      (item) => item.command.toLowerCase() === command,
+    );
+
+    return (publishedCommand?.description.trim() || `/${command}`).slice(
+      0,
+      128,
+    );
   }
 
   private isTelegramForumTopicServiceMessage(props: { ctx: GrammyContext }) {
@@ -320,7 +329,7 @@ export class TelegarmBot {
   }
 
   /**
-   * Should be called after routes and conversations are added
+   * Should be called after routes are added
    */
   init() {
     this.instance.on("chat_member", async (ctx) => {
@@ -534,6 +543,10 @@ export class TelegarmBot {
     });
 
     this.instance.on("message", async (ctx) => {
+      if (isTelegramBotAuthoredMessage(ctx.message)) {
+        return;
+      }
+
       console.log("🚀 ~ init ~ on message ~ ctx.message", ctx.message);
 
       const telegramForumTopicCreated = this.getTelegramForumTopicCreated({
@@ -671,6 +684,7 @@ export class TelegarmBot {
         },
       },
     });
+    this.telegramPublishedCommands = commands;
 
     await Promise.all([
       this.instance.api.setMyCommands(commands),
@@ -1511,6 +1525,15 @@ export class TelegarmBot {
       );
     }
 
+    const isGroup = props.ctx.chat?.id && props.ctx.chat.id < 0;
+    const isMentioned = this.shouldHandleIncomingMessageInChat({
+      ctx: props.ctx,
+    });
+
+    if (isGroup && !isMentioned) {
+      return;
+    }
+
     const {
       rbacModuleSubject,
       socialModuleProfile,
@@ -1526,53 +1549,42 @@ export class TelegarmBot {
       botUsername: TELEGRAM_SERVICE_BOT_USERNAME,
       description: props.data.description,
     });
-
-    const isGroup = props.ctx.chat?.id && props.ctx.chat.id < 0;
-    const isMentioned = this.shouldHandleIncomingMessageInChat({
-      ctx: props.ctx,
+    const commandTopicTitle = this.getTelegramCommandTopicTitle({
+      description: sanitizedDescription,
     });
-
-    if (!isGroup) {
-      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-        {
-          id: rbacModuleSubject.id,
-          socialModuleChatId: socialModuleChat.id,
-          socialModuleThreadId: socialModuleThread.id,
-          socialModuleProfileId: socialModuleProfile.id,
-          data: {
-            ...props.data,
-            description: sanitizedDescription,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + jwtToken,
+    const targetSocialModuleThread =
+      commandTopicTitle && !this.getTelegramMessageThreadId({ ctx: props.ctx })
+        ? await rbacModuleSubjectApi.socialModuleChatFindByIdThreadCreate({
+            id: rbacModuleSubject.id,
+            socialModuleChatId: socialModuleChat.id,
+            data: {
+              title: commandTopicTitle,
             },
+            options: {
+              headers: {
+                Authorization: "Bearer " + jwtToken,
+              },
+            },
+          })
+        : socialModuleThread;
+
+    return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+      {
+        id: rbacModuleSubject.id,
+        socialModuleChatId: socialModuleChat.id,
+        socialModuleThreadId: targetSocialModuleThread.id,
+        socialModuleProfileId: socialModuleProfile.id,
+        data: {
+          ...props.data,
+          description: sanitizedDescription,
+        },
+        options: {
+          headers: {
+            Authorization: "Bearer " + jwtToken,
           },
         },
-      );
-    }
-
-    if (isMentioned) {
-      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-        {
-          id: rbacModuleSubject.id,
-          socialModuleChatId: socialModuleChat.id,
-          socialModuleThreadId: socialModuleThread.id,
-          socialModuleProfileId: socialModuleProfile.id,
-          data: {
-            ...props.data,
-            description: sanitizedDescription,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + jwtToken,
-            },
-          },
-        },
-      );
-    }
-
-    return;
+      },
+    );
   }
 
   private async flushMediaGroup(props: { mediaGroupId: string }) {

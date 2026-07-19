@@ -64,6 +64,34 @@ services, run `./server.sh up` instead.
 Password authentication remains available for other providers by leaving both
 private-key variables empty and setting `ANSIBLE_PASSWORD`.
 
+## Knowledge embedding provider
+
+Knowledge uses the private `apps/llm` service and its Ollama embedding model by
+default. Configure the local route in `tools/deployer/.env` with:
+
+```dotenv
+KNOWLEDGE_EMBEDDING_PROVIDER=llm
+OLLAMA_EMBED_MODEL=nomic-embed-text
+OLLAMA_EMBED_DIMENSIONS=768
+```
+
+To send indexing chunks and search queries directly from `apps/api` to
+OpenRouter instead, configure:
+
+```dotenv
+KNOWLEDGE_EMBEDDING_PROVIDER=openrouter
+KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL=qwen/qwen3-embedding-8b
+OPEN_ROUTER_API_KEY=sk-or-v1-...
+```
+
+`api.sh` writes the selected provider, OpenRouter model, and API key into the
+server API environment. `llm.sh` writes the local Ollama model and dimensions
+into the server LLM environment. `github_deployer.sh` creates the same GitHub
+Actions secrets; preview deployments use their `PREVIEW_`-prefixed variants.
+
+Changing the provider or embedding model requires a complete Knowledge
+reindex. Do not search a database containing vectors from the previous model.
+
 The server playbook adds `ANSIBLE_USER` to the `docker` group. An SSH session
 that was already open before provisioning must be closed and opened again
 before commands such as `docker ps` work without `sudo`.

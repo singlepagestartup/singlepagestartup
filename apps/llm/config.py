@@ -12,6 +12,8 @@ class Settings(BaseSettings):
 
     # Gateway
     ollama_url: str = "http://localhost:11434"
+    ollama_embed_model: str = "nomic-embed-text"
+    ollama_embed_dimensions: int = 768
     llm_preload_model_ids: str = ""
     llm_max_loaded_hf_models: int = 1
 

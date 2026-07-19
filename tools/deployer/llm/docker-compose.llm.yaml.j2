@@ -49,6 +49,7 @@ services:
       - traefik_overlay
     environment:
       OLLAMA_HOST: http://ollama:11434
+      OLLAMA_EMBED_MODEL: "{{ OLLAMA_EMBED_MODEL | default('nomic-embed-text', true) }}"
       OLLAMA_MODEL_IDS: "{{ OLLAMA_MODEL_IDS | default('nomic-embed-text', true) }}"
     entrypoint: ["/bin/sh"]
     command: ["/usr/local/bin/ollama-init.sh"]

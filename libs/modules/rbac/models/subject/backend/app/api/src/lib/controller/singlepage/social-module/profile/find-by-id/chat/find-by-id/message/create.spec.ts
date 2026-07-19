@@ -8,10 +8,12 @@
 
 const mockSocialModuleProfilesToMessagesCreate = jest.fn();
 const mockSocialModuleMessageCreate = jest.fn();
+const mockSocialModuleMessageUpdate = jest.fn();
 const mockSocialModuleChatsToMessagesCreate = jest.fn();
 const mockSocialModuleThreadsToMessagesCreate = jest.fn();
 const mockSocialModuleMessagesToFilesCreate = jest.fn();
 const mockFileStorageFileCreate = jest.fn();
+const mockRbacSubjectNotify = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   return {
@@ -52,7 +54,7 @@ jest.mock("@sps/social/models/message/sdk/server", () => {
   return {
     api: {
       create: (...args: unknown[]) => mockSocialModuleMessageCreate(...args),
-      update: jest.fn(),
+      update: (...args: unknown[]) => mockSocialModuleMessageUpdate(...args),
     },
   };
 });
@@ -98,7 +100,7 @@ jest.mock("@sps/file-storage/models/file/sdk/server", () => {
 jest.mock("@sps/rbac/models/subject/sdk/server", () => {
   return {
     api: {
-      notify: jest.fn(),
+      notify: (...args: unknown[]) => mockRbacSubjectNotify(...args),
     },
   };
 });
@@ -177,6 +179,8 @@ describe("Given: rbac social message create author relation", () => {
     mockSocialModuleProfilesToMessagesCreate.mockResolvedValue({});
     mockSocialModuleMessagesToFilesCreate.mockResolvedValue({});
     mockFileStorageFileCreate.mockResolvedValue({});
+    mockSocialModuleMessageUpdate.mockResolvedValue({});
+    mockRbacSubjectNotify.mockResolvedValue({});
   });
 
   /**
@@ -223,6 +227,69 @@ describe("Given: rbac social message create author relation", () => {
       events.indexOf("profiles-to-messages"),
     );
     expect(handler.notifyOtherSubjectsInChat).toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Telegram system message must precede a dependent AI reply.
+   * When: message metadata requests awaited notification delivery.
+   * Then: the create response is held until notification delivery completes.
+   */
+  it("When: system notification is awaited Then: delivery precedes response", async () => {
+    const events: string[] = [];
+    let finishNotification: (() => void) | undefined;
+    let markNotificationStarted: (() => void) | undefined;
+    const notificationStarted = new Promise<void>((resolve) => {
+      markNotificationStarted = resolve;
+    });
+
+    mockSocialModuleMessageCreate.mockResolvedValueOnce({
+      id: "message-1",
+      description: "Tool calls",
+      metadata: {
+        systemMessage: {
+          version: 1,
+          source: "rbac.telegram.ai-execution",
+          excludeFromOpenRouter: true,
+          awaitNotification: true,
+        },
+      },
+    });
+
+    const handler = new Handler(createService());
+    handler.notifyOtherSubjectsInChat = jest.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          markNotificationStarted?.();
+          finishNotification = () => {
+            events.push("notify");
+            resolve();
+          };
+        }),
+    );
+
+    const executePromise = handler.execute(
+      createContext(events, {
+        description: "Tool calls",
+        metadata: {
+          systemMessage: {
+            version: 1,
+            source: "rbac.telegram.ai-execution",
+            excludeFromOpenRouter: true,
+            awaitNotification: true,
+          },
+        },
+      }),
+      jest.fn(),
+    );
+
+    await notificationStarted;
+    expect(events).toEqual([]);
+
+    finishNotification?.();
+    await executePromise;
+
+    expect(events).toEqual(["notify", "response"]);
   });
 
   /**
@@ -326,5 +393,87 @@ describe("Given: rbac social message create author relation", () => {
     });
     expect(handler.notifyOtherSubjectsInChat).not.toHaveBeenCalled();
     expect(events).toEqual(["response"]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: Telegram delivery completes after another request has replaced a placeholder with interactive menu content.
+   * When: the delivery path persists Telegram's source-system message id from its stale create-time snapshot.
+   * Then: it patches only the source-system id and cannot restore the stale placeholder fields.
+   */
+  it("When: Telegram delivery finishes late Then: newer message content is preserved", async () => {
+    const service = {
+      socialModule: {
+        chat: {
+          findById: jest.fn().mockResolvedValue({
+            id: "chat-1",
+            sourceSystemId: "153077581",
+            variant: "telegram",
+          }),
+        },
+        thread: {
+          findById: jest.fn().mockResolvedValue({ id: "thread-1" }),
+        },
+        profilesToChats: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ chatId: "chat-1", profileId: "profile-2" }]),
+        },
+        profile: {
+          find: jest.fn().mockResolvedValue([{ id: "profile-2" }]),
+        },
+      },
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn().mockResolvedValue([
+          {
+            subjectId: "subject-2",
+            socialModuleProfileId: "profile-2",
+          },
+        ]),
+      },
+      find: jest.fn().mockResolvedValue([{ id: "subject-2" }]),
+      notificationModule: {
+        template: {
+          find: jest.fn().mockResolvedValue([
+            {
+              id: "template-1",
+              variant: "telegram-social-module-message-created",
+            },
+          ]),
+        },
+      },
+    } as any;
+    const staleCreateTimeMessage = {
+      id: "message-1",
+      description: "Готовлю меню управления ассистентом…",
+      interaction: {},
+      messagesToFileStorageModuleFiles: [],
+    } as any;
+
+    mockRbacSubjectNotify.mockResolvedValueOnce({
+      notificationService: {
+        notifications: [{ sourceSystemId: "5263" }],
+      },
+    });
+
+    await new Handler(service).notifyOtherSubjectsInChat({
+      id: "subject-1",
+      socialModuleChatId: "chat-1",
+      socialModuleThreadId: "thread-1",
+      socialModuleProfileId: "profile-1",
+      extendedSocialModuleMessage: staleCreateTimeMessage,
+    });
+
+    expect(mockSocialModuleMessageUpdate).toHaveBeenCalledWith({
+      id: "message-1",
+      data: {
+        sourceSystemId: "5263",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "rbac-secret",
+        },
+      },
+    });
   });
 });

@@ -2,7 +2,14 @@
 
 set -eu
 
-model_ids="${OLLAMA_MODEL_IDS:-nomic-embed-text}"
+embedding_model="${OLLAMA_EMBED_MODEL:-nomic-embed-text}"
+model_ids="${OLLAMA_MODEL_IDS:-}"
+
+case ",$model_ids," in
+  *",$embedding_model,"*) ;;
+  *) model_ids="${embedding_model}${model_ids:+,$model_ids}" ;;
+esac
+
 reconcile_interval_seconds="${OLLAMA_MODEL_RECONCILE_INTERVAL_SECONDS:-60}"
 
 case "$reconcile_interval_seconds" in

@@ -23,22 +23,33 @@ export interface IConstructorProps {
 export function getSocialProfileKnowledgePermissionDescriptors(
   props: IEnsureSocialProfileKnowledgeAccessProps,
 ): IKnowledgePermissionDescriptor[] {
-  const collectionPath = [
+  const chatProfilesPath = [
     "/api/rbac/subjects",
     props.ownerRbacSubjectId,
     "social-module/profiles/[social.profiles.id]",
     "chats/[social.chats.id]",
-    `profiles/${props.socialModuleProfileId}`,
-    "knowledge/documents",
   ].join("/");
-  const documentPath = `${collectionPath}/[knowledge.documents.id]`;
+  const targetProfilePath = `${chatProfilesPath}/profiles/${props.socialModuleProfileId}`;
+  const skillsPath = `${targetProfilePath}/skills`;
+  const skillPath = `${skillsPath}/[social.skills.id]`;
+  const knowledgeDocumentsPath = `${targetProfilePath}/knowledge/documents`;
+  const knowledgeDocumentPath = `${knowledgeDocumentsPath}/[knowledge.documents.id]`;
 
   return [
-    { method: "GET", path: collectionPath },
-    { method: "POST", path: collectionPath },
-    { method: "PATCH", path: documentPath },
-    { method: "POST", path: `${documentPath}/reindex` },
-    { method: "DELETE", path: documentPath },
+    { method: "GET", path: `${chatProfilesPath}/profiles` },
+    { method: "PATCH", path: targetProfilePath },
+    { method: "POST", path: `${targetProfilePath}/avatar` },
+    { method: "GET", path: skillsPath },
+    { method: "POST", path: skillsPath },
+    { method: "GET", path: `${skillsPath}/available` },
+    { method: "POST", path: skillPath },
+    { method: "PATCH", path: skillPath },
+    { method: "DELETE", path: skillPath },
+    { method: "GET", path: knowledgeDocumentsPath },
+    { method: "POST", path: knowledgeDocumentsPath },
+    { method: "PATCH", path: knowledgeDocumentPath },
+    { method: "POST", path: `${knowledgeDocumentPath}/reindex` },
+    { method: "DELETE", path: knowledgeDocumentPath },
   ];
 }
 

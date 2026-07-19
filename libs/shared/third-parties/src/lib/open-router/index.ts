@@ -51,7 +51,7 @@ export type IOpenRouterResponseFormat =
 
 export type IOpenRouterReasoning =
   | {
-      effort: "none" | "low" | "medium" | "high" | "xhigh";
+      effort: "max" | "xhigh" | "high" | "medium" | "low" | "minimal" | "none";
       exclude?: boolean;
     }
   | {

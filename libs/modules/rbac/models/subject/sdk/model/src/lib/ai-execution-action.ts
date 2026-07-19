@@ -63,6 +63,41 @@ export interface IAiExecutionActionPayload {
   steps: IAiExecutionActionStep[];
 }
 
+/**
+ * Converts the collision-safe function name used at the model boundary into a
+ * transport-safe display name. The server is rendered separately, so the MCP
+ * namespace would otherwise be duplicated in user-visible progress.
+ */
+export function formatAiExecutionActionStepToolName(
+  step: Pick<IAiExecutionActionStep, "kind" | "serverId" | "toolName">,
+) {
+  let toolName = step.toolName.trim();
+
+  if (step.kind === "mcp") {
+    const prefix = step.serverId ? `mcp__${step.serverId}__` : "";
+
+    if (prefix && toolName.toLowerCase().startsWith(prefix.toLowerCase())) {
+      toolName = toolName.slice(prefix.length);
+    } else {
+      const namespaceParts = toolName.split("__");
+
+      if (
+        namespaceParts.length >= 3 &&
+        namespaceParts[0]?.toLowerCase() === "mcp"
+      ) {
+        toolName = namespaceParts.slice(2).join("__");
+      }
+    }
+  }
+
+  const displayName = toolName
+    .replace(/_+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return displayName || "tool";
+}
+
 interface IActionLike {
   variant?: unknown;
   payload?: unknown;

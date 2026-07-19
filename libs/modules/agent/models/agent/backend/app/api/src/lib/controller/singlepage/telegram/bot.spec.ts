@@ -111,6 +111,9 @@ function createService() {
           },
         ]),
       },
+      messagesToFileStorageModuleFiles: {
+        find: jest.fn().mockResolvedValue([]),
+      },
       chatsToActions: {
         find: jest.fn().mockResolvedValue([
           {
@@ -391,6 +394,60 @@ describe("Given: agent social message action routing", () => {
       "personal-ai-profile",
       "telegram-bot-profile",
     ]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Telegram photo was persisted as an attachment-only Social message.
+   * When: backend automatic dispatch handles the message-create action.
+   * Then: the message reaches Agent so an active avatar editor can consume the persisted file.
+   */
+  it("When: an attachment-only Telegram message is logged Then: automatic participants receive it", async () => {
+    const service = createService();
+    service.socialModule.message.findById.mockResolvedValue({
+      id: "message-1",
+      description: "",
+    });
+    service.socialModule.messagesToFileStorageModuleFiles.find.mockResolvedValue(
+      [
+        {
+          messageId: "message-1",
+          fileStorageModuleFileId: "file-1",
+        },
+      ],
+    );
+    const handler = new Handler(service);
+
+    await handler.onMessage(createContext(), {
+      data: createAction(
+        "/api/rbac/subjects/subject-1/social-module/profiles/sender-profile/chats/chat-1/threads/thread-1/messages",
+      ),
+    });
+
+    expect(
+      service.socialModule.messagesToFileStorageModuleFiles.find,
+    ).toHaveBeenCalledWith({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "messageId",
+              method: "eq",
+              value: "message-1",
+            },
+          ],
+        },
+        limit: 1,
+      },
+    });
+    expect(service.agentSocialModuleProfileHandler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        socialModuleMessage: expect.objectContaining({
+          id: "message-1",
+        }),
+        socialModuleThreadId: "thread-1",
+      }),
+    );
   });
 
   /**

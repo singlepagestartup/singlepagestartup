@@ -81,10 +81,14 @@ import { Handler as SocialModuleChatFindByIdProfileSearch } from "./social-modul
 import { Handler as SocialModuleChatFindByIdProfileDelete } from "./social-module/chat/find-by-id/profile/delete";
 import { Handler as SocialModuleChatFindByIdAgentSubjectSearch } from "./social-module/chat/find-by-id/agent-subject/search";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/update";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFind } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFindByIdAvatarUpdate } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/avatar/update";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillFind } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/skill/find";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillCreate } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/skill/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillUpdate } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/skill/update";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillAvailable } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/skill/available";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillLink } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/skill/link";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillUnlink } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/skill/unlink";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/document/find";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentCreate } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/document/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdUpdate } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/document/find-by-id/update";
@@ -228,6 +232,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.authenticationEmailAndPasswordResetPassword,
       },
       {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/profiles",
+        handler: this.socialModuleProfileFindByIdChatFindByIdProfileFind,
+        middlewares: [
+          new RequestSubjectIdOwner().init(),
+          new RequestProfileSubjectIdOwner().init(),
+          new RequestSubjectOwnsSocialModuleChat(this.service).init(),
+        ],
+      },
+      {
         method: "PATCH",
         path: "/:uuid",
         handler: this.update,
@@ -236,6 +250,17 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "DELETE",
         path: "/:uuid",
         handler: this.delete,
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/profiles/:targetSocialModuleProfileId/skills/available",
+        handler:
+          this
+            .socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillAvailable,
+        middlewares: [
+          new RequestSubjectIdOwner().init(),
+          new RequestSubjectCanManageChatAgentProfile(this.service).init(),
+        ],
       },
       {
         method: "POST",
@@ -288,9 +313,32 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.ecommerceModuleOrderIdTotal,
       },
       {
+        method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/profiles/:targetSocialModuleProfileId/skills/:socialModuleSkillId",
+        handler:
+          this.socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillLink,
+        middlewares: [
+          new RequestSubjectIdOwner().init(),
+          new RequestSubjectCanManageChatAgentProfile(this.service).init({
+            requireLinkedSkill: false,
+          }),
+        ],
+      },
+      {
         method: "PATCH",
         path: "/:id/ecommerce-module/orders/:orderId",
         handler: this.ecommerceModuleOrderIdUpdate,
+      },
+      {
+        method: "DELETE",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/profiles/:targetSocialModuleProfileId/skills/:socialModuleSkillId",
+        handler:
+          this
+            .socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillUnlink,
+        middlewares: [
+          new RequestSubjectIdOwner().init(),
+          new RequestSubjectCanManageChatAgentProfile(this.service).init(),
+        ],
       },
       {
         method: "DELETE",
@@ -480,7 +528,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/openrouter/models",
         handler:
           this.socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind,
-        middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
         method: "GET",
@@ -1044,6 +1091,14 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     ).execute(c, next);
   }
 
+  async socialModuleProfileFindByIdChatFindByIdProfileFind(
+    c: Context,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdProfileFind(
+      this.service,
+    ).execute(c);
+  }
+
   async socialModuleProfileFindByIdChatFindByIdProfileFindByIdAvatarUpdate(
     c: Context,
     next: any,
@@ -1078,6 +1133,30 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     return new SocialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillUpdate(
       this.service,
     ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillAvailable(
+    c: Context,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillAvailable(
+      this.service,
+    ).execute(c);
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillLink(
+    c: Context,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillLink(
+      this.service,
+    ).execute(c);
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillUnlink(
+    c: Context,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillUnlink(
+      this.service,
+    ).execute(c);
   }
 
   async socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind(

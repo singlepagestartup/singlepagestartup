@@ -43,22 +43,48 @@ export class Handler {
 
       this.assertNoForbiddenFields(data);
 
+      const currentProfile = await socialModuleProfileApi.findById({
+        id: targetSocialModuleProfileId,
+        options: {
+          headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
+        },
+      });
+
+      if (!currentProfile) {
+        throw new Error("Not found error. Social profile not found");
+      }
+
       const updateData: {
         adminTitle?: string;
         allowedMcpServerIds?: TSupportedMcpServerIdentifier[];
         title?: LocalizedText;
         subtitle?: LocalizedText;
         description?: LocalizedText;
-      } = {};
+      } = {
+        adminTitle: currentProfile.adminTitle,
+        allowedMcpServerIds: [...(currentProfile.allowedMcpServerIds || [])],
+        title: { ...(currentProfile.title || {}) },
+        subtitle: { ...(currentProfile.subtitle || {}) },
+        description: { ...(currentProfile.description || {}) },
+      };
 
       if ("adminTitle" in data) {
         updateData.adminTitle = this.toOptionalString(data.adminTitle);
       }
 
       if ("allowedMcpServerIds" in data) {
-        updateData.allowedMcpServerIds = this.toAllowedMcpServerIds(
+        const supportedIdentifiers = this.toAllowedMcpServerIds(
           data.allowedMcpServerIds,
         );
+        const staleIdentifiers = (
+          currentProfile?.allowedMcpServerIds || []
+        ).filter(
+          (identifier: string) => !isSupportedMcpServerIdentifier(identifier),
+        );
+        updateData.allowedMcpServerIds = [
+          ...staleIdentifiers,
+          ...supportedIdentifiers,
+        ] as TSupportedMcpServerIdentifier[];
       }
 
       if ("title" in data) {

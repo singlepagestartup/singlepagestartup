@@ -1,7 +1,10 @@
 from singlepage.catalog import ModelCatalog, ModelDefinition
 
 
-def build_catalog() -> ModelCatalog:
+def build_catalog(
+    embedding_provider_model: str = "nomic-embed-text",
+    embedding_dimensions: int = 768,
+) -> ModelCatalog:
     return ModelCatalog(
         [
             ModelDefinition(
@@ -45,13 +48,13 @@ def build_catalog() -> ModelCatalog:
                 local=False,
             ),
             ModelDefinition(
-                id="nomic/nomic-embed-text",
-                label="Nomic Embed Text",
+                id="local/default-embedding",
+                label="Configured Ollama Embedding Model",
                 provider="ollama",
-                provider_model="nomic-embed-text",
+                provider_model=embedding_provider_model,
                 task="embedding",
                 local=True,
-                dimensions=768,
+                dimensions=embedding_dimensions,
             ),
         ]
     )

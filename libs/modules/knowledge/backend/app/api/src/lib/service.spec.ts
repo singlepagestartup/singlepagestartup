@@ -450,6 +450,45 @@ describe("knowledge service", () => {
   });
 
   /**
+   * BDD Scenario: direct OpenRouter indexing validation.
+   *
+   * Given: apps/api routes embeddings directly to OpenRouter.
+   * When: Knowledge starts an indexing operation.
+   * Then: it relies on response vector validation and does not query apps/llm for that remote model.
+   */
+  it("does not resolve OpenRouter embedding models through apps/llm", async () => {
+    const previousProvider = process.env.KNOWLEDGE_EMBEDDING_PROVIDER;
+    const modelGet = jest.fn();
+    const service = new KnowledgeService({
+      repository: {
+        listDocumentsForIndex: jest.fn().mockResolvedValue([]),
+      } as any,
+      embeddingClient: {} as any,
+      generationClient: {} as any,
+      modelClient: {
+        get: modelGet,
+      } as any,
+    });
+
+    process.env.KNOWLEDGE_EMBEDDING_PROVIDER = "openrouter";
+
+    try {
+      await expect(
+        service.index({ documentId: "document-1", dryRun: true }),
+      ).resolves.toEqual(
+        expect.objectContaining({ indexed: 0, skipped: 0, dryRun: true }),
+      );
+      expect(modelGet).not.toHaveBeenCalled();
+    } finally {
+      if (typeof previousProvider === "undefined") {
+        delete process.env.KNOWLEDGE_EMBEDDING_PROVIDER;
+      } else {
+        process.env.KNOWLEDGE_EMBEDDING_PROVIDER = previousProvider;
+      }
+    }
+  });
+
+  /**
    * BDD Scenario: missing document deletion.
    *
    * Given: a delete request references a missing Knowledge document.

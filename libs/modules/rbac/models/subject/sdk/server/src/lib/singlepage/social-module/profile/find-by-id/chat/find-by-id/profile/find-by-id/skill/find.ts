@@ -11,6 +11,8 @@ export interface IProps {
   socialModuleProfileId: string;
   socialModuleChatId: string;
   targetSocialModuleProfileId: string;
+  limit?: number;
+  offset?: number;
   host?: string;
   tag?: string;
   revalidate?: number;
@@ -38,8 +40,12 @@ export async function action(props: IProps): Promise<IResult> {
     },
   };
 
+  const query = new URLSearchParams();
+  if (props.limit !== undefined) query.set("limit", String(props.limit));
+  if (props.offset !== undefined) query.set("offset", String(props.offset));
+  const suffix = query.size ? `?${query}` : "";
   const res = await fetch(
-    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}/profiles/${targetSocialModuleProfileId}/skills`,
+    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}/profiles/${targetSocialModuleProfileId}/skills${suffix}`,
     requestOptions,
   );
   const json = await responsePipe<{ data: IResult }>({

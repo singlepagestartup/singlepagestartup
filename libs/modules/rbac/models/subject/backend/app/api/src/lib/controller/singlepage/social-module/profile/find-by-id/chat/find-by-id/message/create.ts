@@ -10,7 +10,10 @@ import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/server";
 import { IModel as ISocialModuleMessagesToFileStorageModuleFile } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/model";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
-import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import {
+  IModel as ISocialModuleMessage,
+  shouldAwaitSocialMessageNotification,
+} from "@sps/social/models/message/sdk/model";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import {
@@ -305,7 +308,7 @@ export class Handler {
           socialModuleMessage,
         })
       ) {
-        void this.notifyOtherSubjectsInChat({
+        const notificationPromise = this.notifyOtherSubjectsInChat({
           id,
           socialModuleChatId,
           socialModuleThreadId,
@@ -329,6 +332,14 @@ export class Handler {
         }).catch((error) => {
           logger.error(error);
         });
+
+        if (
+          shouldAwaitSocialMessageNotification(socialModuleMessage.metadata)
+        ) {
+          await notificationPromise;
+        } else {
+          void notificationPromise;
+        }
       }
 
       return c.json({
@@ -561,7 +572,6 @@ export class Handler {
               await socialModuleMessageApi.update({
                 id: props.extendedSocialModuleMessage.id,
                 data: {
-                  ...props.extendedSocialModuleMessage,
                   sourceSystemId: notificationServiceNotificationSourceSystemId,
                 },
                 options: {

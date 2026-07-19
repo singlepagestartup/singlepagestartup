@@ -16,6 +16,25 @@ from startup.catalog import build_catalog
 
 
 class StartupCatalogTest(unittest.TestCase):
+    def test_embedding_model_comes_from_gateway_environment(self):
+        """
+        BDD Scenario: environment-selected Ollama embedding model.
+
+        Given: apps/llm is configured with Qwen3 Embedding 4B.
+        When: the startup catalog is built.
+        Then: the stable local embedding alias maps to that Ollama model at 768 dimensions.
+        """
+        catalog = build_catalog(
+            embedding_provider_model="qwen3-embedding:4b",
+            embedding_dimensions=768,
+        )
+
+        model = catalog.get("local/default-embedding")
+
+        self.assertEqual(model.provider, "ollama")
+        self.assertEqual(model.provider_model, "qwen3-embedding:4b")
+        self.assertEqual(model.dimensions, 768)
+
     def test_openai_gpt_5_5_is_available(self):
         """
         BDD Scenario: OpenAI GPT-5.5 preset.

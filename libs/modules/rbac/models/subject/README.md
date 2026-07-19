@@ -111,6 +111,31 @@ and relations (`role`, `permission`, `roles-to-permissions`, and
 only explicitly bracketed requester profile, chat, and Knowledge document ids
 are dynamic masks.
 
+### Subject-scoped assistant management API
+
+The Telegram Assistant uses only authenticated subject routes under the
+requesting Social profile and chat. The manageable-profile collection returns
+connected `artificial-intelligence` profiles that have an Agent RBAC subject;
+requester-profile ownership, chat ownership, target eligibility, and linked
+resource checks remain enforced by route middleware on every request.
+Telegram bootstrap idempotently provisions exact target-profile permission
+paths for every connected AI profile, so multiple-profile selection does not
+depend on a global admin wildcard.
+
+Linked Skills and Knowledge documents accept bounded `limit` and `offset`
+queries while keeping the existing plain-array response. Available Skills are
+ordered, searchable, paginated, and exclude skills already linked to the target
+profile. Linking is idempotent. Unlinking deletes only the profile-to-skill
+relation and never the global `social.skill` record.
+
+Profile updates remain limited to the existing allowlist, including supported
+`allowedMcpServerIds`; unknown stored MCP identifiers are preserved rather than
+being exposed as arbitrary connections. Avatar input follows the canonical
+Social message attachment to File Storage and the existing profile-avatar
+action. Knowledge create/update/reindex contracts are unchanged, and deletion
+requires the Agent conversation's fresh confirmation revision before the RBAC
+delete action is called.
+
 ## Variants
 
 - `default`: renders linked identity email and a profile link.

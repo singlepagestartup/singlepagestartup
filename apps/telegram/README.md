@@ -102,6 +102,10 @@ Allowed responsibilities in `apps/telegram`:
   `social.action`, including thread-aware message ingestion. The transport does
   not choose an AI reply profile; Agent dispatches every automatic profile
   connected to the chat.
+- Forward `/assistant`, `/cancel`, `/exit`, `/stop`, editor text, and persisted
+  image attachments through that same ingestion path. `apps/telegram` does not
+  install `@grammyjs/conversations`, hold session state, or interpret assistant
+  callbacks; the Agent service owns the in-memory conversation state machine.
 - Call RBAC/billing APIs only for transport-bound flows such as bootstrap,
   membership sync, checkout/payment webhook forwarding, and incoming message
   ingestion.
@@ -125,6 +129,10 @@ messages.
   those records.
 - `social` owns chats, profiles, messages, actions, threads, and relations.
 - `agent` owns bot command interpretation and agent-side replies.
+- `agent` also owns assistant conversation entry, transitions, callback
+  validation, page rendering, and the process-local session lifetime. API
+  restart or idle expiry invalidates transient menus; users recover by running
+  `/assistant` again.
 - `billing` owns payment intent state and provider verification.
 - `notification` owns outbound delivery to Telegram and other channels.
 

@@ -38,6 +38,28 @@ describe("knowledge vector repository contract", () => {
   });
 
   /**
+   * BDD Scenario: profile-scoped exact vector search.
+   *
+   * Given: HNSW can choose global candidates before a document filter is applied.
+   * When: search is restricted to profile-linked document ids.
+   * Then: allowed chunks are materialized before exact distance ordering.
+   */
+  it("materializes document-filtered chunks before ordering", () => {
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        "libs/modules/knowledge/backend/app/api/src/lib/repository.ts",
+      ),
+      "utf-8",
+    );
+
+    expect(source).toContain("filtered_chunks AS MATERIALIZED");
+    expect(source).toContain("INNER JOIN sps_ke_source s");
+    expect(source).toContain("FROM filtered_chunks");
+    expect(source).toContain("ORDER BY distance");
+  });
+
+  /**
    * BDD Scenario: source relation join.
    *
    * Given: chunk ownership moved to an SPS relation table.

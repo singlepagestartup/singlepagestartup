@@ -28,20 +28,11 @@ jest.mock("@sps/providers-kv", () => {
 import { Context } from "hono";
 import { Handler } from "./model-favorites";
 
-function createService(props?: { canAccessChat?: boolean }) {
+function createService() {
   return {
     socialModule: {
       profilesToChats: {
-        find: jest.fn(async () => {
-          return props?.canAccessChat === false
-            ? []
-            : [
-                {
-                  profileId: "profile-1",
-                  chatId: "chat-1",
-                },
-              ];
-        }),
+        find: jest.fn(),
       },
     },
   };
@@ -161,28 +152,32 @@ describe("Given: OpenRouter model favorites", () => {
 
   /**
    * BDD Scenario
-   * Given: a profile is not linked to the requested chat.
-   * When: OpenRouter model favorites are requested.
-   * Then: the endpoint rejects the request before reading user KV state.
+   * Given: profile ownership was authorized by middleware but that profile is not a chat participant.
+   * When: subject-scoped OpenRouter model favorites are requested from the chat controls.
+   * Then: the handler reads the subject's own KV state without requiring an unrelated profile/chat link.
    */
-  it("When: profile cannot access chat Then: favorites are not read", async () => {
-    const handler = new Handler(
-      createService({
-        canAccessChat: false,
-      }) as any,
-      createKvProvider(),
+  it("When: a profile is not in the chat Then: subject favorites remain readable", async () => {
+    const service = createService();
+    const handler = new Handler(service as any, createKvProvider());
+    mockKvGet.mockResolvedValue(
+      JSON.stringify({
+        favoriteModelIds: ["openai/gpt-5.2"],
+      }),
     );
 
-    await expect(
-      handler.execute(
-        createContext({
-          method: "GET",
-        }),
-        undefined,
-      ),
-    ).rejects.toThrow(
-      "Authorization error. Requested social-module chat does not belong to profile",
+    const response = (await handler.execute(
+      createContext({
+        method: "GET",
+      }),
+      undefined,
+    )) as any;
+
+    expect(response.data.favoriteModelIds).toEqual(["openai/gpt-5.2"]);
+    expect(service.socialModule.profilesToChats.find).not.toHaveBeenCalled();
+    expect(mockKvGet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        key: "subject-1",
+      }),
     );
-    expect(mockKvGet).not.toHaveBeenCalled();
   });
 });

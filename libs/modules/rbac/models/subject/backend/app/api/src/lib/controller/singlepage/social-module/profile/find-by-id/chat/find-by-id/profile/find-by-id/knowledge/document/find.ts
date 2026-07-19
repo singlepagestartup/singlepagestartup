@@ -4,6 +4,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../../../service";
 import { findProfileKnowledgeDocumentIds } from "./helpers";
+import { parsePagination } from "../../skill/helpers";
 
 export class Handler {
   service: Service;
@@ -29,6 +30,7 @@ export class Handler {
       const documentIds = await findProfileKnowledgeDocumentIds({
         service: this.service,
         targetSocialModuleProfileId,
+        ...parsePagination(c),
       });
       const documents = await this.knowledgeService.listDocuments({
         documentIds,

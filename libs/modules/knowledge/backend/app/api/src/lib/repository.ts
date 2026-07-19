@@ -591,33 +591,66 @@ export class KnowledgeRepository {
   }): Promise<KnowledgeSearchResult[]> {
     const embeddingValue = `[${props.embedding.join(",")}]`;
     const minSimilarity = props.minSimilarity ?? -1;
-    const documentFilter = props.documentIds?.length
-      ? sql`AND s.metadata->>'documentId' IN (${sql.join(
-          props.documentIds.map((id) => sql`${id}`),
-          sql`, `,
-        )})`
-      : sql``;
-
-    const rows = await this.db.execute<Record<string, unknown>>(sql`
-      SELECT
-        c.id,
-        c.text,
-        c.chunk_index AS "chunkIndex",
-        c.metadata,
-        sc.se_id AS "sourceId",
-        s.title AS "sourceTitle",
-        s.original_path AS "sourceOriginalPath",
-        s.type AS "sourceType",
-        (c.embedding <=> ${embeddingValue}::vector) AS distance,
-        (1 - (c.embedding <=> ${embeddingValue}::vector)) AS similarity
-      FROM sps_ke_chunk c
-      LEFT JOIN sps_ke_ss_to_cs_rae sc ON sc.ck_id = c.id
-      LEFT JOIN sps_ke_source s ON s.id = sc.se_id
-      WHERE (1 - (c.embedding <=> ${embeddingValue}::vector)) >= ${minSimilarity}
-      ${documentFilter}
-      ORDER BY c.embedding <=> ${embeddingValue}::vector
-      LIMIT ${props.topK}
-    `);
+    const rows = props.documentIds?.length
+      ? await this.db.execute<Record<string, unknown>>(sql`
+          WITH query_vector AS (
+            SELECT ${embeddingValue}::vector AS embedding
+          ),
+          filtered_chunks AS MATERIALIZED (
+            SELECT
+              c.id,
+              c.text,
+              c.chunk_index AS "chunkIndex",
+              c.metadata,
+              sc.se_id AS "sourceId",
+              s.title AS "sourceTitle",
+              s.original_path AS "sourceOriginalPath",
+              s.type AS "sourceType",
+              (c.embedding <=> query_vector.embedding) AS distance
+            FROM sps_ke_chunk c
+            CROSS JOIN query_vector
+            INNER JOIN sps_ke_ss_to_cs_rae sc ON sc.ck_id = c.id
+            INNER JOIN sps_ke_source s ON s.id = sc.se_id
+            WHERE (1 - (c.embedding <=> query_vector.embedding)) >= ${minSimilarity}
+            AND s.metadata->>'documentId' IN (${sql.join(
+              props.documentIds.map((id) => sql`${id}`),
+              sql`, `,
+            )})
+          )
+          SELECT
+            id,
+            text,
+            "chunkIndex",
+            metadata,
+            "sourceId",
+            "sourceTitle",
+            "sourceOriginalPath",
+            "sourceType",
+            distance,
+            (1 - distance) AS similarity
+          FROM filtered_chunks
+          ORDER BY distance
+          LIMIT ${props.topK}
+        `)
+      : await this.db.execute<Record<string, unknown>>(sql`
+          SELECT
+            c.id,
+            c.text,
+            c.chunk_index AS "chunkIndex",
+            c.metadata,
+            sc.se_id AS "sourceId",
+            s.title AS "sourceTitle",
+            s.original_path AS "sourceOriginalPath",
+            s.type AS "sourceType",
+            (c.embedding <=> ${embeddingValue}::vector) AS distance,
+            (1 - (c.embedding <=> ${embeddingValue}::vector)) AS similarity
+          FROM sps_ke_chunk c
+          LEFT JOIN sps_ke_ss_to_cs_rae sc ON sc.ck_id = c.id
+          LEFT JOIN sps_ke_source s ON s.id = sc.se_id
+          WHERE (1 - (c.embedding <=> ${embeddingValue}::vector)) >= ${minSimilarity}
+          ORDER BY c.embedding <=> ${embeddingValue}::vector
+          LIMIT ${props.topK}
+        `);
 
     return rows.map((row: any) => {
       return {

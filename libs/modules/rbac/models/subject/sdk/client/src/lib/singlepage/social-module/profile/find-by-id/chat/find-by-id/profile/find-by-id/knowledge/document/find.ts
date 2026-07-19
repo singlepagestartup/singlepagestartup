@@ -27,7 +27,7 @@ export type IResult =
   IParentResult["ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindResult"];
 
 export function action(props: IProps) {
-  const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${props.targetSocialModuleProfileId}/knowledge/documents`;
+  const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${props.targetSocialModuleProfileId}/knowledge/documents?limit=${props.limit ?? ""}&offset=${props.offset ?? ""}`;
   const { meta: userMeta, ...restReactQueryOptions } =
     props.reactQueryOptions ?? {};
 

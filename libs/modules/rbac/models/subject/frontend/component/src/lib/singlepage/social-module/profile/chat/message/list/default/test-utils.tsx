@@ -399,6 +399,13 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
                       outputModalities: ["text"],
                       supportedParameters: ["reasoning"],
                       supportsReasoning: true,
+                      reasoning: {
+                        defaultEffort: "high",
+                        defaultEnabled: true,
+                        mandatory: true,
+                        supportedEfforts: ["high", "low"],
+                        supportsMaxTokens: false,
+                      },
                     },
                     {
                       id: "openai/gpt-basic",
@@ -409,6 +416,7 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
                       outputModalities: ["text"],
                       supportedParameters: [],
                       supportsReasoning: false,
+                      reasoning: null,
                     },
                   ],
                 },

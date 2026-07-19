@@ -1,5 +1,8 @@
 import { getKnowledgeConfiguration } from "../configuration";
-import { LlmEmbeddingClient } from "../embedding";
+import {
+  createKnowledgeEmbeddingClient,
+  IKnowledgeEmbeddingClient,
+} from "../embedding";
 import { KnowledgeRepository } from "../repository";
 import { KnowledgeDocumentIndexInput, KnowledgeIndexResult } from "../types";
 import {
@@ -11,23 +14,17 @@ import { createHash } from "node:crypto";
 
 export interface KnowledgeIndexerProps {
   repository?: KnowledgeRepository;
-  embeddingClient?: LlmEmbeddingClient;
+  embeddingClient?: IKnowledgeEmbeddingClient;
 }
 
 export class KnowledgeIndexer {
   private repository: KnowledgeRepository;
-  private embeddingClient: LlmEmbeddingClient;
+  private embeddingClient: IKnowledgeEmbeddingClient;
 
   constructor(props?: KnowledgeIndexerProps) {
-    const config = getKnowledgeConfiguration();
     this.repository = props?.repository || new KnowledgeRepository();
     this.embeddingClient =
-      props?.embeddingClient ||
-      new LlmEmbeddingClient({
-        baseUrl: config.llm.url,
-        model: config.llm.embeddingModel,
-        dimensions: config.llm.dimensions,
-      });
+      props?.embeddingClient || createKnowledgeEmbeddingClient();
   }
 
   async index(props?: {

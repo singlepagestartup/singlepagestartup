@@ -24,32 +24,19 @@ async function createKvProvider(): Promise<IKvProvider> {
 }
 
 export class Handler {
-  service: Service;
   private kvProviderFactory: TKvProviderFactory;
   private kvProviderPromise?: Promise<IKvProvider>;
 
   constructor(
-    service: Service,
+    _service: Service,
     kvProviderFactory: TKvProviderFactory = createKvProvider,
   ) {
-    this.service = service;
     this.kvProviderFactory = kvProviderFactory;
   }
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
       const subjectId = this.requireParam(c, "id");
-      const socialModuleProfileId = this.requireParam(
-        c,
-        "socialModuleProfileId",
-      );
-      const socialModuleChatId = this.requireParam(c, "socialModuleChatId");
-
-      await this.assertProfileCanAccessChat({
-        socialModuleProfileId,
-        socialModuleChatId,
-      });
-
       if (c.req.method === "PATCH") {
         const payload = await this.readPayload(c);
         const favoriteModelIds = this.normalizeFavoriteModelIds(
@@ -99,37 +86,6 @@ export class Handler {
     }
 
     return value;
-  }
-
-  private async assertProfileCanAccessChat(props: {
-    socialModuleProfileId: string;
-    socialModuleChatId: string;
-  }) {
-    const relations = await this.service.socialModule.profilesToChats.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "profileId",
-              method: "eq",
-              value: props.socialModuleProfileId,
-            },
-            {
-              column: "chatId",
-              method: "eq",
-              value: props.socialModuleChatId,
-            },
-          ],
-        },
-        limit: 1,
-      },
-    });
-
-    if (!relations?.length) {
-      throw new Error(
-        "Authorization error. Requested social-module chat does not belong to profile",
-      );
-    }
   }
 
   private async readPayload(

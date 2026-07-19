@@ -4,7 +4,10 @@ import {
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
-import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
+import {
+  type IModel as ISocialModuleProfile,
+  type TSupportedMcpServerIdentifier,
+} from "@sps/social/models/profile/sdk/model";
 
 export interface IProps {
   id: string;
@@ -17,6 +20,7 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
   data: {
     adminTitle?: string;
+    allowedMcpServerIds?: TSupportedMcpServerIdentifier[];
     title?: Record<string, string | undefined>;
     subtitle?: Record<string, string | undefined>;
     description?: Record<string, string | undefined>;

@@ -3,6 +3,7 @@
 import type { ProfileSummary } from "../types";
 import {
   AI_EXECUTION_ACTION_VARIANT,
+  formatAiExecutionActionStepToolName,
   parseAiExecutionActionPayload,
   type IAiExecutionActionStep,
 } from "@sps/rbac/models/subject/sdk/model";
@@ -213,7 +214,7 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
                     {step.kind === "mcp" && step.serverId
                       ? `${serverLabel(step.serverId)} · `
                       : ""}
-                    {step.toolName}
+                    {formatAiExecutionActionStepToolName(step)}
                   </span>
                 </span>
               </div>

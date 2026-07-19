@@ -4,10 +4,13 @@ import {
   AI_EXECUTION_ACTION_MAX_STEPS,
   AI_EXECUTION_ACTION_VARIANT,
   AI_EXECUTION_ACTION_VERSION,
+  formatAiExecutionActionStepToolName,
   type IAiExecutionActionPayload,
   type IAiExecutionActionStep,
 } from "@sps/rbac/models/subject/sdk/model";
+import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleActionApi } from "@sps/social/models/action/sdk/server";
+import { withSocialMessageSystemMetadata } from "@sps/social/models/message/sdk/model";
 import { api as socialModuleChatsToActionsApi } from "@sps/social/relations/chats-to-actions/sdk/server";
 import { api as socialModuleProfilesToActionsApi } from "@sps/social/relations/profiles-to-actions/sdk/server";
 import { api as socialModuleThreadsToActionsApi } from "@sps/social/relations/threads-to-actions/sdk/server";
@@ -25,6 +28,16 @@ interface IAiExecutionActionPersistence {
   linkChat: (actionId: string, chatId: string) => Promise<unknown>;
   linkThread: (actionId: string, threadId: string) => Promise<unknown>;
   linkProfile: (actionId: string, profileId: string) => Promise<unknown>;
+  createTelegramMessage?: (data: {
+    description: string;
+    metadata: Record<string, unknown>;
+  }) => Promise<unknown>;
+}
+
+export interface IAiExecutionTelegramMessageProps {
+  rbacSubjectId: string;
+  authorizationJwt: string;
+  language?: string;
 }
 
 export interface IAiExecutionActionReporterProps {
@@ -36,6 +49,7 @@ export interface IAiExecutionActionReporterProps {
   runId?: string;
   now?: () => Date;
   persistence?: IAiExecutionActionPersistence;
+  telegramMessage?: IAiExecutionTelegramMessageProps;
 }
 
 export interface IAiExecutionActionReporter {
@@ -62,6 +76,75 @@ function boundedText(value: string, fallback: string, maxLength = 256) {
   const normalized = value.trim() || fallback;
 
   return normalized.slice(0, maxLength);
+}
+
+const TELEGRAM_AI_EXECUTION_MESSAGE_MAX_LENGTH = 3_500;
+
+function telegramStepStatusIcon(step: IAiExecutionActionStep) {
+  if (step.status === "succeeded") {
+    return "✅";
+  }
+
+  if (step.status === "failed") {
+    return "❌";
+  }
+
+  return "⏳";
+}
+
+function telegramStepSourceLabel(
+  step: IAiExecutionActionStep,
+  isRussian: boolean,
+) {
+  if (step.kind === "mcp") {
+    if (step.serverId?.toLowerCase() === "singlepagestartup") {
+      return "SinglePageStartup MCP";
+    }
+
+    return step.serverId ? `${step.serverId} MCP` : "MCP";
+  }
+
+  if (step.kind === "knowledge") {
+    return isRussian ? "База знаний" : "Knowledge";
+  }
+
+  return isRussian ? "Навык" : "Skill";
+}
+
+function renderTelegramAiExecutionMessage(props: {
+  language?: string;
+  payload: IAiExecutionActionPayload;
+}) {
+  const isRussian = props.language?.toLowerCase().startsWith("ru") ?? false;
+  const title = isRussian ? "🛠 Вызов инструментов" : "🛠 Tool calls";
+  let description = title;
+  let renderedSteps = 0;
+
+  for (const [index, step] of props.payload.steps.entries()) {
+    const block =
+      `\n\n${index + 1}. ${telegramStepStatusIcon(step)} ${step.label}` +
+      `\n   ${telegramStepSourceLabel(step, isRussian)} · ${formatAiExecutionActionStepToolName(step)}`;
+
+    if (
+      description.length + block.length >
+      TELEGRAM_AI_EXECUTION_MESSAGE_MAX_LENGTH - 64
+    ) {
+      break;
+    }
+
+    description += block;
+    renderedSteps += 1;
+  }
+
+  const omittedSteps = props.payload.steps.length - renderedSteps;
+
+  if (omittedSteps > 0) {
+    description += isRussian
+      ? `\n\n… И ещё инструментов: ${omittedSteps}`
+      : `\n\n… And ${omittedSteps} more tool calls`;
+  }
+
+  return description;
 }
 
 export class AiExecutionActionReporter implements IAiExecutionActionReporter {
@@ -130,6 +213,7 @@ export class AiExecutionActionReporter implements IAiExecutionActionReporter {
         completedAt: this.now().toISOString(),
       };
       await this.persistence.updateAction(this.actionId, this.payload);
+      await this.createTelegramMessage();
       return;
     }
 
@@ -251,6 +335,37 @@ export class AiExecutionActionReporter implements IAiExecutionActionReporter {
     await this.persistence.updateAction(this.actionId, this.payload);
   }
 
+  private async createTelegramMessage() {
+    if (
+      !this.props.telegramMessage ||
+      !this.actionId ||
+      !this.payload.steps.length ||
+      !this.persistence.createTelegramMessage
+    ) {
+      return;
+    }
+
+    await this.persistence.createTelegramMessage({
+      description: renderTelegramAiExecutionMessage({
+        language: this.props.telegramMessage.language,
+        payload: this.payload,
+      }),
+      metadata: withSocialMessageSystemMetadata({
+        source: "rbac.telegram.ai-execution",
+        awaitNotification: true,
+        metadata: {
+          aiExecution: {
+            version: 1,
+            actionId: this.actionId,
+            runId: this.payload.runId,
+            status: this.payload.status,
+            toolCount: this.payload.steps.length,
+          },
+        },
+      }),
+    });
+  }
+
   private createSdkPersistence(
     secretKey: string,
   ): IAiExecutionActionPersistence {
@@ -295,6 +410,31 @@ export class AiExecutionActionReporter implements IAiExecutionActionReporter {
           options,
         });
       },
+      ...(this.props.telegramMessage
+        ? {
+            createTelegramMessage: async (data: {
+              description: string;
+              metadata: Record<string, unknown>;
+            }) => {
+              return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+                {
+                  id: this.props.telegramMessage!.rbacSubjectId,
+                  socialModuleProfileId: this.props.replySocialProfileId,
+                  socialModuleChatId: this.props.chatId,
+                  socialModuleThreadId: this.props.threadId,
+                  data,
+                  options: {
+                    headers: {
+                      Authorization:
+                        "Bearer " +
+                        this.props.telegramMessage!.authorizationJwt,
+                    },
+                  },
+                },
+              );
+            },
+          }
+        : {}),
     };
   }
 }

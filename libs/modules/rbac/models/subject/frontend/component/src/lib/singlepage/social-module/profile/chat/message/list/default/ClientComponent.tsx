@@ -325,6 +325,9 @@ export function Component(props: IComponentPropsExtended) {
             openRouterReasoningLabel={
               openRouterModelControls.selectedReasoningLabel
             }
+            openRouterReasoningOptions={
+              openRouterModelControls.reasoningOptions
+            }
             profileSkills={profileSkills.profileSkills}
             registerFocusComposerTextArea={registerFocusComposerTextArea}
             selectedSkillIds={profileSkills.selectedSkillIds}
