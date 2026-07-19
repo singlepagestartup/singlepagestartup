@@ -231,6 +231,69 @@ describe("Given: rbac social message create author relation", () => {
 
   /**
    * BDD Scenario
+   * Given: a Telegram system message must precede a dependent AI reply.
+   * When: message metadata requests awaited notification delivery.
+   * Then: the create response is held until notification delivery completes.
+   */
+  it("When: system notification is awaited Then: delivery precedes response", async () => {
+    const events: string[] = [];
+    let finishNotification: (() => void) | undefined;
+    let markNotificationStarted: (() => void) | undefined;
+    const notificationStarted = new Promise<void>((resolve) => {
+      markNotificationStarted = resolve;
+    });
+
+    mockSocialModuleMessageCreate.mockResolvedValueOnce({
+      id: "message-1",
+      description: "Tool calls",
+      metadata: {
+        systemMessage: {
+          version: 1,
+          source: "rbac.telegram.ai-execution",
+          excludeFromOpenRouter: true,
+          awaitNotification: true,
+        },
+      },
+    });
+
+    const handler = new Handler(createService());
+    handler.notifyOtherSubjectsInChat = jest.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          markNotificationStarted?.();
+          finishNotification = () => {
+            events.push("notify");
+            resolve();
+          };
+        }),
+    );
+
+    const executePromise = handler.execute(
+      createContext(events, {
+        description: "Tool calls",
+        metadata: {
+          systemMessage: {
+            version: 1,
+            source: "rbac.telegram.ai-execution",
+            excludeFromOpenRouter: true,
+            awaitNotification: true,
+          },
+        },
+      }),
+      jest.fn(),
+    );
+
+    await notificationStarted;
+    expect(events).toEqual([]);
+
+    finishNotification?.();
+    await executePromise;
+
+    expect(events).toEqual(["notify", "response"]);
+  });
+
+  /**
+   * BDD Scenario
    * Given: the web composer persists its complete AI reaction intent with the message.
    * When: message creation normalizes that intent.
    * Then: the action logger remains enabled and receives one durable backend-dispatch trigger.

@@ -1542,6 +1542,9 @@ export class Handler {
 
       if (expectedOutputModality === "text" && socialProfileTools.length) {
         let generationCallCount = 0;
+        const socialModuleChat = await this.service.socialModule.chat.findById({
+          id: socialModuleChatId,
+        });
         const executionActionReporter = RBAC_SECRET_KEY
           ? this.service.socialModuleProfileAiExecutionActionReporterCreate({
               chatId: socialModuleChatId,
@@ -1549,6 +1552,15 @@ export class Handler {
               triggerMessageId: socialModuleMessage.id,
               replySocialProfileId: replyBySocialModuleProfile.id,
               secretKey: RBAC_SECRET_KEY,
+              ...(socialModuleChat?.variant === "telegram"
+                ? {
+                    telegramMessage: {
+                      rbacSubjectId: replyByRbacSubject.id,
+                      authorizationJwt: replyByRbacSubjectAuthenticationJwt,
+                      language: requestClassification.language,
+                    },
+                  }
+                : {}),
             })
           : null;
         socialProfileToolLoopResult =

@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-18T23:20:49Z
+last_updated: 2026-07-19T07:38:33Z
 status: active
 current_phase: complete
 ---
@@ -58,7 +58,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 23 -->
+<!-- incident-count: 24 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -290,6 +290,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Any direct Social message creation path that represents UI, billing, access, or transport status must use the same persisted system-message wrapper as command replies; live verification must inspect stored metadata rather than infer it from visible text.
 - **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/index.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/open-router-reply.spec.ts`; Telegram topic `113124`.
 
+### Incident 24 — Telegram tool execution had no ordered, durable projection
+
+- **Phase**: Code Review
+- **Occurrences**: 3
+- **Symptom**: The web chat rendered the canonical `ai-execution` action, but Telegram showed only the final answer. The first Telegram projection arrived after the final answer, and its metadata was later replaced with `{}` when the transport saved `sourceSystemId`.
+- **Root Cause**: Tool lifecycle data existed only as a frontend action projection. Telegram notification dispatch was fire-and-forget, so a dependent final reply could overtake it. Social message insert validation also injected empty `interaction` and `metadata` defaults into source-system-id-only updates, erasing the system marker.
+- **Fix**: Project the completed canonical action into one bounded Telegram message with a heading and safe tool list, mark it with `systemMessage.excludeFromOpenRouter`, and request awaited notification delivery before creating the final AI reply. Leave JSON defaults to Postgres so partial transport updates cannot erase existing metadata. A clean live run delivered the tool card before the separate answer, persisted `actionId/runId/toolCount`, and recorded one real MCP call in the final trace.
+- **Preventive Action**: Reuse canonical execution telemetry for transport projections, await any message that must precede a dependent reply, and test partial update schemas for injected defaults that can clobber durable metadata.
+- **References**: `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/execution-action.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/create.ts`; `libs/modules/social/models/message/backend/repository/database/src/lib/index.ts`; Telegram topic `113101` live verification.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -309,3 +319,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Telegram document messages normally have no description; text-capable editors must resolve their canonical File Storage attachment before treating the input as empty or enforcing inline-message limits.
 - Conversation-state suppression is not a durable history policy; internal control-plane messages need persisted metadata and defense-in-depth filtering at both generation dispatch and context collection.
 - Central reply helpers do not protect direct SDK writes automatically; every status-message creation branch must apply the shared system metadata contract explicitly.
+- Transport-visible tool telemetry should be projected from the canonical execution action, delivered before its dependent answer, and protected from partial-update default clobbering.

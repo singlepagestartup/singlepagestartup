@@ -5,6 +5,7 @@ export interface ISocialMessageSystemMetadata {
   version: typeof SOCIAL_MESSAGE_SYSTEM_METADATA_VERSION;
   source: string;
   excludeFromOpenRouter: true;
+  awaitNotification?: true;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -14,6 +15,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export function withSocialMessageSystemMetadata(props: {
   metadata?: unknown;
   source: string;
+  awaitNotification?: boolean;
 }): Record<string, unknown> {
   const metadata = isRecord(props.metadata) ? props.metadata : {};
   const currentValue = metadata[SOCIAL_MESSAGE_SYSTEM_METADATA_KEY];
@@ -26,6 +28,7 @@ export function withSocialMessageSystemMetadata(props: {
       version: SOCIAL_MESSAGE_SYSTEM_METADATA_VERSION,
       source: props.source,
       excludeFromOpenRouter: true,
+      ...(props.awaitNotification ? { awaitNotification: true as const } : {}),
     } satisfies ISocialMessageSystemMetadata,
   };
 }
@@ -39,5 +42,17 @@ export function isSocialMessageExcludedFromOpenRouter(metadata: unknown) {
 
   return (
     isRecord(systemMetadata) && systemMetadata["excludeFromOpenRouter"] === true
+  );
+}
+
+export function shouldAwaitSocialMessageNotification(metadata: unknown) {
+  if (!isRecord(metadata)) {
+    return false;
+  }
+
+  const systemMetadata = metadata[SOCIAL_MESSAGE_SYSTEM_METADATA_KEY];
+
+  return (
+    isRecord(systemMetadata) && systemMetadata["awaitNotification"] === true
   );
 }

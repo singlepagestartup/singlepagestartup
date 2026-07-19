@@ -67,6 +67,7 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] Knowledge create/edit now resolves persisted text attachments instead of relying on an empty Telegram document caption; the real 15,770-byte `content.txt` is reachable from the live API, and Agent BDD covers the complete file-to-Knowledge mutation beyond 4,000 characters.
 - [x] Telegram commands, management replies, and active assistant-editor inputs now persist `systemMessage.excludeFromOpenRouter: true`; Agent and RBAC independently reject marked generation triggers, and RBAC omits them from later thread context.
 - [x] Subscription, token-limit, channel-requirement, and OpenRouter-error replies now use the same system marker even on direct SDK creation paths; existing topic `113124` messages `5423`–`5427` were backfilled and verified.
+- [x] A clean MCP run in topic `113101` delivered `🛠 Вызов инструментов` with `List SPS modules` before the separate AI answer, persisted `systemMessage.excludeFromOpenRouter: true` plus `actionId/runId/toolCount`, and recorded one traced tool call in the final reply.
 - [x] Group/multi-sender, zero/multiple-profile, permission-loss, and missing-record variants remain covered by BDD because the authenticated Browser session exposed only one private sender and one manageable profile.
 
 ## Incident Log
@@ -74,7 +75,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 20 -->
+<!-- incident-count: 21 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -256,6 +257,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Wrapped every direct required-subscription, missing-subscription, insufficient-token, and OpenRouter-error write with `systemMessage.excludeFromOpenRouter: true`, added BDD assertions, and backfilled source message IDs `5423`–`5427` in the local runtime database.
 - **Reusable Pattern**: Audit direct SDK message creates whenever introducing cross-cutting message metadata; central helper coverage alone is insufficient.
 
+### Incident 21 — Telegram tool execution projection lost order and metadata
+
+- **Occurrences**: 3
+- **Stage**: Manual review follow-up
+- **Symptom**: Telegram initially had no tool-call presentation; the first projection arrived after the answer, and its persisted metadata became `{}` after Telegram delivery completed.
+- **Root Cause**: The canonical `ai-execution` action was frontend-only, notification delivery was fire-and-forget, and Social insert validation injected empty JSON defaults into a source-system-id-only update.
+- **Fix**: Added a bounded Telegram projection from the canonical action, awaited its notification before final reply creation, marked it as excluded from OpenRouter, and removed insert-time JSON defaults from partial update parsing. BDD, TypeScript, and a clean live Telegram/DB trace verify the result.
+- **Reusable Pattern**: Ordered transport projections must await delivery, and partial updates must not inject defaults for omitted durable fields.
+
 ## Summary
 
 ### Changes Made
@@ -273,6 +283,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Bot-authored topic service updates are ignored before RBAC bootstrap, and private chats self-heal stale automatic personal-agent links without removing manually connected AI profiles.
 - Telegram command, assistant-management, and Avatar/editor messages carry a durable system marker and are excluded from OpenRouter triggers and thread history.
 - Subscription and OpenRouter status replies, including direct fallback writes, carry the same durable exclusion marker; the five reported runtime records were backfilled.
+- Telegram now presents the canonical tool execution heading/list before the final AI answer, with durable exclusion and execution metadata preserved through transport acknowledgement.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
 
 ### Pull Request
@@ -289,4 +300,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T23:20:49Z
+**Last updated**: 2026-07-19T07:38:33Z
