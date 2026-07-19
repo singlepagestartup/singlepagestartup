@@ -1,5 +1,8 @@
 import { getKnowledgeConfiguration } from "./configuration";
-import { LlmEmbeddingClient } from "./embedding";
+import {
+  createKnowledgeEmbeddingClient,
+  IKnowledgeEmbeddingClient,
+} from "./embedding";
 import { LlmChatClient } from "./generation";
 import { KnowledgeIndexer } from "./indexer";
 import { LlmModelClient } from "./models";
@@ -18,25 +21,20 @@ export interface IKnowledgePersona {
 
 export class KnowledgeService {
   private repository: KnowledgeRepository;
-  private embeddingClient: LlmEmbeddingClient;
+  private embeddingClient: IKnowledgeEmbeddingClient;
   private generationClient: LlmChatClient;
   private modelClient: LlmModelClient;
 
   constructor(props?: {
     repository?: KnowledgeRepository;
-    embeddingClient?: LlmEmbeddingClient;
+    embeddingClient?: IKnowledgeEmbeddingClient;
     generationClient?: LlmChatClient;
     modelClient?: LlmModelClient;
   }) {
     const config = getKnowledgeConfiguration();
     this.repository = props?.repository || new KnowledgeRepository();
     this.embeddingClient =
-      props?.embeddingClient ||
-      new LlmEmbeddingClient({
-        baseUrl: config.llm.url,
-        model: config.llm.embeddingModel,
-        dimensions: config.llm.dimensions,
-      });
+      props?.embeddingClient || createKnowledgeEmbeddingClient();
     this.generationClient =
       props?.generationClient ||
       new LlmChatClient({
@@ -56,8 +54,10 @@ export class KnowledgeService {
     return {
       ...counts,
       llmUrl: config.llm.url,
-      embeddingModel: config.llm.embeddingModel,
-      embeddingDimensions: config.llm.dimensions,
+      embeddingProvider: config.embedding.provider,
+      embeddingUrl: config.embedding.url,
+      embeddingModel: config.embedding.model,
+      embeddingDimensions: config.embedding.dimensions,
     };
   }
 
@@ -390,11 +390,16 @@ export class KnowledgeService {
 
   private async assertEmbeddingModelDimensions() {
     const config = getKnowledgeConfiguration();
-    const model = await this.modelClient.get(config.llm.embeddingModel);
 
-    if (model.dimensions !== config.llm.dimensions) {
+    if (config.embedding.provider === "openrouter") {
+      return;
+    }
+
+    const model = await this.modelClient.get(config.embedding.model);
+
+    if (model.dimensions !== config.embedding.dimensions) {
       throw new Error(
-        `Knowledge embedding model ${model.id} must have ${config.llm.dimensions} dimensions; got ${model.dimensions || "unknown"}.`,
+        `Knowledge embedding model ${model.id} must have ${config.embedding.dimensions} dimensions; got ${model.dimensions || "unknown"}.`,
       );
     }
   }

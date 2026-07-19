@@ -1,7 +1,12 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { OpenRouter, type IOpenRouterModel } from "@sps/shared-third-parties";
+import {
+  OpenRouter,
+  openRouterReasoningEffortValues,
+  type IOpenRouterModel,
+  type TOpenRouterReasoningEffort,
+} from "@sps/shared-third-parties";
 import { Service } from "../../../../../../../../service";
 
 type TOpenRouterModelGroup = "text" | "vision_file" | "image" | "audio";
@@ -15,6 +20,15 @@ interface IOpenRouterChatModelOption {
   outputModalities: string[];
   supportedParameters: string[];
   supportsReasoning: boolean;
+  reasoning: IOpenRouterChatModelReasoning | null;
+}
+
+interface IOpenRouterChatModelReasoning {
+  defaultEffort: TOpenRouterReasoningEffort | null;
+  defaultEnabled: boolean | null;
+  mandatory: boolean;
+  supportedEfforts: TOpenRouterReasoningEffort[];
+  supportsMaxTokens: boolean;
 }
 
 interface IOpenRouterChatModelGroup {
@@ -24,25 +38,10 @@ interface IOpenRouterChatModelGroup {
 }
 
 export class Handler {
-  service: Service;
-
-  constructor(service: Service) {
-    this.service = service;
-  }
+  constructor(_service: Service) {}
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      const socialModuleProfileId = this.requireParam(
-        c,
-        "socialModuleProfileId",
-      );
-      const socialModuleChatId = this.requireParam(c, "socialModuleChatId");
-
-      await this.assertProfileCanAccessChat({
-        socialModuleProfileId,
-        socialModuleChatId,
-      });
-
       const openRouter = new OpenRouter();
       const models = await openRouter.getModels();
 
@@ -59,47 +58,6 @@ export class Handler {
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
-    }
-  }
-
-  private requireParam(c: Context, name: string) {
-    const value = c.req.param(name);
-
-    if (!value) {
-      throw new Error(`Validation error. No ${name} provided`);
-    }
-
-    return value;
-  }
-
-  private async assertProfileCanAccessChat(props: {
-    socialModuleProfileId: string;
-    socialModuleChatId: string;
-  }) {
-    const relations = await this.service.socialModule.profilesToChats.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "profileId",
-              method: "eq",
-              value: props.socialModuleProfileId,
-            },
-            {
-              column: "chatId",
-              method: "eq",
-              value: props.socialModuleChatId,
-            },
-          ],
-        },
-        limit: 1,
-      },
-    });
-
-    if (!relations?.length) {
-      throw new Error(
-        "Authorization error. Requested social-module chat does not belong to profile",
-      );
     }
   }
 
@@ -187,6 +145,8 @@ export class Handler {
           .filter((item): item is string => Boolean(item))
       : [];
 
+    const reasoning = this.toReasoningOption(props.model);
+
     return {
       id: props.model.id,
       name: props.model.name || props.model.id,
@@ -198,9 +158,61 @@ export class Handler {
       inputModalities: props.inputModalities,
       outputModalities: props.outputModalities,
       supportedParameters,
-      supportsReasoning:
-        supportedParameters.includes("reasoning") ||
-        supportedParameters.includes("include_reasoning"),
+      supportsReasoning: Boolean(reasoning),
+      reasoning,
+    };
+  }
+
+  private toReasoningOption(
+    model: IOpenRouterModel,
+  ): IOpenRouterChatModelReasoning | null {
+    const reasoning = model.reasoning;
+
+    if (!reasoning || !("supported_efforts" in reasoning)) {
+      return null;
+    }
+
+    const supportedEffortsSource =
+      reasoning.supported_efforts === null
+        ? [...openRouterReasoningEffortValues]
+        : reasoning.supported_efforts;
+
+    if (!Array.isArray(supportedEffortsSource)) {
+      return null;
+    }
+
+    const supportedEfforts = Array.from(
+      new Set(
+        supportedEffortsSource.filter(
+          (effort): effort is TOpenRouterReasoningEffort => {
+            return (
+              openRouterReasoningEffortValues.includes(effort) &&
+              !(reasoning.mandatory === true && effort === "none")
+            );
+          },
+        ),
+      ),
+    );
+
+    if (!supportedEfforts.length) {
+      return null;
+    }
+
+    const defaultEffort = supportedEfforts.includes(
+      reasoning.default_effort as TOpenRouterReasoningEffort,
+    )
+      ? (reasoning.default_effort as TOpenRouterReasoningEffort)
+      : null;
+
+    return {
+      defaultEffort,
+      defaultEnabled:
+        typeof reasoning.default_enabled === "boolean"
+          ? reasoning.default_enabled
+          : null,
+      mandatory: reasoning.mandatory === true,
+      supportedEfforts,
+      supportsMaxTokens: reasoning.supports_max_tokens === true,
     };
   }
 

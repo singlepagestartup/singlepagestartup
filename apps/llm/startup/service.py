@@ -10,7 +10,10 @@ def get_service() -> GatewayService:
 
     if _service is None:
         _service = GatewayService(
-            catalog=build_catalog(),
+            catalog=build_catalog(
+                embedding_provider_model=settings.ollama_embed_model,
+                embedding_dimensions=settings.ollama_embed_dimensions,
+            ),
             ollama_url=settings.ollama_url,
             anthropic_api_key=settings.anthropic_api_key,
             openai_api_key=settings.openai_api_key or settings.open_ai_api_key,

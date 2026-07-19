@@ -15,7 +15,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from singlepage.catalog import ModelCatalog, ModelDefinition
 from singlepage.errors import GatewayError
-from singlepage.providers import AnthropicProvider, OpenAIProvider
+from singlepage.providers import AnthropicProvider, OllamaProvider, OpenAIProvider
 from singlepage.results import ChatResult, EmbeddingResult, Usage
 from singlepage.service import GatewayService
 
@@ -191,6 +191,54 @@ class GatewayServiceTest(unittest.TestCase):
             )
 
         self.assertIn("qwen/qwen3-1-7b", context.exception.details["available_models"])
+
+
+class OllamaProviderTest(unittest.TestCase):
+    def setUp(self):
+        self.previous_requests_module = sys.modules.get("requests")
+
+    def tearDown(self):
+        if self.previous_requests_module is not None:
+            sys.modules["requests"] = self.previous_requests_module
+        else:
+            sys.modules.pop("requests", None)
+
+    def test_embedding_request_includes_catalog_dimensions(self):
+        """
+        BDD Scenario: reduced Ollama embedding dimensions.
+
+        Given: the configured local model has a larger native vector size.
+        When: the Ollama provider requests embeddings.
+        Then: it asks Ollama for the catalog's 768-dimensional output.
+        """
+        calls = []
+
+        class FakeResponse:
+            ok = True
+
+            def json(self):
+                return {"embeddings": [[0.1, 0.2, 0.3]]}
+
+        def post(url, json, timeout):
+            calls.append({"url": url, "json": json, "timeout": timeout})
+            return FakeResponse()
+
+        sys.modules["requests"] = types.SimpleNamespace(post=post)
+        provider = OllamaProvider("http://ollama.test")
+        model = ModelDefinition(
+            id="local/default-embedding",
+            label="Configured embedding",
+            provider="ollama",
+            provider_model="qwen3-embedding:4b",
+            task="embedding",
+            local=True,
+            dimensions=768,
+        )
+
+        provider.embed(model, ["hello"])
+
+        self.assertEqual(calls[0]["json"]["dimensions"], 768)
+        self.assertEqual(calls[0]["json"]["model"], "qwen3-embedding:4b")
 
 
 class OpenAIProviderTest(unittest.TestCase):

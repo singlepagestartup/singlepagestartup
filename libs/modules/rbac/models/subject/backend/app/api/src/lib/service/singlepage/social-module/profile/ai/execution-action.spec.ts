@@ -102,7 +102,7 @@ function toolEvent(
   return {
     type,
     callId: "call-1",
-    name: "mcp__singlepagestartup__model_record_count",
+    name: "mcp__singlepagestartup__model-record-count",
     source: "mcp",
     label: "Count model records",
     serverId: "singlepagestartup",
@@ -214,7 +214,7 @@ describe("Given: safe social.profile tool lifecycle events", () => {
       description:
         "🛠 Вызов инструментов\n\n" +
         "1. ✅ Count model records\n" +
-        "   SinglePageStartup MCP · mcp__singlepagestartup__model_record_count",
+        "   SinglePageStartup MCP · model-record-count",
       metadata: {
         aiExecution: {
           version: 1,

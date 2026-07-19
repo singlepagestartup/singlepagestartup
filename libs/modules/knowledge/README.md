@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Knowledge module stores editable markdown documents, indexes them into PostgreSQL with pgvector, retrieves relevant text chunks with embeddings from the local `apps/llm` gateway, and generates source-grounded answers through selectable local or hosted models. It is a generic RAG engine and does not read or write Social/RBAC tables.
+The Knowledge module stores editable markdown documents, indexes them into PostgreSQL with pgvector, retrieves relevant text chunks with embeddings from either the local `apps/llm` gateway or OpenRouter, and generates source-grounded answers through selectable local or hosted models. It is a generic RAG engine and does not read or write Social/RBAC tables.
 
 ## Models
 
@@ -19,19 +19,28 @@ Sources connect to chunks through the `sources-to-chunks` SPS relation. Sources 
 
 - PostgreSQL must run from `pgvector/pgvector:pg17`.
 - The shared migration wrapper creates the `vector` extension before repository migrations run.
-- `apps/llm` serves the OpenAI-compatible local gateway for embeddings, local models, HuggingFace presets, Claude, and OpenAI.
-- Knowledge owns RAG data and vector search; provider routing and model catalog live in `apps/llm`.
+- `apps/llm` serves the OpenAI-compatible local gateway for local embeddings, local models, HuggingFace presets, Claude, and OpenAI.
+- `apps/api` can alternatively call OpenRouter's OpenAI-compatible embeddings endpoint directly.
+- Knowledge owns RAG data and vector search; generation routing and the local model catalog live in `apps/llm`, while the embedding provider switch lives in `apps/api`.
 
 Environment variables:
 
-| Variable                    | Default                       | Purpose                                 |
-| --------------------------- | ----------------------------- | --------------------------------------- |
-| `LLM_SERVICE_URL`           | `http://localhost:8765`       | Local gateway URL used by Knowledge     |
-| `KNOWLEDGE_EMBEDDING_MODEL` | `nomic/nomic-embed-text`      | Gateway embedding model id              |
-| `OLLAMA_MODEL_IDS`          | `nomic-embed-text,qwen3:1.7b` | Ollama models pulled by `apps/llm` init |
-| `OLLAMA_MODELS_DIR`         | `.ollama/models`              | Project-local native Ollama model cache |
-| `ANTHROPIC_API_KEY`         | empty                         | Anthropic key consumed by `apps/llm`    |
-| `OPENAI_API_KEY`            | empty                         | OpenAI key consumed by `apps/llm`       |
+| Location        | Variable                                | Default                   | Purpose                                                         |
+| --------------- | --------------------------------------- | ------------------------- | --------------------------------------------------------------- |
+| `apps/api/.env` | `KNOWLEDGE_EMBEDDING_PROVIDER`          | `llm`                     | Embedding route: `llm` or `openrouter`                          |
+| `apps/api/.env` | `KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL` | `qwen/qwen3-embedding-8b` | OpenRouter model used when the provider is `openrouter`         |
+| `apps/api/.env` | `OPEN_ROUTER_API_KEY`                   | empty                     | OpenRouter credential required by the direct embedding route    |
+| `apps/api/.env` | `LLM_SERVICE_URL`                       | `http://localhost:8765`   | Local gateway URL used for generation and local embeddings      |
+| `apps/llm/.env` | `OLLAMA_EMBED_MODEL`                    | `nomic-embed-text`        | Ollama embedding model behind `local/default-embedding`         |
+| `apps/llm/.env` | `OLLAMA_EMBED_DIMENSIONS`               | `768`                     | Output size requested from Ollama; must remain 768 for pgvector |
+| `apps/llm/.env` | `OLLAMA_MODEL_IDS`                      | `nomic-embed-text`        | Other Ollama models pulled by the reconciler                    |
+| `apps/llm/.env` | `OLLAMA_MODELS_DIR`                     | `.ollama/models`          | Project-local native Ollama model cache                         |
+| `apps/llm/.env` | `ANTHROPIC_API_KEY`                     | empty                     | Anthropic key consumed by `apps/llm`                            |
+| `apps/llm/.env` | `OPENAI_API_KEY`                        | empty                     | OpenAI key consumed by `apps/llm`                               |
+
+`apps/api` always calls `local/default-embedding` for the `llm` provider, so switching local models requires changing only `OLLAMA_EMBED_MODEL` in `apps/llm/.env`. The Ollama reconciler treats that model as required even when it is absent from `OLLAMA_MODEL_IDS`. For OpenRouter, the API sends `dimensions: 768` and `encoding_format: float`; both indexing and query search use the same configured provider and model.
+
+Vectors from different embedding models are not comparable. After changing `KNOWLEDGE_EMBEDDING_PROVIDER`, `KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL`, or `OLLAMA_EMBED_MODEL`, rebuild all derived vectors with `npm run knowledge:index -- --clear`. Do not query a partially reindexed database with the new model.
 
 Generation model slugs are loaded from `GET /api/knowledge/models?task=chat`, which proxies `apps/llm`.
 
@@ -85,7 +94,12 @@ Required deployer variables are listed in `tools/deployer/.env.example`:
 - `LLM_SERVICE_NAME=llm`
 - `LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME`
 - `LLM_SERVICE_URL=http://llm:8765`
-- `OLLAMA_MODEL_IDS=nomic-embed-text,qwen3:1.7b`
+- `KNOWLEDGE_EMBEDDING_PROVIDER=llm` or `openrouter`
+- `KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL=qwen/qwen3-embedding-8b`
+- optional `OPEN_ROUTER_API_KEY` when OpenRouter embeddings are enabled
+- `OLLAMA_EMBED_MODEL=nomic-embed-text`
+- `OLLAMA_EMBED_DIMENSIONS=768`
+- `OLLAMA_MODEL_IDS=nomic-embed-text`
 - optional `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and `HF_TOKEN`
 
 The server stack runs three private Docker Swarm services: the Python LLM gateway, Ollama, and a one-shot Ollama model pull service. LLM is not exposed through Traefik by default; API reaches it through internal overlay DNS at `http://llm:8765`.
@@ -203,6 +217,7 @@ Admin/global Knowledge frontend code should use the Knowledge SDK actions instea
 ## Troubleshooting
 
 - `extension "vector" is not available`: rebuild the DB container after changing `apps/db/Dockerfile` to `pgvector/pgvector:pg17`, then rerun migrations.
-- `LLM embedding request failed`: start `apps/llm` and verify `GET http://localhost:8765/v1/models` responds.
+- `LLM embedding request failed`: start `apps/llm`, verify `GET http://localhost:8765/v1/models` responds, and confirm `local/default-embedding` maps to the expected `provider_model`.
+- `OPEN_ROUTER_API_KEY is required`: add the key to `apps/api/.env` or switch `KNOWLEDGE_EMBEDDING_PROVIDER` back to `llm`.
 - `ANTHROPIC_API_KEY is not set`: set the key in `apps/llm/.env` before using Claude models.
-- Wrong embedding dimension: `nomic/nomic-embed-text` must return 768 values; other embedding models are rejected until Knowledge supports variable vector dimensions.
+- Wrong embedding dimension: the selected model must support a 768-dimensional output. Knowledge rejects any other vector size before writing pgvector rows.

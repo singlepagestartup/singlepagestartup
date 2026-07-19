@@ -528,7 +528,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/openrouter/models",
         handler:
           this.socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind,
-        middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
         method: "GET",

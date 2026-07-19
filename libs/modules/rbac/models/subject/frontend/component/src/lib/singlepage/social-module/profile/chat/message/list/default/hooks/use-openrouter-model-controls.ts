@@ -3,6 +3,7 @@
 import {
   OpenRouterChatModelGroup,
   OpenRouterChatModelOption,
+  OpenRouterReasoningOption,
   OpenRouterReasoningValue,
 } from "../types";
 import { api } from "@sps/rbac/models/subject/sdk/client";
@@ -19,33 +20,38 @@ interface UseOpenRouterModelControlsProps {
   subjectId: string;
 }
 
-export const openRouterReasoningOptions: {
-  label: string;
-  value: OpenRouterReasoningValue;
-}[] = [
+export const openRouterReasoningOptions: OpenRouterReasoningOption[] = [
   {
     label: "Auto",
     value: "auto",
   },
   {
-    label: "Off",
-    value: "none",
+    label: "Maximum",
+    value: "max",
   },
   {
-    label: "Low",
-    value: "low",
-  },
-  {
-    label: "Medium",
-    value: "medium",
+    label: "Extra High",
+    value: "xhigh",
   },
   {
     label: "High",
     value: "high",
   },
   {
-    label: "Extra High",
-    value: "xhigh",
+    label: "Medium",
+    value: "medium",
+  },
+  {
+    label: "Low",
+    value: "low",
+  },
+  {
+    label: "Minimal",
+    value: "minimal",
+  },
+  {
+    label: "Off",
+    value: "none",
   },
 ];
 
@@ -176,12 +182,27 @@ export function useOpenRouterModelControls(
     selectedModelId === "auto"
       ? "Auto"
       : selectedModel?.name || selectedModelId;
-  const canSelectReasoning =
-    selectedModelId === "auto" || Boolean(selectedModel?.supportsReasoning);
+  const reasoningOptions = useMemo<OpenRouterReasoningOption[]>(() => {
+    if (!selectedModel?.reasoning) {
+      return [];
+    }
+
+    const supportedEfforts = new Set(selectedModel.reasoning.supportedEfforts);
+
+    return openRouterReasoningOptions.filter((option) => {
+      return option.value === "auto" || supportedEfforts.has(option.value);
+    });
+  }, [selectedModel]);
+  const canSelectReasoning = reasoningOptions.length > 1;
+  const selectedReasoningIsAvailable = reasoningOptions.some((option) => {
+    return option.value === selectedReasoning;
+  });
   const effectiveSelectedReasoning: OpenRouterReasoningValue =
-    canSelectReasoning ? selectedReasoning : "auto";
+    canSelectReasoning && selectedReasoningIsAvailable
+      ? selectedReasoning
+      : "auto";
   const selectedReasoningLabel =
-    openRouterReasoningOptions.find((item) => {
+    reasoningOptions.find((item) => {
       return item.value === effectiveSelectedReasoning;
     })?.label || "Auto";
   const favoriteModelIdSet = useMemo(() => {
@@ -281,12 +302,12 @@ export function useOpenRouterModelControls(
   }, [favoritesQuery.data?.favoriteModelIds, props.subjectId]);
 
   useEffect(() => {
-    if (canSelectReasoning || selectedReasoning === "auto") {
+    if (selectedReasoningIsAvailable || selectedReasoning === "auto") {
       return;
     }
 
     setSelectedReasoning("auto");
-  }, [canSelectReasoning, selectedReasoning]);
+  }, [selectedReasoning, selectedReasoningIsAvailable]);
 
   return {
     canSelectReasoning,
@@ -297,6 +318,7 @@ export function useOpenRouterModelControls(
     isUpdatingFavoriteModels: favoritesMutation.isPending,
     modelGroups,
     modelsQuery,
+    reasoningOptions,
     selectedModel,
     selectedModelId,
     selectedModelLabel,

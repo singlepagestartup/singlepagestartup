@@ -45,7 +45,7 @@ function createAction(props?: {
           id: "call-1",
           kind: "mcp",
           serverId: "singlepagestartup",
-          toolName: "model-record-count",
+          toolName: "mcp__singlepagestartup__model-record-count",
           label: "Count model records",
           status:
             props?.status === "completed"
@@ -117,6 +117,7 @@ describe("Given: an ai-execution action in the message timeline", () => {
       "Использует SinglePageStartup MCP: Count model records",
     );
     expect(container.textContent).toContain("model-record-count");
+    expect(container.textContent).not.toContain("mcp__singlepagestartup__");
     expect(container.textContent).not.toContain("must-not-render");
     expect(container.textContent).not.toContain("Bearer");
     expect(container.textContent).not.toContain('"count"');

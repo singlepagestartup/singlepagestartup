@@ -15,6 +15,84 @@ import unittest
 
 
 class OllamaInitTest(unittest.TestCase):
+    def test_embedding_model_is_reconciled_even_when_not_in_model_ids(self):
+        """
+        BDD Scenario: embedding model selected independently.
+
+        Given: OLLAMA_EMBED_MODEL is not duplicated in OLLAMA_MODEL_IDS.
+        When: the model reconciler performs its first check.
+        Then: it pulls the selected embedding model as a required dependency.
+        """
+        script_path = pathlib.Path(__file__).resolve().parents[1] / "ollama-init.sh"
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_path = pathlib.Path(temporary_directory)
+            model_state_path = temporary_path / "models"
+            command_log_path = temporary_path / "commands"
+            fake_ollama_path = temporary_path / "ollama"
+
+            model_state_path.write_text("chat-model\n", encoding="utf-8")
+            fake_ollama_path.write_text(
+                """#!/bin/sh
+set -eu
+printf '%s\\n' "$*" >> "$OLLAMA_TEST_COMMAND_LOG"
+
+case "$1" in
+  list)
+    exit 0
+    ;;
+  show)
+    grep -Fxq "$2" "$OLLAMA_TEST_MODEL_STATE"
+    ;;
+  pull)
+    printf '%s\\n' "$2" >> "$OLLAMA_TEST_MODEL_STATE"
+    exit 0
+    ;;
+  *)
+    exit 1
+    ;;
+esac
+""",
+                encoding="utf-8",
+            )
+            fake_ollama_path.chmod(0o755)
+
+            environment = os.environ.copy()
+            environment.update(
+                {
+                    "OLLAMA_EMBED_MODEL": "qwen3-embedding:4b",
+                    "OLLAMA_MODEL_IDS": "chat-model",
+                    "OLLAMA_MODEL_RECONCILE_INTERVAL_SECONDS": "1",
+                    "OLLAMA_TEST_COMMAND_LOG": str(command_log_path),
+                    "OLLAMA_TEST_MODEL_STATE": str(model_state_path),
+                    "PATH": f"{temporary_path}:{environment['PATH']}",
+                }
+            )
+
+            process = subprocess.Popen(
+                ["/bin/sh", str(script_path)],
+                env=environment,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+
+            try:
+                deadline = time.monotonic() + 5
+                while time.monotonic() < deadline:
+                    if command_log_path.exists() and "pull qwen3-embedding:4b" in (
+                        command_log_path.read_text(encoding="utf-8")
+                    ):
+                        break
+                    time.sleep(0.05)
+                else:
+                    self.fail("The reconciler did not pull the embedding model.")
+
+                self.assertIsNone(process.poll())
+            finally:
+                process.terminate()
+                process.communicate(timeout=5)
+
     def test_missing_models_are_pulled_without_stopping_the_reconciler(self):
         """
         BDD Scenario: missing models are restored by a persistent process.

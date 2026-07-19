@@ -215,7 +215,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    * BDD Scenario
    * Given: the active chat has an artificial-intelligence opponent.
    * When: the composer is rendered.
-   * Then: the message input reserves three rows and keeps OpenRouter controls in the action bar.
+   * Then: the message input reserves three rows and hides Thinking until a compatible model is selected.
    */
   it("When: rendering an AI-opponent chat Then: the composer uses the expanded layout", () => {
     renderComponent("knowledge");
@@ -224,7 +224,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     expect(textarea.getAttribute("rows")).toBe("3");
     expect(screen.getByLabelText("Select OpenRouter model")).toBeTruthy();
-    expect(screen.getByLabelText("Select OpenRouter thinking")).toBeTruthy();
+    expect(screen.queryByLabelText("Select OpenRouter thinking")).toBeNull();
   });
 
   /**
@@ -613,6 +613,42 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
   /**
    * BDD Scenario
+   * Given: the selected model accepts only high and low reasoning and makes reasoning mandatory.
+   * When: the user opens the Thinking selector.
+   * Then: only Auto and the model's accepted efforts are offered, without Off or unsupported levels.
+   */
+  it("When: opening Thinking Then: only model-supported efforts are listed", async () => {
+    (window as unknown as { PointerEvent: typeof MouseEvent }).PointerEvent =
+      MouseEvent;
+
+    renderComponent("knowledge");
+
+    fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter model"), {
+      button: 0,
+      ctrlKey: false,
+    });
+    fireEvent.click(await screen.findByText("GPT-5.2"));
+    fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter thinking"), {
+      button: 0,
+      ctrlKey: false,
+    });
+
+    expect(
+      await screen.findByRole("menuitemradio", { name: "Auto" }),
+    ).toBeTruthy();
+    expect(screen.getByRole("menuitemradio", { name: "High" })).toBeTruthy();
+    expect(screen.getByRole("menuitemradio", { name: "Low" })).toBeTruthy();
+    expect(screen.queryByRole("menuitemradio", { name: "Maximum" })).toBeNull();
+    expect(
+      screen.queryByRole("menuitemradio", { name: "Extra High" }),
+    ).toBeNull();
+    expect(screen.queryByRole("menuitemradio", { name: "Medium" })).toBeNull();
+    expect(screen.queryByRole("menuitemradio", { name: "Minimal" })).toBeNull();
+    expect(screen.queryByRole("menuitemradio", { name: "Off" })).toBeNull();
+  });
+
+  /**
+   * BDD Scenario
    * Given: the active thread persisted a concrete OpenRouter model.
    * When: the chat composer mounts after a page reload.
    * Then: that model is restored instead of resetting to Auto.
@@ -656,6 +692,12 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     });
 
     renderComponent("knowledge");
+
+    fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter model"), {
+      button: 0,
+      ctrlKey: false,
+    });
+    fireEvent.click(await screen.findByText("GPT-5.2"));
 
     fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter thinking"), {
       button: 0,

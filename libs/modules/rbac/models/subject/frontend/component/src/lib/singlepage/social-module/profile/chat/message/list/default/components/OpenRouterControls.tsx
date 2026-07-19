@@ -3,9 +3,9 @@
 import {
   OpenRouterChatModelGroup,
   OpenRouterChatModelOption,
+  OpenRouterReasoningOption,
   OpenRouterReasoningValue,
 } from "../types";
-import { openRouterReasoningOptions } from "../hooks/use-openrouter-model-controls";
 import {
   Button,
   DropdownMenu,
@@ -31,6 +31,7 @@ interface OpenRouterControlsProps {
   selectedModelLabel: string;
   selectedReasoning: OpenRouterReasoningValue;
   selectedReasoningLabel: string;
+  reasoningOptions: OpenRouterReasoningOption[];
   showReasoningControl: boolean;
   onModelChange: (value: string) => void;
   onReasoningChange: (value: OpenRouterReasoningValue) => void;
@@ -230,7 +231,7 @@ export function OpenRouterControls(props: OpenRouterControlsProps) {
                 props.onReasoningChange(value as OpenRouterReasoningValue);
               }}
             >
-              {openRouterReasoningOptions.map((option) => {
+              {props.reasoningOptions.map((option) => {
                 return (
                   <DropdownMenuRadioItem
                     key={option.value}

@@ -1,4 +1,5 @@
 import type { IModel as IKnowledgeModuleDocument } from "@sps/knowledge/models/document/sdk/model";
+import type { TRbacAiReactionReasoning } from "@sps/rbac/models/subject/sdk/model";
 import type { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
 
 export interface ProfileSummary {
@@ -39,13 +40,24 @@ export interface SkillCreateContext {
 
 export interface SkillUpdateValues extends SkillCreateValues {}
 
-export type OpenRouterReasoningValue =
-  | "auto"
-  | "none"
-  | "low"
-  | "medium"
-  | "high"
-  | "xhigh";
+export type OpenRouterReasoningValue = TRbacAiReactionReasoning;
+export type OpenRouterReasoningEffort = Exclude<
+  OpenRouterReasoningValue,
+  "auto"
+>;
+
+export interface OpenRouterReasoningOption {
+  label: string;
+  value: OpenRouterReasoningValue;
+}
+
+export interface OpenRouterChatModelReasoning {
+  defaultEffort: OpenRouterReasoningEffort | null;
+  defaultEnabled: boolean | null;
+  mandatory: boolean;
+  supportedEfforts: OpenRouterReasoningEffort[];
+  supportsMaxTokens: boolean;
+}
 
 export interface OpenRouterChatModelOption {
   id: string;
@@ -56,6 +68,7 @@ export interface OpenRouterChatModelOption {
   outputModalities: string[];
   supportedParameters: string[];
   supportsReasoning: boolean;
+  reasoning: OpenRouterChatModelReasoning | null;
 }
 
 export interface OpenRouterChatModelGroup {

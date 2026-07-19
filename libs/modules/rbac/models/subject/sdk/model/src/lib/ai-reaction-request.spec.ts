@@ -104,4 +104,27 @@ describe("Given: persisted RBAC AI reaction request metadata", () => {
       }),
     ).toThrow("Unsupported rbacAiReactionRequest.reasoning");
   });
+
+  /**
+   * BDD Scenario
+   * Given: OpenRouter exposes the full gateway reasoning effort range.
+   * When: maximum or minimal effort is persisted in the reaction envelope.
+   * Then: both current OpenRouter effort values pass validation unchanged.
+   */
+  it.each(["max", "minimal"] as const)(
+    "When: %s effort is parsed Then: the current OpenRouter value is preserved",
+    (reasoning) => {
+      expect(
+        parseRbacAiReactionRequestMetadata({
+          [RBAC_AI_REACTION_REQUEST_METADATA_KEY]: {
+            version: 1,
+            modelId: "openai/gpt-5.6-sol",
+            reasoning,
+            skillIds: [],
+            useKnowledgeSearch: false,
+          },
+        }),
+      ).toMatchObject({ reasoning });
+    },
+  );
 });

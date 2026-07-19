@@ -88,9 +88,14 @@ class OllamaProvider:
     def embed(self, model: ModelDefinition, inputs: list[str]) -> EmbeddingResult:
         import requests
 
+        payload = {"model": model.provider_model, "input": inputs}
+
+        if model.dimensions is not None:
+            payload["dimensions"] = model.dimensions
+
         response = requests.post(
             f"{self.base_url}/api/embed",
-            json={"model": model.provider_model, "input": inputs},
+            json=payload,
             timeout=180,
         )
 

@@ -8,6 +8,7 @@ export {
   type IOpenRouterRequestMessage,
   type IOpenRouterReasoning,
 } from "./open-router";
+export { openRouterReasoningEffortValues } from "./open-router/interface";
 export type {
   IOpenRouterBilling,
   IOpenRouterGenerateResult,
@@ -15,9 +16,11 @@ export type {
   IOpenRouterGenerationSuccess,
   IOpenRouterGeneratedImage,
   IOpenRouterModel,
+  IOpenRouterModelReasoning,
   IOpenRouterTool,
   IOpenRouterToolCall,
   IOpenRouterToolChoice,
   IOpenRouterToolFunction,
   IOpenRouterUsage,
+  TOpenRouterReasoningEffort,
 } from "./open-router/interface";

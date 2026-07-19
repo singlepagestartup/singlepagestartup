@@ -4,6 +4,7 @@ import {
   AI_EXECUTION_ACTION_MAX_STEPS,
   AI_EXECUTION_ACTION_VARIANT,
   AI_EXECUTION_ACTION_VERSION,
+  formatAiExecutionActionStepToolName,
   type IAiExecutionActionPayload,
   type IAiExecutionActionStep,
 } from "@sps/rbac/models/subject/sdk/model";
@@ -122,7 +123,7 @@ function renderTelegramAiExecutionMessage(props: {
   for (const [index, step] of props.payload.steps.entries()) {
     const block =
       `\n\n${index + 1}. ${telegramStepStatusIcon(step)} ${step.label}` +
-      `\n   ${telegramStepSourceLabel(step, isRussian)} · ${step.toolName}`;
+      `\n   ${telegramStepSourceLabel(step, isRussian)} · ${formatAiExecutionActionStepToolName(step)}`;
 
     if (
       description.length + block.length >
