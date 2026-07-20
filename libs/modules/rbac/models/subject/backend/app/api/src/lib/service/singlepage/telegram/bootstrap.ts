@@ -1,4 +1,8 @@
 import { RBAC_SECRET_KEY, TELEGRAM_SERVICE_BOT_TOKEN } from "@sps/shared-utils";
+import {
+  type PostgresAdvisoryLockRunner,
+  withPostgresAdvisoryLock,
+} from "@sps/shared-backend-database-config";
 import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as IRbacIdentity } from "@sps/rbac/models/identity/sdk/model";
 import { api as rbacModuleIdentityApi } from "@sps/rbac/models/identity/sdk/server";
@@ -83,6 +87,7 @@ export interface IConstructorProps {
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   resolvePersonalAiAgent?: IResolvePersonalAiAgent;
   ensureProfileManagementAccess?: IEnsureProfileManagementAccess;
+  advisoryLock?: PostgresAdvisoryLockRunner;
 }
 
 export class Service {
@@ -93,6 +98,7 @@ export class Service {
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   resolvePersonalAiAgent: IResolvePersonalAiAgent;
   ensureProfileManagementAccess: IEnsureProfileManagementAccess;
+  advisoryLock: PostgresAdvisoryLockRunner;
 
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
@@ -109,6 +115,7 @@ export class Service {
       });
     this.ensureProfileManagementAccess =
       props.ensureProfileManagementAccess || (async () => undefined);
+    this.advisoryLock = props.advisoryLock || withPostgresAdvisoryLock;
   }
 
   protected getSdkHeaders() {
@@ -1715,6 +1722,14 @@ export class Service {
       throw new Error("Validation error. 'chatId' is required");
     }
 
+    return this.advisoryLock({
+      namespace: "rbac:telegram-bootstrap",
+      key: props.fromId,
+      execute: () => this.executeWithinLock(props),
+    });
+  }
+
+  protected async executeWithinLock(props: IExecuteProps): Promise<IResult> {
     const headers = this.getSdkHeaders();
     let registration = false;
     let subject: IRbacSubject | null = null;

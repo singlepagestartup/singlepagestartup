@@ -10,7 +10,7 @@ status: implemented
 
 ## Overview
 
-Make Telegram bootstrap safe under concurrent updates by repairing existing RBAC duplicates, enforcing the three shared natural keys in PostgreSQL, and making free-subscription provisioning idempotent across processes. Database invariants remain the source of correctness; keyed serialization is limited to the subscription side effect that cannot be represented by the RBAC grant constraints.
+Make Telegram bootstrap safe under concurrent updates by repairing existing RBAC duplicates, enforcing the three shared natural keys in PostgreSQL, serializing each user's multi-repository bootstrap across API processes, and making free-subscription provisioning idempotent across processes. Database invariants remain the source of correctness; keyed serialization prevents expected losing inserts from surfacing as internal API errors while preserving concurrency between different users.
 
 ## Current State Analysis
 
@@ -48,7 +48,7 @@ Bootstrap already returns `shouldCheckoutFreeSubscription`, but the Telegram ada
 
 ## Implementation Approach
 
-Use two distinct concurrency mechanisms matching two distinct invariants. RBAC grants receive database unique indexes because their identity is a persistent natural key. Free-subscription checkout receives a reusable PostgreSQL advisory-lock helper keyed by operation and subject because provisioning spans multiple repositories and an HTTP checkout side effect; the service re-runs all idempotency reads inside that cross-process critical section. An optional Telegram-local bootstrap queue is unnecessary once these shared boundaries are correct.
+Use distinct concurrency mechanisms matching distinct invariants. RBAC grants receive database unique indexes because their identity is a persistent natural key. Telegram bootstrap uses the reusable PostgreSQL advisory-lock helper keyed by Telegram user because identity, subject, profile, chat, and personal-agent initialization spans several HTTP/repository operations whose losing inserts would otherwise be logged as internal errors. Free-subscription checkout uses its own namespace keyed by subject because it spans several repositories and an HTTP checkout side effect. An optional Telegram-local queue remains unnecessary because it cannot protect multiple API processes.
 
 Before the generated indexes run, an RBAC-owned maintenance command repairs all existing duplicates transactionally. It selects canonical rows by `(createdAt, id)`, redirects dependent role-permission rows, removes semantic duplicates, verifies zero duplicate groups, and aborts before mutation when duplicate role-permission conditions conflict. Production rollout quiesces API and Telegram writers between repair and generated index application so there is no unprotected write window.
 
@@ -78,15 +78,18 @@ Provide a safe, repeatable data-repair path and make the database enforce the id
 **Files**:
 
 - `libs/modules/rbac/models/permission/backend/repository/database/src/lib/schema.ts`
+- `libs/modules/rbac/models/permission/backend/repository/database/src/lib/fields/{singlepage,startup,index}.ts`
 - `libs/modules/rbac/models/permission/backend/repository/database/src/lib/constraints/{singlepage,startup,index}.ts` (new)
 - `libs/modules/rbac/relations/roles-to-permissions/backend/repository/database/src/lib/schema.ts`
+- `libs/modules/rbac/relations/roles-to-permissions/backend/repository/database/src/lib/fields/{singlepage,startup,index}.ts` (new)
 - `libs/modules/rbac/relations/roles-to-permissions/backend/repository/database/src/lib/constraints/{singlepage,startup,index}.ts` (new)
 - `libs/modules/rbac/relations/subjects-to-roles/backend/repository/database/src/lib/schema.ts`
+- `libs/modules/rbac/relations/subjects-to-roles/backend/repository/database/src/lib/fields/{singlepage,startup,index}.ts` (new)
 - `libs/modules/rbac/relations/subjects-to-roles/backend/repository/database/src/lib/constraints/{singlepage,startup,index}.ts` (new)
 
 **Why**: Service-level reads cannot prevent simultaneous inserts, and the keys are shared RBAC invariants rather than Telegram-specific behavior.
 
-**Changes**: Declare named composite unique indexes for `(type, method, path)`, `(roleId, permissionId)`, and `(subjectId, roleId)`. Follow the repository `singlepage -> startup -> index` composition pattern: `singlepage` owns the SPS natural-key defaults, `startup` inherits them and may add project constraints, and each Drizzle `schema.ts` supplies the composed constraint builders through the `pgTable` extra-config callback. A startup that intentionally changes a natural key must coordinate its fields, service lookup filters, repair, and generated migration; ordinary startup extension must retain the parent constraints.
+**Changes**: Declare named composite unique indexes for `(type, method, path)`, `(roleId, permissionId)`, and `(subjectId, roleId)`. Follow parallel repository composition layers for both columns and constraints: `fields/singlepage -> fields/startup -> fields/index` owns and exposes the column builders, while `constraints/singlepage -> constraints/startup -> constraints/index` owns and exposes the extra-config builders. Each Drizzle `schema.ts` only composes those two final exports. A startup that intentionally changes a natural key must coordinate its fields, service lookup filters, repair, and generated migration; ordinary startup extension must retain the parent fields and constraints.
 
 #### 3. Generated repository migrations
 
@@ -164,7 +167,7 @@ Prove that the existing ensure contract converges on the new database invariants
 
 ### Overview
 
-Stop ordinary messages from provisioning subscriptions and serialize the remaining registration/`/start` provisioning at the API boundary across processes.
+Serialize each user's Telegram bootstrap across API processes, stop ordinary messages from provisioning subscriptions, and separately serialize the remaining registration/`/start` subscription provisioning.
 
 ### Changes Required
 
@@ -203,6 +206,17 @@ Stop ordinary messages from provisioning subscriptions and serialize the remaini
 
 **Changes**: Request checkout only when bootstrap explicitly asks for it. Cover normal messages, first registration, repeated `/start`, and simultaneous topic-created/`/start` paths; both background tasks must settle without a generic error, while the API provisioning boundary performs at most one checkout.
 
+#### 4. Serialize multi-repository bootstrap per Telegram user
+
+**Files**:
+
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.ts`
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.spec.ts`
+
+**Why**: Live rapid `/start` verification showed that two API requests can both pass a profile lookup before either deterministic profile insert completes. The database correctly rejects the losing insert, and the service can re-read the winner, but the nested REST create endpoint still records an avoidable internal `sl_profile_slug_unique` error.
+
+**Changes**: Inject the shared advisory-lock runner at the bootstrap service boundary and execute all identity, subject, profile, chat, personal-agent, and thread initialization inside the `rbac:telegram-bootstrap` namespace keyed by Telegram `fromId`. Validate required input before acquiring the lock. Keep database constraints and conflict recovery as defense in depth.
+
 ### Success Criteria
 
 #### Automated Verification
@@ -212,6 +226,8 @@ Stop ordinary messages from provisioning subscriptions and serialize the remaini
 - [x] A normal Telegram bootstrap with `shouldCheckoutFreeSubscription=false` makes no checkout request.
 - [x] `/start` with an active subscription succeeds as an idempotent no-op.
 - [x] Concurrent `forum_topic_created` and `/start` background tasks emit no fallback reply.
+- [x] Bootstrap enters a cross-process advisory lock keyed by Telegram user id.
+- [x] Equal lock keys serialize across PostgreSQL sessions while different keys remain concurrent.
 
 #### Manual Verification
 

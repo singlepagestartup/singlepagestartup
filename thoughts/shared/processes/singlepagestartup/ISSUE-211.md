@@ -3,7 +3,7 @@ issue_number: 211
 issue_title: "Telegram bootstrap race creates duplicate RBAC grants and breaks message processing"
 repository: singlepagestartup
 created_at: 2026-07-20T07:43:57Z
-last_updated: 2026-07-20T20:42:20Z
+last_updated: 2026-07-20T22:20:16Z
 status: active
 current_phase: complete
 ---
@@ -51,7 +51,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ## Incident Log
 
-<!-- incident-count: 3 -->
+<!-- incident-count: 4 -->
 
 ### Incident 1 — Existing issue was not attached to the configured Project
 
@@ -82,6 +82,17 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Fix**: Run the required Nx repository generators sequentially; all three generated only the expected composite unique index.
 - **Preventive Action**: Do not parallelize repository-generate targets that include `drizzle-kit up`.
 - **References**: `libs/modules/rbac/project.json`.
+
+### Incident 4 — Concurrent bootstrap recovery still logged a profile-create 500
+
+- **Phase**: Code Review
+- **Occurrences**: 1 live rapid `/start` reproduction
+- **Symptom**: The API logged `duplicate key value violates unique constraint "sl_profile_slug_unique"` while two Telegram bootstrap requests initialized the same personal-agent profile.
+- **Root Cause**: Deterministic profile conflict recovery re-read the winning row, so persisted state converged without duplicates, but the losing nested REST create request emitted its own internal 500 before the caller recovered. Database constraints protected correctness but did not serialize the surrounding multi-repository bootstrap flow.
+- **Fix**: Run the complete bootstrap critical section inside the shared PostgreSQL advisory lock namespace `rbac:telegram-bootstrap`, keyed by Telegram user id. Retain unique indexes and conflict recovery as defense in depth.
+- **Result**: The focused bootstrap suite passes 15/15 tests, the real PostgreSQL advisory-lock suite passes 3/3 tests, and RBAC TypeScript and ESLint checks pass. No schema migration is required.
+- **Preventive Action**: When a multi-step initialization flow intentionally recovers from losing HTTP creates, use a shared API-boundary lock if the losing endpoint would otherwise surface a misleading internal error.
+- **References**: `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.ts`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.spec.ts`, `libs/shared/backend/database/config/src/lib/advisory-lock.ts`.
 
 ## Reusable Learnings
 

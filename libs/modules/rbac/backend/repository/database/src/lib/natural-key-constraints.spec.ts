@@ -10,6 +10,12 @@ import { getTableConfig } from "drizzle-orm/pg-core";
 import { Table as PermissionTable } from "@sps/rbac/models/permission/backend/repository/database";
 import { Table as RolesToPermissionsTable } from "@sps/rbac/relations/roles-to-permissions/backend/repository/database";
 import { Table as SubjectsToRolesTable } from "@sps/rbac/relations/subjects-to-roles/backend/repository/database";
+import { fields as permissionSinglepageFields } from "../../../../../models/permission/backend/repository/database/src/lib/fields/singlepage";
+import { fields as permissionStartupFields } from "../../../../../models/permission/backend/repository/database/src/lib/fields/startup";
+import { fields as rolesToPermissionsSinglepageFields } from "../../../../../relations/roles-to-permissions/backend/repository/database/src/lib/fields/singlepage";
+import { fields as rolesToPermissionsStartupFields } from "../../../../../relations/roles-to-permissions/backend/repository/database/src/lib/fields/startup";
+import { fields as subjectsToRolesSinglepageFields } from "../../../../../relations/subjects-to-roles/backend/repository/database/src/lib/fields/singlepage";
+import { fields as subjectsToRolesStartupFields } from "../../../../../relations/subjects-to-roles/backend/repository/database/src/lib/fields/startup";
 
 interface IExpectedIndex {
   name: string;
@@ -34,6 +40,27 @@ function expectUniqueIndex(
 }
 
 describe("Given: startup RBAC repository schemas", () => {
+  /**
+   * BDD Scenario: startup fields inherit SPS fields.
+   *
+   * Given: permission and grant repositories expose separate field layers.
+   * When: their startup field compositions are inspected.
+   * Then: every SPS field remains present while startup may add or override fields.
+   */
+  it("When: startup fields are composed Then: retains every singlepage field", () => {
+    const compositions = [
+      [permissionSinglepageFields, permissionStartupFields],
+      [rolesToPermissionsSinglepageFields, rolesToPermissionsStartupFields],
+      [subjectsToRolesSinglepageFields, subjectsToRolesStartupFields],
+    ];
+
+    for (const [singlepageFields, startupFields] of compositions) {
+      expect(Object.keys(startupFields)).toEqual(
+        expect.arrayContaining(Object.keys(singlepageFields)),
+      );
+    }
+  });
+
   /**
    * BDD Scenario: permission natural key.
    *

@@ -24,6 +24,11 @@ retained by the `singlepage -> startup -> index` composition. Startup may add
 indexes, but changing this identity requires coordinated service filters,
 repair semantics for `condition`, and a generated migration.
 
+Repository columns use the same extension boundary: SPS defaults live in
+`fields/singlepage.ts`, `fields/startup.ts` inherits them and may add or
+override startup-specific columns, and `fields/index.ts` exposes the composed
+set to `schema.ts`. Constraints never own column declarations.
+
 ## Variants
 
 - `default`: renders the related permission using its frontend variant.

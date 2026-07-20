@@ -22,6 +22,11 @@ retained by the `singlepage -> startup -> index` composition. Startup may add
 indexes in `constraints/startup.ts`; replacing this natural key also requires
 coordinated service filters, repair behavior, and a generated migration.
 
+Column declarations follow the parallel `fields/singlepage.ts ->
+fields/startup.ts -> fields/index.ts` composition. `schema.ts` consumes the
+composed fields and constraints; startup-specific overrides stay in their
+respective startup files.
+
 ## Variants
 
 - `default`: placeholder permission view.

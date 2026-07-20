@@ -95,6 +95,54 @@ jest.mock("@sps/shared-third-parties", () => ({
 }));
 
 import { Service } from "./bootstrap";
+import type { PostgresAdvisoryLockRunner } from "@sps/shared-backend-database-config";
+
+describe("Given: concurrent Telegram bootstrap requests for one user", () => {
+  /**
+   * BDD Scenario: Bootstrap uses a per-user PostgreSQL advisory lock.
+   *
+   * Given: two processes can receive Telegram updates for the same user.
+   * When: the public bootstrap operation starts.
+   * Then: all initialization runs inside the shared lock keyed by Telegram user id.
+   */
+  it("Then: runs initialization inside the Telegram user advisory lock", async () => {
+    const lockCalls: Array<{ namespace: string; key: string }> = [];
+    const advisoryLock: PostgresAdvisoryLockRunner = async (props) => {
+      lockCalls.push({ namespace: props.namespace, key: props.key });
+
+      return props.execute();
+    };
+    const expectedResult = { registration: true };
+    const service = new Service({
+      findById: jest.fn(),
+      identity: {} as any,
+      subjectsToIdentities: {} as any,
+      subjectsToSocialModuleProfiles: {} as any,
+      socialModule: {} as any,
+      advisoryLock,
+    });
+    const executeWithinLock = jest
+      .spyOn(service as any, "executeWithinLock")
+      .mockResolvedValue(expectedResult);
+
+    await expect(
+      service.execute({
+        fromId: "telegram-user-1",
+        chatId: "telegram-chat-1",
+      }),
+    ).resolves.toBe(expectedResult);
+    expect(lockCalls).toEqual([
+      {
+        namespace: "rbac:telegram-bootstrap",
+        key: "telegram-user-1",
+      },
+    ]);
+    expect(executeWithinLock).toHaveBeenCalledWith({
+      fromId: "telegram-user-1",
+      chatId: "telegram-chat-1",
+    });
+  });
+});
 
 describe("Given: Telegram bootstrap finds duplicate chats or threads", () => {
   beforeEach(() => {
