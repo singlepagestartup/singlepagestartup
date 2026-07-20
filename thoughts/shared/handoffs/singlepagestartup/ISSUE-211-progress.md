@@ -3,7 +3,8 @@ issue_number: 211
 issue_title: "Telegram bootstrap race creates duplicate RBAC grants and breaks message processing"
 start_date: 2026-07-20T19:50:04Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-211.md
-status: in_progress
+status: complete
+completed_date: 2026-07-20
 ---
 
 # Implementation Progress: ISSUE-211 - Telegram bootstrap race creates duplicate RBAC grants and breaks message processing
@@ -82,8 +83,8 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/212
+- [x] PR number: 212
 
 ### Final Status
 
@@ -93,4 +94,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-07-20T20:35:52Z
+**Last updated**: 2026-07-20T20:42:20Z
