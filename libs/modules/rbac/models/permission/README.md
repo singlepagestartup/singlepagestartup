@@ -14,6 +14,14 @@ Permissions define allowed operations for resources (method/path pairs).
 - `method`: HTTP method.
 - `path`: resource path.
 
+## Natural key and startup extension
+
+The database permits exactly one permission for `(type, method, path)`. The
+named composite unique index is declared in `constraints/singlepage.ts` and is
+retained by the `singlepage -> startup -> index` composition. Startup may add
+indexes in `constraints/startup.ts`; replacing this natural key also requires
+coordinated service filters, repair behavior, and a generated migration.
+
 ## Variants
 
 - `default`: placeholder permission view.

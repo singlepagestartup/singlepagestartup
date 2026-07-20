@@ -23,6 +23,7 @@ jest.mock("@sps/backend-utils", () => {
 
 import { Handler } from "./react-by-openrouter";
 import { blobifyFiles } from "@sps/backend-utils";
+import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
 import type { KnowledgeSearchResult } from "@sps/knowledge/backend/app/api/src/lib/types";
 
 interface IFindThreadMessageIdsInChatHandler {
@@ -1188,19 +1189,19 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       {
         type: "file_url",
         file_url: {
-          url: "http://localhost:4000/public/file-storage/static/cat-part-1.txt",
+          url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/file-storage/static/cat-part-1.txt`,
         },
       },
       {
         type: "file_url",
         file_url: {
-          url: "http://localhost:4000/public/file-storage/static/cat-part-2.txt",
+          url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/file-storage/static/cat-part-2.txt`,
         },
       },
       {
         type: "image_url",
         image_url: {
-          url: "http://localhost:4000/public/file-storage/static/cat.jpeg",
+          url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/file-storage/static/cat.jpeg`,
         },
       },
     ]);

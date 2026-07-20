@@ -42,12 +42,31 @@
         "parallel": false,
         "commands": [
           {
+            "command": "nx run @sps/rbac:repository-natural-key-repair-apply"
+          },
+          {
             "command": "nx run @sps/rbac:models:repository-migrate"
           },
           {
             "command": "nx run @sps/rbac:relations:repository-migrate"
           }
         ]
+      }
+    },
+    "repository-natural-key-repair-check": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "envFile": "apps/api/.env",
+        "command": "bun run ./libs/modules/rbac/backend/repository/database/src/lib/repair-natural-keys.ts --check"
+      }
+    },
+    "repository-natural-key-repair-apply": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "envFile": "apps/api/.env",
+        "command": "bun run ./libs/modules/rbac/backend/repository/database/src/lib/repair-natural-keys.ts --apply"
       }
     },
     "models:repository-generate": {

@@ -11,6 +11,12 @@ import {
   SocialProfileKnowledgeAccessService,
 } from "./access";
 
+class TestSocialProfileKnowledgeAccessService extends SocialProfileKnowledgeAccessService {
+  async ensureTestEntity(props: any) {
+    return this.ensureEntity(props);
+  }
+}
+
 function createMemoryService(prefix: string) {
   const rows: any[] = [];
   let nextId = 1;
@@ -35,6 +41,69 @@ function createMemoryService(prefix: string) {
 }
 
 describe("Given: a profile-specific Knowledge owner grant", () => {
+  /**
+   * BDD Scenario
+   * Given: another request wins the natural-key insert race.
+   * When: the losing create is rejected and the grant is re-read.
+   * Then: the winner is returned instead of leaking the unique violation.
+   */
+  it("When: a concurrent insert wins Then: converges on the persisted entity", async () => {
+    const winner = { id: "winner-id", slug: "winner" };
+    const uniqueViolation = Object.assign(new Error("duplicate key"), {
+      code: "23505",
+    });
+    const racedService = {
+      find: jest.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([winner]),
+      create: jest.fn().mockRejectedValue(uniqueViolation),
+    };
+    const service = new TestSocialProfileKnowledgeAccessService({
+      permission: {} as any,
+      role: {} as any,
+      rolesToPermissions: {} as any,
+      subjectsToRoles: {} as any,
+    });
+
+    await expect(
+      service.ensureTestEntity({
+        service: racedService,
+        filters: [{ column: "slug", method: "eq", value: "winner" }],
+        data: { slug: "winner" },
+        entityName: "rbac.role",
+      }),
+    ).resolves.toBe(winner);
+    expect(racedService.find).toHaveBeenCalledTimes(2);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: creation fails for a reason unrelated to a concurrent winner.
+   * When: the post-failure lookup still finds no matching entity.
+   * Then: the original error is preserved.
+   */
+  it("When: creation fails without a winner Then: rethrows the original error", async () => {
+    const creationError = new Error("database unavailable");
+    const failedService = {
+      find: jest.fn().mockResolvedValue([]),
+      create: jest.fn().mockRejectedValue(creationError),
+    };
+    const service = new TestSocialProfileKnowledgeAccessService({
+      permission: {} as any,
+      role: {} as any,
+      rolesToPermissions: {} as any,
+      subjectsToRoles: {} as any,
+    });
+
+    await expect(
+      service.ensureTestEntity({
+        service: failedService,
+        filters: [{ column: "slug", method: "eq", value: "missing" }],
+        data: { slug: "missing" },
+        entityName: "rbac.role",
+      }),
+    ).rejects.toBe(creationError);
+    expect(failedService.find).toHaveBeenCalledTimes(2);
+  });
+
   /**
    * BDD Scenario
    * Given: the owner has not been granted Knowledge access yet.

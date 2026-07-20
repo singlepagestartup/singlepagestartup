@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "sps_rc_role_permission_unique" ON "sps_rc_rs_to_ps_mz2" USING btree ("re_id","pn_id");
