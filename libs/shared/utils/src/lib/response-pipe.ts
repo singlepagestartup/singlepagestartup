@@ -120,6 +120,11 @@ async function util<T>(props: {
       (Array.isArray(errorJson?.cause)
         ? errorJson.cause[0]?.message
         : errorJson?.cause);
+    const responseRequestId = props.res.headers.get("x-request-id");
+    const requestId =
+      typeof errorJson?.requestId === "string" && errorJson.requestId.trim()
+        ? errorJson.requestId.trim()
+        : responseRequestId?.trim() || undefined;
 
     if (primaryMessage) {
       errorMessages.push(primaryMessage);
@@ -152,6 +157,7 @@ async function util<T>(props: {
       message: errorMessages[0] || "Unknown error",
       status: props.res.status,
       cause: causes,
+      requestId,
     };
 
     if (props.catchErrors) {

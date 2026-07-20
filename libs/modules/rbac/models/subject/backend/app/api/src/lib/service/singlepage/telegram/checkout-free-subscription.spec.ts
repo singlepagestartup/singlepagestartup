@@ -20,6 +20,43 @@ jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
 }));
 
 import { Service } from "./checkout-free-subscription";
+import type {
+  IPostgresAdvisoryLockProps,
+  PostgresAdvisoryLockRunner,
+} from "@sps/shared-backend-database-config";
+
+const runWithoutContention: PostgresAdvisoryLockRunner = async <T>({
+  execute,
+}: IPostgresAdvisoryLockProps<T>) => execute();
+
+function createSerializedLockRunner(): PostgresAdvisoryLockRunner {
+  const tails = new Map<string, Promise<void>>();
+
+  return async <T>({
+    namespace,
+    key,
+    execute,
+  }: IPostgresAdvisoryLockProps<T>) => {
+    const lockKey = `${namespace}:${key}`;
+    const previous = tails.get(lockKey) ?? Promise.resolve();
+    let release = () => {};
+    const current = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    tails.set(
+      lockKey,
+      previous.then(() => current),
+    );
+    await previous;
+
+    try {
+      return await execute();
+    } finally {
+      release();
+    }
+  };
+}
 
 function createFreeSubscriptionContext(props?: {
   subjectToOrders?: {
@@ -29,9 +66,11 @@ function createFreeSubscriptionContext(props?: {
   }[];
   orderFindById?: jest.Mock;
   orderFindByIdCheckoutAttributes?: jest.Mock;
+  advisoryLock?: PostgresAdvisoryLockRunner;
 }) {
+  const subjectToOrders = props?.subjectToOrders ?? [];
   const subjectsToEcommerceModuleOrders = {
-    find: jest.fn().mockResolvedValue(props?.subjectToOrders ?? []),
+    find: jest.fn().mockImplementation(async () => [...subjectToOrders]),
   } as any;
 
   const ecommerceModule = {
@@ -127,12 +166,14 @@ function createFreeSubscriptionContext(props?: {
     subjectsToEcommerceModuleOrders,
     ecommerceModule,
     billingModule,
+    advisoryLock: props?.advisoryLock ?? runWithoutContention,
   });
 
   return {
     billingModule,
     ecommerceModule,
     service,
+    subjectToOrders,
     subjectsToEcommerceModuleOrders,
   };
 }
@@ -224,6 +265,60 @@ describe("Given: telegram user with attached subject triggers the bot", () => {
           },
         },
       });
+    });
+  });
+
+  describe("When: two free-subscription requests race for one subject", () => {
+    /**
+     * BDD Scenario: cross-process critical section rechecks shared order state.
+     *
+     * Given: both requests initially target one eligible subject.
+     * When: the first checkout persists an active order before releasing the lock.
+     * Then: the second request observes the order and both requests settle after one checkout.
+     */
+    it("Then: performs one checkout and returns two successful results", async () => {
+      const context = createFreeSubscriptionContext({
+        advisoryLock: createSerializedLockRunner(),
+        orderFindById: jest.fn().mockImplementation(async ({ id }) => ({
+          id,
+          status: "paying",
+        })),
+        orderFindByIdCheckoutAttributes: jest
+          .fn()
+          .mockResolvedValue({ type: "subscription" }),
+      });
+      const checkoutResult = {
+        billingModule: {
+          invoices: [],
+        },
+      };
+
+      mockEcommerceModuleProductCheckout.mockImplementationOnce(async () => {
+        context.subjectToOrders.push({
+          id: "stemo-created",
+          subjectId: "subject-1",
+          ecommerceModuleOrderId: "order-created",
+        });
+
+        return checkoutResult;
+      });
+
+      const results = await Promise.all([
+        context.service.execute({
+          id: "subject-1",
+          chatId: "telegram-chat-1",
+        }),
+        context.service.execute({
+          id: "subject-1",
+          chatId: "telegram-chat-1",
+        }),
+      ]);
+
+      expect(results).toEqual([checkoutResult, null]);
+      expect(mockEcommerceModuleProductCheckout).toHaveBeenCalledTimes(1);
+      expect(
+        context.subjectsToEcommerceModuleOrders.find,
+      ).toHaveBeenCalledTimes(2);
     });
   });
 

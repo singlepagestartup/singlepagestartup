@@ -70,10 +70,56 @@ These routes validate subject/profile access and the Social profile-document rel
 
 Telegram personal AI provisioning also ensures one existing-model RBAC grant
 for the profile owner. The role slug is
-`social-profile-<social-profile-id>-knowledge-owner`; five chat-scoped
-Knowledge permissions keep the target AI profile UUID literal, and the role is
+`social-profile-<social-profile-id>-knowledge-owner`; fourteen chat-scoped
+assistant-management permissions cover profile listing/update/avatar, six
+skill operations, and five Knowledge-document operations. They keep the target
+AI profile UUID literal, and the role is
 assigned to the authenticated owner through `subjects-to-roles`. No
 profile-to-role relation or extra authorization middleware is introduced.
+
+### Grant integrity and concurrent Telegram bootstrap
+
+RBAC grant identity is enforced by PostgreSQL, not by a Telegram queue or an
+in-process mutex:
+
+- `permission`: one row per `(type, method, path)`;
+- `roles-to-permissions`: one row per `(roleId, permissionId)`;
+- `subjects-to-roles`: one row per `(subjectId, roleId)`.
+
+Each repository composes constraints through `constraints/singlepage ->
+startup -> index`. Startup constraints inherit the SPS natural key and may add
+project-specific indexes. Changing a natural key requires coordinated changes
+to repository fields, service lookup filters, the repair operation, and a
+generated migration.
+
+Concurrent create callers use the normal find/create/re-read service contract:
+the unique index rejects the losing insert, and that caller reloads the winner.
+Free-subscription provisioning is a separate cross-repository side effect. It
+uses a namespaced PostgreSQL advisory lock keyed by `rbac.subject` id and
+rechecks active and previous orders inside the lock. Telegram calls that
+provisioner only when bootstrap returns
+`shouldCheckoutFreeSubscription=true` (registration or `/start`); ordinary
+messages remain independent from billing.
+
+### Repair and rollout
+
+Before applying the generated natural-key indexes to an existing environment:
+
+1. Quiesce API and Telegram writers and create the normal database backup.
+2. Run `npx nx run @sps/rbac:repository-natural-key-repair-check`.
+3. Investigate any reported conflicting role-permission conditions; apply mode
+   intentionally fails closed for them.
+4. Run `npx nx run @sps/rbac:repository-natural-key-repair-apply`.
+5. Run the scoped repository migrations or
+   `npx nx run @sps/rbac:repository-migrate`; the aggregate target runs repair
+   before migrations.
+6. Re-run the check and verify all duplicate counts are zero before restoring
+   writers.
+
+Repair locks the three grant tables, keeps the earliest `(createdAt, id)` row,
+repoints dependent relations, removes equivalent duplicates, verifies the
+result in the same transaction, and logs aggregate counts only. Permission
+paths and row payloads are not logged.
 
 ---
 

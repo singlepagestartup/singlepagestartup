@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "sps_rc_permission_type_method_path_unique" ON "sps_rc_permission" USING btree ("type","method","path");

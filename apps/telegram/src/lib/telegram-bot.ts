@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -89,6 +90,83 @@ interface IIsTelegramMessageAddressedToBotProps {
   botUsername: string;
   description?: string;
   isReplyToBot?: boolean;
+}
+
+interface ITelegramBackgroundErrorMetadata {
+  errorId: string;
+  errorType: string;
+  status?: number;
+}
+
+function asErrorRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+function parseErrorMessage(
+  value: unknown,
+): Record<string, unknown> | undefined {
+  if (!(value instanceof Error)) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(value.message);
+    return asErrorRecord(parsed);
+  } catch {
+    return undefined;
+  }
+}
+
+function sanitizeErrorIdentifier(value: unknown) {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const identifier = value.trim();
+
+  if (
+    !identifier ||
+    identifier === "unknown" ||
+    !/^[a-zA-Z0-9._:-]{1,128}$/.test(identifier)
+  ) {
+    return undefined;
+  }
+
+  return identifier;
+}
+
+function getTelegramBackgroundErrorMetadata(
+  error: unknown,
+): ITelegramBackgroundErrorMetadata {
+  const errorRecord = asErrorRecord(error);
+  const causeRecord = asErrorRecord(errorRecord?.cause);
+  const payloadRecord = asErrorRecord(errorRecord?.payload);
+  const parsedRecord = parseErrorMessage(error);
+  const candidates = [errorRecord, causeRecord, payloadRecord, parsedRecord];
+  const errorId =
+    candidates
+      .map((candidate) =>
+        sanitizeErrorIdentifier(candidate?.requestId ?? candidate?.errorId),
+      )
+      .find(Boolean) ?? randomUUID();
+  const status = candidates
+    .map((candidate) => candidate?.status)
+    .find((value): value is number => typeof value === "number");
+  const rawErrorType =
+    candidates
+      .map((candidate) => candidate?.name)
+      .find((value): value is string => typeof value === "string") ??
+    (error instanceof Error ? error.constructor.name : typeof error);
+  const errorType =
+    rawErrorType.replace(/[^a-zA-Z0-9._:-]/g, "").slice(0, 64) || "unknown";
+
+  return {
+    errorId,
+    errorType,
+    status,
+  };
 }
 
 export function normalizeTelegramTransportControls(
@@ -261,27 +339,30 @@ export class TelegarmBot {
   private runInBackground(props: {
     label: string;
     task: () => Promise<void>;
-    onError?: (error: unknown) => Promise<void>;
+    onError?: (
+      error: unknown,
+      metadata: ITelegramBackgroundErrorMetadata,
+    ) => Promise<void>;
   }) {
     const backgroundTask = props.task().catch(async (error) => {
-      console.error(
-        `🚀 ~ TelegarmBot ~ ${props.label} ~ background error:`,
-        error instanceof Error ? error.message : error,
-      );
+      const metadata = getTelegramBackgroundErrorMetadata(error);
+
+      console.error("Telegram background task failed", {
+        label: props.label,
+        ...metadata,
+      });
 
       if (!props.onError) {
         return;
       }
 
       try {
-        await props.onError(error);
+        await props.onError(error, metadata);
       } catch (notificationError) {
-        console.error(
-          `🚀 ~ TelegarmBot ~ ${props.label} ~ user notification error:`,
-          notificationError instanceof Error
-            ? notificationError.message
-            : notificationError,
-        );
+        console.error("Telegram error notification failed", {
+          label: props.label,
+          ...getTelegramBackgroundErrorMetadata(notificationError),
+        });
       }
     });
 
@@ -290,18 +371,27 @@ export class TelegarmBot {
     return backgroundTask;
   }
 
-  private getIncomingMessageErrorText(props: { ctx: GrammyContext }) {
+  private getIncomingMessageErrorText(props: {
+    ctx: GrammyContext;
+    errorId: string;
+  }) {
     const languageCode = props.ctx.from?.language_code?.toLowerCase() || "";
 
     if (languageCode.startsWith("ru")) {
-      return "Не удалось обработать сообщение. Попробуйте отправить его ещё раз.";
+      return `Не удалось обработать сообщение. Попробуйте отправить его ещё раз. Код ошибки: ${props.errorId}.`;
     }
 
-    return "We couldn't process your message. Please try sending it again.";
+    return `We couldn't process your message. Please try sending it again. Reference: ${props.errorId}.`;
   }
 
-  private async notifyIncomingMessageError(props: { ctx: GrammyContext }) {
-    const text = this.getIncomingMessageErrorText({ ctx: props.ctx });
+  private async notifyIncomingMessageError(props: {
+    ctx: GrammyContext;
+    errorId: string;
+  }) {
+    const text = this.getIncomingMessageErrorText({
+      ctx: props.ctx,
+      errorId: props.errorId,
+    });
     const messageThreadId = (props.ctx.message as any)?.message_thread_id;
 
     if (messageThreadId === undefined || messageThreadId === null) {
@@ -322,8 +412,11 @@ export class TelegarmBot {
     return this.runInBackground({
       label: props.label,
       task: props.task,
-      onError: async () => {
-        await this.notifyIncomingMessageError({ ctx: props.ctx });
+      onError: async (_error, metadata) => {
+        await this.notifyIncomingMessageError({
+          ctx: props.ctx,
+          errorId: metadata.errorId,
+        });
       },
     });
   }
@@ -789,10 +882,12 @@ export class TelegarmBot {
       rbacModuleSubject: bootstrap.rbacModuleSubject,
     });
 
-    await this.checkoutFreeSubscriptionEcommerceModuleProducts({
-      ctx: props.ctx,
-      rbacModuleSubject: bootstrap.rbacModuleSubject,
-    });
+    if (bootstrap.shouldCheckoutFreeSubscription) {
+      await this.checkoutFreeSubscriptionEcommerceModuleProducts({
+        ctx: props.ctx,
+        rbacModuleSubject: bootstrap.rbacModuleSubject,
+      });
+    }
 
     return {
       rbacModuleSubject: bootstrap.rbacModuleSubject,

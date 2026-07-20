@@ -14,6 +14,20 @@ Links roles to permissions.
 - `className`: optional CSS class name.
 - `roleId`: linked role ID.
 - `permissionId`: linked permission ID.
+- `condition`: optional authorization condition attached to the grant.
+
+## Natural key and startup extension
+
+The database permits exactly one relation for `(roleId, permissionId)`. The
+named composite unique index is declared in `constraints/singlepage.ts` and is
+retained by the `singlepage -> startup -> index` composition. Startup may add
+indexes, but changing this identity requires coordinated service filters,
+repair semantics for `condition`, and a generated migration.
+
+Repository columns use the same extension boundary: SPS defaults live in
+`fields/singlepage.ts`, `fields/startup.ts` inherits them and may add or
+override startup-specific columns, and `fields/index.ts` exposes the composed
+set to `schema.ts`. Constraints never own column declarations.
 
 ## Variants
 

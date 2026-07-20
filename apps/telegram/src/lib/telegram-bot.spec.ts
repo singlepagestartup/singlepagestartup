@@ -14,6 +14,9 @@ const mockBlobifyFiles = jest.fn();
 const mockTelegramCommands = jest.fn();
 const mockTelegramMessageCreate = jest.fn();
 const mockTelegramThreadCreate = jest.fn();
+const mockTelegramBootstrap = jest.fn();
+const mockTelegramSyncMembership = jest.fn();
+const mockTelegramCheckoutFreeSubscription = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   return {
@@ -42,6 +45,11 @@ jest.mock("@sps/rbac/models/subject/sdk/server", () => {
       socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate: (
         ...args: unknown[]
       ) => mockTelegramMessageCreate(...args),
+      telegramBootstrap: (...args: unknown[]) => mockTelegramBootstrap(...args),
+      telegramSyncMembership: (...args: unknown[]) =>
+        mockTelegramSyncMembership(...args),
+      telegramCheckoutFreeSubscription: (...args: unknown[]) =>
+        mockTelegramCheckoutFreeSubscription(...args),
     },
   };
 });
@@ -58,6 +66,159 @@ import {
   normalizeTelegramTransportControls,
   TelegarmBot,
 } from "./telegram-bot";
+
+function createBootstrapResult(shouldCheckoutFreeSubscription: boolean) {
+  return {
+    rbacModuleSubject: { id: "subject-1" },
+    personalAiRbacModuleSubject: { id: "personal-ai-subject-1" },
+    socialModuleProfile: { id: "profile-1" },
+    personalAiSocialModuleProfile: { id: "personal-ai-profile-1" },
+    socialModuleChat: { id: "chat-1" },
+    socialModuleThread: { id: "thread-1" },
+    shouldCheckoutFreeSubscription,
+  };
+}
+
+describe("Given: Telegram bootstrap returns a checkout decision", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  /**
+   * BDD Scenario: ordinary messages stay independent from billing.
+   *
+   * Given: bootstrap says the existing subject does not need free checkout.
+   * When: the transport resolves its subject, profile, chat, and thread.
+   * Then: membership is synchronized but checkout is not requested.
+   */
+  it("When: checkout is not requested Then: skips the billing endpoint", async () => {
+    mockTelegramBootstrap.mockResolvedValue(createBootstrapResult(false));
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    bot.synchronizeRbacModuleRole = jest.fn().mockResolvedValue(undefined);
+    bot.checkoutFreeSubscriptionEcommerceModuleProducts = jest
+      .fn()
+      .mockResolvedValue(undefined);
+    const ctx = {
+      from: { id: 101 },
+      chat: { id: 202 },
+      message: { text: "Обычное сообщение" },
+    } as any;
+
+    await expect(
+      bot.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({ ctx }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        rbacModuleSubject: { id: "subject-1" },
+        socialModuleThread: { id: "thread-1" },
+      }),
+    );
+
+    expect(bot.synchronizeRbacModuleRole).toHaveBeenCalledTimes(1);
+    expect(
+      bot.checkoutFreeSubscriptionEcommerceModuleProducts,
+    ).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: registration and start retain provisioning.
+   *
+   * Given: bootstrap says this registration or /start needs checkout.
+   * When: the transport completes bootstrap.
+   * Then: it requests free checkout exactly once for that update.
+   */
+  it("When: checkout is requested Then: calls the billing endpoint once", async () => {
+    mockTelegramBootstrap.mockResolvedValue(createBootstrapResult(true));
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    bot.synchronizeRbacModuleRole = jest.fn().mockResolvedValue(undefined);
+    bot.checkoutFreeSubscriptionEcommerceModuleProducts = jest
+      .fn()
+      .mockResolvedValue(undefined);
+    const ctx = {
+      from: { id: 101 },
+      chat: { id: 202 },
+      message: { text: "/start" },
+    } as any;
+
+    await bot.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
+      ctx,
+    });
+
+    expect(
+      bot.checkoutFreeSubscriptionEcommerceModuleProducts,
+    ).toHaveBeenCalledTimes(1);
+    expect(
+      bot.checkoutFreeSubscriptionEcommerceModuleProducts,
+    ).toHaveBeenCalledWith({
+      ctx,
+      rbacModuleSubject: { id: "subject-1" },
+    });
+  });
+
+  /**
+   * BDD Scenario: adjacent topic and start updates settle independently.
+   *
+   * Given: a topic-service bootstrap needs no checkout while an adjacent /start does.
+   * When: both background tasks run concurrently.
+   * Then: neither emits a fallback and only the eligible update reaches checkout.
+   */
+  it("When: topic creation and start overlap Then: both settle without fallback", async () => {
+    mockTelegramBootstrap
+      .mockResolvedValueOnce(createBootstrapResult(false))
+      .mockResolvedValueOnce(createBootstrapResult(true));
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    bot.synchronizeRbacModuleRole = jest.fn().mockResolvedValue(undefined);
+    bot.checkoutFreeSubscriptionEcommerceModuleProducts = jest
+      .fn()
+      .mockResolvedValue(undefined);
+    const reply = jest.fn().mockResolvedValue(undefined);
+    const topicCtx = {
+      from: { id: 101, language_code: "ru" },
+      chat: { id: 202 },
+      message: {
+        message_thread_id: 303,
+        forum_topic_created: { name: "Новый тред" },
+      },
+      reply,
+    } as any;
+    const startCtx = {
+      from: { id: 101, language_code: "ru" },
+      chat: { id: 202 },
+      message: { text: "/start", message_thread_id: 303 },
+      reply,
+    } as any;
+
+    await Promise.all([
+      bot.runIncomingMessageInBackground({
+        ctx: topicCtx,
+        label: "message:forum_topic_created",
+        task: async () => {
+          await bot.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate(
+            {
+              ctx: topicCtx,
+              telegram: { messageThreadId: "303", isTopicMessage: true },
+            },
+          );
+        },
+      }),
+      bot.runIncomingMessageInBackground({
+        ctx: startCtx,
+        label: "message",
+        task: async () => {
+          await bot.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate(
+            {
+              ctx: startCtx,
+            },
+          );
+        },
+      }),
+    ]);
+
+    expect(reply).not.toHaveBeenCalled();
+    expect(
+      bot.checkoutFreeSubscriptionEcommerceModuleProducts,
+    ).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe("Given: Telegram bot-authored service messages", () => {
   /**
@@ -410,13 +571,22 @@ describe("Given: background processing of an incoming Telegram message", () => {
         ctx,
         label: "message",
         task: async () => {
-          throw new Error("internal JWT details");
+          throw Object.assign(
+            new Error(
+              JSON.stringify({
+                requestId: "request-telegram-123",
+                status: 500,
+                message: "internal JWT details",
+              }),
+            ),
+            { status: 500 },
+          );
         },
       }),
     ).resolves.toBeUndefined();
 
     expect(reply).toHaveBeenCalledWith(
-      "Не удалось обработать сообщение. Попробуйте отправить его ещё раз.",
+      "Не удалось обработать сообщение. Попробуйте отправить его ещё раз. Код ошибки: request-telegram-123.",
       {
         message_thread_id: 42,
       },
@@ -426,8 +596,56 @@ describe("Given: background processing of an incoming Telegram message", () => {
       expect.anything(),
     );
     expect(consoleError).toHaveBeenCalledWith(
-      "🚀 ~ TelegarmBot ~ message ~ background error:",
+      "Telegram background task failed",
+      {
+        errorId: "request-telegram-123",
+        errorType: "Error",
+        label: "message",
+        status: 500,
+      },
+    );
+    expect(JSON.stringify(consoleError.mock.calls)).not.toContain(
       "internal JWT details",
+    );
+
+    consoleError.mockRestore();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a local transport failure has no downstream requestId.
+   * When: background processing reports the failure.
+   * Then: Telegram creates a safe local correlation id and does not log the raw error.
+   */
+  it("When: requestId is absent Then: creates a safe local reference", async () => {
+    const reply = jest.fn().mockResolvedValue(null);
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    const ctx = {
+      from: {
+        language_code: "en",
+      },
+      message: {},
+      reply,
+    } as any;
+    const consoleError = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    await bot.runIncomingMessageInBackground({
+      ctx,
+      label: "message:local",
+      task: async () => {
+        throw new Error("secret local payload");
+      },
+    });
+
+    expect(reply).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^We couldn't process your message\. Please try sending it again\. Reference: [0-9a-f-]{36}\.$/,
+      ),
+    );
+    expect(JSON.stringify(consoleError.mock.calls)).not.toContain(
+      "secret local payload",
     );
 
     consoleError.mockRestore();
