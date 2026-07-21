@@ -931,6 +931,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     const billingLedger: IOpenRouterBillingLedgerEntry[] = [];
     let socialProfileMcpCatalogSession: IProfileMcpCatalogSession | null = null;
+    let unavailableMcpServerIds: string[] = [];
     let selectedModelIdForBilling: string | null = null;
     let billingSettled = false;
     const requestRoute = c.req.path.toLowerCase();
@@ -1497,11 +1498,13 @@ export class Handler {
         : [];
 
       if (expectedOutputModality === "text" && allowedMcpServerIds.length) {
-        socialProfileMcpCatalogSession =
-          await this.service.socialModuleProfileMcpCatalogOpen({
-            configuredServerIds: allowedMcpServerIds,
-            rbacSubjectAuthenticationJwt: replyByRbacSubjectAuthenticationJwt,
-          });
+        const mcpCatalogResult = await this.openProfileMcpCatalogBestEffort({
+          configuredServerIds: allowedMcpServerIds,
+          rbacSubjectAuthenticationJwt: replyByRbacSubjectAuthenticationJwt,
+          socialModuleProfileId: replyBySocialModuleProfile.id,
+        });
+        socialProfileMcpCatalogSession = mcpCatalogResult.session;
+        unavailableMcpServerIds = mcpCatalogResult.unavailableServerIds;
       }
 
       const socialProfileTools = [
@@ -1683,6 +1686,7 @@ export class Handler {
                 (server) => server.id,
               ) || [],
             staleServerIds: socialProfileMcpCatalogSession?.catalog.stale || [],
+            unavailableServerIds: unavailableMcpServerIds,
           },
           knowledge: {
             action: this.hasLearnCommand(socialModuleMessage.description)
@@ -2762,6 +2766,41 @@ export class Handler {
         } satisfies ISocialProfileAiTool;
       });
     });
+  }
+
+  private async openProfileMcpCatalogBestEffort(props: {
+    configuredServerIds: string[];
+    rbacSubjectAuthenticationJwt: string;
+    socialModuleProfileId: string;
+  }): Promise<{
+    session: IProfileMcpCatalogSession | null;
+    unavailableServerIds: string[];
+  }> {
+    try {
+      const session = await this.service.socialModuleProfileMcpCatalogOpen({
+        configuredServerIds: props.configuredServerIds,
+        rbacSubjectAuthenticationJwt: props.rbacSubjectAuthenticationJwt,
+      });
+
+      return {
+        session,
+        unavailableServerIds: [],
+      };
+    } catch (error) {
+      console.warn(
+        "react-by-openrouter: profile MCP catalog unavailable; continuing without MCP tools",
+        {
+          socialModuleProfileId: props.socialModuleProfileId,
+          serverIds: props.configuredServerIds,
+          error: this.stringifyError(error),
+        },
+      );
+
+      return {
+        session: null,
+        unavailableServerIds: [...props.configuredServerIds],
+      };
+    }
   }
 
   private attachSkillMessagePrefixToContext(props: {

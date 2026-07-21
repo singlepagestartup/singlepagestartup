@@ -391,6 +391,17 @@ interface IOpenRouterKnowledgeControlsHandler {
   };
 }
 
+interface IOpenRouterMcpFallbackHandler {
+  openProfileMcpCatalogBestEffort(props: {
+    configuredServerIds: string[];
+    rbacSubjectAuthenticationJwt: string;
+    socialModuleProfileId: string;
+  }): Promise<{
+    session: unknown;
+    unavailableServerIds: string[];
+  }>;
+}
+
 function createMessageId(index: number) {
   return `message-${String(index).padStart(3, "0")}`;
 }
@@ -1979,6 +1990,49 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       name: "find_record",
       arguments: { id: "record-1" },
     });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a profile allows an MCP server that is temporarily unavailable.
+   * When: OpenRouter prepares optional MCP capabilities for a text response.
+   * Then: generation can continue without MCP tools and the unavailable server remains observable.
+   */
+  it("When: profile MCP is unavailable Then: OpenRouter generation degrades without tools", async () => {
+    const socialModuleProfileMcpCatalogOpen = jest
+      .fn()
+      .mockRejectedValue(new Error("MCP service unavailable"));
+    const handler = new Handler({
+      socialModuleProfileMcpCatalogOpen,
+    } as any) as unknown as IOpenRouterMcpFallbackHandler;
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      await expect(
+        handler.openProfileMcpCatalogBestEffort({
+          configuredServerIds: ["singlepagestartup"],
+          rbacSubjectAuthenticationJwt: "jwt",
+          socialModuleProfileId: "profile-1",
+        }),
+      ).resolves.toEqual({
+        session: null,
+        unavailableServerIds: ["singlepagestartup"],
+      });
+      expect(socialModuleProfileMcpCatalogOpen).toHaveBeenCalledWith({
+        configuredServerIds: ["singlepagestartup"],
+        rbacSubjectAuthenticationJwt: "jwt",
+      });
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining("continuing without MCP tools"),
+        expect.objectContaining({
+          socialModuleProfileId: "profile-1",
+          serverIds: ["singlepagestartup"],
+          error: "MCP service unavailable",
+        }),
+      );
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   /**
