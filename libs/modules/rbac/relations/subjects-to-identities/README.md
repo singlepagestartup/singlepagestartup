@@ -15,6 +15,9 @@ Links subjects to identities for authentication.
 - `subjectId`: linked subject ID.
 - `identityId`: linked identity ID.
 
+`identityId` is unique: one authentication identity resolves to at most one
+subject. A subject may still own multiple identities for different providers.
+
 ## Variants
 
 - `default`: renders the related identity using its frontend variant.

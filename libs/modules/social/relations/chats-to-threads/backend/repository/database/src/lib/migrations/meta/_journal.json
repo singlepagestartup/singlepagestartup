@@ -8,6 +8,13 @@
       "when": 1763470711492,
       "tag": "0000_secret_beyonder",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784666068301,
+      "tag": "0001_unique_scarlet_witch",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "sl_profile_chat_unique" ON "sl_ps_to_cs_m2s" USING btree ("pe_id","ct_id");

@@ -151,6 +151,7 @@ describe("Given: Telegram-backed SPS chat thread creation", () => {
       data: {
         chatId: "chat-1",
         threadId: "thread-1",
+        variant: "telegram",
       },
       options: {
         headers: {

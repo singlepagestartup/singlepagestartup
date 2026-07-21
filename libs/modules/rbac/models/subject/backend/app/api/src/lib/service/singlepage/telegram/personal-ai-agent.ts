@@ -121,27 +121,15 @@ export class Service {
       return existingSubject;
     }
 
-    try {
-      return await rbacSubjectApi.create({
-        data: {
-          variant: "agent",
-          slug: props.slug,
-        },
-        options: {
-          headers: props.headers,
-        },
-      });
-    } catch (error) {
-      const concurrentlyCreatedSubject = await this.findAgentSubject(
-        props.slug,
-      );
-
-      if (concurrentlyCreatedSubject?.variant === "agent") {
-        return concurrentlyCreatedSubject;
-      }
-
-      throw error;
-    }
+    return rbacSubjectApi.create({
+      data: {
+        variant: "agent",
+        slug: props.slug,
+      },
+      options: {
+        headers: props.headers,
+      },
+    });
   }
 
   protected async findAgentProfile(slug: string) {
@@ -183,32 +171,24 @@ export class Service {
     let profile = await this.findAgentProfile(props.slug);
 
     if (!profile) {
-      try {
-        profile = await socialModuleProfileApi.create({
-          data: {
-            variant: "artificial-intelligence",
-            className: "",
-            adminTitle: `Telegram personal AI agent for ${props.ownerRbacSubject.slug}`,
-            slug: props.slug,
-            title: {
-              en: "My AI agent",
-              ru: "Мой ИИ-агент",
-            },
-            subtitle: {},
-            description: {},
-            allowedMcpServerIds: ["singlepagestartup"],
+      profile = await socialModuleProfileApi.create({
+        data: {
+          variant: "artificial-intelligence",
+          className: "",
+          adminTitle: `Telegram personal AI agent for ${props.ownerRbacSubject.slug}`,
+          slug: props.slug,
+          title: {
+            en: "My AI agent",
+            ru: "Мой ИИ-агент",
           },
-          options: {
-            headers: props.headers,
-          },
-        });
-      } catch (error) {
-        profile = await this.findAgentProfile(props.slug);
-
-        if (!profile) {
-          throw error;
-        }
-      }
+          subtitle: {},
+          description: {},
+          allowedMcpServerIds: ["singlepagestartup"],
+        },
+        options: {
+          headers: props.headers,
+        },
+      });
     }
 
     const profileSubjectRelations =
@@ -252,15 +232,10 @@ export class Service {
           headers: props.headers,
         },
       });
-    } else {
-      for (const duplicateRelation of currentSubjectRelations.slice(1)) {
-        await subjectsToSocialModuleProfilesApi.delete({
-          id: duplicateRelation.id,
-          options: {
-            headers: props.headers,
-          },
-        });
-      }
+    } else if (currentSubjectRelations.length > 1) {
+      throw new Error(
+        "Data integrity error. Duplicate subject-to-profile relations found",
+      );
     }
 
     return profile;
@@ -306,17 +281,10 @@ export class Service {
       return;
     }
 
-    for (const duplicateRelation of relations.slice(1)) {
-      if (!duplicateRelation.id) {
-        continue;
-      }
-
-      await socialModuleProfilesToChatsApi.delete({
-        id: duplicateRelation.id,
-        options: {
-          headers: props.headers,
-        },
-      });
+    if (relations.length > 1) {
+      throw new Error(
+        "Data integrity error. Duplicate profile-to-chat relations found",
+      );
     }
   }
 

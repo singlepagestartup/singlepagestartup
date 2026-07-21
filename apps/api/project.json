@@ -105,6 +105,9 @@
             "command": "npx nx run @sps/knowledge:repository-migrate"
           },
           {
+            "command": "npx nx run @sps/rbac:repository-natural-key-repair-apply"
+          },
+          {
             "command": "npx nx run @sps/social:repository-migrate"
           },
           {

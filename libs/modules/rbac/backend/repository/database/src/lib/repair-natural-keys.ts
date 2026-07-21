@@ -7,6 +7,8 @@ import {
   repairRbacNaturalKeys,
   type NaturalKeyRepairMode,
 } from "./natural-key-repair";
+import { repairIdentityNaturalKeys } from "./identity-natural-key-repair";
+import { repairTelegramNaturalKeys } from "./telegram-natural-key-repair";
 
 function getMode(): NaturalKeyRepairMode {
   if (process.argv.includes("--apply")) {
@@ -26,16 +28,17 @@ async function main() {
   const mode = getMode();
 
   try {
-    const result = await repairRbacNaturalKeys({ mode });
+    const identity = await repairIdentityNaturalKeys({ mode });
+    const telegram = await repairTelegramNaturalKeys({ mode });
+    const grants = await repairRbacNaturalKeys({ mode });
 
     logger.info(
       "RBAC_NATURAL_KEY_REPAIR",
       JSON.stringify({
-        mode: result.mode,
-        skipped: result.skipped,
-        before: result.before,
-        after: result.after,
-        changes: result.changes,
+        mode,
+        identity,
+        telegram,
+        grants,
       }),
     );
 

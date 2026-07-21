@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "sps_rc_subject_identity_identity_unique" ON "sps_rc_ss_to_is_h58" USING btree ("iy_id");

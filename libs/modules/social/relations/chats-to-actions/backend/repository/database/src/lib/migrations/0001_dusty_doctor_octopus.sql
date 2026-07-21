@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "sl_chat_action_unique" ON "sl_cs_to_as_b9b" USING btree ("ct_id","an_id");

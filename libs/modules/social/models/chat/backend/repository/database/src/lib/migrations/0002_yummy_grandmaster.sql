@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "sl_chat_telegram_source_system_unique" ON "sl_chat" USING btree ("source_system_id") WHERE "sl_chat"."variant" = 'telegram' AND "sl_chat"."source_system_id" IS NOT NULL;

@@ -2,10 +2,6 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { type IBillingModule, type IEcommerceModule } from "../../../di";
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
-import {
-  withPostgresAdvisoryLock,
-  type PostgresAdvisoryLockRunner,
-} from "@sps/shared-backend-database-config";
 
 const terminalSubscriptionOrderStatuses = new Set(["completed", "canceled"]);
 
@@ -18,21 +14,18 @@ export interface IConstructorProps {
   ecommerceModule: IEcommerceModule;
   billingModule: IBillingModule;
   subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
-  advisoryLock?: PostgresAdvisoryLockRunner;
 }
 
 export class Service {
   ecommerceModule: IEcommerceModule;
   billingModule: IBillingModule;
   subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
-  advisoryLock: PostgresAdvisoryLockRunner;
 
   constructor(props: IConstructorProps) {
     this.ecommerceModule = props.ecommerceModule;
     this.billingModule = props.billingModule;
     this.subjectsToEcommerceModuleOrders =
       props.subjectsToEcommerceModuleOrders;
-    this.advisoryLock = props.advisoryLock ?? withPostgresAdvisoryLock;
   }
 
   protected async hasActiveSubscriptionOrder(props: {
@@ -128,17 +121,10 @@ export class Service {
       return null;
     }
 
-    return this.advisoryLock({
-      namespace: "rbac:telegram-free-subscription",
-      key: props.id,
-      execute: () => this.executeWithinLock(props, rbacSecretKey),
-    });
+    return this.executeCheckout(props, rbacSecretKey);
   }
 
-  protected async executeWithinLock(
-    props: IExecuteProps,
-    rbacSecretKey: string,
-  ) {
+  protected async executeCheckout(props: IExecuteProps, rbacSecretKey: string) {
     const subjectToOrders = await this.subjectsToEcommerceModuleOrders.find({
       params: {
         filters: {

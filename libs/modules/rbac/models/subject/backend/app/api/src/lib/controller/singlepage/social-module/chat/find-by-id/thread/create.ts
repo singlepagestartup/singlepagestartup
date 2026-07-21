@@ -137,6 +137,7 @@ export class Handler {
         data: {
           chatId: socialModuleChatId,
           threadId: socialModuleThread.id,
+          variant: telegramTopic ? "telegram" : data.variant || "default",
         },
         options: {
           headers: {

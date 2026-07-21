@@ -17,6 +17,16 @@ Identities store authentication credentials and account identifiers.
 - `variant`: display variant.
 - `code`: verification/reset code.
 
+## Natural keys
+
+- `telegram` and `oauth_google`: exact non-null `account` per provider.
+- `ethereum_virtual_machine`: case-insensitive non-null `account`.
+- `email_and_password` and `email`: case-insensitive non-null `email` per
+  provider.
+
+These are partial unique indexes, so providers keep their own identifier
+semantics and incomplete rows are not incorrectly grouped together.
+
 ## Variants
 
 - `default`: renders the identity email for email/password provider.

@@ -1,0 +1,134 @@
+{
+  "id": "1ab3ec58-5743-4b28-bb02-7f3d25da4db3",
+  "prevId": "98c54dcc-0a78-4bf9-b5cb-6f2de583e60d",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sl_cs_to_ms_e6r": {
+      "name": "sl_cs_to_ms_e6r",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ct_id": {
+          "name": "ct_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "me_id": {
+          "name": "me_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "sl_chat_message_unique": {
+          "name": "sl_chat_message_unique",
+          "columns": [
+            {
+              "expression": "ct_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "me_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sl_cs_to_ms_e6r_ct_id_sl_chat_id_fk": {
+          "name": "sl_cs_to_ms_e6r_ct_id_sl_chat_id_fk",
+          "tableFrom": "sl_cs_to_ms_e6r",
+          "tableTo": "sl_chat",
+          "columnsFrom": [
+            "ct_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sl_cs_to_ms_e6r_me_id_sl_message_id_fk": {
+          "name": "sl_cs_to_ms_e6r_me_id_sl_message_id_fk",
+          "tableFrom": "sl_cs_to_ms_e6r",
+          "tableTo": "sl_message",
+          "columnsFrom": [
+            "me_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

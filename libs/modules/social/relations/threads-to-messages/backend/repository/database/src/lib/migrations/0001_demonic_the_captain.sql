@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "sl_thread_message_unique" ON "sl_ts_to_ms_2n4" USING btree ("td_id","me_id");

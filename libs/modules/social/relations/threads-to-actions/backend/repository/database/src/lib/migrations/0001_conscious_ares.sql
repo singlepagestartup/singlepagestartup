@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "sl_thread_action_unique" ON "sl_ts_to_as_4vv" USING btree ("td_id","ac_id");
