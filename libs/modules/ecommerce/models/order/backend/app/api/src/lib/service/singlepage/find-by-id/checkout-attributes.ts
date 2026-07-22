@@ -16,10 +16,27 @@ export type IExecuteProps = {
   billingModuleCurrencyId?: string;
 };
 
+export const SUPPORTED_ORDER_INTERVALS = [
+  "minute",
+  "hour",
+  "day",
+  "week",
+  "month",
+  "year",
+] as const;
+
+export type IOrderInterval = (typeof SUPPORTED_ORDER_INTERVALS)[number];
+
+export function isSupportedOrderInterval(
+  value: string,
+): value is IOrderInterval {
+  return (SUPPORTED_ORDER_INTERVALS as readonly string[]).includes(value);
+}
+
 export type IResult = {
   amount: number;
   type: "subscription" | "one-time";
-  interval?: "minute" | "hour" | "day" | "week" | "month" | "year";
+  interval?: IOrderInterval;
 };
 
 @injectable()
@@ -297,10 +314,7 @@ export class Service {
       const nextIntervalRaw =
         productIntervals[0].string?.[internationalization.defaultLanguage.code];
 
-      if (
-        nextIntervalRaw &&
-        !["minute", "day", "week", "month", "year"].includes(nextIntervalRaw)
-      ) {
+      if (nextIntervalRaw && !isSupportedOrderInterval(nextIntervalRaw)) {
         throw new Error(
           "Validation error. Unsupported interval value: " + nextIntervalRaw,
         );

@@ -1,10 +1,12 @@
 /**
- * BDD Suite: Telegram Star payment webhook.
+ * BDD Suite: Telegram Star invoice lifecycle.
  *
- * Given: Telegram sends a successful_payment update to the Telegram adapter.
- * When: the billing Telegram Star service receives the internal webhook payload.
- * Then: it validates the SPS invoice payload and marks the invoice as paid without blocking on getStarTransactions.
+ * Given: SPS creates Telegram Star invoices and Telegram sends successful_payment updates.
+ * When: the billing Telegram Star service processes creation or payment confirmation.
+ * Then: it sends the invoice to the target account and safely marks paid invoices.
  */
+
+const mockSendInvoice = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   const actual = jest.requireActual("@sps/shared-utils");
@@ -37,11 +39,95 @@ jest.mock(
   },
 );
 
+jest.mock("grammy", () => ({
+  Bot: jest.fn().mockImplementation(() => ({
+    api: {
+      sendInvoice: (...args: unknown[]) => mockSendInvoice(...args),
+    },
+  })),
+}));
+
 import { Service } from "./telegram-star";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
+import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 
+const mockedInvoiceCreate = invoiceApi.create as jest.Mock;
 const mockedInvoiceFind = invoiceApi.find as jest.Mock;
 const mockedInvoiceUpdate = invoiceApi.update as jest.Mock;
+const mockedPaymentIntentToInvoiceCreate =
+  paymentIntentsToInvoicesApi.create as jest.Mock;
+
+describe("Telegram Star invoice creation", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a one-off payment intent is created for an hourly Telegram Stars subscription renewal.
+   * When: the Telegram Star provider creates its invoice.
+   * Then: it persists the invoice, sends it to the exact Telegram account, and links it to the payment intent.
+   */
+  it("sends a newly created renewal invoice to the Telegram account", async () => {
+    const invoice = {
+      id: "invoice-1",
+      amount: 1,
+      status: "open",
+      provider: "telegram-star",
+    };
+
+    mockedInvoiceCreate.mockResolvedValue(invoice);
+    mockSendInvoice.mockResolvedValue({});
+    mockedPaymentIntentToInvoiceCreate.mockResolvedValue({});
+
+    await expect(
+      new Service().proceed({
+        action: "create",
+        account: "telegram-account-1",
+        currency: "telegram-star",
+        entity: {
+          id: "payment-intent-1",
+          amount: 1,
+        } as any,
+        metadata: {
+          paymentIntentId: "payment-intent-1",
+        },
+      }),
+    ).resolves.toEqual(invoice);
+
+    expect(mockedInvoiceCreate).toHaveBeenCalledWith({
+      data: {
+        amount: 1,
+        status: "open",
+        provider: "telegram-star",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "rbac-secret",
+        },
+      },
+    });
+    expect(mockSendInvoice).toHaveBeenCalledWith(
+      "telegram-account-1",
+      "Invoice created",
+      "Pay invoice to get the target good",
+      "invoice-1",
+      "XTR",
+      [{ label: "Star", amount: 1 }],
+    );
+    expect(mockedPaymentIntentToInvoiceCreate).toHaveBeenCalledWith({
+      data: {
+        paymentIntentId: "payment-intent-1",
+        invoiceId: "invoice-1",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "rbac-secret",
+        },
+      },
+    });
+  });
+});
 
 describe("Telegram Star payment webhook", () => {
   beforeEach(() => {

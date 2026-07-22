@@ -67,11 +67,17 @@ import {
 function createService(props?: {
   candidateOrders?: any[];
   relationFindResults?: any[][];
+  socialModuleChats?: any[];
+  socialModuleProfilesToChats?: any[];
+  subjectsToSocialModuleProfiles?: any[];
 }) {
   const ecommerceModuleOrderFind = jest
     .fn()
     .mockResolvedValue(props?.candidateOrders ?? []);
   const subjectsToEcommerceModuleOrdersFind = jest.fn();
+  const subjectsToSocialModuleProfilesFind = jest
+    .fn()
+    .mockResolvedValue(props?.subjectsToSocialModuleProfiles ?? []);
 
   for (const result of props?.relationFindResults ?? [[]]) {
     subjectsToEcommerceModuleOrdersFind.mockResolvedValueOnce(result);
@@ -83,8 +89,14 @@ function createService(props?: {
     {} as any,
     {
       attribute: { find: jest.fn().mockResolvedValue([]) },
-      chat: { find: jest.fn().mockResolvedValue([]) },
-      profilesToChats: { find: jest.fn().mockResolvedValue([]) },
+      chat: {
+        find: jest.fn().mockResolvedValue(props?.socialModuleChats ?? []),
+      },
+      profilesToChats: {
+        find: jest
+          .fn()
+          .mockResolvedValue(props?.socialModuleProfilesToChats ?? []),
+      },
     } as any,
     {
       order: {
@@ -100,7 +112,7 @@ function createService(props?: {
     { find: jest.fn().mockResolvedValue([]) } as any,
     { find: subjectsToEcommerceModuleOrdersFind } as any,
     { find: jest.fn().mockResolvedValue([]) } as any,
-    { find: jest.fn().mockResolvedValue([]) } as any,
+    { find: subjectsToSocialModuleProfilesFind } as any,
     { find: jest.fn().mockResolvedValue([]) } as any,
     { find: jest.fn().mockResolvedValue([]) } as any,
   );
@@ -425,5 +437,116 @@ describe("Given: delivered subscription order without invoice context", () => {
       }),
     );
     expect(mockSubjectProductCheckout).not.toHaveBeenCalled();
+  });
+});
+
+describe("Given: an expired Telegram Stars subscription order", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  /**
+   * BDD Scenario: a completed one-off Telegram Stars payment is renewed.
+   *
+   * Given: an expired subscription order has one product, one currency, one Telegram Stars invoice, and one Telegram chat.
+   * When: delivered order processing completes the expired order.
+   * Then: it creates a new checkout for the same product and Telegram account so the billing provider can send a new invoice.
+   */
+  it("Then: creates a new Telegram Stars checkout for the same subscription", async () => {
+    const { service } = createService({
+      subjectsToSocialModuleProfiles: [
+        {
+          socialModuleProfileId: "profile-1",
+          subjectId: "subject-1",
+        },
+      ],
+      socialModuleProfilesToChats: [
+        {
+          profileId: "profile-1",
+          chatId: "chat-1",
+        },
+      ],
+      socialModuleChats: [
+        {
+          id: "chat-1",
+          sourceSystemId: "telegram-account-1",
+          variant: "telegram",
+        },
+      ],
+    });
+
+    await service.delivered({
+      order: {
+        id: "order-1",
+        status: "delivered",
+      } as any,
+      extendedOrder: {
+        id: "order-1",
+        status: "delivered",
+        checkoutAttributesByCurrency: {
+          type: "subscription",
+          interval: "hour",
+        },
+        ordersToBillingModulePaymentIntents: [
+          {
+            billingModulePaymentIntent: {
+              type: "one_off",
+              paymentIntentsToCurrencies: [
+                {
+                  currency: {
+                    id: "currency-telegram-star",
+                    slug: "telegram-star",
+                  },
+                },
+              ],
+              paymentIntentsToInvoices: [
+                {
+                  invoice: {
+                    id: "invoice-1",
+                    provider: "telegram-star",
+                  },
+                },
+              ],
+            },
+          },
+        ],
+        ordersToProducts: [
+          {
+            productId: "product-1",
+          },
+        ],
+        ordersToFileStorageModuleFiles: [],
+      } as any,
+      subjectToEcommerceModuleOrder: {
+        subjectId: "subject-1",
+        ecommerceModuleOrderId: "order-1",
+      },
+      existingRolesIds: [],
+      productsRolesIds: [],
+      subjectsToRoles: [],
+    });
+
+    expect(mockEcommerceOrderUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: "completed",
+        }),
+        id: "order-1",
+      }),
+    );
+    expect(mockSubjectProductCheckout).toHaveBeenCalledWith({
+      id: "subject-1",
+      productId: "product-1",
+      data: {
+        provider: "telegram-star",
+        billingModule: {
+          currency: {
+            id: "currency-telegram-star",
+            slug: "telegram-star",
+          },
+        },
+        account: "telegram-account-1",
+      },
+    });
   });
 });
