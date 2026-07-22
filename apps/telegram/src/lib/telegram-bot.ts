@@ -225,6 +225,39 @@ export function isTelegramBotAuthoredMessage(message?: {
 }
 
 const TELEGRAM_LEARN_CHUNK_DEBOUNCE_MS = 1_500;
+const TELEGRAM_BOOTSTRAP_RETRY_DELAYS_MS = [
+  1_000, 2_000, 5_000, 10_000, 20_000,
+];
+
+export function isTransientTelegramApiError(error: unknown) {
+  const errorRecord = asErrorRecord(error);
+  const parsedRecord = parseErrorMessage(error);
+  const candidates = [
+    errorRecord,
+    asErrorRecord(errorRecord?.cause),
+    asErrorRecord(errorRecord?.payload),
+    parsedRecord,
+  ];
+  const status = candidates
+    .map((candidate) => candidate?.status)
+    .find((value): value is number => typeof value === "number");
+
+  if (status && [408, 425, 429, 502, 503, 504].includes(status)) {
+    return true;
+  }
+
+  const message = [
+    error instanceof Error ? error.message : String(error),
+    ...candidates.map((candidate) => candidate?.message),
+    parsedRecord?.cause ? JSON.stringify(parsedRecord.cause) : "",
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ");
+
+  return /unable to connect|fetch failed|connection refused|econnrefused|econnreset|etimedout|socket (?:closed|ended)|network error/i.test(
+    message,
+  );
+}
 
 export class TelegarmBot {
   instance: GrammyBot<TelegramBotContext>;
@@ -857,7 +890,7 @@ export class TelegarmBot {
         ctx: props.ctx,
       });
 
-    const bootstrap = await rbacModuleSubjectApi.telegramBootstrap({
+    const bootstrap = await this.telegramBootstrapWithRetry({
       data: {
         telegram: {
           fromId: props.ctx.from.id,
@@ -897,6 +930,39 @@ export class TelegarmBot {
       socialModuleChat: bootstrap.socialModuleChat,
       socialModuleThread: bootstrap.socialModuleThread,
     };
+  }
+
+  private async telegramBootstrapWithRetry(
+    props: Parameters<typeof rbacModuleSubjectApi.telegramBootstrap>[0],
+  ) {
+    const retryDelays = this.getTelegramBootstrapRetryDelays();
+
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        return await rbacModuleSubjectApi.telegramBootstrap(props);
+      } catch (error) {
+        const retryDelayMs = retryDelays[attempt];
+
+        if (retryDelayMs === undefined || !isTransientTelegramApiError(error)) {
+          throw error;
+        }
+
+        console.warn(
+          "Telegram API bootstrap temporarily unavailable; retrying",
+          {
+            attempt: attempt + 1,
+            retryDelayMs,
+            ...getTelegramBackgroundErrorMetadata(error),
+          },
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+      }
+    }
+  }
+
+  protected getTelegramBootstrapRetryDelays() {
+    return TELEGRAM_BOOTSTRAP_RETRY_DELAYS_MS;
   }
 
   async synchronizeRbacModuleRole(props: {

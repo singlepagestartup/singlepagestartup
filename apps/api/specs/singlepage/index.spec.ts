@@ -70,4 +70,23 @@ describe("apps/api singlepage contract", () => {
     expect(authIndex).toBeGreaterThan(httpCacheIndex);
     expect(parseQueryIndex).toBeGreaterThan(authIndex);
   });
+
+  /**
+   * BDD Scenario: production migrations run without blocking the API.
+   *
+   * Given: a production API container starts and applies repository migrations.
+   * When: the startup script launches both processes.
+   * Then: migrations run in the background while the API remains the foreground process.
+   */
+  it("starts the production API without waiting for migrations", () => {
+    const startSource = readFileSync(
+      resolve(process.cwd(), "start.sh"),
+      "utf-8",
+    );
+
+    expect(startSource).toContain("./migrate.sh seed &");
+    expect(startSource.indexOf("./migrate.sh seed &")).toBeLessThan(
+      startSource.indexOf("npm run api:start"),
+    );
+  });
 });

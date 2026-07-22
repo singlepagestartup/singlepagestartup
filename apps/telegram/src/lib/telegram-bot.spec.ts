@@ -63,6 +63,7 @@ jest.mock("@sps/backend-utils", () => {
 import {
   isTelegramBotAuthoredMessage,
   isTelegramMessageAddressedToBot,
+  isTransientTelegramApiError,
   normalizeTelegramTransportControls,
   TelegarmBot,
 } from "./telegram-bot";
@@ -117,6 +118,71 @@ describe("Given: Telegram bootstrap returns a checkout decision", () => {
     expect(
       bot.checkoutFreeSubscriptionEcommerceModuleProducts,
     ).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: API replacement task is still migrating.
+   *
+   * Given: Telegram receives a message while the API connection is temporarily unavailable.
+   * When: bootstrap retries after the transient transport failure.
+   * Then: the same update continues after API readiness without showing a terminal error.
+   */
+  it("When: API bootstrap is temporarily unavailable Then: retries the same update", async () => {
+    mockTelegramBootstrap
+      .mockRejectedValueOnce(
+        new Error("Unable to connect. Is the computer able to access the url?"),
+      )
+      .mockResolvedValueOnce(createBootstrapResult(false));
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    bot.getTelegramBootstrapRetryDelays = jest.fn(() => [0]);
+    bot.synchronizeRbacModuleRole = jest.fn().mockResolvedValue(undefined);
+    bot.checkoutFreeSubscriptionEcommerceModuleProducts = jest
+      .fn()
+      .mockResolvedValue(undefined);
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const ctx = {
+      from: { id: 101 },
+      chat: { id: 202 },
+      message: { text: "/knowledge вопрос" },
+    } as any;
+
+    try {
+      await expect(
+        bot.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
+          ctx,
+        }),
+      ).resolves.toEqual(
+        expect.objectContaining({
+          rbacModuleSubject: { id: "subject-1" },
+          socialModuleThread: { id: "thread-1" },
+        }),
+      );
+    } finally {
+      warn.mockRestore();
+    }
+
+    expect(mockTelegramBootstrap).toHaveBeenCalledTimes(2);
+    expect(bot.synchronizeRbacModuleRole).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * BDD Scenario: validation failure is permanent.
+   *
+   * Given: Telegram bootstrap rejects an invalid request.
+   * When: transient-error classification inspects the failure.
+   * Then: the adapter does not retry a permanent application error.
+   */
+  it("When: API bootstrap fails validation Then: does not classify it as transient", () => {
+    expect(
+      isTransientTelegramApiError(
+        new Error("Validation error. Telegram user id is required"),
+      ),
+    ).toBe(false);
+    expect(
+      isTransientTelegramApiError(
+        new Error("Unable to connect. Is the computer able to access the url?"),
+      ),
+    ).toBe(true);
   });
 
   /**
