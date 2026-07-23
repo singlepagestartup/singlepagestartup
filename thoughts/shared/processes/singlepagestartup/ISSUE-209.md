@@ -58,7 +58,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 25 -->
+<!-- incident-count: 26 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -310,6 +310,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Conversation presence and editor-input capture are distinct states; generation suppression must be tied to the latter. Subject-scoped settings endpoints must not add resource-membership checks for path context they do not read or expose.
 - **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/index.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/openrouter/model-favorites.ts`; Telegram topic `113162` live verification.
 
+### Incident 26 — A canceled Telegram Stars invoice remained payable
+
+- **Phase**: Code Review
+- **Occurrences**: 1 incident with 3 provider charges
+- **Symptom**: An invoice created roughly eleven hours earlier was paid after its related order had already reached `canceled`. Telegram emitted three distinct `successful_payment` updates for the same invoice; Billing accepted the first charge, rejected the other two as duplicates, the canceled order was never fulfilled, and Telegram sent no payment-result message.
+- **Root Cause**: The Telegram adapter approved every `pre_checkout_query` without loading current SPS state. Billing correctly made invoice settlement idempotent but could only reject a second charge after Telegram had already debited it. The successful-payment background task also called Billing without replying to the user, and a succeeded payment intent could not move an already-canceled order through the normal fulfillment statuses.
+- **Fix**: Telegram now validates the complete live `invoice → payment intent → order` chain before approving checkout, accepts only open Telegram Star invoices attached to `new` or `paying` orders, treats redelivery of the original charge idempotently, refunds a distinct charge for a paid or invalid invoice, and sends explicit success/refund/delayed-processing messages. Production recovery kept the first charge, refunded the two duplicate charges through `refundStarPayment`, restored the single canceled paid order, verified it reached `delivering` with its product role assigned, and sent a confirmation message.
+- **Preventive Action**: Provider pre-checkout approval must be an authorization decision over current domain state, not a transport-only acknowledgement. Every post-debit failure needs an explicit refund or recoverable status message, and duplicate-provider protection must include compensation because rejection after `successful_payment` is too late to prevent a debit.
+- **References**: `apps/telegram/src/lib/telegram-bot.ts`; `apps/telegram/src/lib/telegram-bot.spec.ts`; production invoice `2f6d76e7-1ffd-4e77-9beb-1fc9c5fffb15`.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -332,3 +342,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Transport-visible tool telemetry should be projected from the canonical execution action, delivered before its dependent answer, and protected from partial-update default clobbering.
 - Read-only conversation menus must not capture ordinary prompts; only active editor state should mark input as system traffic or suppress AI dispatch.
 - Subject-scoped preferences should rely on subject ownership and must not require incidental chat membership when their storage and response are chat-independent.
+- Telegram Stars checkout must validate current invoice, payment-intent, and order state before accepting pre-checkout; duplicate debits detected after `successful_payment` require provider compensation rather than a bare application error.

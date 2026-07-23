@@ -17,6 +17,12 @@ const mockTelegramThreadCreate = jest.fn();
 const mockTelegramBootstrap = jest.fn();
 const mockTelegramSyncMembership = jest.fn();
 const mockTelegramCheckoutFreeSubscription = jest.fn();
+const mockBillingInvoiceFindById = jest.fn();
+const mockBillingPaymentIntentFind = jest.fn();
+const mockBillingProviderWebhook = jest.fn();
+const mockBillingPaymentIntentsToInvoicesFind = jest.fn();
+const mockEcommerceOrdersToPaymentIntentsFind = jest.fn();
+const mockEcommerceOrderFind = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   return {
@@ -60,13 +66,88 @@ jest.mock("@sps/backend-utils", () => {
   };
 });
 
+jest.mock("@sps/billing/models/invoice/sdk/server", () => ({
+  api: {
+    findById: (...args: unknown[]) => mockBillingInvoiceFindById(...args),
+  },
+}));
+
+jest.mock("@sps/billing/models/payment-intent/sdk/server", () => ({
+  api: {
+    find: (...args: unknown[]) => mockBillingPaymentIntentFind(...args),
+    providerWebhook: (...args: unknown[]) =>
+      mockBillingProviderWebhook(...args),
+  },
+}));
+
+jest.mock(
+  "@sps/billing/relations/payment-intents-to-invoices/sdk/server",
+  () => ({
+    api: {
+      find: (...args: unknown[]) =>
+        mockBillingPaymentIntentsToInvoicesFind(...args),
+    },
+  }),
+);
+
+jest.mock(
+  "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server",
+  () => ({
+    api: {
+      find: (...args: unknown[]) =>
+        mockEcommerceOrdersToPaymentIntentsFind(...args),
+    },
+  }),
+);
+
+jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
+  api: {
+    find: (...args: unknown[]) => mockEcommerceOrderFind(...args),
+  },
+}));
+
 import {
   isTelegramBotAuthoredMessage,
+  isDuplicateTelegramStarPaymentError,
   isTelegramMessageAddressedToBot,
   isTransientTelegramApiError,
   normalizeTelegramTransportControls,
   TelegarmBot,
 } from "./telegram-bot";
+
+function mockPayableTelegramStarCheckout() {
+  mockBillingInvoiceFindById.mockResolvedValue({
+    id: "invoice-1",
+    amount: 1,
+    status: "open",
+    provider: "telegram-star",
+    providerId: null,
+  });
+  mockBillingPaymentIntentsToInvoicesFind.mockResolvedValue([
+    {
+      invoiceId: "invoice-1",
+      paymentIntentId: "payment-intent-1",
+    },
+  ]);
+  mockBillingPaymentIntentFind.mockResolvedValue([
+    {
+      id: "payment-intent-1",
+      status: "requires_payment_method",
+    },
+  ]);
+  mockEcommerceOrdersToPaymentIntentsFind.mockResolvedValue([
+    {
+      orderId: "order-1",
+      billingModulePaymentIntentId: "payment-intent-1",
+    },
+  ]);
+  mockEcommerceOrderFind.mockResolvedValue([
+    {
+      id: "order-1",
+      status: "paying",
+    },
+  ]);
+}
 
 function createBootstrapResult(shouldCheckoutFreeSubscription: boolean) {
   return {
@@ -79,6 +160,212 @@ function createBootstrapResult(shouldCheckoutFreeSubscription: boolean) {
     shouldCheckoutFreeSubscription,
   };
 }
+
+describe("Given: Telegram Stars checkout and payment updates", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an open Telegram Star invoice belongs to a payable order.
+   * When: Telegram asks whether checkout may proceed.
+   * Then: the adapter accepts the pre-checkout query.
+   */
+  it("When: invoice and order are payable Then: accepts pre-checkout", async () => {
+    mockPayableTelegramStarCheckout();
+    const answerPreCheckoutQuery = jest.fn().mockResolvedValue(true);
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    const ctx = {
+      from: { id: 101, language_code: "ru" },
+      preCheckoutQuery: {
+        currency: "XTR",
+        total_amount: 1,
+        invoice_payload: "invoice-1",
+      },
+      answerPreCheckoutQuery,
+    } as any;
+
+    await bot.handleTelegramStarPreCheckout(ctx);
+
+    expect(answerPreCheckoutQuery).toHaveBeenCalledWith(true);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a legacy open Telegram Star invoice belongs to a canceled order.
+   * When: Telegram asks whether checkout may proceed.
+   * Then: the adapter rejects the stale invoice before Telegram charges the user.
+   */
+  it("When: linked order is canceled Then: rejects pre-checkout", async () => {
+    mockPayableTelegramStarCheckout();
+    mockEcommerceOrderFind.mockResolvedValue([
+      {
+        id: "order-1",
+        status: "canceled",
+      },
+    ]);
+    const answerPreCheckoutQuery = jest.fn().mockResolvedValue(true);
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    const ctx = {
+      from: { id: 101, language_code: "ru" },
+      preCheckoutQuery: {
+        currency: "XTR",
+        total_amount: 1,
+        invoice_payload: "invoice-1",
+      },
+      answerPreCheckoutQuery,
+    } as any;
+
+    await bot.handleTelegramStarPreCheckout(ctx);
+
+    expect(answerPreCheckoutQuery).toHaveBeenCalledWith(false, {
+      error_message:
+        "Счёт больше недействителен. Запросите новый счёт командой /premium.",
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: Telegram reports the first valid payment for a payable invoice.
+   * When: the adapter commits the provider webhook.
+   * Then: it confirms the payment to the user without issuing a refund.
+   */
+  it("When: first payment succeeds Then: confirms it to the user", async () => {
+    mockPayableTelegramStarCheckout();
+    mockBillingProviderWebhook.mockResolvedValue({ code: 0 });
+    const refundStarPayment = jest.fn();
+    const reply = jest.fn().mockResolvedValue(undefined);
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    const ctx = {
+      from: { id: 101, language_code: "ru" },
+      message: {
+        successful_payment: {
+          currency: "XTR",
+          total_amount: 1,
+          invoice_payload: "invoice-1",
+          telegram_payment_charge_id: "telegram-charge-1",
+          provider_payment_charge_id: "provider-charge-1",
+        },
+      },
+      api: { refundStarPayment },
+      reply,
+    } as any;
+
+    await bot.handleTelegramStarSuccessfulPayment(ctx);
+
+    expect(mockBillingProviderWebhook).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          invoice_payload: "invoice-1",
+          telegram_payment_charge_id: "telegram-charge-1",
+        }),
+      }),
+    );
+    expect(refundStarPayment).not.toHaveBeenCalled();
+    expect(reply).toHaveBeenCalledWith(
+      "✅ Оплата успешно получена. Подписка будет активирована в ближайшее время.",
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a paid invoice receives another successful_payment with a different charge id.
+   * When: the adapter validates the already charged update.
+   * Then: it refunds the duplicate charge and does not process the invoice twice.
+   */
+  it("When: another charge targets a paid invoice Then: refunds it", async () => {
+    mockBillingInvoiceFindById.mockResolvedValue({
+      id: "invoice-1",
+      amount: 1,
+      status: "paid",
+      provider: "telegram-star",
+      providerId: "telegram-charge-1",
+    });
+    const refundStarPayment = jest.fn().mockResolvedValue(true);
+    const reply = jest.fn().mockResolvedValue(undefined);
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    const ctx = {
+      from: { id: 101, language_code: "ru" },
+      message: {
+        successful_payment: {
+          currency: "XTR",
+          total_amount: 1,
+          invoice_payload: "invoice-1",
+          telegram_payment_charge_id: "telegram-charge-2",
+          provider_payment_charge_id: "provider-charge-2",
+        },
+      },
+      api: { refundStarPayment },
+      reply,
+    } as any;
+
+    await bot.handleTelegramStarSuccessfulPayment(ctx);
+
+    expect(refundStarPayment).toHaveBeenCalledWith(101, "telegram-charge-2");
+    expect(mockBillingProviderWebhook).not.toHaveBeenCalled();
+    expect(reply).toHaveBeenCalledWith(
+      "↩️ Этот счёт уже недействителен или был оплачен ранее. Списанные Telegram Stars возвращены. Запросите новый счёт командой /premium.",
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: Telegram redelivers the same successful charge for its already-paid invoice.
+   * When: the adapter validates the original charge id.
+   * Then: it treats the update idempotently and does not refund the valid payment.
+   */
+  it("When: the original charge is redelivered Then: keeps it idempotent", async () => {
+    mockBillingInvoiceFindById.mockResolvedValue({
+      id: "invoice-1",
+      amount: 1,
+      status: "paid",
+      provider: "telegram-star",
+      providerId: "telegram-charge-1",
+    });
+    const refundStarPayment = jest.fn();
+    const reply = jest.fn().mockResolvedValue(undefined);
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    const ctx = {
+      from: { id: 101, language_code: "ru" },
+      message: {
+        successful_payment: {
+          currency: "XTR",
+          total_amount: 1,
+          invoice_payload: "invoice-1",
+          telegram_payment_charge_id: "telegram-charge-1",
+          provider_payment_charge_id: "provider-charge-1",
+        },
+      },
+      api: { refundStarPayment },
+      reply,
+    } as any;
+
+    await bot.handleTelegramStarSuccessfulPayment(ctx);
+
+    expect(refundStarPayment).not.toHaveBeenCalled();
+    expect(mockBillingProviderWebhook).not.toHaveBeenCalled();
+    expect(reply).toHaveBeenCalledWith(
+      "✅ Оплата успешно получена. Подписка будет активирована в ближайшее время.",
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a concurrent payment loses the invoice update race.
+   * When: Billing reports that another Telegram charge already paid the invoice.
+   * Then: duplicate-payment classification enables the adapter refund path.
+   */
+  it("When: Billing reports another charge Then: classifies the duplicate", () => {
+    expect(
+      isDuplicateTelegramStarPaymentError(
+        new Error(
+          '{"message":"Validation error. Invoice is already paid by another Telegram charge"}',
+        ),
+      ),
+    ).toBe(true);
+  });
+});
 
 describe("Given: Telegram bootstrap returns a checkout decision", () => {
   beforeEach(() => {

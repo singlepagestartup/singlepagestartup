@@ -24,6 +24,11 @@ import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
+import { IModel as IBillingModuleInvoice } from "@sps/billing/models/invoice/sdk/model";
+import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
+import { api as ecommerceModuleOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
+import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { blobifyFiles } from "@sps/backend-utils";
 import * as jwt from "hono/jwt";
 import {
@@ -97,6 +102,24 @@ interface ITelegramBackgroundErrorMetadata {
   errorType: string;
   status?: number;
 }
+
+type ITelegramStarCheckoutValidation =
+  | {
+      ok: true;
+      invoice: IBillingModuleInvoice;
+      idempotent: boolean;
+    }
+  | {
+      ok: false;
+      code:
+        | "currency"
+        | "invoice"
+        | "provider"
+        | "amount"
+        | "status"
+        | "payment-intent"
+        | "order";
+    };
 
 function asErrorRecord(value: unknown): Record<string, unknown> | undefined {
   return value && typeof value === "object"
@@ -257,6 +280,22 @@ export function isTransientTelegramApiError(error: unknown) {
   return /unable to connect|fetch failed|connection refused|econnrefused|econnreset|etimedout|socket (?:closed|ended)|network error/i.test(
     message,
   );
+}
+
+export function isDuplicateTelegramStarPaymentError(error: unknown) {
+  const errorRecord = asErrorRecord(error);
+  const parsedRecord = parseErrorMessage(error);
+  const message = [
+    error instanceof Error ? error.message : String(error),
+    errorRecord?.message,
+    asErrorRecord(errorRecord?.cause)?.message,
+    parsedRecord?.message,
+    parsedRecord?.cause ? JSON.stringify(parsedRecord.cause) : "",
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ");
+
+  return /invoice is already paid by another telegram charge/i.test(message);
 }
 
 export class TelegarmBot {
@@ -454,6 +493,324 @@ export class TelegarmBot {
     });
   }
 
+  private getTelegramStarPaymentText(props: {
+    ctx: GrammyContext;
+    variant: "success" | "refunded" | "processing-error";
+    errorId?: string;
+  }) {
+    const isRussian = props.ctx.from?.language_code
+      ?.toLowerCase()
+      .startsWith("ru");
+
+    if (props.variant === "success") {
+      return isRussian
+        ? "✅ Оплата успешно получена. Подписка будет активирована в ближайшее время."
+        : "✅ Payment received successfully. Your subscription will be activated shortly.";
+    }
+
+    if (props.variant === "refunded") {
+      return isRussian
+        ? "↩️ Этот счёт уже недействителен или был оплачен ранее. Списанные Telegram Stars возвращены. Запросите новый счёт командой /premium."
+        : "↩️ This invoice is no longer valid or was already paid. The charged Telegram Stars were refunded. Request a new invoice with /premium.";
+    }
+
+    return isRussian
+      ? `⚠️ Telegram подтвердил платёж, но автоматическая обработка задержалась. Мы сохранили данные платежа. Код ошибки: ${props.errorId}.`
+      : `⚠️ Telegram confirmed the payment, but automatic processing was delayed. We retained the payment details. Reference: ${props.errorId}.`;
+  }
+
+  private getTelegramStarPreCheckoutErrorText(ctx: GrammyContext) {
+    const isRussian = ctx.from?.language_code?.toLowerCase().startsWith("ru");
+
+    return isRussian
+      ? "Счёт больше недействителен. Запросите новый счёт командой /premium."
+      : "This invoice is no longer valid. Request a new invoice with /premium.";
+  }
+
+  async validateTelegramStarCheckout(props: {
+    currency: string;
+    totalAmount: number;
+    invoicePayload: string;
+    paidChargeId?: string;
+  }): Promise<ITelegramStarCheckoutValidation> {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
+    }
+
+    if (props.currency !== "XTR") {
+      return { ok: false, code: "currency" };
+    }
+
+    const invoice = await billingModuleInvoiceApi.findById({
+      id: props.invoicePayload,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!invoice) {
+      return { ok: false, code: "invoice" };
+    }
+
+    if (invoice.provider !== "telegram-star") {
+      return { ok: false, code: "provider" };
+    }
+
+    if (Number(invoice.amount) !== Number(props.totalAmount)) {
+      return { ok: false, code: "amount" };
+    }
+
+    if (
+      invoice.status === "paid" &&
+      props.paidChargeId &&
+      invoice.providerId === props.paidChargeId
+    ) {
+      return {
+        ok: true,
+        invoice,
+        idempotent: true,
+      };
+    }
+
+    if (invoice.status !== "open") {
+      return { ok: false, code: "status" };
+    }
+
+    const paymentIntentsToInvoices =
+      await billingModulePaymentIntentsToInvoicesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "invoiceId",
+                method: "eq",
+                value: invoice.id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!paymentIntentsToInvoices?.length) {
+      return { ok: false, code: "payment-intent" };
+    }
+
+    const paymentIntents = await billingModulePaymentIntentApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: paymentIntentsToInvoices.map(
+                (relation) => relation.paymentIntentId,
+              ),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+    const payablePaymentIntentIds = (paymentIntents ?? [])
+      .filter(
+        (paymentIntent) =>
+          !["succeeded", "canceled"].includes(paymentIntent.status),
+      )
+      .map((paymentIntent) => paymentIntent.id);
+
+    if (!payablePaymentIntentIds.length) {
+      return { ok: false, code: "payment-intent" };
+    }
+
+    const ordersToPaymentIntents =
+      await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "billingModulePaymentIntentId",
+                method: "inArray",
+                value: payablePaymentIntentIds,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!ordersToPaymentIntents?.length) {
+      return { ok: false, code: "order" };
+    }
+
+    const orders = await ecommerceModuleOrderApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: ordersToPaymentIntents.map((relation) => relation.orderId),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+    const hasPayableOrder = (orders ?? []).some((order) =>
+      ["new", "paying"].includes(order.status),
+    );
+
+    if (!hasPayableOrder) {
+      return { ok: false, code: "order" };
+    }
+
+    return {
+      ok: true,
+      invoice,
+      idempotent: false,
+    };
+  }
+
+  async handleTelegramStarPreCheckout(ctx: GrammyContext) {
+    const query = ctx.preCheckoutQuery;
+
+    if (!query) {
+      throw new Error(
+        "Validation error. Telegram pre-checkout query is required",
+      );
+    }
+
+    const validation = await this.validateTelegramStarCheckout({
+      currency: query.currency,
+      totalAmount: query.total_amount,
+      invoicePayload: query.invoice_payload,
+    });
+
+    if (!validation.ok) {
+      await ctx.answerPreCheckoutQuery(false, {
+        error_message: this.getTelegramStarPreCheckoutErrorText(ctx),
+      });
+      return;
+    }
+
+    await ctx.answerPreCheckoutQuery(true);
+  }
+
+  private async refundTelegramStarPayment(props: {
+    ctx: GrammyContext;
+    chargeId: string;
+  }) {
+    if (!props.ctx.from?.id) {
+      throw new Error("Validation error. Telegram payment user id is required");
+    }
+
+    await props.ctx.api.refundStarPayment(props.ctx.from.id, props.chargeId);
+    await props.ctx.reply(
+      this.getTelegramStarPaymentText({
+        ctx: props.ctx,
+        variant: "refunded",
+      }),
+    );
+  }
+
+  async handleTelegramStarSuccessfulPayment(ctx: GrammyContext) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
+    }
+
+    if (!ctx.message?.successful_payment) {
+      throw new Error(
+        "Validation error. Telegram successful payment is required",
+      );
+    }
+
+    const payment = ctx.message.successful_payment;
+    const validation = await this.validateTelegramStarCheckout({
+      currency: payment.currency,
+      totalAmount: payment.total_amount,
+      invoicePayload: payment.invoice_payload,
+      paidChargeId: payment.telegram_payment_charge_id,
+    });
+
+    if (validation.ok && validation.idempotent) {
+      await ctx.reply(
+        this.getTelegramStarPaymentText({
+          ctx,
+          variant: "success",
+        }),
+      );
+      return;
+    }
+
+    if (!validation.ok) {
+      await this.refundTelegramStarPayment({
+        ctx,
+        chargeId: payment.telegram_payment_charge_id,
+      });
+      return;
+    }
+
+    try {
+      await billingModulePaymentIntentApi.providerWebhook({
+        data: {
+          provider: "telegram-star",
+          currency: "XTR",
+          invoice_payload: payment.invoice_payload,
+          provider_payment_charge_id: payment.provider_payment_charge_id,
+          telegram_payment_charge_id: payment.telegram_payment_charge_id,
+          total_amount: payment.total_amount,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+    } catch (error) {
+      if (!isDuplicateTelegramStarPaymentError(error)) {
+        throw error;
+      }
+
+      await this.refundTelegramStarPayment({
+        ctx,
+        chargeId: payment.telegram_payment_charge_id,
+      });
+      return;
+    }
+
+    await ctx.reply(
+      this.getTelegramStarPaymentText({
+        ctx,
+        variant: "success",
+      }),
+    );
+  }
+
   /**
    * Should be called after routes are added
    */
@@ -592,10 +949,15 @@ export class TelegarmBot {
       try {
         console.log("🚀 ~ init ~ pre_checkout_query ~ ctx.update:", ctx.update);
 
-        await ctx.answerPreCheckoutQuery(true);
+        await this.handleTelegramStarPreCheckout(ctx);
         return;
       } catch (error: any) {
         console.log("🚀 ~ init ~ pre_checkout_query ~ error:", error.message);
+        await ctx
+          .answerPreCheckoutQuery(false, {
+            error_message: this.getTelegramStarPreCheckoutErrorText(ctx),
+          })
+          .catch(() => undefined);
         return;
       }
     });
@@ -640,28 +1002,16 @@ export class TelegarmBot {
       this.runInBackground({
         label: "message:successful_payment",
         task: async () => {
-          if (!RBAC_SECRET_KEY) {
-            throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
-          }
-
-          await billingModulePaymentIntentApi.providerWebhook({
-            data: {
-              provider: "telegram-star",
-              currency: "XTR",
-              invoice_payload: ctx.message.successful_payment.invoice_payload,
-              provider_payment_charge_id:
-                ctx.message.successful_payment.provider_payment_charge_id,
-              telegram_payment_charge_id:
-                ctx.message.successful_payment.telegram_payment_charge_id,
-              total_amount: ctx.message.successful_payment.total_amount,
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
+          await this.handleTelegramStarSuccessfulPayment(ctx);
+        },
+        onError: async (_error, metadata) => {
+          await ctx.reply(
+            this.getTelegramStarPaymentText({
+              ctx,
+              variant: "processing-error",
+              errorId: metadata.errorId,
+            }),
+          );
         },
       });
 
