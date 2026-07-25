@@ -64,6 +64,121 @@ services, run `./server.sh up` instead.
 Password authentication remains available for other providers by leaving both
 private-key variables empty and setting `ANSIBLE_PASSWORD`.
 
+## Infrastructure security and operations
+
+The default production deployment keeps infrastructure services behind the
+Docker Swarm network:
+
+- provider firewall ingress is limited to TCP `22`, `80`, and `443`;
+- PostgreSQL `5432`, Redis `6379`, and Portainer `9000` must not be opened;
+- PostgreSQL and Redis have no public Traefik TCP routers;
+- Portainer is available only through its HTTPS hostname.
+
+The deployer does not create or modify provider or host firewall rules. Keep
+SSH access available before tightening firewall policy, and verify the rules in
+the provider console before each infrastructure rollout.
+
+### PostgreSQL and Redis administration
+
+Connect to the host over SSH and run administrative tools inside the service
+containers. Do not restore public database routes for routine administration.
+
+Find the running PostgreSQL container and open `psql` with the database values
+already present in its environment:
+
+```bash
+POSTGRES_CONTAINER_ID="$(
+  docker ps \
+    --filter label=com.docker.swarm.service.name=postgres_postgres \
+    --format '{{.ID}}' \
+  | head -n 1
+)"
+docker exec -it "$POSTGRES_CONTAINER_ID" /bin/sh
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB"
+```
+
+Find the running Redis container and use its protected environment value
+through `REDISCLI_AUTH`. Do not place the password directly in a command-line
+argument or log:
+
+```bash
+REDIS_CONTAINER_ID="$(
+  docker ps \
+    --filter label=com.docker.swarm.service.name=redis_redis \
+    --format '{{.ID}}' \
+  | head -n 1
+)"
+docker exec -it "$REDIS_CONTAINER_ID" /bin/sh
+REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli -p "${REDIS_PORT:-6379}"
+```
+
+`REDIS_PASSWORD` is the single deployment credential. The Redis stack consumes
+it as `requirepass`, while API and MCP receive the same protected value as
+`KV_PASSWORD`. Keep both production and preview secrets populated and deploy
+Redis, API, and MCP as one coordinated rollout when the credential changes.
+
+### Traefik log level
+
+Traefik defaults to `INFO`. For a short troubleshooting window, set
+`TRAEFIK_LOG_LEVEL=DEBUG` in `tools/deployer/.env` or the matching production
+or preview GitHub secret, then redeploy only Traefik:
+
+```bash
+cd tools/deployer
+./traefik.sh up
+```
+
+Collect the required diagnostic sample, set the value back to `INFO` (or remove
+the override), and run the same deployment command again. Confirm the restored
+level from the service command and recent logs:
+
+```bash
+docker service inspect traefik_traefik \
+  --format '{{json .Spec.TaskTemplate.ContainerSpec.Command}}'
+docker service logs traefik_traefik --since 10m
+```
+
+Never leave `DEBUG` enabled after troubleshooting; it can repeatedly expose
+dynamic routing details and credential hashes in logs.
+
+### Hardened rollout and verification
+
+Before rollout, confirm DNS and certificates for the Portainer HTTPS hostname
+and confirm that no authorized integration depends on public ports `5432` or
+`9000`. Run the normal coordinated deployment so Traefik and Portainer are
+updated before PostgreSQL, Redis, API, and MCP:
+
+```bash
+cd tools/deployer
+./up.sh
+```
+
+The Redis and PostgreSQL playbooks wait for their Swarm replicas and perform
+container-local readiness checks. Redis additionally proves that an
+unauthenticated command is rejected and the protected credential returns
+`PONG`.
+
+After deployment:
+
+```bash
+docker service ls
+docker service ps traefik_traefik
+docker service ps portainer_portainer
+docker service ps postgres_postgres
+docker service ps redis_redis
+ss -ltnp
+```
+
+Verify all expected replicas are healthy, ports `5432` and `9000` are absent
+from host listeners, Portainer is available over HTTPS, API can use PostgreSQL
+and Redis, and MCP logs contain no password-to-passwordless-Redis warning.
+Confirm the provider firewall still exposes only `22`, `80`, and `443`.
+
+Prefer fixing forward if the rollout fails. Reverting to a version before this
+hardening restores the public `5432`/`9000` configuration and catch-all TCP
+routers. If rollback is unavoidable, restrict those ports at the provider
+firewall first and recheck host listeners immediately afterward.
+
 ## Knowledge embedding provider
 
 Knowledge uses the private `apps/llm` service and its Ollama embedding model by

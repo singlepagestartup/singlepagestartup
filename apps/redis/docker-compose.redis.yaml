@@ -5,11 +5,32 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        test -n "$${REDIS_PASSWORD}" &&
+        exec redis-server
+        --port "$${REDIS_PORT:-6379}"
+        --requirepass "$${REDIS_PASSWORD}"
     restart: always
     volumes:
       - ./redis_data:/root/redis
     env_file:
       - .env
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          REDISCLI_AUTH="$${REDIS_PASSWORD}"
+          redis-cli
+          -p "$${REDIS_PORT:-6379}"
+          --no-auth-warning
+          ping | grep -qx PONG
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
     expose:
       - 6379
     ports:

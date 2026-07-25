@@ -15,6 +15,12 @@ GITHUB_REPOSITORY=$(get_env "$BASH_SOURCE" "GITHUB_REPOSITORY")
 
 if [ "$1" != "down" ]
 then
+    if [ -z "$REDIS_PASSWORD" ]
+    then
+        echo "Error: REDIS_PASSWORD must be set before Redis deployment" >&2
+        exit 1
+    fi
+
     ansible-playbook \
         ./redis/create_redis.yaml \
          -e "REDIS_PORT=$REDIS_PORT \

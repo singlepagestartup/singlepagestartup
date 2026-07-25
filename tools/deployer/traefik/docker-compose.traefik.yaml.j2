@@ -6,11 +6,10 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 5432:5432
     networks:
       - traefik_overlay
     command:
-      - --log.level=DEBUG
+      - --log.level={{ TRAEFIK_LOG_LEVEL | default('INFO', true) }}
       - --api
       - --providers.swarm=true
       - --providers.swarm.endpoint=unix:///var/run/docker.sock
@@ -20,7 +19,6 @@ services:
       - --providers.file.watch=true
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
-      - --entrypoints.tcp.address=:5432
     volumes:
       - ./certs/:/certs/:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro

@@ -5,20 +5,21 @@
   vars:
     portainer_username: "{{ PORTAINER_USERNAME }}"
     portainer_password: "{{ PORTAINER_PASSWORD }}"
+    service_url: "{{ SERVICE_URL }}"
   tasks:
-    - name: Wait for local Portainer API
+    - name: Wait for HTTPS Portainer API
       retries: 30
       delay: 2
       register: portainer_status
       until: portainer_status.status == 200
       uri:
-        url: "http://127.0.0.1:9000/api/system/status"
+        url: "https://{{ service_url }}/api/system/status"
         status_code: 200
         method: GET
 
     - name: Check whether Portainer administrator exists
       uri:
-        url: "http://127.0.0.1:9000/api/users/admin/check"
+        url: "https://{{ service_url }}/api/users/admin/check"
         status_code: 204,303,404
         method: GET
         follow_redirects: none
@@ -30,13 +31,13 @@
         portainer_portainer
       when: portainer_admin_check.status != 204
 
-    - name: Wait for restarted Portainer API
+    - name: Wait for restarted HTTPS Portainer API
       retries: 30
       delay: 2
       register: restarted_portainer_status
       until: restarted_portainer_status.status == 200
       uri:
-        url: "http://127.0.0.1:9000/api/system/status"
+        url: "https://{{ service_url }}/api/system/status"
         status_code: 200
         method: GET
       when: portainer_admin_check.status != 204
@@ -73,7 +74,7 @@
     - name: Create Portainer user request
       register: result
       uri:
-        url: "http://127.0.0.1:9000/api/users/admin/init"
+        url: "https://{{ service_url }}/api/users/admin/init"
         status_code: 200,303,400,403,409,422
         method: POST
         return_content: true

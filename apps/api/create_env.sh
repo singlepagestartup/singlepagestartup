@@ -72,6 +72,8 @@ add_env "DATABASE_PORT" $DATABASE_PORT
 
 add_env "DATABASE_NO_SSL" true
 
+add_env "KV_PROVIDER" "redis"
+
 KV_PORT=$(get_env "$BASH_SOURCE" "REDIS_PORT" ../redis/.env)
 add_env "KV_PORT" $KV_PORT
 

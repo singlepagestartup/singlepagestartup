@@ -3,6 +3,14 @@ version: "3.7"
 services:
   redis:
     image: redis
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        test -n "$${REDIS_PASSWORD}" &&
+        exec redis-server
+        --port "$${REDIS_PORT:-6379}"
+        --requirepass "$${REDIS_PASSWORD}"
     volumes:
       - ./redis_data:/root/redis
     networks:
@@ -10,19 +18,26 @@ services:
     environment:
       REDIS_DATABASES: 16
       REDIS_PORT: {{ REDIS_PORT | default('6379') }}
-      REDIS_PASSWORD: {{ REDIS_PASSWORD }}
+      REDIS_PASSWORD: {{ REDIS_PASSWORD | to_json }}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          REDISCLI_AUTH="$${REDIS_PASSWORD}"
+          redis-cli
+          -p "$${REDIS_PORT:-6379}"
+          --no-auth-warning
+          ping | grep -qx PONG
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
     deploy:
       update_config:
         order: start-first
       placement:
         constraints:
           - node.role == manager
-      labels:
-        - traefik.enable=true
-        - traefik.tcp.services.redis.loadbalancer.server.port=6379
-        - traefik.tcp.routers.redis.entrypoints=tcp
-        - traefik.tcp.routers.redis.rule=HostSNI(`*`)
-        - traefik.swarm.network=traefik_overlay
 
 networks:
   traefik_overlay:
