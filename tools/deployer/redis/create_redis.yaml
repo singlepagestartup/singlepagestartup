@@ -24,6 +24,16 @@
     - name: Run Redis service
       shell: docker stack deploy --compose-file=/home/code/docker-compose.redis.yaml redis
 
+    - name: Wait for Redis service update completion
+      shell: >
+        docker service inspect redis_redis
+        --format '{% raw %}{{if .UpdateStatus}}{{.UpdateStatus.State}}{{else}}completed{{end}}{% endraw %}'
+      register: redis_update_status
+      until: redis_update_status.stdout | trim == "completed"
+      retries: 20
+      delay: 5
+      changed_when: false
+
     - name: Wait for Redis service ready state
       shell: >
         docker service ls --filter name=redis_redis --format '{% raw %}{{.Replicas}}{% endraw %}'
@@ -33,11 +43,20 @@
       delay: 5
       changed_when: false
 
-    - name: Find running Redis container
-      shell: >
-        docker ps
-        --filter label=com.docker.swarm.service.name=redis_redis
-        --format '{% raw %}{{.ID}}{% endraw %}'
+    - name: Find container for current Redis service task
+      shell: |
+        task_id="$(
+          docker service ps redis_redis \
+            --filter desired-state=running \
+            --format '{% raw %}{{.ID}}{% endraw %}' \
+          | head -n 1
+        )"
+        if [ -z "$task_id" ]; then
+          exit 1
+        fi
+        docker ps \
+          --filter "label=com.docker.swarm.task.id=$task_id" \
+          --format '{% raw %}{{.ID}}{% endraw %}' \
         | head -n 1
       args:
         executable: /bin/bash
@@ -67,7 +86,7 @@
         docker exec \
           "{{ redis_container_id.stdout | trim }}" \
           /bin/sh \
-          -c 'REDISCLI_AUTH="$REDIS_PASSWORD" exec redis-cli -p "$REDIS_PORT" --no-auth-warning ping'
+          -c 'REDISCLI_AUTH="$REDIS_PASSWORD" exec redis-cli -p "${REDIS_PORT:-6379}" --no-auth-warning ping'
       register: redis_authenticated_ping
       changed_when: false
       no_log: true

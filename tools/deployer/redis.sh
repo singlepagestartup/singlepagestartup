@@ -8,7 +8,7 @@ get_environment_type $2
 . ./get_env.sh
 
 REDIS_PASSWORD=$(get_env "$BASH_SOURCE" "REDIS_PASSWORD")
-REDIS_PORT=$(get_env "$BASH_SOURCE" "REDIS_PORT")
+REDIS_PORT=$(get_env_or_default "$BASH_SOURCE" "REDIS_PORT" "6379")
 
 GITHUB_TOKEN=$(get_env "$BASH_SOURCE" "GITHUB_TOKEN")
 GITHUB_REPOSITORY=$(get_env "$BASH_SOURCE" "GITHUB_REPOSITORY")

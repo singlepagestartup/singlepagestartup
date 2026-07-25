@@ -20,7 +20,7 @@ completed_date: 2026-07-26T00:52:38+03:00
 - [x] Completed: 2026-07-26T00:42:02+03:00
 - [x] Automated verification: PASSED 2026-07-26T00:38:27+03:00
 
-**Notes**: Added production/local `requirepass`, authenticated health checks, Ansible replica plus negative/positive authentication probes, production empty-password validation, and local `KV_PROVIDER=redis` generation. Shell syntax, Ansible syntax, both Compose validations, isolated Redis health/authentication, the exact focused backend KV scenario (4/4), and `git diff --check` pass. The operator directed all phases to continue before the server redeploy, so live deployment checks are retained as a post-deploy checklist.
+**Notes**: Added production/local `requirepass`, authenticated health checks, Ansible replica plus negative/positive authentication probes, production empty-password validation, and local `KV_PROVIDER=redis` generation. Shell syntax, Ansible syntax, both Compose validations, isolated Redis health/authentication, the exact focused backend KV scenario (4/4), and `git diff --check` pass. Production rollout exposed two probe defects: Swarm `start-first` could select the retiring task, and an absent `REDIS_PORT` produced an empty positive-probe port. The follow-up waits for update completion, selects the current desired task, and defaults every deployment path to `6379`.
 
 ### Phase 2: Remove Public Infrastructure Exposure and Move Portainer Bootstrap to HTTPS
 
@@ -43,7 +43,7 @@ completed_date: 2026-07-26T00:52:38+03:00
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 5 -->
+<!-- incident-count: 7 -->
 
 ### Incident 1 — Plan linked unrelated issue 199 research
 
@@ -56,7 +56,7 @@ completed_date: 2026-07-26T00:52:38+03:00
 
 ### Incident 2 — Sandbox blocked Ansible and Docker verification
 
-- **Occurrences**: 2
+- **Occurrences**: 3
 - **Stage**: Phase 1 - automated verification
 - **Symptom**: Ansible could not create its local temporary directory and Docker commands could not access the desktop daemon socket.
 - **Root Cause**: Both tools require host resources outside the workspace sandbox.
@@ -90,11 +90,30 @@ completed_date: 2026-07-26T00:52:38+03:00
 - **Fix**: Ran the plan's exact project-qualified backend target, which passed 4/4.
 - **Reusable Pattern**: Use the plan's focused project target when an issue-level scenario directory contains unrelated suites.
 
+### Incident 6 — Redis probe selected the retiring Swarm task
+
+- **Occurrences**: 1
+- **Stage**: Production rollout
+- **Symptom**: The first authenticated Redis rollout failed the negative probe even though the replacement task enforced authentication after the old task stopped.
+- **Root Cause**: `docker ps ... | head -n 1` could select the retiring passwordless container while `update_config.order=start-first` temporarily kept both tasks running.
+- **Fix**: Wait for the Redis service update to complete, resolve the desired running task ID, and select the container carrying that exact Swarm task label.
+- **Reusable Pattern**: Deployment probes must bind to the orchestrator's current desired task rather than an arbitrary container matching the service name.
+
+### Incident 7 — Positive Redis probe assumed an optional port variable
+
+- **Occurrences**: 1
+- **Stage**: Production rollout retry
+- **Symptom**: The unauthenticated probe correctly returned `NOAUTH`, but the authenticated probe failed even though a protected read-only diagnostic returned `PONG` on port `6379`.
+- **Root Cause**: `REDIS_PORT` was absent from the deployer environment. Redis startup and the negative probe defaulted to `6379`, while the positive probe passed an empty value to `redis-cli -p`.
+- **Fix**: Add `REDIS_PORT=6379` to the example environment, resolve it through `get_env_or_default`, render an empty input as the string `"6379"`, and retain a container-side `${REDIS_PORT:-6379}` fallback.
+- **Reusable Pattern**: Apply the same default at input, render, runtime, health-check, and verification boundaries for optional deployment values.
+
 ## Summary
 
 ### Changes Made
 
 - Enforced authenticated Redis startup and health checks in production and local Compose flows while preserving the existing protected credential path into API and MCP.
+- Made Redis port `6379` explicit and consistent across deployer input, rendered service environment, runtime commands, and probes; probes now target the current desired Swarm task.
 - Removed public PostgreSQL/Redis Traefik routing and direct Portainer publication, retained private overlay connectivity, and moved Portainer bootstrap to its HTTPS route.
 - Defaulted Traefik logging to `INFO` with an explicit temporary `DEBUG` override propagated through deployer and CI inputs.
 - Added bounded Ansible convergence/authentication probes and documented firewall ownership, private administration, coordinated rollout, rollback risks, and post-deploy verification.
@@ -112,4 +131,4 @@ completed_date: 2026-07-26T00:52:38+03:00
 
 ---
 
-**Last updated**: 2026-07-26T00:53:39+03:00
+**Last updated**: 2026-07-26T02:05:16+03:00

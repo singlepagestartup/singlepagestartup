@@ -17,7 +17,7 @@ services:
       - traefik_overlay
     environment:
       REDIS_DATABASES: 16
-      REDIS_PORT: {{ REDIS_PORT | default('6379') }}
+      REDIS_PORT: {{ REDIS_PORT | default('6379', true) | to_json }}
       REDIS_PASSWORD: {{ REDIS_PASSWORD | to_json }}
     healthcheck:
       test:

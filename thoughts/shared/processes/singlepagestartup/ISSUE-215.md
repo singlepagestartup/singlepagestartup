@@ -3,7 +3,7 @@ issue_number: 215
 issue_title: "Harden public PostgreSQL, Redis, Portainer, and Traefik configuration"
 repository: singlepagestartup
 created_at: 2026-07-25T23:36:05+03:00
-last_updated: 2026-07-26T00:53:39+03:00
+last_updated: 2026-07-26T02:05:16+03:00
 status: complete
 current_phase: complete
 ---
@@ -71,12 +71,13 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   - The final automated sweep passed shell and Ansible syntax, rendered Compose validation, default/override/restored log-level behavior, static exposure checks, supported-file formatting, API KV integration, MCP OAuth tests, and whitespace validation.
   - The operator directed implementation through all phases before redeploying the server; live environment verification is deferred to the documented post-deploy checklist.
   - Pull request 217 was linked from issue 215 and the GitHub Project status was verified as `Code Review`.
+  - The first production rollout exposed a Swarm task-selection race and an inconsistent optional Redis port default. The follow-up waits for update completion, probes the current desired task, and resolves `REDIS_PORT` to `6379` across every deployment boundary.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 9 -->
+<!-- incident-count: 11 -->
 
 ### Incident 1 — GitHub CLI connectivity from sandbox
 
@@ -131,7 +132,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Incident 6 — Sandbox blocked Ansible and Docker verification
 
 - **Phase**: Implement
-- **Occurrences**: 2
+- **Occurrences**: 3
 - **Symptom**: Ansible could not create its local temporary directory and Docker commands could not access the desktop daemon socket.
 - **Root Cause**: Both tools require host resources outside the workspace sandbox.
 - **Fix**: Reran the same scoped syntax and integration checks with host access; all passed.
@@ -167,6 +168,26 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Fix**: Ran the exact project-qualified backend target; all four tests passed.
 - **Preventive Action**: Prefer the plan's focused project target when a historical issue directory contains unrelated suites.
 - **References**: `tools/testing/test-scenario-issue.sh`, `apps/api/specs/scenario/singlepagestartup/issue-152/backend-cart.scenario.spec.ts`
+
+### Incident 10 — Redis probe selected the retiring Swarm task
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: During the first production rollout, the negative Redis probe targeted the old passwordless task while the replacement task was starting and failed the deployment.
+- **Root Cause**: The playbook selected the first service-named container during a `start-first` overlap instead of resolving the current desired Swarm task.
+- **Fix**: Wait for service update completion and select the container by the desired running task's `com.docker.swarm.task.id` label.
+- **Preventive Action**: Bind post-deploy probes to the orchestrator's desired task identity whenever an update strategy permits overlapping containers.
+- **References**: `tools/deployer/redis/create_redis.yaml`, `tools/deployer/redis/docker-compose.redis.yaml.j2`
+
+### Incident 11 — Positive Redis probe assumed an optional port variable
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: A production retry passed the negative authentication probe but failed the positive probe; a protected diagnostic using port `6379` returned `PONG`.
+- **Root Cause**: The deployer `.env` did not define `REDIS_PORT`. Startup and the negative probe used `6379` fallbacks, while the positive probe passed an empty port.
+- **Fix**: Default `REDIS_PORT` to `6379` in the wrapper, example environment, rendered Compose value, and container-side positive probe.
+- **Preventive Action**: Keep optional configuration defaults consistent across generators, templates, runtime commands, health checks, and verification.
+- **References**: `tools/deployer/.env.example`, `tools/deployer/redis.sh`, `tools/deployer/redis/create_redis.yaml`, `tools/deployer/redis/docker-compose.redis.yaml.j2`
 
 ## Reusable Learnings
 

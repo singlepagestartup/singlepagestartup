@@ -266,7 +266,7 @@ Current live-code inspection confirms that the v3.7 Swarm-provider and shared-ov
 
 ### Ansible and Docker verification may require host access
 
-- **Occurrences**: 2
+- **Occurrences**: 3
 - **Symptom**: Ansible can fail before syntax validation when it cannot create its local temporary directory, and Docker checks can fail before exercising the configuration when the desktop daemon socket is inaccessible.
 - **Root Cause**: Both tools depend on host resources outside a restricted workspace sandbox.
 - **Fix**: Rerun the unchanged, narrowly scoped validation command with host access; do not modify deployment code to work around the execution boundary.

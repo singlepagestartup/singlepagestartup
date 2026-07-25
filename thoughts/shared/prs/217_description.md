@@ -5,6 +5,7 @@ Harden the production infrastructure boundary for issue #215 by removing public 
 ## Changes
 
 - Enforce Redis `requirepass` in production and local Compose flows, add authenticated health checks, and validate both rejected unauthenticated access and accepted protected access during deployment.
+- Default the Redis deployment port to `6379` at every boundary and bind post-update probes to the current desired Swarm task.
 - Remove public PostgreSQL and Redis Traefik TCP routing plus direct Portainer port `9000`; retain private Swarm overlay connectivity and bootstrap Portainer through HTTPS.
 - Default Traefik logging to `INFO`, propagate a temporary `DEBUG` override through deployer and CI configuration, and document restoration.
 - Add bounded PostgreSQL/Redis deployment readiness checks and an operator runbook covering firewall ownership, private administration, rollout, verification, and rollback.
@@ -17,6 +18,7 @@ Harden the production infrastructure boundary for issue #215 by removing public 
 - [x] Rendered production Traefik, PostgreSQL, Redis, and Portainer templates pass `docker compose config`.
 - [x] Traefik renders `INFO` by default, accepts temporary `DEBUG`, and restores the default.
 - [x] Isolated Redis integration proves unauthenticated `PING` is rejected and authenticated `PING` returns `PONG`.
+- [x] An empty Redis port input renders as `REDIS_PORT: "6379"` and the resulting Compose document validates.
 - [x] `npx nx run api:jest:scenario --testFile=apps/api/specs/scenario/singlepagestartup/issue-152/backend-cart.scenario.spec.ts` (4/4).
 - [x] `npx nx run mcp:jest:test --testFile=apps/mcp/lib/oauth.spec.ts` (12/12).
 - [x] Supported YAML/Markdown formatting and `git diff --check`.
