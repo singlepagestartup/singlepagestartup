@@ -153,9 +153,9 @@ cd tools/deployer
 ./up.sh
 ```
 
-The PostgreSQL playbook performs a container-local readiness check. Redis keeps
-deployment intentionally simple: the wrapper rejects an empty password, and
-the container command refuses to start unless it can launch Redis with
+The PostgreSQL and Redis playbooks intentionally stay small: render the Compose
+file and deploy the stack. The Redis wrapper rejects an empty password, and the
+container command refuses to start unless it can launch Redis with
 `requirepass`.
 
 After deployment:

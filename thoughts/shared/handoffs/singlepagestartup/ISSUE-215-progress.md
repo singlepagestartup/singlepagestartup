@@ -28,7 +28,7 @@ completed_date: 2026-07-26T00:52:38+03:00
 - [x] Completed: 2026-07-26T00:43:57+03:00
 - [x] Automated verification: PASSED 2026-07-26T00:43:57+03:00
 
-**Notes**: Removed the Traefik database publication/entrypoint and PostgreSQL/Redis TCP labels, retained internal overlays, moved all Portainer administrator bootstrap requests to HTTPS before removing port `9000`, and added container-local PostgreSQL readiness. Shell/Ansible syntax, four rendered Compose configs, forbidden-route absence, preserved HTTP/HTTPS/overlay contracts, live local `pg_isready`, and whitespace checks pass. Production checks remain deferred to the operator's server redeploy.
+**Notes**: Removed the Traefik database publication/entrypoint and PostgreSQL/Redis TCP labels, retained internal overlays, and moved all Portainer administrator bootstrap requests to HTTPS before removing port `9000`. Shell/Ansible syntax, four rendered Compose configs, forbidden-route absence, preserved HTTP/HTTPS/overlay contracts, live local `pg_isready`, and whitespace checks pass. The operator later directed removal of added PostgreSQL wait/container/readiness tasks so its Ansible deployment remains a simple render plus stack deploy.
 
 ### Phase 3: Add Traefik Log Controls, Operational Documentation, and End-to-End Verification
 
@@ -116,7 +116,7 @@ completed_date: 2026-07-26T00:52:38+03:00
 - Made Redis port `6379` explicit across deployer input, rendered service environment, and runtime command while removing fragile post-deploy task/probe orchestration.
 - Removed public PostgreSQL/Redis Traefik routing and direct Portainer publication, retained private overlay connectivity, and moved Portainer bootstrap to its HTTPS route.
 - Defaulted Traefik logging to `INFO` with an explicit temporary `DEBUG` override propagated through deployer and CI inputs.
-- Added bounded PostgreSQL readiness checks and documented firewall ownership, private administration, coordinated rollout, rollback risks, and post-deploy verification.
+- Documented firewall ownership, private administration, coordinated rollout, rollback risks, and operator-driven post-deploy verification.
 
 ### Pull Request
 
@@ -131,4 +131,4 @@ completed_date: 2026-07-26T00:52:38+03:00
 
 ---
 
-**Last updated**: 2026-07-26T02:15:19+03:00
+**Last updated**: 2026-07-26T02:20:58+03:00

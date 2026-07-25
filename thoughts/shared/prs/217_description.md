@@ -8,7 +8,7 @@ Harden the production infrastructure boundary for issue #215 by removing public 
 - Default the Redis deployment port to `6379` at every input, render, and runtime boundary without adding post-deploy task discovery or probes.
 - Remove public PostgreSQL and Redis Traefik TCP routing plus direct Portainer port `9000`; retain private Swarm overlay connectivity and bootstrap Portainer through HTTPS.
 - Default Traefik logging to `INFO`, propagate a temporary `DEBUG` override through deployer and CI configuration, and document restoration.
-- Add bounded PostgreSQL readiness checks and an operator runbook covering firewall ownership, private administration, rollout, verification, and rollback.
+- Keep PostgreSQL and Redis Ansible deployment as simple render-and-deploy flows, with operational verification documented for the operator.
 - Add the canonical ticket, research, plan, process, and implementation-progress artifacts for issue 215.
 
 ## Verification

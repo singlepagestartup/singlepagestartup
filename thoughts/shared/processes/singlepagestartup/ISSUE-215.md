@@ -3,7 +3,7 @@ issue_number: 215
 issue_title: "Harden public PostgreSQL, Redis, Portainer, and Traefik configuration"
 repository: singlepagestartup
 created_at: 2026-07-25T23:36:05+03:00
-last_updated: 2026-07-26T02:15:19+03:00
+last_updated: 2026-07-26T02:20:58+03:00
 status: complete
 current_phase: complete
 ---
@@ -66,12 +66,13 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Notes:
   - Production and local Redis now enforce the existing password, and new local API environments explicitly select Redis.
   - Phase 1 shell, Ansible, Compose, isolated Redis, focused API KV scenario, and whitespace checks pass.
-  - Phase 2 removed public data/admin routes, moved Portainer bootstrap to HTTPS, and added internal PostgreSQL readiness; rendered Compose and local readiness verification pass.
+  - Phase 2 removed public data/admin routes and moved Portainer bootstrap to HTTPS; rendered Compose and local readiness verification pass.
   - Phase 3 added the Traefik `INFO` default and temporary `DEBUG` override through deployer and CI paths, plus the hardened operational and post-deploy runbook.
   - The final automated sweep passed shell and Ansible syntax, rendered Compose validation, default/override/restored log-level behavior, static exposure checks, supported-file formatting, API KV integration, MCP OAuth tests, and whitespace validation.
   - The operator directed implementation through all phases before redeploying the server; live environment verification is deferred to the documented post-deploy checklist.
   - Pull request 217 was linked from issue 215 and the GitHub Project status was verified as `Code Review`.
   - The first production rollout exposed a Swarm task-selection race and an inconsistent optional Redis port default. The operator directed removal of the added Redis waits, task discovery, authentication probes, and healthchecks; the final path resolves `REDIS_PORT` to `6379` and performs only the guarded service deployment.
+  - A full branch deployment audit removed the added PostgreSQL replica wait, container lookup, and `pg_isready` orchestration so both data-service playbooks remain simple render-and-deploy flows.
 
 ## Incident Log
 
