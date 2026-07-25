@@ -3,9 +3,9 @@ issue_number: 215
 issue_title: "Harden public PostgreSQL, Redis, Portainer, and Traefik configuration"
 repository: singlepagestartup
 created_at: 2026-07-25T23:36:05+03:00
-last_updated: 2026-07-26T00:49:02+03:00
-status: active
-current_phase: implement
+last_updated: 2026-07-26T00:53:39+03:00
+status: complete
+current_phase: complete
 ---
 
 # Process Log: ISSUE-215 - Harden public PostgreSQL, Redis, Portainer, and Traefik configuration
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: implementation_complete
-- Current phase: implement
-- Next step: create and submit PR for code review
+- Implement: completed
+- Current phase: complete
+- Next step: code review / merge
 
 ## Phase Notes
 
@@ -61,6 +61,8 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Summary: All three implementation phases and their automated verification are complete; live-host verification is intentionally deferred until the operator redeploys the server.
 - Outputs:
   - Progress: `thoughts/shared/handoffs/singlepagestartup/ISSUE-215-progress.md`
+  - Pull request: https://github.com/singlepagestartup/singlepagestartup/pull/217
+  - Implementation commit: `34b22b86367767cbb15b57e1cf81edd1c45ed7e4`
 - Notes:
   - Production and local Redis now enforce the existing password, deployment probes verify negative and positive authentication, and new local API environments explicitly select Redis.
   - Phase 1 shell, Ansible, Compose, isolated Redis, focused API KV scenario, and whitespace checks pass.
@@ -68,6 +70,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   - Phase 3 added the Traefik `INFO` default and temporary `DEBUG` override through deployer and CI paths, plus the hardened operational and post-deploy runbook.
   - The final automated sweep passed shell and Ansible syntax, rendered Compose validation, default/override/restored log-level behavior, static exposure checks, supported-file formatting, API KV integration, MCP OAuth tests, and whitespace validation.
   - The operator directed implementation through all phases before redeploying the server; live environment verification is deferred to the documented post-deploy checklist.
+  - Pull request 217 was linked from issue 215 and the GitHub Project status was verified as `Code Review`.
 
 ## Incident Log
 
