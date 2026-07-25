@@ -15,6 +15,13 @@
       "when": 1784666060674,
       "tag": "0001_purple_dorian_gray",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784978717475,
+      "tag": "0002_late_power_man",
+      "breakpoints": true
     }
   ]
 }

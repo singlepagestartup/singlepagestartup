@@ -79,6 +79,11 @@ export class Handler {
                   method: "eq",
                   value: "cart",
                 },
+                {
+                  column: "status",
+                  method: "eq",
+                  value: "new",
+                },
               ],
             },
           },

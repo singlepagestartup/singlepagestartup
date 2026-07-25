@@ -87,18 +87,24 @@ describe("Given: startup RBAC repository schemas", () => {
    *
    * Given: identity providers use different canonical identifier rules.
    * When: the final identity table is built.
-   * Then: every supported provider keeps its partial unique index.
+   * Then: authentication providers keep their partial unique indexes while
+   * checkout contact identities may repeat an email across subjects.
    */
-  it("When: identity constraints are composed Then: keeps each provider natural key", () => {
+  it("When: identity constraints are composed Then: keeps only authentication natural keys", () => {
     for (const name of [
       "sps_rc_identity_telegram_account_unique",
       "sps_rc_identity_oauth_google_account_unique",
       "sps_rc_identity_evm_account_unique",
       "sps_rc_identity_email_password_email_unique",
-      "sps_rc_identity_email_email_unique",
     ]) {
       expectUniqueIndexExists(IdentityTable, name);
     }
+
+    expect(
+      getTableConfig(IdentityTable).indexes.find(
+        (item) => item.config.name === "sps_rc_identity_email_email_unique",
+      ),
+    ).toBeUndefined();
   });
 
   /**

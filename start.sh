@@ -4,6 +4,7 @@ set -euo pipefail
 
 if [ "${1:-}" = "host" ]; then
   ./create_env.sh host deployment
+  node ./tools/runtime/sync-next-static.mjs
   npm run host:start
   exit 0
 elif [ "${1:-}" = "api" ]; then

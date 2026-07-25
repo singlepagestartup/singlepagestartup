@@ -34,6 +34,10 @@ export interface IEcommerceOrderReadService extends IExtendedReadService {
   }) => Promise<any>;
 }
 
+export interface IEcommerceOrdersToProductsService extends IReadService {
+  getTotal: (props: { id: string }) => Promise<any>;
+}
+
 export interface ISocialModule {
   profile: IReadService;
   skill: ICreateUpdateService;
@@ -65,7 +69,7 @@ export interface IEcommerceModule {
   attribute: IReadService;
   attributeKey: IReadService;
   storesToOrders: IReadService;
-  ordersToProducts: IReadService;
+  ordersToProducts: IEcommerceOrdersToProductsService;
   ordersToBillingModuleCurrencies: IReadService;
   ordersToBillingModulePaymentIntents: IReadService;
   ordersToFileStorageModuleFiles: IReadService;

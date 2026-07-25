@@ -1,0 +1,1 @@
+DROP INDEX "sps_rc_identity_email_email_unique";

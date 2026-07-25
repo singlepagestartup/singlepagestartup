@@ -35,9 +35,5 @@ export function constraints(
       .where(
         sql`${table.provider} = 'email_and_password' AND ${table.email} IS NOT NULL`,
       ),
-    pgCore
-      .uniqueIndex("sps_rc_identity_email_email_unique")
-      .on(sql`lower(${table.email})`)
-      .where(sql`${table.provider} = 'email' AND ${table.email} IS NOT NULL`),
   ];
 }

@@ -1,0 +1,9 @@
+{
+  "id": "1213be37-df56-46a5-8a28-30a6a6e03d89",
+  "createdAt": "2026-07-20T22:04:27.317Z",
+  "updatedAt": "2026-07-20T22:04:27.317Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "DELETE",
+  "path": "/api/rbac/subjects/be410302-c7ef-4547-b208-d7954e34d8cd/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/91ffbc78-5f50-4c9d-bee4-d853e26a4d8c/knowledge/documents/[knowledge.documents.id]"
+}

@@ -2,7 +2,6 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { IModel } from "@sps/rbac/models/subject/sdk/model";
-import { logger } from "@sps/backend-utils";
 import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
 import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
 
@@ -59,10 +58,32 @@ export class Service {
       },
     });
 
-    if (!subjectsToIdentities?.length) {
-      const identity = await identityApi.findOrCreate({
+    const identities = subjectsToIdentities?.length
+      ? await this.identity.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: subjectsToIdentities.map((item) => item.identityId),
+                },
+                {
+                  column: "email",
+                  method: "eq",
+                  value: props.email,
+                },
+              ],
+            },
+          },
+        })
+      : [];
+
+    if (!identities?.length) {
+      const identity = await identityApi.create({
         data: {
           email: props.email,
+          provider: "email",
         },
         options: {
           headers: {
@@ -70,8 +91,6 @@ export class Service {
           },
         },
       });
-
-      logger.debug("🚀 ~ identity:", identity);
 
       await subjectsToIdentitiesApi.create({
         data: {
@@ -84,51 +103,6 @@ export class Service {
           },
         },
       });
-    } else {
-      const identities = await this.identity.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: subjectsToIdentities.map((item) => item.identityId),
-              },
-              {
-                column: "email",
-                method: "eq",
-                value: props.email,
-              },
-            ],
-          },
-        },
-      });
-
-      if (!identities?.length) {
-        const identity = await identityApi.create({
-          data: {
-            email: props.email,
-            provider: "email",
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-
-        await subjectsToIdentitiesApi.create({
-          data: {
-            subjectId: props.id,
-            identityId: identity.id,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-      }
     }
 
     return entity;

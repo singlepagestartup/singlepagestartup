@@ -136,7 +136,7 @@ function inspectionQuery(tables: IIdentityNaturalKeyRepairTables) {
             THEN account
           WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
             THEN lower(account)
-          WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+          WHEN provider = 'email_and_password' AND email IS NOT NULL
             THEN lower(email)
           ELSE NULL
         END AS natural_key
@@ -199,7 +199,7 @@ async function inspectDiagnostics(
             THEN account
           WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
             THEN lower(account)
-          WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+          WHEN provider = 'email_and_password' AND email IS NOT NULL
             THEN lower(email)
           ELSE NULL
         END AS natural_key,
@@ -210,7 +210,7 @@ async function inspectDiagnostics(
                 THEN account
               WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
                 THEN lower(account)
-              WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+              WHEN provider = 'email_and_password' AND email IS NOT NULL
                 THEN lower(email)
               ELSE NULL
             END
@@ -223,7 +223,7 @@ async function inspectDiagnostics(
                 THEN account
               WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
                 THEN lower(account)
-              WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+              WHEN provider = 'email_and_password' AND email IS NOT NULL
                 THEN lower(email)
               ELSE NULL
             END
@@ -246,7 +246,7 @@ async function inspectDiagnostics(
             THEN account
           WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
             THEN lower(account)
-          WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+          WHEN provider = 'email_and_password' AND email IS NOT NULL
             THEN lower(email)
           ELSE NULL
         END AS natural_key,
@@ -257,7 +257,7 @@ async function inspectDiagnostics(
                 THEN account
               WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
                 THEN lower(account)
-              WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+              WHEN provider = 'email_and_password' AND email IS NOT NULL
                 THEN lower(email)
               ELSE NULL
             END
@@ -270,7 +270,7 @@ async function inspectDiagnostics(
                 THEN account
               WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
                 THEN lower(account)
-              WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+              WHEN provider = 'email_and_password' AND email IS NOT NULL
                 THEN lower(email)
               ELSE NULL
             END
@@ -412,7 +412,7 @@ async function apply(
             THEN account
           WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
             THEN lower(account)
-          WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+          WHEN provider = 'email_and_password' AND email IS NOT NULL
             THEN lower(email)
           ELSE NULL
         END AS natural_key,
@@ -423,7 +423,7 @@ async function apply(
                 THEN account
               WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
                 THEN lower(account)
-              WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+              WHEN provider = 'email_and_password' AND email IS NOT NULL
                 THEN lower(email)
               ELSE NULL
             END
@@ -462,7 +462,7 @@ async function apply(
             THEN account
           WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
             THEN lower(account)
-          WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+          WHEN provider = 'email_and_password' AND email IS NOT NULL
             THEN lower(email)
           ELSE NULL
         END AS natural_key,
@@ -473,7 +473,7 @@ async function apply(
                 THEN account
               WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
                 THEN lower(account)
-              WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+              WHEN provider = 'email_and_password' AND email IS NOT NULL
                 THEN lower(email)
               ELSE NULL
             END
@@ -499,7 +499,7 @@ async function apply(
             THEN account
           WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
             THEN lower(account)
-          WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+          WHEN provider = 'email_and_password' AND email IS NOT NULL
             THEN lower(email)
           ELSE NULL
         END AS natural_key,
@@ -510,7 +510,7 @@ async function apply(
                 THEN account
               WHEN provider = 'ethereum_virtual_machine' AND account IS NOT NULL
                 THEN lower(account)
-              WHEN provider IN ('email', 'email_and_password') AND email IS NOT NULL
+              WHEN provider = 'email_and_password' AND email IS NOT NULL
                 THEN lower(email)
               ELSE NULL
             END

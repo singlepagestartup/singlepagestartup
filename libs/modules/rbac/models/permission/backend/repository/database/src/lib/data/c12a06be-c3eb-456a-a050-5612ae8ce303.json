@@ -1,0 +1,9 @@
+{
+  "id": "c12a06be-c3eb-456a-a050-5612ae8ce303",
+  "createdAt": "2026-07-21T21:32:35.529Z",
+  "updatedAt": "2026-07-21T21:32:35.529Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "DELETE",
+  "path": "/api/rbac/subjects/64925bdb-7f45-4817-bfe2-7520ad0c8244/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/1370fd8c-3514-4dcc-9c8e-e8ccd3486cc9/skills/[social.skills.id]"
+}

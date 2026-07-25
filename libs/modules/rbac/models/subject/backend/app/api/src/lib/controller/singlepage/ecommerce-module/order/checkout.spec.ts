@@ -6,7 +6,7 @@
  * Then: handler validates payload, annotates order comments, and delegates to checkout service.
  */
 
-const orderFindByIdMock = jest.fn();
+const orderFindMock = jest.fn();
 const orderUpdateMock = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
@@ -23,7 +23,7 @@ jest.mock("@sps/backend-utils", () => ({
 
 jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
   api: {
-    findById: (...args: unknown[]) => orderFindByIdMock(...args),
+    find: (...args: unknown[]) => orderFindMock(...args),
     update: (...args: unknown[]) => orderUpdateMock(...args),
   },
 }));
@@ -58,11 +58,13 @@ describe("Given: ecommerce order checkout handler", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    orderFindByIdMock.mockResolvedValue({
-      id: "order-1",
-      comment: "",
-      status: "new",
-    });
+    orderFindMock.mockResolvedValue([
+      {
+        id: "order-1",
+        comment: "",
+        status: "new",
+      },
+    ]);
     orderUpdateMock.mockResolvedValue({ id: "order-1" });
   });
 
@@ -96,16 +98,18 @@ describe("Given: ecommerce order checkout handler", () => {
       },
     );
 
-    orderFindByIdMock.mockResolvedValueOnce({
-      id: "order-1",
-      comment: "",
-      status: "new",
-    });
-    orderFindByIdMock.mockResolvedValueOnce({
-      id: "order-2",
-      comment: "",
-      status: "new",
-    });
+    orderFindMock.mockResolvedValueOnce([
+      {
+        id: "order-1",
+        comment: "",
+        status: "new",
+      },
+      {
+        id: "order-2",
+        comment: "",
+        status: "new",
+      },
+    ]);
 
     await handler.execute(context, jest.fn());
 
@@ -128,5 +132,49 @@ describe("Given: ecommerce order checkout handler", () => {
         checkoutUrl: "https://example.test/pay",
       }),
     });
+  });
+
+  /**
+   * BDD Scenario
+   *
+   * Given: the checkout form still contains an id of an order deleted from the cart.
+   * When: the checkout request is handled.
+   * Then: only existing orders are updated and passed to the checkout service.
+   */
+  it("When: payload contains a deleted order id Then: stale order ids are ignored", async () => {
+    const service = createService();
+    const handler = new Handler(service);
+    const context = createContext(
+      { id: "subject-1" },
+      {
+        data: JSON.stringify({
+          provider: "stripe",
+          email: "user@example.test",
+          comment: "checkout note",
+          ecommerceModule: {
+            orders: [{ id: "order-1" }, { id: "deleted-order" }],
+          },
+        }),
+      },
+    );
+
+    orderFindMock.mockResolvedValueOnce([
+      {
+        id: "order-1",
+        comment: "",
+        status: "new",
+      },
+    ]);
+
+    await handler.execute(context, jest.fn());
+
+    expect(orderUpdateMock).toHaveBeenCalledTimes(1);
+    expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ecommerceModule: {
+          orders: [{ id: "order-1" }],
+        },
+      }),
+    );
   });
 });

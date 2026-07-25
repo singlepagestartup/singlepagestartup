@@ -474,6 +474,42 @@ describe("Given: subject starts checkout for a subscription product", () => {
     });
   });
 
+  describe("When: checkout payload contains a deleted order id", () => {
+    /**
+     * BDD Scenario
+     *
+     * Given: one requested order still exists and another was already deleted.
+     * When: checkout resolves the requested orders.
+     * Then: only the existing order participates in checkout.
+     */
+    it("Then: stale order ids are excluded from downstream processing", async () => {
+      const { service, checkoutOrders } = createTestContext({
+        activeOrderProductId: "product-other",
+      });
+
+      await service.execute({
+        id: "subject-1",
+        email: "subject@example.com",
+        provider: "stripe",
+        comment: "",
+        ecommerceModule: {
+          orders: [{ id: checkoutOrders[0].id }, { id: "deleted-order" }],
+        },
+      });
+
+      expect(
+        service.ecommerceModule.order.findByIdCheckoutAttributesByCurrency,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        service.ecommerceModule.order.findByIdCheckoutAttributesByCurrency,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: checkoutOrders[0].id,
+        }),
+      );
+    });
+  });
+
   describe("When: checkout completes successfully", () => {
     it("Then: observer messages are scheduled for webhook check and RBAC subject recheck", async () => {
       const { service, checkoutOrders } = createTestContext({

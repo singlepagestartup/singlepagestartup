@@ -283,6 +283,64 @@ afterAll(async () => {
 
 describe("Given: duplicate provider identities", () => {
   /**
+   * BDD Scenario: Checkout contact identities share an email.
+   *
+   * Given: two subjects use the same unverified email while checking out.
+   * When: identity natural-key repair is checked and applied.
+   * Then: both contact identities remain because plain email is not an
+   * authentication natural key.
+   */
+  it("Then: preserves repeated checkout contact emails", async () => {
+    const context = await createTestContext();
+    const identity = quoteIdentifier(context.identityTables.identity);
+    const links = quoteIdentifier(context.identityTables.subjectsToIdentities);
+
+    try {
+      await context.sql.unsafe(`
+        INSERT INTO ${identity}
+          (id, created_at, updated_at, provider, account, email)
+        VALUES
+          ('12000000-0000-0000-0000-000000000001', '2026-01-01', '2026-01-01', 'email', NULL, 'same@example.com'),
+          ('12000000-0000-0000-0000-000000000002', '2026-01-02', '2026-01-02', 'email', NULL, 'SAME@example.com')
+      `);
+      await context.sql.unsafe(`
+        INSERT INTO ${links}
+          (id, created_at, updated_at, st_id, iy_id)
+        VALUES
+          ('12000000-0000-0000-0000-000000000011', '2026-01-01', '2026-01-01', '12000000-0000-0000-0000-000000000021', '12000000-0000-0000-0000-000000000001'),
+          ('12000000-0000-0000-0000-000000000012', '2026-01-02', '2026-01-02', '12000000-0000-0000-0000-000000000022', '12000000-0000-0000-0000-000000000002')
+      `);
+
+      const checked = await repairIdentityNaturalKeys({
+        mode: "check",
+        sql: context.sql,
+        tables: context.identityTables,
+      });
+      expect(checked.before.identityGroups).toBe(0);
+
+      const applied = await repairIdentityNaturalKeys({
+        mode: "apply",
+        sql: context.sql,
+        tables: context.identityTables,
+      });
+      expect(applied.changes).toEqual({
+        identityRowsDeleted: 0,
+        identityLinksDeleted: 0,
+        identityLinksRepointed: 0,
+      });
+
+      const [row] = await context.sql.unsafe<{ count: number | string }[]>(`
+        SELECT COUNT(*)::bigint AS count
+        FROM ${identity}
+        WHERE provider = 'email' AND lower(email) = 'same@example.com'
+      `);
+      expect(Number(row.count)).toBe(2);
+    } finally {
+      await destroyTestContext(context);
+    }
+  });
+
+  /**
    * BDD Scenario: Newest identity is retained and the active subject link follows it.
    *
    * Given: two Telegram identities share an account and only the older row is linked.

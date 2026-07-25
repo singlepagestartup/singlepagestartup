@@ -11,7 +11,6 @@ import {
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { queryClient, subscription } from "@sps/shared-frontend-client-api";
-import { STALE_TIME } from "@sps/shared-utils";
 import { useEffect } from "react";
 
 export type IProps = IParentProps["IEcommerceModuleOrderQuantityProps"] & {
@@ -69,7 +68,10 @@ export function action(props: IProps) {
 
       return data;
     },
-    staleTime: STALE_TIME,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     ...restReactQueryOptions,
   });
 }

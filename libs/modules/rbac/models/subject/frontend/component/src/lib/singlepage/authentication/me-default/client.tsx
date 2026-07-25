@@ -48,12 +48,12 @@ export default function Client(props: IComponentProps) {
       setRawToken(readAuthenticationJwtCookie());
     };
 
-    handleAuthenticationStorageChange();
     window.addEventListener(
       authenticationStorageEvent,
       handleAuthenticationStorageChange,
     );
     window.addEventListener("focus", handleAuthenticationStorageChange);
+    handleAuthenticationStorageChange();
 
     return () => {
       window.removeEventListener(

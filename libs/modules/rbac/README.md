@@ -90,7 +90,9 @@ Authentication and Telegram graph identity are enforced by provider-specific
 and relation-specific indexes:
 
 - Telegram and Google identities use exact `(provider, account)` semantics;
-- EVM accounts and email providers use case-insensitive natural keys;
+- EVM accounts and email/password identities use case-insensitive natural
+  keys;
+- plain email checkout/contact identities may repeat across subjects;
 - one identity may be linked to only one subject;
 - Telegram chats are unique by `sourceSystemId` within the Telegram variant;
 - graph relations are unique by their two foreign keys, and a chat has at most

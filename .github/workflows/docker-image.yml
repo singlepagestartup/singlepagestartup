@@ -113,6 +113,7 @@ jobs:
           push: true
           tags: ${{ steps.image-tags.outputs.tags }}
           build-args: |
+            NEXT_DEPLOYMENT_ID=${{ github.sha }}
             NEXT_PUBLIC_API_SERVICE_URL=${{ env.NEXT_PUBLIC_API_SERVICE_URL }}
             NEXT_PUBLIC_HOST_SERVICE_URL=${{ env.NEXT_PUBLIC_HOST_SERVICE_URL }}
             NEXT_PUBLIC_API_SERVICE_WS_URL=${{ env.NEXT_PUBLIC_API_SERVICE_WS_URL }}
@@ -126,6 +127,7 @@ jobs:
           push: true
           tags: ${{ steps.image-tags.outputs.tags }}
           build-args: |
+            NEXT_DEPLOYMENT_ID=${{ github.sha }}
             NEXT_PUBLIC_API_SERVICE_URL=${{ env.NEXT_PUBLIC_API_SERVICE_URL }}
             NEXT_PUBLIC_HOST_SERVICE_URL=${{ env.NEXT_PUBLIC_HOST_SERVICE_URL }}
             NEXT_PUBLIC_API_SERVICE_WS_URL=${{ env.NEXT_PUBLIC_API_SERVICE_WS_URL }}

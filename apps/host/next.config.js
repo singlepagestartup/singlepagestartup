@@ -24,6 +24,7 @@ function makeConfig() {
 
   return withBundleAnalyzer({
     reactStrictMode: true,
+    deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
     staticPageGenerationTimeout: 6000,
     images: {
       unoptimized: true,

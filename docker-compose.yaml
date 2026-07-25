@@ -27,6 +27,9 @@ services:
       - DATABASE_PORT=5432
       - KV_PROVIDER=redis
       - KV_PORT=6379
+      - NEXT_STATIC_RETENTION_DAYS=${NEXT_STATIC_RETENTION_DAYS:-30}
+    volumes:
+      - host_next_static:/usr/src/app/apps/host/.next/static
     command: "sh -c './start.sh host'"
     ports:
       - "3000:3000"
@@ -40,3 +43,6 @@ networks:
   overlay_network:
     external: false
     name: ${COMPOSE_PROJECT_NAME}_overlay_network
+
+volumes:
+  host_next_static:

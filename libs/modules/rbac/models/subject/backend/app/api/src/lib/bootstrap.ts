@@ -117,6 +117,7 @@ import { Repository as EcommerceStoresToOrdersRepository } from "@sps/ecommerce/
 import { Configuration as EcommerceStoresToOrdersConfiguration } from "@sps/ecommerce/relations/stores-to-orders/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceOrdersToProductsRepository } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceOrdersToProductsConfiguration } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/configuration";
+import { Service as EcommerceOrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
 import { Repository as EcommerceOrdersToBillingModuleCurrenciesRepository } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceOrdersToBillingModuleCurrenciesConfiguration } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceOrdersToBillingModulePaymentIntentsRepository } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/repository";
@@ -290,11 +291,6 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
           new EcommerceStoresToOrdersConfiguration(),
         ),
       );
-      const ordersToProducts = new CRUDService<any>(
-        new EcommerceOrdersToProductsRepository(
-          new EcommerceOrdersToProductsConfiguration(),
-        ),
-      );
       const ordersToBillingModuleCurrencies = new CRUDService<any>(
         new EcommerceOrdersToBillingModuleCurrenciesRepository(
           new EcommerceOrdersToBillingModuleCurrenciesConfiguration(),
@@ -344,6 +340,17 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         new FileStorageFileService(
           new FileStorageFileRepository(new FileStorageFileConfiguration()),
         ),
+      );
+      const ordersToProducts = new EcommerceOrdersToProductsService(
+        new EcommerceOrdersToProductsRepository(
+          new EcommerceOrdersToProductsConfiguration(),
+        ),
+        product,
+        attribute as any,
+        attributeKey as any,
+        productsToAttributes as any,
+        attributeKeysToAttributes as any,
+        attributesToBillingModuleCurrencies as any,
       );
 
       const findByIdCheckoutAttributesService =

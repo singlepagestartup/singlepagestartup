@@ -39,8 +39,14 @@ RUN if [ -n "$NEXT_PUBLIC_YANDEX_METRIKA_ID" ]; then echo "NEXT_PUBLIC_YANDEX_ME
 RUN npm ci && npm cache clean --force
 RUN python3 -m venv /usr/src/app/apps/llm/.venv && \
     /usr/src/app/apps/llm/.venv/bin/pip install --no-cache-dir -r /usr/src/app/apps/llm/requirements.txt
+
+ARG NEXT_DEPLOYMENT_ID
+ENV NEXT_DEPLOYMENT_ID=$NEXT_DEPLOYMENT_ID
+
 RUN npm run host:build && \
-    rm -rf /usr/src/app/.nx /usr/src/app/apps/host/.next/cache
+    rm -rf /usr/src/app/.nx /usr/src/app/apps/host/.next/cache && \
+    rm -rf /usr/src/app/apps/host/.next-static-release && \
+    cp -a /usr/src/app/apps/host/.next/static /usr/src/app/apps/host/.next-static-release
 
 EXPOSE 3000
 EXPOSE 4000

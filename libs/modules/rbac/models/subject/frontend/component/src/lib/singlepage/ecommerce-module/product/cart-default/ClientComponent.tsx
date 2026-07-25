@@ -59,7 +59,18 @@ export function Component(props: IComponentPropsExtended) {
                         method: "eq",
                         value: "cart",
                       },
+                      {
+                        column: "status",
+                        method: "eq",
+                        value: "new",
+                      },
                     ],
+                  },
+                },
+                options: {
+                  cache: "no-store",
+                  headers: {
+                    "Cache-Control": "no-store",
                   },
                 },
               }}
@@ -95,6 +106,7 @@ export function Component(props: IComponentPropsExtended) {
                         },
                       },
                       options: {
+                        cache: "no-store",
                         headers: {
                           "Cache-Control": "no-store",
                         },
@@ -163,6 +175,12 @@ export function Component(props: IComponentPropsExtended) {
                                       value: props.product.id,
                                     },
                                   ],
+                                },
+                              },
+                              options: {
+                                cache: "no-store",
+                                headers: {
+                                  "Cache-Control": "no-store",
                                 },
                               },
                             }}

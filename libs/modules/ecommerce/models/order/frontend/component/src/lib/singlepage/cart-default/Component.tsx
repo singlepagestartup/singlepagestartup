@@ -165,8 +165,16 @@ export function Component(props: IComponentPropsExtended) {
                                                 language={props.language}
                                               >
                                                 {({ data: totals }) => {
-                                                  return totals.map(
-                                                    (total, index) => {
+                                                  return totals
+                                                    .filter((total) => {
+                                                      return props.billingModuleCurrencyId
+                                                        ? total
+                                                            .billingModuleCurrency
+                                                            .id ===
+                                                            props.billingModuleCurrencyId
+                                                        : true;
+                                                    })
+                                                    .map((total, index) => {
                                                       return (
                                                         <p key={index}>
                                                           {total.total}{" "}
@@ -177,8 +185,7 @@ export function Component(props: IComponentPropsExtended) {
                                                           }
                                                         </p>
                                                       );
-                                                    },
-                                                  );
+                                                    });
                                                 }}
                                               </OrdersToProducts>
                                             </div>

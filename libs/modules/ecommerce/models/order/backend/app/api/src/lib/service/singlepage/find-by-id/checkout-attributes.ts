@@ -33,9 +33,17 @@ export function isSupportedOrderInterval(
   return (SUPPORTED_ORDER_INTERVALS as readonly string[]).includes(value);
 }
 
+export const SUPPORTED_ORDER_TYPES = ["one_off", "subscription"] as const;
+
+export type IOrderType = (typeof SUPPORTED_ORDER_TYPES)[number];
+
+export function isSupportedOrderType(value: string): value is IOrderType {
+  return (SUPPORTED_ORDER_TYPES as readonly string[]).includes(value);
+}
+
 export type IResult = {
   amount: number;
-  type: "subscription" | "one-time";
+  type: IOrderType;
   interval?: IOrderInterval;
 };
 
@@ -144,7 +152,7 @@ export class Service {
         throw new Error("Not Found error. Product not found");
       }
 
-      if (product.type !== "subscription" && product.type !== "one-time") {
+      if (!isSupportedOrderType(product.type)) {
         throw new Error(
           "Validation error. Unsupported product.type value: " + product.type,
         );

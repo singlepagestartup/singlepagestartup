@@ -150,3 +150,22 @@ pull. A failed pull is retried up to three times. When Docker reports
 day to all images not referenced by a container. Running containers, their
 images, networks, and volumes are not removed. The same lock, cleanup, and
 retry behavior is used by direct Ansible service deployments.
+
+## Next.js deployment skew protection
+
+Host images are built with the Git commit SHA as the Next.js `deploymentId`.
+Next.js uses it to detect requests from pages opened before a rolling
+deployment and reload those pages when their server and client versions no
+longer match.
+
+Each image also contains an immutable copy of its `.next/static` directory.
+Before the host starts, those files are merged into the persistent
+`next_static` Docker volume. This keeps hashed chunks from previous deployments
+available to browser tabs that were already open when the deployment began.
+
+`NEXT_STATIC_RETENTION_DAYS` controls when unused chunks are removed. The
+default is 30 days; set it to `0` to disable pruning.
+
+Existing installations must run `tools/deployer/host.sh up` once after this
+change so the host service is recreated with the persistent volume. Subsequent
+image releases preserve and update the volume automatically.

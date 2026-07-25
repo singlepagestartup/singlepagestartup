@@ -31,6 +31,11 @@ export async function action(props: IProps): Promise<IResult> {
     credentials: "include",
     method: "GET",
     ...options,
+    cache: "no-store",
+    headers: {
+      ...options?.headers,
+      "Cache-Control": "no-store",
+    },
     next: {
       ...options?.next,
     },

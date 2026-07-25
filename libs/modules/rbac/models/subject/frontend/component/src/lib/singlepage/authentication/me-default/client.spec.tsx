@@ -122,4 +122,56 @@ describe("Given: authentication me-default client", () => {
       expect(screen.queryByTestId("subject-id")?.textContent).toBe("subject-2");
     });
   });
+
+  /**
+   * BDD Scenario: authentication event subscription race.
+   *
+   * Given: the anonymous JWT is persisted while the consumer effect subscribes.
+   * When: the storage event can occur before the listener is attached.
+   * Then: the post-subscription cookie synchronization still renders the subject.
+   */
+  it("When: JWT is persisted during subscription Then: the subject still appears", async () => {
+    useJwtMock.mockImplementation((token: string) => {
+      if (token === "valid-token") {
+        return {
+          decodedToken: {
+            subject: {
+              id: "subject-3",
+              variant: "default",
+            },
+          },
+          isExpired: false,
+        };
+      }
+
+      return {
+        decodedToken: null,
+        isExpired: false,
+      };
+    });
+
+    const addEventListener = window.addEventListener.bind(window);
+    let tokenPersisted = false;
+
+    jest
+      .spyOn(window, "addEventListener")
+      .mockImplementation((type, listener, options) => {
+        if (type === "sps-rbac-auth-storage-change" && !tokenPersisted) {
+          tokenPersisted = true;
+          document.cookie = "rbac.subject.jwt=valid-token; path=/";
+        }
+
+        addEventListener(type, listener, options);
+      });
+
+    render(
+      <Client variant="authentication-me-default" isServer={false}>
+        {({ data }: any) => <div data-testid="subject-id">{data.id}</div>}
+      </Client>,
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("subject-id")?.textContent).toBe("subject-3");
+    });
+  });
 });
