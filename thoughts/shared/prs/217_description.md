@@ -4,11 +4,11 @@ Harden the production infrastructure boundary for issue #215 by removing public 
 
 ## Changes
 
-- Enforce Redis `requirepass` in production and local Compose flows, add authenticated health checks, and validate both rejected unauthenticated access and accepted protected access during deployment.
-- Default the Redis deployment port to `6379` at every boundary and bind post-update probes to the current desired Swarm task.
+- Enforce Redis `requirepass` in production and local Compose flows while rejecting an empty production password before deployment.
+- Default the Redis deployment port to `6379` at every input, render, and runtime boundary without adding post-deploy task discovery or probes.
 - Remove public PostgreSQL and Redis Traefik TCP routing plus direct Portainer port `9000`; retain private Swarm overlay connectivity and bootstrap Portainer through HTTPS.
 - Default Traefik logging to `INFO`, propagate a temporary `DEBUG` override through deployer and CI configuration, and document restoration.
-- Add bounded PostgreSQL/Redis deployment readiness checks and an operator runbook covering firewall ownership, private administration, rollout, verification, and rollback.
+- Add bounded PostgreSQL readiness checks and an operator runbook covering firewall ownership, private administration, rollout, verification, and rollback.
 - Add the canonical ticket, research, plan, process, and implementation-progress artifacts for issue 215.
 
 ## Verification
@@ -29,6 +29,7 @@ Harden the production infrastructure boundary for issue #215 by removing public 
 - No database schema or data migration is required.
 - Keep production and preview `REDIS_PASSWORD` secrets populated before rollout.
 - Deploy as one coordinated infrastructure release. The live-host checks are intentionally deferred until the operator redeploys the server.
+- Redis deployment intentionally stays minimal: password guard, rendered Compose file, and `docker stack deploy`; runtime checks remain operator-driven.
 - Prefer fixing forward. Reverting to the old network templates republishes sensitive listeners/routes and requires immediate firewall review.
 
 Closes #215

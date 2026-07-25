@@ -153,10 +153,10 @@ cd tools/deployer
 ./up.sh
 ```
 
-The Redis and PostgreSQL playbooks wait for their Swarm replicas and perform
-container-local readiness checks. Redis additionally proves that an
-unauthenticated command is rejected and the protected credential returns
-`PONG`.
+The PostgreSQL playbook performs a container-local readiness check. Redis keeps
+deployment intentionally simple: the wrapper rejects an empty password, and
+the container command refuses to start unless it can launch Redis with
+`requirepass`.
 
 After deployment:
 

@@ -19,19 +19,6 @@ services:
       REDIS_DATABASES: 16
       REDIS_PORT: {{ REDIS_PORT | default('6379', true) | to_json }}
       REDIS_PASSWORD: {{ REDIS_PASSWORD | to_json }}
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - >-
-          REDISCLI_AUTH="$${REDIS_PASSWORD}"
-          redis-cli
-          -p "$${REDIS_PORT:-6379}"
-          --no-auth-warning
-          ping | grep -qx PONG
-      interval: 5s
-      timeout: 3s
-      retries: 12
-      start_period: 5s
     deploy:
       update_config:
         order: start-first
