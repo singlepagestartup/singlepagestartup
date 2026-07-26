@@ -36,14 +36,14 @@ completed_date: 2026-07-26T00:52:38+03:00
 - [x] Completed: 2026-07-26T00:49:02+03:00
 - [x] Automated verification: PASSED 2026-07-26T00:49:02+03:00
 
-**Notes**: Parameterized Traefik logging with an `INFO` default and temporary `DEBUG` override across local and CI deployment inputs, then documented the hardened network boundary, private administration paths, credential flow, rollout, verification, and rollback procedure. Shell and Ansible syntax, default/override/restored Traefik renders, production and preview CI propagation, rendered Compose validation, supported-file formatting, forbidden-route scans, and `git diff --check` pass. Live-host checks remain deferred until the operator redeploys.
+**Notes**: Parameterized Traefik logging with an `INFO` default and temporary `DEBUG` override across local and CI deployment inputs, then documented the hardened network boundary, private administration paths, credential flow, rollout, verification, and rollback procedure. Shell and Ansible syntax, default/override/restored Traefik renders, production and preview CI propagation, rendered Compose validation, supported-file formatting, forbidden-route scans, and `git diff --check` pass. Production verification later confirmed all replicas, private infrastructure ports, DNS, TLS, current logs, and fresh Admin login.
 
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 7 -->
+<!-- incident-count: 11 -->
 
 ### Incident 1 — Plan linked unrelated issue 199 research
 
@@ -108,6 +108,42 @@ completed_date: 2026-07-26T00:52:38+03:00
 - **Fix**: Add `REDIS_PORT=6379` to the example environment, resolve it through `get_env_or_default`, render an empty input as the string `"6379"`, and remove the unnecessary positive deployment probe.
 - **Reusable Pattern**: Apply the same default at input, render, and runtime boundaries for optional deployment values.
 
+### Incident 8 — Redis authentication rollover left existing clients aborted
+
+- **Occurrences**: 1
+- **Stage**: Production rollout verification
+- **Symptom**: Correct production credentials returned `500 Internal server error: The operation was aborted.`, and API/MCP logged repeated ioredis errors.
+- **Root Cause**: Redis was replaced with authentication before an earlier aborted rollout reached API and MCP, leaving their long-lived connections in an unrecovered state despite matching credentials.
+- **Fix**: Confirmed a fresh authenticated connection returned `PONG`, force-restarted API and MCP, then verified successful Admin login and clean current logs.
+- **Reusable Pattern**: When Redis is recreated outside the complete rollout, restart its API and MCP clients before application verification.
+
+### Incident 9 — Domain deployment continued after Certbot failure
+
+- **Occurrences**: 1
+- **Stage**: Production rollout verification
+- **Symptom**: Traefik reloaded an absent certificate path after Let's Encrypt rejected the HTTP-01 challenge.
+- **Root Cause**: Cloudflare retained both old and current A-records, while `domain.sh` continued to certificate registration after the Certbot Ansible command failed.
+- **Fix**: Made the managed A-record exclusive, added fail-fast shell behavior to domain deployment and certificate renewal, then successfully issued and registered the Traefik certificate.
+- **Reusable Pattern**: Keep one A-record for the managed service hostname, and require certificate issuance to succeed before registration or reload.
+
+### Incident 10 — Redundant Portainer update raced with stack deployment
+
+- **Occurrences**: 1
+- **Stage**: Production rollout
+- **Symptom**: LLM stack deployment succeeded, then the following Portainer service update failed with `update out of sequence`.
+- **Root Cause**: Five application playbooks posted the unchanged service Spec back through Portainer using a version captured immediately after `docker stack deploy`.
+- **Fix**: Removed the repeated version/Spec/update tasks from LLM, API, MCP, Telegram, and Host; all five subsequently deployed through the shorter stack-and-webhook flow.
+- **Reusable Pattern**: Use one service mutation per deploy path and avoid version-sensitive duplicate updates.
+
+### Incident 11 — MCP and Telegram secret tasks exposed loop values
+
+- **Occurrences**: 1
+- **Stage**: Production rollout
+- **Symptom**: MCP printed a generated webhook update URL while creating GitHub secrets.
+- **Root Cause**: MCP and Telegram lacked the `no_log: true` used by the other service secret tasks.
+- **Fix**: Added the mask to both playbooks and confirmed Telegram values were censored during deployment.
+- **Reusable Pattern**: Secret-writing tasks must mask both command arguments and loop item values.
+
 ## Summary
 
 ### Changes Made
@@ -117,6 +153,10 @@ completed_date: 2026-07-26T00:52:38+03:00
 - Removed public PostgreSQL/Redis Traefik routing and direct Portainer publication, retained private overlay connectivity, and moved Portainer bootstrap to its HTTPS route.
 - Defaulted Traefik logging to `INFO` with an explicit temporary `DEBUG` override propagated through deployer and CI inputs.
 - Documented firewall ownership, private administration, coordinated rollout, rollback risks, and operator-driven post-deploy verification.
+- Made domain issuance and certificate renewal fail fast so a missing certificate cannot be registered as a successful deployment.
+- Verified production Redis connectivity and restored Admin login by restarting the API/MCP clients after the Redis authentication rollover.
+- Keep Cloudflare service A-records exclusive so certificate validation cannot reach a retired server.
+- Removed redundant Portainer service updates from all five application deploys and masked MCP/Telegram secret output.
 
 ### Pull Request
 
@@ -131,4 +171,4 @@ completed_date: 2026-07-26T00:52:38+03:00
 
 ---
 
-**Last updated**: 2026-07-26T02:20:58+03:00
+**Last updated**: 2026-07-26T03:00:45+03:00

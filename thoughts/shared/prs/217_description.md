@@ -9,6 +9,9 @@ Harden the production infrastructure boundary for issue #215 by removing public 
 - Remove public PostgreSQL and Redis Traefik TCP routing plus direct Portainer port `9000`; retain private Swarm overlay connectivity and bootstrap Portainer through HTTPS.
 - Default Traefik logging to `INFO`, propagate a temporary `DEBUG` override through deployer and CI configuration, and document restoration.
 - Keep PostgreSQL and Redis Ansible deployment as simple render-and-deploy flows, with operational verification documented for the operator.
+- Keep one Cloudflare A-record per managed service hostname and stop domain/certificate flows on the first failure.
+- Remove the redundant version-sensitive Portainer update after application stack deployments; retain the stack deployment and webhook registration.
+- Mask GitHub secret values consistently in MCP and Telegram deployment output.
 - Add the canonical ticket, research, plan, process, and implementation-progress artifacts for issue 215.
 
 ## Verification
@@ -22,13 +25,17 @@ Harden the production infrastructure boundary for issue #215 by removing public 
 - [x] `npx nx run api:jest:scenario --testFile=apps/api/specs/scenario/singlepagestartup/issue-152/backend-cart.scenario.spec.ts` (4/4).
 - [x] `npx nx run mcp:jest:test --testFile=apps/mcp/lib/oauth.spec.ts` (12/12).
 - [x] Supported YAML/Markdown formatting and `git diff --check`.
-- [ ] Redeploy on the production server and complete the documented listener, firewall, replica, HTTPS, API, MCP, and Traefik log-level checks.
+- [x] All changed Ansible playbooks pass `ansible-playbook --syntax-check`.
+- [x] Production deployment completes for LLM, API, MCP, Telegram, and Host without the duplicate Portainer update.
+- [x] Production shows every service at `1/1`, only ports `80/443` published, one Traefik DNS address, and a valid Let's Encrypt certificate.
+- [x] Fresh production API/MCP/Host/Traefik logs contain no Redis, authentication, certificate, or service-version errors.
+- [x] Fresh browser logout/login reaches `/en` with the authenticated `Admin` control.
 
 ## Notes
 
 - No database schema or data migration is required.
 - Keep production and preview `REDIS_PASSWORD` secrets populated before rollout.
-- Deploy as one coordinated infrastructure release. The live-host checks are intentionally deferred until the operator redeploys the server.
+- Deploy as one coordinated infrastructure release. If Redis is recreated separately, restart API and MCP before application verification.
 - Redis deployment intentionally stays minimal: password guard, rendered Compose file, and `docker stack deploy`; runtime checks remain operator-driven.
 - Prefer fixing forward. Reverting to the old network templates republishes sensitive listeners/routes and requires immediate firewall review.
 

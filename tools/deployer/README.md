@@ -116,6 +116,12 @@ REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli -p "${REDIS_PORT:-6379}"
 it as `requirepass`, while API and MCP receive the same protected value as
 `KV_PASSWORD`. Keep both production and preview secrets populated and deploy
 Redis, API, and MCP as one coordinated rollout when the credential changes.
+If Redis is recreated separately, restart its existing clients before testing:
+
+```bash
+docker service update --force api_api
+docker service update --force mcp_mcp
+```
 
 ### Traefik log level
 
@@ -224,7 +230,10 @@ Certbot nginx container and Traefik's Docker Swarm provider. The deployer:
 DNS must resolve each service hostname to `ANSIBLE_HOST`, and inbound TCP port
 `80` must remain open until certificate issuance finishes. If certificate
 creation stops at `Verify ACME webroot is publicly reachable`, check DNS and
-the Lightsail firewall first; Certbot has not contacted Let's Encrypt yet.
+the Lightsail firewall first; Certbot has not contacted Let's Encrypt yet. If
+DNS was just changed, wait for the public record to resolve to `ANSIBLE_HOST`
+and rerun the affected service deployment. Certificate failures stop the
+deployment instead of registering an unusable certificate path in Traefik.
 
 ## GitHub Actions deployment
 

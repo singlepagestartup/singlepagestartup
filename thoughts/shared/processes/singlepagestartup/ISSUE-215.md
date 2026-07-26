@@ -3,7 +3,7 @@ issue_number: 215
 issue_title: "Harden public PostgreSQL, Redis, Portainer, and Traefik configuration"
 repository: singlepagestartup
 created_at: 2026-07-25T23:36:05+03:00
-last_updated: 2026-07-26T02:20:58+03:00
+last_updated: 2026-07-26T03:00:45+03:00
 status: complete
 current_phase: complete
 ---
@@ -58,7 +58,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Implement
 
-- Summary: All three implementation phases and their automated verification are complete; live-host verification is intentionally deferred until the operator redeploys the server.
+- Summary: All three implementation phases, automated verification, production rollout recovery, and live-host verification are complete.
 - Outputs:
   - Progress: `thoughts/shared/handoffs/singlepagestartup/ISSUE-215-progress.md`
   - Pull request: https://github.com/singlepagestartup/singlepagestartup/pull/217
@@ -69,16 +69,20 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   - Phase 2 removed public data/admin routes and moved Portainer bootstrap to HTTPS; rendered Compose and local readiness verification pass.
   - Phase 3 added the Traefik `INFO` default and temporary `DEBUG` override through deployer and CI paths, plus the hardened operational and post-deploy runbook.
   - The final automated sweep passed shell and Ansible syntax, rendered Compose validation, default/override/restored log-level behavior, static exposure checks, supported-file formatting, API KV integration, MCP OAuth tests, and whitespace validation.
-  - The operator directed implementation through all phases before redeploying the server; live environment verification is deferred to the documented post-deploy checklist.
+  - The operator directed implementation through all phases before redeploying the server; the documented post-deploy checklist was then completed against production.
   - Pull request 217 was linked from issue 215 and the GitHub Project status was verified as `Code Review`.
   - The first production rollout exposed a Swarm task-selection race and an inconsistent optional Redis port default. The operator directed removal of the added Redis waits, task discovery, authentication probes, and healthchecks; the final path resolves `REDIS_PORT` to `6379` and performs only the guarded service deployment.
   - A full branch deployment audit removed the added PostgreSQL replica wait, container lookup, and `pg_isready` orchestration so both data-service playbooks remain simple render-and-deploy flows.
+  - Production login initially returned `500 Internal server error: The operation was aborted.` because API and MCP processes predated the authenticated Redis replacement and the earlier aborted rollout never reached their deployment steps. Their configured Redis credential matched the service, a fresh connection returned `PONG`, and force-restarting both services restored login.
+  - A separate Traefik startup error exposed an absent certificate entry after two A-records sent part of Certbot validation to the previous server. DNS deployment now keeps one A-record, while the domain wrapper and renewal script stop on the first failed command.
+  - Application playbooks no longer repeat a Portainer service update immediately after `docker stack deploy`; LLM, API, MCP, Telegram, and Host completed successfully through the shorter flow.
+  - Final production verification confirmed every service at `1/1`, only ports `80/443` published, one Traefik DNS address, a valid Let's Encrypt certificate, clean current service logs, and a fresh authenticated Admin login in the browser.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 11 -->
+<!-- incident-count: 15 -->
 
 ### Incident 1 — GitHub CLI connectivity from sandbox
 
@@ -189,6 +193,46 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Fix**: Default `REDIS_PORT` to `6379` in the wrapper, example environment, and rendered Compose value, then remove the unnecessary positive probe.
 - **Preventive Action**: Keep optional configuration defaults consistent across generators, templates, and runtime commands.
 - **References**: `tools/deployer/.env.example`, `tools/deployer/redis.sh`, `tools/deployer/redis/create_redis.yaml`, `tools/deployer/redis/docker-compose.redis.yaml.j2`
+
+### Incident 12 — Redis authentication rollover left existing clients aborted
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Correct production login credentials returned `500 Internal server error: The operation was aborted.`, while API and MCP repeatedly logged unhandled ioredis errors.
+- **Root Cause**: Redis had been recreated with authentication, but the earlier rollout stopped before reaching API and MCP. Their long-lived clients predated the Redis replacement and did not recover, even though the configured API and Redis passwords matched.
+- **Fix**: Verified the protected credential match without exposing values, confirmed a fresh ioredis connection returned `PONG`, then force-restarted API and MCP. Browser login reached the authenticated Admin page and current API/MCP logs contained no Redis errors.
+- **Preventive Action**: Deploy Redis, API, and MCP as one rollout. If Redis is recreated separately, force-restart API and MCP before application verification.
+- **References**: `tools/deployer/up.sh`, `tools/deployer/README.md`, `tools/deployer/api/docker-compose.api.yaml.j2`, `tools/deployer/mcp/docker-compose.mcp.yaml.j2`
+
+### Incident 13 — Domain deployment continued after Certbot failure
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Traefik logged that `/certs/traefik.singlepagestartup.com.crt` contained no PEM data, while the certificate and key files were absent.
+- **Root Cause**: Cloudflare contained both the previous and current A-records, so secondary Let's Encrypt validation reached the previous server. `domain.sh` then ignored the failed Ansible command, registered the absent certificate path, restarted Traefik, and returned success because its final command passed.
+- **Fix**: Made the managed A-record exclusive with `solo: true`, then added shell fail-fast behavior to `domain.sh` and the generated renewal script. The retry removed the old address, issued a valid certificate, and restarted Traefik successfully.
+- **Preventive Action**: Keep one managed A-record per service hostname and never register or reload a certificate path after issuance fails.
+- **References**: `tools/deployer/cloudflare/dns_records.yaml`, `tools/deployer/domain.sh`, `tools/deployer/certbot/certbot_renew_ssl_and_update_traefik.sh.j2`, `tools/deployer/certbot/create_ssl_certificate.yaml`, `tools/deployer/README.md`
+
+### Incident 14 — Redundant Portainer update raced with stack deployment
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The coordinated deployment stopped in LLM after `docker stack deploy` succeeded because a following Portainer update returned `500 update out of sequence`.
+- **Root Cause**: Each application playbook read a Swarm service version and posted the unchanged service Spec back through Portainer immediately after deploying the same service, creating a version race with Swarm reconciliation.
+- **Fix**: Removed the duplicate version/Spec/auth/update sequence from LLM, API, MCP, Telegram, and Host. Each playbook now deploys the stack once, gets the service ID, and creates the Portainer webhook with its registry ID.
+- **Preventive Action**: Keep one service mutation in the deployment path; do not follow `docker stack deploy --with-registry-auth` with an identical version-sensitive service update.
+- **References**: `tools/deployer/llm/create_llm.yaml`, `tools/deployer/api/create_api.yaml`, `tools/deployer/mcp/create_mcp.yaml`, `tools/deployer/telegram/create_telegram.yaml`, `tools/deployer/host/create_host.yaml`
+
+### Incident 15 — MCP and Telegram secret tasks exposed loop values
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: MCP deployment printed the generated webhook update URL while writing GitHub secrets.
+- **Root Cause**: MCP and Telegram were the only `fill_github.yaml` service playbooks whose `Set secrets to GitHub` task lacked `no_log: true`.
+- **Fix**: Added `no_log: true` to both tasks and verified the Telegram deployment output was censored.
+- **Preventive Action**: Mask every Ansible task whose arguments or loop items contain secret values, including generated webhook URLs.
+- **References**: `tools/deployer/mcp/fill_github.yaml`, `tools/deployer/telegram/fill_github.yaml`
 
 ## Reusable Learnings
 
