@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 echo "[INFO] Renewing Let's Encrypt certificates..."
 certbot renew --webroot -w /home/code/certbot --quiet

@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 . ./get_env.sh
 
 SERVICE_URL=$2
