@@ -155,7 +155,7 @@ completed_date: 2026-07-26T00:52:38+03:00
 - Documented firewall ownership, private administration, coordinated rollout, rollback risks, and operator-driven post-deploy verification.
 - Made domain issuance and certificate renewal fail fast so a missing certificate cannot be registered as a successful deployment.
 - Verified production Redis connectivity and restored Admin login by restarting the API/MCP clients after the Redis authentication rollover.
-- Keep Cloudflare service A-records exclusive so certificate validation cannot reach a retired server.
+- Kept Cloudflare service A-records exclusive so certificate validation cannot reach a retired server.
 - Removed redundant Portainer service updates from all five application deploys and masked MCP/Telegram secret output.
 
 ### Pull Request

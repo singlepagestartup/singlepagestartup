@@ -25,7 +25,6 @@ Harden the production infrastructure boundary for issue #215 by removing public 
 - [x] `npx nx run api:jest:scenario --testFile=apps/api/specs/scenario/singlepagestartup/issue-152/backend-cart.scenario.spec.ts` (4/4).
 - [x] `npx nx run mcp:jest:test --testFile=apps/mcp/lib/oauth.spec.ts` (12/12).
 - [x] Supported YAML/Markdown formatting and `git diff --check`.
-- [x] All changed Ansible playbooks pass `ansible-playbook --syntax-check`.
 - [x] Production deployment completes for LLM, API, MCP, Telegram, and Host without the duplicate Portainer update.
 - [x] Production shows every service at `1/1`, only ports `80/443` published, one Traefik DNS address, and a valid Let's Encrypt certificate.
 - [x] Fresh production API/MCP/Host/Traefik logs contain no Redis, authentication, certificate, or service-version errors.
