@@ -5,6 +5,7 @@ Harden the production infrastructure boundary for issue #215 by removing public 
 ## Changes
 
 - Enforce Redis `requirepass` in production and local Compose flows while rejecting an empty production password before deployment.
+- Persist Redis through the stock image's `/data` directory and keep the production Redis singleton on stop-first updates.
 - Default the Redis deployment port to `6379` at every input, render, and runtime boundary without adding post-deploy task discovery or probes.
 - Remove public PostgreSQL and Redis Traefik TCP routing plus direct Portainer port `9000`; retain private Swarm overlay connectivity and bootstrap Portainer through HTTPS.
 - Default Traefik logging to `INFO`, propagate a temporary `DEBUG` override through deployer and CI configuration, and document restoration.
@@ -29,6 +30,7 @@ Harden the production infrastructure boundary for issue #215 by removing public 
 - [x] Production shows every service at `1/1`, only ports `80/443` published, one Traefik DNS address, and a valid Let's Encrypt certificate.
 - [x] Fresh production API/MCP/Host/Traefik logs contain no Redis, authentication, certificate, or service-version errors.
 - [x] Fresh browser logout/login reaches `/en` with the authenticated `Admin` control.
+- [x] Clean production Redis recreation mounts `/home/code/redis_data:/data`, rejects unauthenticated `PING`, accepts authenticated `PING`, writes `dump.rdb` to the host directory, and leaves restarted API/MCP logs clean.
 
 ## Notes
 
@@ -36,6 +38,7 @@ Harden the production infrastructure boundary for issue #215 by removing public 
 - Keep production and preview `REDIS_PASSWORD` secrets populated before rollout.
 - Deploy as one coordinated infrastructure release. If Redis is recreated separately, restart API and MCP before application verification.
 - Redis deployment intentionally stays minimal: password guard, rendered Compose file, and `docker stack deploy`; runtime checks remain operator-driven.
+- Existing test production Redis data was intentionally cleared before applying the corrected persistence mount.
 - Prefer fixing forward. Reverting to the old network templates republishes sensitive listeners/routes and requires immediate firewall review.
 
 Closes #215

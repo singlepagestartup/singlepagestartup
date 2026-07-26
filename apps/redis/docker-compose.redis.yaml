@@ -15,7 +15,7 @@ services:
         --requirepass "$${REDIS_PASSWORD}"
     restart: always
     volumes:
-      - ./redis_data:/root/redis
+      - ./redis_data:/data
     env_file:
       - .env
     expose:

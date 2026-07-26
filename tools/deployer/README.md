@@ -162,7 +162,10 @@ cd tools/deployer
 The PostgreSQL and Redis playbooks intentionally stay small: render the Compose
 file and deploy the stack. The Redis wrapper rejects an empty password, and the
 container command refuses to start unless it can launch Redis with
-`requirepass`.
+`requirepass`. Redis stores its RDB snapshot in `/data`, which is backed by
+`/home/code/redis_data` on the server. Its singleton Swarm service uses the
+default stop-first update order so two Redis processes never write to that
+directory at the same time.
 
 After deployment:
 

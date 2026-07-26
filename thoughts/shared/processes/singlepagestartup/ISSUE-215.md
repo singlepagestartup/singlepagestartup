@@ -3,7 +3,7 @@ issue_number: 215
 issue_title: "Harden public PostgreSQL, Redis, Portainer, and Traefik configuration"
 repository: singlepagestartup
 created_at: 2026-07-25T23:36:05+03:00
-last_updated: 2026-07-26T03:00:45+03:00
+last_updated: 2026-07-26T23:45:50+03:00
 status: complete
 current_phase: complete
 ---
@@ -77,12 +77,13 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   - A separate Traefik startup error exposed an absent certificate entry after two A-records sent part of Certbot validation to the previous server. DNS deployment now keeps one A-record, while the domain wrapper and renewal script stop on the first failed command.
   - Application playbooks no longer repeat a Portainer service update immediately after `docker stack deploy`; LLM, API, MCP, Telegram, and Host completed successfully through the shorter flow.
   - Final production verification confirmed every service at `1/1`, only ports `80/443` published, one Traefik DNS address, a valid Let's Encrypt certificate, clean current service logs, and a fresh authenticated Admin login in the browser.
+  - A later MCP reconnection exposed that Redis persisted to its container-local `/data` while the host directory was mounted at `/root/redis`. Production Redis was intentionally cleared as test infrastructure, both production and local Compose now mount `redis_data` at `/data`, and the Redis singleton uses stop-first updates.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 15 -->
+<!-- incident-count: 16 -->
 
 ### Incident 1 — GitHub CLI connectivity from sandbox
 
@@ -234,7 +235,18 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Mask every Ansible task whose arguments or loop items contain secret values, including generated webhook URLs.
 - **References**: `tools/deployer/mcp/fill_github.yaml`, `tools/deployer/telegram/fill_github.yaml`
 
+### Incident 16 — Redis persistence mount discarded MCP OAuth clients
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: An MCP connector created before the production Redis replacement reached the login form but failed with `Invalid client or redirect_uri`.
+- **Root Cause**: MCP dynamic OAuth clients are stored in Redis, but production and local Compose mounted `redis_data` at `/root/redis` while the stock Redis image writes its RDB snapshot to `/data`. Recreating the Redis task therefore discarded every registered OAuth client.
+- **Fix**: Mounted `redis_data` at `/data` in both Compose sources, removed `start-first` from the production Redis singleton, intentionally cleared the test production Redis through `redis.sh`, recreated it, and restarted API/MCP.
+- **Preventive Action**: Mount the datastore's actual persistence directory and never let two singleton Redis tasks share it during an update.
+- **References**: `tools/deployer/redis/docker-compose.redis.yaml.j2`, `apps/redis/docker-compose.redis.yaml`, `tools/deployer/README.md`, `apps/mcp/lib/oauth.ts`
+
 ## Reusable Learnings
 
 - Production deployment behavior is sourced from `tools/deployer/**/*.j2` through Ansible, while `apps/db` and `apps/redis` describe local development.
 - Preserve the current reverse-proxy/orchestrator boundary when reasoning about deployment behavior: Traefik and service labels share one explicit `traefik_overlay`, while internal application clients use Swarm service DNS.
+- Persistence mounts must match the image's real data directory; for the stock Redis image that directory is `/data`, and a singleton stateful service should update stop-first.

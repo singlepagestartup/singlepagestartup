@@ -43,7 +43,7 @@ completed_date: 2026-07-26T00:52:38+03:00
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 11 -->
+<!-- incident-count: 12 -->
 
 ### Incident 1 — Plan linked unrelated issue 199 research
 
@@ -144,11 +144,21 @@ completed_date: 2026-07-26T00:52:38+03:00
 - **Fix**: Added the mask to both playbooks and confirmed Telegram values were censored during deployment.
 - **Reusable Pattern**: Secret-writing tasks must mask both command arguments and loop item values.
 
+### Incident 12 — Redis persistence mount discarded MCP OAuth clients
+
+- **Occurrences**: 1
+- **Stage**: Production MCP verification
+- **Symptom**: A connector registered before Redis recreation failed authorization with `Invalid client or redirect_uri`.
+- **Root Cause**: OAuth clients were stored in Redis, but Compose mounted the host directory at `/root/redis` while Redis persisted to container-local `/data`.
+- **Fix**: Changed production and local mounts to `/data`, removed production `start-first`, intentionally cleared the test Redis through `redis.sh`, recreated it, and restarted API/MCP.
+- **Reusable Pattern**: Mount the image's real datastore directory and use stop-first updates for a singleton stateful service.
+
 ## Summary
 
 ### Changes Made
 
 - Enforced authenticated Redis startup in production and local Compose flows while preserving the existing protected credential path into API and MCP.
+- Persisted Redis RDB data through `/data` in production and local Compose and kept the singleton update stop-first.
 - Made Redis port `6379` explicit across deployer input, rendered service environment, and runtime command while removing fragile post-deploy task/probe orchestration.
 - Removed public PostgreSQL/Redis Traefik routing and direct Portainer publication, retained private overlay connectivity, and moved Portainer bootstrap to its HTTPS route.
 - Defaulted Traefik logging to `INFO` with an explicit temporary `DEBUG` override propagated through deployer and CI inputs.
@@ -171,4 +181,4 @@ completed_date: 2026-07-26T00:52:38+03:00
 
 ---
 
-**Last updated**: 2026-07-26T03:00:45+03:00
+**Last updated**: 2026-07-26T23:45:50+03:00

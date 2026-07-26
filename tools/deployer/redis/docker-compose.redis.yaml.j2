@@ -12,7 +12,7 @@ services:
         --port "$${REDIS_PORT:-6379}"
         --requirepass "$${REDIS_PASSWORD}"
     volumes:
-      - ./redis_data:/root/redis
+      - ./redis_data:/data
     networks:
       - traefik_overlay
     environment:
@@ -20,8 +20,6 @@ services:
       REDIS_PORT: {{ REDIS_PORT | default('6379', true) | to_json }}
       REDIS_PASSWORD: {{ REDIS_PASSWORD | to_json }}
     deploy:
-      update_config:
-        order: start-first
       placement:
         constraints:
           - node.role == manager
