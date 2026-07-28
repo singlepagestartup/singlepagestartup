@@ -21,16 +21,20 @@ export class Handler {
       logger.info("Host module page cache started");
 
       const urls = await this.service.hostModule.page.urls();
+      const hostServiceUrl = HOST_SERVICE_URL.replace(/\/+$/, "");
 
       if (urls?.length) {
-        for (const [index, url] of urls.entries()) {
+        for (const url of urls) {
           for (const language of internationalization.languages) {
             const code =
               language.code === internationalization.defaultLanguage.code
                 ? ""
-                : language.code + "/";
+                : language.code;
+            const urlPath = url.url.replace(/^\/+|\/+$/g, "");
+            const localizedPath = [code, urlPath].filter(Boolean).join("/");
+            const rootSuffix = !urlPath && localizedPath ? "/" : "";
 
-            const path = HOST_SERVICE_URL + "/" + code + url.url.join("/");
+            const path = `${hostServiceUrl}/${localizedPath}${rootSuffix}`;
 
             try {
               await this.revalidatePage(path);
