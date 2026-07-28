@@ -63,11 +63,38 @@
         state: present
         lock_timeout: 120
 
+    - name: Configure Docker to use the classic overlay2 image store
+      ansible.builtin.copy:
+        dest: /etc/docker/daemon.json
+        mode: "0644"
+        content: >-
+          {"features":{"containerd-snapshotter":false}}
+      notify: Restart Docker
+
     - name: Enable and start Docker
       ansible.builtin.service:
         name: docker
         enabled: yes
         state: started
+
+    - name: Apply Docker configuration before deployment
+      ansible.builtin.meta: flush_handlers
+
+    - name: Read active Docker storage driver
+      ansible.builtin.shell: >-
+        docker info | sed -n 's/^ Storage Driver: //p'
+      args:
+        executable: /bin/bash
+      register: docker_storage_driver
+      changed_when: false
+
+    - name: Verify Docker uses the overlay2 storage driver
+      ansible.builtin.assert:
+        that:
+          - docker_storage_driver.stdout == "overlay2"
+        fail_msg: >-
+          Docker must use the overlay2 storage driver for reliable image pulls.
+          Detected {{ docker_storage_driver.stdout | default("unknown") }}.
 
     - name: Allow deployment user to use Docker without sudo
       ansible.builtin.user:
@@ -80,3 +107,9 @@
       ansible.builtin.command: python3 -m venv /opt/venv
       args:
         creates: /opt/venv/bin/python
+
+  handlers:
+    - name: Restart Docker
+      ansible.builtin.service:
+        name: docker
+        state: restarted

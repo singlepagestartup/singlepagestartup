@@ -50,6 +50,14 @@
 
           printf '%s\n' "$pull_output" >&2
 
+          if grep -qiE \
+            '(/var/lib/containerd/|snapshotter\.v1\.overlayfs).*(no such file or directory)' \
+            <<< "$pull_output"; then
+            echo "Docker containerd image-store extraction failed." >&2
+            echo "Re-run server provisioning to configure the overlay2 storage driver before retrying deployment." >&2
+            exit 1
+          fi
+
           if grep -qi "no space left on device" <<< "$pull_output"; then
             docker container prune --force || true
 
