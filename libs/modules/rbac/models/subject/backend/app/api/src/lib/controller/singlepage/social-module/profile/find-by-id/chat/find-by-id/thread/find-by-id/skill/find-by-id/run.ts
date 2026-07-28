@@ -11,6 +11,7 @@ import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/
 import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
 import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import { getLocalizedProfilePlainText } from "@sps/social/models/profile/sdk/model";
 import { createHash } from "node:crypto";
 
 interface IRequestBody {
@@ -83,12 +84,6 @@ export class Handler {
       if (!skill) {
         throw new Error(
           `Not found error. Social skill ${socialModuleSkillId} was not found`,
-        );
-      }
-
-      if (skill.status === "archived") {
-        throw new Error(
-          `Validation error. Social skill ${skill.slug} is archived`,
         );
       }
 
@@ -364,21 +359,7 @@ export class Handler {
   }
 
   private resolveModelSlug(props: { skill: any; requested?: string }) {
-    const modelSlug =
-      props.requested?.trim() ||
-      props.skill.defaultModelSlug?.trim() ||
-      "openai/gpt-5-5";
-    const allowedModelSlugs = Array.isArray(props.skill.allowedModelSlugs)
-      ? props.skill.allowedModelSlugs
-      : [];
-
-    if (allowedModelSlugs.length && !allowedModelSlugs.includes(modelSlug)) {
-      throw new Error(
-        `Validation error. Model ${modelSlug} is not allowed for skill ${props.skill.slug}. Allowed models: ${allowedModelSlugs.join(", ")}`,
-      );
-    }
-
-    return modelSlug;
+    return props.requested?.trim() || "openai/gpt-5-5";
   }
 
   private buildPrompt(props: {
@@ -403,29 +384,13 @@ export class Handler {
         "Use this social profile as business context.",
         `Profile title: ${props.profile.adminTitle || props.profile.slug || "Profile"}`,
         `Profile slug: ${props.profile.slug || ""}`,
-        `Profile description: ${this.stringifyProfileDescription(props.profile.description)}`,
+        `Profile description: ${getLocalizedProfilePlainText(props.profile.description, "en")}`,
         "",
         props.title ? `Transcript title: ${props.title}` : "",
         "Transcript:",
         props.transcript,
       ].join("\n"),
     };
-  }
-
-  private stringifyProfileDescription(value: unknown) {
-    if (!value) {
-      return "";
-    }
-
-    if (typeof value === "string") {
-      return value;
-    }
-
-    try {
-      return JSON.stringify(value);
-    } catch {
-      return "";
-    }
   }
 
   private toSlug(value: string) {

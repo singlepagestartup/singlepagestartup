@@ -17,6 +17,10 @@ Chats group messages and threads for social conversations.
 - `slug`: URL-friendly unique identifier.
 - `sourceSystemId`: external source id.
 
+Telegram chats have a partial unique natural key on `sourceSystemId` when
+`variant = telegram`, preventing two internal chats from representing the same
+Telegram chat.
+
 ## Variants
 
 - `default`: placeholder chat view.

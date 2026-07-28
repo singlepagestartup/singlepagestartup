@@ -15,6 +15,19 @@ Links subjects to roles.
 - `subjectId`: linked subject ID.
 - `roleId`: linked role ID.
 
+## Natural key and startup extension
+
+The database permits exactly one relation for `(subjectId, roleId)`. The named
+composite unique index is declared in `constraints/singlepage.ts` and is
+retained by the `singlepage -> startup -> index` composition. Startup may add
+indexes; replacing the pair requires coordinated service filters, repair, and
+a generated migration.
+
+Repository columns use the same extension boundary: SPS defaults live in
+`fields/singlepage.ts`, `fields/startup.ts` inherits them and may add or
+override startup-specific columns, and `fields/index.ts` exposes the composed
+set to `schema.ts`. Constraints never own column declarations.
+
 ## Variants
 
 - `default`: renders the related role using its frontend variant.

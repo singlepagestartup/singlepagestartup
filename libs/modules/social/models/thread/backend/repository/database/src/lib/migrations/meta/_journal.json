@@ -15,6 +15,13 @@
       "when": 1777324836128,
       "tag": "0001_overjoyed_stingray",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784014784497,
+      "tag": "0002_whole_the_hood",
+      "breakpoints": true
     }
   ]
 }

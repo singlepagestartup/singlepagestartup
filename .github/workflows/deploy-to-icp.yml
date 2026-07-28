@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Run backend
         env:
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}

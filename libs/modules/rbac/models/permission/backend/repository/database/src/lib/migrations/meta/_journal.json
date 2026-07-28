@@ -15,6 +15,13 @@
       "when": 1764359912271,
       "tag": "0001_many_reavers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784577729259,
+      "tag": "0002_confused_famine",
+      "breakpoints": true
     }
   ]
 }

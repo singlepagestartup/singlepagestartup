@@ -58,9 +58,42 @@ export interface IOpenRouterGeneratedImage {
   b64_json?: string;
 }
 
+export interface IOpenRouterToolFunction {
+  name: string;
+  description?: string;
+  parameters: Record<string, unknown>;
+  strict?: boolean;
+}
+
+export interface IOpenRouterTool {
+  type: "function";
+  function: IOpenRouterToolFunction;
+}
+
+export interface IOpenRouterToolCall {
+  id: string;
+  type: "function";
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
+export type IOpenRouterToolChoice =
+  | "none"
+  | "auto"
+  | "required"
+  | {
+      type: "function";
+      function: {
+        name: string;
+      };
+    };
+
 export interface IOpenRouterGenerationSuccess {
   text: string;
   images?: IOpenRouterGeneratedImage[];
+  toolCalls?: IOpenRouterToolCall[];
   billing: IOpenRouterBilling;
 }
 
@@ -72,6 +105,27 @@ export interface IOpenRouterGenerationError {
 export type IOpenRouterGenerateResult =
   | IOpenRouterGenerationSuccess
   | IOpenRouterGenerationError;
+
+export const openRouterReasoningEffortValues = [
+  "max",
+  "xhigh",
+  "high",
+  "medium",
+  "low",
+  "minimal",
+  "none",
+] as const;
+
+export type TOpenRouterReasoningEffort =
+  (typeof openRouterReasoningEffortValues)[number];
+
+export interface IOpenRouterModelReasoning {
+  mandatory?: boolean;
+  default_enabled?: boolean;
+  supported_efforts?: TOpenRouterReasoningEffort[] | null;
+  default_effort?: TOpenRouterReasoningEffort | null;
+  supports_max_tokens?: boolean;
+}
 
 export interface IOpenRouterModel {
   id: string;
@@ -135,8 +189,10 @@ export interface IOpenRouterModel {
     | "parallel_tool_calls"
     | "include_reasoning"
     | "reasoning"
+    | "reasoning_effort"
     | "web_search_options"
     | "verbosity"
   )[];
   default_parameters: {};
+  reasoning?: IOpenRouterModelReasoning;
 }

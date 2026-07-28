@@ -1,7 +1,9 @@
 import {
+  IRouteRule,
   NEXT_PUBLIC_API_SERVICE_URL,
   prepareFormDataToSend,
   RBAC_SECRET_KEY,
+  RouteMatcher,
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
@@ -9,8 +11,18 @@ import { api as channelApi } from "@sps/broadcast/models/channel/sdk/server";
 import { api as messagesApi } from "@sps/broadcast/models/message/sdk/server";
 import { IModel as IBroadcastMessage } from "@sps/broadcast/models/message/sdk/model";
 import { logger } from "@sps/backend-utils";
+import { createSkippedRoutesMatcher } from "./routes";
 
 export type IMiddlewareGeneric = unknown;
+
+/**
+ * Project extension seam: framework consumers register routes the observer
+ * pipeline must skip via constructor options, merged with the framework
+ * defaults (`routes/singlepage.ts`) and the project layer (`routes/startup.ts`).
+ */
+export interface IMiddlewareOptions {
+  skippedRoutes?: IRouteRule[];
+}
 
 export interface IPayload {
   trigger: {
@@ -27,7 +39,13 @@ export interface IPayload {
 }
 
 export class Middleware {
-  constructor() {}
+  private skippedRoutesMatcher: RouteMatcher;
+
+  constructor(options?: IMiddlewareOptions) {
+    this.skippedRoutesMatcher = createSkippedRoutesMatcher(
+      options?.skippedRoutes,
+    );
+  }
 
   init(): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
@@ -36,7 +54,7 @@ export class Middleware {
 
       await next();
 
-      if (path.includes("/api/broadcast")) {
+      if (this.skippedRoutesMatcher.matches(path)) {
         return;
       }
 

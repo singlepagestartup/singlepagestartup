@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -16,16 +17,18 @@ import {
   webhookCallback,
   Context as GrammyContext,
 } from "grammy";
-import {
-  Conversation,
-  ConversationFlavor as GrammyConversationFlavor,
-} from "@grammyjs/conversations";
 import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
+import { IModel as IBillingModuleInvoice } from "@sps/billing/models/invoice/sdk/model";
+import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
+import { api as ecommerceModuleOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
+import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { blobifyFiles } from "@sps/backend-utils";
 import * as jwt from "hono/jwt";
 import {
@@ -34,7 +37,7 @@ import {
   type TelegramVoiceMessageData,
 } from "./telegram-voice-message";
 
-export type TelegramBotContext = GrammyContext & GrammyConversationFlavor;
+export type TelegramBotContext = GrammyContext;
 
 type TelegramAttachmentCandidate = {
   fileId: string;
@@ -79,21 +82,237 @@ function sanitizeFileTitle(value: string) {
   return safe || "telegram-audio";
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+interface INormalizeTelegramTransportControlsProps {
+  botUsername: string;
+  description: string;
+}
+
+interface IIsTelegramMessageAddressedToBotProps {
+  botUsername: string;
+  description?: string;
+  isReplyToBot?: boolean;
+}
+
+interface ITelegramBackgroundErrorMetadata {
+  errorId: string;
+  errorType: string;
+  status?: number;
+}
+
+type ITelegramStarCheckoutValidation =
+  | {
+      ok: true;
+      invoice: IBillingModuleInvoice;
+      idempotent: boolean;
+    }
+  | {
+      ok: false;
+      code:
+        | "currency"
+        | "invoice"
+        | "provider"
+        | "amount"
+        | "status"
+        | "payment-intent"
+        | "order";
+    };
+
+function asErrorRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+function parseErrorMessage(
+  value: unknown,
+): Record<string, unknown> | undefined {
+  if (!(value instanceof Error)) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(value.message);
+    return asErrorRecord(parsed);
+  } catch {
+    return undefined;
+  }
+}
+
+function sanitizeErrorIdentifier(value: unknown) {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const identifier = value.trim();
+
+  if (
+    !identifier ||
+    identifier === "unknown" ||
+    !/^[a-zA-Z0-9._:-]{1,128}$/.test(identifier)
+  ) {
+    return undefined;
+  }
+
+  return identifier;
+}
+
+function getTelegramBackgroundErrorMetadata(
+  error: unknown,
+): ITelegramBackgroundErrorMetadata {
+  const errorRecord = asErrorRecord(error);
+  const causeRecord = asErrorRecord(errorRecord?.cause);
+  const payloadRecord = asErrorRecord(errorRecord?.payload);
+  const parsedRecord = parseErrorMessage(error);
+  const candidates = [errorRecord, causeRecord, payloadRecord, parsedRecord];
+  const errorId =
+    candidates
+      .map((candidate) =>
+        sanitizeErrorIdentifier(candidate?.requestId ?? candidate?.errorId),
+      )
+      .find(Boolean) ?? randomUUID();
+  const status = candidates
+    .map((candidate) => candidate?.status)
+    .find((value): value is number => typeof value === "number");
+  const rawErrorType =
+    candidates
+      .map((candidate) => candidate?.name)
+      .find((value): value is string => typeof value === "string") ??
+    (error instanceof Error ? error.constructor.name : typeof error);
+  const errorType =
+    rawErrorType.replace(/[^a-zA-Z0-9._:-]/g, "").slice(0, 64) || "unknown";
+
+  return {
+    errorId,
+    errorType,
+    status,
+  };
+}
+
+export function normalizeTelegramTransportControls(
+  props: INormalizeTelegramTransportControlsProps,
+): string {
+  const botUsername = props.botUsername.trim().replace(/^@/, "");
+  const escapedBotUsername = escapeRegExp(botUsername);
+  let description = props.description.trim();
+
+  if (escapedBotUsername) {
+    description = description
+      .replace(new RegExp(`^@${escapedBotUsername}(?=\\s|$)\\s*`, "i"), "")
+      .replace(
+        new RegExp(`^(\\/[a-z0-9_]+)@${escapedBotUsername}(?=\\s|$)`, "i"),
+        "$1",
+      )
+      .trim();
+  }
+
+  return description;
+}
+
+export function isTelegramLearnCommand(description: string): boolean {
+  return /^(?:@knowledge\s+)?\/learn(?=\s|$)/i.test(description.trim());
+}
+
+export function isTelegramMessageAddressedToBot(
+  props: IIsTelegramMessageAddressedToBotProps,
+): boolean {
+  if (props.isReplyToBot) {
+    return true;
+  }
+
+  const botUsername = props.botUsername.trim().replace(/^@/, "");
+
+  if (!botUsername || !props.description) {
+    return false;
+  }
+
+  const escapedBotUsername = escapeRegExp(botUsername);
+
+  return (
+    new RegExp(`^@${escapedBotUsername}(?=\\s|$)`, "i").test(
+      props.description,
+    ) ||
+    new RegExp(`^/[a-z0-9_]+@${escapedBotUsername}(?=\\s|$)`, "i").test(
+      props.description,
+    )
+  );
+}
+
+export function isTelegramBotAuthoredMessage(message?: {
+  from?: { is_bot?: boolean };
+}) {
+  return message?.from?.is_bot === true;
+}
+
+const TELEGRAM_LEARN_CHUNK_DEBOUNCE_MS = 1_500;
+const TELEGRAM_BOOTSTRAP_RETRY_DELAYS_MS = [
+  1_000, 2_000, 5_000, 10_000, 20_000,
+];
+
+export function isTransientTelegramApiError(error: unknown) {
+  const errorRecord = asErrorRecord(error);
+  const parsedRecord = parseErrorMessage(error);
+  const candidates = [
+    errorRecord,
+    asErrorRecord(errorRecord?.cause),
+    asErrorRecord(errorRecord?.payload),
+    parsedRecord,
+  ];
+  const status = candidates
+    .map((candidate) => candidate?.status)
+    .find((value): value is number => typeof value === "number");
+
+  if (status && [408, 425, 429, 502, 503, 504].includes(status)) {
+    return true;
+  }
+
+  const message = [
+    error instanceof Error ? error.message : String(error),
+    ...candidates.map((candidate) => candidate?.message),
+    parsedRecord?.cause ? JSON.stringify(parsedRecord.cause) : "",
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ");
+
+  return /unable to connect|fetch failed|connection refused|econnrefused|econnreset|etimedout|socket (?:closed|ended)|network error/i.test(
+    message,
+  );
+}
+
+export function isDuplicateTelegramStarPaymentError(error: unknown) {
+  const errorRecord = asErrorRecord(error);
+  const parsedRecord = parseErrorMessage(error);
+  const message = [
+    error instanceof Error ? error.message : String(error),
+    errorRecord?.message,
+    asErrorRecord(errorRecord?.cause)?.message,
+    parsedRecord?.message,
+    parsedRecord?.cause ? JSON.stringify(parsedRecord.cause) : "",
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ");
+
+  return /invoice is already paid by another telegram charge/i.test(message);
+}
+
 export class TelegarmBot {
   instance: GrammyBot<TelegramBotContext>;
   webhookHandler: ReturnType<typeof webhookCallback>;
+  private telegramPublishedCommands: Array<{
+    command: string;
+    description: string;
+  }> = [];
   private mediaGroupBuffer = new Map<
     string,
     { messages: GrammyContext[]; timer: ReturnType<typeof setTimeout> }
   >();
-  conversations: {
-    path: string;
-    handler: (
-      conversation: Conversation<any>,
-      ctx: GrammyContext & GrammyConversationFlavor,
-    ) => void;
-  }[] = [];
-
+  private learnCommandBuffer = new Map<
+    string,
+    { messages: GrammyContext[]; timer: ReturnType<typeof setTimeout> }
+  >();
   constructor() {
     if (!TELEGRAM_SERVICE_BOT_TOKEN) {
       return;
@@ -103,16 +322,7 @@ export class TelegarmBot {
       TELEGRAM_SERVICE_BOT_TOKEN || "",
     );
 
-    this.addServiceActions();
-
     this.webhookHandler = webhookCallback(this.instance, "hono") as any;
-  }
-
-  addServiceActions() {
-    this.instance.command(["cancel", "exit", "stop"], async (ctx) => {
-      await ctx.conversation.exit();
-      await ctx.reply("Leaving.");
-    });
   }
 
   private getTelegramMessageThreadId(props: { ctx: GrammyContext }) {
@@ -123,6 +333,26 @@ export class TelegarmBot {
     }
 
     return String(messageThreadId);
+  }
+
+  private getTelegramCommandTopicTitle(props: { description: string }) {
+    const commandMatch = props.description
+      .trim()
+      .match(/^\/([a-z0-9_]+)(?=\s|$)/i);
+    const command = commandMatch?.[1]?.toLowerCase();
+
+    if (!command) {
+      return;
+    }
+
+    const publishedCommand = this.telegramPublishedCommands?.find(
+      (item) => item.command.toLowerCase() === command,
+    );
+
+    return (publishedCommand?.description.trim() || `/${command}`).slice(
+      0,
+      128,
+    );
   }
 
   private isTelegramForumTopicServiceMessage(props: { ctx: GrammyContext }) {
@@ -178,17 +408,411 @@ export class TelegarmBot {
     );
   }
 
-  private runInBackground(props: { label: string; task: () => Promise<void> }) {
-    void props.task().catch((error) => {
-      console.error(
-        `🚀 ~ TelegarmBot ~ ${props.label} ~ background error:`,
-        error?.message || error,
-      );
+  private runInBackground(props: {
+    label: string;
+    task: () => Promise<void>;
+    onError?: (
+      error: unknown,
+      metadata: ITelegramBackgroundErrorMetadata,
+    ) => Promise<void>;
+  }) {
+    const backgroundTask = props.task().catch(async (error) => {
+      const metadata = getTelegramBackgroundErrorMetadata(error);
+
+      console.error("Telegram background task failed", {
+        label: props.label,
+        ...metadata,
+      });
+
+      if (!props.onError) {
+        return;
+      }
+
+      try {
+        await props.onError(error, metadata);
+      } catch (notificationError) {
+        console.error("Telegram error notification failed", {
+          label: props.label,
+          ...getTelegramBackgroundErrorMetadata(notificationError),
+        });
+      }
+    });
+
+    void backgroundTask;
+
+    return backgroundTask;
+  }
+
+  private getIncomingMessageErrorText(props: {
+    ctx: GrammyContext;
+    errorId: string;
+  }) {
+    const languageCode = props.ctx.from?.language_code?.toLowerCase() || "";
+
+    if (languageCode.startsWith("ru")) {
+      return `Не удалось обработать сообщение. Попробуйте отправить его ещё раз. Код ошибки: ${props.errorId}.`;
+    }
+
+    return `We couldn't process your message. Please try sending it again. Reference: ${props.errorId}.`;
+  }
+
+  private async notifyIncomingMessageError(props: {
+    ctx: GrammyContext;
+    errorId: string;
+  }) {
+    const text = this.getIncomingMessageErrorText({
+      ctx: props.ctx,
+      errorId: props.errorId,
+    });
+    const messageThreadId = (props.ctx.message as any)?.message_thread_id;
+
+    if (messageThreadId === undefined || messageThreadId === null) {
+      await props.ctx.reply(text);
+      return;
+    }
+
+    await props.ctx.reply(text, {
+      message_thread_id: messageThreadId,
     });
   }
 
+  private runIncomingMessageInBackground(props: {
+    ctx: GrammyContext;
+    label: string;
+    task: () => Promise<void>;
+  }) {
+    return this.runInBackground({
+      label: props.label,
+      task: props.task,
+      onError: async (_error, metadata) => {
+        await this.notifyIncomingMessageError({
+          ctx: props.ctx,
+          errorId: metadata.errorId,
+        });
+      },
+    });
+  }
+
+  private getTelegramStarPaymentText(props: {
+    ctx: GrammyContext;
+    variant: "success" | "refunded" | "processing-error";
+    errorId?: string;
+  }) {
+    const isRussian = props.ctx.from?.language_code
+      ?.toLowerCase()
+      .startsWith("ru");
+
+    if (props.variant === "success") {
+      return isRussian
+        ? "✅ Оплата успешно получена. Подписка будет активирована в ближайшее время."
+        : "✅ Payment received successfully. Your subscription will be activated shortly.";
+    }
+
+    if (props.variant === "refunded") {
+      return isRussian
+        ? "↩️ Этот счёт уже недействителен или был оплачен ранее. Списанные Telegram Stars возвращены. Запросите новый счёт командой /premium."
+        : "↩️ This invoice is no longer valid or was already paid. The charged Telegram Stars were refunded. Request a new invoice with /premium.";
+    }
+
+    return isRussian
+      ? `⚠️ Telegram подтвердил платёж, но автоматическая обработка задержалась. Мы сохранили данные платежа. Код ошибки: ${props.errorId}.`
+      : `⚠️ Telegram confirmed the payment, but automatic processing was delayed. We retained the payment details. Reference: ${props.errorId}.`;
+  }
+
+  private getTelegramStarPreCheckoutErrorText(ctx: GrammyContext) {
+    const isRussian = ctx.from?.language_code?.toLowerCase().startsWith("ru");
+
+    return isRussian
+      ? "Счёт больше недействителен. Запросите новый счёт командой /premium."
+      : "This invoice is no longer valid. Request a new invoice with /premium.";
+  }
+
+  async validateTelegramStarCheckout(props: {
+    currency: string;
+    totalAmount: number;
+    invoicePayload: string;
+    paidChargeId?: string;
+  }): Promise<ITelegramStarCheckoutValidation> {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
+    }
+
+    if (props.currency !== "XTR") {
+      return { ok: false, code: "currency" };
+    }
+
+    const invoice = await billingModuleInvoiceApi.findById({
+      id: props.invoicePayload,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!invoice) {
+      return { ok: false, code: "invoice" };
+    }
+
+    if (invoice.provider !== "telegram-star") {
+      return { ok: false, code: "provider" };
+    }
+
+    if (Number(invoice.amount) !== Number(props.totalAmount)) {
+      return { ok: false, code: "amount" };
+    }
+
+    if (
+      invoice.status === "paid" &&
+      props.paidChargeId &&
+      invoice.providerId === props.paidChargeId
+    ) {
+      return {
+        ok: true,
+        invoice,
+        idempotent: true,
+      };
+    }
+
+    if (invoice.status !== "open") {
+      return { ok: false, code: "status" };
+    }
+
+    const paymentIntentsToInvoices =
+      await billingModulePaymentIntentsToInvoicesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "invoiceId",
+                method: "eq",
+                value: invoice.id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!paymentIntentsToInvoices?.length) {
+      return { ok: false, code: "payment-intent" };
+    }
+
+    const paymentIntents = await billingModulePaymentIntentApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: paymentIntentsToInvoices.map(
+                (relation) => relation.paymentIntentId,
+              ),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+    const payablePaymentIntentIds = (paymentIntents ?? [])
+      .filter(
+        (paymentIntent) =>
+          !["succeeded", "canceled"].includes(paymentIntent.status),
+      )
+      .map((paymentIntent) => paymentIntent.id);
+
+    if (!payablePaymentIntentIds.length) {
+      return { ok: false, code: "payment-intent" };
+    }
+
+    const ordersToPaymentIntents =
+      await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "billingModulePaymentIntentId",
+                method: "inArray",
+                value: payablePaymentIntentIds,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!ordersToPaymentIntents?.length) {
+      return { ok: false, code: "order" };
+    }
+
+    const orders = await ecommerceModuleOrderApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: ordersToPaymentIntents.map((relation) => relation.orderId),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+    const hasPayableOrder = (orders ?? []).some((order) =>
+      ["new", "paying"].includes(order.status),
+    );
+
+    if (!hasPayableOrder) {
+      return { ok: false, code: "order" };
+    }
+
+    return {
+      ok: true,
+      invoice,
+      idempotent: false,
+    };
+  }
+
+  async handleTelegramStarPreCheckout(ctx: GrammyContext) {
+    const query = ctx.preCheckoutQuery;
+
+    if (!query) {
+      throw new Error(
+        "Validation error. Telegram pre-checkout query is required",
+      );
+    }
+
+    const validation = await this.validateTelegramStarCheckout({
+      currency: query.currency,
+      totalAmount: query.total_amount,
+      invoicePayload: query.invoice_payload,
+    });
+
+    if (!validation.ok) {
+      await ctx.answerPreCheckoutQuery(false, {
+        error_message: this.getTelegramStarPreCheckoutErrorText(ctx),
+      });
+      return;
+    }
+
+    await ctx.answerPreCheckoutQuery(true);
+  }
+
+  private async refundTelegramStarPayment(props: {
+    ctx: GrammyContext;
+    chargeId: string;
+  }) {
+    if (!props.ctx.from?.id) {
+      throw new Error("Validation error. Telegram payment user id is required");
+    }
+
+    await props.ctx.api.refundStarPayment(props.ctx.from.id, props.chargeId);
+    await props.ctx.reply(
+      this.getTelegramStarPaymentText({
+        ctx: props.ctx,
+        variant: "refunded",
+      }),
+    );
+  }
+
+  async handleTelegramStarSuccessfulPayment(ctx: GrammyContext) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
+    }
+
+    if (!ctx.message?.successful_payment) {
+      throw new Error(
+        "Validation error. Telegram successful payment is required",
+      );
+    }
+
+    const payment = ctx.message.successful_payment;
+    const validation = await this.validateTelegramStarCheckout({
+      currency: payment.currency,
+      totalAmount: payment.total_amount,
+      invoicePayload: payment.invoice_payload,
+      paidChargeId: payment.telegram_payment_charge_id,
+    });
+
+    if (validation.ok && validation.idempotent) {
+      await ctx.reply(
+        this.getTelegramStarPaymentText({
+          ctx,
+          variant: "success",
+        }),
+      );
+      return;
+    }
+
+    if (!validation.ok) {
+      await this.refundTelegramStarPayment({
+        ctx,
+        chargeId: payment.telegram_payment_charge_id,
+      });
+      return;
+    }
+
+    try {
+      await billingModulePaymentIntentApi.providerWebhook({
+        data: {
+          provider: "telegram-star",
+          currency: "XTR",
+          invoice_payload: payment.invoice_payload,
+          provider_payment_charge_id: payment.provider_payment_charge_id,
+          telegram_payment_charge_id: payment.telegram_payment_charge_id,
+          total_amount: payment.total_amount,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+    } catch (error) {
+      if (!isDuplicateTelegramStarPaymentError(error)) {
+        throw error;
+      }
+
+      await this.refundTelegramStarPayment({
+        ctx,
+        chargeId: payment.telegram_payment_charge_id,
+      });
+      return;
+    }
+
+    await ctx.reply(
+      this.getTelegramStarPaymentText({
+        ctx,
+        variant: "success",
+      }),
+    );
+  }
+
   /**
-   * Should be called after routes and conversations are added
+   * Should be called after routes are added
    */
   init() {
     this.instance.on("chat_member", async (ctx) => {
@@ -325,10 +949,15 @@ export class TelegarmBot {
       try {
         console.log("🚀 ~ init ~ pre_checkout_query ~ ctx.update:", ctx.update);
 
-        await ctx.answerPreCheckoutQuery(true);
+        await this.handleTelegramStarPreCheckout(ctx);
         return;
       } catch (error: any) {
         console.log("🚀 ~ init ~ pre_checkout_query ~ error:", error.message);
+        await ctx
+          .answerPreCheckoutQuery(false, {
+            error_message: this.getTelegramStarPreCheckoutErrorText(ctx),
+          })
+          .catch(() => undefined);
         return;
       }
     });
@@ -373,28 +1002,16 @@ export class TelegarmBot {
       this.runInBackground({
         label: "message:successful_payment",
         task: async () => {
-          if (!RBAC_SECRET_KEY) {
-            throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
-          }
-
-          await billingModulePaymentIntentApi.providerWebhook({
-            data: {
-              provider: "telegram-star",
-              currency: "XTR",
-              invoice_payload: ctx.message.successful_payment.invoice_payload,
-              provider_payment_charge_id:
-                ctx.message.successful_payment.provider_payment_charge_id,
-              telegram_payment_charge_id:
-                ctx.message.successful_payment.telegram_payment_charge_id,
-              total_amount: ctx.message.successful_payment.total_amount,
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
+          await this.handleTelegramStarSuccessfulPayment(ctx);
+        },
+        onError: async (_error, metadata) => {
+          await ctx.reply(
+            this.getTelegramStarPaymentText({
+              ctx,
+              variant: "processing-error",
+              errorId: metadata.errorId,
+            }),
+          );
         },
       });
 
@@ -402,6 +1019,10 @@ export class TelegarmBot {
     });
 
     this.instance.on("message", async (ctx) => {
+      if (isTelegramBotAuthoredMessage(ctx.message)) {
+        return;
+      }
+
       console.log("🚀 ~ init ~ on message ~ ctx.message", ctx.message);
 
       const telegramForumTopicCreated = this.getTelegramForumTopicCreated({
@@ -409,7 +1030,8 @@ export class TelegarmBot {
       });
 
       if (telegramForumTopicCreated) {
-        this.runInBackground({
+        this.runIncomingMessageInBackground({
+          ctx,
           label: "message:forum_topic_created",
           task: async () => {
             await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate(
@@ -438,7 +1060,8 @@ export class TelegarmBot {
       const telegramVoice = extractTelegramVoiceMessageData(ctx.message);
 
       if (telegramVoice) {
-        this.runInBackground({
+        this.runIncomingMessageInBackground({
+          ctx,
           label: "message:voice",
           task: async () => {
             await this.handleIncomingVoiceMessage({
@@ -454,7 +1077,8 @@ export class TelegarmBot {
       const telegramAudio = extractTelegramAudioMessageData(ctx.message);
 
       if (telegramAudio) {
-        this.runInBackground({
+        this.runIncomingMessageInBackground({
+          ctx,
           label: "message:audio",
           task: async () => {
             await this.handleIncomingVoiceMessage({
@@ -479,13 +1103,14 @@ export class TelegarmBot {
         }
 
         const timer = setTimeout(() => {
-          this.flushMediaGroup({
-            mediaGroupId,
-          }).catch((error) => {
-            console.error(
-              "🚀 ~ flushMediaGroup ~ error:",
-              error?.message || error,
-            );
+          this.runIncomingMessageInBackground({
+            ctx,
+            label: "message:media-group",
+            task: async () => {
+              await this.flushMediaGroup({
+                mediaGroupId,
+              });
+            },
           });
         }, 600);
 
@@ -493,9 +1118,18 @@ export class TelegarmBot {
         return;
       }
 
-      this.runInBackground({
+      this.runIncomingMessageInBackground({
+        ctx,
         label: "message",
         task: async () => {
+          if (
+            this.bufferTelegramLearnCommandMessage({
+              ctx,
+            })
+          ) {
+            return;
+          }
+
           await this.handleIncomingMessage({
             ctx,
             data: await this.buildTelegramMessageData({ ctx }),
@@ -513,6 +1147,39 @@ export class TelegarmBot {
         "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN is not set",
       );
     }
+
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
+    }
+
+    const commands = await agentModuleAgentApi.telegramCommands({
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+    this.telegramPublishedCommands = commands;
+
+    await Promise.all([
+      this.instance.api.setMyCommands(commands),
+      this.instance.api.setMyCommands(commands, {
+        scope: {
+          type: "all_private_chats",
+        },
+      }),
+      this.instance.api.setMyCommands(commands, {
+        scope: {
+          type: "all_group_chats",
+        },
+      }),
+      this.instance.api.setMyCommands(commands, {
+        scope: {
+          type: "all_chat_administrators",
+        },
+      }),
+    ]);
 
     const endpoint = NEXT_PUBLIC_TELEGRAM_SERVICE_URL + "/api/telegram";
 
@@ -545,7 +1212,9 @@ export class TelegarmBot {
     };
   }): Promise<{
     rbacModuleSubject: IRbacSubject;
+    personalAiRbacModuleSubject: IRbacSubject;
     socialModuleProfile: ISocialModuleProfile;
+    personalAiSocialModuleProfile: ISocialModuleProfile;
     socialModuleChat: ISocialModuleChat;
     socialModuleThread: ISocialModuleThread;
   }> {
@@ -571,7 +1240,7 @@ export class TelegarmBot {
         ctx: props.ctx,
       });
 
-    const bootstrap = await rbacModuleSubjectApi.telegramBootstrap({
+    const bootstrap = await this.telegramBootstrapWithRetry({
       data: {
         telegram: {
           fromId: props.ctx.from.id,
@@ -596,17 +1265,54 @@ export class TelegarmBot {
       rbacModuleSubject: bootstrap.rbacModuleSubject,
     });
 
-    await this.checkoutFreeSubscriptionEcommerceModuleProducts({
-      ctx: props.ctx,
-      rbacModuleSubject: bootstrap.rbacModuleSubject,
-    });
+    if (bootstrap.shouldCheckoutFreeSubscription) {
+      await this.checkoutFreeSubscriptionEcommerceModuleProducts({
+        ctx: props.ctx,
+        rbacModuleSubject: bootstrap.rbacModuleSubject,
+      });
+    }
 
     return {
       rbacModuleSubject: bootstrap.rbacModuleSubject,
+      personalAiRbacModuleSubject: bootstrap.personalAiRbacModuleSubject,
       socialModuleProfile: bootstrap.socialModuleProfile,
+      personalAiSocialModuleProfile: bootstrap.personalAiSocialModuleProfile,
       socialModuleChat: bootstrap.socialModuleChat,
       socialModuleThread: bootstrap.socialModuleThread,
     };
+  }
+
+  private async telegramBootstrapWithRetry(
+    props: Parameters<typeof rbacModuleSubjectApi.telegramBootstrap>[0],
+  ) {
+    const retryDelays = this.getTelegramBootstrapRetryDelays();
+
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        return await rbacModuleSubjectApi.telegramBootstrap(props);
+      } catch (error) {
+        const retryDelayMs = retryDelays[attempt];
+
+        if (retryDelayMs === undefined || !isTransientTelegramApiError(error)) {
+          throw error;
+        }
+
+        console.warn(
+          "Telegram API bootstrap temporarily unavailable; retrying",
+          {
+            attempt: attempt + 1,
+            retryDelayMs,
+            ...getTelegramBackgroundErrorMetadata(error),
+          },
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+      }
+    }
+  }
+
+  protected getTelegramBootstrapRetryDelays() {
+    return TELEGRAM_BOOTSTRAP_RETRY_DELAYS_MS;
   }
 
   async synchronizeRbacModuleRole(props: {
@@ -753,23 +1459,30 @@ export class TelegarmBot {
       .map((item) => item.message)
       .filter(Boolean);
 
-    const description =
-      messageList.find((message) => message?.caption || message?.text)
-        ?.caption ||
-      messageList.find((message) => message?.text)?.text ||
-      "";
+    const description = messageList
+      .map((message) => message?.text || message?.caption || "")
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .join("\n");
 
     const sourceSystemId =
       messageList.find((message) => message?.media_group_id)?.media_group_id ||
       messageList[0]?.message_id?.toString() ||
       "";
+    const metadata = {
+      telegram: {
+        sourceMessageIds: messageList
+          .map((message) => message?.message_id)
+          .filter((messageId) => messageId !== undefined),
+      },
+    };
 
     const attachments = messageList.flatMap((message) =>
       this.extractTelegramAttachments(message),
     );
 
     if (!attachments.length) {
-      return { description, sourceSystemId };
+      return { description, sourceSystemId, metadata };
     }
 
     const files = await this.buildTelegramFiles({
@@ -781,6 +1494,7 @@ export class TelegarmBot {
       description,
       sourceSystemId,
       files,
+      metadata,
     };
   }
 
@@ -1015,10 +1729,126 @@ export class TelegarmBot {
     }
 
     const messageText = props.ctx.message?.text || props.ctx.message?.caption;
+    const replyToUsername = (props.ctx.message as any)?.reply_to_message?.from
+      ?.username;
 
-    return Boolean(
-      messageText?.startsWith(`@${TELEGRAM_SERVICE_BOT_USERNAME}`),
-    );
+    return isTelegramMessageAddressedToBot({
+      botUsername: TELEGRAM_SERVICE_BOT_USERNAME,
+      description: messageText,
+      isReplyToBot:
+        typeof replyToUsername === "string" &&
+        replyToUsername.toLowerCase() ===
+          TELEGRAM_SERVICE_BOT_USERNAME.replace(/^@/, "").toLowerCase(),
+    });
+  }
+
+  private getTelegramLearnCommandBufferKey(props: { ctx: GrammyContext }) {
+    const chatId = props.ctx.chat?.id;
+    const senderId = props.ctx.from?.id;
+
+    if (chatId === undefined || senderId === undefined) {
+      return;
+    }
+
+    const messageThreadId = this.getTelegramMessageThreadId({
+      ctx: props.ctx,
+    });
+
+    return [
+      String(chatId),
+      messageThreadId || "default",
+      String(senderId),
+    ].join(":");
+  }
+
+  private scheduleTelegramLearnCommandBufferFlush(props: {
+    key: string;
+    messages: GrammyContext[];
+  }) {
+    const timer = setTimeout(() => {
+      const ctx = props.messages[0];
+
+      if (!ctx) {
+        return;
+      }
+
+      this.runIncomingMessageInBackground({
+        ctx,
+        label: "message:learn:flush",
+        task: async () => {
+          await this.flushTelegramLearnCommandBuffer({ key: props.key });
+        },
+      });
+    }, TELEGRAM_LEARN_CHUNK_DEBOUNCE_MS);
+
+    this.learnCommandBuffer.set(props.key, {
+      messages: props.messages,
+      timer,
+    });
+  }
+
+  private bufferTelegramLearnCommandMessage(props: { ctx: GrammyContext }) {
+    if (!TELEGRAM_SERVICE_BOT_USERNAME) {
+      throw new Error(
+        "Configuration error. 'TELEGRAM_SERVICE_BOT_USERNAME' is not set",
+      );
+    }
+
+    const key = this.getTelegramLearnCommandBufferKey({ ctx: props.ctx });
+
+    if (!key) {
+      return false;
+    }
+
+    const description = normalizeTelegramTransportControls({
+      botUsername: TELEGRAM_SERVICE_BOT_USERNAME,
+      description: props.ctx.message?.text || props.ctx.message?.caption || "",
+    });
+    const isLearnCommand = isTelegramLearnCommand(description);
+    const existing = this.learnCommandBuffer.get(key);
+
+    if (!existing && !isLearnCommand) {
+      return false;
+    }
+
+    if (existing?.timer) {
+      clearTimeout(existing.timer);
+    }
+
+    if (existing && isLearnCommand) {
+      this.learnCommandBuffer.delete(key);
+      const bufferedContext = existing.messages[0] || props.ctx;
+
+      this.runIncomingMessageInBackground({
+        ctx: bufferedContext,
+        label: "message:learn:flush-before-next-command",
+        task: async () => {
+          await this.persistTelegramLearnCommandMessages({
+            messages: existing.messages,
+          });
+        },
+      });
+      this.scheduleTelegramLearnCommandBufferFlush({
+        key,
+        messages: [props.ctx],
+      });
+      return true;
+    }
+
+    if (existing && /^\/[a-z0-9_]+(?=\s|$)/i.test(description)) {
+      this.scheduleTelegramLearnCommandBufferFlush({
+        key,
+        messages: existing.messages,
+      });
+      return false;
+    }
+
+    this.scheduleTelegramLearnCommandBufferFlush({
+      key,
+      messages: [...(existing?.messages || []), props.ctx],
+    });
+
+    return true;
   }
 
   private async downloadTelegramVoiceFile(props: {
@@ -1151,7 +1981,10 @@ export class TelegarmBot {
         socialModuleThreadId: socialModuleThread.id,
         socialModuleProfileId: socialModuleProfile.id,
         data: {
-          description: messageText || "",
+          description: normalizeTelegramTransportControls({
+            botUsername: TELEGRAM_SERVICE_BOT_USERNAME,
+            description: messageText || "",
+          }),
           files: [file],
           metadata: {
             telegram: {
@@ -1180,6 +2013,7 @@ export class TelegarmBot {
       description: string;
       sourceSystemId: string;
       files?: File[];
+      metadata?: Record<string, unknown>;
     };
   }) {
     if (!RBAC_SECRET_KEY) {
@@ -1202,6 +2036,15 @@ export class TelegarmBot {
       );
     }
 
+    const isGroup = props.ctx.chat?.id && props.ctx.chat.id < 0;
+    const isMentioned = this.shouldHandleIncomingMessageInChat({
+      ctx: props.ctx,
+    });
+
+    if (isGroup && !isMentioned) {
+      return;
+    }
+
     const {
       rbacModuleSubject,
       socialModuleProfile,
@@ -1213,51 +2056,46 @@ export class TelegarmBot {
 
     const jwtToken = await this.signSubjectJwt({ rbacModuleSubject });
 
-    const sanitizedDescription = props.data.description.replaceAll(
-      `@${TELEGRAM_SERVICE_BOT_USERNAME} `,
-      "",
+    const sanitizedDescription = normalizeTelegramTransportControls({
+      botUsername: TELEGRAM_SERVICE_BOT_USERNAME,
+      description: props.data.description,
+    });
+    const commandTopicTitle = this.getTelegramCommandTopicTitle({
+      description: sanitizedDescription,
+    });
+    const targetSocialModuleThread =
+      commandTopicTitle && !this.getTelegramMessageThreadId({ ctx: props.ctx })
+        ? await rbacModuleSubjectApi.socialModuleChatFindByIdThreadCreate({
+            id: rbacModuleSubject.id,
+            socialModuleChatId: socialModuleChat.id,
+            data: {
+              title: commandTopicTitle,
+            },
+            options: {
+              headers: {
+                Authorization: "Bearer " + jwtToken,
+              },
+            },
+          })
+        : socialModuleThread;
+
+    return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+      {
+        id: rbacModuleSubject.id,
+        socialModuleChatId: socialModuleChat.id,
+        socialModuleThreadId: targetSocialModuleThread.id,
+        socialModuleProfileId: socialModuleProfile.id,
+        data: {
+          ...props.data,
+          description: sanitizedDescription,
+        },
+        options: {
+          headers: {
+            Authorization: "Bearer " + jwtToken,
+          },
+        },
+      },
     );
-
-    const isGroup = props.ctx.chat?.id && props.ctx.chat.id < 0;
-    const isMentioned =
-      props.ctx.message?.text &&
-      props.ctx.message.text.startsWith(`@${TELEGRAM_SERVICE_BOT_USERNAME}`);
-
-    if (!isGroup) {
-      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-        {
-          id: rbacModuleSubject.id,
-          socialModuleChatId: socialModuleChat.id,
-          socialModuleThreadId: socialModuleThread.id,
-          socialModuleProfileId: socialModuleProfile.id,
-          data: { ...props.data, description: sanitizedDescription },
-          options: {
-            headers: {
-              Authorization: "Bearer " + jwtToken,
-            },
-          },
-        },
-      );
-    }
-
-    if (isMentioned) {
-      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-        {
-          id: rbacModuleSubject.id,
-          socialModuleChatId: socialModuleChat.id,
-          socialModuleThreadId: socialModuleThread.id,
-          socialModuleProfileId: socialModuleProfile.id,
-          data: { ...props.data, description: sanitizedDescription },
-          options: {
-            headers: {
-              Authorization: "Bearer " + jwtToken,
-            },
-          },
-        },
-      );
-    }
-
-    return;
   }
 
   private async flushMediaGroup(props: { mediaGroupId: string }) {
@@ -1277,6 +2115,41 @@ export class TelegarmBot {
     const data = await this.buildTelegramMessageDataFromMessages({
       ctx,
       messages: entry.messages,
+    });
+
+    await this.handleIncomingMessage({
+      ctx,
+      data,
+    });
+  }
+
+  private async flushTelegramLearnCommandBuffer(props: { key: string }) {
+    const entry = this.learnCommandBuffer.get(props.key);
+
+    if (!entry) {
+      return;
+    }
+
+    clearTimeout(entry.timer);
+    this.learnCommandBuffer.delete(props.key);
+
+    await this.persistTelegramLearnCommandMessages({
+      messages: entry.messages,
+    });
+  }
+
+  private async persistTelegramLearnCommandMessages(props: {
+    messages: GrammyContext[];
+  }) {
+    const ctx = props.messages[0];
+
+    if (!ctx) {
+      return;
+    }
+
+    const data = await this.buildTelegramMessageDataFromMessages({
+      ctx,
+      messages: props.messages,
     });
 
     await this.handleIncomingMessage({

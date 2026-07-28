@@ -7,12 +7,13 @@
 
 import { z } from "zod";
 import {
-  applyDeleteContentRecord,
-  createContentRecord,
+  applyDeleteContentModelRecord,
+  createContentModelRecord,
   describeContentEntities,
-  findContentRecords,
-  previewDeleteContentRecord,
-  updateContentRecord,
+  describeContentModel,
+  findContentModelRecords,
+  previewDeleteContentModelRecord,
+  updateContentModelRecord,
   updateLocalizedContentField,
 } from "./operations";
 import { IContentEntityDescriptor } from "./types";
@@ -32,6 +33,13 @@ function createApi(records: Record<string, any>[] = []) {
       id: "created-record",
       ...data,
     })),
+    createFromUrl: jest.fn(
+      async ({ data }: { data: Record<string, unknown> }) => ({
+        id: "created-from-url-record",
+        file: "https://storage.example.com/uploaded.webp",
+        ...data,
+      }),
+    ),
     update: jest.fn(
       async ({ id, data }: { id: string; data: Record<string, unknown> }) => ({
         id,
@@ -59,7 +67,8 @@ function createDescriptor(
     kind: props?.kind ?? "model",
     module: key.split(".")[0],
     name: key.split(".").slice(1).join("."),
-    route: `/api/${key}`,
+    route:
+      key === "file-storage.file" ? "/api/file-storage/files" : `/api/${key}`,
     title: key,
     description: key,
     variants: ["default", "list"],
@@ -70,7 +79,7 @@ function createDescriptor(
     ],
     localizedFields: key === "blog.widget" ? ["title"] : [],
     relationFields: [],
-    operations: ["find", "count", "get-by-id", "create", "update", "delete"],
+    operations: ["find", "count", "get", "create", "update", "delete"],
     insertSchema: z
       .object({
         title: z.record(z.any()).optional(),
@@ -85,6 +94,7 @@ function createDescriptor(
 describe("MCP content-management generic operations", () => {
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   /**
@@ -93,28 +103,103 @@ describe("MCP content-management generic operations", () => {
    * When Codex asks for content entities
    * Then the response includes fields, localized fields, variants, and operations
    */
-  it("summarizes supported content entity descriptors", () => {
+  it("summarizes supported modules with nested model descriptors", () => {
     const api = createApi();
     const registry = [createDescriptor(api)];
 
-    expect(describeContentEntities({ registry })).toEqual([
+    expect(describeContentEntities({ registry })).toEqual({
+      modules: [
+        expect.objectContaining({
+          id: "blog",
+          models: [
+            expect.objectContaining({
+              id: "widget",
+              operations: [
+                "find",
+                "count",
+                "get",
+                "create",
+                "update",
+                "delete",
+              ],
+            }),
+          ],
+          relations: [],
+        }),
+      ],
+    });
+  });
+
+  /**
+   * BDD Scenario: Model schema exposes descriptor metadata
+   * Given a supported blog widget descriptor
+   * When Codex asks for the model schema
+   * Then the response includes fields, localized fields, variants, and operations
+   */
+  it("describes model schema metadata", async () => {
+    const api = createApi();
+    const registry = [createDescriptor(api)];
+
+    await expect(
+      describeContentModel(
+        {
+          module: "blog",
+          model: "widget",
+        },
+        { registry },
+      ),
+    ).resolves.toEqual(
       expect.objectContaining({
-        key: "blog.widget",
+        module: "blog",
+        model: "widget",
         fields: expect.arrayContaining([
           expect.objectContaining({ name: "title", localized: true }),
         ]),
         localizedFields: ["title"],
         variants: ["default", "list"],
-        operations: [
-          "find",
-          "count",
-          "get-by-id",
-          "create",
-          "update",
-          "delete",
-        ],
+        operations: ["find", "count", "get", "create", "update", "delete"],
       }),
-    ]);
+    );
+  });
+
+  /**
+   * BDD Scenario: File model schema exposes upload examples
+   * Given the file-storage file model supports uploads
+   * When Codex asks for the model schema
+   * Then the response shows URL and base64 upload examples for AI chat clients
+   */
+  it("describes file upload examples for file-storage files", async () => {
+    const api = createApi();
+    const registry = [createDescriptor(api, { key: "file-storage.file" })];
+
+    await expect(
+      describeContentModel(
+        {
+          module: "file-storage",
+          model: "file",
+        },
+        { registry },
+      ),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        module: "file-storage",
+        model: "file",
+        writeExamples: expect.objectContaining({
+          createFromUrl: expect.objectContaining({
+            data: expect.objectContaining({
+              url: "https://example.com/image.webp",
+            }),
+          }),
+          uploadBase64: expect.objectContaining({
+            data: expect.objectContaining({
+              contentBase64: "<base64-without-data-url-prefix>",
+              fileName: "image.webp",
+              mimeType: "image/webp",
+            }),
+          }),
+        }),
+      }),
+    );
   });
 
   /**
@@ -128,9 +213,10 @@ describe("MCP content-management generic operations", () => {
     const registry = [createDescriptor(api)];
 
     await expect(
-      findContentRecords(
+      findContentModelRecords(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           filters: {
             and: [
               {
@@ -182,9 +268,10 @@ describe("MCP content-management generic operations", () => {
     const registry = [createDescriptor(api)];
 
     await expect(
-      createContentRecord(
+      createContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           data: {
             title: { en: "Articles" },
             adminTitle: "Articles",
@@ -195,13 +282,152 @@ describe("MCP content-management generic operations", () => {
       ),
     ).resolves.toEqual({
       operation: "create",
-      entity: "blog.widget",
+      module: "blog",
+      model: "widget",
       data: {
         title: { en: "Articles" },
         adminTitle: "Articles",
       },
     });
     expect(api.create).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: File create from URL uses the file API route
+   * Given an AI chat client provides a public image URL for file-storage.file
+   * When dryRun is false
+   * Then MCP calls the file SDK createFromUrl action instead of generic JSON create
+   */
+  it("creates file-storage file records from public URLs", async () => {
+    const api = createApi();
+    const registry = [createDescriptor(api, { key: "file-storage.file" })];
+
+    await expect(
+      createContentModelRecord(
+        {
+          module: "file-storage",
+          model: "file",
+          data: {
+            url: "https://example.com/cover.webp",
+            adminTitle: "Cover",
+            alt: "Cover alt",
+          },
+          dryRun: false,
+        },
+        { registry, authHeaders },
+      ),
+    ).resolves.toEqual({
+      id: "created-from-url-record",
+      file: "https://storage.example.com/uploaded.webp",
+      url: "https://example.com/cover.webp",
+      adminTitle: "Cover",
+      alt: "Cover alt",
+    });
+
+    expect(api.createFromUrl).toHaveBeenCalledWith({
+      data: {
+        url: "https://example.com/cover.webp",
+        adminTitle: "Cover",
+        alt: "Cover alt",
+      },
+      options: {
+        headers: authHeaders,
+      },
+    });
+    expect(api.create).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: File create from base64 uses multipart upload
+   * Given an AI chat client has a generated image only inside its own sandbox
+   * When it sends contentBase64 for file-storage.file
+   * Then MCP uploads multipart data to the file-storage API with caller auth
+   */
+  it("creates file-storage file records from base64 content", async () => {
+    const api = createApi();
+    const registry = [createDescriptor(api, { key: "file-storage.file" })];
+    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: {
+            id: "file-record",
+            file: "https://storage.example.com/cover.webp",
+          },
+        }),
+        { status: 201, headers: { "content-type": "application/json" } },
+      ),
+    );
+
+    await expect(
+      createContentModelRecord(
+        {
+          module: "file-storage",
+          model: "file",
+          data: {
+            contentBase64: Buffer.from("image-content").toString("base64"),
+            fileName: "cover.webp",
+            mimeType: "image/webp",
+            adminTitle: "Cover",
+            alt: "Cover alt",
+          },
+          dryRun: false,
+        },
+        { registry, authHeaders },
+      ),
+    ).resolves.toEqual({
+      id: "file-record",
+      file: "https://storage.example.com/cover.webp",
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:4000/api/file-storage/files",
+      expect.objectContaining({
+        method: "POST",
+        headers: authHeaders,
+        body: expect.any(FormData),
+      }),
+    );
+
+    const body = fetchMock.mock.calls[0][1]?.body as FormData;
+    expect(body.get("data")).toBe(
+      JSON.stringify({
+        mimeType: "image/webp",
+        adminTitle: "Cover",
+        alt: "Cover alt",
+      }),
+    );
+    expect(body.get("file")).toBeInstanceOf(File);
+    expect(api.create).not.toHaveBeenCalled();
+    expect(api.createFromUrl).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: File create rejects inaccessible client paths
+   * Given ChatGPT created an image inside /mnt/data
+   * When it passes that local path to file-storage.file
+   * Then MCP returns an actionable validation error instead of creating a broken record
+   */
+  it("rejects MCP client local paths for file-storage files", async () => {
+    const api = createApi();
+    const registry = [createDescriptor(api, { key: "file-storage.file" })];
+
+    await expect(
+      createContentModelRecord(
+        {
+          module: "file-storage",
+          model: "file",
+          data: {
+            file: "/mnt/data/cover.webp",
+            adminTitle: "Cover",
+          },
+          dryRun: false,
+        },
+        { registry, authHeaders },
+      ),
+    ).rejects.toThrow("file-storage.file cannot read MCP client local paths");
+
+    expect(api.create).not.toHaveBeenCalled();
+    expect(api.createFromUrl).not.toHaveBeenCalled();
   });
 
   /**
@@ -215,9 +441,10 @@ describe("MCP content-management generic operations", () => {
     const registry = [createDescriptor(api)];
 
     await expect(
-      updateContentRecord(
+      updateContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           id: "widget-1",
           data: {
             adminTitle: "Fresh Articles",
@@ -253,27 +480,30 @@ describe("MCP content-management generic operations", () => {
     const registry = [createDescriptor(api)];
 
     await expect(
-      previewDeleteContentRecord(
+      previewDeleteContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           id: "widget-1",
         },
         { registry, authHeaders },
       ),
     ).resolves.toEqual({
-      entity: "blog.widget",
+      module: "blog",
+      model: "widget",
       id: "widget-1",
       record: {
         id: "widget-1",
         adminTitle: "Articles",
       },
-      confirmationToken: "blog.widget:widget-1",
+      confirmationToken: "model:blog:widget:widget-1",
     });
 
     await expect(
-      applyDeleteContentRecord(
+      applyDeleteContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           id: "widget-1",
           confirm: true,
           confirmationToken: "wrong-token",
@@ -281,16 +511,17 @@ describe("MCP content-management generic operations", () => {
         { registry, authHeaders },
       ),
     ).rejects.toThrow(
-      "Validation error. Delete confirmation token does not match entity and id",
+      "Validation error. Delete confirmation token does not match selector and id",
     );
 
     await expect(
-      applyDeleteContentRecord(
+      applyDeleteContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           id: "widget-1",
           confirm: true,
-          confirmationToken: "blog.widget:widget-1",
+          confirmationToken: "model:blog:widget:widget-1",
         },
         { registry, authHeaders },
       ),
@@ -349,16 +580,18 @@ describe("MCP content-management generic operations", () => {
     ];
 
     await expect(
-      previewDeleteContentRecord(
+      previewDeleteContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           id: "widget-1",
         },
         { registry, authHeaders },
       ),
     ).resolves.toEqual(
       expect.objectContaining({
-        entity: "blog.widget",
+        module: "blog",
+        model: "widget",
         id: "widget-1",
         relationContext: {
           externalWidgetRelations: [
@@ -419,7 +652,8 @@ describe("MCP content-management generic operations", () => {
       ),
     ).resolves.toEqual({
       operation: "localized-field-update",
-      entity: "blog.widget",
+      module: "blog",
+      model: "widget",
       id: "widget-1",
       before: {
         en: "Articles",

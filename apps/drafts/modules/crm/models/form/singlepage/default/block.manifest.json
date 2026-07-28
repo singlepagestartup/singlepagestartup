@@ -1,0 +1,40 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "crm.form.default",
+  "title": "CRM Form / Default",
+  "description": "Singlepage CRM form variant that composes CRM steps and CRM inputs.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "form",
+    "variant": "default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "form",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "crm.form",
+    "pageName": "crm",
+    "variantName": "default",
+    "nodeId": "978:58",
+    "variantNodeId": "978:51",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "crm",
+    "form",
+    "step",
+    "input"
+  ]
+}

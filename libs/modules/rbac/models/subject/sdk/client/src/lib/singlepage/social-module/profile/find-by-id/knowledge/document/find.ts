@@ -11,7 +11,11 @@ import {
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { queryClient, subscription } from "@sps/shared-frontend-client-api";
-import { STALE_TIME } from "@sps/shared-utils";
+import {
+  defaultCompiledTopicRules,
+  resolveTopicsForPath,
+  STALE_TIME,
+} from "@sps/shared-utils";
 import { useEffect } from "react";
 import QueryString from "qs";
 
@@ -29,6 +33,11 @@ export function action(props: IProps) {
     encodeValuesOnly: true,
   });
   const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/knowledge/documents?${stringifiedQuery}`;
+  // Merge caller meta last but never let it clobber topics (issue #195): a
+  // project passing reactQueryOptions.meta must not silently drop the realtime
+  // topic subscription.
+  const { meta: userMeta, ...restReactQueryOptions } =
+    props.reactQueryOptions ?? {};
 
   useEffect(() => {
     const unsubscribe = subscription(queryKey, queryClient);
@@ -37,6 +46,13 @@ export function action(props: IProps) {
 
   return useQuery<IResult>({
     queryKey: [queryKey],
+    // This RBAC endpoint is a composite read over a Social relation and
+    // Knowledge documents. Resolve the framework rule instead of deriving the
+    // misleading literal `social.documents` topic from its URL suffix.
+    meta: {
+      topics: resolveTopicsForPath(queryKey, defaultCompiledTopicRules),
+      ...(userMeta ?? {}),
+    },
     queryFn: async () => {
       const result = await api.socialModuleProfileFindByIdKnowledgeDocumentFind(
         {
@@ -64,6 +80,6 @@ export function action(props: IProps) {
       return data;
     },
     staleTime: STALE_TIME,
-    ...props.reactQueryOptions,
+    ...restReactQueryOptions,
   });
 }

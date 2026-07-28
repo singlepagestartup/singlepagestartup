@@ -1,0 +1,65 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": "700:24",
+  "variantNodeId": "700:2",
+  "variantName": "content-default",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.widget.content-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.group": "content",
+    "sps.drafts.groupVariant": "default",
+    "sps.drafts.syncKey": "website-builder/models/widget/singlepage/content-default",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "content-default",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "content-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/content-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-default/Component.stories.tsx",
+    "sps.code.html": "apps/drafts/modules/website-builder/models/widget/singlepage/content-default/index.html"
+  },
+  "properties": [
+    {
+      "name": "Counter Label",
+      "type": "TEXT",
+      "slot": "counterLabel"
+    },
+    {
+      "name": "Counter Value",
+      "type": "TEXT",
+      "slot": "counterValue"
+    },
+    {
+      "name": "Eyebrow",
+      "type": "TEXT",
+      "slot": "eyebrow"
+    },
+    {
+      "name": "Title",
+      "type": "TEXT",
+      "slot": "title"
+    },
+    {
+      "name": "Description",
+      "type": "TEXT",
+      "slot": "description"
+    },
+    {
+      "name": "Show Media",
+      "type": "BOOLEAN",
+      "default": true
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary",
+    "color/secondary",
+    "color/accent"
+  ]
+}

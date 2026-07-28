@@ -10,13 +10,20 @@ import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/server";
 import { IModel as ISocialModuleMessagesToFileStorageModuleFile } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/model";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
-import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import {
+  IModel as ISocialModuleMessage,
+  shouldAwaitSocialMessageNotification,
+} from "@sps/social/models/message/sdk/model";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import {
   AudioTranscriptionService,
   shouldSkipOrdinaryNotificationForAudioTranscription,
 } from "./audio-transcription";
+import {
+  normalizeRbacAiReactionRequestMetadata,
+  parseRbacAiReactionRequestMetadata,
+} from "@sps/rbac/models/subject/sdk/model";
 export class Handler {
   service: Service;
   audioTranscriptionService = new AudioTranscriptionService();
@@ -85,6 +92,16 @@ export class Handler {
       } catch (error) {
         throw new Error(
           "Validation error. Invalid JSON in body['data']. Got: " + dataField,
+        );
+      }
+
+      const aiReactionRequest = parseRbacAiReactionRequestMetadata(
+        parsedBody.data?.metadata,
+      );
+
+      if (aiReactionRequest && parsedBody.data) {
+        parsedBody.data.metadata = normalizeRbacAiReactionRequestMetadata(
+          parsedBody.data.metadata,
         );
       }
 
@@ -291,7 +308,7 @@ export class Handler {
           socialModuleMessage,
         })
       ) {
-        void this.notifyOtherSubjectsInChat({
+        const notificationPromise = this.notifyOtherSubjectsInChat({
           id,
           socialModuleChatId,
           socialModuleThreadId,
@@ -315,6 +332,14 @@ export class Handler {
         }).catch((error) => {
           logger.error(error);
         });
+
+        if (
+          shouldAwaitSocialMessageNotification(socialModuleMessage.metadata)
+        ) {
+          await notificationPromise;
+        } else {
+          void notificationPromise;
+        }
       }
 
       return c.json({
@@ -547,7 +572,6 @@ export class Handler {
               await socialModuleMessageApi.update({
                 id: props.extendedSocialModuleMessage.id,
                 data: {
-                  ...props.extendedSocialModuleMessage,
                   sourceSystemId: notificationServiceNotificationSourceSystemId,
                 },
                 options: {

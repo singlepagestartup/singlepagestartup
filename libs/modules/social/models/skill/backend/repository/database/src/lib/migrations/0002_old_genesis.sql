@@ -1,0 +1,1 @@
+ALTER TABLE "sl_skill" DROP COLUMN "status";

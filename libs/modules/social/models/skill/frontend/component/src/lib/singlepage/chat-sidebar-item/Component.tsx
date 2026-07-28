@@ -35,9 +35,9 @@ export function Component(props: IComponentPropsExtended) {
         </span>
         <span
           className="mt-0.5 block max-w-full truncate text-[11px] text-slate-400"
-          title={`@${props.data.slug}`}
+          title={`/${props.data.slug}`}
         >
-          @{props.data.slug}
+          /{props.data.slug}
         </span>
       </span>
     </button>

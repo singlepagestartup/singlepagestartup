@@ -30,6 +30,11 @@ export function action(props: IProps) {
     `social.threads.${props.socialModuleThreadId}.messages`,
     "social.messages",
   ];
+  // Merge caller meta last but never let it clobber topics (issue #195): a
+  // project passing reactQueryOptions.meta must not silently drop the realtime
+  // topic subscription.
+  const { meta: userMeta, ...restReactQueryOptions } =
+    props.reactQueryOptions ?? {};
 
   useEffect(() => {
     const unsubscribe = subscription(queryKey, queryClient);
@@ -40,6 +45,7 @@ export function action(props: IProps) {
     queryKey: [queryKey],
     meta: {
       topics,
+      ...(userMeta ?? {}),
     },
     queryFn: async () => {
       const result =
@@ -69,6 +75,6 @@ export function action(props: IProps) {
       return data;
     },
     staleTime: STALE_TIME,
-    ...props.reactQueryOptions,
+    ...restReactQueryOptions,
   });
 }

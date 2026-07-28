@@ -1,3 +1,9 @@
+export {
+  type AnalyticsMetadata,
+  type AnalyticsMetadataValue,
+  type TrackAnalyticsEventInput,
+  trackAnalyticsEvent,
+} from "./analytics";
 export { util as cn } from "./cn";
 export { util as copyToClipboard } from "./copy-to-clipboard";
 export * as authorization from "./authorization";

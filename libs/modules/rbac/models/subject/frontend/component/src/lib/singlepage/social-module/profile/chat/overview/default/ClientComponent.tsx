@@ -3,6 +3,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SocialModuleProfileChatMessageListDefault } from "../../message/list/default";
+import { Component as SocialModuleProfileChatProfileAvatar } from "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar";
 import {
   emptyLocalizedTextFields,
   getLocalizedText,
@@ -11,7 +12,10 @@ import {
   normalizeLocalizedTextFields,
 } from "../../title";
 import { api, queryClient } from "@sps/rbac/models/subject/sdk/client";
-import { route } from "@sps/rbac/models/subject/sdk/model";
+import {
+  route,
+  type IModel as IRbacSubject,
+} from "@sps/rbac/models/subject/sdk/model";
 import { FormField } from "@sps/ui-adapter";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/client";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/client";
@@ -45,6 +49,13 @@ type ProfileListItem = {
   subtitle: string;
   initial: string;
   searchText: string;
+};
+
+type AgentSubjectListItem = {
+  subject: IRbacSubject;
+  title: string;
+  subtitle: string;
+  initial: string;
 };
 
 type ProfileRemovalIntent = {
@@ -212,6 +223,9 @@ export function Component(props: IComponentPropsExtended) {
   const [pendingAddProfileId, setPendingAddProfileId] = useState<string | null>(
     null,
   );
+  const [pendingAddAgentSubjectId, setPendingAddAgentSubjectId] = useState<
+    string | null
+  >(null);
   const [profileRemovalIntent, setProfileRemovalIntent] =
     useState<ProfileRemovalIntent | null>(null);
   const [isChatDeleteConfirmOpen, setIsChatDeleteConfirmOpen] = useState(false);
@@ -330,14 +344,6 @@ export function Component(props: IComponentPropsExtended) {
       return requestedThread.id;
     }
 
-    const defaultThread = socialModuleThreads.find((socialModuleThread) => {
-      return socialModuleThread.variant === "default";
-    });
-
-    if (defaultThread?.id) {
-      return defaultThread.id;
-    }
-
     return socialModuleThreads[0]?.id;
   }, [props.socialModuleThreadId, socialModuleThreads]);
   const chatListQueryKey = useMemo(() => {
@@ -386,6 +392,7 @@ export function Component(props: IComponentPropsExtended) {
     setMemberSearch("");
     setDebouncedMemberSearch("");
     setPendingAddProfileId(null);
+    setPendingAddAgentSubjectId(null);
     setProfileRemovalIntent(null);
     setIsChatDeleteConfirmOpen(false);
     setThreadDeletionIntent(null);
@@ -411,20 +418,13 @@ export function Component(props: IComponentPropsExtended) {
 
   const threadItems = useMemo(() => {
     return (socialModuleThreads || []).map((socialModuleThread, index) => {
-      const title =
-        socialModuleThread.title?.trim() ||
-        (socialModuleThread.variant === "default"
-          ? "Default thread"
-          : `Thread ${index + 1}`);
+      const title = socialModuleThread.title?.trim() || `Thread ${index + 1}`;
 
       return {
         data: socialModuleThread,
         title,
         createdAt: new Date(socialModuleThread.createdAt).toLocaleDateString(),
-        preview:
-          socialModuleThread.variant === "default"
-            ? "Primary conversation thread"
-            : "Conversation thread",
+        preview: "Conversation thread",
         shortId: socialModuleThread.id.slice(0, 8),
       };
     });
@@ -433,6 +433,10 @@ export function Component(props: IComponentPropsExtended) {
     activeThreadIndex >= 0
       ? threadItems[activeThreadIndex]?.title || "Select a thread"
       : "Select a thread";
+  const activeSocialModuleThread =
+    activeThreadIndex >= 0
+      ? socialModuleThreads?.[activeThreadIndex] || null
+      : null;
   const filteredThreadItems = useMemo(() => {
     const normalizedSearch = threadSearch.trim().toLowerCase();
 
@@ -514,6 +518,23 @@ export function Component(props: IComponentPropsExtended) {
         debouncedMemberSearch.length >= 2,
     },
   });
+  const {
+    data: searchedAgentSubjects,
+    isLoading: searchedAgentSubjectsIsLoading,
+    isFetching: searchedAgentSubjectsIsFetching,
+    refetch: refetchSearchedAgentSubjects,
+  } = api.socialModuleChatFindByIdAgentSubjectSearch({
+    id: props.data.id,
+    socialModuleChatId: props.socialModuleChat.id,
+    q: debouncedMemberSearch,
+    limit: 20,
+    reactQueryOptions: {
+      enabled:
+        showSettings &&
+        settingsTab === "members" &&
+        debouncedMemberSearch.length >= 2,
+    },
+  });
   const memberItems = useMemo<ProfileListItem[]>(() => {
     return (socialModuleMemberProfiles || []).map((socialModuleProfile) => {
       const title = profileTitle(socialModuleProfile, props.language);
@@ -531,10 +552,6 @@ export function Component(props: IComponentPropsExtended) {
     });
   }, [props.language, socialModuleMemberProfiles]);
   const knowledgeAssistantProfile = useMemo(() => {
-    if (props.socialModuleChat.variant !== "knowledge") {
-      return null;
-    }
-
     const profilesById = new Map(
       (socialModuleMemberProfiles || []).map((socialModuleProfile) => {
         return [socialModuleProfile.id, socialModuleProfile];
@@ -557,11 +574,7 @@ export function Component(props: IComponentPropsExtended) {
     }
 
     return null;
-  }, [
-    props.socialModuleChat.variant,
-    socialModuleMemberProfiles,
-    socialModuleProfilesToChats,
-  ]);
+  }, [socialModuleMemberProfiles, socialModuleProfilesToChats]);
   const artificialIntelligenceOpponentProfile = useMemo(() => {
     if (knowledgeAssistantProfile) {
       return knowledgeAssistantProfile;
@@ -611,6 +624,18 @@ export function Component(props: IComponentPropsExtended) {
         };
       });
   }, [memberProfileIds, props.language, searchedSocialModuleProfiles]);
+  const searchedAgentSubjectItems = useMemo<AgentSubjectListItem[]>(() => {
+    return (searchedAgentSubjects || []).map((subject) => {
+      const title = subject.slug || "agent";
+
+      return {
+        subject,
+        title,
+        subtitle: subject.id,
+        initial: profileInitial(title),
+      };
+    });
+  }, [searchedAgentSubjects]);
   const chatTitleValues = chatSettingsForm.watch("title");
   const chatDisplayTitle = getLocalizedText(
     chatTitleValues,
@@ -693,6 +718,30 @@ export function Component(props: IComponentPropsExtended) {
         },
         onSettled() {
           setPendingAddProfileId(null);
+        },
+      },
+    );
+  };
+
+  const handleAddAgentSubject = (agentSubjectItem: AgentSubjectListItem) => {
+    setPendingAddAgentSubjectId(agentSubjectItem.subject.id);
+
+    socialModuleChatFindByIdProfileCreate.mutate(
+      {
+        id: props.data.id,
+        socialModuleChatId: props.socialModuleChat.id,
+        data: {
+          agentSubjectId: agentSubjectItem.subject.id,
+        },
+      },
+      {
+        onSuccess() {
+          refetchMemberQueries();
+          void refetchSearchedAgentSubjects();
+          toast.success("Agent profile added to chat");
+        },
+        onSettled() {
+          setPendingAddAgentSubjectId(null);
         },
       },
     );
@@ -836,10 +885,7 @@ export function Component(props: IComponentPropsExtended) {
           toast.success("Thread deleted successfully");
 
           if (activeSocialModuleThreadId === deletedThreadId) {
-            const nextThread =
-              remainingThreadItems.find((threadItem) => {
-                return threadItem.data.variant === "default";
-              }) || remainingThreadItems[0];
+            const nextThread = remainingThreadItems[0];
 
             if (nextThread?.data.id) {
               router.push(
@@ -1216,9 +1262,13 @@ export function Component(props: IComponentPropsExtended) {
                                 key={profileItem.profile.id}
                                 className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-slate-50"
                               >
-                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-medium text-slate-600">
-                                  {profileItem.initial}
-                                </div>
+                                <SocialModuleProfileChatProfileAvatar
+                                  isServer={false}
+                                  variant="chat-profile-avatar"
+                                  data={profileItem.profile}
+                                  language={props.language}
+                                  className="h-7 w-7 text-[11px]"
+                                />
                                 <div className="min-w-0 flex-1">
                                   <p className="truncate text-xs text-slate-700">
                                     {profileItem.title}
@@ -1293,7 +1343,7 @@ export function Component(props: IComponentPropsExtended) {
                     {memberSearch.trim() ? (
                       <div className="border-t border-slate-200 pt-3">
                         <h4 className="mb-1.5 text-[11px] text-slate-400">
-                          Search results
+                          User profiles
                         </h4>
                         {!canSearchProfiles ? (
                           <p className="py-4 text-center text-xs text-slate-400">
@@ -1315,9 +1365,13 @@ export function Component(props: IComponentPropsExtended) {
                                   key={profileItem.profile.id}
                                   className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-slate-50"
                                 >
-                                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-medium text-slate-500 opacity-70">
-                                    {profileItem.initial}
-                                  </div>
+                                  <SocialModuleProfileChatProfileAvatar
+                                    isServer={false}
+                                    variant="chat-profile-avatar"
+                                    data={profileItem.profile}
+                                    language={props.language}
+                                    className="h-7 w-7 text-[11px] opacity-70"
+                                  />
                                   <div className="min-w-0 flex-1">
                                     <p className="truncate text-xs text-slate-500">
                                       {profileItem.title}
@@ -1348,6 +1402,67 @@ export function Component(props: IComponentPropsExtended) {
                         ) : (
                           <p className="py-4 text-center text-xs text-slate-400">
                             No users found
+                          </p>
+                        )}
+                        <h4 className="mb-1.5 mt-3 text-[11px] text-slate-400">
+                          Agents
+                        </h4>
+                        {!canSearchProfiles ? (
+                          <p className="py-4 text-center text-xs text-slate-400">
+                            Type at least 2 characters to search agents.
+                          </p>
+                        ) : searchedAgentSubjectsIsLoading ||
+                          searchedAgentSubjectsIsFetching ? (
+                          <p className="py-4 text-center text-xs text-slate-400">
+                            Searching agents...
+                          </p>
+                        ) : searchedAgentSubjectItems.length ? (
+                          <div className="space-y-1">
+                            {searchedAgentSubjectItems.map(
+                              (agentSubjectItem) => {
+                                const isAdding =
+                                  pendingAddAgentSubjectId ===
+                                  agentSubjectItem.subject.id;
+
+                                return (
+                                  <div
+                                    key={agentSubjectItem.subject.id}
+                                    className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-slate-50"
+                                  >
+                                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-medium text-slate-500 opacity-70">
+                                      {agentSubjectItem.initial}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="truncate text-xs text-slate-500">
+                                        {agentSubjectItem.title}
+                                      </p>
+                                      <p className="truncate text-[10px] text-slate-400">
+                                        Agent subject
+                                      </p>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleAddAgentSubject(agentSubjectItem);
+                                      }}
+                                      title="Add agent"
+                                      disabled={
+                                        isAdding ||
+                                        socialModuleChatFindByIdProfileCreate.isPending
+                                      }
+                                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-green-50 hover:text-green-600 disabled:cursor-not-allowed disabled:opacity-40"
+                                    >
+                                      <UserPlus className="h-3.5 w-3.5" />
+                                      <span className="sr-only">Add agent</span>
+                                    </button>
+                                  </div>
+                                );
+                              },
+                            )}
+                          </div>
+                        ) : (
+                          <p className="py-4 text-center text-xs text-slate-400">
+                            No agents found
                           </p>
                         )}
                       </div>
@@ -1712,7 +1827,7 @@ export function Component(props: IComponentPropsExtended) {
                     : "Create or select a thread to open the message timeline."}
                 </p>
               </div>
-            ) : (
+            ) : activeSocialModuleThread ? (
               <SocialModuleProfileChatMessageListDefault
                 isServer={false}
                 data={props.data}
@@ -1723,9 +1838,14 @@ export function Component(props: IComponentPropsExtended) {
                   artificialIntelligenceOpponentProfile
                 }
                 knowledgeAssistantProfile={knowledgeAssistantProfile}
+                socialModuleThread={activeSocialModuleThread}
                 socialModuleThreadId={activeSocialModuleThreadId}
                 variant="social-module-profile-chat-message-list-default"
               />
+            ) : (
+              <div className="flex h-full items-center justify-center bg-white px-6 text-center text-sm text-slate-500">
+                Loading thread settings
+              </div>
             )}
           </div>
         </section>

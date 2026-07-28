@@ -4,7 +4,8 @@
   "sourceRoot": "libs/middlewares/src",
   "projectType": "library",
   "targets": {
-    "tsc:build": {}
+    "tsc:build": {},
+    "jest:test": {}
   },
   "tags": []
 }

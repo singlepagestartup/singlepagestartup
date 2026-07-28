@@ -1,0 +1,30 @@
+{
+  "id": "admin.relation-manager",
+  "title": "Admin / Relation Manager",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the runnable RelationManager state.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.admin-v2-navigation",
+      "path": "../../../../../website-builder/models/widget/singlepage/admin-v2-navigation"
+    },
+    {
+      "id": "ecommerce.relation.products-to-attributes.admin-v2-manager",
+      "path": "../../../../../ecommerce/relations/products-to-attributes/singlepage/admin-v2-manager"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "admin-relation-manager",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1741",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  }
+}

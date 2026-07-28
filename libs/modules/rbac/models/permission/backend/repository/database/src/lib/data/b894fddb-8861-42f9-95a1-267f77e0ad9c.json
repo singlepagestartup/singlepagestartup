@@ -1,0 +1,9 @@
+{
+  "id": "b894fddb-8861-42f9-95a1-267f77e0ad9c",
+  "createdAt": "2026-07-17T21:45:49.653Z",
+  "updatedAt": "2026-07-17T21:45:49.653Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/openrouter/models"
+}

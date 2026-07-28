@@ -2,6 +2,7 @@ export { type IModel } from "@sps/rbac/models/subject/sdk/model";
 import { IModel } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
+import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { type IResult } from "@sps/rbac/models/subject/sdk/server";
 
@@ -15,22 +16,33 @@ export interface IComponentProps extends ISpsComponentBase {
   artificialIntelligenceOpponentProfile?: ISocialModuleProfile | null;
   knowledgeAssistantProfile?: ISocialModuleProfile | null;
   socialModuleChat: ISocialModuleChat;
+  socialModuleThread: ISocialModuleThread;
   socialModuleThreadId: string;
   variant: typeof variant;
   className?: string;
 }
 
-export interface IComponentPropsExtended extends IComponentProps {
-  socialModuleMessages?: IResult["ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindResult"];
-  socialModuleActions?: IResult["ISocialModuleProfileFindByIdChatFindByIdActionFindResult"];
-  socialModuleMessagesAndActionsQuery?: (
-    | {
-        type: "message";
-        data: IResult["ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindResult"][0];
-      }
-    | {
-        type: "action";
-        data: IResult["ISocialModuleProfileFindByIdChatFindByIdActionFindResult"][0];
-      }
-  )[];
-}
+/**
+ * Message/action data types for the timeline boundary. The queries that
+ * produce them live INSIDE MessageTimelineSection (issue #195): the chat
+ * shell never receives message arrays as props, so cache appends/refetches
+ * rerender only the timeline area.
+ */
+export type ISocialModuleMessages =
+  IResult["ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindResult"];
+
+export type ISocialModuleActions =
+  IResult["ISocialModuleProfileFindByIdChatFindByIdActionFindResult"];
+
+export type ISocialModuleMessagesAndActionsQuery = (
+  | {
+      type: "message";
+      data: ISocialModuleMessages[0];
+    }
+  | {
+      type: "action";
+      data: ISocialModuleActions[0];
+    }
+)[];
+
+export interface IComponentPropsExtended extends IComponentProps {}

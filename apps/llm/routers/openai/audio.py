@@ -9,7 +9,6 @@ import tempfile
 from fastapi import APIRouter, Form, HTTPException, UploadFile
 from fastapi.responses import PlainTextResponse
 from config import settings
-from services.openai import whisper
 
 router = APIRouter()
 
@@ -37,6 +36,17 @@ async def create_transcription(
         path = tmp.name
 
     try:
+        try:
+            from services.openai import whisper
+        except ImportError as error:
+            raise HTTPException(
+                status_code=501,
+                detail=(
+                    "Local audio transcription is disabled in this image. "
+                    "Install optional Whisper/PyTorch dependencies to enable it."
+                ),
+            ) from error
+
         text = whisper.transcribe(path, language=language, initial_prompt=prompt)
 
         if response_format == "text":

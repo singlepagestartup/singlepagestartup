@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.subject.me-crm-form-deafult",
+  "title": "RBAC Subject / me-crm-form-deafult",
+  "description": "RBAC subject-owned wrapper that composes CRM module form, step, input, and option draft models.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-crm-form-deafult"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "subject",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "crmForm",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-crm-form-deafult",
+    "nodeId": "859:27",
+    "variantNodeId": "981:99",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "rbac",
+    "subject",
+    "crm",
+    "form"
+  ]
+}

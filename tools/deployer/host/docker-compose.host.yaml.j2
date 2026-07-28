@@ -7,6 +7,8 @@ services:
       - traefik_overlay
     env_file:
       - ./{{ SERVICE_NAME }}.env.local
+    volumes:
+      - next_static:/usr/src/app/apps/host/.next/static
     command: "sh -c './start.sh host'"
     logging:
       driver: "json-file"
@@ -25,8 +27,11 @@ services:
         - traefik.http.routers.{{ SERVICE_NAME }}.entrypoints=websecure
         - traefik.http.routers.{{ SERVICE_NAME }}.tls=true
         - traefik.http.routers.{{ SERVICE_NAME }}.rule=Host(`{{ SERVICE_URL }}`)
-        - traefik.docker.network=traefik_overlay
+        - traefik.swarm.network=traefik_overlay
 
 networks:
   traefik_overlay:
     external: true
+
+volumes:
+  next_static:

@@ -146,4 +146,72 @@ describe("agent thread normalization routine", () => {
     expect(result).toBe("thread-default");
     expect(mocks.createThreadToMessage).not.toHaveBeenCalled();
   });
+
+  /**
+   * BDD Scenario
+   * Given: a message is already linked to one of several chat-owned UI threads.
+   * When: the agent resolves the message thread.
+   * Then: it returns the concrete relation without running legacy default-thread normalization.
+   */
+  it("returns the concrete message thread before legacy normalization", async () => {
+    const { service, mocks } = createServiceWithMocks({
+      chatsToThreads: [
+        { chatId: "chat-3", threadId: "thread-primary" },
+        { chatId: "chat-3", threadId: "thread-current" },
+      ],
+      threadsToMessages: [
+        { messageId: "message-current", threadId: "thread-current" },
+      ],
+    });
+    const normalizeChatThreadsAndMessageLinks = jest.fn();
+    (service as any).normalizeChatThreadsAndMessageLinks =
+      normalizeChatThreadsAndMessageLinks;
+
+    const result = await service.resolveThreadIdForMessageInChat({
+      socialModuleChatId: "chat-3",
+      socialModuleMessageId: "message-current",
+      secretKey: "rbac-secret",
+    });
+
+    expect(result).toBe("thread-current");
+    expect(normalizeChatThreadsAndMessageLinks).not.toHaveBeenCalled();
+    expect(mocks.ensureDefaultThreadForChat).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a successful thread-aware route identifies a chat-owned thread but its relation is missing.
+   * When: the agent resolves the message thread from that authoritative route.
+   * Then: it restores the missing relation instead of guessing a default thread.
+   */
+  it("restores a missing relation from the requested route thread", async () => {
+    const { service, mocks } = createServiceWithMocks({
+      chatsToThreads: [
+        { chatId: "chat-4", threadId: "thread-requested" },
+        { chatId: "chat-4", threadId: "thread-other" },
+      ],
+      threadsToMessages: [],
+    });
+
+    const result = await service.resolveThreadIdForMessageInChat({
+      socialModuleChatId: "chat-4",
+      socialModuleMessageId: "message-requested",
+      requestedSocialModuleThreadId: "thread-requested",
+      secretKey: "rbac-secret",
+    });
+
+    expect(result).toBe("thread-requested");
+    expect(mocks.createThreadToMessage).toHaveBeenCalledWith({
+      data: {
+        threadId: "thread-requested",
+        messageId: "message-requested",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "rbac-secret",
+        },
+      },
+    });
+    expect(mocks.ensureDefaultThreadForChat).not.toHaveBeenCalled();
+  });
 });

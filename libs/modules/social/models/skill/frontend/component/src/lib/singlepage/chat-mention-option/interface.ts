@@ -9,6 +9,7 @@ export interface IClientComponentProps
   data: IModel;
   language: string;
   editOnClick?: boolean;
+  mentionPrefix?: "@" | "/";
   onEdit?: (skill: IModel) => void;
 }
 

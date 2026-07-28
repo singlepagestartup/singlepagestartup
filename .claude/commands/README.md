@@ -2,6 +2,18 @@
 
 This directory contains commands for the SPS development workflow.
 
+These command documents are provider-neutral: Codex executes them through `.codex/skills` wrappers, and any other agent can execute them directly (see root `AGENTS.md`, "Running the workflow from any provider").
+
+## Workflow Contracts
+
+Every phase command relies on the shared contracts in `.claude/references/`:
+
+| Contract                         | Purpose                                                                      |
+| -------------------------------- | ---------------------------------------------------------------------------- |
+| `repository-context-contract.md` | Resolving the target repo/Project and artifact namespace (upstream vs child) |
+| `process-artifact-contract.md`   | Persistent cross-phase process log: incidents, fixes, reusable learnings     |
+| `knowledge-first-contract.md`    | Lookup order and reuse-with-verification rules (token efficiency)            |
+
 ## Core Linear Cycle Commands
 
 The main development workflow uses these unified commands with explicit phase gates:
@@ -30,10 +42,10 @@ After PR merge: manually move the issue to "Done" in GitHub Project.
 
 Supporting commands used by the main workflow:
 
-| Command                    | Purpose                                            |
-| -------------------------- | -------------------------------------------------- |
-| `utilities/commit.md`      | Create git commits (used by implement phase)       |
-| `utilities/describe_pr.md` | Generate PR descriptions (used by implement phase) |
+| Command                          | Purpose                                                                            |
+| -------------------------------- | ---------------------------------------------------------------------------------- |
+| `utilities/commit.md`            | Create git commits (used by implement phase)                                       |
+| `utilities/describe_pr.md`       | Generate PR descriptions (used by implement phase)                                 |
 | `utilities/post_commit_retro.md` | Analyze workflow friction after a commit/session and propose reusable improvements |
 
 ## Special Purpose Commands

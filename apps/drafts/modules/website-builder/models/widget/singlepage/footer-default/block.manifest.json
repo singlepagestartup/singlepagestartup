@@ -1,0 +1,56 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.widget.footer-default",
+  "title": "Website Builder Widget / Footer / Default",
+  "description": "Singlepage draft block for the current home page footer default section.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "footer-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "brand",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "columns",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "legalLinks",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "footer-default",
+    "nodeId": "700:24",
+    "variantNodeId": "715:250",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "home",
+    "landing",
+    "website-builder",
+    "widget",
+    "footer-default"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": "700:24",
+  "variantNodeId": "715:41",
+  "variantName": "content-feature-find-default",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.widget.content-feature-find-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.group": "content",
+    "sps.drafts.groupVariant": "feature-find-default",
+    "sps.drafts.syncKey": "website-builder/models/widget/singlepage/content-feature-find-default",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "content-feature-find-default",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "content-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/content-feature-find-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-feature-find-default/Component.stories.tsx"
+  },
+  "properties": [
+    {
+      "name": "stats",
+      "type": "TEXT",
+      "slot": "stats"
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary"
+  ]
+}

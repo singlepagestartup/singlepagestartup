@@ -7,17 +7,20 @@
  */
 
 import { buildGroundedPrompt, LlmChatClient } from ".";
+import type { KnowledgeSearchResult } from "../types";
 
-const contexts = [
+const contexts: KnowledgeSearchResult[] = [
   {
     id: "chunk-1",
     text: "Product documentation can reuse indexed knowledge fragments.",
     chunkIndex: 0,
+    sourceId: "source-1",
     sourceTitle: "Documentation source",
     sourceOriginalPath: "knowledge.md",
     sourceType: "text",
     distance: 0.1,
     similarity: 0.9,
+    retrievalRole: "seed",
     metadata: {},
   },
 ];
@@ -82,61 +85,6 @@ describe("knowledge LLM generation client", () => {
         stream: false,
       }),
     );
-  });
-
-  /**
-   * BDD Scenario: provider-native skills.
-   *
-   * Given: Knowledge generation receives provider skill references.
-   * When: it delegates to apps/llm.
-   * Then: the gateway payload includes provider_skills outside the prompt.
-   */
-  it("passes provider-native skill references to the LLM gateway", async () => {
-    const fetcher = jest.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          model: "openai/gpt-5-5",
-          provider: "openai",
-          provider_model: "gpt-5.5",
-          choices: [{ message: { content: "answer" } }],
-        }),
-        { status: 200 },
-      ),
-    );
-    const client = new LlmChatClient({
-      baseUrl: "http://llm.test",
-      fetcher,
-    });
-
-    await client.generate({
-      query: "documentation",
-      contexts,
-      model: "openai/gpt-5-5",
-      providerSkills: [
-        {
-          provider: "openai",
-          provider_skill_id: "skill_openai_1",
-          version: "v1",
-          content_hash: "hash-1",
-          name: "brief-writer",
-          source_skill_id: "skill-1",
-        },
-      ],
-    });
-
-    const payload = JSON.parse(fetcher.mock.calls[0][1].body);
-
-    expect(payload.provider_skills).toEqual([
-      {
-        provider: "openai",
-        provider_skill_id: "skill_openai_1",
-        version: "v1",
-        content_hash: "hash-1",
-        name: "brief-writer",
-        source_skill_id: "skill-1",
-      },
-    ]);
-    expect(payload.messages[0].content).not.toContain("skill_openai_1");
   });
 
   /**

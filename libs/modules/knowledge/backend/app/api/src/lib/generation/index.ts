@@ -16,15 +16,6 @@ export interface KnowledgeGenerationResult {
   usage?: IKnowledgeGenerationUsage;
 }
 
-export interface IKnowledgeProviderSkillReference {
-  provider: "openai" | "anthropic";
-  provider_skill_id: string;
-  version?: string | null;
-  content_hash: string;
-  name: string;
-  source_skill_id: string;
-}
-
 export interface KnowledgeGenerationProps {
   query: string;
   contexts: KnowledgeSearchResult[];
@@ -43,7 +34,6 @@ export interface KnowledgeGenerationProps {
     role: "user" | "assistant";
     content: string;
   }[];
-  providerSkills?: IKnowledgeProviderSkillReference[];
 }
 
 export interface KnowledgeChatCompletionProps {
@@ -54,7 +44,6 @@ export interface KnowledgeChatCompletionProps {
   }[];
   maxTokens?: number;
   temperature?: number;
-  providerSkills?: IKnowledgeProviderSkillReference[];
 }
 
 export interface LlmChatClientProps {
@@ -92,16 +81,12 @@ export class LlmChatClient {
           content: buildGroundedPrompt(props),
         },
       ],
-      providerSkills: props.providerSkills,
     });
   }
 
   async complete(
     props: KnowledgeChatCompletionProps,
   ): Promise<KnowledgeGenerationResult> {
-    const providerSkills = props.providerSkills?.length
-      ? props.providerSkills
-      : undefined;
     let res: Response;
 
     try {
@@ -116,7 +101,6 @@ export class LlmChatClient {
           max_tokens: props.maxTokens ?? KNOWLEDGE_GENERATION_MAX_OUTPUT_TOKENS,
           temperature: props.temperature ?? 0.2,
           messages: props.messages,
-          ...(providerSkills ? { provider_skills: providerSkills } : {}),
         }),
       });
     } catch (error) {
@@ -176,7 +160,8 @@ export function buildGroundedPrompt(
           return [
             `Source ${index + 1}: ${context.sourceTitle || "Untitled"}`,
             `Path: ${context.sourceOriginalPath || "unknown"}`,
-            `Similarity: ${context.similarity.toFixed(3)}`,
+            `Similarity: ${formatSimilarity(context.similarity)}`,
+            `Retrieval role: ${context.retrievalRole}`,
             context.text,
           ].join("\n");
         })
@@ -233,6 +218,14 @@ export function buildGroundedPrompt(
     "Knowledge fragments:",
     contextText,
   ].join("\n");
+}
+
+function formatSimilarity(value: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "n/a";
+  }
+
+  return value.toFixed(3);
 }
 
 function compactUsage(usage: IKnowledgeGenerationUsage) {

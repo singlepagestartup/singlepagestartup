@@ -98,6 +98,28 @@ export class Handler {
       const title =
         typeof data.title === "string" ? data.title.trim() : undefined;
 
+      const hasOpenRouterModelId = Object.prototype.hasOwnProperty.call(
+        data,
+        "openRouterModelId",
+      );
+      let preferenceUpdatedThread;
+
+      if (hasOpenRouterModelId) {
+        preferenceUpdatedThread =
+          await this.service.socialModuleChatThreadOpenRouterModelUpdate({
+            subjectId: id,
+            socialModuleChatId,
+            socialModuleThreadId,
+            modelId: data.openRouterModelId,
+          });
+      }
+
+      if (!title && preferenceUpdatedThread) {
+        return c.json({
+          data: preferenceUpdatedThread,
+        });
+      }
+
       if (!title) {
         throw new Error("Validation error. Thread title is required");
       }

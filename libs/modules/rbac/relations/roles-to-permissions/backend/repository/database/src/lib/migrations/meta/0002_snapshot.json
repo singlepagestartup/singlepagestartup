@@ -1,0 +1,140 @@
+{
+  "id": "9ad7d092-738e-490f-8f9a-6bee7042c6fc",
+  "prevId": "2f2f4264-bb66-4cd8-a565-320cadd7f2ee",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_rc_rs_to_ps_mz2": {
+      "name": "sps_rc_rs_to_ps_mz2",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "re_id": {
+          "name": "re_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pn_id": {
+          "name": "pn_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "condition": {
+          "name": "condition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "sps_rc_role_permission_unique": {
+          "name": "sps_rc_role_permission_unique",
+          "columns": [
+            {
+              "expression": "re_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "pn_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sps_rc_rs_to_ps_mz2_re_id_sps_rc_role_id_fk": {
+          "name": "sps_rc_rs_to_ps_mz2_re_id_sps_rc_role_id_fk",
+          "tableFrom": "sps_rc_rs_to_ps_mz2",
+          "tableTo": "sps_rc_role",
+          "columnsFrom": [
+            "re_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sps_rc_rs_to_ps_mz2_pn_id_sps_rc_permission_id_fk": {
+          "name": "sps_rc_rs_to_ps_mz2_pn_id_sps_rc_permission_id_fk",
+          "tableFrom": "sps_rc_rs_to_ps_mz2",
+          "tableTo": "sps_rc_permission",
+          "columnsFrom": [
+            "pn_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

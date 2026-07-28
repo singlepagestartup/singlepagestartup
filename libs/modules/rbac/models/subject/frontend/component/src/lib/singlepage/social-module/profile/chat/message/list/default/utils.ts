@@ -1,4 +1,4 @@
-import { IComponentPropsExtended } from "./interface";
+import { ISocialModuleMessagesAndActionsQuery } from "./interface";
 import { KnowledgeMentionOption, ProfileSummary, SocialSkill } from "./types";
 import { internationalization } from "@sps/shared-configuration";
 import { saveLanguageContext } from "@sps/shared-utils";
@@ -43,6 +43,7 @@ export function getFallbackSocialModuleProfile(
     title: {},
     subtitle: {},
     description: {},
+    allowedMcpServerIds: [],
     adminTitle: label,
     slug: label,
   };
@@ -68,16 +69,17 @@ export function getProfileSummary(
 
 export function getTimelineSignature(
   socialModuleThreadId: string,
-  items: IComponentPropsExtended["socialModuleMessagesAndActionsQuery"] = [],
+  items: ISocialModuleMessagesAndActionsQuery = [],
 ) {
   const lastItem = items[items.length - 1];
 
+  // updatedAt is intentionally excluded: editing an existing message must not
+  // change the signature, otherwise the scroll-to-bottom effect fires on edit.
   return [
     socialModuleThreadId,
     items.length,
     lastItem?.type || "",
     lastItem?.data.id || "",
-    lastItem?.data.updatedAt || "",
     lastItem?.data.createdAt || "",
   ].join(":");
 }
@@ -112,7 +114,7 @@ export function filterSkillMentionOptions(
   profileSkills: SocialSkill[],
   description?: string | null,
 ) {
-  const skillMentionMatch = getSkillMentionMatch(description);
+  const skillMentionMatch = getKnowledgeCommandMatch(description);
 
   if (!skillMentionMatch) {
     return [];
@@ -148,15 +150,19 @@ export function shouldShowKnowledgeMentionOption(description?: string | null) {
 }
 
 export function hasKnowledgeMention(value?: string | null) {
-  return /(^|\s)@knowledge(?=\s|$)/i.test(value || "");
+  return /(^|\s)(?:@knowledge|\/knowledge)(?=\s|$)/i.test(value || "");
 }
 
 export function getMentionedSkillSlugs(value?: string | null) {
-  const matches = (value || "").matchAll(/(^|\s)@([a-zA-Z0-9._-]+)(?=\s|$)/g);
+  const matches = (value || "").matchAll(/(^|\s)\/([a-zA-Z0-9._-]+)(?=\s|$)/g);
 
   return new Set(
-    Array.from(matches).map((match) => {
-      return match[2].toLowerCase();
-    }),
+    Array.from(matches)
+      .map((match) => {
+        return match[2].toLowerCase();
+      })
+      .filter((slug) => {
+        return !["knowledge", "learn", "new"].includes(slug);
+      }),
   );
 }

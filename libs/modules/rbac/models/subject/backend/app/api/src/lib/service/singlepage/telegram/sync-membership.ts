@@ -42,6 +42,52 @@ export class Service {
     };
   }
 
+  protected async createSubjectRoleIfMissing(props: {
+    subjectId: string;
+    roleId: string;
+    headers: Record<string, string>;
+  }): Promise<boolean> {
+    try {
+      await subjectsToRolesApi.create({
+        data: {
+          subjectId: props.subjectId,
+          roleId: props.roleId,
+        },
+        options: {
+          headers: props.headers,
+        },
+      });
+
+      return true;
+    } catch (error) {
+      const concurrentlyCreatedLinks = await this.subjectsToRoles.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: props.subjectId,
+              },
+              {
+                column: "roleId",
+                method: "eq",
+                value: props.roleId,
+              },
+            ],
+          },
+          limit: 1,
+        },
+      });
+
+      if (concurrentlyCreatedLinks?.length) {
+        return false;
+      }
+
+      throw error;
+    }
+  }
+
   async execute(props: IExecuteProps): Promise<IResult> {
     if (!props.id) {
       throw new Error("Validation error. 'id' is required");
@@ -91,16 +137,15 @@ export class Service {
         ["administrator", "member", "creator"].includes(props.memberStatus) &&
         !requiredRoleSubjectLinks?.length
       ) {
-        await subjectsToRolesApi.create({
-          data: {
-            subjectId: props.id,
-            roleId: requiredSubscriptionRole.id,
-          },
-          options: {
-            headers,
-          },
+        const created = await this.createSubjectRoleIfMissing({
+          subjectId: props.id,
+          roleId: requiredSubscriptionRole.id,
+          headers,
         });
-        addedRoleIds.push(requiredSubscriptionRole.id);
+
+        if (created) {
+          addedRoleIds.push(requiredSubscriptionRole.id);
+        }
       }
 
       if (
@@ -190,16 +235,15 @@ export class Service {
       );
 
       for (const missingRole of missingRoles) {
-        await subjectsToRolesApi.create({
-          data: {
-            subjectId: props.id,
-            roleId: missingRole.id,
-          },
-          options: {
-            headers,
-          },
+        const created = await this.createSubjectRoleIfMissing({
+          subjectId: props.id,
+          roleId: missingRole.id,
+          headers,
         });
-        addedRoleIds.push(missingRole.id);
+
+        if (created) {
+          addedRoleIds.push(missingRole.id);
+        }
       }
     }
 

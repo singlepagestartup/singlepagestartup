@@ -1,0 +1,39 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.cart.drawer-default",
+  "title": "Ecommerce Cart / Drawer Default",
+  "description": "Singlepage cart drawer model variant with overlay, item list, totals, and checkout actions.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "cart",
+    "variant": "drawer-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "items",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "checkoutHref",
+      "type": "link",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.cart",
+    "pageName": "ecommerce",
+    "variantName": "drawer-default",
+    "nodeId": "982:139",
+    "variantNodeId": "982:133",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  }
+}

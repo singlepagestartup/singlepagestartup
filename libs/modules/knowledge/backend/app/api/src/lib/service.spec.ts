@@ -7,6 +7,25 @@
  */
 
 import { KnowledgeService } from "./service";
+import type { KnowledgeSearchResult } from "./types";
+
+function createSearchResult(
+  props: Partial<KnowledgeSearchResult> & { id: string },
+): KnowledgeSearchResult {
+  return {
+    text: "Knowledge fragment",
+    chunkIndex: 0,
+    sourceId: "source-1",
+    sourceTitle: "Source",
+    sourceOriginalPath: "source.txt",
+    sourceType: "text",
+    distance: 0.1,
+    similarity: 0.9,
+    retrievalRole: "seed",
+    metadata: {},
+    ...props,
+  };
+}
 
 describe("knowledge service", () => {
   /**
@@ -52,8 +71,74 @@ describe("knowledge service", () => {
     await service.search({ query: "project documentation", topK: 100 });
 
     expect(searchChunks).toHaveBeenCalledWith(
-      expect.objectContaining({ topK: 20 }),
+      expect.objectContaining({ topK: 50 }),
     );
+  });
+
+  /**
+   * BDD Scenario: expanded neighbor search.
+   *
+   * Given: vector search finds seed chunks inside profile-scoped documents.
+   * When: search is requested with a neighbor window.
+   * Then: same-source neighboring chunks are loaded and duplicate chunk ids are removed.
+   */
+  it("expands seed chunks with same-source neighbors and removes duplicates", async () => {
+    const seed = createSearchResult({
+      id: "chunk-2",
+      chunkIndex: 2,
+      sourceId: "source-1",
+    });
+    const duplicateSeedNeighbor = createSearchResult({
+      id: "chunk-2",
+      chunkIndex: 2,
+      sourceId: "source-1",
+      retrievalRole: "neighbor",
+    });
+    const neighbor = createSearchResult({
+      id: "chunk-3",
+      chunkIndex: 3,
+      sourceId: "source-1",
+      retrievalRole: "neighbor",
+    });
+    const searchChunks = jest.fn().mockResolvedValue([seed]);
+    const findNeighborChunks = jest
+      .fn()
+      .mockResolvedValue([duplicateSeedNeighbor, neighbor]);
+    const service = new KnowledgeService({
+      repository: {
+        searchChunks,
+        findNeighborChunks,
+      } as any,
+      embeddingClient: {
+        embed: jest
+          .fn()
+          .mockResolvedValue(Array.from({ length: 768 }, () => 0)),
+      } as any,
+      generationClient: {} as any,
+      modelClient: {} as any,
+    });
+
+    await expect(
+      service.search({
+        query: "project documentation",
+        topK: 30,
+        neighborWindow: 1,
+      }),
+    ).resolves.toEqual([seed, neighbor]);
+    expect(searchChunks).toHaveBeenCalledWith(
+      expect.objectContaining({ topK: 30 }),
+    );
+    expect(findNeighborChunks).toHaveBeenCalledWith({
+      window: 1,
+      seeds: [
+        {
+          sourceId: "source-1",
+          chunkIndex: 2,
+          distance: 0.1,
+          similarity: 0.9,
+        },
+      ],
+    });
   });
 
   /**
@@ -158,17 +243,11 @@ describe("knowledge service", () => {
    */
   it("passes explicit document scope and generic persona to generation", async () => {
     const contexts = [
-      {
+      createSearchResult({
         id: "chunk-1",
         text: "Documentation context",
         chunkIndex: 0,
-        sourceTitle: "Source",
-        sourceOriginalPath: "source.txt",
-        sourceType: "text",
-        distance: 0.1,
-        similarity: 0.9,
-        metadata: {},
-      },
+      }),
     ];
     const searchChunks = jest.fn().mockResolvedValue(contexts);
     const generate = jest.fn().mockResolvedValue({ answer: "answer" });
@@ -368,5 +447,103 @@ describe("knowledge service", () => {
       document: { id: "document-1" },
       index: { indexed: 1, skipped: 0 },
     });
+  });
+
+  /**
+   * BDD Scenario: direct OpenRouter indexing validation.
+   *
+   * Given: apps/api routes embeddings directly to OpenRouter.
+   * When: Knowledge starts an indexing operation.
+   * Then: it relies on response vector validation and does not query apps/llm for that remote model.
+   */
+  it("does not resolve OpenRouter embedding models through apps/llm", async () => {
+    const previousProvider = process.env.KNOWLEDGE_EMBEDDING_PROVIDER;
+    const modelGet = jest.fn();
+    const service = new KnowledgeService({
+      repository: {
+        listDocumentsForIndex: jest.fn().mockResolvedValue([]),
+      } as any,
+      embeddingClient: {} as any,
+      generationClient: {} as any,
+      modelClient: {
+        get: modelGet,
+      } as any,
+    });
+
+    process.env.KNOWLEDGE_EMBEDDING_PROVIDER = "openrouter";
+
+    try {
+      await expect(
+        service.index({ documentId: "document-1", dryRun: true }),
+      ).resolves.toEqual(
+        expect.objectContaining({ indexed: 0, skipped: 0, dryRun: true }),
+      );
+      expect(modelGet).not.toHaveBeenCalled();
+    } finally {
+      if (typeof previousProvider === "undefined") {
+        delete process.env.KNOWLEDGE_EMBEDDING_PROVIDER;
+      } else {
+        process.env.KNOWLEDGE_EMBEDDING_PROVIDER = previousProvider;
+      }
+    }
+  });
+
+  /**
+   * BDD Scenario: missing document deletion.
+   *
+   * Given: a delete request references a missing Knowledge document.
+   * When: the service validates the document id.
+   * Then: cleanup is not attempted.
+   */
+  it("rejects deleting a missing document before cleanup", async () => {
+    const deleteDocumentWithDerivedData = jest.fn();
+    const service = new KnowledgeService({
+      repository: {
+        findDocumentById: jest.fn().mockResolvedValue(undefined),
+        deleteDocumentWithDerivedData,
+      } as any,
+      embeddingClient: {} as any,
+      generationClient: {} as any,
+      modelClient: {} as any,
+    });
+
+    await expect(service.deleteDocument("missing-document")).rejects.toThrow(
+      "Knowledge document missing-document was not found.",
+    );
+    expect(deleteDocumentWithDerivedData).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: document deletion cleanup.
+   *
+   * Given: a Knowledge document exists.
+   * When: the service deletes it.
+   * Then: repository cleanup runs without embedding generation or reindexing.
+   */
+  it("deletes a document through cleanup without embedding generation", async () => {
+    const document = { id: "document-1", title: "Temporary knowledge" };
+    const deleteDocumentWithDerivedData = jest.fn().mockResolvedValue(document);
+    const embeddingClient = {
+      embed: jest.fn(),
+      embedMany: jest.fn(),
+    };
+    const service = new KnowledgeService({
+      repository: {
+        findDocumentById: jest.fn().mockResolvedValue(document),
+        deleteDocumentWithDerivedData,
+      } as any,
+      embeddingClient: embeddingClient as any,
+      generationClient: {} as any,
+      modelClient: {
+        get: jest.fn(),
+      } as any,
+    });
+    const index = jest.spyOn(service, "index");
+
+    await expect(service.deleteDocument("document-1")).resolves.toBe(document);
+    expect(deleteDocumentWithDerivedData).toHaveBeenCalledWith("document-1");
+    expect(embeddingClient.embed).not.toHaveBeenCalled();
+    expect(embeddingClient.embedMany).not.toHaveBeenCalled();
+    expect(index).not.toHaveBeenCalled();
   });
 });

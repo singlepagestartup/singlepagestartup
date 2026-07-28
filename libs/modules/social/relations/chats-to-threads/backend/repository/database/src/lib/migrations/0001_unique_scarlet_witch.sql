@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX "sl_chat_thread_unique" ON "sl_cs_to_ts_v33" USING btree ("ct_id","td_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "sl_chat_default_thread_unique" ON "sl_cs_to_ts_v33" USING btree ("ct_id") WHERE "sl_cs_to_ts_v33"."variant" = 'default';

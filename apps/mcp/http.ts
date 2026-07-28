@@ -18,7 +18,9 @@ import {
   getMcpPublicUrl,
   getProtectedResourceMetadata,
   getWwwAuthenticateHeader,
+  handleInternalRbacSubjectTokenExchange,
   handleOAuthRequest,
+  isInternalRbacSubjectTokenExchangeRoute,
   isOAuthRoute,
   verifyMcpAccessToken,
 } from "./lib/oauth.js";
@@ -28,8 +30,8 @@ type IHttpMcpSession = {
 };
 
 const sessions = new Map<string, IHttpMcpSession>();
-const host = process.env["MCP_HTTP_HOST"] || "127.0.0.1";
-const port = Number(process.env["MCP_HTTP_PORT"] || 3001);
+const host = process.env["MCP_SERVICE_HTTP_HOST"] || "127.0.0.1";
+const port = Number(process.env["MCP_SERVICE_HTTP_PORT"] || 3001);
 
 installMcpFetchAuthForwarding();
 
@@ -45,6 +47,10 @@ const server = createServer(async (req, res) => {
 
     if (url.pathname === "/authentication/oauth") {
       return sendHtml(res, 200, getOAuthAuthenticationPage());
+    }
+
+    if (isInternalRbacSubjectTokenExchangeRoute(url.pathname)) {
+      return handleInternalRbacSubjectTokenExchange(req, res);
     }
 
     if (isOAuthRoute(url.pathname)) {
@@ -109,7 +115,7 @@ const server = createServer(async (req, res) => {
       expiresAt: requestAuth.expiresAt,
       resource: new URL(getMcpPublicUrl()),
       extra: {
-        subject: requestAuth.subject,
+        rbacSubjectId: requestAuth.rbacSubjectId,
       },
     };
     const authenticatedReq = req as IncomingMessage & { auth?: AuthInfo };
@@ -181,13 +187,13 @@ async function getRequestAuth(req: IncomingMessage): Promise<
       clientId: string;
       scopes: string[];
       expiresAt?: number;
-      subject?: string;
+      rbacSubjectId?: string;
       authorization?: string;
       rbacSecretKey?: string;
     }
   | { ok: false; message: string }
 > {
-  if (process.env["MCP_AUTH_REQUIRED"] === "false") {
+  if (process.env["MCP_SERVICE_AUTH_REQUIRED"] === "false") {
     return {
       ok: true,
       token: "anonymous",
@@ -209,8 +215,8 @@ async function getRequestAuth(req: IncomingMessage): Promise<
         clientId: verified.clientId,
         scopes: verified.scopes,
         expiresAt: verified.expiresAt,
-        subject: verified.subject,
-        authorization: `Bearer ${verified.spsJwt}`,
+        rbacSubjectId: verified.rbacSubjectId,
+        authorization: `Bearer ${verified.rbacSubjectAuthenticationJwt}`,
       };
     } catch (error) {
       return {
@@ -220,7 +226,7 @@ async function getRequestAuth(req: IncomingMessage): Promise<
     }
   }
 
-  if (process.env["MCP_ALLOW_RBAC_SECRET_FALLBACK"] === "true") {
+  if (process.env["MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK"] === "true") {
     const providedSecret = getHeader(req, "x-rbac-secret-key");
 
     if (providedSecret && providedSecret === process.env["RBAC_SECRET_KEY"]) {
@@ -237,7 +243,7 @@ async function getRequestAuth(req: IncomingMessage): Promise<
   return {
     ok: false,
     message:
-      process.env["MCP_ALLOW_RBAC_SECRET_FALLBACK"] === "true"
+      process.env["MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK"] === "true"
         ? "Authentication error. Provide Authorization: Bearer <mcp_access_token> or X-RBAC-SECRET-KEY"
         : "Authentication error. Provide Authorization: Bearer <mcp_access_token>",
   };
@@ -250,7 +256,7 @@ function isAllowedOrigin(req: IncomingMessage) {
     return true;
   }
 
-  const allowedOrigins = (process.env["MCP_ALLOWED_ORIGINS"] || "")
+  const allowedOrigins = (process.env["MCP_SERVICE_ALLOWED_ORIGINS"] || "")
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);

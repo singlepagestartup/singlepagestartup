@@ -11,6 +11,12 @@ export interface IUpdateService extends IReadService {
   update: (props: { id: string; data: any }) => Promise<any>;
 }
 
+export interface ICreateUpdateService extends ICreateService, IUpdateService {}
+
+export interface ICreateDeleteService extends ICreateService {
+  delete: (props: { id: string }) => Promise<any>;
+}
+
 export interface IExtendedReadService extends IReadService {
   findByIdExtended: (props: { id: string }) => Promise<any>;
 }
@@ -28,17 +34,21 @@ export interface IEcommerceOrderReadService extends IExtendedReadService {
   }) => Promise<any>;
 }
 
+export interface IEcommerceOrdersToProductsService extends IReadService {
+  getTotal: (props: { id: string }) => Promise<any>;
+}
+
 export interface ISocialModule {
   profile: IReadService;
-  skill: IUpdateService;
+  skill: ICreateUpdateService;
   chat: IReadService;
-  thread: IReadService;
+  thread: IUpdateService;
   message: IReadService;
   action: IReadService;
   attribute: IReadService;
   attributeKey: IReadService;
   profilesToChats: IReadService;
-  profilesToSkills: IReadService;
+  profilesToSkills: ICreateDeleteService;
   profilesToKnowledgeModuleDocuments: ICreateService;
   profilesToMessages: IReadService;
   profilesToActions: IReadService;
@@ -59,7 +69,7 @@ export interface IEcommerceModule {
   attribute: IReadService;
   attributeKey: IReadService;
   storesToOrders: IReadService;
-  ordersToProducts: IReadService;
+  ordersToProducts: IEcommerceOrdersToProductsService;
   ordersToBillingModuleCurrencies: IReadService;
   ordersToBillingModulePaymentIntents: IReadService;
   ordersToFileStorageModuleFiles: IReadService;
@@ -109,6 +119,10 @@ export const SubjectDI = {
   IBroadcastModule: Symbol.for("rbac.subject.broadcast.module"),
   IIdentityService: Symbol.for("rbac.subject.identity.service"),
   IRoleService: Symbol.for("rbac.subject.role.service"),
+  IPermissionService: Symbol.for("rbac.subject.permission.service"),
+  IRolesToPermissionsService: Symbol.for(
+    "rbac.subject.roles-to-permissions.service",
+  ),
   IRolesToEcommerceModuleProductsService: Symbol.for(
     "rbac.subject.roles-to-ecommerce-module-products.service",
   ),

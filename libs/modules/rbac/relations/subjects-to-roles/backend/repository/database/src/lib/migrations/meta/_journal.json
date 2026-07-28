@@ -8,6 +8,13 @@
       "when": 1737754268929,
       "tag": "0000_shallow_rogue",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784577741442,
+      "tag": "0001_thankful_leader",
+      "breakpoints": true
     }
   ]
 }

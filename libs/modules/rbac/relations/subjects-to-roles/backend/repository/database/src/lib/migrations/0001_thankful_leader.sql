@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "sps_rc_subject_role_unique" ON "sps_rc_ss_to_rs_3nw" USING btree ("st_id","re_id");

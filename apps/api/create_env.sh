@@ -72,6 +72,8 @@ add_env "DATABASE_PORT" $DATABASE_PORT
 
 add_env "DATABASE_NO_SSL" true
 
+add_env "KV_PROVIDER" "redis"
+
 KV_PORT=$(get_env "$BASH_SOURCE" "REDIS_PORT" ../redis/.env)
 add_env "KV_PORT" $KV_PORT
 
@@ -87,9 +89,16 @@ add_env "RBAC_JWT_SECRET" $RBAC_JWT_SECRET
 RBAC_SECRET_KEY=$(generate_random_string)
 add_env "RBAC_SECRET_KEY" $RBAC_SECRET_KEY
 
+MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET=$(generate_random_string)
+add_env "MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET" $MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET
+add_env "MCP_SERVICE_URL" "http://127.0.0.1:3001/mcp"
+
 add_env "FILE_STORAGE_PROVIDER" "local"
 
 add_env "LLM_SERVICE_URL" "http://localhost:8765"
+add_env "KNOWLEDGE_EMBEDDING_PROVIDER" "llm"
+add_env "KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL" "qwen/qwen3-embedding-8b"
+add_env "OPEN_ROUTER_API_KEY" ""
 add_env "OLLAMA_URL" "http://localhost:11434"
 add_env "ANTHROPIC_API_KEY" ""
 add_env "ANTHROPIC_MODEL" "claude-sonnet-4-20250514"

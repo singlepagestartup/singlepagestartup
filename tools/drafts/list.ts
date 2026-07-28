@@ -3,7 +3,7 @@ import { basename } from "node:path";
 import { discoverDrafts } from "./lib/discovery";
 
 interface ListOptions {
-  status: "incoming" | "approved" | "archived" | null;
+  scope: "singlepage" | "startup" | null;
   type: "html" | "react" | "next" | null;
   json: boolean;
   help: boolean;
@@ -15,7 +15,7 @@ function printHelp(): void {
 Usage: bun tools/drafts/list.ts [options]
 
 Options:
-  --status <incoming|approved|archived>  Filter by manifest.status
+  --scope <singlepage|startup>           Filter by manifest.scope
   --type <html|react|next>               Filter by manifest.type
   --json                                 Output JSON
   --help                                 Show help
@@ -25,7 +25,7 @@ Options:
 
 function parseArgs(argv: string[]): ListOptions {
   const options: ListOptions = {
-    status: null,
+    scope: null,
     type: null,
     json: false,
     help: false,
@@ -44,14 +44,14 @@ function parseArgs(argv: string[]): ListOptions {
       continue;
     }
 
-    if (arg === "--status") {
-      options.status = (argv[index + 1] ?? null) as ListOptions["status"];
+    if (arg === "--scope") {
+      options.scope = (argv[index + 1] ?? null) as ListOptions["scope"];
       index += 1;
       continue;
     }
 
-    if (arg.startsWith("--status=")) {
-      options.status = arg.slice("--status=".length) as ListOptions["status"];
+    if (arg.startsWith("--scope=")) {
+      options.scope = arg.slice("--scope=".length) as ListOptions["scope"];
       continue;
     }
 
@@ -92,7 +92,7 @@ function printTable(
       location: draft.relativeDir,
       id: manifest.id ?? "-",
       type: manifest.type ?? "-",
-      status: manifest.status ?? "-",
+      scope: manifest.scope ?? "-",
       slug,
       title: manifest.title ?? "-",
     };
@@ -107,9 +107,9 @@ function printTable(
     "type".length,
     ...rows.map((row) => row.type.length),
   );
-  const statusWidth = Math.max(
-    "status".length,
-    ...rows.map((row) => row.status.length),
+  const scopeWidth = Math.max(
+    "scope".length,
+    ...rows.map((row) => row.scope.length),
   );
   const slugWidth = Math.max(
     "slug".length,
@@ -117,15 +117,15 @@ function printTable(
   );
 
   console.log(
-    `${pad("location", locationWidth)}  ${pad("id", idWidth)}  ${pad("type", typeWidth)}  ${pad("status", statusWidth)}  ${pad("slug", slugWidth)}  title`,
+    `${pad("location", locationWidth)}  ${pad("id", idWidth)}  ${pad("type", typeWidth)}  ${pad("scope", scopeWidth)}  ${pad("slug", slugWidth)}  title`,
   );
   console.log(
-    `${"-".repeat(locationWidth)}  ${"-".repeat(idWidth)}  ${"-".repeat(typeWidth)}  ${"-".repeat(statusWidth)}  ${"-".repeat(slugWidth)}  ${"-".repeat(5)}`,
+    `${"-".repeat(locationWidth)}  ${"-".repeat(idWidth)}  ${"-".repeat(typeWidth)}  ${"-".repeat(scopeWidth)}  ${"-".repeat(slugWidth)}  ${"-".repeat(5)}`,
   );
 
   for (const row of rows) {
     console.log(
-      `${pad(row.location, locationWidth)}  ${pad(row.id, idWidth)}  ${pad(row.type, typeWidth)}  ${pad(row.status, statusWidth)}  ${pad(row.slug, slugWidth)}  ${row.title}`,
+      `${pad(row.location, locationWidth)}  ${pad(row.id, idWidth)}  ${pad(row.type, typeWidth)}  ${pad(row.scope, scopeWidth)}  ${pad(row.slug, slugWidth)}  ${row.title}`,
     );
   }
 
@@ -143,7 +143,7 @@ async function main(): Promise<void> {
   const { drafts, invalidDrafts } = await discoverDrafts();
 
   const filtered = drafts.filter((draft) => {
-    if (options.status && draft.manifest.status !== options.status) {
+    if (options.scope && draft.manifest.scope !== options.scope) {
       return false;
     }
 

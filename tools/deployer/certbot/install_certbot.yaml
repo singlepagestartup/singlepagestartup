@@ -3,30 +3,31 @@
   hosts: all
   become: yes
   tasks:
-    - name: Wait for apt lock
-      shell: while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 5; done;
-
-    - name: Wait for apt lock
-      shell: while fuser /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 5; done;
-
-    - name: Apt Update
-      shell: sudo apt-get update
-
-    - name: Install prerequisites
-      apt:
-        name: "{{ item }}"
+    - name: Install Certbot webroot client
+      ansible.builtin.apt:
+        name: certbot
         state: present
-        force_apt_get: yes
-      register: result
-      until: result is not failed
-      retries: 5
-      delay: 5
-      loop:
-        - certbot
-        - python3-certbot-nginx
+        update_cache: yes
+        lock_timeout: 120
+
+    - name: Remove unused Certbot nginx plugin
+      ansible.builtin.apt:
+        name: python3-certbot-nginx
+        state: absent
+        lock_timeout: 120
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Stop system nginx that conflicts with Traefik port 80
+      ansible.builtin.service:
+        name: nginx
+        state: stopped
+        enabled: no
+      when: "'nginx.service' in ansible_facts.services"
 
     - name: Check certbot installed
-      command: certbot --version
+      ansible.builtin.command: certbot --version
       register: certbot_check
       changed_when: false
       failed_when: certbot_check.rc != 0

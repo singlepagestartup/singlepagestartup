@@ -1,0 +1,30 @@
+{
+  "id": "admin.preview-dialog",
+  "title": "Admin / Preview Dialog",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for runnable PreviewDialog and editor states.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.admin-v2-navigation",
+      "path": "../../../../../website-builder/models/widget/singlepage/admin-v2-navigation"
+    },
+    {
+      "id": "website-builder.widget.admin-v2-rich-editor",
+      "path": "../../../../../website-builder/models/widget/singlepage/admin-v2-rich-editor"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "admin-preview-dialog",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1735",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  }
+}

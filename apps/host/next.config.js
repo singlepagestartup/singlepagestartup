@@ -23,9 +23,8 @@ function makeConfig() {
   const nextPublicHostServiceHost = stripProtocol(NEXT_PUBLIC_HOST_SERVICE_URL);
 
   return withBundleAnalyzer({
-    // Keep the previous caching model during the framework migration.
-    // Enabling cacheComponents here would change host rendering semantics.
     reactStrictMode: true,
+    deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
     staticPageGenerationTimeout: 6000,
     images: {
       unoptimized: true,
@@ -112,15 +111,4 @@ function makeConfig() {
   });
 }
 
-const configuredNextApp = withNx(makeConfig());
-
-export default async function nextConfig(phase, context) {
-  const resolvedConfig =
-    typeof configuredNextApp === "function"
-      ? await configuredNextApp(phase, context)
-      : configuredNextApp;
-
-  const { eslint, ...nextConfigWithoutEslint } = resolvedConfig;
-
-  return nextConfigWithoutEslint;
-}
+export default withNx(makeConfig());

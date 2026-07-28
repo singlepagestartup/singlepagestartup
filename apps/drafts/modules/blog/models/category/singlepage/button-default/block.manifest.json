@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.category.button-default",
+  "title": "Blog Category / Button Default",
+  "description": "Category filter button used by blog article-find widgets.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "category",
+    "variant": "button-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "slug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "label",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "count",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "isActive",
+      "type": "boolean",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.category",
+    "pageName": "blog",
+    "variantName": "button-default",
+    "nodeId": "979:130",
+    "variantNodeId": "979:123",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "blog",
+    "category",
+    "button-default"
+  ]
+}

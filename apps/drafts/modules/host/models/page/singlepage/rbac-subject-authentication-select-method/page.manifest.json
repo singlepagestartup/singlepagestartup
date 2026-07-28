@@ -1,0 +1,34 @@
+{
+  "id": "rbac-subject-authentication-select-method",
+  "title": "RBAC Subject Authentication Select Method",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the /rbac/subject/authentication/select-method route.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.navbar-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/navbar-default"
+    },
+    {
+      "id": "rbac.identity.login-default",
+      "path": "../../../../../rbac/models/identity/singlepage/login-default"
+    },
+    {
+      "id": "website-builder.widget.footer-compact",
+      "path": "../../../../../website-builder/models/widget/singlepage/footer-compact"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "rbac-subject-authentication-select-method",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1795",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  }
+}

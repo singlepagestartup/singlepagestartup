@@ -5,9 +5,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        test -n "$${REDIS_PASSWORD}" &&
+        exec redis-server
+        --port "$${REDIS_PORT:-6379}"
+        --requirepass "$${REDIS_PASSWORD}"
     restart: always
     volumes:
-      - ./redis_data:/root/redis
+      - ./redis_data:/data
     env_file:
       - .env
     expose:

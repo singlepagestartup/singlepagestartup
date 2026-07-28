@@ -14,12 +14,15 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/file-storage/files";
+export const defaultSocialModulePersonalAssistantVariant =
+  "default-social-module-personal-assistant";
 export const variants = [
   "default",
   "generate-template-opengraph-image-default",
   "generate-template-ecommerce-order-receipt-default",
   "generate-template-ecommerce-product-attachment-default",
   "generate-template-social-module-message-attachment-start",
+  defaultSocialModulePersonalAssistantVariant,
 ];
 export const query = {};
 export const options = {

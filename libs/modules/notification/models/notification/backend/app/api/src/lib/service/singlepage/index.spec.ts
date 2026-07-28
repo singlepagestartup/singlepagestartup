@@ -10,6 +10,29 @@ import { IModel } from "@sps/notification/models/notification/sdk/model";
 import { api as notificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as templateApi } from "@sps/notification/models/template/sdk/server";
 
+const mockTelegramSendDocument = jest.fn();
+const mockTelegramSendMessage = jest.fn();
+const mockTelegramEditMessageCaption = jest.fn();
+const mockTelegramEditMessageText = jest.fn();
+
+jest.mock("grammy", () => ({
+  Bot: jest.fn().mockImplementation(() => ({
+    api: {
+      editMessageCaption: mockTelegramEditMessageCaption,
+      editMessageText: mockTelegramEditMessageText,
+      sendDocument: mockTelegramSendDocument,
+      sendMessage: mockTelegramSendMessage,
+    },
+  })),
+  InputFile: jest.fn(),
+}));
+
+jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
+  RBAC_SECRET_KEY: "test-rbac-secret",
+  TELEGRAM_SERVICE_BOT_TOKEN: "test-telegram-token",
+}));
+
 jest.mock(
   "@sps/notification/relations/notifications-to-templates/sdk/server",
   () => ({
@@ -62,6 +85,51 @@ function createService(overrides: Record<string, jest.Mock> = {}) {
 describe("notification send service", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    (jest.requireMock("grammy").Bot as jest.Mock).mockImplementation(() => ({
+      api: {
+        editMessageCaption: mockTelegramEditMessageCaption,
+        editMessageText: mockTelegramEditMessageText,
+        sendDocument: mockTelegramSendDocument,
+        sendMessage: mockTelegramSendMessage,
+      },
+    }));
+  });
+
+  /**
+   * BDD Scenario: edit a Telegram photo menu.
+   *
+   * Given: a notification source message is a photo with a caption.
+   * When: the shared Telegram editor receives a new menu state.
+   * Then: it falls back from text editing to caption editing with the same keyboard.
+   */
+  it("edits a media caption when the Telegram message has no text", async () => {
+    mockTelegramEditMessageText.mockRejectedValue(
+      new Error("Bad Request: there is no text in the message to edit"),
+    );
+    mockTelegramEditMessageCaption.mockResolvedValue({ message_id: 10 });
+    const service = createService();
+
+    await service.telegramEditMessage({
+      chatId: "chat-1",
+      messageId: "10",
+      text: "Аватар ассистента",
+      interaction: {
+        inline_keyboard: [[{ text: "Назад", callback_data: "back" }]],
+      },
+    });
+
+    expect(mockTelegramEditMessageText).toHaveBeenCalled();
+    expect(mockTelegramEditMessageCaption).toHaveBeenCalledWith(
+      "chat-1",
+      10,
+      expect.objectContaining({
+        caption: "Аватар ассистента",
+        parse_mode: "MarkdownV2",
+        reply_markup: {
+          inline_keyboard: [[{ text: "Назад", callback_data: "back" }]],
+        },
+      }),
+    );
   });
 
   /**
@@ -312,5 +380,75 @@ describe("notification send service", () => {
         new Error("Call to 'sendMessage' failed! (500: Internal Server Error)"),
       ),
     ).toBe(false);
+  });
+
+  /**
+   * BDD Scenario: A single text attachment is delivered as a Telegram document
+   *
+   * Given a Telegram notification contains one reachable TXT attachment
+   * When the provider sends that notification
+   * Then it uses sendDocument instead of an invalid one-item media group
+   */
+  it("sends one TXT attachment as a Telegram document", async () => {
+    const notification = createNotification({
+      reciever: "-100123",
+      attachments: [
+        {
+          type: "document",
+          url: "https://cdn.example.test/knowledge.txt",
+        },
+      ],
+    });
+    const sentNotification = createNotification({
+      ...notification,
+      status: "sent",
+      sourceSystemId: "321",
+    });
+    const service = Object.assign(Object.create(Service.prototype), {
+      findById: jest.fn().mockResolvedValue(notification),
+      update: jest.fn().mockResolvedValue(sentNotification),
+    }) as Service;
+    const fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      headers: new Headers({ "content-type": "text/plain" }),
+    } as Response);
+    mockTelegramSendDocument.mockResolvedValue({ message_id: 321 });
+    (templateApi.render as jest.Mock).mockResolvedValue(
+      JSON.stringify({
+        method: "sendMessage",
+        props: ["Knowledge-документ", { message_thread_id: 77 }],
+      }),
+    );
+
+    await expect(
+      service.provider({
+        method: "telegram",
+        provider: "Telegram",
+        id: notification.id,
+        template: {
+          id: "template-id",
+          variant: "generate-telegram-agent-result-user",
+        } as any,
+      }),
+    ).resolves.toBe(sentNotification);
+
+    expect(mockTelegramSendDocument).toHaveBeenCalledWith(
+      notification.reciever,
+      notification.attachments?.[0].url,
+      expect.objectContaining({
+        caption: expect.any(String),
+        message_thread_id: 77,
+      }),
+    );
+    expect(service.update).toHaveBeenCalledWith({
+      id: notification.id,
+      data: expect.objectContaining({
+        sourceSystemId: "321",
+        status: "sent",
+      }),
+    });
+    expect(mockTelegramSendMessage).not.toHaveBeenCalled();
+
+    fetchSpy.mockRestore();
   });
 });

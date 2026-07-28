@@ -2,6 +2,8 @@
 
 This directory contains Claude Code agents, commands (skills), and local configuration for this project.
 
+> **Provider neutrality**: the command documents, helper scripts, and reference contracts in this directory are the canonical, provider-neutral definition of the SPS development workflow. Other agents (Codex via `.codex/skills`, or any other provider) execute these same files — see the root `AGENTS.md` ("AI Development Workflow") for the universal entry point and tool-mapping rules.
+
 ## Directory Structure
 
 ```
@@ -33,6 +35,11 @@ This directory contains Claude Code agents, commands (skills), and local configu
 │   │   └── describe_pr.md
 │   │   └── post_commit_retro.md
 │   └── ...
+├── helpers/             # Bash helpers for GitHub Project / issue operations (provider-independent)
+├── references/          # Workflow contracts shared by all phases and providers
+│   ├── repository-context-contract.md   # Target repo / Project resolution (upstream vs child repos)
+│   ├── process-artifact-contract.md     # Persistent cross-phase process log format
+│   └── knowledge-first-contract.md      # Lookup order and reuse rules (token efficiency)
 ├── .env          # ⚠ Gitignored — per-project config (you must create this)
 ├── settings.local.json  # Local Claude Code settings
 └── README.md            # This file
@@ -333,7 +340,7 @@ Legacy wrapper equivalent: `/ralph_research 42`
    - **thoughts-locator** — searches for existing notes on the topic
    - **thoughts-analyzer** — extracts research context from thoughts documents
    - **web-search-researcher** — searches for external docs, APIs, or best practices (if needed)
-5. Writes findings to `thoughts/shared/research/ISSUE-42.md`
+5. Writes findings to `thoughts/shared/research/REPO_NAME/ISSUE-42.md`
 6. Posts a summary comment on the GitHub issue
 7. Sets the issue status to `Research in Review`
 
@@ -348,7 +355,7 @@ Legacy wrapper equivalent: `/ralph_research 42`
 **Action:** Open the research file:
 
 ```
-thoughts/shared/research/ISSUE-42.md
+thoughts/shared/research/REPO_NAME/ISSUE-42.md
 ```
 
 **Verify:**
@@ -390,7 +397,7 @@ Legacy wrapper equivalent: `/ralph_plan 42`
    - **codebase-pattern-finder** — finds similar implementations to follow
    - **thoughts-locator** — searches for related decisions or patterns
    - **thoughts-analyzer** — extracts relevant context from existing plans
-5. Writes a detailed implementation plan to `thoughts/shared/plans/ISSUE-42.md`
+5. Writes a detailed implementation plan to `thoughts/shared/plans/REPO_NAME/ISSUE-42.md`
 6. Posts a summary comment on the GitHub issue linking to the plan
 7. Sets the issue status to `Plan in Review`
 
@@ -405,7 +412,7 @@ Legacy wrapper equivalent: `/ralph_plan 42`
 **Action:** Open the plan file:
 
 ```
-thoughts/shared/plans/ISSUE-42.md
+thoughts/shared/plans/REPO_NAME/ISSUE-42.md
 ```
 
 **Verify the plan contains:**
@@ -486,7 +493,7 @@ Legacy wrapper equivalent: `/ralph_impl 42`
 **To verify the implementation thoroughly:**
 
 ```
-/validate_plan thoughts/shared/plans/ISSUE-42.md
+/validate_plan thoughts/shared/plans/REPO_NAME/ISSUE-42.md
 ```
 
 This command reads both the plan and the actual changed files, then reports which success criteria passed and which didn't.
@@ -567,7 +574,7 @@ This writes a handoff document to `thoughts/shared/handoffs/` with everything th
 To resume:
 
 ```
-/resume_handoff thoughts/shared/handoffs/YYYY-MM-DD_ISSUE-42_description.md
+/resume_handoff thoughts/shared/handoffs/REPO_NAME/ISSUE-42/YYYY-MM-DD_HH-MM-SS_description.md
 ```
 
 The agent reads the handoff and picks up exactly where you left off.

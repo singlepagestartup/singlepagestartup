@@ -150,7 +150,7 @@ npm run mcp:codex:add:http
 Claude Code can override the HTTP URL through `.mcp.json` env expansion:
 
 ```bash
-MCP_URL="https://mcp.example.com/mcp" RBAC_SECRET_KEY="<secret>" claude
+MCP_SERVICE_PUBLIC_URL="https://mcp.example.com/mcp" RBAC_SECRET_KEY="<secret>" claude
 ```
 
 If Codex Desktop is launched only through the app UI and cannot read environment variables, configure `X-RBAC-SECRET-KEY` as a local MCP header in the app UI. Do not commit static secrets. If the app clears the header on restart, use an environment-aware launch or MCP OAuth/auth instead of repository config.

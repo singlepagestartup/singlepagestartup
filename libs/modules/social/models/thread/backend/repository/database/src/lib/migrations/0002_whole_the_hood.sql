@@ -1,0 +1,1 @@
+ALTER TABLE "sl_thread" ADD COLUMN "metadata" jsonb DEFAULT '{}'::jsonb NOT NULL;

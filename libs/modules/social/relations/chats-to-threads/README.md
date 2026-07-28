@@ -15,6 +15,10 @@ Links chats to threads.
 - `chatId`: linked chat ID.
 - `threadId`: linked thread ID.
 
+The `(chatId, threadId)` pair is unique. Relations with `variant = default`
+also enforce at most one default thread per chat; Telegram topic threads use
+their Telegram-specific relation variant.
+
 ## Variants
 
 - `default`: renders the related thread using its frontend variant.

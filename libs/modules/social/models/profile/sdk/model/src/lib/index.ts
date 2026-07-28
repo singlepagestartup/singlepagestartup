@@ -4,6 +4,8 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/social/models/profile/backend/repository/database";
+export * from "./mcp-servers";
+export * from "./plain-text";
 import {
   API_SERVICE_URL,
   NEXT_PUBLIC_API_SERVICE_URL,

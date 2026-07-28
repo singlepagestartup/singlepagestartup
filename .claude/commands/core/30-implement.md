@@ -21,6 +21,10 @@ REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
 
 Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh issue ...` commands without `--repo "$REPO_FULL_NAME"` unless a shared helper is being used.
 
+## Knowledge Preflight
+
+Follow `.claude/references/knowledge-first-contract.md`: the plan, research document, and process log already contain the verified context for this issue. Navigate by their `file:line` references instead of re-searching the codebase; check the incident logs before debugging anything; investigate from scratch only where the plan turns out to mismatch reality (and record that mismatch as an incident).
+
 ## Status Gate
 
 **Entry**: Issue must be in "Ready for Dev" or "In Dev" status (the latter allows resuming an interrupted session)

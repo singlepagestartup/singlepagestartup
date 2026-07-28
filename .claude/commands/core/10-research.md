@@ -21,6 +21,10 @@ REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
 
 Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh issue ...` commands without `--repo "$REPO_FULL_NAME"` unless a shared helper is being used.
 
+## Knowledge Preflight
+
+Follow `.claude/references/knowledge-first-contract.md`: consult the process log, ticket, and existing research/plan artifacts (for this issue and related topics) before spawning any codebase-wide investigation. If a research document for this issue already exists, default to updating it with verification of its load-bearing claims instead of re-researching from scratch.
+
 ## Status Gate
 
 **Entry**: Issue must be in "Research Needed" or "Research in Progress" status (the latter allows resuming an interrupted session)
@@ -254,7 +258,7 @@ View the issue: [ISSUE_URL]
 ## Important Notes
 
 - Always use parallel Task agents to maximize efficiency and minimize context usage
-- Always run fresh codebase research — never rely solely on existing research documents
+- Reuse existing research with verification (`.claude/references/knowledge-first-contract.md`): when a research document already covers the topic, spot-check the claims this issue depends on against live code instead of relaunching a full research sweep; never trust recorded notes over live code when they conflict
 - The thoughts/ directory provides historical context to supplement live findings
 - Focus on finding concrete file paths and line numbers for developer reference
 - Research documents should be self-contained with all necessary context

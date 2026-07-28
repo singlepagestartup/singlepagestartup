@@ -11,7 +11,7 @@ import {
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { queryClient, subscription } from "@sps/shared-frontend-client-api";
-import { STALE_TIME } from "@sps/shared-utils";
+import { deriveTopicsFromPath, STALE_TIME } from "@sps/shared-utils";
 import { useEffect } from "react";
 
 export type IProps =
@@ -25,6 +25,11 @@ export type IResult =
 
 export function action(props: IProps) {
   const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats`;
+  // Merge caller meta last but never let it clobber topics (issue #195): a
+  // project passing reactQueryOptions.meta must not silently drop the realtime
+  // topic subscription.
+  const { meta: userMeta, ...restReactQueryOptions } =
+    props.reactQueryOptions ?? {};
 
   useEffect(() => {
     const unsubscribe = subscription(queryKey, queryClient);
@@ -33,6 +38,18 @@ export function action(props: IProps) {
 
   return useQuery<IResult>({
     queryKey: [queryKey],
+    // Canonical realtime subscription (issue #195): hand-written SDK queries
+    // MUST declare meta.topics, otherwise the topic branch in subscription()
+    // never matches and the route fallback cannot bridge the differently
+    // scoped create route (/social-module/chats) to this read route
+    // (/social-module/profiles/{id}/chats) — which is why a newly created chat
+    // did not appear in the list until reload. Derived from the same algorithm
+    // the backend emitter and factory use, so a chat create/update/delete
+    // (topic `social.chats`) invalidates this list.
+    meta: {
+      topics: deriveTopicsFromPath(queryKey),
+      ...(userMeta ?? {}),
+    },
     queryFn: async () => {
       const result = await api.socialModuleProfileFindByIdChatFind({
         ...props,
@@ -58,6 +75,6 @@ export function action(props: IProps) {
       return data;
     },
     staleTime: STALE_TIME,
-    ...props.reactQueryOptions,
+    ...restReactQueryOptions,
   });
 }

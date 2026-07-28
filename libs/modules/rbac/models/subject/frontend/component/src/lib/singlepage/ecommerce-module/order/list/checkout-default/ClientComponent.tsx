@@ -54,6 +54,7 @@ export function Component(props: IComponentPropsExtended) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    shouldUnregister: true,
     defaultValues: {
       provider: "stripe",
       email: "",
@@ -105,6 +106,12 @@ export function Component(props: IComponentPropsExtended) {
                 ],
               },
             },
+            options: {
+              cache: "no-store",
+              headers: {
+                "Cache-Control": "no-store",
+              },
+            },
           }}
         >
           {({ data: subjectsToEcommerceModuleOrders }) => {
@@ -128,7 +135,18 @@ export function Component(props: IComponentPropsExtended) {
                           method: "eq",
                           value: "cart",
                         },
+                        {
+                          column: "status",
+                          method: "eq",
+                          value: "new",
+                        },
                       ],
+                    },
+                  },
+                  options: {
+                    cache: "no-store",
+                    headers: {
+                      "Cache-Control": "no-store",
                     },
                   },
                 }}
@@ -140,7 +158,7 @@ export function Component(props: IComponentPropsExtended) {
                         (ecommerceModuleOrder, index) => {
                           return (
                             <EcommerceModuleOrder
-                              key={index}
+                              key={ecommerceModuleOrder.id}
                               isServer={false}
                               variant="cart-default"
                               data={ecommerceModuleOrder}
@@ -148,7 +166,6 @@ export function Component(props: IComponentPropsExtended) {
                             >
                               <>
                                 <EcommerceModuleOrder
-                                  key={index}
                                   isServer={false}
                                   variant="form-field-default"
                                   data={ecommerceModuleOrder}

@@ -19,7 +19,8 @@ export interface IProps {
   };
   options?: Partial<NextRequestOptions>;
   data: {
-    socialModuleProfileId: string;
+    socialModuleProfileId?: string;
+    agentSubjectId?: string;
   };
 }
 

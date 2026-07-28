@@ -1,14 +1,8 @@
-import { DI, type IRepository } from "@sps/shared-backend-api";
-import {
-  RBAC_JWT_SECRET,
-  RBAC_SECRET_KEY,
-  createMemoryCache,
-} from "@sps/shared-utils";
-import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
-import { type IModel as IRolesToPermissions } from "@sps/rbac/relations/roles-to-permissions/sdk/model";
-import { api as rolesToPermissionsApi } from "@sps/rbac/relations/roles-to-permissions/sdk/server";
+import { RBAC_JWT_SECRET, createMemoryCache } from "@sps/shared-utils";
+import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
+import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
 import * as jwt from "hono/jwt";
-import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service/singlepage";
+import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import { inject, injectable } from "inversify";
 import { SubjectDI } from "../../di";
 
@@ -27,16 +21,25 @@ export type IExecuteProps = {
 
 @injectable()
 export class Service {
-  repository: IRepository;
+  permissionService: PermissionService;
+  rolesToPermissionsService: RolesToPermissionsService;
   subjectsToRolesService: SubjectsToRolesService;
 
   constructor(
-    @inject(DI.IRepository) repository: IRepository,
+    @inject(SubjectDI.IPermissionService)
+    permissionService: PermissionService,
+    @inject(SubjectDI.IRolesToPermissionsService)
+    rolesToPermissionsService: RolesToPermissionsService,
     @inject(SubjectDI.ISubjectsToRolesService)
     subjectsToRolesService: SubjectsToRolesService,
   ) {
-    this.repository = repository;
+    this.permissionService = permissionService;
+    this.rolesToPermissionsService = rolesToPermissionsService;
     this.subjectsToRolesService = subjectsToRolesService;
+  }
+
+  invalidateSubjectRoleCache(subjectId: string) {
+    cache.del(`subjects-to-roles:subject:${subjectId}`);
   }
 
   protected async getSubjectRoleIds(subjectId: string) {
@@ -78,22 +81,28 @@ export class Service {
     return roleIds;
   }
 
-  protected getRoleIdsByPermissionId(props: {
-    rolesToPermissions: IRolesToPermissions[];
-    permissionId?: string;
-  }) {
-    const { rolesToPermissions, permissionId } = props;
-
+  protected async getRoleIdsByPermissionId(permissionId?: string) {
     if (!permissionId) {
       return [];
     }
 
+    const rolesToPermissions = await this.rolesToPermissionsService.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "permissionId",
+              method: "eq",
+              value: permissionId,
+            },
+          ],
+        },
+      },
+    });
+
     return Array.from(
       new Set(
         rolesToPermissions
-          .filter((roleToPermission) => {
-            return roleToPermission.permissionId === permissionId;
-          })
           .map((roleToPermission) => roleToPermission.roleId)
           .filter((roleId): roleId is string => typeof roleId === "string"),
       ),
@@ -105,10 +114,6 @@ export class Service {
 
     if (!RBAC_JWT_SECRET) {
       throw new Error("Configuration error. RBAC_JWT_SECRET is not defined");
-    }
-
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
     let subjectId: string | undefined = undefined;
@@ -142,22 +147,15 @@ export class Service {
     ].join(":");
 
     let permissionResolution = cache.get<
-      Awaited<ReturnType<typeof permissionApi.resolveByRoute>>
+      Awaited<ReturnType<PermissionService["resolveByRoute"]>>
     >(permissionResolutionCacheKey);
 
     if (!permissionResolution) {
-      permissionResolution = await permissionApi.resolveByRoute({
-        params: {
-          permission: {
-            method: props.permission.method,
-            route: props.permission.route,
-            type: props.permission.type,
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
+      permissionResolution = await this.permissionService.resolveByRoute({
+        permission: {
+          method: props.permission.method,
+          route: props.permission.route,
+          type: props.permission.type,
         },
       });
 
@@ -168,25 +166,6 @@ export class Service {
 
     const permission = permissionResolution?.permission;
     const rootPermission = permissionResolution?.rootPermission;
-
-    const rolesToPermissionsCacheKey = "roles-to-permissions:all";
-    let rolesToPermissions = cache.get<IRolesToPermissions[]>(
-      rolesToPermissionsCacheKey,
-    );
-    if (!rolesToPermissions) {
-      const fetched = await rolesToPermissionsApi
-        .find({
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        })
-        .catch(() => undefined);
-
-      rolesToPermissions = Array.isArray(fetched) ? fetched : [];
-      cache.set(rolesToPermissionsCacheKey, rolesToPermissions);
-    }
 
     let subjectRoleIds: string[] | undefined = undefined;
     const getSubjectRoleIds = async () => {
@@ -203,10 +182,7 @@ export class Service {
 
     if (permission) {
       const permissionRoleIds = new Set(
-        this.getRoleIdsByPermissionId({
-          rolesToPermissions,
-          permissionId: permission.id,
-        }),
+        await this.getRoleIdsByPermissionId(permission.id),
       );
 
       /**
@@ -227,10 +203,7 @@ export class Service {
 
     if (!authorized && subjectId) {
       const rootRoleIds = new Set(
-        this.getRoleIdsByPermissionId({
-          rolesToPermissions,
-          permissionId: rootPermission?.id,
-        }),
+        await this.getRoleIdsByPermissionId(rootPermission?.id),
       );
 
       if (rootRoleIds.size) {

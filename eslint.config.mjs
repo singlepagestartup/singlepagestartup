@@ -21,7 +21,7 @@ export default defineFlatConfig([
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
-        project: ["./tsconfig.base.json"],
+        project: ["./tsconfig.base.json", "./apps/drafts/tsconfig.eslint.json"],
         ecmaFeatures: {
           jsx: true,
         },
@@ -95,7 +95,7 @@ export default defineFlatConfig([
   {
     rules: {
       "comma-dangle": "off",
-      quotes: ["warn", "double"],
+      quotes: ["warn", "double", { avoidEscape: true }],
       semi: "off",
       "no-duplicate-imports": "error",
       "no-empty-pattern": "off",

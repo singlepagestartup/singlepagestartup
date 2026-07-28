@@ -20,8 +20,8 @@ export interface IProps {
 
 export interface IResult {
   amount: number;
-  type: "subscription" | "one-time";
-  interval: "day" | "week" | "month" | "year";
+  type: "subscription" | "one_off";
+  interval?: "minute" | "hour" | "day" | "week" | "month" | "year";
 }
 
 export async function action(props: IProps): Promise<IResult> {

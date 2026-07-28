@@ -10,12 +10,13 @@ get_environment_type $2
 RBAC_SECRET_KEY=$(get_env "$BASH_SOURCE" "RBAC_SECRET_KEY")
 
 API_SERVICE_SUBDOMAIN=$(get_env "$BASH_SOURCE" "API_SERVICE_SUBDOMAIN")
+DOMAIN=$(get_env "$BASH_SOURCE" "DOMAIN")
 
-if [ -z "$BACKEND_SERVICE_SUBDOMAIN" ]
+if [ -z "$API_SERVICE_SUBDOMAIN" ]
 then
     API_SERVICE_URL=$DOMAIN
 else
-    API_SERVICE_URL=$BACKEND_SERVICE_SUBDOMAIN.$DOMAIN
+    API_SERVICE_URL=$API_SERVICE_SUBDOMAIN.$DOMAIN
 fi
 
 ansible-playbook \
@@ -28,4 +29,4 @@ ansible-playbook \
 ansible-playbook \
     ./server/set_cron_jobs.yaml \
     -e "API_SERVICE_URL=$API_SERVICE_URL \
-        RBAC_SECRET_KEY=$RBAC_SECRET_KEY" \
+        RBAC_SECRET_KEY=$RBAC_SECRET_KEY"

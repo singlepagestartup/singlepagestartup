@@ -6,6 +6,9 @@ import type {
   IOpenRouterGenerationError,
   IOpenRouterGenerationSuccess,
   IOpenRouterModel,
+  IOpenRouterTool,
+  IOpenRouterToolCall,
+  IOpenRouterToolChoice,
   IOpenRouterUsage,
 } from "./interface";
 
@@ -27,8 +30,10 @@ export type IOpenRouterMessageContent =
   | { type: "file_url"; file_url: { url: string } };
 
 export type IOpenRouterRequestMessage = {
-  role: "user" | "assistant" | "system";
+  role: "user" | "assistant" | "system" | "tool";
   content: string | IOpenRouterMessageContent[];
+  tool_calls?: IOpenRouterToolCall[];
+  tool_call_id?: string;
 };
 
 export type IOpenRouterResponseFormat =
@@ -46,7 +51,7 @@ export type IOpenRouterResponseFormat =
 
 export type IOpenRouterReasoning =
   | {
-      effort: "none" | "low" | "medium" | "high" | "xhigh";
+      effort: "max" | "xhigh" | "high" | "medium" | "low" | "minimal" | "none";
       exclude?: boolean;
     }
   | {
@@ -55,6 +60,7 @@ export type IOpenRouterReasoning =
     };
 
 const MODEL_CACHE_TTL_MS = 5 * 60 * 1000;
+const OBJECT_COERCION_TEXT_PATTERN = /^\[object [^\]]+\]$/;
 let cachedModels:
   | {
       expiresAt: number;
@@ -103,8 +109,12 @@ export class Service {
 
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const mimeType =
+    const rawMimeType =
       response.headers.get("content-type") || props.fallbackMimeType;
+    const mimeType =
+      rawMimeType.split(";")[0]?.trim().toLowerCase() ||
+      props.fallbackMimeType.split(";")[0]?.trim().toLowerCase() ||
+      "application/octet-stream";
     const dataUrl = `data:${mimeType};base64,${buffer.toString("base64")}`;
     const filename = (() => {
       try {
@@ -117,6 +127,30 @@ export class Service {
     })();
 
     return { dataUrl, mimeType, filename };
+  }
+
+  private shouldInlineMediaUrl(url: string) {
+    if (url.startsWith("data:")) {
+      return false;
+    }
+
+    try {
+      const hostname = new URL(url).hostname.toLowerCase();
+
+      return (
+        hostname === "localhost" ||
+        hostname === "0.0.0.0" ||
+        hostname === "::1" ||
+        hostname === "host.docker.internal" ||
+        hostname.endsWith(".local") ||
+        hostname.startsWith("127.") ||
+        hostname.startsWith("10.") ||
+        hostname.startsWith("192.168.") ||
+        /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+      );
+    } catch {
+      return false;
+    }
   }
 
   private async normalizeMessages(
@@ -136,6 +170,24 @@ export class Service {
 
             if (part.type === "image_url") {
               const url = part.image_url.url;
+
+              if (this.shouldInlineMediaUrl(url)) {
+                const { dataUrl } = await this.fetchAsDataUrl({
+                  url,
+                  fallbackMimeType: "image/*",
+                });
+
+                return {
+                  type: "image_url" as const,
+                  image_url: {
+                    url: dataUrl,
+                    ...(part.image_url.detail && {
+                      detail: part.image_url.detail,
+                    }),
+                  },
+                };
+              }
+
               return {
                 type: "image_url" as const,
                 image_url: {
@@ -232,6 +284,9 @@ export class Service {
     model: string;
     messages: IOpenRouterRequestMessage[];
     max_tokens?: number;
+    tools?: IOpenRouterTool[];
+    tool_choice?: IOpenRouterToolChoice;
+    parallel_tool_calls?: boolean;
     reasoning?: IOpenRouterReasoning;
     response_format?: IOpenRouterResponseFormat;
     temperature?: number;
@@ -248,6 +303,11 @@ export class Service {
           messages: props.messages,
           stream: false,
           max_tokens: props.max_tokens,
+          ...(props.tools && { tools: props.tools }),
+          ...(props.tool_choice && { tool_choice: props.tool_choice }),
+          ...(typeof props.parallel_tool_calls === "boolean" && {
+            parallel_tool_calls: props.parallel_tool_calls,
+          }),
           ...(props.reasoning && { reasoning: props.reasoning }),
           ...(props.response_format && {
             response_format: props.response_format,
@@ -271,9 +331,28 @@ export class Service {
   private parseMessage(message: any): {
     text: string;
     images?: IOpenRouterGeneratedImage[];
+    toolCalls?: IOpenRouterToolCall[];
   } {
     let text = "";
     let images: { url?: string; b64_json?: string }[] | undefined;
+    const toolCalls = Array.isArray(message.tool_calls)
+      ? message.tool_calls
+          .filter(
+            (toolCall: any) =>
+              toolCall?.type === "function" &&
+              typeof toolCall.id === "string" &&
+              typeof toolCall.function?.name === "string" &&
+              typeof toolCall.function?.arguments === "string",
+          )
+          .map((toolCall: any) => ({
+            id: toolCall.id,
+            type: "function" as const,
+            function: {
+              name: toolCall.function.name,
+              arguments: toolCall.function.arguments,
+            },
+          }))
+      : undefined;
 
     if (message.images && Array.isArray(message.images)) {
       images = message.images.map((img: any) => {
@@ -292,9 +371,11 @@ export class Service {
 
     if (Array.isArray(message.content)) {
       const textParts = message.content
-        .filter((part: any) => part?.type === "text")
-        .map((part: any) => part.text || "");
-      text = textParts.join("");
+        .filter(
+          (part: any) => part?.type === "text" || part?.type === "output_text",
+        )
+        .map((part: any) => this.parseResponseTextPart(part));
+      text = this.assertValidResponseText(textParts.join(""));
 
       const contentImages = message.content
         .filter((part: any) => part?.type === "image_url")
@@ -304,11 +385,42 @@ export class Service {
       if (contentImages.length) {
         images = (images || []).concat(contentImages);
       }
+    } else if (typeof message.content === "string" || message.content == null) {
+      text = this.assertValidResponseText(message.content || "");
     } else {
-      text = message.content || "";
+      throw new Error("OpenRouter returned unsupported response content");
     }
 
-    return { text, images };
+    return {
+      text,
+      images,
+      ...(toolCalls?.length && { toolCalls }),
+    };
+  }
+
+  private parseResponseTextPart(part: any): string {
+    if (typeof part?.text === "string") {
+      return part.text;
+    }
+
+    if (
+      part?.text &&
+      typeof part.text === "object" &&
+      !Array.isArray(part.text) &&
+      typeof part.text.value === "string"
+    ) {
+      return part.text.value;
+    }
+
+    throw new Error("OpenRouter returned unsupported response text content");
+  }
+
+  private assertValidResponseText(text: string): string {
+    if (OBJECT_COERCION_TEXT_PATTERN.test(text.trim())) {
+      throw new Error("OpenRouter returned object-coercion text");
+    }
+
+    return text;
   }
 
   private toFiniteNumber(value: unknown): number | null {
@@ -509,9 +621,28 @@ export class Service {
     data: any;
     requestModelId: string;
     messages: IOpenRouterRequestMessage[];
-  }): Promise<IOpenRouterGenerationSuccess> {
+  }): Promise<IOpenRouterGenerateResult> {
     const message = props.data?.choices?.[0]?.message;
-    const parsedMessage = this.parseMessage(message || {});
+    let parsedMessage: ReturnType<Service["parseMessage"]>;
+
+    try {
+      parsedMessage = this.parseMessage(message || {});
+    } catch {
+      const billing = await this.buildBilling({
+        data: props.data,
+        requestModelId: props.requestModelId,
+        messages: props.messages,
+      });
+
+      return {
+        error: {
+          code: "unsupported_response_content",
+          message: "The model returned a response in an unsupported format.",
+        },
+        billing,
+      };
+    }
+
     const billing = await this.buildBilling({
       data: props.data,
       requestModelId: props.requestModelId,
@@ -549,6 +680,9 @@ export class Service {
     model: string;
     fallbackModels?: string[];
     max_tokens?: number;
+    tools?: IOpenRouterTool[];
+    toolChoice?: IOpenRouterToolChoice;
+    parallelToolCalls?: boolean;
     reasoning?: IOpenRouterReasoning;
     responseFormat?: IOpenRouterResponseFormat;
     temperature?: number;
@@ -558,12 +692,20 @@ export class Service {
       (message) => typeof message.content !== "string",
     );
     const shouldStripNonTextOnRetry = props.stripNonTextOnRetry ?? true;
+    const hasToolProtocolMessages = props.context.some(
+      (message) =>
+        message.role === "tool" ||
+        (message.role === "assistant" && Boolean(message.tool_calls?.length)),
+    );
 
     const normalizedMessages = await this.normalizeMessages(props.context);
     const data = await this.requestCompletion({
       model: props.model,
       messages: normalizedMessages,
       max_tokens: props.max_tokens,
+      tools: props.tools,
+      tool_choice: props.toolChoice,
+      parallel_tool_calls: props.parallelToolCalls,
       reasoning: props.reasoning,
       response_format: props.responseFormat,
       temperature: props.temperature,
@@ -574,7 +716,11 @@ export class Service {
         "❌ OpenRouter Error:",
         JSON.stringify(data.error, null, 2),
       );
-      if (hasNonTextContent && shouldStripNonTextOnRetry) {
+      if (
+        hasNonTextContent &&
+        shouldStripNonTextOnRetry &&
+        !hasToolProtocolMessages
+      ) {
         console.error(
           "↩️ OpenRouter Retry: stripping non-text content and retrying once.",
         );
@@ -587,6 +733,9 @@ export class Service {
           model: props.model,
           messages: strippedMessages,
           max_tokens: props.max_tokens,
+          tools: props.tools,
+          tool_choice: props.toolChoice,
+          parallel_tool_calls: props.parallelToolCalls,
           reasoning: props.reasoning,
           response_format: props.responseFormat,
           temperature: props.temperature,

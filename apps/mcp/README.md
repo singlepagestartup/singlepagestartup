@@ -1,6 +1,55 @@
 # SPS MCP Server
 
-`apps/mcp` exposes SPS module resources, generated CRUD/count tools, documentation tools, and content-management tools to MCP clients. It supports local stdio and remote Streamable HTTP.
+`apps/mcp` exposes one compact SPS content surface to MCP clients. It supports local stdio and remote Streamable HTTP.
+
+The public toolset is intentionally small for AI chat clients:
+
+- `module-list`
+- `model-schema`
+- `relation-schema`
+- `model-record-count`, `model-record-find`, `model-record-get`, `model-record-create`, `model-record-update`, `model-record-delete-preview`, `model-record-delete-apply`
+- `relation-record-count`, `relation-record-find`, `relation-record-get`, `relation-record-create`, `relation-record-update`, `relation-record-delete-preview`, `relation-record-delete-apply`
+- `page-preview`, `page-localized-field-update`
+
+Generated per-model/per-relation CRUD tools are not part of `apps/mcp`. Select records with explicit selectors such as `{ "module": "blog", "model": "article" }` or `{ "module": "blog", "relation": "categories-to-articles" }`.
+
+## File Uploads
+
+Use the same compact `model-record-create` tool for files. For `file-storage.file`, MCP supports two upload forms:
+
+Public URL:
+
+```json
+{
+  "module": "file-storage",
+  "model": "file",
+  "dryRun": false,
+  "data": {
+    "url": "https://example.com/cover.webp",
+    "adminTitle": "Cover image",
+    "alt": "Cover image description"
+  }
+}
+```
+
+Generated/local client file as base64:
+
+```json
+{
+  "module": "file-storage",
+  "model": "file",
+  "dryRun": false,
+  "data": {
+    "fileName": "cover.webp",
+    "mimeType": "image/webp",
+    "contentBase64": "<base64-without-data-url-prefix>",
+    "adminTitle": "Cover image",
+    "alt": "Cover image description"
+  }
+}
+```
+
+Do not pass ChatGPT/Claude sandbox paths such as `/mnt/data/cover.webp`; the SPS server cannot read files from the model provider's container. Encode the generated file as base64 or provide a publicly reachable URL.
 
 ## Local Development
 
@@ -19,7 +68,7 @@ npm run mcp:http
 Local HTTP defaults to `http://127.0.0.1:3001/mcp`. For Inspector/debugging with the static RBAC fallback:
 
 ```bash
-MCP_ALLOW_RBAC_SECRET_FALLBACK=true RBAC_SECRET_KEY=<secret> npm run mcp:http
+MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true RBAC_SECRET_KEY=<secret> npm run mcp:http
 ```
 
 Then pass `X-RBAC-SECRET-KEY: <secret>` in the MCP client headers. This fallback is for local/private debugging only.
@@ -114,7 +163,7 @@ claude mcp add --transport http "${REPO_NAME}-local" http://127.0.0.1:3001/mcp
 
 `claude mcp add` only registers the server. Start Claude Code, run `/mcp`, select the server, and authenticate there. Claude should open the OAuth login page; if it does not, open the URL it prints manually.
 
-This repository's project `.mcp.json` intentionally keeps `<repo-name>` as the local project MCP. Use `<repo-name>-production` for the deployed connector to avoid name and precedence conflicts.
+This repository's project `.mcp.json` intentionally keeps `<repo-name>` as the local SinglePageStartup MCP. Use `<repo-name>-production` for the deployed connector to avoid name and precedence conflicts.
 
 To apply Claude Code configuration from the helper, pass a real production URL:
 
@@ -130,7 +179,7 @@ Deployed remote MCP is served as:
 https://mcp.<domain>/mcp
 ```
 
-Use that URL as the remote MCP connector URL in ChatGPT or Claude. Production auth is OAuth/Bearer: the connector opens `/oauth/authorize`, the user signs in with SPS email/password, and MCP issues an MCP-bound access token. MCP tools then call `apps/api` with the authenticated caller's SPS JWT.
+Use that URL as the remote MCP connector URL in ChatGPT or Claude. Production auth is OAuth/Bearer: the connector opens `/oauth/authorize`, the user signs in with their SinglePageStartup email/password, and MCP issues an MCP-bound access token. MCP tools then call `apps/api` with the authenticated caller's `rbac.subject` authentication JWT.
 
 Public metadata endpoints:
 
@@ -143,6 +192,46 @@ https://mcp.<domain>/.well-known/oauth-authorization-server/mcp
 
 The `/mcp` suffix variants are intentionally supported for clients that resolve OAuth metadata for the exact protected resource URL.
 
+## Internal rbac.subject Token Exchange
+
+`apps.api` exchanges a server-signed `rbac.subject` authentication JWT inside
+the MCP process so the resulting MCP bearer maps back to the same `rbac.subject`
+identity in the existing access-token store:
+
+```text
+POST /internal/rbac-subject-token-exchange
+X-MCP-Internal-Token-Exchange-Secret: <MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET>
+Content-Type: application/json
+
+{"subject_token":"<rbac.subject authentication JWT>"}
+```
+
+The endpoint verifies `subject_token` with `RBAC_JWT_SECRET` and derives the
+`rbac.subject` only from `subject.id` in the verified payload. Requests
+containing a separate `subject`, `subjectId`, `subject_id`, `rbacSubjectId`, or
+`rbac_subject_id` are rejected.
+
+A successful exchange returns an access-only bearer with:
+
+- client id `internal-rbac-subject`;
+- scope `mcp:content`;
+- a fixed five-minute lifetime;
+- no refresh token.
+
+Configure the same dedicated `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` in `apps.api`
+and `apps.mcp`. Do not reuse `RBAC_SECRET_KEY`, do not send
+`X-RBAC-SECRET-KEY`, and do not expose this internal endpoint to browser clients.
+External authorization-code, PKCE, refresh-token, revoke, and connector flows
+remain unchanged. Configure `MCP_SERVICE_URL` in `apps.api` with the Streamable
+HTTP resource URL (`http://127.0.0.1:3001/mcp` locally or
+`http://mcp:3001/mcp` on the default deployment network).
+
+`MCP_SERVICE_HTTP_HOST` and `MCP_SERVICE_HTTP_PORT` are bind settings for the
+MCP process itself; `0.0.0.0` is valid there but is not a client destination.
+`MCP_SERVICE_PUBLIC_BASE_URL` and `MCP_SERVICE_PUBLIC_URL` describe the external
+HTTPS/OAuth address. Keep `MCP_SERVICE_URL` separate so `apps.api` can use the
+correct internal service-to-service address in every environment.
+
 ## Deployment
 
 Configure `tools/deployer/.env`:
@@ -151,15 +240,17 @@ Configure `tools/deployer/.env`:
 MCP_SERVICE_NAME=mcp
 MCP_SERVICE_SUBDOMAIN=mcp
 MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME=
-MCP_ALLOW_RBAC_SECRET_FALLBACK=false
-MCP_ALLOWED_ORIGINS=
-MCP_OAUTH_JWT_SECRET=
-MCP_OAUTH_AUTH_CODE_TTL_SECONDS=300
-MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS=3600
-MCP_OAUTH_REFRESH_TOKEN_TTL_SECONDS=2592000
+MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=false
+MCP_SERVICE_ALLOWED_ORIGINS=
+MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET=
+MCP_SERVICE_URL=http://mcp:3001/mcp
+MCP_SERVICE_OAUTH_JWT_SECRET=
+MCP_SERVICE_OAUTH_AUTH_CODE_TTL_SECONDS=300
+MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS=3600
+MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS=2592000
 ```
 
-`MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME` falls back to `API_SERVICE_DOCKER_HUB_REPOSITORY_NAME` when empty. Leave `MCP_ALLOWED_ORIGINS` empty to allow every Origin; OAuth/Bearer still protects data access. Redis is used for OAuth clients, codes, access-token mappings, and refresh tokens.
+`MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME` falls back to `API_SERVICE_DOCKER_HUB_REPOSITORY_NAME` when empty. Leave `MCP_SERVICE_ALLOWED_ORIGINS` empty to allow every Origin; OAuth/Bearer still protects data access. Redis is used for OAuth clients, codes, access-token mappings, and refresh tokens.
 
 Deploy or remove only the MCP service:
 

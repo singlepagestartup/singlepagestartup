@@ -15,6 +15,13 @@
       "when": 1751145876366,
       "tag": "0001_clumsy_payback",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784666065238,
+      "tag": "0002_yummy_grandmaster",
+      "breakpoints": true
     }
   ]
 }

@@ -19,6 +19,26 @@
         state: directory
         mode: "0755"
 
+    - name: Create ACME webroot routing probe
+      ansible.builtin.copy:
+        content: sps-certbot-webroot-ok
+        dest: /home/code/certbot/.well-known/acme-challenge/sps-webroot-check
+        mode: "0644"
+
+    - name: Verify ACME webroot is publicly reachable
+      ansible.builtin.uri:
+        url: "http://{{ fqdn }}/.well-known/acme-challenge/sps-webroot-check"
+        method: GET
+        return_content: yes
+        status_code: 200
+        timeout: 10
+      register: acme_webroot_probe
+      until:
+        - acme_webroot_probe.status == 200
+        - acme_webroot_probe.content == "sps-certbot-webroot-ok"
+      retries: 30
+      delay: 5
+
     - name: Create SSL certificate using certbot webroot
       command: >
         certbot certonly --webroot -w /home/code/certbot
@@ -39,3 +59,8 @@
         remote_src: yes
         src: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"
         dest: "/home/code/certs/{{ fqdn }}.key"
+
+    - name: Delete ACME webroot routing probe
+      ansible.builtin.file:
+        path: /home/code/certbot/.well-known/acme-challenge/sps-webroot-check
+        state: absent

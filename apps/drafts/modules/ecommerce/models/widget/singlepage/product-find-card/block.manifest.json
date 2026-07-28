@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.widget.product-find-card",
+  "title": "Ecommerce Widget / Product Find Card",
+  "description": "Singlepage draft block for product search/filter controls and product card grid.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "product-find-card"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "categories",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "products",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.widget",
+    "pageName": "ecommerce",
+    "variantName": "product-find-card",
+    "nodeId": "743:3",
+    "variantNodeId": "818:79",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "ecommerce",
+    "widget",
+    "product-find-card",
+    "ecommerce.product.card"
+  ]
+}

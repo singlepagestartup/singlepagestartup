@@ -6,28 +6,34 @@
   "tags": [],
   "targets": {
     "next:dev": {
-      "executor": "nx:run-commands",
+      "executor": "@nx/next:server",
+      "defaultConfiguration": "development",
+      "cache": true,
       "options": {
-        "cwd": "apps/host",
-        "command": "node ../../node_modules/next/dist/bin/next dev --turbopack --port 3000"
+        "buildTarget": "next:build",
+        "dev": true,
+        "port": 3000,
+        "turbo": true
       }
     },
     "next:build": {
-      "executor": "nx:run-commands",
-      "outputs": [
-        "{projectRoot}/.next"
-      ],
+      "executor": "@nx/next:build",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": [],
       "cache": true,
+      "defaultConfiguration": "production",
       "options": {
-        "cwd": "apps/host",
-        "command": "node ../../node_modules/next/dist/bin/next build --webpack"
+        "outputPath": "apps/host"
       }
     },
     "next:start": {
-      "executor": "nx:run-commands",
+      "executor": "@nx/next:server",
+      "defaultConfiguration": "production",
+      "dependsOn": [],
       "options": {
-        "cwd": "apps/host",
-        "command": "node ../../node_modules/next/dist/bin/next start --port 3000"
+        "buildTarget": "host:next:build",
+        "dev": false,
+        "port": 3000
       }
     },
     "next:export": {

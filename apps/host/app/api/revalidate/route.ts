@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   const type = searchParams.get("type");
 
   if (tag) {
-    revalidateTag(tag, "max");
+    await revalidateTag(tag);
   }
 
   if (path) {

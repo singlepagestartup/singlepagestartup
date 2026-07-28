@@ -1,0 +1,9 @@
+{
+  "id": "3c20918a-ee61-469d-b2d5-a0f8b860d21a",
+  "createdAt": "2026-07-21T21:32:35.538Z",
+  "updatedAt": "2026-07-21T21:32:35.538Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "PATCH",
+  "path": "/api/rbac/subjects/64925bdb-7f45-4817-bfe2-7520ad0c8244/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/1370fd8c-3514-4dcc-9c8e-e8ccd3486cc9/knowledge/documents/[knowledge.documents.id]"
+}

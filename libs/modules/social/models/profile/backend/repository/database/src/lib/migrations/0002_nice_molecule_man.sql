@@ -1,0 +1,1 @@
+ALTER TABLE "sl_profile" ADD COLUMN "allowed_mcp_server_ids" jsonb DEFAULT '[]'::jsonb NOT NULL;

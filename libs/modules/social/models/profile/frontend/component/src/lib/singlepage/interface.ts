@@ -7,6 +7,7 @@ import { IComponentProps as IAdminV2TableRowComponentProps } from "./admin-v2/ta
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview/default/interface";
 import { IComponentProps as IButtonDefaultComponentProps } from "./button-default/interface";
 import { IComponentProps as IChatProfileSidebarComponentProps } from "./chat-profile-sidebar/interface";
+import { IComponentProps as IChatProfileAvatarComponentProps } from "./chat-profile-avatar/interface";
 import { IComponentProps as IChatMessageRowComponentProps } from "./chat-message-row/interface";
 import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input/interface";
 import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
@@ -18,6 +19,7 @@ export type IComponentProps =
   | IOverviewDefaultComponentProps
   | IButtonDefaultComponentProps
   | IChatProfileSidebarComponentProps
+  | IChatProfileAvatarComponentProps
   | IChatMessageRowComponentProps
   | IAdminSelectInputComponentProps
   | IAdminTableComponentProps

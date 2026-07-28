@@ -25,7 +25,7 @@ services:
         - traefik.http.routers.{{ SERVICE_NAME }}.entrypoints=websecure
         - traefik.http.routers.{{ SERVICE_NAME }}.tls=true
         - traefik.http.routers.{{ SERVICE_NAME }}.rule=Host(`{{ SERVICE_URL }}`)
-        - traefik.docker.network=traefik_overlay
+        - traefik.swarm.network=traefik_overlay
 
 networks:
   traefik_overlay:

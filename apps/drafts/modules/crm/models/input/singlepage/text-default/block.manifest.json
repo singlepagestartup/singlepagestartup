@@ -1,0 +1,39 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "crm.input.text-default",
+  "title": "CRM Input / Text Default",
+  "description": "Singlepage CRM text input variant.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "input",
+    "variant": "text-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "input",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "crm.input",
+    "pageName": "crm",
+    "variantName": "text-default",
+    "nodeId": "978:77",
+    "variantNodeId": "978:65",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "crm",
+    "input",
+    "text"
+  ]
+}

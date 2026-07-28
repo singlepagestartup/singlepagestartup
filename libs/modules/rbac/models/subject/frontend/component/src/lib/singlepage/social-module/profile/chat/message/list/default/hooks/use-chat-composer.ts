@@ -3,27 +3,27 @@
 import { ChatMessageFormValues, chatMessageFormSchema } from "../schemas";
 import { OpenRouterReasoningValue, SocialSkill } from "../types";
 import { hasKnowledgeMention } from "../utils";
+import { ThreadMessagesCache } from "./use-thread-messages-refetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import { useCallback, useEffect, useRef } from "react";
+import { RBAC_AI_REACTION_REQUEST_METADATA_KEY } from "@sps/rbac/models/subject/sdk/model";
+import { useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface UseChatComposerProps {
-  assistantProfileId?: string;
   clearSelectedSkills: () => void;
-  isKnowledgeChat: boolean;
   markShouldScrollToBottom: () => void;
-  onKnowledgeReactionSuccess: () => void;
   openRouterModelId: string;
   openRouterReasoning: OpenRouterReasoningValue;
+  persistAiReactionRequest: boolean;
   profileSkills: SocialSkill[];
-  refetchThreadMessages: () => void;
   selectedSkillIds: string[];
   socialModuleChatId: string;
   socialModuleProfileId: string;
   socialModuleThreadId: string;
   subjectId: string;
+  threadMessagesCache: ThreadMessagesCache;
 }
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -60,25 +60,6 @@ export function useChatComposer(props: UseChatComposerProps) {
       socialModuleChatId: props.socialModuleChatId,
       socialModuleThreadId: props.socialModuleThreadId,
     });
-  const reactByOpenrouter =
-    api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter(
-      {
-        id: props.subjectId,
-        socialModuleProfileId: props.socialModuleProfileId,
-        socialModuleChatId: props.socialModuleChatId,
-        socialModuleMessageId: "pending",
-      },
-    );
-
-  const selectedFiles = form.watch("files");
-  const description = form.watch("description");
-  const selectedFileNames = Array.isArray(selectedFiles)
-    ? selectedFiles.map((file) => {
-        return typeof file === "string" ? file : file.name;
-      })
-    : [];
-  const canSubmit = Boolean(description?.trim()) && !createMessage.isPending;
-
   const focusComposerTextArea = useCallback(() => {
     window.requestAnimationFrame(() => {
       const textarea = textareaRef.current;
@@ -122,6 +103,17 @@ export function useChatComposer(props: UseChatComposerProps) {
             },
           }
         : {}),
+      ...(props.persistAiReactionRequest
+        ? {
+            [RBAC_AI_REACTION_REQUEST_METADATA_KEY]: {
+              version: 1,
+              modelId: props.openRouterModelId || "auto",
+              reasoning: props.openRouterReasoning || "auto",
+              skillIds: appliedSkillIds,
+              useKnowledgeSearch: isKnowledgeSearchSelected,
+            },
+          }
+        : {}),
     };
     const hasMessageMetadata = Object.keys(messageMetadata).length > 0;
 
@@ -143,53 +135,16 @@ export function useChatComposer(props: UseChatComposerProps) {
       },
       {
         onSuccess(createdMessage) {
-          if (
-            !props.isKnowledgeChat ||
-            !props.assistantProfileId ||
-            !createdMessage.id
-          ) {
-            return;
+          toast.success("Message created successfully");
+          // Targeted append (exact server response) instead of a full
+          // invalidation - the timeline gains one row without refetching.
+          // WS topic invalidation remains the background consistency check.
+          if (createdMessage?.id) {
+            props.threadMessagesCache.append(createdMessage);
+          } else {
+            props.threadMessagesCache.refetch();
           }
-
-          reactByOpenrouter.mutate(
-            {
-              id: props.subjectId,
-              socialModuleProfileId: props.socialModuleProfileId,
-              socialModuleChatId: props.socialModuleChatId,
-              socialModuleMessageId: createdMessage.id,
-              params: {
-                model: props.openRouterModelId || "auto",
-                reasoning: props.openRouterReasoning || "auto",
-              },
-              data: {
-                shouldReplySocialModuleProfile: {
-                  id: props.assistantProfileId,
-                },
-                ...(appliedSkillIds.length
-                  ? {
-                      skillIds: appliedSkillIds,
-                    }
-                  : {}),
-                ...(isKnowledgeSearchSelected
-                  ? {
-                      useKnowledgeSearch: true,
-                    }
-                  : {}),
-              },
-            },
-            {
-              onSuccess() {
-                props.refetchThreadMessages();
-                props.onKnowledgeReactionSuccess();
-              },
-              onError(error: unknown) {
-                props.refetchThreadMessages();
-                toast.error(
-                  getErrorMessage(error, "OpenRouter response failed"),
-                );
-              },
-            },
-          );
+          resetComposer();
         },
         onError(error: unknown) {
           toast.error(getErrorMessage(error, "Message creation failed"));
@@ -210,27 +165,13 @@ export function useChatComposer(props: UseChatComposerProps) {
     }
   }
 
-  useEffect(() => {
-    if (!createMessage.isSuccess) {
-      return;
-    }
-
-    toast.success("Message created successfully");
-    props.refetchThreadMessages();
-    resetComposer();
-  }, [createMessage.isSuccess]);
-
   return {
-    canSubmit,
     createMessage,
-    description,
     fileInputRef,
     focusComposerTextArea,
     form,
     onSubmit,
-    reactByOpenrouter,
     resetComposer,
-    selectedFileNames,
     textareaRef,
   };
 }

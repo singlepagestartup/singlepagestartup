@@ -2,7 +2,7 @@
   "mcpServers": {
     "singlepagestartup": {
       "type": "http",
-      "url": "${MCP_URL:-http://127.0.0.1:3001/mcp}",
+      "url": "${MCP_SERVICE_PUBLIC_URL:-http://127.0.0.1:3001/mcp}",
       "headers": {
         "X-RBAC-SECRET-KEY": "${RBAC_SECRET_KEY}"
       }

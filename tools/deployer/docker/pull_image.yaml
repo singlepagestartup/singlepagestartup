@@ -1,0 +1,72 @@
+---
+- name: Pull Docker image before service deployment
+  hosts: all
+  become: yes
+  vars:
+    docker_image: "{{ lookup('ansible.builtin.env', 'SPS_DOCKER_IMAGE') }}"
+    docker_hub_url: "{{ lookup('ansible.builtin.env', 'SPS_DOCKER_HUB_URL') }}"
+    docker_hub_login_username: "{{ lookup('ansible.builtin.env', 'SPS_DOCKER_HUB_LOGIN_USERNAME') }}"
+    docker_hub_password: "{{ lookup('ansible.builtin.env', 'SPS_DOCKER_HUB_PASSWORD') }}"
+  tasks:
+    - name: Validate Docker image configuration
+      ansible.builtin.assert:
+        that:
+          - docker_image | length > 0
+        fail_msg: SPS_DOCKER_IMAGE must be configured before deployment.
+
+    - name: Authenticate Docker daemon with registry
+      ansible.builtin.command:
+        argv:
+          - docker
+          - login
+          - "{{ docker_hub_url }}"
+          - --username
+          - "{{ docker_hub_login_username }}"
+          - --password-stdin
+        stdin: "{{ docker_hub_password }}"
+      no_log: true
+      when:
+        - docker_hub_url | length > 0
+        - docker_hub_login_username | length > 0
+        - docker_hub_password | length > 0
+
+    - name: Pull Docker image under deployment lock
+      ansible.builtin.shell: |
+        set -uo pipefail
+
+        exec 9>/var/lock/sps-docker-image-pull.lock
+        flock --wait 1800 9
+
+        docker container prune --force || true
+        docker image prune --force || true
+
+        for attempt in 1 2 3; do
+          echo "Pulling ${SPS_DOCKER_IMAGE} (attempt ${attempt}/3)"
+
+          if pull_output="$(docker image pull "${SPS_DOCKER_IMAGE}" 2>&1)"; then
+            printf '%s\n' "$pull_output"
+            exit 0
+          fi
+
+          printf '%s\n' "$pull_output" >&2
+
+          if grep -qi "no space left on device" <<< "$pull_output"; then
+            docker container prune --force || true
+
+            if [ "$attempt" -eq 1 ]; then
+              docker image prune --all --force --filter until=24h || true
+            else
+              docker image prune --all --force || true
+            fi
+          fi
+
+          if [ "$attempt" -lt 3 ]; then
+            sleep $((attempt * 15))
+          fi
+        done
+
+        exit 1
+      args:
+        executable: /bin/bash
+      environment:
+        SPS_DOCKER_IMAGE: "{{ docker_image }}"

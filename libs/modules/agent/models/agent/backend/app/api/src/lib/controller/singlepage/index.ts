@@ -10,6 +10,7 @@ import { Handler as HostModulePageCache } from "./page/cache";
 import { Handler as EcommerceModuleOrdersCheck } from "./ecommerce-module/order/check";
 import { Handler as EcommerceModuleOrdersDeleteCanceled } from "./ecommerce-module/order/delete-canceled";
 import { Handler as TelegramBot } from "./telegram/bot";
+import { Handler as TelegramCommands } from "./telegram/commands";
 import { Handler as BillingModulePaymentIntentsCheck } from "./billing-module/payment-intent/check";
 import { Handler as BillingModulePaymentIntentsDeleteFailed } from "./billing-module/payment-intent/delete-failed";
 import { Handler as BillingModuleInvoicesDeleteFailed } from "./billing-module/invoice/delete-failed";
@@ -87,6 +88,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.telegramBot,
       },
       {
+        method: "GET",
+        path: "/telegram/commands",
+        handler: this.telegramCommands,
+      },
+      {
         method: "POST",
         path: "/billing-module-payment-intents-check",
         handler: this.billingModulePaymentIntentsCheck,
@@ -147,6 +153,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async telegramBot(c: Context, next: any): Promise<Response> {
     return new TelegramBot(this.service).execute(c, next);
+  }
+
+  async telegramCommands(c: Context): Promise<Response> {
+    return new TelegramCommands(this.service).execute(c);
   }
 
   async billingModulePaymentIntentsCheck(

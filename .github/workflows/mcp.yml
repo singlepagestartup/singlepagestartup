@@ -18,16 +18,8 @@ jobs:
     steps:
       - name: Send webhook for preview service update
         if: ${{ inputs.PRERELEASE == true }}
-        uses: fjogeleit/http-request-action@master
-        with:
-          url: ${{ secrets.PREVIEW_PORTAINER_MCP_UPDATE_URL }}?tag=${{ inputs.TAG }}
-          method: "POST"
-          timeout: 40000
+        run: curl --fail --silent --show-error --max-time 40 --request POST "${{ secrets.PREVIEW_PORTAINER_MCP_UPDATE_URL }}?tag=${{ inputs.TAG }}"
 
       - name: Send webhook for production service update
         if: ${{ inputs.PRERELEASE == false }}
-        uses: fjogeleit/http-request-action@master
-        with:
-          url: ${{ secrets.PORTAINER_MCP_UPDATE_URL }}?tag=${{ inputs.TAG }}
-          method: "POST"
-          timeout: 40000
+        run: curl --fail --silent --show-error --max-time 40 --request POST "${{ secrets.PORTAINER_MCP_UPDATE_URL }}?tag=${{ inputs.TAG }}"

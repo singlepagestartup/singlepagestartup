@@ -4,8 +4,8 @@ import { Table } from "./schema";
 import { z } from "zod";
 
 export const insertSchema = createInsertSchema(Table).extend({
-  interaction: z.record(z.any()).default({}),
-  metadata: z.record(z.any()).default({}),
+  interaction: z.record(z.any()).optional(),
+  metadata: z.record(z.any()).optional(),
 });
 export const selectSchema = createSelectSchema(Table).extend({
   interaction: z.record(z.any()).default({}),

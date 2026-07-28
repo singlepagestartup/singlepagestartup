@@ -65,7 +65,7 @@ completed_date: 2026-05-05T16:30:00Z
 
 - [x] Completed: 2026-05-05T16:53:00Z
 - [x] Automated verification: `npx nx run mcp:jest:test`, `npx tsc -p apps/mcp/tsconfig.json --noEmit`, `npx nx run mcp:eslint:lint`
-- [x] Smoke verification: `MCP_HTTP_PORT=3999 npm run mcp:http` plus `curl -i -X OPTIONS http://127.0.0.1:3999/mcp`
+- [x] Smoke verification: `MCP_SERVICE_HTTP_PORT=3999 npm run mcp:http` plus `curl -i -X OPTIONS http://127.0.0.1:3999/mcp`
 
 **Notes**: Added `apps/mcp/http.ts`, `npm run mcp:http`, `npm run mcp:http:dev`, and `npm run mcp:inspector:http`. Inspector can now connect with Streamable HTTP at `http://127.0.0.1:3001/mcp` and pass `Authorization` or `X-RBAC-SECRET-KEY` through HTTP headers. `/sse` is kept as a compatibility endpoint for existing Inspector setups.
 

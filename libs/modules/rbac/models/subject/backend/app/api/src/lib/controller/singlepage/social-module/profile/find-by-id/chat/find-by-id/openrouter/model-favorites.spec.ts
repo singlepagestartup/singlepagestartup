@@ -1,0 +1,183 @@
+/**
+ * BDD Suite: OpenRouter model favorites.
+ *
+ * Given: a user stores OpenRouter model favorites for chat controls.
+ * When: favorites are read and updated through the RBAC-scoped endpoint.
+ * Then: values are stored in KV per subject and normalized before persistence.
+ */
+
+const mockKvGet = jest.fn();
+const mockKvSet = jest.fn();
+const mockDefaultKvGet = jest.fn();
+const mockDefaultKvSet = jest.fn();
+const mockKvProviderConstructor = jest.fn();
+
+jest.mock("@sps/providers-kv", () => {
+  return {
+    Provider: function Provider(props: unknown) {
+      mockKvProviderConstructor(props);
+
+      return {
+        get: mockDefaultKvGet,
+        set: mockDefaultKvSet,
+      };
+    },
+  };
+});
+
+import { Context } from "hono";
+import { Handler } from "./model-favorites";
+
+function createService() {
+  return {
+    socialModule: {
+      profilesToChats: {
+        find: jest.fn(),
+      },
+    },
+  };
+}
+
+function createContext(props: {
+  body?: unknown;
+  method: "GET" | "PATCH";
+}): Context {
+  const params: Record<string, string> = {
+    id: "subject-1",
+    socialModuleProfileId: "profile-1",
+    socialModuleChatId: "chat-1",
+  };
+
+  return {
+    req: {
+      method: props.method,
+      param(name: string) {
+        return params[name];
+      },
+      async json() {
+        return props.body;
+      },
+    },
+    json(payload: unknown) {
+      return payload as Response;
+    },
+  } as unknown as Context;
+}
+
+function createKvProvider() {
+  return async () => {
+    return {
+      get: mockKvGet,
+      set: mockKvSet,
+    };
+  };
+}
+
+describe("Given: OpenRouter model favorites", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockDefaultKvGet.mockResolvedValue(null);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the API process uses apps/api as its current working directory.
+   * When: model favorites use the default KV provider factory.
+   * Then: the provider resolves through the workspace package alias without constructing a cwd-relative source path.
+   */
+  it("When: the API cwd is apps/api Then: the workspace KV provider loads", async () => {
+    const cwd = jest
+      .spyOn(process, "cwd")
+      .mockReturnValue("/workspace/apps/api");
+    const handler = new Handler(createService() as any);
+
+    try {
+      const response = (await handler.execute(
+        createContext({
+          method: "GET",
+        }),
+        undefined,
+      )) as any;
+
+      expect(mockKvProviderConstructor).toHaveBeenCalledWith({
+        type: expect.any(String),
+      });
+      expect(response.data.favoriteModelIds).toEqual([]);
+    } finally {
+      cwd.mockRestore();
+    }
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a PATCH request contains duplicate model ids, auto, and invalid values.
+   * When: OpenRouter model favorites are updated.
+   * Then: only unique concrete model ids are persisted in KV for the subject.
+   */
+  it("When: favorites are updated Then: concrete model ids are normalized", async () => {
+    const handler = new Handler(createService() as any, createKvProvider());
+    const response = (await handler.execute(
+      createContext({
+        method: "PATCH",
+        body: {
+          data: {
+            favoriteModelIds: [
+              "openai/gpt-5.2",
+              "auto",
+              "openai/gpt-5.2",
+              "",
+              null,
+              "anthropic/claude-sonnet-4.6",
+            ],
+          },
+        },
+      }),
+      undefined,
+    )) as any;
+
+    expect(mockKvSet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prefix: "rbac:subject:openrouter-model-favorites",
+        key: "subject-1",
+        value: JSON.stringify({
+          favoriteModelIds: ["openai/gpt-5.2", "anthropic/claude-sonnet-4.6"],
+        }),
+      }),
+    );
+    expect(response.data.favoriteModelIds).toEqual([
+      "openai/gpt-5.2",
+      "anthropic/claude-sonnet-4.6",
+    ]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: profile ownership was authorized by middleware but that profile is not a chat participant.
+   * When: subject-scoped OpenRouter model favorites are requested from the chat controls.
+   * Then: the handler reads the subject's own KV state without requiring an unrelated profile/chat link.
+   */
+  it("When: a profile is not in the chat Then: subject favorites remain readable", async () => {
+    const service = createService();
+    const handler = new Handler(service as any, createKvProvider());
+    mockKvGet.mockResolvedValue(
+      JSON.stringify({
+        favoriteModelIds: ["openai/gpt-5.2"],
+      }),
+    );
+
+    const response = (await handler.execute(
+      createContext({
+        method: "GET",
+      }),
+      undefined,
+    )) as any;
+
+    expect(response.data.favoriteModelIds).toEqual(["openai/gpt-5.2"]);
+    expect(service.socialModule.profilesToChats.find).not.toHaveBeenCalled();
+    expect(mockKvGet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        key: "subject-1",
+      }),
+    );
+  });
+});

@@ -1,0 +1,73 @@
+name: Prepare Docker images
+
+on:
+  workflow_dispatch:
+    inputs:
+      TAG:
+        description: Docker image tag to pull
+        required: true
+        type: string
+      PRERELEASE:
+        description: Use preview deployment settings
+        required: true
+        type: boolean
+  workflow_call:
+    inputs:
+      TAG:
+        required: true
+        type: string
+      PRERELEASE:
+        required: true
+        type: boolean
+
+jobs:
+  prepare-docker-images:
+    name: Pull images on deployment server
+    runs-on: ubuntu-latest
+    concurrency:
+      group: prepare-docker-images-${{ inputs.PRERELEASE && 'preview' || 'production' }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set preview deployment configuration
+        if: ${{ inputs.PRERELEASE == true }}
+        run: |
+          {
+            echo "DOMAIN=${{ secrets.PREVIEW_DOMAIN }}"
+            echo "PORTAINER_SERVICE_SUBDOMAIN=${{ secrets.PREVIEW_PORTAINER_SERVICE_SUBDOMAIN }}"
+            echo "PORTAINER_USERNAME=${{ secrets.PREVIEW_PORTAINER_USERNAME }}"
+            echo "PORTAINER_PASSWORD=${{ secrets.PREVIEW_PORTAINER_PASSWORD }}"
+            echo "DOCKER_HUB_URL=${{ secrets.PREVIEW_DOCKER_HUB_URL }}"
+            echo "DOCKER_HUB_USERNAME=${{ secrets.PREVIEW_DOCKER_HUB_USERNAME }}"
+            echo "DOCKER_HUB_LOGIN_USERNAME=${{ secrets.PREVIEW_DOCKER_HUB_LOGIN_USERNAME }}"
+            echo "HOST_REPOSITORY=${{ secrets.PREVIEW_HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "API_REPOSITORY=${{ secrets.PREVIEW_API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "LLM_REPOSITORY=${{ secrets.PREVIEW_LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "MCP_REPOSITORY=${{ secrets.PREVIEW_MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "TELEGRAM_REPOSITORY=${{ secrets.PREVIEW_TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+          } >> "$GITHUB_ENV"
+
+      - name: Set production deployment configuration
+        if: ${{ inputs.PRERELEASE == false }}
+        run: |
+          {
+            echo "DOMAIN=${{ secrets.DOMAIN }}"
+            echo "PORTAINER_SERVICE_SUBDOMAIN=${{ secrets.PORTAINER_SERVICE_SUBDOMAIN }}"
+            echo "PORTAINER_USERNAME=${{ secrets.PORTAINER_USERNAME }}"
+            echo "PORTAINER_PASSWORD=${{ secrets.PORTAINER_PASSWORD }}"
+            echo "DOCKER_HUB_URL=${{ secrets.DOCKER_HUB_URL }}"
+            echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}"
+            echo "DOCKER_HUB_LOGIN_USERNAME=${{ secrets.DOCKER_HUB_LOGIN_USERNAME }}"
+            echo "HOST_REPOSITORY=${{ secrets.HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "API_REPOSITORY=${{ secrets.API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "LLM_REPOSITORY=${{ secrets.LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "MCP_REPOSITORY=${{ secrets.MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "TELEGRAM_REPOSITORY=${{ secrets.TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+          } >> "$GITHUB_ENV"
+
+      - name: Pull release images through Portainer
+        env:
+          IMAGE_TAG: ${{ inputs.TAG }}
+        run: bash tools/deployer/docker/pull_image_via_portainer.sh

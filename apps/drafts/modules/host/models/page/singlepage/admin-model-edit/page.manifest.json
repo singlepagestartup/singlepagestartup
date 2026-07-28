@@ -1,0 +1,34 @@
+{
+  "id": "admin.model-edit",
+  "title": "Admin / Model Edit",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the runnable nested model edit state.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.admin-v2-navigation",
+      "path": "../../../../../website-builder/models/widget/singlepage/admin-v2-navigation"
+    },
+    {
+      "id": "ecommerce.product.admin-v2-form",
+      "path": "../../../../../ecommerce/models/product/singlepage/admin-v2-form"
+    },
+    {
+      "id": "ecommerce.relation.products-to-attributes.admin-v2-manager",
+      "path": "../../../../../ecommerce/relations/products-to-attributes/singlepage/admin-v2-manager"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "admin-model-edit",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1717",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  }
+}

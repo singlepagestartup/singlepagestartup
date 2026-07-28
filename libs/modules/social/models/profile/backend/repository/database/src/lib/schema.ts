@@ -1,6 +1,11 @@
 import * as pgCore from "drizzle-orm/pg-core";
 import { fields } from "./fields";
 
+export {
+  supportedMcpServerIdentifiers,
+  type TSupportedMcpServerIdentifier,
+} from "./fields/singlepage";
+
 export const moduleName = "sl";
 export const table = "profile";
 

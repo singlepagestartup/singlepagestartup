@@ -77,47 +77,56 @@ export class Handler {
 
       await this.service.deanonymize({ id, email: data.email });
 
-      for (const dataEcommerceModuleOrder of data.ecommerceModule.orders) {
-        await ecommerceModuleOrderApi
-          .findById({
-            id: dataEcommerceModuleOrder.id,
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
+      const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: data.ecommerceModule.orders.map(
+                  (order: { id: string }) => order.id,
+                ),
               },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+      if (!ecommerceModuleOrders?.length) {
+        throw new Error("Not Found error. No ecommerce module orders found");
+      }
+
+      for (const ecommerceModuleOrder of ecommerceModuleOrders) {
+        await ecommerceModuleOrderApi.update({
+          id: ecommerceModuleOrder.id,
+          data: {
+            ...ecommerceModuleOrder,
+            comment: data.comment,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
             },
-          })
-          .then(async (ecommerceModuleOrder) => {
-            if (!RBAC_SECRET_KEY) {
-              throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-            }
-
-            if (!ecommerceModuleOrder) {
-              return;
-            }
-
-            await ecommerceModuleOrderApi.update({
-              id: ecommerceModuleOrder.id,
-              data: {
-                ...ecommerceModuleOrder,
-                comment: data.comment,
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
-                },
-              },
-            });
-          });
+          },
+        });
       }
 
       const result = await this.service.ecommerceOrderCheckout({
         id,
         email: data.email,
         provider: data.provider,
-        ecommerceModule: data.ecommerceModule,
+        ecommerceModule: {
+          ...data.ecommerceModule,
+          orders: ecommerceModuleOrders.map((order) => ({ id: order.id })),
+        },
         comment: data.comment,
       });
 

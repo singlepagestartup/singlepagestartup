@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/social/actions";
-export const variants = ["default"];
+export const variants = ["default", "ai-execution"] as const;
 export const query = {};
 export const options = {
   next: {

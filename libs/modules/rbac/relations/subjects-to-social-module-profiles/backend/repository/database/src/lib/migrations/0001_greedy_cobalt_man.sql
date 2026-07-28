@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "sps_rc_subject_social_profile_unique" ON "rc_ss_to_sl_me_ps_ges" USING btree ("st_id","sl_me_pe_id");

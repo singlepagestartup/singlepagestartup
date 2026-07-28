@@ -38,6 +38,28 @@ describe("knowledge vector repository contract", () => {
   });
 
   /**
+   * BDD Scenario: profile-scoped exact vector search.
+   *
+   * Given: HNSW can choose global candidates before a document filter is applied.
+   * When: search is restricted to profile-linked document ids.
+   * Then: allowed chunks are materialized before exact distance ordering.
+   */
+  it("materializes document-filtered chunks before ordering", () => {
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        "libs/modules/knowledge/backend/app/api/src/lib/repository.ts",
+      ),
+      "utf-8",
+    );
+
+    expect(source).toContain("filtered_chunks AS MATERIALIZED");
+    expect(source).toContain("INNER JOIN sps_ke_source s");
+    expect(source).toContain("FROM filtered_chunks");
+    expect(source).toContain("ORDER BY distance");
+  });
+
+  /**
    * BDD Scenario: source relation join.
    *
    * Given: chunk ownership moved to an SPS relation table.
@@ -54,7 +76,33 @@ describe("knowledge vector repository contract", () => {
     );
 
     expect(source).toContain("LEFT JOIN sps_ke_ss_to_cs_rae sc");
+    expect(source).toContain('sc.se_id AS "sourceId"');
     expect(source).not.toContain("c.source_id");
+  });
+
+  /**
+   * BDD Scenario: neighbor chunks.
+   *
+   * Given: RAG retrieval uses parent context from adjacent chunks.
+   * When: the repository source is read.
+   * Then: neighbors are selected by the same source relation and chunk index window.
+   */
+  it("loads neighbor chunks by source relation and chunk index window", () => {
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        "libs/modules/knowledge/backend/app/api/src/lib/repository.ts",
+      ),
+      "utf-8",
+    );
+
+    expect(source).toContain("async findNeighborChunks");
+    expect(source).toContain("WITH seed_values");
+    expect(source).toContain(
+      "INNER JOIN sps_ke_ss_to_cs_rae sc ON sc.se_id = seed_values.source_id",
+    );
+    expect(source).toContain("WHERE c.chunk_index BETWEEN");
+    expect(source).toContain('retrievalRole: "neighbor"');
   });
 
   /**
@@ -164,6 +212,35 @@ describe("knowledge vector repository contract", () => {
         status: "indexed",
         contentHash: "content-hash",
       }),
+    );
+  });
+
+  /**
+   * BDD Scenario: hard-delete cleanup.
+   *
+   * Given: a Knowledge document has indexed sources, chunks, files, and edit suggestions.
+   * When: the repository implementation is inspected.
+   * Then: document deletion cleans Knowledge-owned derived rows instead of reindexing.
+   */
+  it("cleans document-derived vectors and suggestions during hard delete", () => {
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        "libs/modules/knowledge/backend/app/api/src/lib/repository.ts",
+      ),
+      "utf-8",
+    );
+
+    expect(source).toContain("deleteDocumentWithDerivedData");
+    expect(source).toContain("deleteSourceFilesBySourceIds");
+    expect(source).toContain("deleteSourceChunkRelationsBySourceIds");
+    expect(source).toContain("deleteOrphanChunks");
+    expect(source).toContain("deleteSourcesByIds");
+    expect(source).toContain("EditSuggestionTable");
+    expect(source).toContain("DocumentTable");
+    expect(source).toContain("metadata}->>'documentId'");
+    expect(source).not.toContain(
+      "deleteDocumentWithDerivedData(documentId) {\n    await this.index",
     );
   });
 });

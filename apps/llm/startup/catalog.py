@@ -1,9 +1,10 @@
 from singlepage.catalog import ModelCatalog, ModelDefinition
 
-DEFAULT_WHISPER_MODEL = "openai/whisper-small"
 
-
-def build_catalog(whisper_model: str = DEFAULT_WHISPER_MODEL) -> ModelCatalog:
+def build_catalog(
+    embedding_provider_model: str = "nomic-embed-text",
+    embedding_dimensions: int = 768,
+) -> ModelCatalog:
     return ModelCatalog(
         [
             ModelDefinition(
@@ -13,15 +14,6 @@ def build_catalog(whisper_model: str = DEFAULT_WHISPER_MODEL) -> ModelCatalog:
                 provider_model="qwen3:1.7b",
                 task="chat",
                 local=True,
-            ),
-            ModelDefinition(
-                id="huggingface/qwen2-5-0-5b-instruct",
-                label="HuggingFace Qwen2.5 0.5B Instruct",
-                provider="huggingface",
-                provider_model="Qwen/Qwen2.5-0.5B-Instruct",
-                task="chat",
-                local=True,
-                hf_task="text-generation",
             ),
             ModelDefinition(
                 id="anthropic/claude-sonnet-4",
@@ -56,22 +48,13 @@ def build_catalog(whisper_model: str = DEFAULT_WHISPER_MODEL) -> ModelCatalog:
                 local=False,
             ),
             ModelDefinition(
-                id="nomic/nomic-embed-text",
-                label="Nomic Embed Text",
+                id="local/default-embedding",
+                label="Configured Ollama Embedding Model",
                 provider="ollama",
-                provider_model="nomic-embed-text",
+                provider_model=embedding_provider_model,
                 task="embedding",
                 local=True,
-                dimensions=768,
-            ),
-            ModelDefinition(
-                id=whisper_model,
-                label="Whisper Small",
-                provider="huggingface",
-                provider_model=whisper_model,
-                task="audio",
-                local=True,
-                aliases=("whisper-1",),
+                dimensions=embedding_dimensions,
             ),
         ]
     )

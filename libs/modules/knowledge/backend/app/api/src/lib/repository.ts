@@ -12,7 +12,7 @@ import {
   KnowledgeSearchResult,
   KnowledgeSourceInput,
 } from "./types";
-import { and, eq, inArray, not, sql } from "drizzle-orm";
+import { and, eq, inArray, not, or, sql } from "drizzle-orm";
 import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
 import fs from "node:fs/promises";
@@ -234,6 +234,35 @@ export class KnowledgeRepository {
     return updated;
   }
 
+  async deleteDocumentWithDerivedData(documentId: string) {
+    const document = await this.findDocumentById(documentId);
+
+    if (!document) {
+      return undefined;
+    }
+
+    const sources = await this.findSourcesByDocumentId(documentId);
+    const sourceIds = sources
+      .map((source) => source.id)
+      .filter((sourceId): sourceId is string => {
+        return Boolean(sourceId);
+      });
+
+    await this.deleteSourceFilesBySourceIds(sourceIds);
+    await this.deleteSourceChunkRelationsBySourceIds(sourceIds);
+    await this.deleteSourcesByIds(sourceIds);
+    await this.db
+      .delete(EditSuggestionTable)
+      .where(eq(EditSuggestionTable.targetDocumentId, documentId))
+      .execute();
+    await this.db
+      .delete(DocumentTable)
+      .where(eq(DocumentTable.id, documentId))
+      .execute();
+
+    return document;
+  }
+
   async createDocumentFromSuggestion(props: {
     title: string;
     description: string;
@@ -334,6 +363,123 @@ export class KnowledgeRepository {
       .execute();
 
     await this.deleteOrphanChunks();
+  }
+
+  private async findSourcesByDocumentId(documentId: string) {
+    return this.db
+      .select()
+      .from(SourceTable)
+      .where(
+        or(
+          eq(
+            SourceTable.originalPath,
+            this.getDocumentOriginalPath(documentId),
+          ),
+          sql`${SourceTable.metadata}->>'documentId' = ${documentId}`,
+        ),
+      )
+      .execute();
+  }
+
+  private async deleteSourceFilesBySourceIds(sourceIds: string[]) {
+    if (!sourceIds.length) {
+      return;
+    }
+
+    const fileRelations = await this.db
+      .select({
+        fileId: SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
+        file: FileTable.file,
+      })
+      .from(SourcesToFileStorageModuleFilesTable)
+      .leftJoin(
+        FileTable,
+        eq(
+          FileTable.id,
+          SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
+        ),
+      )
+      .where(inArray(SourcesToFileStorageModuleFilesTable.sourceId, sourceIds))
+      .execute();
+    const fileIds = fileRelations
+      .map((relation) => relation.fileId)
+      .filter((fileId): fileId is string => {
+        return Boolean(fileId);
+      });
+    const fileById = new Map(
+      fileRelations.map((relation) => {
+        return [relation.fileId, relation.file] as const;
+      }),
+    );
+
+    await this.db
+      .delete(SourcesToFileStorageModuleFilesTable)
+      .where(inArray(SourcesToFileStorageModuleFilesTable.sourceId, sourceIds))
+      .execute();
+
+    if (fileIds.length) {
+      const remainingRelations = await this.db
+        .select({
+          fileId: SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
+        })
+        .from(SourcesToFileStorageModuleFilesTable)
+        .where(
+          inArray(
+            SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
+            fileIds,
+          ),
+        )
+        .execute();
+      const remainingFileIds = new Set(
+        remainingRelations
+          .map((relation) => relation.fileId)
+          .filter((fileId): fileId is string => {
+            return Boolean(fileId);
+          }),
+      );
+      const orphanFileIds = fileIds.filter((fileId) => {
+        return !remainingFileIds.has(fileId);
+      });
+
+      await Promise.all(
+        orphanFileIds.map((fileId) => {
+          return this.deleteStoredFile(fileById.get(fileId));
+        }),
+      );
+
+      if (!orphanFileIds.length) {
+        return;
+      }
+
+      await this.db
+        .delete(FileTable)
+        .where(inArray(FileTable.id, orphanFileIds))
+        .execute();
+    }
+  }
+
+  private async deleteSourceChunkRelationsBySourceIds(sourceIds: string[]) {
+    if (!sourceIds.length) {
+      return;
+    }
+
+    await this.db
+      .delete(SourcesToChunksTable)
+      .where(inArray(SourcesToChunksTable.sourceId, sourceIds))
+      .execute();
+
+    await this.deleteOrphanChunks();
+  }
+
+  private async deleteSourcesByIds(sourceIds: string[]) {
+    if (!sourceIds.length) {
+      return;
+    }
+
+    await this.db
+      .delete(SourceTable)
+      .where(inArray(SourceTable.id, sourceIds))
+      .execute();
   }
 
   async insertChunksForSource(sourceId: string, chunks: KnowledgeChunkInput[]) {
@@ -445,31 +591,133 @@ export class KnowledgeRepository {
   }): Promise<KnowledgeSearchResult[]> {
     const embeddingValue = `[${props.embedding.join(",")}]`;
     const minSimilarity = props.minSimilarity ?? -1;
-    const documentFilter = props.documentIds?.length
-      ? sql`AND s.metadata->>'documentId' IN (${sql.join(
-          props.documentIds.map((id) => sql`${id}`),
-          sql`, `,
-        )})`
-      : sql``;
+    const rows = props.documentIds?.length
+      ? await this.db.execute<Record<string, unknown>>(sql`
+          WITH query_vector AS (
+            SELECT ${embeddingValue}::vector AS embedding
+          ),
+          filtered_chunks AS MATERIALIZED (
+            SELECT
+              c.id,
+              c.text,
+              c.chunk_index AS "chunkIndex",
+              c.metadata,
+              sc.se_id AS "sourceId",
+              s.title AS "sourceTitle",
+              s.original_path AS "sourceOriginalPath",
+              s.type AS "sourceType",
+              (c.embedding <=> query_vector.embedding) AS distance
+            FROM sps_ke_chunk c
+            CROSS JOIN query_vector
+            INNER JOIN sps_ke_ss_to_cs_rae sc ON sc.ck_id = c.id
+            INNER JOIN sps_ke_source s ON s.id = sc.se_id
+            WHERE (1 - (c.embedding <=> query_vector.embedding)) >= ${minSimilarity}
+            AND s.metadata->>'documentId' IN (${sql.join(
+              props.documentIds.map((id) => sql`${id}`),
+              sql`, `,
+            )})
+          )
+          SELECT
+            id,
+            text,
+            "chunkIndex",
+            metadata,
+            "sourceId",
+            "sourceTitle",
+            "sourceOriginalPath",
+            "sourceType",
+            distance,
+            (1 - distance) AS similarity
+          FROM filtered_chunks
+          ORDER BY distance
+          LIMIT ${props.topK}
+        `)
+      : await this.db.execute<Record<string, unknown>>(sql`
+          SELECT
+            c.id,
+            c.text,
+            c.chunk_index AS "chunkIndex",
+            c.metadata,
+            sc.se_id AS "sourceId",
+            s.title AS "sourceTitle",
+            s.original_path AS "sourceOriginalPath",
+            s.type AS "sourceType",
+            (c.embedding <=> ${embeddingValue}::vector) AS distance,
+            (1 - (c.embedding <=> ${embeddingValue}::vector)) AS similarity
+          FROM sps_ke_chunk c
+          LEFT JOIN sps_ke_ss_to_cs_rae sc ON sc.ck_id = c.id
+          LEFT JOIN sps_ke_source s ON s.id = sc.se_id
+          WHERE (1 - (c.embedding <=> ${embeddingValue}::vector)) >= ${minSimilarity}
+          ORDER BY c.embedding <=> ${embeddingValue}::vector
+          LIMIT ${props.topK}
+        `);
+
+    return rows.map((row: any) => {
+      return {
+        id: row.id,
+        text: row.text,
+        chunkIndex: Number(row.chunkIndex),
+        sourceId: row.sourceId,
+        sourceTitle: row.sourceTitle,
+        sourceOriginalPath: row.sourceOriginalPath,
+        sourceType: row.sourceType,
+        distance: Number(row.distance),
+        similarity: Number(row.similarity),
+        retrievalRole: "seed",
+        metadata: row.metadata || {},
+      };
+    });
+  }
+
+  async findNeighborChunks(props: {
+    seeds: Array<{
+      sourceId: string;
+      chunkIndex: number;
+      distance?: number | null;
+      similarity?: number | null;
+    }>;
+    window: number;
+  }): Promise<KnowledgeSearchResult[]> {
+    const seeds = props.seeds.filter((seed) => {
+      return Boolean(seed.sourceId) && Number.isFinite(seed.chunkIndex);
+    });
+    const window = Math.max(0, Math.floor(Number(props.window || 0)));
+
+    if (!seeds.length || !window) {
+      return [];
+    }
+
+    const seedValues = sql.join(
+      seeds.map((seed) => {
+        return sql`(${seed.sourceId}::uuid, ${seed.chunkIndex}::int, ${
+          seed.distance ?? null
+        }::double precision, ${seed.similarity ?? null}::double precision)`;
+      }),
+      sql`, `,
+    );
 
     const rows = await this.db.execute<Record<string, unknown>>(sql`
+      WITH seed_values(source_id, seed_chunk_index, seed_distance, seed_similarity) AS (
+        VALUES ${seedValues}
+      )
       SELECT
         c.id,
         c.text,
         c.chunk_index AS "chunkIndex",
         c.metadata,
+        sc.se_id AS "sourceId",
         s.title AS "sourceTitle",
         s.original_path AS "sourceOriginalPath",
         s.type AS "sourceType",
-        (c.embedding <=> ${embeddingValue}::vector) AS distance,
-        (1 - (c.embedding <=> ${embeddingValue}::vector)) AS similarity
-      FROM sps_ke_chunk c
-      LEFT JOIN sps_ke_ss_to_cs_rae sc ON sc.ck_id = c.id
+        seed_values.seed_distance AS distance,
+        seed_values.seed_similarity AS similarity
+      FROM seed_values
+      INNER JOIN sps_ke_ss_to_cs_rae sc ON sc.se_id = seed_values.source_id
+      INNER JOIN sps_ke_chunk c ON c.id = sc.ck_id
       LEFT JOIN sps_ke_source s ON s.id = sc.se_id
-      WHERE (1 - (c.embedding <=> ${embeddingValue}::vector)) >= ${minSimilarity}
-      ${documentFilter}
-      ORDER BY c.embedding <=> ${embeddingValue}::vector
-      LIMIT ${props.topK}
+      WHERE c.chunk_index BETWEEN seed_values.seed_chunk_index - ${window}
+        AND seed_values.seed_chunk_index + ${window}
+      ORDER BY seed_values.seed_distance NULLS LAST, sc.se_id, c.chunk_index
     `);
 
     return rows.map((row: any) => {
@@ -477,11 +725,19 @@ export class KnowledgeRepository {
         id: row.id,
         text: row.text,
         chunkIndex: Number(row.chunkIndex),
+        sourceId: row.sourceId,
         sourceTitle: row.sourceTitle,
         sourceOriginalPath: row.sourceOriginalPath,
         sourceType: row.sourceType,
-        distance: Number(row.distance),
-        similarity: Number(row.similarity),
+        distance:
+          row.distance === null || row.distance === undefined
+            ? null
+            : Number(row.distance),
+        similarity:
+          row.similarity === null || row.similarity === undefined
+            ? null
+            : Number(row.similarity),
+        retrievalRole: "neighbor",
         metadata: row.metadata || {},
       };
     });

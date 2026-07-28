@@ -7,6 +7,7 @@
  */
 
 import { Provider as KvProvider } from "@sps/providers-kv";
+import { deriveTopicsFromPath } from "@sps/shared-utils";
 import { authenticateScenarioSubject } from "./test-utils/auth";
 import { getCartStateFromDb } from "./test-utils/db";
 import { getApiUrl, loadScenarioEnv } from "./test-utils/env";
@@ -23,7 +24,6 @@ import {
 import { expectOk, requestApi } from "./test-utils/http";
 import { waitForCondition } from "./test-utils/polling";
 
-const HTTP_CACHE_DATA_PREFIX = "http-cache:data";
 const HTTP_CACHE_VERSION_PREFIX = "http-cache:version";
 
 function getKvProviderType(): "redis" | "vercel-kv" {
@@ -60,14 +60,57 @@ async function getCacheVersion(provider: KvProvider, path: string) {
     : 0;
 }
 
+const HTTP_CACHE_DATA_PREFIX = "http-cache:data";
+
+// Contract copies of the http-cache key helpers (importing @sps/middlewares
+// into jest drags ESM-only server deps). Must stay in sync with
+// libs/middlewares/src/lib/http-cache/index.ts.
+function getTopicVersionKey(topic: string): string {
+  return `topic:${topic}`;
+}
+
+function buildVersionedDataPrefix(
+  path: string,
+  pathVersion: number,
+  topicVersionsByTopic: Record<string, number>,
+): string {
+  const topicVector = Object.keys(topicVersionsByTopic)
+    .sort()
+    .map((topic) => topicVersionsByTopic[topic] || 0)
+    .join(".");
+
+  return `${HTTP_CACHE_DATA_PREFIX}:${path}:v${pathVersion}:t${topicVector || "0"}`;
+}
+
 async function hasCachedResponseForPath(
   provider: KvProvider,
   path: string,
   params = "",
 ) {
+  // Topic-versioned key shape (issue #195): the data prefix embeds both the
+  // legacy per-path version and the topic-version vector derived from the
+  // request pathname — reconstructed here with the SAME shared helpers the
+  // middleware uses.
   const version = await getCacheVersion(provider, path);
+  const pathname = new URL(path).pathname;
+  const readTopics = deriveTopicsFromPath(pathname);
+  const topicVersionEntries = await Promise.all(
+    readTopics.map(async (topic) => {
+      const topicVersion = await getCacheVersion(
+        provider,
+        getTopicVersionKey(topic),
+      );
+
+      return [topic, topicVersion] as const;
+    }),
+  );
+  const prefix = buildVersionedDataPrefix(
+    path,
+    version,
+    Object.fromEntries(topicVersionEntries),
+  );
   const cached = await provider.get({
-    prefix: `${HTTP_CACHE_DATA_PREFIX}:${path}:v${version}`,
+    prefix,
     key: params,
   });
 

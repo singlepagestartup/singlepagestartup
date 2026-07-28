@@ -79,8 +79,13 @@ ensure_env_file() {
   fi
 
   if [ -z "${OLLAMA_MODEL_IDS:-}" ]; then
-    OLLAMA_MODEL_IDS="${OLLAMA_MODELS:-nomic-embed-text,qwen3:1.7b}"
+    OLLAMA_MODEL_IDS="${OLLAMA_MODELS:-nomic-embed-text}"
     upsert_env "OLLAMA_MODEL_IDS" "$OLLAMA_MODEL_IDS"
+  fi
+
+  if [ -z "${OLLAMA_EMBED_MODEL:-}" ]; then
+    OLLAMA_EMBED_MODEL="nomic-embed-text"
+    upsert_env "OLLAMA_EMBED_MODEL" "$OLLAMA_EMBED_MODEL"
   fi
 
   if [ -z "${OLLAMA_MODELS_DIR:-}" ]; then
@@ -208,7 +213,14 @@ require_ollama() {
 }
 
 pull_models() {
-  printf "%s\n" "${OLLAMA_MODEL_IDS:-nomic-embed-text,qwen3:1.7b}" |
+  local model_ids="${OLLAMA_MODEL_IDS:-}"
+
+  case ",$model_ids," in
+    *",$OLLAMA_EMBED_MODEL,"*) ;;
+    *) model_ids="${OLLAMA_EMBED_MODEL}${model_ids:+,$model_ids}" ;;
+  esac
+
+  printf "%s\n" "$model_ids" |
     tr ',' '\n' |
     while IFS= read -r model_id; do
       model_id="$(printf "%s" "$model_id" | xargs)"

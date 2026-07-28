@@ -218,30 +218,32 @@ export class Handler {
         socialModuleChatId,
       });
 
-      const socialModuleProfilesToChats =
-        await this.service.socialModule.profilesToChats.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "profileId",
-                  method: "eq",
-                  value: socialModuleProfileId,
-                },
-                {
-                  column: "chatId",
-                  method: "eq",
-                  value: socialModuleChatId,
-                },
-              ],
+      if (!(await this.isSubjectAdmin(id))) {
+        const socialModuleProfilesToChats =
+          await this.service.socialModule.profilesToChats.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "profileId",
+                    method: "eq",
+                    value: socialModuleProfileId,
+                  },
+                  {
+                    column: "chatId",
+                    method: "eq",
+                    value: socialModuleChatId,
+                  },
+                ],
+              },
             },
-          },
-        });
+          });
 
-      if (!socialModuleProfilesToChats?.length) {
-        throw new Error(
-          "Not found error. Requested social-module chat not found",
-        );
+        if (!socialModuleProfilesToChats?.length) {
+          throw new Error(
+            "Not found error. Requested social-module chat not found",
+          );
+        }
       }
 
       const socialModuleChat = await this.service.socialModule.chat.findById({
@@ -274,5 +276,52 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
+  }
+
+  protected async isSubjectAdmin(subjectId: string): Promise<boolean> {
+    const subjectsToRoles = await this.service.subjectsToRoles.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: subjectId,
+            },
+          ],
+        },
+      },
+    });
+
+    const roleIds =
+      subjectsToRoles
+        ?.map((subjectToRole) => {
+          return subjectToRole.roleId;
+        })
+        .filter((roleId): roleId is string => Boolean(roleId)) || [];
+
+    if (!roleIds.length) {
+      return false;
+    }
+
+    const roles = await this.service.role.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: roleIds,
+            },
+          ],
+        },
+      },
+    });
+
+    return Boolean(
+      roles?.find((role) => {
+        return role.slug === "admin";
+      }),
+    );
   }
 }

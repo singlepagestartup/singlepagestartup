@@ -59,8 +59,8 @@ type IExtendedEcommerceModuleProduct = IEcommerceModuleProduct & {
 export type IResult = IEcommerceModuleOrder & {
   checkoutAttributesByCurrency: {
     amount: number;
-    type: "subscription" | "one-time";
-    interval: "day" | "week" | "month" | "year";
+    type: "subscription" | "one_off";
+    interval?: "minute" | "hour" | "day" | "week" | "month" | "year";
   };
   ordersToProducts: (IEcommerceModuleOrdersToProducts & {
     product: IExtendedEcommerceModuleProduct;

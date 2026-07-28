@@ -1,0 +1,5 @@
+CREATE UNIQUE INDEX "sps_rc_identity_telegram_account_unique" ON "sps_rc_identity" USING btree ("account") WHERE "sps_rc_identity"."provider" = 'telegram' AND "sps_rc_identity"."account" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "sps_rc_identity_oauth_google_account_unique" ON "sps_rc_identity" USING btree ("account") WHERE "sps_rc_identity"."provider" = 'oauth_google' AND "sps_rc_identity"."account" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "sps_rc_identity_evm_account_unique" ON "sps_rc_identity" USING btree (lower("account")) WHERE "sps_rc_identity"."provider" = 'ethereum_virtual_machine' AND "sps_rc_identity"."account" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "sps_rc_identity_email_password_email_unique" ON "sps_rc_identity" USING btree (lower("email")) WHERE "sps_rc_identity"."provider" = 'email_and_password' AND "sps_rc_identity"."email" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "sps_rc_identity_email_email_unique" ON "sps_rc_identity" USING btree (lower("email")) WHERE "sps_rc_identity"."provider" = 'email' AND "sps_rc_identity"."email" IS NOT NULL;

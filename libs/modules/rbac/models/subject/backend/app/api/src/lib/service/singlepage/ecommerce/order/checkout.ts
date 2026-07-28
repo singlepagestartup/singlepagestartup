@@ -390,9 +390,7 @@ export class Service {
               {
                 column: "orderId",
                 method: "inArray",
-                value: props.ecommerceModule.orders.map(
-                  (order: { id: string }) => order.id,
-                ),
+                value: ecommerceModuleOrders.map((order) => order.id),
               },
             ],
           },
@@ -413,9 +411,7 @@ export class Service {
               {
                 column: "orderId",
                 method: "inArray",
-                value: props.ecommerceModule.orders.map(
-                  (order: { id: string }) => order.id,
-                ),
+                value: ecommerceModuleOrders.map((order) => order.id),
               },
             ],
           },
@@ -440,11 +436,11 @@ export class Service {
       billingModuleCurrencyId: string;
       checkoutAttributesByCurrency: {
         type: string;
-        interval: string;
+        interval?: string;
       };
     }[] = [];
 
-    for (const order of props.ecommerceModule.orders) {
+    for (const order of ecommerceModuleOrders) {
       const checkoutOrderProductIds = new Set(
         ordersToProducts
           .filter((orderToProduct) => {
@@ -722,7 +718,7 @@ export class Service {
       });
     }
 
-    for (const order of props.ecommerceModule.orders) {
+    for (const order of ecommerceModuleOrders) {
       const orderToUpdate = await this.ecommerceModule.order.findById({
         id: order["id"],
       });

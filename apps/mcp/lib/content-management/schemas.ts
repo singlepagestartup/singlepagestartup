@@ -1,12 +1,6 @@
 import { z } from "zod";
 
-export const ContentEntityKeySchema = z.enum([
-  "host.page",
-  "host.widget",
-  "host.pages-to-widgets",
-  "host.widgets-to-external-widgets",
-  "blog.widget",
-]);
+export const ContentEntityKeySchema = z.string().min(1);
 
 export const ContentFilterMethodSchema = z.enum([
   "eq",
@@ -65,37 +59,119 @@ export const ContentEntitySelectorSchema = z.object({
 
 export const ContentEntityDescribeInputSchema = ContentEntitySelectorSchema;
 
-export const ContentFindInputSchema = ContentEntitySelectorSchema.extend({
+export const ContentModelSelectorSchema = z.object({
+  module: z.string().min(1),
+  model: z.string().min(1),
+});
+
+export const ContentRelationSelectorSchema = z.object({
+  module: z.string().min(1),
+  relation: z.string().min(1),
+});
+
+const ContentQueryInputShape = {
   filters: ContentFiltersSchema.optional(),
   orderBy: ContentOrderBySchema.optional(),
   limit: z.number().int().min(1).max(100).default(25),
   offset: z.number().int().min(0).optional(),
-});
+};
+
+export const ContentFindInputSchema = ContentEntitySelectorSchema.extend(
+  ContentQueryInputShape,
+);
+
+export const ContentModelFindInputSchema = ContentModelSelectorSchema.extend(
+  ContentQueryInputShape,
+);
+
+export const ContentRelationFindInputSchema =
+  ContentRelationSelectorSchema.extend(ContentQueryInputShape);
 
 export const ContentCountInputSchema = ContentEntitySelectorSchema.extend({
   filters: ContentFiltersSchema.optional(),
 });
 
+export const ContentModelCountInputSchema = ContentModelSelectorSchema.extend({
+  filters: ContentFiltersSchema.optional(),
+});
+
+export const ContentRelationCountInputSchema =
+  ContentRelationSelectorSchema.extend({
+    filters: ContentFiltersSchema.optional(),
+  });
+
 export const ContentGetByIdInputSchema = ContentEntitySelectorSchema.extend({
   id: z.string().min(1),
 });
 
+export const ContentModelGetByIdInputSchema = ContentModelSelectorSchema.extend(
+  {
+    id: z.string().min(1),
+  },
+);
+
+export const ContentRelationGetByIdInputSchema =
+  ContentRelationSelectorSchema.extend({
+    id: z.string().min(1),
+  });
+
 export const ContentCreateInputSchema = ContentEntitySelectorSchema.extend({
   data: z.record(z.any()),
-  dryRun: z.boolean().default(false),
+  dryRun: z.boolean().default(true),
 });
+
+export const ContentModelCreateInputSchema = ContentModelSelectorSchema.extend({
+  data: z.record(z.any()),
+  dryRun: z.boolean().default(true),
+});
+
+export const ContentRelationCreateInputSchema =
+  ContentRelationSelectorSchema.extend({
+    data: z.record(z.any()),
+    dryRun: z.boolean().default(true),
+  });
 
 export const ContentUpdateInputSchema = ContentGetByIdInputSchema.extend({
   data: z.record(z.any()),
-  dryRun: z.boolean().default(false),
+  dryRun: z.boolean().default(true),
 });
 
+export const ContentModelUpdateInputSchema =
+  ContentModelGetByIdInputSchema.extend({
+    data: z.record(z.any()),
+    dryRun: z.boolean().default(true),
+  });
+
+export const ContentRelationUpdateInputSchema =
+  ContentRelationGetByIdInputSchema.extend({
+    data: z.record(z.any()),
+    dryRun: z.boolean().default(true),
+  });
+
 export const ContentDeletePreviewInputSchema = ContentGetByIdInputSchema;
+
+export const ContentModelDeletePreviewInputSchema =
+  ContentModelGetByIdInputSchema;
+
+export const ContentRelationDeletePreviewInputSchema =
+  ContentRelationGetByIdInputSchema;
 
 export const ContentDeleteApplyInputSchema = ContentGetByIdInputSchema.extend({
   confirm: z.literal(true),
   confirmationToken: z.string().min(1),
 });
+
+export const ContentModelDeleteApplyInputSchema =
+  ContentModelGetByIdInputSchema.extend({
+    confirm: z.literal(true),
+    confirmationToken: z.string().min(1),
+  });
+
+export const ContentRelationDeleteApplyInputSchema =
+  ContentRelationGetByIdInputSchema.extend({
+    confirm: z.literal(true),
+    confirmationToken: z.string().min(1),
+  });
 
 export const LocalizedFieldUpdateInputSchema = ContentGetByIdInputSchema.extend(
   {
@@ -129,6 +205,36 @@ export type IContentCountInput = z.infer<typeof ContentCountInputSchema>;
 export type IContentGetByIdInput = z.infer<typeof ContentGetByIdInputSchema>;
 export type IContentCreateInput = z.infer<typeof ContentCreateInputSchema>;
 export type IContentUpdateInput = z.infer<typeof ContentUpdateInputSchema>;
+export type IContentModelFindInput = z.infer<
+  typeof ContentModelFindInputSchema
+>;
+export type IContentModelCountInput = z.infer<
+  typeof ContentModelCountInputSchema
+>;
+export type IContentModelGetByIdInput = z.infer<
+  typeof ContentModelGetByIdInputSchema
+>;
+export type IContentModelCreateInput = z.infer<
+  typeof ContentModelCreateInputSchema
+>;
+export type IContentModelUpdateInput = z.infer<
+  typeof ContentModelUpdateInputSchema
+>;
+export type IContentRelationFindInput = z.infer<
+  typeof ContentRelationFindInputSchema
+>;
+export type IContentRelationCountInput = z.infer<
+  typeof ContentRelationCountInputSchema
+>;
+export type IContentRelationGetByIdInput = z.infer<
+  typeof ContentRelationGetByIdInputSchema
+>;
+export type IContentRelationCreateInput = z.infer<
+  typeof ContentRelationCreateInputSchema
+>;
+export type IContentRelationUpdateInput = z.infer<
+  typeof ContentRelationUpdateInputSchema
+>;
 export type IContentDeleteApplyInput = z.infer<
   typeof ContentDeleteApplyInputSchema
 >;

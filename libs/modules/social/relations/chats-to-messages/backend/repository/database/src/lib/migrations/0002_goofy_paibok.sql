@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "sl_chat_message_unique" ON "sl_cs_to_ms_e6r" USING btree ("ct_id","me_id");

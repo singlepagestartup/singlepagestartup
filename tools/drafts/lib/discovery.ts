@@ -17,7 +17,7 @@ export interface DraftManifest {
   description?: string;
   type: "html" | "react" | "next";
   entry: string;
-  status: "incoming" | "approved" | "archived";
+  scope: "singlepage" | "startup";
   tags?: string[];
   createdAt?: string;
   updatedAt?: string;
@@ -25,7 +25,7 @@ export interface DraftManifest {
 }
 
 export interface DraftRecord {
-  collection: string;
+  scope: string;
   draftDir: string;
   relativeDir: string;
   manifestPath: string;
@@ -33,7 +33,7 @@ export interface DraftRecord {
 }
 
 export interface InvalidDraftRecord {
-  collection: string;
+  scope: string;
   draftDir: string;
   relativeDir: string;
   manifestPath: string;
@@ -42,8 +42,19 @@ export interface InvalidDraftRecord {
 
 export const ROOT = process.cwd();
 export const DRAFTS_DIR = path.join(ROOT, "apps", "drafts");
-export const COLLECTIONS = ["incoming", "approved", "archived", "examples"];
-const SKIP_DIRS = new Set(["node_modules", ".git", ".nx"]);
+export const RUNNABLE_DRAFTS_DIR = path.join(DRAFTS_DIR, "runnable");
+export const SCOPES = ["singlepage", "startup"];
+const SKIP_DIRS = new Set([
+  "node_modules",
+  ".git",
+  ".nx",
+  "design-system",
+  "foundations",
+  "inventory",
+  "modules",
+  "runtime",
+  ".storybook",
+]);
 
 function toPosixPath(value: string): string {
   return value.split(path.sep).join("/");
@@ -76,18 +87,26 @@ async function walkForManifests(dir: string, output: string[]): Promise<void> {
 }
 
 export async function discoverManifestPaths(
-  collections: string[] = COLLECTIONS,
+  scopes: string[] = SCOPES,
 ): Promise<string[]> {
   const manifestPaths: string[] = [];
 
   await Promise.all(
-    collections.map(async (collection) => {
-      const baseDir = path.join(DRAFTS_DIR, collection);
+    scopes.map(async (scope) => {
+      const baseDir = path.join(RUNNABLE_DRAFTS_DIR, scope);
       await walkForManifests(baseDir, manifestPaths);
     }),
   );
 
-  return manifestPaths.sort((left, right) => left.localeCompare(right));
+  const scopeRootManifests = new Set(
+    scopes.map((scope) =>
+      path.join(RUNNABLE_DRAFTS_DIR, scope, "manifest.json"),
+    ),
+  );
+
+  return manifestPaths
+    .filter((manifestPath) => !scopeRootManifests.has(manifestPath))
+    .sort((left, right) => left.localeCompare(right));
 }
 
 export async function readManifest(
@@ -111,27 +130,28 @@ export function normalizeDraftReference(value: unknown): string | null {
 }
 
 export async function discoverDrafts({
-  collections = COLLECTIONS,
+  scopes = SCOPES,
 }: {
-  collections?: string[];
+  scopes?: string[];
 } = {}): Promise<{
   drafts: DraftRecord[];
   invalidDrafts: InvalidDraftRecord[];
   manifestPaths: string[];
 }> {
-  const manifestPaths = await discoverManifestPaths(collections);
+  const manifestPaths = await discoverManifestPaths(scopes);
   const drafts: DraftRecord[] = [];
   const invalidDrafts: InvalidDraftRecord[] = [];
 
   for (const manifestPath of manifestPaths) {
     const draftDir = path.dirname(manifestPath);
     const relativeDir = toPosixPath(path.relative(DRAFTS_DIR, draftDir));
-    const [collection = ""] = relativeDir.split("/");
+    const segments = relativeDir.split("/");
+    const scope = segments[1] ?? "";
 
     try {
       const manifest = await readManifest(manifestPath);
       drafts.push({
-        collection,
+        scope,
         draftDir,
         relativeDir,
         manifestPath,
@@ -139,7 +159,7 @@ export async function discoverDrafts({
       });
     } catch (error) {
       invalidDrafts.push({
-        collection,
+        scope,
         draftDir,
         relativeDir,
         manifestPath,

@@ -5,7 +5,10 @@ export function toMcpText(payload: unknown) {
     content: [
       {
         type: "text" as const,
-        text: JSON.stringify(payload, null, 2),
+        // MCP responses are consumed by machines. Pretty-printing the complete
+        // module catalog adds enough whitespace that a valid response can cross
+        // the bounded AI tool-result limit before the model sees it.
+        text: JSON.stringify(payload),
       },
     ],
   };

@@ -286,6 +286,13 @@ describe("Database", () => {
   });
 
   describe("seed", () => {
+    /**
+     * BDD Scenario: inactive runtime repositories are excluded from seeding.
+     *
+     * Given: a repository whose seed configuration is inactive.
+     * When: the generic seed operation is invoked.
+     * Then: it neither reads snapshot files nor announces an active seed operation.
+     */
     it("should not create entities from files in config.repository.directory if passed active=false", async () => {
       const configuration = new Configuration({
         repository: {
@@ -306,6 +313,7 @@ describe("Database", () => {
       const repository = container.get<IRepository>(DI.IRepository);
 
       const spys = [
+        jest.spyOn(console, "log").mockImplementation(() => undefined),
         jest.spyOn(fs, "readdir"),
         jest.spyOn(fs, "readFile"),
         jest.spyOn(repository, "find").mockResolvedValueOnce([]),
@@ -325,8 +333,9 @@ describe("Database", () => {
       expect(seedResult).toEqual(expectedResult);
       expect(fs.readdir).not.toHaveBeenCalled();
       expect(fs.readFile).not.toHaveBeenCalled();
+      expect(console.log).not.toHaveBeenCalled();
 
-      spys.forEach((spy) => spy.mockClear());
+      spys.forEach((spy) => spy.mockRestore());
     });
 
     it("seeding model should create entities from files in config.repository.directory", async () => {

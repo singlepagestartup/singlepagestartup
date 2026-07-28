@@ -1,96 +1,39 @@
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import {
+  IRouteRule,
   NEXT_PUBLIC_HOST_SERVICE_URL,
   RBAC_SECRET_KEY,
+  RouteMatcher,
   createMemoryCache,
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { getCookie } from "hono/cookie";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { createAllowedRoutesMatcher } from "./routes";
+
+export type IMiddlewareGeneric = unknown;
+
 /**
- * Routes that are allowed to be accessed without authentication
- * @type {Array<{ regexPath: RegExp; methods: string[] }>}
- *
- * [..., {
- *   regexPath: /\/api\/rbac\/identities\/[a-zA-Z0-9-]+/,
- *   methods: ["GET"],
- * }]
+ * Project extension seam: framework consumers register routes allowed without
+ * authentication via constructor options, merged with the framework defaults
+ * (`routes/singlepage.ts`) and the project layer (`routes/startup.ts`).
  */
-const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
-  {
-    regexPath: /\/favicon.ico/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: /\/api\/broadcast\/channels/,
-    methods: ["GET"],
-  },
-  {
-    regexPath:
-      /\/api\/rbac\/subjects\/authentication\/(is-authorized|me|init|refresh|bill-route)/,
-    methods: ["GET", "POST"],
-  },
-  {
-    regexPath: /\/api\/rbac\/subjects\/authentication\/oauth\/.*/,
-    methods: ["GET", "POST"],
-  },
-  {
-    regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
-    methods: ["POST"],
-  },
-  {
-    regexPath: /\/api\/rbac\/roles-to-permissions/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: /\/api\/rbac\/subjects-to-roles/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: /\/public\/file-storage\/.*/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: /\/api\/(host|website-builder|file-storage)\/.*/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: /\/api\/aws-ses/,
-    methods: ["POST"],
-  },
-  {
-    regexPath: /\/api\/http-cache\/clear/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: /\/api\/revalidation\/revalidate/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: /\/api\/rbac\/permissions$/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: /\/api\/rbac\/permissions\/.*/,
-    methods: ["GET"],
-  },
-];
+export interface IMiddlewareOptions {
+  allowedRoutes?: IRouteRule[];
+}
 
 const inFlight = new Map<string, Promise<void>>();
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 5000 });
 
 export class Middleware {
-  private allowedRoutes: { regexPath: RegExp; methods: Set<string> }[];
+  private allowedRoutesMatcher: RouteMatcher;
 
-  constructor() {
-    this.allowedRoutes = allowedRoutes.map(({ regexPath, methods }) => {
-      return {
-        regexPath,
-        methods: new Set(methods.map((method) => method.toUpperCase())),
-      };
-    });
+  constructor(options?: IMiddlewareOptions) {
+    this.allowedRoutesMatcher = createAllowedRoutesMatcher(
+      options?.allowedRoutes,
+    );
   }
 
   init(): MiddlewareHandler<any, any, {}> {
@@ -117,10 +60,8 @@ export class Middleware {
         return next();
       }
 
-      for (const { regexPath, methods } of this.allowedRoutes) {
-        if (regexPath.test(reqPath) && methods.has(reqMethod)) {
-          return next();
-        }
+      if (this.allowedRoutesMatcher.matches(reqPath, reqMethod)) {
+        return next();
       }
 
       try {

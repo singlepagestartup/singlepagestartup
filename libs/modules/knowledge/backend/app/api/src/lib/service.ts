@@ -1,6 +1,9 @@
 import { getKnowledgeConfiguration } from "./configuration";
-import { LlmEmbeddingClient } from "./embedding";
-import { IKnowledgeProviderSkillReference, LlmChatClient } from "./generation";
+import {
+  createKnowledgeEmbeddingClient,
+  IKnowledgeEmbeddingClient,
+} from "./embedding";
+import { LlmChatClient } from "./generation";
 import { KnowledgeIndexer } from "./indexer";
 import { LlmModelClient } from "./models";
 import { KnowledgeRepository } from "./repository";
@@ -9,6 +12,7 @@ import {
   KnowledgeGenerationModelSlug,
   KnowledgeModelTask,
 } from "@sps/knowledge/sdk/model";
+import { KnowledgeSearchResult } from "./types";
 
 export interface IKnowledgePersona {
   title?: string | null;
@@ -17,25 +21,20 @@ export interface IKnowledgePersona {
 
 export class KnowledgeService {
   private repository: KnowledgeRepository;
-  private embeddingClient: LlmEmbeddingClient;
+  private embeddingClient: IKnowledgeEmbeddingClient;
   private generationClient: LlmChatClient;
   private modelClient: LlmModelClient;
 
   constructor(props?: {
     repository?: KnowledgeRepository;
-    embeddingClient?: LlmEmbeddingClient;
+    embeddingClient?: IKnowledgeEmbeddingClient;
     generationClient?: LlmChatClient;
     modelClient?: LlmModelClient;
   }) {
     const config = getKnowledgeConfiguration();
     this.repository = props?.repository || new KnowledgeRepository();
     this.embeddingClient =
-      props?.embeddingClient ||
-      new LlmEmbeddingClient({
-        baseUrl: config.llm.url,
-        model: config.llm.embeddingModel,
-        dimensions: config.llm.dimensions,
-      });
+      props?.embeddingClient || createKnowledgeEmbeddingClient();
     this.generationClient =
       props?.generationClient ||
       new LlmChatClient({
@@ -55,8 +54,10 @@ export class KnowledgeService {
     return {
       ...counts,
       llmUrl: config.llm.url,
-      embeddingModel: config.llm.embeddingModel,
-      embeddingDimensions: config.llm.dimensions,
+      embeddingProvider: config.embedding.provider,
+      embeddingUrl: config.embedding.url,
+      embeddingModel: config.embedding.model,
+      embeddingDimensions: config.embedding.dimensions,
     };
   }
 
@@ -107,9 +108,21 @@ export class KnowledgeService {
     });
   }
 
+  async deleteDocument(documentId: string) {
+    const document = await this.repository.findDocumentById(documentId);
+
+    if (!document) {
+      throw new Error(`Knowledge document ${documentId} was not found.`);
+    }
+
+    return this.repository.deleteDocumentWithDerivedData(documentId);
+  }
+
   async search(props: {
     query: string;
     topK?: number;
+    neighborWindow?: number;
+    finalTopK?: number;
     minSimilarity?: number;
     documentIds?: string[];
   }) {
@@ -129,16 +142,45 @@ export class KnowledgeService {
 
     const config = getKnowledgeConfiguration();
     const embedding = await this.embeddingClient.embed(query);
-
-    return this.repository.searchChunks({
+    const topK = Math.min(
+      Math.max(Number(props.topK || config.search.defaultTopK), 1),
+      50,
+    );
+    const neighborWindow = Math.min(
+      Math.max(Math.floor(Number(props.neighborWindow || 0)), 0),
+      5,
+    );
+    const seedChunks = await this.repository.searchChunks({
       embedding,
-      topK: Math.min(
-        Math.max(Number(props.topK || config.search.defaultTopK), 1),
-        20,
-      ),
+      topK,
       minSimilarity: props.minSimilarity,
       documentIds,
     });
+
+    const neighborChunks = neighborWindow
+      ? await this.repository.findNeighborChunks({
+          window: neighborWindow,
+          seeds: seedChunks
+            .filter((chunk) => Boolean(chunk.sourceId))
+            .map((chunk) => {
+              return {
+                sourceId: chunk.sourceId as string,
+                chunkIndex: chunk.chunkIndex,
+                distance: chunk.distance,
+                similarity: chunk.similarity,
+              };
+            }),
+        })
+      : [];
+    const results = this.dedupeSearchResults([
+      ...seedChunks,
+      ...neighborChunks,
+    ]);
+    const finalTopK = props.finalTopK
+      ? Math.min(Math.max(Number(props.finalTopK), 1), 50)
+      : null;
+
+    return finalTopK ? results.slice(0, finalTopK) : results;
   }
 
   async generate(props: {
@@ -158,7 +200,6 @@ export class KnowledgeService {
       role: "user" | "assistant";
       content: string;
     }[];
-    providerSkills?: IKnowledgeProviderSkillReference[];
     useKnowledgeSearch?: boolean;
   }) {
     const generationModelSlug =
@@ -180,7 +221,6 @@ export class KnowledgeService {
       persona: props.persona,
       skillInstructions: props.skillInstructions,
       chatHistory: props.chatHistory,
-      providerSkills: props.providerSkills,
     });
 
     return {
@@ -350,11 +390,16 @@ export class KnowledgeService {
 
   private async assertEmbeddingModelDimensions() {
     const config = getKnowledgeConfiguration();
-    const model = await this.modelClient.get(config.llm.embeddingModel);
 
-    if (model.dimensions !== config.llm.dimensions) {
+    if (config.embedding.provider === "openrouter") {
+      return;
+    }
+
+    const model = await this.modelClient.get(config.embedding.model);
+
+    if (model.dimensions !== config.embedding.dimensions) {
       throw new Error(
-        `Knowledge embedding model ${model.id} must have ${config.llm.dimensions} dimensions; got ${model.dimensions || "unknown"}.`,
+        `Knowledge embedding model ${model.id} must have ${config.embedding.dimensions} dimensions; got ${model.dimensions || "unknown"}.`,
       );
     }
   }
@@ -367,6 +412,19 @@ export class KnowledgeService {
           .filter((documentId) => Boolean(documentId)),
       ),
     );
+  }
+
+  private dedupeSearchResults(results: KnowledgeSearchResult[]) {
+    const seen = new Set<string>();
+
+    return results.filter((result) => {
+      if (seen.has(result.id)) {
+        return false;
+      }
+
+      seen.add(result.id);
+      return true;
+    });
   }
 
   private toTitle(value: string) {

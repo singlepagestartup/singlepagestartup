@@ -21,3 +21,4 @@ export const options = {
     revalidate: REVALIDATE,
   },
 } as NextRequestOptions;
+export * from "./system-message-metadata";

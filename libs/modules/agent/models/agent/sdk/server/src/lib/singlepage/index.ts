@@ -11,13 +11,20 @@ import {
   type IProps as ITelegramBotProps,
   type IResult as ITelegramBotResult,
 } from "./telegram-bot";
+import {
+  action as telegramCommands,
+  type IProps as ITelegramCommandsProps,
+  type IResult as ITelegramCommandsResult,
+} from "./telegram-commands";
 
 export type IProps = {
   ITelegramBotProps: ITelegramBotProps;
+  ITelegramCommandsProps: ITelegramCommandsProps;
 };
 
 export type IResult = {
   ITelegramBotResult: ITelegramBotResult;
+  ITelegramCommandsResult: ITelegramCommandsResult;
 };
 
 export const api = {
@@ -28,4 +35,5 @@ export const api = {
     params: query,
   }),
   telegramBot,
+  telegramCommands,
 };

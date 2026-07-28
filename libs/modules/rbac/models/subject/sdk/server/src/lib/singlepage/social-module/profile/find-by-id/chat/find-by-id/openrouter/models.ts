@@ -5,6 +5,23 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 
+export type TOpenRouterReasoningEffort =
+  | "max"
+  | "xhigh"
+  | "high"
+  | "medium"
+  | "low"
+  | "minimal"
+  | "none";
+
+export interface IOpenRouterChatModelReasoning {
+  defaultEffort: TOpenRouterReasoningEffort | null;
+  defaultEnabled: boolean | null;
+  mandatory: boolean;
+  supportedEfforts: TOpenRouterReasoningEffort[];
+  supportsMaxTokens: boolean;
+}
+
 export interface IOpenRouterChatModelOption {
   id: string;
   name: string;
@@ -13,6 +30,8 @@ export interface IOpenRouterChatModelOption {
   inputModalities: string[];
   outputModalities: string[];
   supportedParameters: string[];
+  supportsReasoning: boolean;
+  reasoning: IOpenRouterChatModelReasoning | null;
 }
 
 export interface IOpenRouterChatModelGroup {

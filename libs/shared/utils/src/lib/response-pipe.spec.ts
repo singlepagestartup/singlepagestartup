@@ -164,3 +164,34 @@ describe("Given: catchErrors response handling", () => {
     );
   });
 });
+
+describe("Given: an API error with a request identifier", () => {
+  /**
+   * BDD Scenario: client correlation metadata.
+   *
+   * Given: the API response includes its structured requestId.
+   * When: responsePipe creates a browser error.
+   * Then: the normalized payload retains the identifier for safe support diagnostics.
+   */
+  it("When: the client error is normalized Then: preserves requestId", async () => {
+    const response = new Response(
+      JSON.stringify({
+        requestId: "request-client-123",
+        error: "Internal server error",
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    await expect(responsePipe({ res: response })).rejects.toMatchObject({
+      status: 500,
+      payload: {
+        requestId: "request-client-123",
+      },
+    });
+  });
+});

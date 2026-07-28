@@ -45,6 +45,13 @@ Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh iss
    - Format: Use the standard ticket structure below
 
    ```markdown
+   ---
+   repository: REPO_NAME
+   issue_number: (not in GitHub yet)
+   status: Triage
+   created: YYYY-MM-DD
+   ---
+
    # Issue: [title]
 
    ## Metadata
@@ -122,7 +129,7 @@ Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh iss
      ```bash
      .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Triage"
      ```
-   - Update local ticket file with GitHub URL and issue number
+   - Update local ticket file with GitHub URL and issue number (both in `## Metadata` and in the frontmatter `issue_number`)
    - Update the process file with:
      - `issue_number`;
      - `current_phase: create`;

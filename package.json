@@ -7,7 +7,6 @@
     "api:start": "nx run api:start",
     "host:build": "nx run host:next:build",
     "host:dev": "nx run host:next:dev",
-    "site:dev:poc": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run-many --target=next:dev --projects=host,ecommerce,rbac --parallel=3 --outputStyle=stream",
     "host:production": "NODE_ENV=production npm run host:build && npm run host:start",
     "host:start": "nx run host:next:start",
     "mcp:dev": "nx run mcp:dev",
@@ -45,6 +44,11 @@
     "drafts:dev": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:dev --",
     "drafts:init": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:init --",
     "drafts:validate": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:validate --",
+    "drafts:ds:inventory": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:ds:inventory --",
+    "drafts:ds:dev": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:ds:dev --",
+    "drafts:ds:validate": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:ds:validate --",
+    "drafts:storybook": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:storybook --",
+    "drafts:storybook:build": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:storybook:build --",
     "knowledge:index": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/knowledge:index --"
   },
   "dependencies": {
@@ -56,8 +60,8 @@
     "@hono/zod-validator": "^0.4.2",
     "@hookform/resolvers": "^3.9.1",
     "@modelcontextprotocol/sdk": "^1.18.1",
-    "@next/bundle-analyzer": "^16.2.4",
-    "@next/third-parties": "^16.2.4",
+    "@next/bundle-analyzer": "^15.1.3",
+    "@next/third-parties": "^15.1.3",
     "@nx/devkit": "^22.0.2",
     "@paralleldrive/cuid2": "^2.2.2",
     "@radix-ui/react-accordion": "^1.2.2",
@@ -135,7 +139,7 @@
     "lucide-react": "^0.469.0",
     "markdown-to-jsx": "^9.5.0",
     "nanoid": "^5.0.9",
-    "next": "16.2.4",
+    "next": "15.4.8",
     "next-themes": "^0.4.4",
     "nodemailer": "^6.9.16",
     "npm": "^11.0.0",
@@ -187,6 +191,7 @@
     "@nx/rollup": "^22.0.2",
     "@nx/workspace": "^22.0.2",
     "@rollup/plugin-url": "^8.0.2",
+    "@storybook/react-vite": "^10.4.6",
     "@svgr/rollup": "^8.1.0",
     "@svgr/webpack": "^8.1.0",
     "@swc-node/register": "^1.10.9",
@@ -212,13 +217,14 @@
     "@types/qs": "^6.9.17",
     "@typescript-eslint/eslint-plugin": "^8.18.2",
     "@typescript-eslint/parser": "^8.18.2",
+    "@vitejs/plugin-react": "^6.0.2",
     "autoprefixer": "^10.4.20",
     "babel-jest": "^29.7.0",
     "dotenv": "^16.4.7",
     "drizzle-kit": "^0.30.1",
     "esbuild": "^0.24.2",
     "eslint": "^9.17.0",
-    "eslint-config-next": "^16.2.4",
+    "eslint-config-next": "^15.1.3",
     "eslint-config-prettier": "^9.1.0",
     "eslint-define-config": "^2.1.0",
     "eslint-import-resolver-typescript": "^3.7.0",
@@ -242,13 +248,15 @@
     "pluralize": "^8.0.0",
     "prettier": "^3.4.2",
     "sass": "^1.83.0",
+    "storybook": "^10.4.6",
     "swc-loader": "^0.2.6",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3",
     "typescript-transform-paths": "^3.5.3",
     "url": "^0.11.4",
-    "verdaccio": "^6.0.5"
+    "verdaccio": "^6.0.5",
+    "vite": "^8.0.16"
   },
   "overrides": {
     "@types/react": "npm:types-react@rc",
@@ -260,7 +268,7 @@
   },
   "engines": {
     "node": "^24.x",
-    "npm": "^10.x"
+    "npm": "^11.x"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

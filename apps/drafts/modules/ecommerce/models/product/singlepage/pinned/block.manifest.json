@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.product.pinned",
+  "title": "Ecommerce Product / Pinned",
+  "description": "Article-sidebar pinned product card: Package icon, title, short description, price chip, category chip, and View service link.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "pinned"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "slug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "shortDescription",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "priceLabel",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "variantName": "pinned",
+    "nodeId": "795:10",
+    "variantNodeId": "982:207",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  }
+}

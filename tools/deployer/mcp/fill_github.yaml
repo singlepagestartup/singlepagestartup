@@ -42,6 +42,7 @@
       register: mcp_webhook_token
 
     - name: Set secrets to GitHub
+      no_log: true
       shell:
         cmd: "node ./create_secret.js {{ github_token }} {{ github_repository }} {{ item.secret_name }} {{ item.secret_content }} {{ item.secret_scope }}"
         chdir: "/home/code/github-node-api"
@@ -52,7 +53,7 @@
             secret_scope: actions,
           }
         - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'MCP_URL' }}",
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'MCP_SERVICE_PUBLIC_URL' }}",
             secret_content: "https://{{ service_url }}/mcp",
             secret_scope: actions,
           }

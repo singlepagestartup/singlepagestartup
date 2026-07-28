@@ -21,3 +21,5 @@ export const options = {
     revalidate: REVALIDATE,
   },
 } as NextRequestOptions;
+
+export * from "./primary-thread";

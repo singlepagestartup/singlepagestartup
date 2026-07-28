@@ -21,11 +21,13 @@ export interface KnowledgeSearchResult {
   id: string;
   text: string;
   chunkIndex: number;
+  sourceId: string | null;
   sourceTitle: string | null;
   sourceOriginalPath: string | null;
   sourceType: string | null;
-  distance: number;
-  similarity: number;
+  distance: number | null;
+  similarity: number | null;
+  retrievalRole: "seed" | "neighbor";
   metadata: Record<string, unknown>;
 }
 

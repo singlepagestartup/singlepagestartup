@@ -16,16 +16,28 @@ import { Table } from "@sps/agent/models/agent/backend/repository/database";
 import { Repository } from "../../repository";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
-import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import {
+  IModel as ISocialModuleMessage,
+  isSocialMessageExcludedFromOpenRouter,
+  withSocialMessageSystemMetadata,
+} from "@sps/social/models/message/sdk/model";
+import {
+  IModel as ISocialModuleThread,
+  selectPrimaryLinkedThread,
+} from "@sps/social/models/thread/sdk/model";
 import { IModel as ISocialModuleAction } from "@sps/social/models/action/sdk/model";
 import { IModel as IRbacModuleSubject } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
+import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
 import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
 import { IModel as IEcommerceModuleProductsToFileStorageFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
-import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
+import {
+  defaultSocialModulePersonalAssistantVariant,
+  IModel as IFileStorageModuleFile,
+} from "@sps/file-storage/models/file/sdk/model";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import * as jwt from "hono/jwt";
 import { blobifyFiles, logger } from "@sps/backend-utils";
@@ -39,7 +51,21 @@ import {
   type INotificationModule,
   type IRbacModule,
   type ISocialModule,
+  type ITelegramConversationRuntime,
 } from "../../di";
+import {
+  type ITelegramRequiredSubscriptionChannelConfiguration,
+  resolveTelegramRequiredSubscriptionChannelConfiguration,
+} from "./telegram-required-subscription-channel";
+import {
+  TELEGRAM_ASSISTANT_CALLBACK_PREFIX,
+  type ITelegramConversationKey,
+} from "./telegram-conversation";
+import {
+  TelegramAssistantConversation,
+  type ITelegramAssistantConversationContext,
+  type ITelegramAssistantConversationTransport,
+} from "./telegram-assistant-conversation";
 
 const activeSubscriptionProductsCheckoutMessage =
   "Checking out order has active subscription products.";
@@ -48,6 +74,7 @@ const openRouterTerminalMessageWrittenMarker =
 
 interface ISocialModuleTelegramMessageData {
   description: string;
+  metadata?: Record<string, unknown>;
   interaction?:
     | {
         inline_keyboard: {
@@ -69,11 +96,12 @@ interface ISocialModuleTelegramMessageData {
   files?: File[];
 }
 
-type ITelegramBotReplyContext = {
+export type ITelegramBotReplyContext = {
   jwtToken: string;
   rbacModuleSubject: IRbacModuleSubject;
   shouldReplySocialModuleProfile: ISocialModuleProfile;
   socialModuleChat: ISocialModuleChat;
+  socialModuleThreadId?: string;
   messageFromSocialModuleProfile: ISocialModuleProfile | null;
 } & (
   | {
@@ -83,6 +111,52 @@ type ITelegramBotReplyContext = {
       socialModuleAction: ISocialModuleAction;
     }
 );
+
+type ITelegramConversationSourceContext = {
+  shouldReplySocialModuleProfile: ISocialModuleProfile;
+  socialModuleChat: ISocialModuleChat;
+  socialModuleThreadId?: string;
+  messageFromSocialModuleProfile: ISocialModuleProfile | null;
+} & (
+  | { socialModuleMessage: ISocialModuleMessage }
+  | { socialModuleAction: ISocialModuleAction }
+);
+
+export type TTelegramCommandTarget = "telegram-bot" | "artificial-intelligence";
+
+export type ITelegramCommandMessageContext = ITelegramBotReplyContext & {
+  socialModuleMessage: ISocialModuleMessage;
+  command: string;
+  args: string;
+};
+
+export type ITelegramCommandCallbackContext = ITelegramBotReplyContext & {
+  socialModuleAction: ISocialModuleAction;
+  command: string;
+};
+
+export interface ITelegramCommandDefinition {
+  command: string;
+  description: string;
+  target: TTelegramCommandTarget;
+  conversationId?: string;
+  handleMessage?: (props: ITelegramCommandMessageContext) => Promise<unknown>;
+  handleCallbackQuery?: (
+    props: ITelegramCommandCallbackContext,
+  ) => Promise<unknown>;
+  enabled?: boolean;
+}
+
+export type ITelegramCommandDefinitionOverride = Pick<
+  ITelegramCommandDefinition,
+  "command"
+> &
+  Partial<Omit<ITelegramCommandDefinition, "command">>;
+
+export interface ITelegramPublishedCommand {
+  command: string;
+  description: string;
+}
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -94,6 +168,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   hostModule: IHostModule;
   notificationModule: INotificationModule;
   fileStorageModule: IFileStorageModule;
+  telegramConversationRuntime: ITelegramConversationRuntime;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -106,6 +181,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(AgentDI.INotificationModule)
     notificationModule: INotificationModule,
     @inject(AgentDI.IFileStorageModule) fileStorageModule: IFileStorageModule,
+    @inject(AgentDI.ITelegramConversationRuntime)
+    telegramConversationRuntime: ITelegramConversationRuntime,
   ) {
     super(repository);
     this.socialModule = socialModule;
@@ -116,28 +193,207 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.hostModule = hostModule;
     this.notificationModule = notificationModule;
     this.fileStorageModule = fileStorageModule;
+    this.telegramConversationRuntime = telegramConversationRuntime;
   }
 
-  telegramRequiredChannelName =
-    TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME || "наш Telegram-канал";
-  telegramRequiredChannelLink =
-    TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK ||
-    (TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME
-      ? `https://t.me/${TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME}`
-      : "https://t.me");
-
-  telegramBotCommands = [
-    "/start",
-    "/help",
-    "/referral",
-    "/premium",
-    "/new",
-    "/threads",
-    "/thread_new",
-    "/thread_rename",
-    "/thread_delete",
-  ];
   statusMessages = telegramBotServiceMessages;
+
+  protected getTelegramRequiredSubscriptionChannelConfiguration(): ITelegramRequiredSubscriptionChannelConfiguration {
+    return resolveTelegramRequiredSubscriptionChannelConfiguration({
+      id: TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
+      name: TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME,
+      link: TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK,
+    });
+  }
+
+  protected getTelegramCommandDefinitions(): ITelegramCommandDefinition[] {
+    return [
+      {
+        command: "/start",
+        description: "Начать работу с ботом",
+        target: "telegram-bot",
+        handleMessage: async (props) => {
+          await this.telegramBotWelcomeMessageCreate(props);
+          await new Promise((resolve) => {
+            setTimeout(resolve, 4_000);
+          });
+          return this.telegramBotWelcomeMessageWithKeyboardCreate(props);
+        },
+      },
+      {
+        command: "/help",
+        description: "Показать справку",
+        target: "telegram-bot",
+        handleMessage: (props) =>
+          this.telegramBotHelpMessageWithKeyboardCreate(props),
+        handleCallbackQuery: (props) =>
+          this.telegramBotHelpMessageWithKeyboardCreate(props),
+      },
+      {
+        command: "/referral",
+        description: "Открыть реферальную программу",
+        target: "telegram-bot",
+        handleMessage: (props) =>
+          this.telegramBotReferralMessageWithKeyboardCreate(props),
+        handleCallbackQuery: (props) =>
+          this.telegramBotReferralMessageWithKeyboardCreate(props),
+      },
+      {
+        command: "/premium",
+        description: "Открыть Premium",
+        target: "telegram-bot",
+        handleMessage: (props) =>
+          this.telegramBotPremiumMessageWithKeyboardCreate(props),
+        handleCallbackQuery: (props) =>
+          this.telegramBotPremiumMessageWithKeyboardCreate(props),
+      },
+      {
+        command: "/new",
+        description: "Начать новый контекст диалога",
+        target: "telegram-bot",
+        handleMessage: (props) =>
+          this.telegramBotReplyMessageCreate({
+            ...props,
+            data: {
+              description: this.statusMessages.openRouterContextResetByNew.ru,
+            },
+          }),
+      },
+      {
+        command: "/assistant",
+        description: "Управлять AI-ассистентом",
+        target: "telegram-bot",
+        conversationId: "assistant-profile-management",
+        handleMessage: (props) =>
+          this.telegramAssistantConversationEnter(props),
+      },
+      ...["/cancel", "/exit", "/stop"].map(
+        (command): ITelegramCommandDefinition => {
+          const descriptions: Record<string, string> = {
+            "/cancel": "Отменить текущий диалог",
+            "/exit": "Завершить текущий диалог",
+            "/stop": "Остановить текущий диалог",
+          };
+
+          return {
+            command,
+            description: descriptions[command],
+            target: "telegram-bot",
+            conversationId: "assistant-profile-management",
+            handleMessage: (props) =>
+              this.telegramAssistantConversationExit(props),
+          };
+        },
+      ),
+      ...["/threads", "/thread_new", "/thread_rename", "/thread_delete"].map(
+        (command): ITelegramCommandDefinition => {
+          const descriptions: Record<string, string> = {
+            "/threads": "Показать треды",
+            "/thread_new": "Создать тред",
+            "/thread_rename": "Переименовать текущий тред",
+            "/thread_delete": "Удалить текущий тред",
+          };
+
+          return {
+            command,
+            description: descriptions[command],
+            target: "telegram-bot",
+            handleMessage: (props) =>
+              this.telegramBotThreadCommandReplyMessageCreate(props),
+          };
+        },
+      ),
+      {
+        command: "/knowledge",
+        description: "Использовать знания профиля",
+        target: "artificial-intelligence",
+      },
+      {
+        command: "/learn",
+        description: "Добавить сообщение в знания профиля",
+        target: "artificial-intelligence",
+      },
+    ];
+  }
+
+  protected mergeTelegramCommandDefinitions(props: {
+    base: ITelegramCommandDefinition[];
+    overrides: ITelegramCommandDefinitionOverride[];
+  }) {
+    const definitions = new Map<string, ITelegramCommandDefinition>();
+
+    for (const definition of props.base) {
+      definitions.set(definition.command.toLowerCase(), definition);
+    }
+
+    for (const override of props.overrides) {
+      const key = override.command.toLowerCase();
+      const definition = definitions.get(key);
+
+      if (!definition && (!override.description || !override.target)) {
+        throw new Error(
+          `Configuration error. New Telegram command ${override.command} requires description and target`,
+        );
+      }
+
+      definitions.set(key, {
+        ...definition,
+        ...override,
+      } as ITelegramCommandDefinition);
+    }
+
+    return [...definitions.values()].filter(
+      (definition) => definition.enabled !== false,
+    );
+  }
+
+  telegramPublishedCommandsFind(): ITelegramPublishedCommand[] {
+    return this.getTelegramCommandDefinitions().map((definition) => {
+      const command = definition.command.replace(/^\//, "").trim();
+      const description = definition.description.trim();
+
+      if (!/^[a-z0-9_]{1,32}$/.test(command)) {
+        throw new Error(
+          `Configuration error. Invalid Telegram command: ${definition.command}`,
+        );
+      }
+
+      if (!description || description.length > 256) {
+        throw new Error(
+          `Configuration error. Invalid Telegram command description: ${definition.command}`,
+        );
+      }
+
+      return {
+        command,
+        description,
+      };
+    });
+  }
+
+  protected findTelegramCommandDefinition(props: {
+    description?: string | null;
+  }) {
+    const parsedCommand = this.parseTelegramBotCommand(props);
+
+    if (!parsedCommand) {
+      return;
+    }
+
+    const definition = this.getTelegramCommandDefinitions().find(
+      (item) =>
+        item.command.toLowerCase() === parsedCommand.command.toLowerCase(),
+    );
+
+    if (!definition || definition.enabled === false) {
+      return;
+    }
+
+    return {
+      definition,
+      parsedCommand,
+    };
+  }
 
   protected collectErrorMessages(error: unknown): string[] {
     const messages = new Set<string>();
@@ -243,6 +499,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           shouldReplySocialModuleProfile: ISocialModuleProfile;
           socialModuleChat: ISocialModuleChat;
           socialModuleMessage: ISocialModuleMessage;
+          socialModuleThreadId?: string;
           messageFromSocialModuleProfile: ISocialModuleProfile | null;
         }
       | {
@@ -311,15 +568,28 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       RBAC_JWT_SECRET,
     );
 
+    const telegramCommand =
+      "socialModuleMessage" in props
+        ? this.findTelegramCommandDefinition({
+            description: props.socialModuleMessage.description,
+          })
+        : undefined;
+    const telegramConversationKey =
+      props.socialModuleChat.variant === "telegram" &&
+      this.telegramConversationRuntime
+        ? await this.resolveTelegramConversationKey(props)
+        : undefined;
+    const activeTelegramConversation = telegramConversationKey
+      ? await this.telegramConversationRuntime.get(telegramConversationKey)
+      : undefined;
+
     if (props.shouldReplySocialModuleProfile.slug === "telegram-bot") {
       if ("socialModuleMessage" in props) {
-        const telegramBotCommandMessage = this.telegramBotCommands.find(
-          (command) => {
-            return props.socialModuleMessage.description?.startsWith(command);
-          },
-        );
-
-        if (telegramBotCommandMessage) {
+        if (telegramCommand?.definition.target === "telegram-bot") {
+          await this.markTelegramSystemMessage({
+            socialModuleMessage: props.socialModuleMessage,
+            source: "agent.telegram.command",
+          });
           await this.telegramBotCommandReplyMessageCreate({
             jwtToken,
             rbacModuleSubject,
@@ -327,9 +597,30 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               props.shouldReplySocialModuleProfile,
             socialModuleChat: props.socialModuleChat,
             socialModuleMessage: props.socialModuleMessage,
+            socialModuleThreadId: props.socialModuleThreadId,
             messageFromSocialModuleProfile:
               props.messageFromSocialModuleProfile,
           });
+        } else if (activeTelegramConversation?.editor) {
+          await this.markTelegramSystemMessage({
+            socialModuleMessage: props.socialModuleMessage,
+            source: "agent.telegram.assistant-conversation",
+          });
+          const replyContext: ITelegramBotReplyContext = {
+            ...props,
+            jwtToken,
+            rbacModuleSubject,
+          };
+          const conversationContext =
+            await this.getTelegramAssistantConversationContext({
+              ...replyContext,
+              telegramConversationKey,
+            });
+          await this.getTelegramAssistantConversation().handleMessage(
+            conversationContext,
+            props.socialModuleMessage,
+            this.getTelegramAssistantConversationTransport(replyContext),
+          );
         }
       } else if ("socialModuleAction" in props) {
         if (props.socialModuleAction.payload?.telegram?.callback_query) {
@@ -346,19 +637,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         }
       }
     } else if (
-      this.shouldUseKnowledgeReplyProfile({
-        socialModuleChat: props.socialModuleChat,
-        shouldReplySocialModuleProfile: props.shouldReplySocialModuleProfile,
-      })
+      props.shouldReplySocialModuleProfile.variant === "artificial-intelligence"
     ) {
       if ("socialModuleMessage" in props) {
-        const telegramBotCommandMessage = this.telegramBotCommands.find(
-          (command) => {
-            return props.socialModuleMessage.description?.startsWith(command);
-          },
-        );
+        if (activeTelegramConversation?.editor) {
+          return;
+        }
 
-        if (telegramBotCommandMessage) {
+        if (telegramCommand?.definition.target === "telegram-bot") {
           return;
         }
 
@@ -372,68 +658,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           shouldReplySocialModuleProfile: props.shouldReplySocialModuleProfile,
           socialModuleChat: props.socialModuleChat,
           socialModuleMessage: props.socialModuleMessage,
-          messageFromSocialModuleProfile: props.messageFromSocialModuleProfile,
-        });
-      }
-    } else if (props.shouldReplySocialModuleProfile.slug === "open-router") {
-      if ("socialModuleMessage" in props) {
-        const telegramBotCommandMessage = this.telegramBotCommands.find(
-          (command) => {
-            return props.socialModuleMessage.description?.startsWith(command);
-          },
-        );
-
-        if (telegramBotCommandMessage) {
-          return;
-        }
-
-        if (!props.socialModuleMessage.description?.trim()) {
-          return;
-        }
-
-        const messageFromRbacModuleSubject =
-          await this.getMessageFromRbacModuleSubject({
-            jwtToken,
-            rbacModuleSubject,
-            shouldReplySocialModuleProfile:
-              props.shouldReplySocialModuleProfile,
-            socialModuleChat: props.socialModuleChat,
-            socialModuleMessage: props.socialModuleMessage,
-            messageFromSocialModuleProfile:
-              props.messageFromSocialModuleProfile,
-          });
-
-        console.log(
-          "🚀 ~ agentSocialModuleProfileHandler ~ telegramBotCommandMessage:",
-          messageFromRbacModuleSubject,
-          telegramBotCommandMessage,
-          props.socialModuleMessage.description,
-        );
-
-        await this.openRouterReplyMessageCreate({
-          jwtToken,
-          rbacModuleSubject,
-          shouldReplySocialModuleProfile: props.shouldReplySocialModuleProfile,
-          socialModuleChat: props.socialModuleChat,
-          socialModuleMessage: props.socialModuleMessage,
+          socialModuleThreadId: props.socialModuleThreadId,
           messageFromSocialModuleProfile: props.messageFromSocialModuleProfile,
         });
       }
     }
-  }
-
-  protected shouldUseKnowledgeReplyProfile(props: {
-    socialModuleChat: ISocialModuleChat;
-    shouldReplySocialModuleProfile: ISocialModuleProfile;
-  }) {
-    return (
-      props.socialModuleChat.variant === "knowledge" &&
-      props.shouldReplySocialModuleProfile.variant ===
-        "artificial-intelligence" &&
-      Boolean(
-        props.shouldReplySocialModuleProfile.slug?.startsWith("chat-gpt-"),
-      )
-    );
   }
 
   async telegramBotCommandReplyMessageCreate(props: {
@@ -442,45 +671,25 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     shouldReplySocialModuleProfile: ISocialModuleProfile;
     socialModuleChat: ISocialModuleChat;
     socialModuleMessage: ISocialModuleMessage;
+    socialModuleThreadId?: string;
     messageFromSocialModuleProfile: ISocialModuleProfile | null;
   }) {
-    const parsedCommand = this.parseTelegramBotCommand({
+    const telegramCommand = this.findTelegramCommandDefinition({
       description: props.socialModuleMessage.description,
     });
 
-    if (parsedCommand && this.isTelegramThreadCommand(parsedCommand.command)) {
-      return this.telegramBotThreadCommandReplyMessageCreate({
+    if (
+      telegramCommand?.definition.target === "telegram-bot" &&
+      telegramCommand.definition.handleMessage
+    ) {
+      return telegramCommand.definition.handleMessage({
         ...props,
-        command: parsedCommand.command,
-        args: parsedCommand.args,
+        command: telegramCommand.parsedCommand.command,
+        args: telegramCommand.parsedCommand.args,
       });
     }
 
-    if (parsedCommand?.command === "/start") {
-      return this.telegramBotWelcomeMessageCreate(props).then(async () => {
-        await new Promise((resolve) => {
-          setTimeout(() => {
-            resolve("");
-          }, 4000);
-        });
-        await this.telegramBotWelcomeMessageWithKeyboardCreate(props);
-      });
-    } else if (parsedCommand?.command === "/help") {
-      return this.telegramBotHelpMessageWithKeyboardCreate(props);
-    } else if (parsedCommand?.command === "/premium") {
-      return this.telegramBotPremiumMessageWithKeyboardCreate(props);
-    } else if (parsedCommand?.command === "/referral") {
-      return this.telegramBotReferralMessageWithKeyboardCreate(props);
-    } else if (parsedCommand?.command === "/new") {
-      return this.telegramBotReplyMessageCreate({
-        ...props,
-        data: {
-          description: this.statusMessages.openRouterContextResetByNew.ru,
-        },
-      });
-    }
-
-    await this.telegramBotReplyMessageCreate({
+    return this.telegramBotReplyMessageCreate({
       ...props,
       data: {
         description: `Caught command ${props.socialModuleMessage.description}`,
@@ -521,15 +730,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       command,
       args,
     };
-  }
-
-  protected isTelegramThreadCommand(command: string) {
-    return [
-      "/threads",
-      "/thread_new",
-      "/thread_rename",
-      "/thread_delete",
-    ].includes(command);
   }
 
   protected async signRbacModuleSubjectJwt(props: {
@@ -574,6 +774,259 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     };
   }
 
+  protected async telegramAssistantConversationEnter(
+    props: ITelegramCommandMessageContext,
+  ) {
+    const context = await this.getTelegramAssistantConversationContext(props);
+
+    return this.getTelegramAssistantConversation().enter(
+      context,
+      this.getTelegramAssistantConversationTransport(props),
+    );
+  }
+
+  protected async telegramAssistantConversationExit(
+    props: ITelegramCommandMessageContext,
+  ) {
+    const context = await this.getTelegramAssistantConversationContext(props);
+
+    return this.getTelegramAssistantConversation().terminate(
+      context,
+      this.getTelegramAssistantConversationTransport(props),
+    );
+  }
+
+  protected getTelegramAssistantConversation() {
+    return new TelegramAssistantConversation(this.telegramConversationRuntime);
+  }
+
+  protected async resolveTelegramConversationKey(
+    props: ITelegramConversationSourceContext,
+  ): Promise<ITelegramConversationKey | undefined> {
+    if (!RBAC_SECRET_KEY || !props.messageFromSocialModuleProfile?.id) {
+      return;
+    }
+
+    const threadId = await this.resolveThreadIdForReplyContext({
+      ...props,
+      secretKey: RBAC_SECRET_KEY,
+    });
+
+    return {
+      chatId: props.socialModuleChat.id,
+      threadId,
+      senderProfileId: props.messageFromSocialModuleProfile.id,
+    };
+  }
+
+  protected async getTelegramAssistantConversationContext(
+    props: ITelegramBotReplyContext & {
+      telegramConversationKey?: ITelegramConversationKey;
+    },
+  ): Promise<ITelegramAssistantConversationContext> {
+    if (!props.messageFromSocialModuleProfile?.id) {
+      throw new Error(
+        "Validation error. Telegram conversation sender profile is missing",
+      );
+    }
+
+    const key =
+      props.telegramConversationKey ||
+      (await this.resolveTelegramConversationKey(props));
+
+    if (!key) {
+      throw new Error(
+        "Validation error. Telegram conversation key cannot be resolved",
+      );
+    }
+
+    const requesterSubject = await this.getMessageFromRbacModuleSubject(props);
+    const requesterJwtToken = await this.signRbacModuleSubjectJwt({
+      rbacModuleSubject: requesterSubject,
+    });
+
+    return {
+      key,
+      requesterSubject,
+      requesterProfileId: props.messageFromSocialModuleProfile.id,
+      socialModuleChatId: props.socialModuleChat.id,
+      requesterJwtToken,
+    };
+  }
+
+  protected getTelegramAssistantConversationTransport(
+    props: ITelegramBotReplyContext,
+  ): ITelegramAssistantConversationTransport {
+    return {
+      create: ({ presentationMediaUrl: _presentationMediaUrl, ...data }) =>
+        this.telegramBotReplyMessageCreate({ ...props, data }),
+      update: (
+        socialModuleMessageId,
+        { presentationMediaUrl: _presentationMediaUrl, ...data },
+      ) =>
+        rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+          {
+            id: props.rbacModuleSubject.id,
+            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+            socialModuleChatId: props.socialModuleChat.id,
+            socialModuleMessageId,
+            data,
+            options: {
+              headers: { Authorization: `Bearer ${props.jwtToken}` },
+            },
+          },
+        ),
+      resolveProfileAvatar: (profileId) =>
+        this.resolveTelegramAssistantProfileAvatar(profileId),
+      resolveEditorFile: (message) =>
+        this.resolveTelegramAssistantEditorFile(message),
+    };
+  }
+
+  protected async resolveTelegramAssistantProfileAvatar(profileId: string) {
+    const relations =
+      await this.socialModule.profilesToFileStorageModuleFiles.find({
+        params: {
+          filters: {
+            and: [{ column: "profileId", method: "eq", value: profileId }],
+          },
+          orderBy: {
+            and: [
+              { column: "orderIndex", method: "desc" },
+              { column: "updatedAt", method: "desc" },
+              { column: "createdAt", method: "desc" },
+            ],
+          },
+          limit: 1,
+        },
+      });
+    const relation = relations?.[0];
+    let file = relation?.fileStorageModuleFileId
+      ? await this.fileStorageModule.file.findById({
+          id: relation.fileStorageModuleFileId,
+        })
+      : undefined;
+    let isDefault =
+      file?.variant === defaultSocialModulePersonalAssistantVariant;
+
+    if (!this.isTelegramAssistantAvatarImage(file)) {
+      const defaultFiles = await this.fileStorageModule.file.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "variant",
+                method: "eq",
+                value: defaultSocialModulePersonalAssistantVariant,
+              },
+            ],
+          },
+          orderBy: {
+            and: [
+              { column: "updatedAt", method: "desc" },
+              { column: "createdAt", method: "desc" },
+            ],
+          },
+          limit: 1,
+        },
+      });
+      file = defaultFiles?.[0];
+      isDefault = true;
+    }
+
+    if (!this.isTelegramAssistantAvatarImage(file)) {
+      return;
+    }
+
+    const url = /^https?:\/\//.test(String(file.file))
+      ? String(file.file)
+      : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`;
+    const previewFiles = await blobifyFiles({
+      files: [
+        {
+          title: file.title || file.adminTitle || file.id,
+          extension:
+            file.extension || String(file.file).split(".").pop() || "jpg",
+          type: file.mimeType || "image/jpeg",
+          url,
+        },
+      ],
+    }).catch(() => []);
+
+    return {
+      url,
+      alt: file.alt || file.adminTitle || undefined,
+      ...(previewFiles[0] ? { file: previewFiles[0] } : {}),
+      isDefault,
+    };
+  }
+
+  protected isTelegramAssistantAvatarImage(
+    file?: Partial<IFileStorageModuleFile> | null,
+  ): boolean {
+    const extension = String(
+      file?.extension || file?.file?.split("?")[0].split(".").pop() || "",
+    ).toLowerCase();
+
+    return Boolean(
+      file?.file &&
+        (String(file?.mimeType || "").startsWith("image/") ||
+          ["avif", "gif", "jpeg", "jpg", "png", "svg", "webp"].includes(
+            extension,
+          )),
+    );
+  }
+
+  protected async resolveTelegramAssistantEditorFile(
+    message: ISocialModuleMessage,
+  ) {
+    const relations =
+      await this.socialModule.messagesToFileStorageModuleFiles.find({
+        params: {
+          filters: {
+            and: [{ column: "messageId", method: "eq", value: message.id }],
+          },
+          orderBy: {
+            and: [{ column: "orderIndex", method: "desc" }],
+          },
+        },
+      });
+    const relation = relations?.find(
+      (item) => typeof item.fileStorageModuleFileId === "string",
+    );
+
+    if (!relation?.fileStorageModuleFileId) {
+      return;
+    }
+
+    const file = await this.fileStorageModule.file.findById({
+      id: relation.fileStorageModuleFileId,
+    });
+
+    if (!file?.file) {
+      return;
+    }
+
+    const url = String(file.file).includes("http")
+      ? String(file.file)
+      : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`;
+    const files = await blobifyFiles({
+      files: [
+        {
+          title: file.title || file.adminTitle || file.id,
+          extension:
+            file.extension ||
+            String(file.file).split("?")[0].split(".").pop() ||
+            "bin",
+          type: file.mimeType || "application/octet-stream",
+          url,
+        },
+      ],
+    });
+
+    return files[0];
+  }
+
   protected formatTelegramThreadTitle(props: {
     thread: { title?: string | null; variant?: string | null };
     index: number;
@@ -594,6 +1047,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   protected async getCurrentTelegramCommandThread(props: {
     socialModuleChat: ISocialModuleChat;
     socialModuleMessage: ISocialModuleMessage;
+    socialModuleThreadId?: string;
   }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
@@ -602,6 +1056,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
       socialModuleChatId: props.socialModuleChat.id,
       socialModuleMessageId: props.socialModuleMessage.id,
+      requestedSocialModuleThreadId: props.socialModuleThreadId,
       secretKey: RBAC_SECRET_KEY,
     });
 
@@ -747,6 +1202,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const socialModuleThread = await this.getCurrentTelegramCommandThread({
       socialModuleChat: props.socialModuleChat,
       socialModuleMessage: props.socialModuleMessage,
+      socialModuleThreadId: props.socialModuleThreadId,
     });
 
     if (socialModuleThread.variant === "default") {
@@ -805,6 +1261,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const socialModuleThread = await this.getCurrentTelegramCommandThread({
       socialModuleChat: props.socialModuleChat,
       socialModuleMessage: props.socialModuleMessage,
+      socialModuleThreadId: props.socialModuleThreadId,
     });
 
     if (socialModuleThread.variant === "default") {
@@ -861,7 +1318,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
         socialModuleChatId: props.socialModuleChat.id,
         socialModuleThreadId,
-        data: props.data,
+        data: this.withSystemMessageMetadata({
+          data: props.data,
+          source: "agent.telegram.system-reply",
+        }),
         options: {
           headers: {
             Authorization: "Bearer " + props.jwtToken,
@@ -871,8 +1331,56 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
+  protected withSystemMessageMetadata<TData extends object>(props: {
+    data: TData & { metadata?: Record<string, unknown> };
+    source: string;
+  }) {
+    return {
+      ...props.data,
+      metadata: withSocialMessageSystemMetadata({
+        metadata: props.data.metadata,
+        source: props.source,
+      }),
+    };
+  }
+
+  protected async markTelegramSystemMessage(props: {
+    socialModuleMessage: ISocialModuleMessage;
+    source: string;
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+    }
+
+    if (
+      isSocialMessageExcludedFromOpenRouter(props.socialModuleMessage.metadata)
+    ) {
+      return props.socialModuleMessage;
+    }
+
+    const metadata = withSocialMessageSystemMetadata({
+      metadata: props.socialModuleMessage.metadata,
+      source: props.source,
+    });
+    const updatedMessage = await socialModuleMessageApi.update({
+      id: props.socialModuleMessage.id,
+      data: {
+        metadata,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    props.socialModuleMessage.metadata = metadata;
+
+    return updatedMessage;
+  }
+
   protected async resolveThreadIdForReplyContext(
-    props: ITelegramBotReplyContext & {
+    props: ITelegramConversationSourceContext & {
       secretKey: string;
     },
   ) {
@@ -880,6 +1388,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return this.resolveThreadIdForMessageInChat({
         socialModuleChatId: props.socialModuleChat.id,
         socialModuleMessageId: props.socialModuleMessage.id,
+        requestedSocialModuleThreadId: props.socialModuleThreadId,
         secretKey: props.secretKey,
       });
     }
@@ -919,34 +1428,43 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Validation error. Callback query data is missing");
     }
 
+    if (
+      callbackQueryData.startsWith(`${TELEGRAM_ASSISTANT_CALLBACK_PREFIX}:`)
+    ) {
+      const context = await this.getTelegramAssistantConversationContext(props);
+
+      return this.getTelegramAssistantConversation().handleCallback(
+        context,
+        callbackQueryData,
+        this.getTelegramAssistantConversationTransport(props),
+      );
+    }
+
     if (callbackQueryData.startsWith("command_")) {
       const passedCommand = callbackQueryData.replace("command_", "");
-      const telegramBotTargetCommand = this.telegramBotCommands
-        .map((command) => {
-          return command.replace("/", "");
-        })
-        .find((command) => {
-          return command === passedCommand;
-        });
-
-      console.log(
-        "🚀 ~ telegramBotCallbackQueryHandler ~ telegramBotTargetCommand:",
-        telegramBotTargetCommand,
+      const telegramCommand = this.getTelegramCommandDefinitions().find(
+        (definition) =>
+          definition.enabled !== false &&
+          definition.target === "telegram-bot" &&
+          definition.command.replace(/^\//, "") === passedCommand,
       );
 
-      switch (telegramBotTargetCommand) {
-        case "help":
-          return this.telegramBotHelpMessageWithKeyboardCreate(props);
-        case "premium":
-          return this.telegramBotPremiumMessageWithKeyboardCreate(props);
-        case "referral":
-          return this.telegramBotReferralMessageWithKeyboardCreate(props);
+      console.log(
+        "🚀 ~ telegramBotCallbackQueryHandler ~ telegramCommand:",
+        telegramCommand?.command,
+      );
+
+      if (telegramCommand?.handleCallbackQuery) {
+        return telegramCommand.handleCallbackQuery({
+          ...props,
+          command: telegramCommand.command,
+        });
       }
 
       console.log(
         "🚀 ~ telegramBotCallbackQueryHandler ~ callbackQueryData:",
         callbackQueryData,
-        telegramBotTargetCommand,
+        telegramCommand?.command,
       );
     } else if (callbackQueryData.startsWith("ec_me_pt_")) {
       const ecommerceModuleProductId = callbackQueryData.replace(
@@ -1102,6 +1620,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     shouldReplySocialModuleProfile: ISocialModuleProfile;
     socialModuleChat: ISocialModuleChat;
     socialModuleMessage: ISocialModuleMessage;
+    socialModuleThreadId?: string;
     messageFromSocialModuleProfile: ISocialModuleProfile | null;
   }) {
     if (!RBAC_SECRET_KEY) {
@@ -1166,6 +1685,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     shouldReplySocialModuleProfile: ISocialModuleProfile;
     socialModuleChat: ISocialModuleChat;
     socialModuleMessage: ISocialModuleMessage;
+    socialModuleThreadId?: string;
     messageFromSocialModuleProfile: ISocialModuleProfile | null;
   }) {
     if (!RBAC_SECRET_KEY) {
@@ -1722,6 +2242,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     shouldReplySocialModuleProfile: ISocialModuleProfile;
     socialModuleChat: ISocialModuleChat;
     socialModuleMessage: ISocialModuleMessage;
+    socialModuleThreadId?: string;
     messageFromSocialModuleProfile: ISocialModuleProfile | null;
   }) {
     let socialModuleThreadId: string | undefined;
@@ -1733,23 +2254,28 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       const secretKey = RBAC_SECRET_KEY;
 
-      if (
-        TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID &&
-        (!TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK ||
-          !TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME)
-      ) {
+      const telegramRequiredSubscriptionChannel =
+        this.getTelegramRequiredSubscriptionChannelConfiguration();
+
+      if (telegramRequiredSubscriptionChannel.isPartiallyConfigured) {
         throw new Error(
-          "Configuration error. Telegram required subscription channel information is incomplete - expected TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID, TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME, and TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK in .env",
+          "Configuration error. Telegram required subscription channel information is incomplete. Set TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID, TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME, and TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK together, or omit all three to disable subscription enforcement.",
         );
       }
 
-      if (!props.socialModuleMessage.description?.trim()) {
+      if (
+        isSocialMessageExcludedFromOpenRouter(
+          props.socialModuleMessage.metadata,
+        ) ||
+        !props.socialModuleMessage.description?.trim()
+      ) {
         return;
       }
 
       socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
         socialModuleChatId: props.socialModuleChat.id,
         socialModuleMessageId: props.socialModuleMessage.id,
+        requestedSocialModuleThreadId: props.socialModuleThreadId,
         secretKey,
       });
 
@@ -1817,6 +2343,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
       if (
+        telegramRequiredSubscriptionChannel.isConfigured &&
         requiredTelegramChannelSubscriptionRbacModuleRole &&
         !requiredTelegramChannelSubscriptionRbacModuleSubjectToRole
       ) {
@@ -1826,23 +2353,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             socialModuleThreadId,
-            data: {
-              description:
-                this.statusMessages
-                  .openRouterRequiredTelegamChannelSubscriptionError.ru,
-              interaction: {
-                inline_keyboard: [
-                  [
-                    {
-                      text:
-                        TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME ||
-                        "Subscribe",
-                      url: this.telegramRequiredChannelLink,
-                    },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description:
+                  `${this.statusMessages.openRouterRequiredTelegamChannelSubscriptionError.ru}\n\n` +
+                  `[${telegramRequiredSubscriptionChannel.name}](${telegramRequiredSubscriptionChannel.link})`,
+                interaction: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: telegramRequiredSubscriptionChannel.name,
+                        url: telegramRequiredSubscriptionChannel.link,
+                      },
+                    ],
                   ],
-                ],
+                },
               },
-            },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,
@@ -1859,20 +2387,23 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             socialModuleThreadId,
-            data: {
-              description:
-                this.statusMessages.openRouterNotFoundSubscription.ru,
-              interaction: {
-                inline_keyboard: [
-                  [
-                    {
-                      text: "Premium",
-                      callback_data: "command_premium",
-                    },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description:
+                  this.statusMessages.openRouterNotFoundSubscription.ru,
+                interaction: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: "Premium",
+                        callback_data: "command_premium",
+                      },
+                    ],
                   ],
-                ],
+                },
               },
-            },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,
@@ -1934,9 +2465,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
                 socialModuleChatId: props.socialModuleChat.id,
                 socialModuleThreadId,
-                data: {
-                  description: this.statusMessages.openRouterNotEnoughTokens.ru,
-                },
+                data: this.withSystemMessageMetadata({
+                  source: "agent.openrouter.status",
+                  data: {
+                    description:
+                      this.statusMessages.openRouterNotEnoughTokens.ru,
+                  },
+                }),
                 options: {
                   headers: {
                     Authorization: "Bearer " + props.jwtToken,
@@ -1950,9 +2485,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 id: props.rbacModuleSubject.id,
                 socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
                 socialModuleChatId: props.socialModuleChat.id,
-                data: {
-                  description: this.statusMessages.openRouterNotEnoughTokens.ru,
-                },
+                data: this.withSystemMessageMetadata({
+                  source: "agent.openrouter.status",
+                  data: {
+                    description:
+                      this.statusMessages.openRouterNotEnoughTokens.ru,
+                  },
+                }),
                 options: {
                   headers: {
                     Authorization: "Bearer " + props.jwtToken,
@@ -1988,13 +2527,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             socialModuleThreadId,
-            data: {
-              description:
-                this.statusMessages.openRouterError.ru +
-                "\n`" +
-                (error as Error).message +
-                "`",
-            },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description: this.statusMessages.openRouterError.ru,
+              },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,
@@ -2008,13 +2546,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             id: props.rbacModuleSubject.id,
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
-            data: {
-              description:
-                this.statusMessages.openRouterError.ru +
-                "\n`" +
-                (error as Error).message +
-                "`",
-            },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description: this.statusMessages.openRouterError.ru,
+              },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,
@@ -2033,134 +2570,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
   }
 
-  async knowledgeReplyMessageCreate(props: {
-    jwtToken: string;
-    rbacModuleSubject: IRbacModuleSubject;
-    shouldReplySocialModuleProfile: ISocialModuleProfile;
-    socialModuleChat: ISocialModuleChat;
-    socialModuleMessage: ISocialModuleMessage;
-    messageFromSocialModuleProfile: ISocialModuleProfile | null;
-  }) {
-    let socialModuleThreadId: string | undefined;
-
-    try {
-      const secretKey = RBAC_SECRET_KEY;
-
-      if (!secretKey) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
-      }
-
-      if (!props.socialModuleMessage.description?.trim()) {
-        return;
-      }
-
-      socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
-        socialModuleChatId: props.socialModuleChat.id,
-        socialModuleMessageId: props.socialModuleMessage.id,
-        secretKey,
-      });
-
-      if (!socialModuleThreadId) {
-        throw new Error(
-          "Validation error. Failed to resolve social module thread",
-        );
-      }
-
-      if (!props.messageFromSocialModuleProfile?.id) {
-        throw new Error(
-          "Not found error. 'messageFromSocialModuleProfile.id' not found",
-        );
-      }
-
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. 'RBAC_JWT_SECRET' not setted.");
-      }
-
-      const messageFromRbacModuleSubject =
-        await this.getMessageFromRbacModuleSubject(props);
-      const messageFromRbacModuleSubjectJwt = await jwt.sign(
-        {
-          exp:
-            Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-          iat: Math.floor(Date.now() / 1000),
-          subject: messageFromRbacModuleSubject,
-        },
-        RBAC_JWT_SECRET,
-      );
-
-      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledge(
-        {
-          id: messageFromRbacModuleSubject.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          socialModuleMessageId: props.socialModuleMessage.id,
-          socialModuleProfileId: props.messageFromSocialModuleProfile.id,
-          data: {
-            shouldReplySocialModuleProfile:
-              props.shouldReplySocialModuleProfile,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + messageFromRbacModuleSubjectJwt,
-            },
-          },
-        },
-      );
-    } catch (error) {
-      logger.error(error);
-
-      if (socialModuleThreadId) {
-        return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-          {
-            id: props.rbacModuleSubject.id,
-            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-            socialModuleChatId: props.socialModuleChat.id,
-            socialModuleThreadId,
-            data: {
-              description:
-                "Knowledge/RAG response failed.\n`" +
-                (error as Error).message +
-                "`",
-            },
-            options: {
-              headers: {
-                Authorization: "Bearer " + props.jwtToken,
-              },
-            },
-          },
-        );
-      }
-
-      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description:
-              "Knowledge/RAG response failed.\n`" +
-              (error as Error).message +
-              "`",
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
-        },
-      );
-    }
-  }
-
   async resolveThreadIdForMessageInChat(props: {
     socialModuleChatId: string;
     socialModuleMessageId: string;
+    requestedSocialModuleThreadId?: string;
     secretKey: string;
   }): Promise<string> {
-    await this.normalizeChatThreadsAndMessageLinks({
-      socialModuleChatId: props.socialModuleChatId,
-      secretKey: props.secretKey,
-    });
-
     const socialModuleChatsToThreads =
       await this.socialModule.chatsToThreads.find({
         params: {
@@ -2176,12 +2591,25 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       });
 
-    const chatThreadIds =
-      socialModuleChatsToThreads
-        ?.map((socialModuleChatToThread) => {
-          return socialModuleChatToThread.threadId;
-        })
-        .filter((threadId): threadId is string => Boolean(threadId)) || [];
+    const chatThreadIds: string[] = Array.from(
+      new Set(
+        socialModuleChatsToThreads
+          ?.map((socialModuleChatToThread) => {
+            return socialModuleChatToThread.threadId;
+          })
+          .filter((threadId): threadId is string => Boolean(threadId)) || [],
+      ),
+    );
+    const chatThreadIdsSet = new Set(chatThreadIds);
+
+    if (
+      props.requestedSocialModuleThreadId &&
+      !chatThreadIdsSet.has(props.requestedSocialModuleThreadId)
+    ) {
+      throw new Error(
+        "Validation error. Requested thread is not linked to the requested chat",
+      );
+    }
 
     const socialModuleThreadsToMessages =
       await this.socialModule.threadsToMessages.find({
@@ -2198,14 +2626,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       });
 
-    const messageThreadIds =
-      socialModuleThreadsToMessages
-        ?.map((socialModuleThreadToMessage) => {
-          return socialModuleThreadToMessage.threadId;
-        })
-        .filter((threadId): threadId is string => Boolean(threadId)) || [];
+    const messageThreadIds: string[] = Array.from(
+      new Set(
+        socialModuleThreadsToMessages
+          ?.map((socialModuleThreadToMessage) => {
+            return socialModuleThreadToMessage.threadId;
+          })
+          .filter((threadId): threadId is string => Boolean(threadId)) || [],
+      ),
+    );
 
-    const chatThreadIdsSet = new Set(chatThreadIds);
     const validMessageThreadIds = messageThreadIds.filter((threadId) => {
       return chatThreadIdsSet.has(threadId);
     });
@@ -2214,6 +2644,35 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error(
         "Validation error. Requested message is linked to multiple chat threads",
       );
+    }
+
+    if (props.requestedSocialModuleThreadId) {
+      if (
+        messageThreadIds.length &&
+        messageThreadIds.some((threadId) => {
+          return threadId !== props.requestedSocialModuleThreadId;
+        })
+      ) {
+        throw new Error(
+          "Validation error. Requested message is linked to a different thread",
+        );
+      }
+
+      if (!messageThreadIds.includes(props.requestedSocialModuleThreadId)) {
+        await socialModuleThreadsToMessagesApi.create({
+          data: {
+            threadId: props.requestedSocialModuleThreadId,
+            messageId: props.socialModuleMessageId,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": props.secretKey,
+            },
+          },
+        });
+      }
+
+      return props.requestedSocialModuleThreadId;
     }
 
     if (validMessageThreadIds.length === 1) {
@@ -2226,24 +2685,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const socialModuleDefaultThread = await this.ensureDefaultThreadForChat({
+    return this.normalizeChatThreadsAndMessageLinks({
       socialModuleChatId: props.socialModuleChatId,
       secretKey: props.secretKey,
     });
-
-    await socialModuleThreadsToMessagesApi.create({
-      data: {
-        threadId: socialModuleDefaultThread.id,
-        messageId: props.socialModuleMessageId,
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": props.secretKey,
-        },
-      },
-    });
-
-    return socialModuleDefaultThread.id;
   }
 
   async resolveThreadIdBySourceSystemIdInChat(props: {
@@ -2487,19 +2932,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       });
 
-      const defaultSocialModuleThreads =
-        socialModuleThreads?.filter((socialModuleThread) => {
-          return socialModuleThread.variant === "default";
-        }) || [];
+      const primarySocialModuleThread =
+        selectPrimaryLinkedThread<ISocialModuleThread>({
+          socialModuleChatsToThreads: socialModuleChatsToThreads || [],
+          socialModuleThreads: socialModuleThreads || [],
+        });
 
-      if (defaultSocialModuleThreads.length > 1) {
-        throw new Error(
-          "Validation error. Requested social-module chat has multiple default threads",
-        );
-      }
-
-      if (defaultSocialModuleThreads.length === 1) {
-        return defaultSocialModuleThreads[0];
+      if (primarySocialModuleThread) {
+        return primarySocialModuleThread;
       }
     }
 

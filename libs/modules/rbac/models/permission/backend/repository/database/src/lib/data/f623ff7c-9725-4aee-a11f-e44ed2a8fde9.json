@@ -1,0 +1,9 @@
+{
+  "id": "f623ff7c-9725-4aee-a11f-e44ed2a8fde9",
+  "createdAt": "2026-05-26T08:53:32.550Z",
+  "updatedAt": "2026-05-26T08:53:32.550Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/skills/count"
+}

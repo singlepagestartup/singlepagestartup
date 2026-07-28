@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "crm.request.default",
+  "title": "CRM Request / Default",
+  "description": "Singlepage CRM request summary variant created from a submitted form.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "request",
+    "variant": "default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "request",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "crm.request",
+    "pageName": "crm",
+    "variantName": "default",
+    "nodeId": "978:93",
+    "variantNodeId": "978:86",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "crm",
+    "request"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.product.overview-cta",
+  "title": "Ecommerce Product / Overview Cta",
+  "description": "Singlepage product model variant for a dark overview CTA with primary and secondary actions.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "overview-cta"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "primaryActionLabel",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "secondaryActionLabel",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "secondaryHref",
+      "type": "link",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "variantName": "overview-cta",
+    "nodeId": "795:10",
+    "variantNodeId": "795:2",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  }
+}

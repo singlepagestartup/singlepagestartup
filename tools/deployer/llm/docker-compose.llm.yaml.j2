@@ -7,7 +7,7 @@ services:
       - traefik_overlay
     env_file:
       - ./{{ SERVICE_NAME }}.env
-    command: "uvicorn main:app --host 0.0.0.0 --port 8765"
+    command: "sh -c './start.sh llm'"
     logging:
       driver: "json-file"
       options:
@@ -44,21 +44,20 @@ services:
     image: ollama/ollama:latest
     volumes:
       - /home/code/ollama_data:/root/.ollama
+      - /home/code/ollama-init.sh:/usr/local/bin/ollama-init.sh:ro
     networks:
       - traefik_overlay
     environment:
       OLLAMA_HOST: http://ollama:11434
-      OLLAMA_MODEL_IDS: "{{ OLLAMA_MODEL_IDS | default('nomic-embed-text,qwen3:1.7b', true) }}"
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        until ollama list >/dev/null 2>&1; do
-          sleep 2
-        done
-        printf '%s\n' "{{ OLLAMA_MODEL_IDS | default('nomic-embed-text,qwen3:1.7b', true) }}" | tr ',' '\n' | xargs -n 1 ollama pull
+      OLLAMA_EMBED_MODEL: "{{ OLLAMA_EMBED_MODEL | default('nomic-embed-text', true) }}"
+      OLLAMA_MODEL_IDS: "{{ OLLAMA_MODEL_IDS | default('nomic-embed-text', true) }}"
+    entrypoint: ["/bin/sh"]
+    command: ["/usr/local/bin/ollama-init.sh"]
     deploy:
+      replicas: 1
       restart_policy:
-        condition: none
+        condition: any
+        delay: 5s
       placement:
         constraints:
           - node.role == manager

@@ -1,0 +1,109 @@
+{
+  "name": "SPS Drafts",
+  "version": "0.1.0",
+  "collections": [
+    {
+      "name": "SPS Drafts / Color",
+      "modes": ["Light", "Dark"],
+      "variables": [
+        {
+          "name": "color/background",
+          "css": "var(--sps-color-background)",
+          "light": "#eaf0f7",
+          "dark": "#0f172a",
+          "scopes": ["FRAME_FILL", "SHAPE_FILL"]
+        },
+        {
+          "name": "color/foreground",
+          "css": "var(--sps-color-foreground)",
+          "light": "#111827",
+          "dark": "#f8fafc",
+          "scopes": ["TEXT_FILL"]
+        },
+        {
+          "name": "color/surface",
+          "css": "var(--sps-color-surface)",
+          "light": "#ffffff",
+          "dark": "#111827",
+          "scopes": ["FRAME_FILL", "SHAPE_FILL"]
+        },
+        {
+          "name": "color/border",
+          "css": "var(--sps-color-border)",
+          "light": "#d6dfeb",
+          "dark": "#334155",
+          "scopes": ["STROKE_COLOR"]
+        },
+        {
+          "name": "color/primary",
+          "css": "var(--sps-color-primary)",
+          "light": "#111827",
+          "dark": "#f8fafc",
+          "scopes": ["FRAME_FILL", "SHAPE_FILL", "TEXT_FILL"]
+        },
+        {
+          "name": "color/secondary",
+          "css": "var(--sps-color-secondary)",
+          "light": "#2563eb",
+          "dark": "#60a5fa",
+          "scopes": ["FRAME_FILL", "SHAPE_FILL", "TEXT_FILL"]
+        },
+        {
+          "name": "color/accent",
+          "css": "var(--sps-color-accent)",
+          "light": "#14b8a6",
+          "dark": "#2dd4bf",
+          "scopes": ["FRAME_FILL", "SHAPE_FILL", "TEXT_FILL"]
+        }
+      ]
+    },
+    {
+      "name": "SPS Drafts / Spacing",
+      "modes": ["Value"],
+      "variables": [
+        {
+          "name": "spacing/xs",
+          "css": "var(--sps-space-xs)",
+          "value": 8,
+          "scopes": ["GAP"]
+        },
+        {
+          "name": "spacing/md",
+          "css": "var(--sps-space-md)",
+          "value": 16,
+          "scopes": ["GAP"]
+        },
+        {
+          "name": "spacing/xl",
+          "css": "var(--sps-space-xl)",
+          "value": 32,
+          "scopes": ["GAP"]
+        }
+      ]
+    },
+    {
+      "name": "SPS Drafts / Radius",
+      "modes": ["Value"],
+      "variables": [
+        {
+          "name": "radius/md",
+          "css": "var(--sps-radius-md)",
+          "value": 8,
+          "scopes": ["CORNER_RADIUS"]
+        },
+        {
+          "name": "radius/lg",
+          "css": "var(--sps-radius-lg)",
+          "value": 12,
+          "scopes": ["CORNER_RADIUS"]
+        },
+        {
+          "name": "radius/xl",
+          "css": "var(--sps-radius-xl)",
+          "value": 16,
+          "scopes": ["CORNER_RADIUS"]
+        }
+      ]
+    }
+  ]
+}

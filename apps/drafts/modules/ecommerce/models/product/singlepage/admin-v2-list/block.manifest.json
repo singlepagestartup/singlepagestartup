@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.product.admin-v2-list",
+  "title": "Ecommerce Product / Admin V2 List",
+  "description": "Admin-v2 product list surface extracted from runnable model list behavior.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "admin-v2-list"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "variantName": "admin-v2-list",
+    "nodeId": "795:10",
+    "variantNodeId": "982:177",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "ecommerce",
+    "product",
+    "admin-v2",
+    "list"
+  ]
+}

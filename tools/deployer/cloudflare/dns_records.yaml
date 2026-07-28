@@ -49,6 +49,7 @@
         type: A
         proxied: "{{ use_cloudflare_ssl | bool }}"
         value: "{{ inventory_hostname }}"
+        solo: true
         account_email: "{{ account_email }}"
         account_api_key: "{{ account_api_key }}"
       when: state == "present" and service_a | length > 0

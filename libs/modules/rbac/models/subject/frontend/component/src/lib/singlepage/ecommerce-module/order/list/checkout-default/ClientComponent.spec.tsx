@@ -14,6 +14,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 const mutateAsyncMock = jest.fn();
 const useFormMock = jest.fn();
+const ecommerceModuleOrderApiPropsMock = jest.fn();
 
 const submitPayload = {
   provider: "stripe",
@@ -96,8 +97,9 @@ jest.mock(
 );
 
 jest.mock("@sps/ecommerce/models/order/frontend/component", () => ({
-  Component: ({ variant, children }: any) => {
+  Component: ({ variant, children, apiProps }: any) => {
     if (variant === "find") {
+      ecommerceModuleOrderApiPropsMock(apiProps);
       return children ? children({ data: [{ id: "order-1" }] }) : null;
     }
 
@@ -136,6 +138,7 @@ describe("Given: order list checkout component", () => {
   beforeEach(() => {
     mutateAsyncMock.mockReset();
     useFormMock.mockReset();
+    ecommerceModuleOrderApiPropsMock.mockReset();
     (window.location as any).href = "";
 
     useFormMock.mockReturnValue({
@@ -203,5 +206,48 @@ describe("Given: order list checkout component", () => {
     });
 
     expect((window.location as any).href).toBe("");
+  });
+
+  /**
+   * BDD Scenario: render only active cart orders.
+   *
+   * Given: the subject has both active and historical cart relations.
+   * When: the checkout list requests its order models.
+   * Then: the model query is restricted to status new and bypasses stale caches.
+   */
+  it("When: checkout list renders Then: it requests only new cart orders", () => {
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-list-checkout-default"
+        data={{ id: "subject-1" } as any}
+        language="en"
+      />,
+    );
+
+    expect(ecommerceModuleOrderApiPropsMock).toHaveBeenCalledWith({
+      params: {
+        filters: {
+          and: expect.arrayContaining([
+            {
+              column: "type",
+              method: "eq",
+              value: "cart",
+            },
+            {
+              column: "status",
+              method: "eq",
+              value: "new",
+            },
+          ]),
+        },
+      },
+      options: {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
+    });
   });
 });

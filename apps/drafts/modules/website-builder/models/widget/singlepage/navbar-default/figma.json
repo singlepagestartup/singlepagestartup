@@ -1,0 +1,47 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": "700:24",
+  "variantNodeId": "715:2",
+  "variantName": "navbar-default",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.widget.navbar-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.group": "navbar",
+    "sps.drafts.groupVariant": "default",
+    "sps.drafts.syncKey": "website-builder/models/widget/singlepage/navbar-default",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "navbar-default",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "navbar-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/navbar-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/navbar-default/Component.stories.tsx"
+  },
+  "properties": [
+    {
+      "name": "brand",
+      "type": "TEXT",
+      "slot": "brand"
+    },
+    {
+      "name": "links",
+      "type": "TEXT",
+      "slot": "links"
+    },
+    {
+      "name": "actions",
+      "type": "TEXT",
+      "slot": "actions"
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary"
+  ]
+}

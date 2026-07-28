@@ -23,12 +23,12 @@ export class Configuration
         insertSchema,
         selectSchema,
         dump: {
-          active: true,
+          active: false,
           type: "json",
           directory: dataDirectory,
         },
         seed: {
-          active: true,
+          active: false,
           module: "social",
           name: "profiles-to-skills",
           type: "relation",
@@ -47,7 +47,7 @@ export class Configuration
                     (seed) => seed.dump.id === data.entity.dump.profileId,
                   );
 
-                return relationEntites?.[0].new.id;
+                return relationEntites?.[0]?.new.id;
               },
             },
             {
@@ -64,7 +64,7 @@ export class Configuration
                     (seed) => seed.dump.id === data.entity.dump.skillId,
                   );
 
-                return relationEntites?.[0].new.id;
+                return relationEntites?.[0]?.new.id;
               },
             },
           ],

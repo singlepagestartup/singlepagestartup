@@ -1,0 +1,39 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.identity.register-default",
+  "title": "RBAC Identity / Register Default",
+  "description": "Singlepage identity registration form variant with credentials, consent, and external providers.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "identity",
+    "variant": "register-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "providers",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.identity",
+    "pageName": "rbac",
+    "variantName": "register-default",
+    "nodeId": "981:86",
+    "variantNodeId": "981:74",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  }
+}

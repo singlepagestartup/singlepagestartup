@@ -1,15 +1,65 @@
 "use client";
 
 import { IClientComponentProps } from "./interface";
+import { getLocalizedPlainText } from "../plain-text";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { Component as SocialModuleProfileChatProfileAvatar } from "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar";
 import { Component as SocialModuleMessagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/frontend/component";
 import { internationalization } from "@sps/shared-configuration";
 import { saveLanguageContext } from "@sps/shared-utils";
 import { CollapsibleContent, CollapsibleTrigger } from "@sps/shared-ui-shadcn";
 import { Collapsible } from "@radix-ui/react-collapsible";
-import { ChevronDown, Pencil, Trash2 } from "lucide-react";
+import { Check, ChevronDown, Copy, Pencil, Trash2 } from "lucide-react";
 import Markdown from "markdown-to-jsx";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+
+const markdownOptions = {
+  forceWrapper: true,
+  overrides: {
+    h1: {
+      props: {
+        className: "mb-2 mt-3 text-lg font-semibold leading-7 text-slate-900",
+      },
+    },
+    h2: {
+      props: {
+        className: "mb-2 mt-3 text-base font-semibold leading-7 text-slate-900",
+      },
+    },
+    h3: {
+      props: {
+        className:
+          "mb-1.5 mt-2.5 text-sm font-semibold leading-6 text-slate-900",
+      },
+    },
+    li: {
+      props: {
+        className: "pl-1",
+      },
+    },
+    ol: {
+      props: {
+        className: "my-2 list-decimal space-y-1 pl-5",
+      },
+    },
+    p: {
+      props: {
+        className: "my-1",
+      },
+    },
+    strong: {
+      props: {
+        className: "font-semibold text-slate-800",
+      },
+    },
+    ul: {
+      props: {
+        className: "my-2 list-disc space-y-1 pl-5",
+      },
+    },
+  },
+} as const;
 
 function getAudioTranscriptionStatus(
   message: IClientComponentProps["message"],
@@ -53,6 +103,28 @@ function formatTimelineDate(value?: string | Date | null) {
   });
 }
 
+export function normalizeChatMessageMarkdown(value?: string | null) {
+  const normalizedValue = (value || "").replace(/\r\n/g, "\n");
+
+  return normalizedValue.replace(
+    /^(\s*)((?:\d+[.)]|[-*+])\s+)([^\n]{2,72})\n(?=\S)/gm,
+    (match, indentation: string, marker: string, title: string) => {
+      const normalizedTitle = title.trim();
+
+      if (
+        !normalizedTitle ||
+        /[.!?…:]$/.test(normalizedTitle) ||
+        normalizedTitle.includes("  ") ||
+        normalizedTitle.length > 64
+      ) {
+        return match;
+      }
+
+      return `${indentation}${marker}**${normalizedTitle}**\n\n${indentation}   `;
+    },
+  );
+}
+
 function getProfileHref(props: IClientComponentProps) {
   if (props.data.id === "unknown") {
     return "#";
@@ -65,9 +137,22 @@ function getProfileHref(props: IClientComponentProps) {
   );
 }
 
+function getProfileDisplayName(props: IClientComponentProps) {
+  return (
+    getLocalizedPlainText(props.data.title, props.language) ||
+    props.data.adminTitle ||
+    props.data.slug
+  );
+}
+
+const avatarTriggerClassName =
+  "sticky top-3 mt-1 flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-full transition hover:opacity-90";
+
 export function Component(props: IClientComponentProps) {
+  const [isCopied, setIsCopied] = useState(false);
+  const copyResetTimeoutRef = useRef<number | null>(null);
   const profileHref = getProfileHref(props);
-  const profileInitial = props.data.slug.charAt(0).toUpperCase() || "?";
+  const profileDisplayName = getProfileDisplayName(props);
   const createdAt = formatTimelineDate(props.message.createdAt);
   const interaction = props.message.interaction;
   const hasInteraction = interaction && Object.keys(interaction).length > 0;
@@ -76,12 +161,44 @@ export function Component(props: IClientComponentProps) {
     props.onProfileOpen && props.data.id !== "unknown",
   );
 
+  useEffect(() => {
+    return () => {
+      if (copyResetTimeoutRef.current !== null) {
+        window.clearTimeout(copyResetTimeoutRef.current);
+      }
+    };
+  }, []);
+
   function onProfileOpen() {
     if (!canOpenProfile) {
       return;
     }
 
     props.onProfileOpen?.(props.data);
+  }
+
+  async function onCopyMessage() {
+    const text = props.message.description || "";
+
+    if (!text || !navigator.clipboard?.writeText) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      return;
+    }
+
+    if (copyResetTimeoutRef.current !== null) {
+      window.clearTimeout(copyResetTimeoutRef.current);
+    }
+
+    setIsCopied(true);
+    copyResetTimeoutRef.current = window.setTimeout(() => {
+      setIsCopied(false);
+      copyResetTimeoutRef.current = null;
+    }, 1500);
   }
 
   return (
@@ -99,17 +216,24 @@ export function Component(props: IClientComponentProps) {
         <button
           type="button"
           onClick={onProfileOpen}
-          className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-600 transition hover:bg-slate-200"
-          aria-label={`Open ${props.data.slug} profile`}
+          className={avatarTriggerClassName}
+          aria-label={`Open ${profileDisplayName} profile`}
         >
-          {profileInitial}
+          <SocialModuleProfileChatProfileAvatar
+            isServer={props.isServer}
+            variant="chat-profile-avatar"
+            data={props.data}
+            language={props.language}
+          />
         </button>
       ) : (
-        <Link
-          href={profileHref}
-          className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-600"
-        >
-          {profileInitial}
+        <Link href={profileHref} className={avatarTriggerClassName}>
+          <SocialModuleProfileChatProfileAvatar
+            isServer={props.isServer}
+            variant="chat-profile-avatar"
+            data={props.data}
+            language={props.language}
+          />
         </Link>
       )}
       <div className="min-w-0 flex-1">
@@ -120,14 +244,14 @@ export function Component(props: IClientComponentProps) {
               onClick={onProfileOpen}
               className="truncate text-left text-sm font-medium text-slate-950 hover:underline"
             >
-              {props.data.slug}
+              {profileDisplayName}
             </button>
           ) : (
             <Link
               href={profileHref}
               className="truncate text-sm font-medium text-slate-950 hover:underline"
             >
-              {props.data.slug}
+              {profileDisplayName}
             </Link>
           )}
           {props.message.sourceSystemId ? (
@@ -139,8 +263,10 @@ export function Component(props: IClientComponentProps) {
             <span className="text-xs text-slate-400">{createdAt}</span>
           ) : null}
         </div>
-        <div className="mt-1 max-w-none text-sm leading-6 text-slate-700 [&_p]:m-0 [&_ul]:my-1 [&_ol]:my-1">
-          <Markdown>{props.message.description || ""}</Markdown>
+        <div className="mt-1 max-w-none text-sm leading-6 text-slate-700">
+          <Markdown options={markdownOptions}>
+            {normalizeChatMessageMarkdown(props.message.description)}
+          </Markdown>
         </div>
         {audioTranscription?.status &&
         audioTranscription.status !== "completed" ? (
@@ -208,7 +334,23 @@ export function Component(props: IClientComponentProps) {
             </CollapsibleContent>
           </Collapsible>
         ) : null}
-        <div className="absolute right-2 top-2 hidden items-center gap-1 rounded-md border border-slate-200 bg-white p-1 shadow-sm group-hover/message:flex">
+        <div className="absolute right-2 top-2 hidden items-center gap-1 rounded-md border border-slate-200 bg-white p-1 shadow-sm group-hover/message:flex focus-within:flex">
+          <button
+            type="button"
+            className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={() => {
+              void onCopyMessage();
+            }}
+            disabled={!props.message.description}
+            aria-label={isCopied ? "Message copied" : "Copy message"}
+            title={isCopied ? "Copied" : "Copy message"}
+          >
+            {isCopied ? (
+              <Check className="h-3.5 w-3.5" />
+            ) : (
+              <Copy className="h-3.5 w-3.5" />
+            )}
+          </button>
           <button
             type="button"
             className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"

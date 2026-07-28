@@ -7,6 +7,7 @@ import { Component as AdminV2TableRow } from "./admin-v2/table-row";
 import { Component as OverviewDefault } from "./overview/default";
 import { Component as ButtonDefault } from "./button-default";
 import { Component as ChatProfileSidebar } from "./chat-profile-sidebar";
+import { Component as ChatProfileAvatar } from "./chat-profile-avatar";
 import { Component as ChatMessageRow } from "./chat-message-row";
 import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminTable } from "./admin/table";
@@ -18,6 +19,7 @@ export const variants = {
   "overview-default": OverviewDefault,
   "button-default": ButtonDefault,
   "chat-profile-sidebar": ChatProfileSidebar,
+  "chat-profile-avatar": ChatProfileAvatar,
   "chat-message-row": ChatMessageRow,
   "admin-select-input": AdminSelectInput,
   "admin-table": AdminTable,

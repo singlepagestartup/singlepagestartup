@@ -12,15 +12,13 @@ services:
   portainer:
     image: portainer/portainer-ce
     command: -H tcp://agent:9001 --tlsskipverify
-    ports:
-      - 9000:9000
     volumes:
       - ./portainer_data:/data
     networks:
       - traefik_overlay
     deploy:
       update_config:
-        order: start-first
+        order: stop-first
       placement:
         constraints:
           - node.role == manager
@@ -30,7 +28,7 @@ services:
         - traefik.http.routers.portainer.entrypoints=websecure
         - traefik.http.routers.portainer.tls=true
         - traefik.http.routers.portainer.rule=Host(`{{ SERVICE_URL }}`)
-        - traefik.docker.network=traefik_overlay
+        - traefik.swarm.network=traefik_overlay
 
 networks:
   traefik_overlay:

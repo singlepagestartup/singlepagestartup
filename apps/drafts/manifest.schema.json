@@ -4,7 +4,7 @@
   "title": "SPS Draft Manifest",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "title", "type", "entry", "status"],
+  "required": ["id", "title", "type", "entry", "scope"],
   "properties": {
     "id": {
       "type": "string",
@@ -25,9 +25,9 @@
       "type": "string",
       "minLength": 1
     },
-    "status": {
+    "scope": {
       "type": "string",
-      "enum": ["incoming", "approved", "archived"]
+      "enum": ["singlepage", "startup"]
     },
     "tags": {
       "type": "array",

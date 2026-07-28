@@ -9,7 +9,6 @@ import {
   normalizeDraftReference,
 } from "./lib/discovery";
 
-const COLLECTION_STATUSES = new Set(["incoming", "approved", "archived"]);
 const MIME_TYPES: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
   ".gif": "image/gif",
@@ -30,7 +29,7 @@ const MIME_TYPES: Record<string, string> = {
 
 interface DevOptions {
   draftRef: string | null;
-  status: string | null;
+  scope: string | null;
   type: string | null;
   port: number | null;
   host: string | null;
@@ -46,13 +45,13 @@ Usage: bun tools/drafts/dev.ts [<draft-ref>] [options]
 
 Examples:
   bun tools/drafts/dev.ts admin-panel-redesign-html
-  bun tools/drafts/dev.ts incoming/ui/admin-panel-redesign-html
-  bun tools/drafts/dev.ts --draft incoming/ui/my-next-prototype --port 4400
+  bun tools/drafts/dev.ts runnable/singlepage/admin-panel-redesign-html
+  bun tools/drafts/dev.ts --draft runnable/startup/my-next-prototype --port 4400
   DRAFT=admin-panel-redesign-html bun tools/drafts/dev.ts
 
 Options:
   --draft <id-or-path>                   Draft id or relative path from apps/drafts
-  --status <incoming|approved|archived>  Filter draft by manifest.status
+  --scope <singlepage|startup>           Filter draft by manifest.scope
   --type <html|react|next>               Filter draft by manifest.type
   --port <number>                        Override port (html server or child env)
   --host <hostname>                      Override host (default: 127.0.0.1 for html)
@@ -66,7 +65,7 @@ function parseArgs(argv: string[]): DevOptions {
     draftRef: normalizeDraftReference(
       process.env.DRAFT ?? process.env.DRAFT_ID ?? null,
     ),
-    status: process.env.DRAFT_STATUS ?? null,
+    scope: process.env.DRAFT_SCOPE ?? null,
     type: process.env.DRAFT_TYPE ?? null,
     port: null,
     host: process.env.DRAFT_HOST ?? process.env.HOST ?? null,
@@ -96,14 +95,14 @@ function parseArgs(argv: string[]): DevOptions {
       continue;
     }
 
-    if (arg === "--status") {
-      options.status = argv[index + 1] ?? null;
+    if (arg === "--scope") {
+      options.scope = argv[index + 1] ?? null;
       index += 1;
       continue;
     }
 
-    if (arg.startsWith("--status=")) {
-      options.status = arg.slice("--status=".length);
+    if (arg.startsWith("--scope=")) {
+      options.scope = arg.slice("--scope=".length);
       continue;
     }
 
@@ -169,7 +168,7 @@ function parsePort(value: unknown, fieldName: string): number | null {
 
 function resolveDraft(drafts: DraftRecord[], options: DevOptions): DraftRecord {
   const filtered = drafts.filter((draft) => {
-    if (options.status && draft.manifest.status !== options.status) {
+    if (options.scope && draft.manifest.scope !== options.scope) {
       return false;
     }
 
@@ -193,10 +192,9 @@ function resolveDraft(drafts: DraftRecord[], options: DevOptions): DraftRecord {
       draft.relativeDir === ref || draft.relativeDir.endsWith(`/${ref}`);
     const byId = draft.manifest.id === ref;
     const bySlug = folderName === ref;
-    const byCollectionAndId =
-      `${draft.collection}/${draft.manifest.id}` === ref;
+    const byScopeAndId = `${draft.scope}/${draft.manifest.id}` === ref;
 
-    return byPath || byId || bySlug || byCollectionAndId;
+    return byPath || byId || bySlug || byScopeAndId;
   });
 
   if (!matches.length) {
@@ -549,18 +547,8 @@ async function main(): Promise<void> {
 
   const draft = resolveDraft(drafts, options);
   console.log(
-    `[drafts] Selected ${draft.relativeDir} (id=${draft.manifest.id}, type=${draft.manifest.type}, status=${draft.manifest.status})`,
+    `[drafts] Selected ${draft.relativeDir} (id=${draft.manifest.id}, type=${draft.manifest.type}, scope=${draft.manifest.scope})`,
   );
-
-  if (
-    COLLECTION_STATUSES.has(draft.collection) &&
-    draft.manifest.status &&
-    draft.collection !== draft.manifest.status
-  ) {
-    console.warn(
-      `[drafts] Warning: folder collection "${draft.collection}" and manifest.status "${draft.manifest.status}" differ.`,
-    );
-  }
 
   if (draft.manifest.type === "html") {
     await runHtmlDraft(draft, options);

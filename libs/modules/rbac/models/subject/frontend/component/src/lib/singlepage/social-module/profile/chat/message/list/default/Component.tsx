@@ -15,11 +15,8 @@ export function Component(props: IComponentPropsExtended) {
       }
       knowledgeAssistantProfile={props.knowledgeAssistantProfile}
       socialModuleChat={props.socialModuleChat}
+      socialModuleThread={props.socialModuleThread}
       socialModuleThreadId={props.socialModuleThreadId}
-      socialModuleMessages={props.socialModuleMessages}
-      socialModuleMessagesAndActionsQuery={
-        props.socialModuleMessagesAndActionsQuery
-      }
     />
   );
 }

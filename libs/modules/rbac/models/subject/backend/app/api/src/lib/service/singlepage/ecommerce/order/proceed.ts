@@ -126,6 +126,7 @@ export class Service {
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
   subjectsToIdentities: SubjectsToIdentitiesService;
+  protected processingOrderIds = new Set<string>();
 
   constructor(
     @inject(DI.IRepository) repository: IRepository,
@@ -262,6 +263,12 @@ export class Service {
       groupSubjectOrderRelationsByOrderId(subjectsToEcommerceModuleOrders);
 
     for (const order of orders) {
+      if (this.processingOrderIds.has(order.id)) {
+        continue;
+      }
+
+      this.processingOrderIds.add(order.id);
+
       try {
         const extendedOrder = await this.getExtendedEcommerceModuleOrderById({
           id: order.id,
@@ -430,6 +437,8 @@ export class Service {
           subjectId: props.subjectId,
           error,
         });
+      } finally {
+        this.processingOrderIds.delete(order.id);
       }
     }
   }

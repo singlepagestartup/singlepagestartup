@@ -7,6 +7,7 @@
  */
 
 import { action as findDocuments } from "./find";
+import { action as deleteDocument } from "./find-by-id/delete";
 import { action as reindexDocument } from "./find-by-id/reindex";
 import { action as updateDocument } from "./find-by-id/update";
 
@@ -106,6 +107,33 @@ describe("rbac profile-scoped Knowledge document SDK actions", () => {
       "http://api.test/api/rbac/subjects/subject-1/social-module/profiles/profile-1/knowledge/documents/document-1/reindex?targetSocialModuleProfileId=assistant-profile-1&socialModuleChatId=chat-1",
       expect.objectContaining({
         method: "POST",
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario: delete profile document.
+   *
+   * Given: a linked Knowledge document id.
+   * When: the delete action executes.
+   * Then: it sends a DELETE request to the RBAC scoped document route.
+   */
+  it("deletes a document through the RBAC scoped profile route", async () => {
+    await deleteDocument({
+      host: "http://api.test",
+      id: "subject-1",
+      socialModuleProfileId: "profile-1",
+      knowledgeModuleDocumentId: "document-1",
+      params: {
+        targetSocialModuleProfileId: "assistant-profile-1",
+        socialModuleChatId: "chat-1",
+      },
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://api.test/api/rbac/subjects/subject-1/social-module/profiles/profile-1/knowledge/documents/document-1?targetSocialModuleProfileId=assistant-profile-1&socialModuleChatId=chat-1",
+      expect.objectContaining({
+        method: "DELETE",
       }),
     );
   });
