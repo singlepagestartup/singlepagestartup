@@ -3,17 +3,37 @@
 ## Metadata
 
 **URL**: https://github.com/singlepagestartup/singlepagestartup/issues/162
-**Status**: Research Needed
+**Status**: Deferred — upstream Turbopack dev OOM remains unresolved
 **Created**: 2026-04-19
 **Priority**: medium
 **Size**: large
 **Type**: refactoring
+**Latest tested version**: `next@16.3.0-canary.97` (2026-07-28)
 
 ---
 
 ## Problem to Solve
 
-The host application is still pinned to `next@15.4.8` in both the workspace root and [apps/host/package.json](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/package.json), while the current stable release is `next@16.2.4` (released April 15, 2026). We need a controlled migration to Next.js 16 for `apps/host`, including the required code and configuration updates for removed or deprecated APIs, package alignment, and verification of Nx compatibility.
+The host application was originally pinned to `next@15.4.8` in both the workspace root and [apps/host/package.json](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/package.json). The `issue-162` branch now contains a retry on Next.js `16.3.0-canary.97`, but the migration remains incomplete because Turbopack dev still exhausts memory while compiling the single catch-all route.
+
+## Current Status — 2026-07-28
+
+The problem is **not resolved** on the latest available Next.js build tested, `16.3.0-canary.97`.
+
+- A clean installation was performed after removing all workspace `node_modules`, `.next`, and Nx cache data.
+- Next.js companion packages were aligned to `16.3.0-canary.97`; React and React DOM were updated to `19.2.8`.
+- The production Turbopack build succeeds after the required Next 16 API/config migrations.
+- `next start` succeeds and `/en` returns HTTP 200.
+- Turbopack dev still crashes on the first request through the single `[[...url]]` catch-all route:
+  - memory eviction `auto`: OOM near the default 9.2 GB heap limit;
+  - memory eviction `full`: OOM near 9.0 GB;
+  - memory eviction `auto` with a 16 GB heap: OOM near 15.8 GB.
+
+Increasing the heap only postpones the failure, and the new eviction implementation does not release the initial catch-all compilation graph before the heap is exhausted.
+
+The issue remains closed and the GitHub Project item remains `Done` as a deferred historical attempt. Reopen the issue and retry the migration when a newer Next.js canary or release contains further Turbopack initial-graph memory improvements.
+
+The architecture constraint remains mandatory: `apps/host/app/[[...url]]/page.tsx` stays the single composition entry point, and splitting the tree into route fragments, microfrontends, or separate Next.js apps is not an acceptable workaround.
 
 ## Key Details
 

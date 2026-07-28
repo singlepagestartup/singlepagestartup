@@ -26,6 +26,9 @@ function makeConfig() {
     reactStrictMode: true,
     deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
     staticPageGenerationTimeout: 6000,
+    experimental: {
+      turbopackMemoryEviction: "auto",
+    },
     images: {
       unoptimized: true,
       remotePatterns: [
@@ -111,4 +114,15 @@ function makeConfig() {
   });
 }
 
-export default withNx(makeConfig());
+const configuredNextApp = withNx(makeConfig());
+
+export default async function nextConfig(phase, context) {
+  const resolvedConfig =
+    typeof configuredNextApp === "function"
+      ? await configuredNextApp(phase, context)
+      : configuredNextApp;
+
+  const { eslint, ...nextConfigWithoutEslint } = resolvedConfig;
+
+  return nextConfigWithoutEslint;
+}
