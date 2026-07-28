@@ -3,7 +3,8 @@ issue_number: 218
 issue_title: "Fix page-cache handler for string URL values"
 start_date: 2026-07-28T14:16:31Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-218.md
-status: in_progress
+status: complete
+completed_date: 2026-07-28T14:48:58Z
 ---
 
 # Implementation Progress: ISSUE-218 - Fix page-cache handler for string URL values
@@ -54,8 +55,8 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/221
+- [x] PR number: 221
 
 ### Final Status
 
@@ -65,4 +66,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-07-28T14:44:54Z
+**Last updated**: 2026-07-28T14:48:58Z
