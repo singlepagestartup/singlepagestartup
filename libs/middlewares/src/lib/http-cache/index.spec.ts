@@ -208,6 +208,70 @@ describe("getTopicVersionKey", () => {
   });
 });
 
+describe("HTTP-cache clear route namespace isolation", () => {
+  /**
+   * BDD Scenario: Clearing HTTP cache preserves unrelated Redis state.
+   * Given: HTTP-cache keys, an MCP OAuth client, and a user preference share
+   *        the same KV backend.
+   * When:  GET /api/http-cache/clear is handled.
+   * Then:  only the HTTP-cache data and version namespaces are deleted.
+   */
+  it("preserves MCP OAuth and user KV keys", async () => {
+    const keys = new Set([
+      "http-cache:data:/api/pages:v0:t0:response-hash",
+      "http-cache:version:path-hash",
+      "mcp:oauth:client:mcp-client-id",
+      "mcp:oauth:refresh:refresh-token",
+      "rbac:subject:openrouter-model-favorites:subject-hash",
+    ]);
+    const deletedPrefixes: string[] = [];
+    const middleware = new Middleware();
+    middleware.storeProvider = {
+      async delByPrefix({ prefix }: { prefix: string }) {
+        deletedPrefixes.push(prefix);
+
+        for (const key of keys) {
+          if (key.startsWith(prefix)) {
+            keys.delete(key);
+          }
+        }
+      },
+    } as any;
+
+    let clearRouteHandler:
+      | ((context: { json: (body: unknown) => unknown }) => Promise<unknown>)
+      | undefined;
+    middleware.setRoutes({
+      get(
+        path: string,
+        handler: (context: {
+          json: (body: unknown) => unknown;
+        }) => Promise<unknown>,
+      ) {
+        if (path === "/api/http-cache/clear") {
+          clearRouteHandler = handler;
+        }
+      },
+    });
+
+    expect(clearRouteHandler).toBeDefined();
+    const json = jest.fn((body) => body);
+    await clearRouteHandler?.({ json });
+
+    expect(deletedPrefixes).toEqual(["http-cache:data", "http-cache:version"]);
+    expect(keys).not.toContain(
+      "http-cache:data:/api/pages:v0:t0:response-hash",
+    );
+    expect(keys).not.toContain("http-cache:version:path-hash");
+    expect(keys).toContain("mcp:oauth:client:mcp-client-id");
+    expect(keys).toContain("mcp:oauth:refresh:refresh-token");
+    expect(keys).toContain(
+      "rbac:subject:openrouter-model-favorites:subject-hash",
+    );
+    expect(json).toHaveBeenCalledWith({ message: "Cache cleared" });
+  });
+});
+
 describe("exclusion gate does not skip the mutation version-bump (issue #195 F1)", () => {
   const chatActionsPath = `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/chats/${CID}/actions`;
   const chatMessagesPath = `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/chats/${CID}/messages`;

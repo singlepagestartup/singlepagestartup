@@ -61,6 +61,11 @@ export class Provider implements IProvider {
     return await this.client.del(props);
   }
 
+  /**
+   * Destructive administrative operation. This removes every KV namespace,
+   * including persistent application and authentication state. Cache cleanup
+   * must use `delByPrefix` with a prefix owned by that cache.
+   */
   async flushall() {
     return await this.client.flushall();
   }

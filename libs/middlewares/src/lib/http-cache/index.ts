@@ -304,9 +304,10 @@ export class Middleware {
 
   setRoutes(app: any) {
     app.get("/api/http-cache/clear", async (c) => {
-      await new StoreProvider({
-        type: KV_PROVIDER,
-      }).flushall();
+      await Promise.all([
+        this.storeProvider.delByPrefix({ prefix: CACHE_DATA_PREFIX }),
+        this.storeProvider.delByPrefix({ prefix: CACHE_VERSION_PREFIX }),
+      ]);
 
       return c.json({ message: "Cache cleared" });
     });
