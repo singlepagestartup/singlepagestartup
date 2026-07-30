@@ -64,6 +64,7 @@ import { Service } from "./checkout";
 
 function createTestContext(props?: {
   activeOrderProductId?: string;
+  activeOrderStatus?: string;
   paymentIntentCreateError?: Error;
   paymentIntentProviderError?: Error;
   checkoutOrderIds?: string[];
@@ -88,7 +89,7 @@ function createTestContext(props?: {
 
   const activeSubscriptionOrder = {
     id: "order-active-1",
-    status: "paying",
+    status: props?.activeOrderStatus ?? "paying",
     comment: "",
   };
 
@@ -382,6 +383,46 @@ describe("Given: subject starts checkout for a subscription product", () => {
         }),
       );
     });
+
+    /**
+     * BDD Scenario
+     *
+     * Given: an earlier checkout attempt left a subscription order in the new cart status.
+     * When: the subject retries checkout for the same subscription product.
+     * Then: the stale cart does not count as an active subscription and checkout continues.
+     */
+    it("Then: a stale new order does not block subscription checkout", async () => {
+      const { service, checkoutOrders } = createTestContext({
+        activeOrderProductId: "product-target",
+        activeOrderStatus: "new",
+      });
+
+      await expect(
+        service.execute({
+          id: "subject-1",
+          email: "subject@example.com",
+          provider: "stripe",
+          comment: "",
+          ecommerceModule: {
+            orders: [{ id: checkoutOrders[0].id }],
+          },
+        }),
+      ).resolves.toEqual({
+        billingModule: {
+          invoices: [
+            {
+              id: "invoice-1",
+              paymentUrl: "https://pay.test/invoice-1",
+            },
+          ],
+        },
+      });
+
+      expect(
+        service.ecommerceModule.order.findByIdCheckoutAttributes,
+      ).not.toHaveBeenCalled();
+      expect(mockBillingModulePaymentIntentProvider).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("When: active subscription has another product", () => {
@@ -416,7 +457,14 @@ describe("Given: subject starts checkout for a subscription product", () => {
   });
 
   describe("When: provider integration fails", () => {
-    it("Then: checkout fails with provider error after payment-intent creation", async () => {
+    /**
+     * BDD Scenario
+     *
+     * Given: a validated cart is ready for payment.
+     * When: the external payment provider rejects invoice creation.
+     * Then: checkout publishes paying first and compensates the order and payment intent.
+     */
+    it("Then: checkout marks the attempt paying before compensating provider failure", async () => {
       const { service, checkoutOrders } = createTestContext({
         activeOrderProductId: "product-other",
         paymentIntentProviderError: new Error("provider-failure"),
@@ -436,6 +484,50 @@ describe("Given: subject starts checkout for a subscription product", () => {
 
       expect(mockBillingModulePaymentIntentCreate).toHaveBeenCalled();
       expect(mockBillingModulePaymentIntentProvider).toHaveBeenCalled();
+
+      const checkoutOrderUpdates = mockEcommerceOrderUpdate.mock.calls.filter(
+        (call) => call?.[0]?.id === checkoutOrders[0].id,
+      );
+
+      expect(checkoutOrderUpdates).toEqual(
+        expect.arrayContaining([
+          [
+            expect.objectContaining({
+              data: expect.objectContaining({
+                status: "paying",
+                type: "history",
+              }),
+            }),
+          ],
+          [
+            expect.objectContaining({
+              data: expect.objectContaining({
+                status: "canceled",
+                type: "history",
+              }),
+            }),
+          ],
+        ]),
+      );
+      expect(mockBillingModulePaymentIntentUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "payment-intent-1",
+          data: expect.objectContaining({
+            status: "failed",
+          }),
+        }),
+      );
+
+      const payingUpdateCall =
+        mockEcommerceOrderUpdate.mock.invocationCallOrder[
+          mockEcommerceOrderUpdate.mock.calls.findIndex(
+            (call) => call?.[0]?.data?.status === "paying",
+          )
+        ];
+      const providerCall =
+        mockBillingModulePaymentIntentProvider.mock.invocationCallOrder[0];
+
+      expect(payingUpdateCall).toBeLessThan(providerCall);
     });
   });
 

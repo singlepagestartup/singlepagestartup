@@ -10,6 +10,8 @@ import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as api } from "@sps/billing/models/payment-intent/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
+export const PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS = 5 * 60 * 1000;
+
 export class Handler {
   service: Service;
 
@@ -47,7 +49,7 @@ export class Handler {
         throw new Error("Not Found error. Not found");
       }
 
-      if (["succeeded", "failed"].includes(entity.status)) {
+      if (["succeeded", "failed", "canceled"].includes(entity.status)) {
         return c.json({
           data: entity,
         });
@@ -69,9 +71,35 @@ export class Handler {
         });
 
       if (!paymentIntentsToInvoices?.length) {
-        throw new Error(
-          "Not Found error. Payment intents to invoices not found",
-        );
+        const updatedAt = new Date(
+          entity.updatedAt ?? entity.createdAt,
+        ).getTime();
+        const initializationExpired =
+          updatedAt <
+          Date.now() - PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS;
+
+        if (initializationExpired) {
+          const failedEntity = await api.update({
+            id: entity.id,
+            data: {
+              ...entity,
+              status: "failed",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
+          return c.json({
+            data: failedEntity,
+          });
+        }
+
+        return c.json({
+          data: entity,
+        });
       }
 
       const invoices = await this.service.billingModule.invoice.find({

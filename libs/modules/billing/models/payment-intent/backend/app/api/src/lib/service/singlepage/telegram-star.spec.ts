@@ -126,6 +126,48 @@ describe("Telegram Star invoice creation", () => {
         },
       },
     });
+    expect(
+      mockedPaymentIntentToInvoiceCreate.mock.invocationCallOrder[0],
+    ).toBeLessThan(mockSendInvoice.mock.invocationCallOrder[0]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the local Telegram Star invoice was created successfully.
+   * When: Telegram rejects sending the invoice message.
+   * Then: the payment-intent relation already identifies the local invoice for recovery.
+   */
+  it("links the invoice before Telegram delivery is attempted", async () => {
+    const invoice = {
+      id: "invoice-1",
+      amount: 1,
+      status: "open",
+      provider: "telegram-star",
+    };
+
+    mockedInvoiceCreate.mockResolvedValue(invoice);
+    mockedPaymentIntentToInvoiceCreate.mockResolvedValue({});
+    mockSendInvoice.mockRejectedValue(new Error("telegram-unavailable"));
+
+    await expect(
+      new Service().proceed({
+        action: "create",
+        account: "telegram-account-1",
+        currency: "telegram-star",
+        entity: {
+          id: "payment-intent-1",
+          amount: 1,
+        } as any,
+        metadata: {
+          paymentIntentId: "payment-intent-1",
+        },
+      }),
+    ).rejects.toThrow("telegram-unavailable");
+
+    expect(mockedPaymentIntentToInvoiceCreate).toHaveBeenCalledTimes(1);
+    expect(
+      mockedPaymentIntentToInvoiceCreate.mock.invocationCallOrder[0],
+    ).toBeLessThan(mockSendInvoice.mock.invocationCallOrder[0]);
   });
 });
 
