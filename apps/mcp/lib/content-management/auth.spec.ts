@@ -1,8 +1,8 @@
 /**
  * BDD Suite: MCP forwarded authentication helper
- * Given MCP resources and tools call protected SPS API routes through SDK adapters
+ * Given MCP resources and tools call protected SinglePageStartup API routes through SDK adapters
  * When authorization is provided by the MCP transport
- * Then SDK options use the same headers accepted by the SPS frontend/API path
+ * Then SDK options use the same headers accepted by the SinglePageStartup frontend/API path
  */
 
 import { getMcpAuthHeaders } from "../auth";

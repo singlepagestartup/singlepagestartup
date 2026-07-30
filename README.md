@@ -109,9 +109,11 @@ tools/
 
 `apps/mcp` exposes a compact content-management surface for AI agents that need to inspect or change SPS data through the existing SDK/API runtime path. Start with `module-list`; it returns modules with nested `models` and `relations` arrays. Then use explicit selectors such as `{ "module": "blog", "model": "article" }` or `{ "module": "blog", "relation": "categories-to-articles" }`.
 
+Connected AI clients receive concise project and safety instructions during MCP initialization. They can retrieve the full structured context through `project-guide`, `content-operations-guide`, `singlepagestartup://project-guide`, or `singlepagestartup://content-operations-guide` without filesystem access.
+
 For page content edits, use `page-preview` before writing. It resolves a page by URL, follows page/widget relations, and returns external widget candidates with ids. Mutations should use dry-run first. Creates and updates default to `dryRun: true`; set `dryRun: false` only when applying the write. Deletes are two-step: preview first, then apply with the returned `confirmationToken` and `confirm: true`.
 
-For client-specific connection steps, see `apps/mcp/README.md`.
+For the complete safe mutation protocol, including impact checks, same-connector enforcement, read-back, and `UNKNOWN` status handling, see `apps/mcp/USAGE.md`. For client-specific connection steps, see `apps/mcp/README.md`.
 
 ### Running MCP Content Management
 
@@ -142,7 +144,11 @@ Then inspect it interactively:
 npm run mcp:inspector:http
 ```
 
-In Inspector, choose `Streamable HTTP` and use `http://127.0.0.1:3001/mcp` as the URL. The compatibility endpoint `http://127.0.0.1:3001/sse` is also available for Inspector setups that already point at `/sse`.
+The command loads `apps/mcp/inspector.config.json`, so Inspector already lists
+the local `singlepagestartup` server at `http://127.0.0.1:3001/mcp`. Start
+`npm run mcp:http` separately before connecting. The compatibility endpoint
+`http://127.0.0.1:3001/sse` is also available for Inspector setups that already
+point at `/sse`.
 
 ### Connecting MCP clients
 
@@ -201,11 +207,14 @@ Required environment values are loaded from the app env files created by `./up.s
 
 Resources do not have per-call input fields, so resource reads must receive auth from the MCP transport headers, cookies, MCP auth info, or request metadata. A typical edit flow is:
 
-1. Call `module-list` or read `sps://modules`.
-2. Call `model-schema` or `relation-schema` for the selected module item.
-3. Use `model-record-find` / `relation-record-find` for filtered reads, or `page-preview` for URL-based page content.
-4. Use dry-run write tools first, such as `model-record-update` with `dryRun: true` or `page-localized-field-update` with `dryRun: true`.
-5. Apply the write only after the preview is unambiguous. For deletes, call `model-record-delete-preview` or `relation-record-delete-preview` first and pass its `confirmationToken` to the matching `*-delete-apply` tool.
+1. Call `project-guide` or read `singlepagestartup://project-guide`.
+2. Call `module-list` or read `singlepagestartup://modules`.
+3. Call `model-schema` or `relation-schema` for the selected module item.
+4. Use `model-record-find` / `relation-record-find` for filtered reads, or `page-preview` for URL-based page content.
+5. Inspect relations and shared-entity impact before mutating the selected record.
+6. Call `content-operations-guide`, then use `model-record-update` with `dryRun: true`. For localized page content, preserve the complete current locale object and change only the requested locale.
+7. Apply the write through the same connector and tool only after the preview is unambiguous. For deletes, call `model-record-delete-preview` or `relation-record-delete-preview` first and pass its `confirmationToken` to the matching `*-delete-apply` tool.
+8. Read the persisted state back through the same connector and compare it with the expected result. Treat an unverified or ambiguous result as `UNKNOWN`.
 
 ## Core Architecture
 

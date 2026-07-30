@@ -14,7 +14,7 @@
     "mcp:http:dev": "nx run mcp:http-dev",
     "mcp:start": "nx run mcp:start",
     "mcp:inspector": "npx @modelcontextprotocol/inspector bun apps/mcp/index.ts",
-    "mcp:inspector:http": "npx @modelcontextprotocol/inspector",
+    "mcp:inspector:http": "npx @modelcontextprotocol/inspector --config apps/mcp/inspector.config.json",
     "llm:install": "bash apps/llm/install.sh",
     "llm:ollama:start": "bash apps/llm/ollama.sh start",
     "llm:ollama:stop": "bash apps/llm/ollama.sh stop",

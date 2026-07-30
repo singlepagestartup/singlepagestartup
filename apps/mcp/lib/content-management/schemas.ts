@@ -190,15 +190,6 @@ export const HostGraphPreviewInputSchema = z.object({
   widgetId: z.string().optional(),
 });
 
-export const HostGraphLocalizedFieldUpdateInputSchema =
-  HostGraphPreviewInputSchema.extend({
-    candidateId: z.string().optional(),
-    field: z.string().min(1),
-    locale: z.string().min(2),
-    value: z.string(),
-    dryRun: z.boolean().default(true),
-  });
-
 export type IContentEntityKey = z.infer<typeof ContentEntityKeySchema>;
 export type IContentFindInput = z.infer<typeof ContentFindInputSchema>;
 export type IContentCountInput = z.infer<typeof ContentCountInputSchema>;
@@ -243,7 +234,4 @@ export type ILocalizedFieldUpdateInput = z.infer<
 >;
 export type IHostGraphPreviewInput = z.infer<
   typeof HostGraphPreviewInputSchema
->;
-export type IHostGraphLocalizedFieldUpdateInput = z.infer<
-  typeof HostGraphLocalizedFieldUpdateInputSchema
 >;

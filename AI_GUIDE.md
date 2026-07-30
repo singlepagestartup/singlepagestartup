@@ -24,11 +24,17 @@ Each module contains:
 
 Use the MCP tools exposed by `apps/mcp`:
 
-- `get-project-doc` → reads root `README.md`.
-- `get-module-doc` → reads module README (use **kebab-case** module name).
-- `get-entity-doc` → reads per-model/per-relation README.
+- `project-guide` → returns project architecture, MCP boundaries, content
+  composition, task routing, documentation order, and non-negotiable rules.
+- `content-operations-guide` → returns the complete safe mutation and
+  verification protocol.
+- `module-list` → discovers modules with nested model and relation summaries.
+- `model-schema` / `relation-schema` → returns fields, variants, examples, and
+  supported operations for one entity.
 
-Start with `get-project-doc`, then drill into modules and entities.
+Start with `project-guide`. For runtime data/content tasks, continue with
+`module-list` and the selected schema. For source-code tasks, follow the
+documentation order below.
 
 ### If MCP tools are NOT available
 
@@ -67,7 +73,10 @@ These files define the current contract and should be treated as source of truth
 - Layers: Repository → Service → Controller → App.
 - Repository schemas in `backend/repository/database`.
 - Controllers extend `RESTController`, services extend `CRUDService`.
-- Middlewares only in `apps/api`, never imported by modules directly.
+- Module route middleware lives in the module's
+  `backend/app/middlewares/src/lib/*` package and is exported from it;
+  controllers only compose route definitions, middleware instances, and
+  handlers.
 
 ## 4. How to add or change content (critical workflow)
 
@@ -121,7 +130,11 @@ Then open Inspector:
 npm run mcp:inspector:http
 ```
 
-Choose `Streamable HTTP` and connect to `http://127.0.0.1:3001/mcp`. The compatibility endpoint `http://127.0.0.1:3001/sse` is also available. The legacy Inspector command starts the MCP server through stdio:
+The command loads `apps/mcp/inspector.config.json`, so Inspector already lists
+the local `singlepagestartup` Streamable HTTP server at
+`http://127.0.0.1:3001/mcp`. Start `npm run mcp:http` separately before
+connecting. The compatibility endpoint `http://127.0.0.1:3001/sse` is also
+available. The legacy Inspector command starts the MCP server through stdio:
 
 ```bash
 npm run mcp:inspector
@@ -163,7 +176,15 @@ MCP SDK calls require the configured API service URL. `./up.sh` creates the loca
 
 For content edits through MCP, start with content entity discovery, then use filtered reads or host graph preview before any mutation.
 
-Use dry-run mutations first. For deletes, call delete preview and pass the returned confirmation token to delete apply. For localized fields such as `blog.widget.title`, use the localized field update tool so changing `title.en` preserves `title.ru` and other locale keys.
+Follow the complete protocol in `apps/mcp/USAGE.md`:
+
+```text
+READ -> IMPACT CHECK -> DRY-RUN -> COMMIT -> READ-BACK -> COMPARE
+```
+
+Dry-run, commit, and read-back must use the same connector. An empty, malformed, timed-out, or ambiguous response means `UNKNOWN`; verify the persisted state through the original connector before retrying or reporting a result.
+
+For deletes, call delete preview and pass the returned confirmation token to delete apply. For localized fields such as `blog.widget.title`, use the localized field update tool so changing `title.en` preserves `title.ru` and other locale keys.
 
 For URL-based edits such as changing the Articles widget on `/about`, preview the host graph first. The path is `host.page` -> `host.pages-to-widgets` -> `host.widget` -> `host.widgets-to-external-widgets` -> external module widget, for example `blog.widget`.
 

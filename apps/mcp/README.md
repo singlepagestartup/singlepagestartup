@@ -1,17 +1,46 @@
-# SPS MCP Server
+# SinglePageStartup MCP Server
 
-`apps/mcp` exposes one compact SPS content surface to MCP clients. It supports local stdio and remote Streamable HTTP.
+`apps/mcp` exposes one compact SinglePageStartup content surface to MCP clients. It supports local stdio and remote Streamable HTTP.
 
 The public toolset is intentionally small for AI chat clients:
 
+- `project-guide`
+- `content-operations-guide`
 - `module-list`
 - `model-schema`
 - `relation-schema`
 - `model-record-count`, `model-record-find`, `model-record-get`, `model-record-create`, `model-record-update`, `model-record-delete-preview`, `model-record-delete-apply`
 - `relation-record-count`, `relation-record-find`, `relation-record-get`, `relation-record-create`, `relation-record-update`, `relation-record-delete-preview`, `relation-record-delete-apply`
-- `page-preview`, `page-localized-field-update`
+- `page-preview`
 
 Generated per-model/per-relation CRUD tools are not part of `apps/mcp`. Select records with explicit selectors such as `{ "module": "blog", "model": "article" }` or `{ "module": "blog", "relation": "categories-to-articles" }`.
+
+For the required read, impact-check, dry-run, commit, and verification procedure, see [`USAGE.md`](./USAGE.md).
+
+## AI Guidance Delivery
+
+The MCP server delivers project knowledge without requiring the client to read
+the repository filesystem:
+
+- MCP `initialize` returns concise server `instructions` with the project
+  boundary, model/relation principles, page graph, source-code boundary, and
+  verified mutation protocol.
+- `project-guide` and `singlepagestartup://project-guide` return the complete structured
+  project architecture, task-routing, content-composition, documentation-order,
+  and non-negotiable-rule guide.
+- `content-operations-guide` and
+  `singlepagestartup://content-operations-guide` return the complete structured
+  mutation, ambiguity, read-back, comparison, and reporting contract.
+- `solve-singlepagestartup-task` is an MCP prompt that applies both guides to a
+  concrete task.
+- Every create, update, delete-apply, and localized page update tool repeats the
+  critical same-connector, read-back, comparison, and `UNKNOWN` rules in its
+  tool description.
+
+Client support varies. A client may ignore MCP server instructions or not expose
+resources/prompts to its model. The read-only guide tools and mutation tool
+descriptions provide the same critical context through the universally used
+MCP tool surface.
 
 ## File Uploads
 
@@ -49,7 +78,7 @@ Generated/local client file as base64:
 }
 ```
 
-Do not pass ChatGPT/Claude sandbox paths such as `/mnt/data/cover.webp`; the SPS server cannot read files from the model provider's container. Encode the generated file as base64 or provide a publicly reachable URL.
+Do not pass ChatGPT/Claude sandbox paths such as `/mnt/data/cover.webp`; the SinglePageStartup server cannot read files from the model provider's container. Encode the generated file as base64 or provide a publicly reachable URL.
 
 ## Local Development
 
@@ -84,10 +113,15 @@ The page registers a local OAuth client, generates PKCE, redirects to the MCP lo
 For MCP Inspector with Streamable HTTP OAuth:
 
 ```bash
-npx @modelcontextprotocol/inspector
+npm run mcp:inspector:http
 ```
 
-Select `Streamable HTTP`, set URL to `http://127.0.0.1:3001/mcp`, keep custom auth headers empty, and reconnect. Inspector should open `/oauth/authorize`, store the MCP access token, and attach `Authorization: Bearer ...` automatically on the next connection attempt.
+The command loads `apps/mcp/inspector.config.json`, so Inspector already
+contains the `singlepagestartup` Streamable HTTP server at
+`http://127.0.0.1:3001/mcp`. Start `npm run mcp:http` separately before
+connecting. Keep custom auth headers empty for OAuth. Inspector should open
+`/oauth/authorize`, store the MCP access token, and attach
+`Authorization: Bearer ...` automatically on the next connection attempt.
 
 If Inspector keeps reconnecting without `Authorization`, clear the Inspector browser session storage or restart Inspector. It caches OAuth clients and tokens by MCP server URL.
 
@@ -142,7 +176,7 @@ For Claude UI / Claude Desktop remote connectors, add a custom connector:
 3. Use name `<repo-name>-production`, for example `singlepagestartup-production`.
 4. Use URL `https://mcp.<domain>/mcp`.
 5. Leave advanced OAuth Client ID/Secret empty.
-6. Click `Add`, then `Connect`, and sign in with SPS email/password.
+6. Click `Add`, then `Connect`, and sign in with SinglePageStartup email/password.
 7. Enable the connector in a chat via `+ -> Connectors`.
 
 Remote connectors are reached from Anthropic cloud infrastructure, so `http://127.0.0.1:3001/mcp` does not work for Claude UI. Use the public HTTPS endpoint.

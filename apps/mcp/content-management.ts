@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import {
   ContentModelCountInputSchema,
   ContentModelCreateInputSchema,
@@ -16,7 +17,6 @@ import {
   ContentRelationGetByIdInputSchema,
   ContentRelationSelectorSchema,
   ContentRelationUpdateInputSchema,
-  HostGraphLocalizedFieldUpdateInputSchema,
   HostGraphPreviewInputSchema,
 } from "./lib/content-management/schemas";
 import {
@@ -39,21 +39,21 @@ import {
   updateContentRelationRecord,
 } from "./lib/content-management/operations";
 import {
-  errorResponse,
   okEnvelope,
   okResponse,
   unknownErrorResponse,
 } from "./lib/content-management/response";
+import { resolveHostGraph } from "./lib/content-management/host-graph";
+import { getMcpAuthHeaders } from "./lib/content-management/auth";
 import {
-  requireSingleHostGraphCandidate,
-  resolveHostGraph,
-} from "./lib/content-management/host-graph";
-import {
-  getMcpAuthHeaders,
-  getMcpSdkOptions,
-} from "./lib/content-management/auth";
-import { requireContentModelDescriptor } from "./lib/content-management/registry";
-import { buildLocalizedFieldPatch } from "./lib/content-management/localized-field";
+  CONTENT_OPERATIONS_GUIDE_RESOURCE_URI,
+  createSolveSpsTaskPrompt,
+  DELETE_SAFETY_DESCRIPTION,
+  MUTATION_SAFETY_DESCRIPTION,
+  PROJECT_GUIDE_RESOURCE_URI,
+  SPS_CONTENT_OPERATIONS_GUIDE,
+  SPS_PROJECT_GUIDE,
+} from "./lib/guidance";
 
 type ToolHandler = Parameters<McpServer["registerTool"]>[2];
 
@@ -69,10 +69,65 @@ function withAuth(handler: ToolHandler): ToolHandler {
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "module-list",
-    "sps://modules",
+    "project-guide",
+    PROJECT_GUIDE_RESOURCE_URI,
     {
-      title: "SPS modules",
+      title: "SinglePageStartup project guide",
+      description:
+        "Project architecture, MCP boundaries, content composition, task routing, documentation order, and non-negotiable SinglePageStartup rules. Read this before the first SinglePageStartup operation in a task.",
+      mimeType: "application/json",
+    },
+    async (uri) => {
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            mimeType: "application/json",
+            text: JSON.stringify(
+              okEnvelope("project-guide", SPS_PROJECT_GUIDE),
+              null,
+              2,
+            ),
+          },
+        ],
+      };
+    },
+  );
+
+  mcp.registerResource(
+    "content-operations-guide",
+    CONTENT_OPERATIONS_GUIDE_RESOURCE_URI,
+    {
+      title: "SinglePageStartup content operations guide",
+      description:
+        "Required read, impact-check, dry-run, commit, read-back, compare, ambiguity, and reporting protocol for SinglePageStartup mutations.",
+      mimeType: "application/json",
+    },
+    async (uri) => {
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            mimeType: "application/json",
+            text: JSON.stringify(
+              okEnvelope(
+                "content-operations-guide",
+                SPS_CONTENT_OPERATIONS_GUIDE,
+              ),
+              null,
+              2,
+            ),
+          },
+        ],
+      };
+    },
+  );
+
+  mcp.registerResource(
+    "module-list",
+    "singlepagestartup://modules",
+    {
+      title: "SinglePageStartup modules",
       description:
         "Discover modules with nested model and relation summaries for compact MCP tools.",
     },
@@ -95,11 +150,34 @@ export function registerResources(mcp: McpServer) {
 
 export function registerTools(mcp: McpServer) {
   mcp.registerTool(
+    "project-guide",
+    {
+      title: "Read SinglePageStartup project guide",
+      description:
+        "Read this first for every SinglePageStartup task. Returns project architecture, MCP boundaries, content composition, task routing, documentation order, and non-negotiable rules.",
+      inputSchema: {},
+    },
+    async () => okResponse("project-guide", SPS_PROJECT_GUIDE),
+  );
+
+  mcp.registerTool(
+    "content-operations-guide",
+    {
+      title: "Read SinglePageStartup content operations guide",
+      description:
+        "Read this before every SinglePageStartup create, update, or delete. Returns the required same-connector mutation protocol, ambiguity handling, verification statuses, operation flows, and anti-patterns.",
+      inputSchema: {},
+    },
+    async () =>
+      okResponse("content-operations-guide", SPS_CONTENT_OPERATIONS_GUIDE),
+  );
+
+  mcp.registerTool(
     "module-list",
     {
-      title: "List SPS modules",
+      title: "List SinglePageStartup modules",
       description:
-        "List modules with nested models and relations available through compact SPS MCP tools.",
+        "After reading project-guide, list modules with nested models and relations available through compact SinglePageStartup MCP tools.",
       inputSchema: {},
     },
     withAuth(async () => okResponse("module-list", describeContentEntities())),
@@ -108,7 +186,7 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "model-schema",
     {
-      title: "Describe SPS model schema",
+      title: "Describe SinglePageStartup model schema",
       description:
         "Return fields, required fields, localized fields, variants, examples, and supported operations for one model.",
       inputSchema: ContentModelSelectorSchema.shape,
@@ -121,7 +199,7 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "relation-schema",
     {
-      title: "Describe SPS relation schema",
+      title: "Describe SinglePageStartup relation schema",
       description:
         "Return fields, relation fields, variants, examples, and supported operations for one relation.",
       inputSchema: ContentRelationSelectorSchema.shape,
@@ -134,7 +212,7 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "model-record-count",
     {
-      title: "Count SPS model records",
+      title: "Count SinglePageStartup model records",
       description: "Count records for one model with optional filters.",
       inputSchema: ContentModelCountInputSchema.shape,
     },
@@ -151,7 +229,7 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "model-record-find",
     {
-      title: "Find SPS model records",
+      title: "Find SinglePageStartup model records",
       description:
         "Find records for one model with filters, order, limit, and offset.",
       inputSchema: ContentModelFindInputSchema.shape,
@@ -169,7 +247,7 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "model-record-get",
     {
-      title: "Get SPS model record",
+      title: "Get SinglePageStartup model record",
       description: "Get one model record by id.",
       inputSchema: ContentModelGetByIdInputSchema.shape,
     },
@@ -186,9 +264,8 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "model-record-create",
     {
-      title: "Create SPS model record",
-      description:
-        "Create one model record. dryRun defaults to true; set dryRun to false to write.",
+      title: "Create SinglePageStartup model record",
+      description: `Create one model record. dryRun defaults to true; set dryRun to false to write.${MUTATION_SAFETY_DESCRIPTION}`,
       inputSchema: ContentModelCreateInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -204,9 +281,8 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "model-record-update",
     {
-      title: "Update SPS model record",
-      description:
-        "Update one model record. dryRun defaults to true; set dryRun to false to write.",
+      title: "Update SinglePageStartup model record",
+      description: `Update one model record. dryRun defaults to true; set dryRun to false to write.${MUTATION_SAFETY_DESCRIPTION}`,
       inputSchema: ContentModelUpdateInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -222,7 +298,7 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "model-record-delete-preview",
     {
-      title: "Preview SPS model delete",
+      title: "Preview SinglePageStartup model delete",
       description:
         "Read a model record and return the confirmation token required by model-record-delete-apply.",
       inputSchema: ContentModelDeletePreviewInputSchema.shape,
@@ -240,9 +316,8 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "model-record-delete-apply",
     {
-      title: "Apply SPS model delete",
-      description:
-        "Delete a model record only after model-record-delete-preview returned a matching confirmation token.",
+      title: "Apply SinglePageStartup model delete",
+      description: `Delete a model record only after model-record-delete-preview returned a matching confirmation token.${DELETE_SAFETY_DESCRIPTION}`,
       inputSchema: ContentModelDeleteApplyInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -258,7 +333,7 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "relation-record-count",
     {
-      title: "Count SPS relation records",
+      title: "Count SinglePageStartup relation records",
       description: "Count records for one relation with optional filters.",
       inputSchema: ContentRelationCountInputSchema.shape,
     },
@@ -275,7 +350,7 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "relation-record-find",
     {
-      title: "Find SPS relation records",
+      title: "Find SinglePageStartup relation records",
       description:
         "Find records for one relation with filters, order, limit, and offset.",
       inputSchema: ContentRelationFindInputSchema.shape,
@@ -293,7 +368,7 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "relation-record-get",
     {
-      title: "Get SPS relation record",
+      title: "Get SinglePageStartup relation record",
       description: "Get one relation record by id.",
       inputSchema: ContentRelationGetByIdInputSchema.shape,
     },
@@ -310,9 +385,8 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "relation-record-create",
     {
-      title: "Create SPS relation record",
-      description:
-        "Create one relation record. dryRun defaults to true; set dryRun to false to write.",
+      title: "Create SinglePageStartup relation record",
+      description: `Create one relation record. dryRun defaults to true; set dryRun to false to write.${MUTATION_SAFETY_DESCRIPTION}`,
       inputSchema: ContentRelationCreateInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -328,9 +402,8 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "relation-record-update",
     {
-      title: "Update SPS relation record",
-      description:
-        "Update one relation record. dryRun defaults to true; set dryRun to false to write.",
+      title: "Update SinglePageStartup relation record",
+      description: `Update one relation record. dryRun defaults to true; set dryRun to false to write.${MUTATION_SAFETY_DESCRIPTION}`,
       inputSchema: ContentRelationUpdateInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -346,7 +419,7 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "relation-record-delete-preview",
     {
-      title: "Preview SPS relation delete",
+      title: "Preview SinglePageStartup relation delete",
       description:
         "Read a relation record and return the confirmation token required by relation-record-delete-apply.",
       inputSchema: ContentRelationDeletePreviewInputSchema.shape,
@@ -364,9 +437,8 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "relation-record-delete-apply",
     {
-      title: "Apply SPS relation delete",
-      description:
-        "Delete a relation record only after relation-record-delete-preview returned a matching confirmation token.",
+      title: "Apply SinglePageStartup relation delete",
+      description: `Delete a relation record only after relation-record-delete-preview returned a matching confirmation token.${DELETE_SAFETY_DESCRIPTION}`,
       inputSchema: ContentRelationDeleteApplyInputSchema.shape,
     },
     withAuth(async (args, extra) => {
@@ -382,7 +454,7 @@ export function registerTools(mcp: McpServer) {
   mcp.registerTool(
     "page-preview",
     {
-      title: "Preview SPS page content graph",
+      title: "Preview SinglePageStartup page content graph",
       description:
         "Resolve a page URL into page widgets, host widgets, external widget relations, and supported content candidates.",
       inputSchema: HostGraphPreviewInputSchema.shape,
@@ -396,75 +468,32 @@ export function registerTools(mcp: McpServer) {
       );
     }),
   );
+}
 
-  mcp.registerTool(
-    "page-localized-field-update",
+export function registerPrompts(mcp: McpServer) {
+  mcp.registerPrompt(
+    "solve-singlepagestartup-task",
     {
-      title: "Update localized field through SPS page graph",
+      title: "Solve a SinglePageStartup task safely",
       description:
-        "Resolve a page URL and unambiguous external widget candidate, then dry-run or apply a locale-safe field update.",
-      inputSchema: HostGraphLocalizedFieldUpdateInputSchema.shape,
+        "Prepare an AI model to classify and solve a SinglePageStartup task using project guidance, entity discovery, explicit relations, impact checks, and verified mutations.",
+      argsSchema: {
+        task: z.string().min(1).describe("The SinglePageStartup task to solve"),
+      },
     },
-    withAuth(async (args, extra) => {
-      const parsed = HostGraphLocalizedFieldUpdateInputSchema.safeParse(args);
-
-      if (!parsed.success) {
-        return errorResponse("validation", parsed.error.message);
-      }
-
-      const authHeaders = getMcpAuthHeaders(extra);
-      const graph = await resolveHostGraph(parsed.data, { authHeaders });
-      const candidate = requireSingleHostGraphCandidate({
-        result: graph,
-        input: parsed.data,
-      });
-
-      if (!candidate.externalSelector || !candidate.externalWidget?.id) {
-        return errorResponse(
-          "validation",
-          "Resolved page candidate does not include a supported external model record",
-          { candidate },
-        );
-      }
-
-      const descriptor = await requireContentModelDescriptor(
-        candidate.externalSelector,
-      );
-      const data = buildLocalizedFieldPatch({
-        descriptor,
-        current: candidate.externalWidget,
-        field: parsed.data.field,
-        locale: parsed.data.locale,
-        value: parsed.data.value,
-      });
-
-      if (parsed.data.dryRun) {
-        return okResponse("page-localized-field-update", {
-          operation: "page-localized-field-update",
-          dryRun: true,
-          graph,
-          candidate,
-          before: candidate.externalWidget[parsed.data.field],
-          after: data[parsed.data.field],
-          data,
-        });
-      }
-
-      const updated = await descriptor.api.update({
-        id: candidate.externalWidget.id,
-        data,
-        options: getMcpSdkOptions(authHeaders),
-      });
-
-      return okResponse("page-localized-field-update", {
-        operation: "page-localized-field-update",
-        dryRun: false,
-        graph,
-        candidate,
-        before: candidate.externalWidget[parsed.data.field],
-        after: updated?.[parsed.data.field],
-        data: updated,
-      });
-    }),
+    ({ task }) => {
+      return {
+        description: "SinglePageStartup task-solving workflow",
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: createSolveSpsTaskPrompt(task),
+            },
+          },
+        ],
+      };
+    },
   );
 }

@@ -1,6 +1,6 @@
 /**
  * BDD Suite: MCP content-management localized field helper
- * Given SPS content records store localized copy as locale-keyed JSON objects
+ * Given SinglePageStartup content records store localized copy as locale-keyed JSON objects
  * When Codex updates one locale through MCP
  * Then sibling locales are preserved and invalid field shapes are rejected
  */

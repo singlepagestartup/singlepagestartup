@@ -1,16 +1,12 @@
 /**
  * BDD Suite: MCP content-management host graph resolver
- * Given SPS host pages compose widgets through host relations and external widget links
+ * Given SinglePageStartup host pages compose widgets through host relations and external widget links
  * When Codex previews a URL-based content path
  * Then the resolver returns deterministic candidates and refuses ambiguous writes
  */
 
 import { z } from "zod";
-import {
-  filterHostGraphCandidates,
-  requireSingleHostGraphCandidate,
-  resolveHostGraph,
-} from "./host-graph";
+import { filterHostGraphCandidates, resolveHostGraph } from "./host-graph";
 import { IContentEntityDescriptor } from "./types";
 
 const authHeaders = {
@@ -250,9 +246,9 @@ describe("MCP content-management host graph resolver", () => {
    * BDD Scenario: Ambiguous matches are preserved
    * Given more than one candidate matches the target text
    * When Codex filters host graph candidates
-   * Then all matches are returned and single-candidate enforcement throws
+   * Then all matches are returned so the caller can refine the preview
    */
-  it("returns multiple matches and refuses single-candidate enforcement", () => {
+  it("returns multiple matches for explicit caller refinement", () => {
     const candidates = [
       {
         id: "blog-widget-1",
@@ -282,18 +278,5 @@ describe("MCP content-management host graph resolver", () => {
     });
 
     expect(matches).toHaveLength(2);
-    expect(() =>
-      requireSingleHostGraphCandidate({
-        result: {
-          url: "/about",
-          language: "en",
-          candidates: matches,
-          matchStatus: "multiple",
-        },
-        input: {},
-      }),
-    ).toThrow(
-      "Validation error. Expected exactly one host graph candidate, found 2",
-    );
   });
 });
