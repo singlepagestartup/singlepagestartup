@@ -1,0 +1,27 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "983:1789",
+  "variantName": "rbac-subject-authentication-reset-password",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.rbac-subject-authentication-reset-password",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/models/page/singlepage/rbac-subject-authentication-reset-password",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "rbac-subject-authentication-reset-password",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "rbac-subject-authentication-reset-password",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/models/page/singlepage/rbac-subject-authentication-reset-password/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/models/page/singlepage/rbac-subject-authentication-reset-password/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1789",
+    "sps.figma.storybookReferenceNodeId": "983:1938",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1938",
+  "storybookImageCount": 1
+}

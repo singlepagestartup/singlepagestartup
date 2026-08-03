@@ -1,0 +1,6 @@
+schema: singlepagestartup.workspace-config.v1
+active_layer: auto
+workspace_root: workspace
+canonical_repository: singlepagestartup/singlepagestartup
+# Copy to workspace/config.local.yaml only when this checkout needs an override.
+# active_layer accepts auto, singlepage, or startup.

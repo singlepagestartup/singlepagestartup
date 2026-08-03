@@ -151,7 +151,7 @@ npm run knowledge:index -- --clear
 Index from a custom root:
 
 ```bash
-npm run knowledge:index -- --root=tools/digital-agency/project/content/video --limit=5
+npm run knowledge:index -- --root=workspace/startup --limit=5
 ```
 
 The indexer treats `knowledge/document.description` as the source of truth. File discovery remains an import path for source transcripts and canonical content only: `content.txt`, `content.md`, `transcript.txt`, `transcript.md`, `transcription.txt`, and `transcription.md` are read into editable documents first, then documents are indexed into derived Source and Chunk rows. Generated outputs such as `description.md` and `youtube_description.md` are intentionally ignored. Unchanged document hashes are skipped when the source still has chunk relations.

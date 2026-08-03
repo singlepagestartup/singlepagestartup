@@ -4,33 +4,37 @@ This directory is the Codex adapter for the provider-neutral SPS development wor
 
 ## Scope
 
-- Root workflow only (no `tools/digital-agency` / `tools/deployer` migration in this phase)
-- Same GitHub-Project-gated lifecycle as `.claude`:
+- Same GitHub-Project-gated engineering lifecycle as every provider:
   - `core-00-create`
   - `core-10-research`
   - `core-20-plan`
   - `core-30-implement`
   - `core-next` dispatcher
+- Local client pre-development through `singlepagestartup`
 
 ## Contracts
 
 - GitHub status backend remains in `.claude/helpers/*.sh`.
-- Canonical process docs remain in `.claude/commands/**/*.md` (provider-neutral despite the directory name).
-- Workflow contracts live in `.claude/references/*.md` (`repository-context-contract`, `process-artifact-contract`, `knowledge-first-contract`).
+- Canonical process docs live in `.agents/workflows/**/*.md`.
+- Shared contracts and roles live in `.agents/contracts/**` and `.agents/roles/**`.
 - Codex skills are wrappers that execute the same logic and produce the same artifacts at the same paths.
 
-**Fallback rule**: if a `.claude/commands/**` command has no Codex skill wrapper, read that command file fully and execute its instructions directly in the current Codex thread, applying the tool-mapping table from `AGENTS.md` ("Running the workflow from any provider").
+**Fallback rule**: when a canonical engineering workflow has no Codex skill,
+read its `.agents/workflows/engineering/**` file fully and execute it in the
+current thread using the tool mapping in `AGENTS.md`.
 
 ## Skills
 
 - Core: `core-next`, `core-00-create`, `core-10-research`, `core-20-plan`, `core-30-implement`
 - Utility: `github`, `github-status`, `validate-plan`, `create-handoff`, `resume-handoff`, `implement-plan`, `commit`, `describe-pr`, `post-commit-retro`
+- Client: `singlepagestartup`
 - Legacy aliases: `ralph-research`, `ralph-plan`, `ralph-impl`, `oneshot`, `oneshot-plan` (hyphenated names only; they delegate to `core-*` semantics)
 
 ## Subagents
 
-Codex subagents are defined in `.codex/agents/*.toml` and mirror `.claude/agents/*` responsibilities.
-Their `developer_instructions` should be detailed enough to stand alone: mission, constraints, strategy, output format, and explicit "do not" rules should match the quality bar of `.claude/agents`.
+Codex subagents are defined in `.codex/agents/*.toml`; these files contain model
+and sandbox metadata plus a pointer to the canonical profession in
+`.agents/roles/*.md`.
 
 - Read-only research/navigation: `codebase-locator`, `codebase-analyzer`, `codebase-pattern-finder`, `thoughts-locator`, `thoughts-analyzer`, `web-search-researcher`
 - Browser verification: `browser-tester`

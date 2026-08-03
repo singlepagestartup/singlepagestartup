@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" aria-hidden="true">
+  <rect width="1200" height="760" fill="#F5F0E8"/>
+  <g fill="none" stroke="#163D37" stroke-width="2" opacity=".22">
+    <path d="M110 650V110h420v540M110 370h420M320 110v540"/>
+    <path d="M670 590V170h330v420M670 380h330M835 170v420"/>
+  </g>
+  <path d="M110 650h420V110" fill="none" stroke="#D97745" stroke-width="12"/>
+  <g fill="#66736F" font-family="Arial, sans-serif" font-size="15">
+    <text x="110" y="690">identity pattern · not client evidence</text>
+    <text x="670" y="625">measure · explain · repair</text>
+  </g>
+</svg>

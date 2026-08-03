@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Рама — pilot acquisition creative</title>
+  <desc id="desc">A decorative concept inviting a person to send window photos for assessment; it contains no client-work imagery.</desc>
+  <rect width="1080" height="1080" fill="#F5F0E8"/>
+  <path d="M760 120h200v840H120V120h480" fill="none" stroke="#163D37" stroke-width="18"/>
+  <path d="M760 120v245h200M120 650h840" fill="none" stroke="#D97745" stroke-width="18"/>
+  <text x="160" y="255" fill="#66736F" font-family="Arial, sans-serif" font-size="28" letter-spacing="3">ДЕРЕВЯННОЕ ОКНО · МОСКВА</text>
+  <text x="160" y="390" fill="#163D37" font-family="Georgia, serif" font-size="78">Ремонтировать</text>
+  <text x="160" y="480" fill="#163D37" font-family="Georgia, serif" font-size="78">или менять?</text>
+  <text x="160" y="570" fill="#14211E" font-family="Arial, sans-serif" font-size="34">Сначала посмотрим на состояние.</text>
+  <rect x="160" y="735" width="485" height="105" rx="18" fill="#D97745"/>
+  <text x="402" y="801" fill="#14211E" font-family="Arial, sans-serif" font-size="32" font-weight="700" text-anchor="middle">Отправить фото на оценку</text>
+  <text x="160" y="905" fill="#66736F" font-family="Arial, sans-serif" font-size="24">Pilot concept · не изображение выполненной работы</text>
+</svg>

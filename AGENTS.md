@@ -56,15 +56,27 @@ This repository uses one provider-agnostic, status-gated development workflow. C
 
 ### Single source of truth
 
-| Concern                                                         | Canonical location                                                        |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Process definitions (phases, gates, artifact templates)         | `.claude/commands/**/*.md`                                                |
-| Workflow contracts (repo context, process log, knowledge reuse) | `.claude/references/*.md`                                                 |
-| GitHub Project / issue automation                               | `.claude/helpers/*.sh` (plain bash, provider-independent)                 |
-| Per-checkout configuration                                      | `.claude/.env` (gitignored; created by `./ai.sh`)                         |
-| Provider adapters                                               | Claude Code: `.claude/commands` as slash commands; Codex: `.codex/skills` |
+| Concern                                           | Canonical location                                        |
+| ------------------------------------------------- | --------------------------------------------------------- |
+| Engineering process definitions                   | `.agents/workflows/engineering/**/*.md`                   |
+| Client pre-development process                    | `.agents/workflows/client/pre-development.md`             |
+| Roles, invariant contracts, and tool capabilities | `.agents/roles`, `.agents/contracts`, `.agents/tools`     |
+| GitHub Project / issue automation                 | `.claude/helpers/*.sh` (plain bash, provider-independent) |
+| Per-checkout engineering configuration            | `.claude/.env` (gitignored; created by `./ai.sh`)         |
+| Provider adapters                                 | Claude Code: `.claude/**`; Codex: `.codex/**`             |
 
-The `.claude/` directory name is historical: the command documents, helper scripts, and reference contracts inside it are provider-neutral and are the canonical definition of the workflow. Adapters for other providers must wrap these files (read them and execute their instructions), never fork or duplicate their content.
+`.agents/` is the only canonical source of shared workflow and role semantics.
+Claude and Codex files retain only provider discovery metadata and routes to
+those sources. `.claude/helpers/*.sh` remains path-stable because it is the
+shared executable backend for GitHub Project automation, not a process copy.
+
+### Client pre-development workflow
+
+Use `singlepagestartup` (Codex), `/singlepagestartup` (Claude), or a plain-language
+request to start, continue, inspect, or change a client project. The workflow
+derives progress from `workspace/<layer>/index.yaml` and its living artifacts;
+there is no separate client status command or run state. The framework repository
+uses `workspace/singlepage/`; downstream repositories use `workspace/startup/`.
 
 ### GitHub Project is the control plane
 
@@ -75,7 +87,7 @@ All phase decisions are made through the GitHub Project status field — not cha
 - Human review gates: `Research in Review`, `Plan in Review`, `Code Review`. Only the human operator moves an issue out of these statuses; this is where work is reviewed and the decision to proceed is made.
 - Status reads/writes go through `.claude/helpers/get_issue_status.sh` and `.claude/helpers/update_issue_status.sh`.
 
-Phases (canonical files in `.claude/commands/core/`):
+Phases (canonical files in `.agents/workflows/engineering/core/`):
 
 | Phase        | Canonical file    | Status transition                       |
 | ------------ | ----------------- | --------------------------------------- |
@@ -97,13 +109,13 @@ All artifacts live under `thoughts/shared/<kind>/<repo-name>/` and are committed
 | Plan        | `thoughts/shared/plans/<repo>/ISSUE-N.md`             | Phased implementation plan with success criteria |
 | Handoff     | `thoughts/shared/handoffs/<repo>/ISSUE-N-progress.md` | Operational progress (deleted after merge)       |
 
-These artifacts are the durable memory of the project. Before searching the codebase, agents must consult them first — see `.claude/references/knowledge-first-contract.md`.
+These artifacts are the durable memory of the project. Before searching the codebase, agents must consult them first — see `.agents/contracts/engineering/knowledge-first.md`.
 
 ### Running the workflow from any provider
 
-- **Claude Code**: `/core/next [issue]` — slash commands map 1:1 onto `.claude/commands/**`.
+- **Claude Code**: `/core/next [issue]` — `.claude/commands/**` routes to the canonical workflow.
 - **Codex**: `core-next` and the other skills in `.codex/skills/` — thin wrappers over the canonical files (see `.codex/README.md`). Run modes: `codex --profile sps-safe` (default) or `codex --profile sps-auto`.
-- **Any other agent**: read the canonical command file (start with `.claude/commands/core/next.md`) and execute its instructions in the current context, applying this tool mapping:
+- **Any other agent**: read the canonical command file (start with `.agents/workflows/engineering/core/next.md`) and execute its instructions in the current context, applying this tool mapping:
 
 | Canonical instruction                   | Any-provider equivalent                                                                                              |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -119,8 +131,8 @@ Hard requirements for every provider: respect status gates, write artifacts at t
 
 `singlepagestartup/sps-lite` is the upstream framework repository. Projects built on SPS use it as an upstream remote (the child repository name is chosen by the developer) and sync workflow improvements in both directions. To keep this safe:
 
-- Shared workflow files (`AGENTS.md`, `CLAUDE.md`, `.claude/**`, `.codex/**`) must stay project-agnostic — never hard-code a repository or project name in them.
-- Repository identity comes from the checkout, not from these files: `TARGET_REPO` in `.claude/.env`, or `remote.origin.url` — see `.claude/references/repository-context-contract.md`.
+- Shared workflow files (`AGENTS.md`, `CLAUDE.md`, `.agents/**`, `.claude/**`, `.codex/**`) must stay project-agnostic — never hard-code a repository or project name in them.
+- Repository identity comes from the checkout, not from these files: `TARGET_REPO` in `.claude/.env`, or `remote.origin.url` — see `.agents/contracts/engineering/repository-context.md`.
 - Artifacts self-identify their home: every ticket/process/research/plan file lives under `thoughts/shared/<kind>/<repo-name>/` and carries a `repository:` frontmatter field, so upstream artifacts and each child project's artifacts never mix — even if a `thoughts/` directory is shared or synced.
 - Each checkout has its own `.claude/.env` (gitignored) pointing at its own GitHub repository and its own GitHub Project.
 - Framework-level fixes discovered in a child project should be backported to `sps-lite`; project-specific behavior must stay in the child repository.
@@ -129,9 +141,9 @@ Hard requirements for every provider: respect status gates, write artifacts at t
 
 The workflow is designed to spend tokens once and reuse the result:
 
-- Consult recorded knowledge before searching the codebase: follow `.claude/references/knowledge-first-contract.md` (lookup order: process log → ticket → research/plans → READMEs → targeted search).
+- Consult recorded knowledge before searching the codebase: follow `.agents/contracts/engineering/knowledge-first.md` (lookup order: process log → ticket → research/plans → READMEs → targeted search).
 - Each phase reads the previous phase's artifact instead of re-deriving it; artifacts must be self-contained for exactly this reason.
-- Incidents and their fixes are recorded once in the process log (`.claude/references/process-artifact-contract.md`); future agents read them instead of re-debugging.
+- Incidents and their fixes are recorded once in the process log (`.agents/contracts/engineering/process-artifact.md`); future agents read them instead of re-debugging.
 - Documentation order (root `README.md` → module README → model/relation README) is the cheapest way to understand a module — read it before scanning code.
 
 ## Test format (BDD)

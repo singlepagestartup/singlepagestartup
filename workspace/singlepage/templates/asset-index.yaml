@@ -1,0 +1,13 @@
+schema: singlepagestartup.asset-index.v1
+assets:
+  - id: replace-with-stable-id
+    path: assets/replace-with-file
+    source_type: client
+    evidence: false
+    rights_status: unknown
+    purpose: replace-with-purpose
+    related_artifacts: []
+    allowed_use: []
+    prohibited_use: []
+    prompt: null
+    source_or_tool: replace-with-source

@@ -1,0 +1,44 @@
+{
+  "componentName": "startup.widget",
+  "pageName": "startup",
+  "nodeId": "977:63",
+  "variantNodeId": "977:51",
+  "variantName": "singlepage-default",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "startup.widget.default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "sps.source.module": "startup",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/startup/models/widget/singlepage/default/StartupWidgetDefault.tsx",
+    "sps.code.story": "apps/studio/modules/startup/models/widget/singlepage/default/StartupWidgetDefault.stories.tsx",
+    "singlepagestartup.studio.syncKey": "startup/models/widget/singlepage/default",
+    "sps.figma.component": "startup.widget",
+    "sps.figma.variant": "singlepage-default",
+    "sps.figma.nodeId": "977:63",
+    "sps.figma.variantNodeId": "977:51",
+    "sps.figma.storybookReferenceNodeId": "977:75",
+    "sps.storybook.imageCount": "1"
+  },
+  "properties": [
+    {
+      "name": "Title",
+      "type": "TEXT",
+      "slot": "title"
+    },
+    {
+      "name": "Description",
+      "type": "TEXT",
+      "slot": "description"
+    }
+  ],
+  "tokens": [
+    "color/surface",
+    "color/primary",
+    "color/border"
+  ],
+  "storybookReferenceNodeId": "977:75",
+  "storybookImageCount": 1
+}

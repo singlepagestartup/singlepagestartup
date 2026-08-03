@@ -1,8 +1,11 @@
 # Claude Code Configuration
 
-This directory contains Claude Code agents, commands (skills), and local configuration for this project.
+This directory contains Claude Code adapters, shared executable GitHub helpers,
+and local configuration for this project.
 
-> **Provider neutrality**: the command documents, helper scripts, and reference contracts in this directory are the canonical, provider-neutral definition of the SPS development workflow. Other agents (Codex via `.codex/skills`, or any other provider) execute these same files — see the root `AGENTS.md` ("AI Development Workflow") for the universal entry point and tool-mapping rules.
+> **Provider neutrality**: canonical workflows, roles, contracts, and tool
+> capabilities live in `.agents/`. Claude files route to those sources. The
+> `.claude/helpers/*.sh` runtime remains shared and path-stable.
 
 ## Directory Structure
 

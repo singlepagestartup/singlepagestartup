@@ -7,6 +7,8 @@ description: "Legacy alias: delegates to core-30-implement behavior."
 
 Thin compatibility alias.
 
+Canonical source: `.agents/workflows/engineering/ralph_impl.md`.
+
 ## Behavior
 
 - Execute the same logic as `core-30-implement`.
@@ -15,5 +17,5 @@ Thin compatibility alias.
 
 ## Source Compatibility
 
-- `.claude/commands/ralph_impl.md`
-- `.claude/commands/core/30-implement.md`
+- `.agents/workflows/engineering/ralph_impl.md`
+- `.agents/workflows/engineering/core/30-implement.md`

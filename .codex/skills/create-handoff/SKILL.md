@@ -5,11 +5,11 @@ description: "Creates a handoff document for multi-session continuation."
 
 # create-handoff
 
-Codex wrapper for `.claude/commands/create_handoff.md`.
+Canonical source: `.agents/workflows/engineering/create_handoff.md`.
 
 ## Execution Contract
 
-1. Read `.claude/commands/create_handoff.md` fully before executing.
+1. Read `.agents/workflows/engineering/create_handoff.md` fully before executing.
 2. Execute the same workflow semantics and status gates.
 3. Keep all artifacts in the same paths under `thoughts/shared/*`.
 4. Use existing helper scripts in `.claude/helpers/*.sh` for GitHub status logic.

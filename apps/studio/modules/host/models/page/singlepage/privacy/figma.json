@@ -1,0 +1,27 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "983:1783",
+  "variantName": "privacy",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.privacy",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/models/page/singlepage/privacy",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "privacy",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "privacy",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/models/page/singlepage/privacy/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/models/page/singlepage/privacy/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1783",
+    "sps.figma.storybookReferenceNodeId": "983:1932",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1932",
+  "storybookImageCount": 1
+}

@@ -4,6 +4,11 @@ Use this file as the Claude-specific entry point for working in this repository.
 
 The provider-neutral entry point (for any AI agent) is the root `AGENTS.md` — it is canonical for shared repository rules and the AI development workflow. Shared sections in both files must stay in sync; when editing one, mirror the change in the other.
 
+Shared workflows, roles, contracts, and tool capabilities are canonical under
+`.agents/`. Files under `.claude/commands`, `.claude/references`, and
+`.claude/agents` are Claude-native adapters. Executable GitHub helpers remain in
+`.claude/helpers/` for compatibility.
+
 ## Repository Overview
 
 SinglePageStartup (SPS) is an Nx monorepo with:
@@ -63,7 +68,9 @@ All test files (`*.spec.*`, `*.test.*`, `*.e2e.*`) must use the repository BDD f
 
 ## Development Workflow Commands
 
-The unified development workflow uses commands in `.claude/commands/core/`.
+The unified development workflow is defined in
+`.agents/workflows/engineering/core/` and exposed through Claude adapters in
+`.claude/commands/core/`.
 
 **Start here in most cases:**
 
@@ -81,6 +88,10 @@ The unified development workflow uses commands in `.claude/commands/core/`.
 **After PR merge**: manually move the issue to "Done" in GitHub Project.
 
 For special-purpose tasks, see `.claude/commands/README.md` for the full command list.
+
+For client work before development, use `/singlepagestartup` or ask to start,
+continue, inspect, or change the active project. The canonical four-stage client
+workflow is `.agents/workflows/client/pre-development.md`.
 
 ## Code Review Checklist
 

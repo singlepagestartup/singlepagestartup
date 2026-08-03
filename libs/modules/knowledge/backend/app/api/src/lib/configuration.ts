@@ -21,7 +21,7 @@ function resolveKnowledgeContentRoot() {
   while (true) {
     const candidate = path.resolve(
       currentPath,
-      "tools/digital-agency/project/content",
+      "workspace/singlepage/knowledge",
     );
 
     if (fs.existsSync(candidate)) {
@@ -31,10 +31,7 @@ function resolveKnowledgeContentRoot() {
     const parentPath = path.dirname(currentPath);
 
     if (parentPath === currentPath) {
-      return path.resolve(
-        process.cwd(),
-        "tools/digital-agency/project/content",
-      );
+      return path.resolve(process.cwd(), "workspace/singlepage/knowledge");
     }
 
     currentPath = parentPath;

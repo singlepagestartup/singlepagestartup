@@ -1,0 +1,31 @@
+schema: singlepagestartup.workspace-index.v1
+layer: startup
+entries:
+  - { id: pilot.brief, kind: brief, path: brief.md, description: Founder request, current operation, assets, constraints, and unknowns., uses: [template.brief, profession.account-manager, knowledge.client-intake] }
+  - { id: pilot.evidence, kind: evidence, path: evidence/register.md, description: Pilot claims, sources, assumptions, promises, constraints, and missing proof., uses: [template.evidence] }
+  - { id: pilot.business, kind: business, path: business.md, description: Business model and complete intended customer-service operating process., uses: [pilot.brief, pilot.evidence, template.business, profession.business-analyst] }
+  - { id: pilot.research, kind: research, path: research.md, description: Decision-led customer, competitor, alternative, price, and channel findings., uses: [pilot.brief, pilot.business, pilot.evidence, template.research, profession.market-researcher] }
+  - { id: pilot.strategy, kind: strategy, path: strategy.md, description: Focused commercial choice and bounded first acquisition experiment., uses: [pilot.business, pilot.research, pilot.evidence, template.strategy, profession.strategist, knowledge.channel-selection] }
+  - { id: pilot.asset-index, kind: asset-index, path: assets/index.yaml, description: Provenance and usage limits for pilot identity and presentation assets., uses: [pilot.evidence, template.asset-index] }
+  - { id: pilot.brand, kind: brand, path: brand.md, description: Evidence-aware communication and usable visual identity system., uses: [pilot.strategy, pilot.research, pilot.evidence, pilot.asset-index, template.brand, profession.communication-strategist, profession.brand-designer, knowledge.content-decisions] }
+  - { id: pilot.website, kind: website, path: website.md, description: Final landing-page copy, conversion behavior, responsive design, and Studio references., uses: [pilot.business, pilot.strategy, pilot.brand, pilot.evidence, pilot.asset-index, template.website, profession.web-designer] }
+exports: []
+imports:
+  - template.brief
+  - template.evidence
+  - template.business
+  - template.research
+  - template.strategy
+  - template.asset-index
+  - template.brand
+  - template.website
+  - profession.account-manager
+  - profession.business-analyst
+  - profession.market-researcher
+  - profession.strategist
+  - profession.communication-strategist
+  - profession.brand-designer
+  - profession.web-designer
+  - knowledge.client-intake
+  - knowledge.channel-selection
+  - knowledge.content-decisions

@@ -7,6 +7,8 @@ description: "Legacy alias: delegates to core-20-plan behavior."
 
 Thin compatibility alias.
 
+Canonical source: `.agents/workflows/engineering/ralph_plan.md`.
+
 ## Behavior
 
 - Execute the same logic as `core-20-plan`.
@@ -15,5 +17,5 @@ Thin compatibility alias.
 
 ## Source Compatibility
 
-- `.claude/commands/ralph_plan.md`
-- `.claude/commands/core/20-plan.md`
+- `.agents/workflows/engineering/ralph_plan.md`
+- `.agents/workflows/engineering/core/20-plan.md`

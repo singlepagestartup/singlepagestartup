@@ -1,0 +1,59 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": "700:24",
+  "variantNodeId": "984:86",
+  "variantName": "content-feature-find-row",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "website-builder.widget.content-feature-find-row",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.group": "content",
+    "singlepagestartup.studio.groupVariant": "feature-find-row",
+    "singlepagestartup.studio.imports": "rbac.subject.me-crm-form-deafult",
+    "singlepagestartup.studio.syncKey": "website-builder/models/widget/singlepage/content-feature-find-row",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "content-feature-find-row",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "content-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-row/Component.tsx",
+    "sps.code.story": "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-row/Component.stories.tsx",
+    "sps.figma.nodeId": "700:24",
+    "sps.figma.variantNodeId": "984:86",
+    "sps.figma.storybookReferenceNodeId": "984:205",
+    "sps.storybook.imageCount": "1"
+  },
+  "properties": [
+    {
+      "name": "eyebrow",
+      "type": "TEXT",
+      "slot": "eyebrow"
+    },
+    {
+      "name": "title",
+      "type": "TEXT",
+      "slot": "title"
+    },
+    {
+      "name": "description",
+      "type": "TEXT",
+      "slot": "description"
+    },
+    {
+      "name": "contacts",
+      "type": "TEXT",
+      "slot": "contacts"
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary"
+  ],
+  "storybookReferenceNodeId": "984:205",
+  "storybookImageCount": 1
+}
