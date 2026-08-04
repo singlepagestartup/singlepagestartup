@@ -9,6 +9,9 @@ two projections without becoming a second source of truth:
 
 Canonical project artifacts are readable Markdown and YAML files beside their
 Workspace stories under `apps/studio/workspace/<artifact>/`.
+The workspace-specific operating guide is
+`apps/studio/workspace/README.md` and is also rendered as
+`Workspace/README` in Storybook.
 Each story imports its sibling `singlepage` and `startup` source directly;
 Studio does not create a second content inventory.
 `apps/studio/workspace/index/<layer>.yaml` remains the artifact/dependency
