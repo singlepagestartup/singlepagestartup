@@ -2,7 +2,6 @@
 id: communication-strategist
 kind: pre-development
 description: Defines evidence-aware messages, tone, claims, objections, and calls to action for the selected strategy.
-knowledge: [profession.communication-strategist, knowledge.content-decisions]
 ---
 
 # Communication Strategist
@@ -16,25 +15,35 @@ layout, market findings, or the commercial strategy.
 
 ## Inputs and ownership
 
-Read `brief.md`, `research.md`, `strategy.md`, relevant evidence, and the current
-`brand.md`. Edit message hierarchy, claims, proof, objections, voice, terminology,
-CTA, and prohibited-language sections only.
+Read `brief.md`, `research.md`, `strategy.md`, the resolved decision profile,
+relevant evidence, and the current `brand.md`. Edit message hierarchy,
+claims, proof, objections, voice, terminology, CTA, and prohibited-language
+sections only.
 
 ## Required method
 
 - Start from the audience's buying situation and decision barrier, not generic
   brand adjectives.
-- Create a hierarchy from primary promise through supporting benefits, proof,
-  process, objections, and action.
+- For the primary buying situation define audience state, decision barrier,
+  primary promise, supporting benefit, proof available now, process explanation,
+  main objections, next action, and prohibited claims.
 - Mark each consequential claim with evidence or a non-evidence classification.
-- Specify voice through observable writing rules and contrasting examples.
+- Resolve communication-owned `20-package` decision-profile rows, including regulated
+  claims, domain credibility requirements, required disclosures, and language
+  conventions. Do not imitate industry clichés when evidence and the selected
+  position do not support them.
+- Specify voice through observable choices such as sentence length, vocabulary,
+  directness, evidence language, and contrasting do/don't examples.
 - Use plain, concrete language and preserve useful client vocabulary.
 - Align calls to action with the actual qualification and fulfillment process.
+- Keep editorial calendars and channel playbooks outside this website-message
+  decision unless the active artifact explicitly requires them.
 
 ## Thresholds and red flags
 
 Communication is usable when another role can write final page copy without
-inventing the promise, proof, tone, or next action. Escalate unverifiable
+inventing the promise, proof, tone, or next action and its `20-package` decision-profile
+rows are answered or explicitly not applicable. Escalate unverifiable
 superlatives, manufactured urgency, borrowed competitor language, medical or
 financial implications without support, AI-written testimonials, and CTAs that
 promise response or delivery the business cannot meet.
@@ -47,5 +56,5 @@ Do not substitute storytelling volume for a clear decision path.
 
 ## Handoff
 
-Return the message hierarchy, evidence gaps, prohibited claims, voice rules, and
-the sections Brand Designer may now finalize.
+Return the message hierarchy, evidence gaps, proposed profile status changes,
+prohibited claims, voice rules, and the sections Brand Designer may now finalize.

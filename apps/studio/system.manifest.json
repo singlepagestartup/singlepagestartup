@@ -14,8 +14,7 @@
     "figmaVariables": "foundations/figma.variables.json"
   },
   "inventory": {
-    "modules": "inventory/modules.generated.json",
-    "workspace": "inventory/workspace.generated.json"
+    "modules": "inventory/modules.generated.json"
   },
   "storybook": {
     "configDir": ".storybook"

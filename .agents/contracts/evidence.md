@@ -16,6 +16,13 @@ Research findings cite a source and distinguish observation from inference.
 Client wording is not independently verified evidence. Public-facing copy links
 to evidence or keeps an explicit non-evidence classification.
 
+Every evidence row also declares `Scope` as `singlepage`, `startup`, or
+`shared`, and `State` as `active`, `not-applicable`, or `superseded`. When the
+active layer is startup, inherited singlepage rows are provenance only: they do
+not support startup claims unless a startup row explicitly adopts or supersedes
+them. Reuse a stable ID to correct a row; keep an explicit non-active row rather
+than silently deleting evidence history.
+
 ## Assets
 
 Every asset entry records a stable ID, source type (`client`, `generated`,

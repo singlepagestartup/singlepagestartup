@@ -89,9 +89,28 @@ The unified development workflow is defined in
 
 For special-purpose tasks, see `.claude/commands/README.md` for the full command list.
 
-For client work before development, use `/singlepagestartup` or ask to start,
-continue, inspect, or change the active project. The canonical four-stage client
-workflow is `.agents/workflows/client/pre-development.md`.
+For work before development, use `/singlepagestartup` or ask to start,
+continue, inspect, or change the active project. The canonical four-stage
+workflow is `.agents/workflows/pre-development.md`; its layer-local
+`apps/studio/workspace/pre-development/<layer>.yaml` cursor records the last
+reconciled `00`, `10`, `20`, or `30` stage across model contexts.
+During `00`, update the active layer's source for the resolved
+singlepage-to-startup `knowledge/decision-profile/<layer>.md`. It classifies the
+potentially compound business model and records only material domain questions,
+metrics, evidence, risks, regulations, and viability rules. Assigned profile
+rows are mandatory quality gates; headings or generic prose do not complete an
+artifact. Use a named method or benchmark only with an authoritative source,
+explicit fit, and limitations for a material decision.
+Workspace configuration defaults unknown repositories to `startup` and maps the
+canonical framework repository to `singlepage`. Inherited singlepage evidence
+is provenance only in a startup unless explicitly adopted by startup evidence.
+
+The seven pre-development professions are executable custom agents, not merely
+Markdown references. Codex discovers them from `.codex/agents/*.toml` and Claude
+from `.claude/agents/*.md`; every adapter must explicitly load its canonical
+role, which contains responsibility and professional method in one file. Source
+URLs in `.agents/roles/SOURCES.md` are provenance only. The agent researches
+external sources only when the current project needs fresh evidence.
 
 ## Code Review Checklist
 

@@ -1,10 +1,6 @@
 import Markdown from "markdown-to-jsx";
 
-import type {
-  IEngineeringArtifact,
-  IStudioArtifact,
-  IStudioWorkspace,
-} from "./types";
+import type { IStudioArtifact, IStudioWorkspace } from "./types";
 
 function ArtifactMetadata({ artifact }: { artifact: IStudioArtifact }) {
   return (
@@ -23,9 +19,15 @@ function ArtifactMetadata({ artifact }: { artifact: IStudioArtifact }) {
       </div>
       <div>
         <span className="block font-semibold uppercase tracking-wide text-slate-900">
-          Canonical source
+          Sources
         </span>
-        <code className="break-all">{artifact.sourcePath}</code>
+        <span className="grid gap-1">
+          {artifact.sourcePaths.map((sourcePath) => (
+            <code className="break-all" key={sourcePath}>
+              {sourcePath}
+            </code>
+          ))}
+        </span>
       </div>
     </div>
   );
@@ -39,146 +41,92 @@ function MarkdownDocument({ children }: { children: string }) {
   );
 }
 
-export function ArtifactBrowser({
+function ArtifactContent({ artifact }: { artifact: IStudioArtifact }) {
+  if (artifact.sourcePaths.some((sourcePath) => sourcePath.endsWith(".yaml"))) {
+    return (
+      <pre className="overflow-x-auto rounded-2xl bg-slate-950 p-5 text-sm leading-6 text-slate-100">
+        <code>{artifact.content}</code>
+      </pre>
+    );
+  }
+  return <MarkdownDocument>{artifact.content}</MarkdownDocument>;
+}
+
+export function ArtifactDocument({
   workspace,
+  kind,
 }: {
   workspace: IStudioWorkspace;
+  kind: IStudioArtifact["kind"];
 }) {
-  const localCount = workspace.artifacts.filter(
-    (artifact) => !artifact.inherited,
-  ).length;
+  const artifact = workspace.artifacts.find(
+    (candidate) => candidate.kind === kind,
+  );
+  const hasLocalContent = Boolean(artifact?.content.trim());
+  if (!artifact || (workspace.id === "startup" && !hasLocalContent)) {
+    const sourcePath = artifact?.sourcePaths[0];
+    return (
+      <main className="grid min-h-screen place-items-center bg-slate-100 p-5 text-slate-950 md:p-10">
+        <section className="w-full max-w-3xl rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm md:p-12">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            {workspace.label}
+          </p>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+            No {kind} override
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl leading-7 text-slate-600">
+            The startup layer is empty by default. current passes through the
+            corresponding singlepage document until this source contains an
+            explicit project override.
+          </p>
+          {sourcePath ? (
+            <code className="mt-6 inline-block rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-700">
+              {sourcePath}
+            </code>
+          ) : null}
+        </section>
+      </main>
+    );
+  }
+  const resolutionLabel =
+    workspace.id === "singlepage"
+      ? "singlepage source"
+      : workspace.id === "startup"
+        ? "startup source"
+        : artifact.resolution === "merged"
+          ? "singlepage + startup"
+          : artifact.resolution === "inherited"
+            ? "Inherited from singlepage"
+            : "Local project document";
+  const projectionDescription =
+    workspace.id === "current"
+      ? "Studio shows the resolved current document. Edit the canonical source files listed below; this projection is read-only."
+      : "Studio shows one source layer for comparison. Edit the canonical source file listed below; this projection is read-only.";
   return (
     <main className="min-h-screen bg-slate-100 p-5 text-slate-950 md:p-10">
-      <header className="mx-auto mb-8 max-w-6xl rounded-3xl bg-slate-950 p-7 text-white shadow-xl md:p-10">
+      <header className="mx-auto mb-8 max-w-5xl rounded-3xl bg-slate-950 p-7 text-white shadow-xl md:p-10">
         <div className="mb-5 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em]">
           <span className="rounded-full bg-teal-400 px-3 py-1 text-slate-950">
-            {workspace.activeLayer}
+            {artifact.kind}
           </span>
           <span className="rounded-full border border-white/20 px-3 py-1">
-            read-only projection
+            {resolutionLabel}
           </span>
         </div>
         <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
-          {workspace.label}
+          {artifact.id}
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
-          Studio renders validated canonical artifacts. Editing remains in the
-          indexed Markdown/YAML sources; inheritance is limited to explicit
-          imports.
+          {artifact.description}
         </p>
-        <dl className="mt-7 grid gap-4 sm:grid-cols-3">
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-400">
-              Local
-            </dt>
-            <dd className="text-2xl font-semibold">{localCount}</dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-400">
-              Inherited
-            </dt>
-            <dd className="text-2xl font-semibold">
-              {workspace.artifacts.length - localCount}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-400">
-              Imports
-            </dt>
-            <dd className="text-2xl font-semibold">
-              {workspace.imports.length}
-            </dd>
-          </div>
-        </dl>
-        <code className="mt-6 block break-all text-xs text-slate-400">
-          {workspace.workspaceRoot}
-        </code>
-      </header>
-
-      <section className="mx-auto grid max-w-6xl gap-4">
-        {workspace.artifacts.map((artifact, index) => (
-          <details
-            key={artifact.id}
-            open={index < 8}
-            className="group rounded-2xl border border-slate-200 bg-white shadow-sm"
-          >
-            <summary className="flex cursor-pointer list-none items-start justify-between gap-5 p-5 md:p-6">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <code className="font-semibold text-teal-800">
-                    {artifact.id}
-                  </code>
-                  <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                    {artifact.kind}
-                  </span>
-                  {artifact.inherited && (
-                    <span className="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
-                      inherited
-                    </span>
-                  )}
-                </div>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {artifact.description}
-                </p>
-              </div>
-              <span
-                aria-hidden="true"
-                className="text-2xl text-slate-400 group-open:rotate-45"
-              >
-                +
-              </span>
-            </summary>
-            <div className="border-t border-slate-100 px-5 py-7 md:px-8">
-              <MarkdownDocument>{artifact.content}</MarkdownDocument>
-              <ArtifactMetadata artifact={artifact} />
-            </div>
-          </details>
-        ))}
-      </section>
-    </main>
-  );
-}
-
-export function EngineeringBrowser({
-  kind,
-  artifacts,
-}: {
-  kind: "research" | "plan";
-  artifacts: IEngineeringArtifact[];
-}) {
-  const selected = artifacts.filter((artifact) => artifact.kind === kind);
-  return (
-    <main className="min-h-screen bg-stone-100 p-5 text-slate-950 md:p-10">
-      <header className="mx-auto mb-7 max-w-6xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
-          Engineering · read-only
-        </p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight">
-          {kind === "research" ? "Research" : "Plans"}
-        </h1>
-        <p className="mt-3 max-w-3xl text-slate-600">
-          Path-stable projections from <code>thoughts/shared/{kind}/**</code>.
-          Studio does not move or edit engineering artifacts.
+        <p className="mt-6 text-xs leading-5 text-slate-400">
+          {projectionDescription}
         </p>
       </header>
-      <section className="mx-auto grid max-w-6xl gap-4">
-        {selected.map((artifact, index) => (
-          <details
-            key={artifact.sourcePath}
-            open={index === 0}
-            className="rounded-2xl border border-stone-200 bg-white shadow-sm"
-          >
-            <summary className="cursor-pointer p-5 md:p-6">
-              <h2 className="font-semibold">{artifact.title}</h2>
-              <code className="mt-2 block text-xs text-slate-500">
-                {artifact.sourcePath}
-              </code>
-            </summary>
-            <div className="border-t border-stone-100 p-5 md:p-8">
-              <MarkdownDocument>{artifact.content}</MarkdownDocument>
-            </div>
-          </details>
-        ))}
+
+      <section className="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white px-5 py-7 shadow-sm md:px-10 md:py-10">
+        <ArtifactContent artifact={artifact} />
+        <ArtifactMetadata artifact={artifact} />
       </section>
     </main>
   );

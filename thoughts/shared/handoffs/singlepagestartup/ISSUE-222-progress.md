@@ -35,12 +35,14 @@ result.
 - [x] Completed: 2026-08-03T21:39:40Z
 - [x] Automated verification: 2026-08-03T21:39:40Z
 
-**Notes**: Reusable discovery, acquisition-channel, communication, role, and
-template knowledge has one indexed owner plus a migration/omission map. The
-legacy agency tree is removed. The project-runtime validator rejects duplicate
-IDs, missing files, invalid imports, broken uses, and cycles; canonical
-singlepage/startup modes and a downstream fixture pass. Requested website
-context loads only its eight-artifact dependency closure.
+**Notes**: Project-invariant role methods and document templates have one
+indexed owner under `.agents/**`. Project-variable discovery,
+acquisition-channel, and communication knowledge stays in Studio with separate
+singlepage/startup sources and resolved inheritance. The legacy agency tree is
+removed, while two compatibility records remain pending downstream migration
+under issue #226. The project-runtime validator rejects duplicate IDs, missing
+files, invalid imports, broken uses, and cycles; canonical singlepage/startup
+modes and a downstream fixture pass.
 
 ### Phase 3: Drafts to Studio and Artifact Presentation
 
@@ -51,35 +53,114 @@ context loads only its eight-artifact dependency closure.
 **Notes**: The complete visual catalog and tooling moved atomically to Studio.
 All 128 story files, 104 block manifests, 24 page manifests, 128 Figma metadata
 files, four runnable manifests, and stable block/page IDs are preserved. Studio
-validation now includes workspace integrity; generated inventory exposes three
-workspaces plus 37 engineering research and 33 plan artifacts. Storybook Docs,
-read-only artifact/reverse-dependency views, and static design shells build
-successfully. The final index has 165 entries: the original 149 plus exactly 16
-workspace/design story and docs entries.
+validation now includes workspace integrity. Following operator review,
+engineering research and plans were removed from Studio inventory and navigation
+and remain exclusively in `thoughts/shared/**`. Storybook's workspace is limited
+to business, marketing, brand, design, evidence, and asset projections.
 
-### Phase 4: Compact Client Method, Founder Pilot, and Cleanup
+### Phase 4: Compact Client Method, Active Project, and Cleanup
 
 - [x] Started: 2026-08-03T21:58:04Z
 - [x] Completed: 2026-08-03T21:58:04Z
 - [x] Automated verification: 2026-08-03T21:58:04Z
 
 **Notes**: The four stages now state inputs, capabilities, canonical outputs,
-completion criteria, and reverse-dependency correction behavior. The isolated
-founder pilot contains eight local artifacts, a complete operating process,
-current sourced market observations, one bounded experiment, a provenance-aware
-identity, final page/form/success copy, four indexed vector assets, and nine
-concrete Studio compositions. Canonical `workspace/startup/` remains an
-eight-artifact clean scaffold and exposes no non-exported singlepage project
-files. Repository navigation now uses Studio and the retired agency tree is
-absent. Manual criteria remain intentionally unchecked until operator review of
-the complete PR.
+completion criteria, and reverse-dependency correction behavior. Following
+operator review, the fictional example and its separate design subtree
+were removed. SinglePageStartup is the live business project in the colocated
+Studio `singlepage` sources; the current Studio project view resolves that base
+with optional same-kind overrides from sibling `startup` sources. Repository
+navigation now uses Studio and the retired agency tree is absent. Manual criteria
+remain intentionally unchecked until operator review of the complete PR.
 
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 5 -->
+<!-- incident-count: 10 -->
+
+### Incident 10 — Active layer and niche inheritance were implicit
+
+- **Occurrences**: 1
+- **Stage**: Phase 4 - Workspace follow-up
+- **Symptom**: Layer-first knowledge paths and kind-based merging left agents
+  with multiple plausible workspace roots and no committed default for a
+  downstream checkout.
+- **Root Cause**: Repository inference and directory placement carried semantics
+  that should have been explicit configuration and index data.
+- **Fix**: Flattened variable data into final artifact folders, added committed
+  `config.yaml` with `default_layer: startup`, mapped the canonical framework to
+  `singlepage`, and required `extends` plus an artifact-specific merge strategy.
+  Evidence now has scope/state semantics that prevent framework proof from
+  silently supporting a downstream claim.
+- **Reusable Pattern**: Put layer variants at the artifact leaf and make both
+  active-layer selection and inheritance executable data.
+
+### Incident 9 — Compact templates lacked cross-industry quality gates
+
+- **Occurrences**: 1
+- **Stage**: Phase 4 - Compact Pre-development Method follow-up
+- **Symptom**: Structurally complete artifacts could remain generic and omit
+  different material economics, evidence, regulation, and viability questions
+  for unrelated business niches.
+- **Root Cause**: The universal templates defined output shape but no selective,
+  project-owned domain completeness contract.
+- **Fix**: Added a decision-profile source per layer, compound business-model
+  classification in Understand, material profile rows assigned to
+  stages/artifacts, fit-for-purpose sourced methods/benchmarks, role-level
+  checks, resolved-profile dependency routing, and validation fixtures. The
+  profile now follows the same singlepage-to-startup overlay as other project
+  knowledge.
+- **Reusable Pattern**: Keep final artifacts universal and compact; select and
+  enforce domain depth through one local routing profile rather than cloned
+  industry templates or exhaustive questionnaires.
+
+### Incident 8 — Pre-development needed a durable stage cursor
+
+- **Occurrences**: 1
+- **Stage**: Phase 4 - Compact Pre-development Method follow-up
+- **Symptom**: A fresh Codex/ChatGPT task could not identify the current
+  pre-development stage without reconstructing progress from the full workspace.
+- **Root Cause**: Rejecting a run journal also removed the bounded cursor needed
+  to resume across model contexts.
+- **Fix**: Numbered the stages `00/10/20/30`, moved the workflow to
+  `.agents/workflows/pre-development.md`, and added validated, layer-local
+  `pre-development.yaml` cursors that are reconciled against artifact
+  prerequisites on every launch.
+- **Reusable Pattern**: Persist orientation, not business content: stage,
+  status, active artifacts, and blockers are enough when artifacts remain the
+  source of truth.
+
+### Incident 7 — Profession responsibility and method always loaded together
+
+- **Occurrences**: 1
+- **Stage**: Phase 1 - Agent and Workspace Foundation follow-up
+- **Symptom**: Every pre-development profession existed as a role plus a second
+  same-named playbook even though adapters always loaded both.
+- **Root Cause**: The split anticipated selective knowledge loading that the
+  runtime did not implement or need.
+- **Fix**: Merged methods into the seven role files, removed the profession
+  knowledge directory and registry entries, simplified provider adapters, and
+  moved source provenance to `.agents/roles/SOURCES.md`.
+- **Reusable Pattern**: Files that describe one profession and always load
+  together should be one compact role contract.
+
+### Incident 6 — Pre-development roles existed only as canonical Markdown
+
+- **Occurrences**: 1
+- **Stage**: Phase 1 - Agent and Workspace Foundation follow-up
+- **Symptom**: Codex could not discover the seven client professions, and the
+  profession source links were mistaken for knowledge automatically available
+  to the agent.
+- **Root Cause**: Canonical role/playbook files were created without native
+  `.codex/agents/*.toml` and `.claude/agents/*.md` discovery adapters; validation
+  did not require the adapter set.
+- **Fix**: Registered all seven agents for both providers, required explicit
+  role and playbook loading, separated source provenance from runtime content,
+  flattened `.agents/templates/`, and added adapter completeness checks.
+- **Reusable Pattern**: Validate canonical content, provider discovery, and
+  runtime loading independently; none implies the other two.
 
 ### Incident 5 — Broad Drafts rename touched generic JSON vocabulary
 
@@ -161,12 +242,45 @@ the complete PR.
 
 - Centralized shared process semantics, roles, contracts, and tools in
   `.agents/**` with thin provider adapters.
-- Added validated singlepage/startup living workspaces, selective inheritance,
-  reusable knowledge/templates, and deterministic context/inventory tooling.
+- Added validated singlepage/startup living workspaces, layered project
+  knowledge, selectively inherited agent knowledge/templates, and deterministic
+  context/inventory tooling.
 - Retired the duplicate agency tree and renamed the full Drafts catalog/tooling
   to SinglePageStartup Studio without losing stable manifest IDs or stories.
-- Added Storybook artifact/engineering projections and nine static design
-  compositions driven by an isolated source-aware founder pilot.
+- Added Storybook business, marketing, and design projections driven by the
+  SinglePageStartup/startup workspace and removed the isolated fictional pilot.
+- Replaced the tracked workspace JSON snapshot with readable per-artifact story
+  folders whose `index.stories.tsx` files import canonical Markdown/YAML sources
+  directly and resolve `current` in memory.
+- Consolidated configuration, layer indexes, project-specific knowledge, living
+  sources, and Storybook presentation under the single
+  `apps/studio/workspace/**` root; moved invariant professions/templates beside
+  the agents, and removed the former repository-root workspace.
+- Split every living-document view into `current`, `singlepage`, and `startup`;
+  Design repeats the same split for every visual projection.
+- Reset all committed colocated `startup` living sources to zero content;
+  `current` passes through singlepage until a real override is written.
+- Registered all seven pre-development professions as native Codex and Claude
+  agents whose thin adapters load one consolidated canonical role containing
+  responsibility and professional method.
+- Flattened artifact templates into `.agents/templates/`, documented their
+  four-stage sequence and legacy lineage, and separated bibliographic
+  provenance from runtime profession instructions.
+- Numbered the pre-development stages `00/10/20/30` and added a minimal
+  layer-local cursor so new model contexts resume from verified artifacts rather
+  than chat history or context compaction.
+- Added a layered decision profile that classifies compound business models and
+  makes material questions, metrics, evidence, risks, regulations, and viability
+  rules mandatory stage gates without expanding the eight final artifacts.
+  Empty startup content inherits singlepage; populated niche knowledge replaces
+  it so unrelated domain constraints do not accumulate.
+- Flattened the workspace to artifact-first folders, moved indexes and cursors
+  under their own top-level directories, and added a committed configuration
+  whose downstream default is `startup` while the canonical repository maps to
+  `singlepage`.
+- Made every startup inheritance edge and merge strategy explicit. Documents use
+  section overlays, assets use keyed overlays, evidence uses scoped keyed rows,
+  and project-specific knowledge uses replacement semantics.
 
 ### Pull Request
 
@@ -181,4 +295,4 @@ the complete PR.
 
 ---
 
-**Last updated**: 2026-08-03T22:04:30Z
+**Last updated**: 2026-08-04T23:45:00+03:00

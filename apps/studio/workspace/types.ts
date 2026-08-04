@@ -3,8 +3,11 @@ export interface IStudioArtifact {
   kind: string;
   description: string;
   sourcePath: string;
+  sourcePaths: string[];
+  sourceIds: string[];
   layer: "singlepage" | "startup";
   inherited: boolean;
+  resolution: "local" | "inherited" | "merged";
   uses: string[];
   usedBy: string[];
   content: string;
@@ -18,24 +21,4 @@ export interface IStudioWorkspace {
   imports: string[];
   exports: string[];
   artifacts: IStudioArtifact[];
-}
-
-export interface IEngineeringArtifact {
-  kind: "research" | "plan";
-  title: string;
-  sourcePath: string;
-  content: string;
-}
-
-export interface IStudioWorkspaceInventory {
-  schema: string;
-  generatedAt: string;
-  workspaces: IStudioWorkspace[];
-  engineering: IEngineeringArtifact[];
-  totals: {
-    workspaces: number;
-    artifacts: number;
-    engineeringResearch: number;
-    engineeringPlans: number;
-  };
 }

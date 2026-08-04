@@ -112,6 +112,6 @@ blob-report/
 .claude/.env
 
 # Checkout-owned SinglePageStartup workspace selection
-workspace/config.local.yaml
+apps/studio/workspace/config.local.yaml
 
 **/*.tsbuildinfo

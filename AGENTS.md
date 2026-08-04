@@ -56,27 +56,51 @@ This repository uses one provider-agnostic, status-gated development workflow. C
 
 ### Single source of truth
 
-| Concern                                           | Canonical location                                        |
-| ------------------------------------------------- | --------------------------------------------------------- |
-| Engineering process definitions                   | `.agents/workflows/engineering/**/*.md`                   |
-| Client pre-development process                    | `.agents/workflows/client/pre-development.md`             |
-| Roles, invariant contracts, and tool capabilities | `.agents/roles`, `.agents/contracts`, `.agents/tools`     |
-| GitHub Project / issue automation                 | `.claude/helpers/*.sh` (plain bash, provider-independent) |
-| Per-checkout engineering configuration            | `.claude/.env` (gitignored; created by `./ai.sh`)         |
-| Provider adapters                                 | Claude Code: `.claude/**`; Codex: `.codex/**`             |
+| Concern                                | Canonical location                                                         |
+| -------------------------------------- | -------------------------------------------------------------------------- |
+| Engineering process definitions        | `.agents/workflows/engineering/**/*.md`                                    |
+| Pre-development process                | `.agents/workflows/pre-development.md`                                     |
+| Roles, templates, contracts, and tools | `.agents/roles`, `.agents/templates`, `.agents/contracts`, `.agents/tools` |
+| GitHub Project / issue automation      | `.claude/helpers/*.sh` (plain bash, provider-independent)                  |
+| Per-checkout engineering configuration | `.claude/.env` (gitignored; created by `./ai.sh`)                          |
+| Provider adapters                      | Claude Code: `.claude/**`; Codex: `.codex/**`                              |
 
 `.agents/` is the only canonical source of shared workflow and role semantics.
 Claude and Codex files retain only provider discovery metadata and routes to
 those sources. `.claude/helpers/*.sh` remains path-stable because it is the
 shared executable backend for GitHub Project automation, not a process copy.
 
-### Client pre-development workflow
+### Pre-development workflow
 
-Use `singlepagestartup` (Codex), `/singlepagestartup` (Claude), or a plain-language
-request to start, continue, inspect, or change a client project. The workflow
-derives progress from `workspace/<layer>/index.yaml` and its living artifacts;
-there is no separate client status command or run state. The framework repository
-uses `workspace/singlepage/`; downstream repositories use `workspace/startup/`.
+Use `singlepagestartup` (Codex), `/singlepagestartup` (Claude), or a
+plain-language request to start, continue, inspect, or change a project before
+engineering. The workflow uses `00-understand`, `10-decide`, `20-package`, and
+`30-design`. Its layer-local
+`apps/studio/workspace/pre-development/<layer>.yaml` cursor survives new model
+contexts and is reconciled against the indexed living artifacts at every launch.
+During `00-understand`, the workflow classifies the potentially compound
+business model and updates the resolved singlepage-to-startup
+`apps/studio/workspace/knowledge/decision-profile/<layer>.md`. Its
+material questions, metrics, evidence, risks, regulations, and viability rules
+become stage-specific quality gates; template headings or generic prose never
+complete a stage. Named professional methods or benchmarks are used only with an
+authoritative source, explicit fit, and limitations for a material decision.
+The framework repository writes the colocated `singlepage` sources; downstream
+repositories write the colocated `startup` sources. All project business context
+lives under `apps/studio/workspace/**`; only project-invariant role methods and
+templates live under `.agents/**`.
+`apps/studio/workspace/config.yaml` defaults unknown repositories to `startup`
+and explicitly maps the canonical framework repository to `singlepage`.
+Layered startup index entries declare their base with `extends` and use
+`sections`, `replace`, `keyed`, or `scoped-keyed` resolution. Inherited
+singlepage evidence is provenance only in a startup unless explicitly adopted.
+
+The seven pre-development professions are executable custom agents, not merely
+Markdown references. Codex discovers them from `.codex/agents/*.toml` and Claude
+from `.claude/agents/*.md`; every adapter must explicitly load its canonical
+role, which contains responsibility and professional method in one file. Source
+URLs in `.agents/roles/SOURCES.md` are provenance only. The agent researches
+external sources only when the current project needs fresh evidence.
 
 ### GitHub Project is the control plane
 

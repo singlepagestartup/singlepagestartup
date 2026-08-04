@@ -25,12 +25,12 @@ A runnable entry may remain after the migration only when all of these are true:
 
 ## Current Entries
 
-| Entry                                  | Current role                                                                                          | Storybook status                                                     | Matrix row                                                                    |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `singlepage/admin-v2`                  | React/Vite source material for public and admin Storybook migration                                   | `migrated` / `replaced` by component rows                            | [`RUN-SP-ADMIN-V2`](../inventory/runnable-migration.md#run-sp-admin-v2)       |
-| `startup/singlepagestartup`            | Startup React/Vite source material; source tree mirrors `singlepage/admin-v2` except wrapper metadata | `migrated` startup widget discoverability / `replaced` mirrored base | [`RUN-ST-STARTUP`](../inventory/runnable-migration.md#run-st-startup)         |
-| `singlepage/admin-panel-redesign-html` | Static admin-panel redesign reference                                                                 | `migrated` into admin Storybook coverage                             | [`RUN-HTML-ADMIN-REF`](../inventory/runnable-migration.md#run-html-admin-ref) |
-| `singlepage/examples/basic-html`       | Minimal runnable-system HTML smoke example                                                            | `retained` as standalone example                                     | [`RUN-BASIC-HTML`](../inventory/runnable-migration.md#run-basic-html)         |
+| Entry                                  | Current role                                                                                          | Storybook status                                   | Matrix row                                                                    |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `singlepage/admin-v2`                  | React/Vite source material for public and admin Storybook migration                                   | `migrated` / `replaced` by component rows          | [`RUN-SP-ADMIN-V2`](../inventory/runnable-migration.md#run-sp-admin-v2)       |
+| `startup/singlepagestartup`            | Startup React/Vite source material; source tree mirrors `singlepage/admin-v2` except wrapper metadata | `replaced` by the owning singlepage module stories | [`RUN-ST-STARTUP`](../inventory/runnable-migration.md#run-st-startup)         |
+| `singlepage/admin-panel-redesign-html` | Static admin-panel redesign reference                                                                 | `migrated` into admin Storybook coverage           | [`RUN-HTML-ADMIN-REF`](../inventory/runnable-migration.md#run-html-admin-ref) |
+| `singlepage/examples/basic-html`       | Minimal runnable-system HTML smoke example                                                            | `retained` as standalone example                   | [`RUN-BASIC-HTML`](../inventory/runnable-migration.md#run-basic-html)         |
 
 ## Retained Entries
 

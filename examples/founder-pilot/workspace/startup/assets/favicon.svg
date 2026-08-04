@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title">
-  <title id="title">Рама — pilot favicon</title>
-  <rect width="64" height="64" rx="14" fill="#163D37"/>
-  <path d="M17 47V17h30v30M17 32h30" fill="none" stroke="#F5F0E8" stroke-width="4"/>
-  <rect x="40" y="25" width="7" height="14" fill="#D97745"/>
-</svg>

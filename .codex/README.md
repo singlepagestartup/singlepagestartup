@@ -10,7 +10,7 @@ This directory is the Codex adapter for the provider-neutral SPS development wor
   - `core-20-plan`
   - `core-30-implement`
   - `core-next` dispatcher
-- Local client pre-development through `singlepagestartup`
+- Local pre-development through `singlepagestartup`
 
 ## Contracts
 
@@ -27,18 +27,22 @@ current thread using the tool mapping in `AGENTS.md`.
 
 - Core: `core-next`, `core-00-create`, `core-10-research`, `core-20-plan`, `core-30-implement`
 - Utility: `github`, `github-status`, `validate-plan`, `create-handoff`, `resume-handoff`, `implement-plan`, `commit`, `describe-pr`, `post-commit-retro`
-- Client: `singlepagestartup`
+- Pre-development: `singlepagestartup`
 - Legacy aliases: `ralph-research`, `ralph-plan`, `ralph-impl`, `oneshot`, `oneshot-plan` (hyphenated names only; they delegate to `core-*` semantics)
 
 ## Subagents
 
-Codex subagents are defined in `.codex/agents/*.toml`; these files contain model
-and sandbox metadata plus a pointer to the canonical profession in
-`.agents/roles/*.md`.
+Codex subagents are defined in `.codex/agents/*.toml`; these files contain native
+discovery metadata and explicit pointers to the canonical responsibility in
+`.agents/roles/*.md`. Pre-development role files also contain the professional
+method, so their adapters load one canonical file rather than a second playbook.
 
 - Read-only research/navigation: `codebase-locator`, `codebase-analyzer`, `codebase-pattern-finder`, `thoughts-locator`, `thoughts-analyzer`, `web-search-researcher`
 - Browser verification: `browser-tester`
 - Write-capable implementation: `frontend-developer`
+- Pre-development: `account-manager`, `business-analyst`,
+  `market-researcher`, `strategist`, `communication-strategist`,
+  `brand-designer`, `web-designer`
 
 ## Run modes
 

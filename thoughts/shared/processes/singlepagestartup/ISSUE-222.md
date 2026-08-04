@@ -3,7 +3,7 @@ issue_number: 222
 issue_title: "Build the AI-native client lifecycle from first meeting to customer-acquisition website"
 repository: singlepagestartup
 created_at: 2026-08-02T20:13:08Z
-last_updated: 2026-08-03T22:04:30Z
+last_updated: 2026-08-04T23:45:00+03:00
 status: active
 current_phase: complete
 ---
@@ -75,24 +75,26 @@ learnings for the unified customer-delivery and artifact-system initiative.
 - Summary: Operator narrowed the target to the pre-development client system and
   then rejected the first full plan because it fragmented one project across too
   many artifacts and stopped short of an implementation-ready business, brand,
-  content, and Storybook design result. The revised plan uses four client stages,
+  content, and Storybook design result. The revised plan uses four
+  pre-development stages,
   eight compact living artifact types, and four repository checkpoints.
 - Outputs: Implementation plan at
   `thoughts/shared/plans/singlepagestartup/ISSUE-222.md`.
-- Notes: Both `workspace/singlepage/` and `workspace/startup/` now use
-  `brief.md`, `evidence/register.md`, `business.md`, `research.md`, `strategy.md`,
-  `brand.md`, `website.md`, and `assets/index.yaml`. The method is Understand,
+- Notes: Both layers now use colocated `brief`, `evidence`, `business`,
+  `research`, `strategy`, `brand`, `website`, and asset-registry sources beside
+  their Studio stories. The method is Understand,
   Decide, Package, Design. `business.md` must contain the complete operating
   process; `strategy.md` a bounded first experiment; `brand.md` usable identity
   outputs; and `website.md` real page copy and post-conversion behavior. The
-  isolated founder pilot lives under `examples/founder-pilot/**`, leaving the
-  canonical startup scaffold clean. A deterministic loader enforces indexes,
+  SinglePageStartup itself is the live project in `singlepage` sources;
+  downstream projects override matching content in sibling `startup` sources.
+  A deterministic loader enforces indexes,
   imports/exports, dependencies, cycles, and reverse dependencies. Inheritance
   is explicitly semantic/context isolation over normal Git sync, not a physical
   confidentiality guarantee. Checkout selection uses a gitignored local config
   plus repository-identity fallback. Studio must build real brand, landing,
-  mobile, form, success, and acquisition compositions and expose engineering
-  research/plans read-only. Technical Studio and adapter checks are required,
+  mobile, form, success, and acquisition compositions. Engineering research and
+  plans stay exclusively in `thoughts/shared/**`. Technical Studio and adapter checks are required,
   but production implementation, client QA, deployment, runtime orchestration,
   and engineering workflow changes remain out of scope. All professions now live
   directly in the flat `.agents/roles/` directory and use their exact profession
@@ -101,8 +103,8 @@ learnings for the unified customer-delivery and artifact-system initiative.
   each contract is capped at 700 words, excludes fictional biography, memory,
   theatrical performance, repeated workflow/templates, and provider tool prose,
   and loads deeper professional methods on demand. Normal and red-flag founder
-  pilot decisions are compared with both the legacy role and a generalist
-  baseline; an instruction is retained only when it improves artifact quality
+  SinglePageStartup project decisions are compared with both the legacy role and
+  a generalist baseline; an instruction is retained only when it improves artifact quality
   relative to its context cost.
 
 ### Implement
@@ -121,12 +123,28 @@ learnings for the unified customer-delivery and artifact-system initiative.
   complete result. Phase 2 migrated reusable legacy knowledge and templates,
   removed the parallel agency tree, and added deterministic two-sided
   inheritance with negative fixtures and minimal-context verification.
-  Phases 3 and 4 then moved the complete presentation catalog to Studio,
-  integrated workspace/engineering inventory and Docs, and produced an isolated
-  source-aware founder pilot with all eight living artifacts and nine concrete
-  static design compositions. The original 128 stories, 128 manifests/Figma
-  pairs, four runnable projects, and stable manifest IDs remain; the built index
-  grows from 149 to 165 only through the intended workspace/design entries.
+  Phases 3 and 4 then moved the complete presentation catalog to Studio and
+  integrated direct canonical workspace sources with Docs. Operator review then
+  removed the fictional example: Studio now presents the active project as a
+  resolved `current` view plus isolated `singlepage` and `startup`
+  sources. The same split applies to every Design projection. The original
+  module stories, manifests/Figma pairs, runnable
+  projects, and stable manifest IDs remain.
+  Operator review clarified that the committed startup living files must be
+  truly zero-content, not heading-only scaffolds; `current` therefore passes
+  through `singlepage` until a downstream project writes an override.
+  A later boundary review moved invariant profession methods and document
+  templates beside the agents under `.agents/**`, while project-variable
+  discovery, acquisition, and communication knowledge now has separate
+  singlepage/startup sources in Studio and resolves through the same overlay
+  mechanism. Legacy migration evidence remains temporarily; issue #226 tracks
+  its deletion after all maintained downstream projects are updated.
+  A subsequent quality review found that the compact templates guaranteed file
+  shape but not sufficient depth across unrelated industries. The workflow now
+  maintains a resolved singlepage-to-startup domain decision profile during
+  Understand; material questions, metrics, evidence, risks, regulations, and
+  viability rules become mandatory stage gates while the eight final artifacts
+  remain unchanged.
   All required automated checks pass and PR #225 contains the cohesive
   implementation. Manual Storybook/workspace review remains for the operator at
   the Code Review gate; production integration stays outside this issue.
@@ -136,7 +154,160 @@ learnings for the unified customer-delivery and artifact-system initiative.
 > Record only substantive incidents: debugging sessions, wrong assumptions,
 > tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 10 -->
+<!-- incident-count: 16 -->
+
+### Incident 16 — Layer-first paths and implicit merging left agent routing ambiguous
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Project artifacts were colocated by kind, but indexes, cursors,
+  and knowledge still used competing `singlepage/` and `startup/` roots. The
+  active layer depended on repository inference, same-kind pairing implied the
+  merge algorithm, and inherited framework evidence could be mistaken for proof
+  about an unrelated downstream business.
+- **Root Cause**: The physical layout and resolver retained intermediate
+  migration concepts instead of making the artifact folder, active-layer
+  configuration, inheritance edge, and merge semantics explicit.
+- **Fix**: Flattened all variable project content into artifact-first folders,
+  moved registries and cursors to `index/<layer>.yaml` and
+  `pre-development/<layer>.yaml`, committed `config.yaml` with a `startup`
+  default and canonical-repository mapping, and required every startup entry to
+  declare `extends` plus `sections`, `keyed`, `scoped-keyed`, or `replace`.
+  Evidence rows now carry scope and state; inherited singlepage evidence is
+  provenance only in startup until explicitly adopted or superseded.
+- **Preventive Action**: Resolve variant selection from committed configuration,
+  express inheritance and merge strategy in data, and place both layer sources
+  at the final artifact level. Never let directory position or prompt wording
+  decide which niche knowledge or claims an agent may use.
+- **References**: `apps/studio/workspace/config.yaml`;
+  `apps/studio/workspace/index/{singlepage,startup}.yaml`;
+  `.agents/contracts/{context-loading,evidence}.md`;
+  `tools/studio/workspace/{loader,merge,validate}.ts`.
+
+### Incident 15 — Decision profile violated uniform workspace inheritance
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Empty startup documents inherited SinglePageStartup and
+  non-empty sections overrode it, but `decision-profile.md` was a special local
+  exception. The framework therefore could not exercise the same complete
+  knowledge path as a downstream project.
+- **Root Cause**: Domain isolation was implemented by bypassing inheritance
+  instead of treating startup as the explicit override layer for all
+  project-variable knowledge.
+- **Fix**: Added `decision-profile` to the layered workspace kinds, retained
+  both source paths, routed dependencies to the resolved profile, and added
+  replacement and empty-pass-through fixtures. The startup entry now explicitly
+  extends the base with `strategy: replace`, so an empty file inherits while a
+  populated niche profile excludes unrelated framework rules.
+- **Preventive Action**: Apply one variant-style rule to all project content:
+  `singlepage` is the base, `startup` is the override, and `current` is the
+  in-memory resolution. Declare the merge strategy rather than assuming every
+  content type is safely merged by sections.
+- **References**: `tools/studio/workspace/{loader,validate}.ts`;
+  `.agents/contracts/context-loading.md`;
+  `.agents/workflows/pre-development.md`.
+
+### Incident 14 — Universal templates had no domain-specific completion gate
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The eight templates produced a stable document shape, but two
+  unrelated niches could satisfy the same headings with generic prose while
+  omitting different unit economics, stakeholders, evidence, regulation, risks,
+  and viability conditions. The result was not demonstrably better than an
+  unstructured model conversation.
+- **Root Cause**: Token-efficiency work correctly removed exhaustive generic
+  questionnaires but did not replace them with a project-specific mechanism for
+  selecting material domain depth and enforcing it at stage completion.
+- **Fix**: Added one non-final `decision-profile.md` template and separate
+  layer sources. `00-understand` now classifies potentially
+  compound business models and records only material questions, metrics,
+  evidence, risks, regulations, viability rules, owning artifacts, stages, and
+  sourced professional methods whose fit and limitations are explicit. Every
+  role and stage gate must resolve its assigned rows. Incident 15 subsequently
+  aligned those sources with the normal singlepage-to-startup overlay.
+- **Preventive Action**: Keep final artifacts universal, but make domain depth a
+  selective project-owned routing contract. Never equate populated headings or
+  fluent best practices with a completed artifact.
+- **References**: `.agents/templates/decision-profile.md`;
+  `.agents/workflows/pre-development.md`;
+  `apps/studio/workspace/knowledge/decision-profile/{singlepage,startup}.md`;
+  `tools/studio/workspace/{loader,validate}.ts`.
+
+### Incident 13 — Artifact-only progress could not resume deterministically
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The pre-development workflow named four stages but persisted no
+  current stage. A fresh model context had to infer progress by reopening the
+  whole artifact graph and could not distinguish current work from completed or
+  downstream documents.
+- **Root Cause**: The earlier rejection of a heavy run-state system was applied
+  too broadly and removed the small durable cursor needed for multi-task agent
+  execution.
+- **Fix**: Moved the canonical process to
+  `.agents/workflows/pre-development.md`, assigned stable `00`, `10`, `20`, and
+  `30` stage IDs, and added one layer-local `pre-development.yaml` containing
+  only stage, status, active artifacts, and blockers. Every launch reconciles
+  that cursor against artifact prerequisites, so artifacts repair an interrupted
+  cursor and remain the business source of truth.
+- **Preventive Action**: Distinguish a bounded resumable cursor from a run
+  journal or duplicated state machine. Long agent workflows need the former;
+  business decisions, history, timestamps, and document copies do not belong in
+  it.
+- **References**: `.agents/workflows/pre-development.md`;
+  `apps/studio/workspace/pre-development/{singlepage,startup}.yaml`;
+  `tools/singlepagestartup/agents/validate.ts`.
+
+### Incident 12 — One profession was split across two always-loaded files
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: `.agents/roles/<profession>.md` and
+  `.agents/knowledge/professions/<profession>.md` shared the same profession name
+  and every provider adapter always loaded both, so the supposed selective
+  knowledge layer added navigation and token overhead without changing runtime
+  selection.
+- **Root Cause**: The architecture separated responsibility from method before
+  proving that either file had an independent loading lifecycle.
+- **Fix**: Merged the useful method into each role's `Required method`, removed
+  the seven playbooks, their index, `profession.*` workspace entries, exports,
+  and imports, and simplified both provider adapters to one canonical pointer.
+  Moved source provenance to `.agents/roles/SOURCES.md` and extended validation
+  to reject the obsolete directory, `knowledge` role metadata, or a second
+  playbook pointer.
+- **Preventive Action**: Split knowledge only when it is selected independently
+  at runtime. Files that always load together and describe the same profession
+  belong in one compact contract.
+- **References**: `.agents/roles/*.md`; `.agents/roles/SOURCES.md`;
+  `tools/singlepagestartup/agents/validate.ts`.
+
+### Incident 11 — Canonical profession files were not registered as provider agents
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The pre-development workflow named seven artifact owners, but Codex could
+  not discover any of them as custom agents. The role frontmatter referenced
+  profession knowledge, yet nothing guaranteed that the playbook was loaded.
+  Source URLs inside the playbooks looked like runtime inputs even though links
+  do not add their contents to an agent context.
+- **Root Cause**: Phase 1 migrated the canonical role content and existing
+  engineering adapters but did not create provider discovery adapters for the
+  new pre-development professions. Structural validation checked pointers that
+  existed, not the required one-to-one adapter set.
+- **Fix**: Added seven `.codex/agents/*.toml` custom agents and matching Claude
+  adapters, documented that live research must be explicit, and extended the
+  validator to require provider discovery and runtime loading. Incident 12 then
+  consolidated responsibility and method into the single role file. Flattened
+  the artifact templates from `.agents/templates/client/` to
+  `.agents/templates/` and added a sequence/provenance contract.
+- **Preventive Action**: Treat canonical content, provider discovery, and
+  runtime loading as three separate checks. A role ID, file path, or source URL
+  is not evidence that the provider will load it.
+- **References**: `.codex/agents/account-manager.toml`;
+  `.agents/roles/account-manager.md`; `.agents/templates/README.md`;
+  `tools/singlepagestartup/agents/validate.ts`.
 
 ### Incident 10 — Broad Drafts rename touched generic JSON vocabulary
 
@@ -251,14 +422,14 @@ learnings for the unified customer-delivery and artifact-system initiative.
 - **Occurrences**: 1
 - **Symptom**: The attached source discussion places the canonical business
   workspace under `apps/studio/` and proposes removing GitHub Project gates from
-  the critical path, while the subsequently revised issue requires a root
-  `workspace/`, preserves the GitHub-gated engineering workflow, and introduces
-  a separate local client workflow.
+  the critical path, while an intermediate revision temporarily proposed a
+  separate repository-root artifact directory and a local client workflow.
 - **Root Cause**: The target architecture evolved through later operator
   clarifications after the original discussion was captured.
 - **Fix**: Treat the current self-contained issue and its recorded operator
-  annotations as the authoritative intent, document the superseded alternatives,
-  and request explicit approval of the plan outline before writing the full plan.
+  annotations as the authoritative intent. The final operator decision keeps
+  the engineering gates and consolidates all client-business context under
+  `apps/studio/workspace/**`, with no second repository-root workspace.
 - **Preventive Action**: Keep the engineering and client state machines separate,
   state precedence decisions in migration plans, and do not delete or relocate
   legacy artifacts until compatibility, fixture, link, and parity checks pass.
@@ -317,7 +488,7 @@ learnings for the unified customer-delivery and artifact-system initiative.
   also removed concrete pre-development outputs and deterministic integrity
   mechanisms. Related decisions were separated by taxonomy rather than by how a
   small founder-led project is actually maintained.
-- **Fix**: Rebuild the plan around four client stages, eight compact artifacts,
+- **Fix**: Rebuild the plan around four pre-development stages, eight compact artifacts,
   complete business/experiment/content/identity contracts, an isolated founder
   pilot, real static Storybook compositions, and a small build-time loader with
   technical migration checks.
@@ -329,19 +500,39 @@ learnings for the unified customer-delivery and artifact-system initiative.
 
 ## Reusable Learnings
 
-- Keep the engineering issue workflow and the client business workflow as
-  separate state machines over a shared artifact protocol; viewing them in one
-  Studio does not require merging their gates or lifecycle semantics.
-- For the current issue scope, do not introduce a separate client state machine;
-  Codex/ChatGPT executes the pre-development sequence directly through durable
-  business and design artifacts.
+- Keep the engineering issue workflow and the pre-development workflow separate;
+  viewing them in one Studio does not require merging their gates or lifecycle
+  semantics.
+- Persist only a numbered, layer-local pre-development cursor and reconcile it
+  from durable business and design artifacts on every launch. Do not turn that
+  cursor into a run journal or second copy of project decisions.
 - Use the full `singlepagestartup` name in new project-specific namespaces;
   avoid `SPS` abbreviations that can collide with unrelated data.
-- Treat `workspace/startup/` as the one project workspace in every downstream
-  repository; do not introduce `startup/<client>` or repository-name nesting.
+- Treat the one colocated `startup` layer as the project workspace in every
+  downstream repository; do not introduce `startup/<client>` or repository-name
+  nesting.
 - Make the artifact graph the working memory: agents derive context and progress
   from stable artifact links, read relevant predecessors automatically, and edit
   canonical living documents so the operator does not have to restate context.
+- Keep the eight final artifact shapes universal, but resolve one layered
+  decision profile that selects material domain questions and makes them stage
+  gates. This spends context on decisions that can change the result instead of
+  generic questionnaires or generic prose.
+- Keep variable knowledge artifact-first and choose the merge policy by semantic
+  type: section overlays for compatible documents, keyed overlays for assets,
+  scoped keyed rows for evidence, and whole-document replacement for niche
+  profiles and working knowledge that must not leak across businesses.
+- Default the configured active layer to `startup`; map only the canonical
+  framework repository to `singlepage`, and treat local overrides as explicit
+  exceptions. A downstream user must not need to configure an environment
+  variable before agents select the correct context.
+- Keep client-business configuration, indexes, project-specific knowledge,
+  living sources, and presentation under `apps/studio/workspace/**`; keep only
+  project-invariant role methods and templates under `.agents/**`. A second
+  repository-root workspace creates avoidable agent routing ambiguity.
+- Keep Studio workspace documents traceable from code: one readable story folder
+  per artifact, direct raw imports from canonical singlepage/startup files, and
+  no tracked generated JSON containing a second copy of business knowledge.
 - Keep living project documents broad enough to update coherently: separate
   evidence and assets structurally, but group closely related business,
   research, strategy, brand, and website decisions into compact artifacts.
@@ -355,6 +546,12 @@ learnings for the unified customer-delivery and artifact-system initiative.
 - Shared workflow semantics now live under `.agents/**`; `.claude/**` and
   `.codex/**` preserve provider discovery through explicit canonical pointers,
   and `singlepagestartup:agents:validate` rejects missing or copied targets.
+- Canonical role Markdown is not an executable agent definition. Every required
+  profession needs a native provider adapter that explicitly loads its single
+  consolidated role contract; bibliographic links stay outside routine context.
+- Do not split one profession across responsibility and method files when both
+  always load together. Independent files require an independent runtime
+  selection rule.
 - Draft manifest validation checks paths, IDs, layers, references, and Figma
   metadata, but presentation-only import prohibitions are currently documented
   guardrails rather than statically enforced checks.

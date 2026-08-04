@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-03T21:59:29.907Z",
+  "generatedAt": "2026-08-04T20:39:29.290Z",
   "modulesRoot": "libs/modules",
   "studioRoot": "apps/studio",
   "totals": {
     "modules": 16,
     "entities": 156,
     "variants": 1836,
-    "coveredVariants": 25
+    "coveredVariants": 24
   },
   "modules": [
     {
@@ -10591,10 +10591,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/startup/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "startup.widget.default",
-                "startup.widget.default"
-              ]
+              "coveredBy": []
             },
             {
               "variant": "find",

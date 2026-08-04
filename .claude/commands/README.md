@@ -19,8 +19,8 @@ adapters for older path references.
 | `process-artifact-contract.md`   | Persistent cross-phase process log: incidents, fixes, reusable learnings     |
 | `knowledge-first-contract.md`    | Lookup order and reuse-with-verification rules (token efficiency)            |
 
-Client pre-development is exposed as `/singlepagestartup` and routes to
-`.agents/workflows/client/pre-development.md`.
+Pre-development is exposed as `/singlepagestartup` and routes to
+`.agents/workflows/pre-development.md`.
 
 ## Core Linear Cycle Commands
 

@@ -27,6 +27,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
+          "tsc -p apps/studio/tsconfig.json --noEmit",
           "bun tools/studio/validate-manifests.ts",
           "bun tools/studio/design-system/validate.ts",
           "bun tools/studio/workspace/validate.ts --active-layer singlepage --self-check",
@@ -38,10 +39,7 @@
     "studio:inventory": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": [
-          "bun tools/studio/design-system/inventory.ts",
-          "bun tools/studio/workspace/inventory.ts"
-        ],
+        "commands": ["bun tools/studio/design-system/inventory.ts"],
         "parallel": false
       }
     },
@@ -57,7 +55,6 @@
       "options": {
         "commands": [
           "bun tools/studio/design-system/inventory.ts",
-          "bun tools/studio/workspace/inventory.ts",
           "storybook dev -c apps/studio/.storybook -p 4320 -h 127.0.0.1"
         ],
         "parallel": false
@@ -68,7 +65,6 @@
       "options": {
         "commands": [
           "bun tools/studio/design-system/inventory.ts",
-          "bun tools/studio/workspace/inventory.ts",
           "storybook build -c apps/studio/.storybook -o dist/studio/storybook"
         ],
         "parallel": false

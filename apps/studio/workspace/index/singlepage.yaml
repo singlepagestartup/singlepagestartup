@@ -1,0 +1,200 @@
+schema: singlepagestartup.workspace-index.v1
+layer: singlepage
+entries:
+  - {
+      id: singlepage.brief,
+      kind: brief,
+      path: brief/singlepage.md,
+      description: "Source request, founder language, constraints, goals, and unknowns.",
+      uses: [singlepage.discovery],
+    }
+  - {
+      id: singlepage.evidence,
+      kind: evidence,
+      path: evidence/singlepage.md,
+      description: "Evidence, claims, assumptions, constraints, and missing proof.",
+      uses: [],
+    }
+  - {
+      id: singlepage.decision-profile,
+      kind: decision-profile,
+      path: knowledge/decision-profile/singlepage.md,
+      description: "Project-specific business-model classification and material domain quality gates.",
+      uses: [singlepage.brief, singlepage.evidence],
+    }
+  - {
+      id: singlepage.business,
+      kind: business,
+      path: business/singlepage.md,
+      description: "Business model, economics, capacity, and complete operating process.",
+      uses:
+        [singlepage.brief, singlepage.evidence, singlepage.decision-profile],
+    }
+  - {
+      id: singlepage.research,
+      kind: research,
+      path: research/singlepage.md,
+      description: "Audiences, market, competitors, alternatives, sources, and inferences.",
+      uses:
+        [singlepage.brief, singlepage.evidence, singlepage.decision-profile],
+    }
+  - {
+      id: singlepage.strategy,
+      kind: strategy,
+      path: strategy/singlepage.md,
+      description: "Positioning, offer, commercial focus, and first experiment.",
+      uses:
+        [
+          singlepage.business,
+          singlepage.research,
+          singlepage.evidence,
+          singlepage.acquisition,
+        ],
+    }
+  - {
+      id: singlepage.asset-index,
+      kind: asset-index,
+      path: assets/singlepage.yaml,
+      description: "Provenance, rights, purpose, and usage limits for assets.",
+      uses: [singlepage.evidence],
+    }
+  - {
+      id: singlepage.brand,
+      kind: brand,
+      path: brand/singlepage.md,
+      description: "Communication system, visual identity, tokens, and identity outputs.",
+      uses:
+        [
+          singlepage.strategy,
+          singlepage.research,
+          singlepage.evidence,
+          singlepage.asset-index,
+          singlepage.communication,
+        ],
+    }
+  - {
+      id: singlepage.website,
+      kind: website,
+      path: website/singlepage.md,
+      description: "Visitor path, final copy, form behavior, and Studio compositions.",
+      uses:
+        [
+          singlepage.business,
+          singlepage.strategy,
+          singlepage.brand,
+          singlepage.evidence,
+          singlepage.asset-index,
+        ],
+    }
+  - {
+      id: profession.role-contract-evaluation,
+      kind: knowledge,
+      path: legacy/role-contract-evaluation.md,
+      description: Compact-role comparison cases and retained-method rationale.,
+      uses: [],
+    }
+  - {
+      id: singlepage.discovery,
+      kind: discovery,
+      path: knowledge/discovery/singlepage.md,
+      description: Singlepage-specific discovery questions,
+      findings,
+      and intake decisions.,
+      uses: [],
+    }
+  - {
+      id: singlepage.acquisition,
+      kind: acquisition,
+      path: knowledge/acquisition/singlepage.md,
+      description: Singlepage-specific channel research and acquisition decisions.,
+      uses: [],
+    }
+  - {
+      id: singlepage.communication,
+      kind: communication,
+      path: knowledge/communication/singlepage.md,
+      description: Singlepage-specific communication research and content decisions.,
+      uses: [],
+    }
+  - {
+      id: knowledge.legacy-agency-migration,
+      kind: migration,
+      path: legacy/legacy-agency.md,
+      description: Canonical destination and omission map for retired agency files.,
+      uses: [],
+    }
+  - {
+      id: template.brief,
+      kind: template,
+      path: .agents/templates/brief.md,
+      description: Compact client brief structure.,
+      uses: [],
+    }
+  - {
+      id: template.evidence,
+      kind: template,
+      path: .agents/templates/evidence-register.md,
+      description: Evidence register structure.,
+      uses: [],
+    }
+  - {
+      id: template.decision-profile,
+      kind: template,
+      path: .agents/templates/decision-profile.md,
+      description: Project-specific business-model and domain quality-gate structure.,
+      uses: [],
+    }
+  - {
+      id: template.business,
+      kind: template,
+      path: .agents/templates/business.md,
+      description: Business and operating-process structure.,
+      uses: [],
+    }
+  - {
+      id: template.research,
+      kind: template,
+      path: .agents/templates/research.md,
+      description: Customer and market research structure.,
+      uses: [],
+    }
+  - {
+      id: template.strategy,
+      kind: template,
+      path: .agents/templates/strategy.md,
+      description: Commercial strategy and first-experiment structure.,
+      uses: [],
+    }
+  - {
+      id: template.asset-index,
+      kind: template,
+      path: .agents/templates/asset-index.yaml,
+      description: Provenance-aware asset index structure.,
+      uses: [],
+    }
+  - {
+      id: template.brand,
+      kind: template,
+      path: .agents/templates/brand.md,
+      description: Communication and identity structure.,
+      uses: [],
+    }
+  - {
+      id: template.website,
+      kind: template,
+      path: .agents/templates/website.md,
+      description: Concrete website and conversion-flow structure.,
+      uses: [],
+    }
+exports:
+  - profession.role-contract-evaluation
+  - template.brief
+  - template.evidence
+  - template.decision-profile
+  - template.business
+  - template.research
+  - template.strategy
+  - template.asset-index
+  - template.brand
+  - template.website
+imports: []
