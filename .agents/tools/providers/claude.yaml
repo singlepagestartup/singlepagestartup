@@ -1,0 +1,12 @@
+provider: claude
+bindings:
+  artifact-read: [Read]
+  artifact-write: [Edit, Write]
+  web-research: [WebSearch, WebFetch]
+  browser-interaction: [browser-capability-if-configured]
+  image-inspection: [multimodal-input-if-configured]
+  image-generation: [image-generation-capability-if-configured]
+  document-creation: [document-capability-if-configured]
+  figma-interaction: [figma-mcp-if-configured]
+availability: Treat optional bindings as unavailable until the active Claude
+  runtime confirms them.

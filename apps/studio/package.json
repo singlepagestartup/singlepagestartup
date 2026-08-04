@@ -1,0 +1,13 @@
+{
+  "name": "@singlepagestartup/studio",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "SinglePageStartup Studio for component projections, client artifacts, design decisions, and Figma sync.",
+  "scripts": {
+    "storybook": "npm --prefix ../.. run studio:storybook",
+    "storybook:build": "npm --prefix ../.. run studio:storybook:build",
+    "inventory": "npm --prefix ../.. run studio:inventory",
+    "validate": "npm --prefix ../.. run studio:validate"
+  }
+}

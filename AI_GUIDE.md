@@ -1,6 +1,8 @@
-# AI Project Guide (Start Here)
+# AI Project Guide
 
-This file is the **entry point for any AI assistant** working in this repository. If you are an AI, read this file first, then follow the references below.
+The universal AI entry point is `AGENTS.md`. This supplemental guide explains
+application architecture, content composition, and MCP usage. Provider-neutral
+workflows, roles, contracts, and tool capabilities live under `.agents/`.
 
 ## 1. What this repo is
 

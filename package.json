@@ -40,15 +40,15 @@
     "telegram:dev": "nx run telegram:dev",
     "telegram:start": "nx run telegram:start",
     "telegram:build": "nx run telegram:build",
-    "drafts:list": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:list --",
-    "drafts:dev": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:dev --",
-    "drafts:init": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:init --",
-    "drafts:validate": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:validate --",
-    "drafts:ds:inventory": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:ds:inventory --",
-    "drafts:ds:dev": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:ds:dev --",
-    "drafts:ds:validate": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:ds:validate --",
-    "drafts:storybook": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:storybook --",
-    "drafts:storybook:build": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:storybook:build --",
+    "studio:list": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:list --",
+    "studio:dev": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:dev --",
+    "studio:init": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:init --",
+    "studio:validate": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:validate --",
+    "studio:inventory": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:inventory --",
+    "studio:design-system:dev": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:design-system:dev --",
+    "studio:storybook": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:storybook --",
+    "studio:storybook:build": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:storybook:build --",
+    "singlepagestartup:agents:validate": "bun tools/singlepagestartup/agents/validate.ts",
     "knowledge:index": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/knowledge:index --"
   },
   "dependencies": {
@@ -191,6 +191,7 @@
     "@nx/rollup": "^22.0.2",
     "@nx/workspace": "^22.0.2",
     "@rollup/plugin-url": "^8.0.2",
+    "@storybook/addon-docs": "^10.4.6",
     "@storybook/react-vite": "^10.4.6",
     "@svgr/rollup": "^8.1.0",
     "@svgr/webpack": "^8.1.0",
@@ -256,7 +257,8 @@
     "typescript-transform-paths": "^3.5.3",
     "url": "^0.11.4",
     "verdaccio": "^6.0.5",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "yaml": "^2.7.0"
   },
   "overrides": {
     "@types/react": "npm:types-react@rc",

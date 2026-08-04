@@ -5,11 +5,11 @@ description: "Creates Git commits using SPS utility command contract."
 
 # commit
 
-Codex wrapper for `.claude/commands/utilities/commit.md`.
+Canonical source: `.agents/workflows/engineering/utilities/commit.md`.
 
 ## Execution Contract
 
-1. Read `.claude/commands/utilities/commit.md` fully before executing.
+1. Read `.agents/workflows/engineering/utilities/commit.md` fully before executing.
 2. Execute the same workflow semantics and status gates.
 3. Keep all artifacts in the same paths under `thoughts/shared/*`.
 4. Use existing helper scripts in `.claude/helpers/*.sh` for GitHub status logic.

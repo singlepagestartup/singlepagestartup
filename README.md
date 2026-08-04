@@ -2,7 +2,17 @@
 
 ## AI Entry Point
 
-Start with `AI_GUIDE.md` for AI-specific onboarding and workflows.
+Start with `AGENTS.md`, the universal provider-neutral entry point.
+`AI_GUIDE.md` remains a supplemental architecture and MCP guide.
+
+For work with a client before development, invoke `singlepagestartup` in Codex,
+`/singlepagestartup` in Claude, or ask in plain language to start, continue, or
+change the active project. The living business and design artifacts are under
+`apps/studio/workspace/<artifact>/**`: this framework repository edits the
+`singlepage` files and downstream projects edit the sibling `startup` files.
+Indexes, project-specific knowledge, and checkout configuration also live under
+`apps/studio/workspace/**`. Shared profession methods and client-document
+templates live beside the agents under `.agents/**`.
 
 ## Project Description
 

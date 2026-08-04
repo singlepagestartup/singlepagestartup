@@ -1,0 +1,27 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "983:1831",
+  "variantName": "social-chats-social-chats-id-threads-social-threads-id",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.social-chats-social-chats-id-threads-social-threads-id",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/models/page/singlepage/social-chats-social-chats-id-threads-social-threads-id",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "social-chats-social-chats-id-threads-social-threads-id",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "social-chats-social-chats-id-threads-social-threads-id",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/models/page/singlepage/social-chats-social-chats-id-threads-social-threads-id/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/models/page/singlepage/social-chats-social-chats-id-threads-social-threads-id/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1831",
+    "sps.figma.storybookReferenceNodeId": "983:1980",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1980",
+  "storybookImageCount": 1
+}

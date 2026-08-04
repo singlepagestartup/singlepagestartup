@@ -1,0 +1,6 @@
+schema: singlepagestartup.pre-development-state.v1
+active_stage: 00-understand
+status: in_progress
+active_artifacts:
+  - brief
+blockers: []

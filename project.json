@@ -2,67 +2,72 @@
   "name": "@sps/source",
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "targets": {
-    "drafts:list": {
+    "studio:list": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "bun tools/drafts/list.ts",
+        "command": "bun tools/studio/list.ts",
         "forwardAllArgs": true
       }
     },
-    "drafts:dev": {
+    "studio:dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "bun tools/drafts/dev.ts",
+        "command": "bun tools/studio/dev.ts",
         "forwardAllArgs": true
       }
     },
-    "drafts:init": {
+    "studio:init": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "bun tools/drafts/init.ts",
+        "command": "bun tools/studio/init.ts",
         "forwardAllArgs": true
       }
     },
-    "drafts:validate": {
+    "studio:validate": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "bun tools/drafts/validate-manifests.ts",
+        "commands": [
+          "tsc -p apps/studio/tsconfig.json --noEmit",
+          "bun tools/studio/validate-manifests.ts",
+          "bun tools/studio/design-system/validate.ts",
+          "bun tools/studio/workspace/validate.ts --active-layer singlepage --self-check",
+          "bun tools/studio/workspace/validate.ts --active-layer startup"
+        ],
+        "parallel": false
+      }
+    },
+    "studio:inventory": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["bun tools/studio/design-system/inventory.ts"],
+        "parallel": false
+      }
+    },
+    "studio:design-system:dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun tools/studio/design-system/dev.ts",
         "forwardAllArgs": true
       }
     },
-    "drafts:ds:inventory": {
+    "studio:storybook": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "bun tools/drafts/design-system/inventory.ts",
-        "forwardAllArgs": true
+        "commands": [
+          "bun tools/studio/design-system/inventory.ts",
+          "storybook dev -c apps/studio/.storybook -p 4320 -h 127.0.0.1"
+        ],
+        "parallel": false
       }
     },
-    "drafts:ds:dev": {
+    "studio:storybook:build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "bun tools/drafts/design-system/dev.ts",
-        "forwardAllArgs": true
-      }
-    },
-    "drafts:ds:validate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "bun tools/drafts/design-system/validate.ts",
-        "forwardAllArgs": true
-      }
-    },
-    "drafts:storybook": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "storybook dev -c apps/drafts/.storybook -p 4320 -h 127.0.0.1",
-        "forwardAllArgs": true
-      }
-    },
-    "drafts:storybook:build": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "storybook build -c apps/drafts/.storybook -o dist/drafts/storybook",
-        "forwardAllArgs": true
+        "commands": [
+          "bun tools/studio/design-system/inventory.ts",
+          "storybook build -c apps/studio/.storybook -o dist/studio/storybook"
+        ],
+        "parallel": false
       }
     },
     "local-registry": {

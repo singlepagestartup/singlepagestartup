@@ -1,0 +1,74 @@
+schema: singlepagestartup.tool-capabilities.v1
+capabilities:
+  - id: artifact-read
+    purpose: Read indexed text, YAML, attachments, and assets.
+    inputs: [artifact-id-or-path]
+    outputs: [content, provenance]
+    roles: [all]
+    artifact_kinds: [all]
+    required: true
+    provenance: Preserve source path or attachment identity.
+    fallback: Stop when required input cannot be read.
+  - id: artifact-write
+    purpose: Update the canonical artifact owned by the active role.
+    inputs: [artifact-id, proposed-change]
+    outputs: [changed-paths, decision-summary]
+    roles: [all]
+    artifact_kinds: [brief, business, research, strategy, brand, website, evidence, asset-index]
+    required: true
+    provenance: Report every changed canonical path.
+    fallback: Return a patch proposal without claiming persistence.
+  - id: web-research
+    purpose: Find current external evidence from attributable sources.
+    inputs: [research-question, source-constraints]
+    outputs: [findings, urls, accessed-at, uncertainty]
+    roles: [market-researcher, strategist, communication-strategist, brand-designer, web-designer]
+    artifact_kinds: [research, strategy, brand, website, evidence]
+    required: false
+    provenance: URL, access date, direct observation versus inference.
+    fallback: Use registered internal evidence and mark current external evidence unavailable.
+  - id: browser-interaction
+    purpose: Inspect pages that require interactive or authenticated browser state.
+    inputs: [target, task]
+    outputs: [observations, screenshots-or-state]
+    roles: [account-manager, market-researcher, brand-designer, web-designer]
+    artifact_kinds: [brief, research, brand, website, evidence, asset-index]
+    required: false
+    provenance: Visited target, observation, capture path when created.
+    fallback: Request an attachment or use a public non-interactive source.
+  - id: image-inspection
+    purpose: Inspect client, generated, stock, or reference imagery.
+    inputs: [asset-path-or-attachment]
+    outputs: [visual-observations, limitations]
+    roles: [account-manager, brand-designer, web-designer]
+    artifact_kinds: [brief, brand, website, asset-index]
+    required: false
+    provenance: Source asset identity and rights status.
+    fallback: Record the asset as uninspected.
+  - id: image-generation
+    purpose: Produce an explicitly generated brand or design asset.
+    inputs: [prompt, purpose, constraints]
+    outputs: [asset-file, prompt, limitations]
+    roles: [brand-designer, web-designer]
+    artifact_kinds: [brand, website, asset-index]
+    required: false
+    provenance: Prompt, provider, output path, rights and prohibited use.
+    fallback: Define an asset brief or use a licensed stock candidate.
+  - id: document-creation
+    purpose: Create a reviewable document when Markdown is not the requested delivery format.
+    inputs: [source-artifact-ids, format]
+    outputs: [document-file]
+    roles: [account-manager, business-analyst, strategist, communication-strategist]
+    artifact_kinds: [brief, business, strategy, brand]
+    required: false
+    provenance: Canonical source artifact IDs and output path.
+    fallback: Keep Markdown canonical and report that export is unavailable.
+  - id: figma-interaction
+    purpose: Inspect or create design material in an explicitly requested Figma file.
+    inputs: [figma-target, design-task]
+    outputs: [figma-reference, changed-nodes]
+    roles: [brand-designer, web-designer]
+    artifact_kinds: [brand, website, asset-index]
+    required: false
+    provenance: File and node references plus changed scope.
+    fallback: Produce static Studio compositions and indexed asset files.

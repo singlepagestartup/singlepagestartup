@@ -1,0 +1,145 @@
+schema: singlepagestartup.workspace-index.v1
+layer: startup
+entries:
+  - {
+      id: startup.brief,
+      kind: brief,
+      path: brief/startup.md,
+      extends: singlepage.brief,
+      strategy: sections,
+      description: "Source request, founder language, constraints, goals, and unknowns.",
+      uses: [startup.discovery],
+    }
+  - {
+      id: startup.evidence,
+      kind: evidence,
+      path: evidence/startup.md,
+      extends: singlepage.evidence,
+      strategy: scoped-keyed,
+      description: "Evidence, claims, assumptions, constraints, and missing proof.",
+      uses: [],
+    }
+  - {
+      id: startup.decision-profile,
+      kind: decision-profile,
+      path: knowledge/decision-profile/startup.md,
+      extends: singlepage.decision-profile,
+      strategy: replace,
+      description: "Project-specific business-model classification and material domain quality gates.",
+      uses: [startup.brief, startup.evidence],
+    }
+  - {
+      id: startup.business,
+      kind: business,
+      path: business/startup.md,
+      extends: singlepage.business,
+      strategy: sections,
+      description: "Business model, economics, capacity, and complete operating process.",
+      uses: [startup.brief, startup.evidence, startup.decision-profile],
+    }
+  - {
+      id: startup.research,
+      kind: research,
+      path: research/startup.md,
+      extends: singlepage.research,
+      strategy: sections,
+      description: "Audiences, market, competitors, alternatives, sources, and inferences.",
+      uses: [startup.brief, startup.evidence, startup.decision-profile],
+    }
+  - {
+      id: startup.strategy,
+      kind: strategy,
+      path: strategy/startup.md,
+      extends: singlepage.strategy,
+      strategy: sections,
+      description: "Positioning, offer, commercial focus, and first experiment.",
+      uses:
+        [
+          startup.business,
+          startup.research,
+          startup.evidence,
+          startup.acquisition,
+        ],
+    }
+  - {
+      id: startup.asset-index,
+      kind: asset-index,
+      path: assets/startup.yaml,
+      extends: singlepage.asset-index,
+      strategy: keyed,
+      description: "Provenance, rights, purpose, and usage limits for assets.",
+      uses: [startup.evidence],
+    }
+  - {
+      id: startup.brand,
+      kind: brand,
+      path: brand/startup.md,
+      extends: singlepage.brand,
+      strategy: sections,
+      description: "Communication system, visual identity, tokens, and identity outputs.",
+      uses:
+        [
+          startup.strategy,
+          startup.research,
+          startup.evidence,
+          startup.asset-index,
+          startup.communication,
+        ],
+    }
+  - {
+      id: startup.website,
+      kind: website,
+      path: website/startup.md,
+      extends: singlepage.website,
+      strategy: sections,
+      description: "Visitor path, final copy, form behavior, and Studio compositions.",
+      uses:
+        [
+          startup.business,
+          startup.strategy,
+          startup.brand,
+          startup.evidence,
+          startup.asset-index,
+        ],
+    }
+  - {
+      id: startup.discovery,
+      kind: discovery,
+      path: knowledge/discovery/startup.md,
+      extends: singlepage.discovery,
+      strategy: replace,
+      description: Startup-specific discovery questions,
+      findings,
+      and intake decisions.,
+      uses: [],
+    }
+  - {
+      id: startup.acquisition,
+      kind: acquisition,
+      path: knowledge/acquisition/startup.md,
+      extends: singlepage.acquisition,
+      strategy: replace,
+      description: Startup-specific channel research and acquisition decisions.,
+      uses: [],
+    }
+  - {
+      id: startup.communication,
+      kind: communication,
+      path: knowledge/communication/startup.md,
+      extends: singlepage.communication,
+      strategy: replace,
+      description: Startup-specific communication research and content decisions.,
+      uses: [],
+    }
+exports: []
+imports:
+  - profession.role-contract-evaluation
+  - template.brief
+  - template.evidence
+  - template.decision-profile
+  - template.business
+  - template.research
+  - template.strategy
+  - template.asset-index
+  - template.brand
+  - template.website

@@ -1,0 +1,12 @@
+provider: codex
+bindings:
+  artifact-read: [filesystem-read, attachment-read]
+  artifact-write: [apply-patch]
+  web-research: [web-search, web-open]
+  browser-interaction: [chrome, in-app-browser]
+  image-inspection: [view-image]
+  image-generation: [imagegen]
+  document-creation: [documents]
+  figma-interaction: [figma]
+availability: Check the active Codex/ChatGPT tool list at launch; plugin or app
+  installation is not implied by this mapping.

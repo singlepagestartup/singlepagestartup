@@ -4,6 +4,11 @@ Use this file as the Claude-specific entry point for working in this repository.
 
 The provider-neutral entry point (for any AI agent) is the root `AGENTS.md` — it is canonical for shared repository rules and the AI development workflow. Shared sections in both files must stay in sync; when editing one, mirror the change in the other.
 
+Shared workflows, roles, contracts, and tool capabilities are canonical under
+`.agents/`. Files under `.claude/commands`, `.claude/references`, and
+`.claude/agents` are Claude-native adapters. Executable GitHub helpers remain in
+`.claude/helpers/` for compatibility.
+
 ## Repository Overview
 
 SinglePageStartup (SPS) is an Nx monorepo with:
@@ -63,7 +68,9 @@ All test files (`*.spec.*`, `*.test.*`, `*.e2e.*`) must use the repository BDD f
 
 ## Development Workflow Commands
 
-The unified development workflow uses commands in `.claude/commands/core/`.
+The unified development workflow is defined in
+`.agents/workflows/engineering/core/` and exposed through Claude adapters in
+`.claude/commands/core/`.
 
 **Start here in most cases:**
 
@@ -81,6 +88,29 @@ The unified development workflow uses commands in `.claude/commands/core/`.
 **After PR merge**: manually move the issue to "Done" in GitHub Project.
 
 For special-purpose tasks, see `.claude/commands/README.md` for the full command list.
+
+For work before development, use `/singlepagestartup` or ask to start,
+continue, inspect, or change the active project. The canonical four-stage
+workflow is `.agents/workflows/pre-development.md`; its layer-local
+`apps/studio/workspace/pre-development/<layer>.yaml` cursor records the last
+reconciled `00`, `10`, `20`, or `30` stage across model contexts.
+During `00`, update the active layer's source for the resolved
+singlepage-to-startup `knowledge/decision-profile/<layer>.md`. It classifies the
+potentially compound business model and records only material domain questions,
+metrics, evidence, risks, regulations, and viability rules. Assigned profile
+rows are mandatory quality gates; headings or generic prose do not complete an
+artifact. Use a named method or benchmark only with an authoritative source,
+explicit fit, and limitations for a material decision.
+Workspace configuration defaults unknown repositories to `startup` and maps the
+canonical framework repository to `singlepage`. Inherited singlepage evidence
+is provenance only in a startup unless explicitly adopted by startup evidence.
+
+The seven pre-development professions are executable custom agents, not merely
+Markdown references. Codex discovers them from `.codex/agents/*.toml` and Claude
+from `.claude/agents/*.md`; every adapter must explicitly load its canonical
+role, which contains responsibility and professional method in one file. Source
+URLs in `.agents/roles/SOURCES.md` are provenance only. The agent researches
+external sources only when the current project needs fresh evidence.
 
 ## Code Review Checklist
 
