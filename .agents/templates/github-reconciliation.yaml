@@ -1,0 +1,12 @@
+schema: singlepagestartup.github-reconciliation.v1
+remote: origin
+branch: default
+strategy_path: apps/studio/workspace/strategy/<layer>.md
+ignore_paths:
+  - apps/studio/workspace/pre-development/github/**
+rules:
+  - id: relevant-source-group
+    paths: []
+    affected_artifacts: []
+    earliest_stage: 00-business
+reconciliations: []

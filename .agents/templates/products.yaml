@@ -1,0 +1,16 @@
+schema: singlepagestartup.product-catalog.v1
+products: []
+# Add complete products only. Every product belongs to exactly one layer and
+# keeps Product, Website, Marketing Creative, and Presentation sources together.
+# If startup contains at least one product, the complete startup catalog
+# replaces the complete singlepage catalog in default; products never merge by
+# ID across layers.
+#
+# products:
+#   - id: replace-with-kebab-case-id
+#     name: Replace with product name
+#     summary: Replace with one-sentence product summary.
+#     product: replace-with-id/product.md
+#     website: replace-with-id/website.md
+#     marketing_creative: replace-with-id/marketing-creative.md
+#     presentation: replace-with-id/presentation/ProjectPresentation.tsx

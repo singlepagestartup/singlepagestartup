@@ -5,11 +5,11 @@ description: "Resumes work from an existing handoff file."
 
 # resume-handoff
 
-Codex wrapper for `.claude/commands/resume_handoff.md`.
+Canonical source: `.agents/workflows/engineering/resume_handoff.md`.
 
 ## Execution Contract
 
-1. Read `.claude/commands/resume_handoff.md` fully before executing.
+1. Read `.agents/workflows/engineering/resume_handoff.md` fully before executing.
 2. Execute the same workflow semantics and status gates.
 3. Keep all artifacts in the same paths under `thoughts/shared/*`.
 4. Use existing helper scripts in `.claude/helpers/*.sh` for GitHub status logic.

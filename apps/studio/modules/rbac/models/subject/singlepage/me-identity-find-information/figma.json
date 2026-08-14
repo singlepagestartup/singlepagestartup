@@ -1,0 +1,28 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "nodeId": "859:27",
+  "variantNodeId": "981:111",
+  "variantName": "me-identity-find-information",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.subject.me-identity-find-information",
+    "singlepagestartup.studio.imports": "rbac.identity.card-default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/models/subject/singlepage/me-identity-find-information",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "me-identity-find-information",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "me-identity-find-information",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/models/subject/singlepage/me-identity-find-information/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/models/subject/singlepage/me-identity-find-information/Component.stories.tsx",
+    "sps.figma.nodeId": "859:27",
+    "sps.figma.variantNodeId": "981:111",
+    "sps.figma.storybookReferenceNodeId": "981:274",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "981:274",
+  "storybookImageCount": 1
+}

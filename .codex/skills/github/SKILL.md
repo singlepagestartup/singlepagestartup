@@ -5,11 +5,11 @@ description: "GitHub issue/project management workflow for SPS."
 
 # github
 
-Codex wrapper for `.claude/commands/github.md`.
+Canonical source: `.agents/workflows/engineering/github.md`.
 
 ## Execution Contract
 
-1. Read `.claude/commands/github.md` fully before executing.
+1. Read `.agents/workflows/engineering/github.md` fully before executing.
 2. Execute the same workflow semantics and status gates.
 3. Keep all artifacts in the same paths under `thoughts/shared/*`.
 4. Use existing helper scripts in `.claude/helpers/*.sh` for GitHub status logic.

@@ -1,0 +1,27 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "983:1759",
+  "variantName": "blog-authors-social-profiles-slug",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.blog-authors-social-profiles-slug",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/models/page/singlepage/blog-authors-social-profiles-slug",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "blog-authors-social-profiles-slug",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "blog-authors-social-profiles-slug",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/models/page/singlepage/blog-authors-social-profiles-slug/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/models/page/singlepage/blog-authors-social-profiles-slug/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1759",
+    "sps.figma.storybookReferenceNodeId": "983:1902",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1902",
+  "storybookImageCount": 1
+}

@@ -1,0 +1,27 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "983:1819",
+  "variantName": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1819",
+    "sps.figma.storybookReferenceNodeId": "983:1968",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1968",
+  "storybookImageCount": 1
+}

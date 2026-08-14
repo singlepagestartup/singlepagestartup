@@ -4,6 +4,11 @@ Use this file as the Claude-specific entry point for working in this repository.
 
 The provider-neutral entry point (for any AI agent) is the root `AGENTS.md` — it is canonical for shared repository rules and the AI development workflow. Shared sections in both files must stay in sync; when editing one, mirror the change in the other.
 
+Shared workflows, roles, contracts, and tool capabilities are canonical under
+`.agents/`. Files under `.claude/commands`, `.claude/references`, and
+`.claude/agents` are Claude-native adapters. Executable GitHub helpers remain in
+`.claude/helpers/` for compatibility.
+
 ## Repository Overview
 
 SinglePageStartup (SPS) is an Nx monorepo with:
@@ -63,7 +68,9 @@ All test files (`*.spec.*`, `*.test.*`, `*.e2e.*`) must use the repository BDD f
 
 ## Development Workflow Commands
 
-The unified development workflow uses commands in `.claude/commands/core/`.
+The unified development workflow is defined in
+`.agents/workflows/engineering/core/` and exposed through Claude adapters in
+`.claude/commands/core/`.
 
 **Start here in most cases:**
 
@@ -81,6 +88,64 @@ The unified development workflow uses commands in `.claude/commands/core/`.
 **After PR merge**: manually move the issue to "Done" in GitHub Project.
 
 For special-purpose tasks, see `.claude/commands/README.md` for the full command list.
+
+For work before development, use `/singlepagestartup` or ask to start,
+continue, inspect, or change the active project. The canonical five-stage
+workflow is `.agents/workflows/pre-development.md`. Before every invocation it
+fetches the configured GitHub branch, scans relevant commits published after
+the first approved strategy commit, and applies evidence and dependency side
+effects before stage work. Its layer-local
+`apps/studio/workspace/pre-development/<layer>.yaml` cursor records the last
+reconciled `00`, `10`, `20`, `30`, or `40` stage across model contexts.
+After the cursor is read, mandatory pipeline compatibility reconciliation
+compares completed, active, and later non-empty artifacts with the current
+checked-out workflow, templates, index, and completion rules. A synchronized
+shared-pipeline change therefore routes missing files, sections, schema keys, or
+decisions to the earliest affected stage in both framework and downstream
+repositories without a separate command or stored pipeline version.
+During `00`, update the active layer's source for the resolved
+singlepage-to-startup `knowledge/decision-profile/<layer>.md`. It classifies the
+potentially compound business model and records only material domain questions,
+metrics, evidence, risks, regulations, and viability rules. Assigned profile
+rows are mandatory quality gates; headings or generic prose do not complete an
+artifact. Use a named method or benchmark only with an authoritative source,
+explicit fit, and limitations for a material decision.
+Before business or market work starts, the operator confirms a compact brief
+that separates the primary decision subject, reference projects, historical
+context, and out-of-scope topics, and classifies every current or intended offer
+as a product candidate, supporting only, or deferred. Strategy selects an exact
+active product set from that confirmed portfolio and one first priority;
+`40-products` must match that set without inferred or omitted products. Unknowns are routed as operator facts,
+research questions, professional choices, or evidence gaps. An assumption never
+answers an operator-controlled fact such as budget, capacity, rights, support,
+or decision authority. Strategy and brand remain proposals until confirmed in
+plain language; no separate stage command is required. Quality and completeness
+take precedence over response length, number of turns, execution time, or token
+use.
+Every primary review document appears in the resolved `default` projection and
+contains at most 1,400 words so
+the operator can read and edit it in five to seven minutes; Git and evidence,
+not repeated prose, retain history and provenance. Brand owns the meaning that
+should form in the audience's mind. During `30-design`, a separate layered
+`design.md` translates approved Brand into visual identity, photography, and
+illustration decisions. Photography and illustration use the same objective
+prompt, production, example, and visual-review contract, and one shared React
+template renders both source layers. During `40-products`, each offer owns a self-contained
+Product, Website, Marketing Creative, and Presentation set. A non-empty startup
+catalog replaces the entire singlepage catalog so unrelated niches never mix.
+None may redefine an upstream decision.
+Workspace configuration defaults unknown repositories to `startup` and maps the
+canonical framework repository to `singlepage`. Inherited singlepage evidence
+is provenance only in a startup unless explicitly adopted by startup evidence.
+Studio consistently exposes `singlepage`, `startup`, and resolved `default`;
+agents edit only the active source layer and never write a default copy.
+
+The seven pre-development professions are executable custom agents, not merely
+Markdown references. Codex discovers them from `.codex/agents/*.toml` and Claude
+from `.claude/agents/*.md`; every adapter must explicitly load its canonical
+role, which contains responsibility and professional method in one file. Source
+URLs in `.agents/roles/SOURCES.md` are provenance only. The agent researches
+external sources only when the current project needs fresh evidence.
 
 ## Code Review Checklist
 

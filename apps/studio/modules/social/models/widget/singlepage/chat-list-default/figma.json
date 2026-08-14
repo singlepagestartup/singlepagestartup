@@ -1,0 +1,27 @@
+{
+  "componentName": "social.widget",
+  "pageName": "social",
+  "nodeId": "855:1498",
+  "variantNodeId": "980:96",
+  "variantName": "chat-list-default",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.widget.chat-list-default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/models/widget/singlepage/chat-list-default",
+    "sps.figma.component": "social.widget",
+    "sps.figma.variant": "chat-list-default",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "chat-list-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/models/widget/singlepage/chat-list-default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/models/widget/singlepage/chat-list-default/Component.stories.tsx",
+    "sps.figma.nodeId": "855:1498",
+    "sps.figma.variantNodeId": "980:96",
+    "sps.figma.storybookReferenceNodeId": "980:250",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "980:250",
+  "storybookImageCount": 1
+}

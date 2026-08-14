@@ -5,11 +5,11 @@ description: "Validates implementation against a plan (pre/post modes)."
 
 # validate-plan
 
-Codex wrapper for `.claude/commands/validate_plan.md`.
+Canonical source: `.agents/workflows/engineering/validate_plan.md`.
 
 ## Execution Contract
 
-1. Read `.claude/commands/validate_plan.md` fully before executing.
+1. Read `.agents/workflows/engineering/validate_plan.md` fully before executing.
 2. Execute the same workflow semantics and status gates.
 3. Keep all artifacts in the same paths under `thoughts/shared/*`.
 4. Use existing helper scripts in `.claude/helpers/*.sh` for GitHub status logic.

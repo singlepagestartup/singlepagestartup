@@ -1,0 +1,52 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": "700:24",
+  "variantNodeId": "715:58",
+  "variantName": "content-feature-find-card",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "website-builder.widget.content-feature-find-card",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.group": "content",
+    "singlepagestartup.studio.groupVariant": "feature-find-card",
+    "singlepagestartup.studio.syncKey": "website-builder/models/widget/singlepage/content-feature-find-card",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "content-feature-find-card",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "content-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-card/Component.tsx",
+    "sps.code.story": "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-card/Component.stories.tsx"
+  },
+  "properties": [
+    {
+      "name": "eyebrow",
+      "type": "TEXT",
+      "slot": "eyebrow"
+    },
+    {
+      "name": "title",
+      "type": "TEXT",
+      "slot": "title"
+    },
+    {
+      "name": "description",
+      "type": "TEXT",
+      "slot": "description"
+    },
+    {
+      "name": "features",
+      "type": "TEXT",
+      "slot": "features"
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary"
+  ]
+}

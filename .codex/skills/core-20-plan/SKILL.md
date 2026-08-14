@@ -5,11 +5,11 @@ description: "Runs planning phase and produces implementation plan artifact."
 
 # core-20-plan
 
-Primary workflow skill. Canonical source: `.claude/commands/core/20-plan.md`.
+Primary workflow skill. Canonical source: `.agents/workflows/engineering/core/20-plan.md`.
 
 ## Required Behavior
 
-1. Read `.claude/commands/core/20-plan.md` completely.
+1. Read `.agents/workflows/engineering/core/20-plan.md` completely.
 2. Enforce the same GitHub Project status gate and transitions.
 3. Preserve all required comments/checkpoints described by the source command.
 4. Write/update artifacts in the exact same repository paths.
@@ -17,7 +17,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/20-plan.md`.
 6. Enforce explicit intent confirmation on ambiguous ticket wording before writing a new/rewritten plan.
 7. Use `.claude/helpers/gh_retry.sh` for direct `gh` comment/view operations described by the source command.
 8. For GitHub issue comments, use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin) to avoid shell interpolation issues in markdown bodies.
-9. Follow `.claude/references/repository-context-contract.md` for repo/project context; never derive artifact namespaces from bare `gh repo view`.
+9. Follow `.agents/contracts/engineering/repository-context.md` for repo/project context; never derive artifact namespaces from bare `gh repo view`.
 
 ## Codex Adaptation Rules
 
@@ -30,7 +30,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/20-plan.md`.
 
 ## Inputs
 
-- Accept the same inputs as `.claude/commands/core/20-plan.md` (issue number and optional flags/paths).
+- Accept the same inputs as `.agents/workflows/engineering/core/20-plan.md` (issue number and optional flags/paths).
 
 ## Notes
 

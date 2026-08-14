@@ -1,0 +1,27 @@
+{
+  "componentName": "rbac.identity",
+  "pageName": "rbac",
+  "nodeId": "981:86",
+  "variantNodeId": "981:62",
+  "variantName": "login-default",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.identity.login-default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/models/identity/singlepage/login-default",
+    "sps.figma.component": "rbac.identity",
+    "sps.figma.variant": "login-default",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "identity",
+    "sps.source.variant": "login-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/models/identity/singlepage/login-default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/models/identity/singlepage/login-default/Component.stories.tsx",
+    "sps.figma.nodeId": "981:86",
+    "sps.figma.variantNodeId": "981:62",
+    "sps.figma.storybookReferenceNodeId": "981:178",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "981:178",
+  "storybookImageCount": 1
+}

@@ -1,0 +1,5 @@
+schema: singlepagestartup.workspace-config.v1
+default_layer: startup
+repository_layers:
+  singlepagestartup/singlepagestartup: singlepage
+# Optional gitignored config.local.yaml may set active_layer to singlepage or startup.
