@@ -1,3 +1,4 @@
+import { z } from "zod";
 import {
   ContentCreateInputSchema,
   ContentDeleteApplyInputSchema,
@@ -114,11 +115,107 @@ function requireOperation(
   }
 }
 
+function unwrapSchema(
+  schema: z.ZodTypeAny | undefined,
+): z.ZodTypeAny | undefined {
+  let current = schema;
+
+  while (current) {
+    const definition = (current as any)._def;
+    const typeName = definition?.typeName ?? definition?.type;
+
+    if (
+      [
+        "ZodOptional",
+        "ZodNullable",
+        "ZodDefault",
+        "ZodCatch",
+        "ZodBranded",
+        "optional",
+        "nullable",
+        "default",
+        "catch",
+        "branded",
+      ].includes(typeName)
+    ) {
+      current = definition.innerType ?? definition.type;
+      continue;
+    }
+
+    if (typeName === "ZodEffects" || typeName === "effects") {
+      current = definition.schema;
+      continue;
+    }
+
+    if (typeName === "ZodPipeline" || typeName === "pipe") {
+      current = definition.out;
+      continue;
+    }
+
+    return current;
+  }
+
+  return current;
+}
+
+function isDateSchema(schema: z.ZodTypeAny | undefined) {
+  const unwrapped = unwrapSchema(schema);
+
+  const definition = (unwrapped as any)?._def;
+
+  return (
+    definition?.typeName === "ZodDate" ||
+    definition?.type === "date" ||
+    unwrapped instanceof z.ZodDate
+  );
+}
+
+function coerceJsonDateFields(
+  descriptor: IContentEntityDescriptor,
+  data: Record<string, unknown>,
+) {
+  const shape = descriptor.insertSchema.shape;
+  const coerced = { ...data };
+
+  Object.entries(shape).forEach(([field, schema]) => {
+    if (!isDateSchema(schema as z.ZodTypeAny | undefined)) {
+      return;
+    }
+
+    const value = coerced[field];
+
+    if (value === undefined || value === null || value instanceof Date) {
+      return;
+    }
+
+    if (typeof value !== "string") {
+      throw new Error(
+        `Validation error. Field "${field}" must be a valid ISO-8601 date string.`,
+      );
+    }
+
+    const isIsoDateString = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value);
+    const date = new Date(value);
+
+    if (!isIsoDateString || Number.isNaN(date.getTime())) {
+      throw new Error(
+        `Validation error. Field "${field}" must be a valid ISO-8601 date string.`,
+      );
+    }
+
+    coerced[field] = date;
+  });
+
+  return coerced;
+}
+
 function parseCreateData(
   descriptor: IContentEntityDescriptor,
   data: Record<string, unknown>,
 ) {
-  const parsed = descriptor.insertSchema.safeParse(data);
+  const parsed = descriptor.insertSchema.safeParse(
+    coerceJsonDateFields(descriptor, data),
+  );
 
   if (!parsed.success) {
     throw new Error(parsed.error.message);
@@ -131,7 +228,9 @@ function parseUpdateData(
   descriptor: IContentEntityDescriptor,
   data: Record<string, unknown>,
 ) {
-  const parsed = descriptor.insertSchema.partial().safeParse(data);
+  const parsed = descriptor.insertSchema
+    .partial()
+    .safeParse(coerceJsonDateFields(descriptor, data));
 
   if (!parsed.success) {
     throw new Error(parsed.error.message);

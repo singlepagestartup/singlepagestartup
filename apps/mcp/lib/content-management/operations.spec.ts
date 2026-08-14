@@ -9,11 +9,13 @@ import { z } from "zod";
 import {
   applyDeleteContentModelRecord,
   createContentModelRecord,
+  createContentRelationRecord,
   describeContentEntities,
   describeContentModel,
   findContentModelRecords,
   previewDeleteContentModelRecord,
   updateContentModelRecord,
+  updateContentRelationRecord,
   updateLocalizedContentField,
 } from "./operations";
 import { IContentEntityDescriptor } from "./types";
@@ -84,6 +86,8 @@ function createDescriptor(
       .object({
         title: z.record(z.any()).optional(),
         adminTitle: z.string().optional(),
+        publishedAt: z.date().optional(),
+        expiresAt: z.date().nullable().optional(),
       })
       .passthrough(),
     selectSchema: z.object({ id: z.string() }).passthrough(),
@@ -293,6 +297,79 @@ describe("MCP content-management generic operations", () => {
   });
 
   /**
+   * BDD Scenario: Create dry-run coerces date strings
+   * Given Codex prepares a JSON create payload with an ISO-8601 date string
+   * When dryRun is true
+   * Then the validated preview contains a Date and the SDK create method is not called
+   */
+  it("coerces JSON date strings in create previews without invoking SDK writes", async () => {
+    const api = createApi();
+    const registry = [createDescriptor(api)];
+    const publishedAt = "2022-07-06T21:00:00.000Z";
+
+    const result = await createContentModelRecord(
+      {
+        module: "blog",
+        model: "widget",
+        data: {
+          adminTitle: "Scheduled Articles",
+          publishedAt,
+        },
+        dryRun: true,
+      },
+      { registry },
+    );
+
+    expect(result).toEqual({
+      operation: "create",
+      module: "blog",
+      model: "widget",
+      data: {
+        adminTitle: "Scheduled Articles",
+        publishedAt: new Date(publishedAt),
+      },
+    });
+    expect(api.create).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: Relation create dry-run coerces date strings
+   * Given Codex prepares a JSON relation create payload with a nullable optional date string
+   * When dryRun is true
+   * Then the relation preview validates the coerced Date without invoking SDK writes
+   */
+  it("coerces JSON date strings in relation create previews", async () => {
+    const api = createApi();
+    const registry = [
+      createDescriptor(api, {
+        key: "blog.categories-to-articles",
+        kind: "relation",
+      }),
+    ];
+    const expiresAt = "2023-01-02T03:04:05.000Z";
+
+    await expect(
+      createContentRelationRecord(
+        {
+          module: "blog",
+          relation: "categories-to-articles",
+          data: { expiresAt },
+          dryRun: true,
+        },
+        { registry },
+      ),
+    ).resolves.toEqual({
+      operation: "create",
+      module: "blog",
+      relation: "categories-to-articles",
+      data: {
+        expiresAt: new Date(expiresAt),
+      },
+    });
+    expect(api.create).not.toHaveBeenCalled();
+  });
+
+  /**
    * BDD Scenario: File create from URL uses the file API route
    * Given an AI chat client provides a public image URL for file-storage.file
    * When dryRun is false
@@ -468,6 +545,128 @@ describe("MCP content-management generic operations", () => {
       },
     });
   });
+
+  /**
+   * BDD Scenario: Update forwards coerced date patch
+   * Given Codex prepares a JSON update payload with an ISO-8601 date string
+   * When Codex applies a generic update
+   * Then the SDK receives a Date value with caller auth headers
+   */
+  it("coerces JSON date strings before forwarding update patches", async () => {
+    const api = createApi();
+    const registry = [createDescriptor(api)];
+    const publishedAt = "2022-07-06T21:00:00.000Z";
+
+    await expect(
+      updateContentModelRecord(
+        {
+          module: "blog",
+          model: "widget",
+          id: "widget-1",
+          data: { publishedAt },
+          dryRun: false,
+        },
+        { registry, authHeaders },
+      ),
+    ).resolves.toEqual({
+      id: "widget-1",
+      publishedAt: new Date(publishedAt),
+    });
+
+    expect(api.update).toHaveBeenCalledWith({
+      id: "widget-1",
+      data: {
+        publishedAt: new Date(publishedAt),
+      },
+      options: {
+        headers: authHeaders,
+      },
+    });
+  });
+
+  /**
+   * BDD Scenario: Relation update forwards coerced date patch
+   * Given Codex prepares a JSON relation update payload with an ISO-8601 date string
+   * When Codex applies a generic relation update
+   * Then the SDK receives a Date value with caller auth headers
+   */
+  it("coerces JSON date strings before forwarding relation update patches", async () => {
+    const api = createApi();
+    const registry = [
+      createDescriptor(api, {
+        key: "blog.categories-to-articles",
+        kind: "relation",
+      }),
+    ];
+    const publishedAt = "2024-02-03T04:05:06.000Z";
+
+    await updateContentRelationRecord(
+      {
+        module: "blog",
+        relation: "categories-to-articles",
+        id: "relation-1",
+        data: { publishedAt },
+        dryRun: false,
+      },
+      { registry, authHeaders },
+    );
+
+    expect(api.update).toHaveBeenCalledWith({
+      id: "relation-1",
+      data: {
+        publishedAt: new Date(publishedAt),
+      },
+      options: {
+        headers: authHeaders,
+      },
+    });
+  });
+
+  /**
+   * BDD Scenario: Invalid date payload rejects before writes
+   * Given Codex prepares invalid JSON values for a date field
+   * When Codex applies create and update mutations
+   * Then validation fails before the SDK write methods are invoked
+   */
+  it.each(["not-a-date", 1657141200000, { iso: "2022-07-06T21:00:00.000Z" }])(
+    "rejects invalid JSON date value %p before SDK writes",
+    async (publishedAt) => {
+      const api = createApi();
+      const registry = [createDescriptor(api)];
+
+      await expect(
+        createContentModelRecord(
+          {
+            module: "blog",
+            model: "widget",
+            data: { publishedAt },
+            dryRun: false,
+          },
+          { registry },
+        ),
+      ).rejects.toThrow(
+        'Validation error. Field "publishedAt" must be a valid ISO-8601 date string.',
+      );
+
+      await expect(
+        updateContentModelRecord(
+          {
+            module: "blog",
+            model: "widget",
+            id: "widget-1",
+            data: { publishedAt },
+            dryRun: false,
+          },
+          { registry },
+        ),
+      ).rejects.toThrow(
+        'Validation error. Field "publishedAt" must be a valid ISO-8601 date string.',
+      );
+
+      expect(api.create).not.toHaveBeenCalled();
+      expect(api.update).not.toHaveBeenCalled();
+    },
+  );
 
   /**
    * BDD Scenario: Delete requires preview token before apply
