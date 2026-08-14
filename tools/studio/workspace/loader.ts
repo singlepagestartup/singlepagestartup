@@ -1,13 +1,20 @@
-import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parse } from "yaml";
 
 import { mergeWorkspaceContent, type WorkspaceMergeStrategy } from "./merge";
+import {
+  resolveWorkspaceLayer,
+  type WorkspaceLayer,
+  type WorkspaceLayerSelection,
+} from "./repository-layer";
 
-export type WorkspaceLayer = "singlepage" | "startup";
-export type WorkspaceLayerSelection = WorkspaceLayer | "auto";
+export type {
+  WorkspaceLayer,
+  WorkspaceLayerSelection,
+} from "./repository-layer";
+export { resolveRepositoryIdentity } from "./repository-layer";
 export type WorkspaceProjection = "resolved" | "source";
 
 export interface IWorkspaceIndexEntry {
@@ -63,12 +70,6 @@ export interface ILoadWorkspaceOptions {
   workspaceRoot?: string;
 }
 
-interface IWorkspaceConfig {
-  active_layer?: WorkspaceLayerSelection;
-  default_layer?: WorkspaceLayer;
-  repository_layers?: Record<string, WorkspaceLayer>;
-}
-
 const LAYERED_ENTRY_KINDS = [
   "brief",
   "evidence",
@@ -77,7 +78,8 @@ const LAYERED_ENTRY_KINDS = [
   "strategy",
   "asset-index",
   "brand",
-  "website",
+  "design",
+  "products",
   "discovery",
   "acquisition",
   "communication",
@@ -89,6 +91,7 @@ const STUDIO_WORKSPACE_ROOT = "apps/studio/workspace";
 const AGENT_RESOURCE_ROOT = ".agents";
 const WORKSPACE_MERGE_STRATEGIES = new Set<WorkspaceMergeStrategy>([
   "keyed",
+  "product-catalog",
   "replace",
   "scoped-keyed",
   "sections",
@@ -97,15 +100,16 @@ const EXPECTED_LAYERED_STRATEGIES: Record<string, WorkspaceMergeStrategy> = {
   acquisition: "replace",
   "asset-index": "keyed",
   brand: "sections",
+  design: "sections",
   brief: "sections",
   business: "sections",
   communication: "replace",
   "decision-profile": "replace",
   discovery: "replace",
   evidence: "scoped-keyed",
+  products: "product-catalog",
   research: "sections",
   strategy: "sections",
-  website: "sections",
 };
 
 export class WorkspaceValidationError extends Error {
@@ -191,7 +195,7 @@ function parseIndex(
         : undefined;
     if (entry.strategy != null && !strategy) {
       failures.push(
-        `${prefix}.strategy must be keyed, replace, scoped-keyed, or sections`,
+        `${prefix}.strategy must be keyed, product-catalog, replace, scoped-keyed, or sections`,
       );
     }
     return {
@@ -248,79 +252,6 @@ async function readIndex(
     indexPath,
     layer,
   );
-}
-
-function parseRepositoryIdentity(remote: string): string | undefined {
-  const normalized = remote.trim().replace(/\.git$/, "");
-  const match = normalized.match(/(?:github\.com[/:])([^/]+\/[^/]+)$/);
-  return match?.[1];
-}
-
-export function resolveRepositoryIdentity(
-  repositoryRoot: string,
-): string | undefined {
-  const fromEnvironment =
-    process.env.TARGET_REPO ?? process.env.GITHUB_REPOSITORY;
-  if (fromEnvironment?.includes("/")) return fromEnvironment;
-
-  const result = spawnSync("git", ["config", "--get", "remote.origin.url"], {
-    cwd: repositoryRoot,
-    encoding: "utf8",
-  });
-  return result.status === 0
-    ? parseRepositoryIdentity(result.stdout)
-    : undefined;
-}
-
-async function readConfig(repositoryRoot: string): Promise<IWorkspaceConfig> {
-  const workspaceRoot = path.join(repositoryRoot, STUDIO_WORKSPACE_ROOT);
-  const configPath = path.join(workspaceRoot, "config.yaml");
-  const localPath = path.join(workspaceRoot, "config.local.yaml");
-  const sources = await Promise.all(
-    [configPath, localPath]
-      .filter((sourcePath) => existsSync(sourcePath))
-      .map(async (sourcePath) => ({
-        parsed: parseYaml(await readFile(sourcePath, "utf8"), sourcePath),
-        sourcePath,
-      })),
-  );
-  const merged: IWorkspaceConfig = {};
-  for (const { parsed } of sources) {
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
-      continue;
-    Object.assign(merged, parsed as IWorkspaceConfig);
-  }
-  const failures: string[] = [];
-  if (
-    merged.active_layer != null &&
-    !["auto", "singlepage", "startup"].includes(merged.active_layer)
-  ) {
-    failures.push(
-      "workspace config active_layer must be auto, singlepage, or startup",
-    );
-  }
-  if (
-    merged.default_layer != null &&
-    !["singlepage", "startup"].includes(merged.default_layer)
-  ) {
-    failures.push(
-      "workspace config default_layer must be singlepage or startup",
-    );
-  }
-  for (const [repository, layer] of Object.entries(
-    merged.repository_layers ?? {},
-  )) {
-    if (
-      !repository.includes("/") ||
-      !["singlepage", "startup"].includes(layer)
-    ) {
-      failures.push(
-        `workspace config repository_layers has invalid mapping ${repository}: ${layer}`,
-      );
-    }
-  }
-  if (failures.length) throw new WorkspaceValidationError(failures);
-  return merged;
 }
 
 function resolveEntryPath(
@@ -510,7 +441,6 @@ export async function loadWorkspace(
   options: ILoadWorkspaceOptions = {},
 ): Promise<IWorkspaceGraph> {
   const repositoryRoot = path.resolve(options.repositoryRoot ?? process.cwd());
-  const config = await readConfig(repositoryRoot);
   const canonicalWorkspaceRoot = path.join(
     repositoryRoot,
     STUDIO_WORKSPACE_ROOT,
@@ -518,16 +448,11 @@ export async function loadWorkspace(
   const workspaceRoot = path.resolve(
     options.workspaceRoot ?? canonicalWorkspaceRoot,
   );
-  const requestedLayer = options.activeLayer ?? config.active_layer ?? "auto";
-  const repositoryIdentity =
-    options.repositoryIdentity ?? resolveRepositoryIdentity(repositoryRoot);
-  const configuredRepositoryLayer = repositoryIdentity
-    ? config.repository_layers?.[repositoryIdentity]
-    : undefined;
-  const activeLayer: WorkspaceLayer =
-    requestedLayer === "singlepage" || requestedLayer === "startup"
-      ? requestedLayer
-      : (configuredRepositoryLayer ?? config.default_layer ?? "startup");
+  const activeLayer = resolveWorkspaceLayer({
+    repositoryRoot,
+    requestedLayer: options.activeLayer,
+    repositoryIdentity: options.repositoryIdentity,
+  }).layer;
   const projection = options.projection ?? "resolved";
 
   const [singlepageIndex, startupIndex] = await Promise.all([

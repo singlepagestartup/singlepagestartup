@@ -74,17 +74,49 @@ shared executable backend for GitHub Project automation, not a process copy.
 
 Use `singlepagestartup` (Codex), `/singlepagestartup` (Claude), or a
 plain-language request to start, continue, inspect, or change a project before
-engineering. The workflow uses `00-understand`, `10-decide`, `20-package`, and
-`30-design`. Its layer-local
+engineering. The workflow uses `00-business`, `10-strategy`, `20-brand`,
+`30-design`, and `40-products`. Before every invocation it fetches the configured GitHub branch,
+scans relevant commits published after the first approved strategy commit, and
+applies evidence and dependency side effects before stage work. Its layer-local
 `apps/studio/workspace/pre-development/<layer>.yaml` cursor survives new model
 contexts and is reconciled against the indexed living artifacts at every launch.
-During `00-understand`, the workflow classifies the potentially compound
+After the cursor is read, mandatory pipeline compatibility reconciliation
+compares completed, active, and later non-empty artifacts with the current
+checked-out workflow, templates, index, and completion rules. A synchronized
+shared-pipeline change therefore routes missing files, sections, schema keys, or
+decisions to the earliest affected stage in both framework and downstream
+repositories without a separate command or stored pipeline version.
+During `00-business`, the workflow classifies the potentially compound
 business model and updates the resolved singlepage-to-startup
 `apps/studio/workspace/knowledge/decision-profile/<layer>.md`. Its
 material questions, metrics, evidence, risks, regulations, and viability rules
 become stage-specific quality gates; template headings or generic prose never
 complete a stage. Named professional methods or benchmarks are used only with an
 authoritative source, explicit fit, and limitations for a material decision.
+Before business or market work starts, the operator confirms a compact brief
+that separates the primary decision subject, reference projects, historical
+context, and out-of-scope topics, and classifies every current or intended offer
+as a product candidate, supporting only, or deferred. Strategy selects an exact
+active product set from that confirmed portfolio and one first priority;
+`40-products` must match that set without inferred or omitted products. Unknowns are routed as operator facts,
+research questions, professional choices, or evidence gaps. An assumption never
+answers an operator-controlled fact such as budget, capacity, rights, support,
+or decision authority. Strategy and brand remain proposals until confirmed in
+plain language; no separate stage command is required. Quality and completeness
+take precedence over response length, number of turns, execution time, or token
+use.
+Every primary review document appears in the resolved `default` projection and
+contains at most 1,400 words so
+the operator can read and edit it in five to seven minutes; Git and evidence,
+not repeated prose, retain history and provenance. Brand owns the meaning that
+should form in the audience's mind. During `30-design`, a separate layered
+`design.md` translates approved Brand into visual identity, photography, and
+illustration decisions. Photography and illustration use the same objective
+prompt, production, example, and visual-review contract, and one shared React
+template renders both source layers. During `40-products`, each offer owns a self-contained
+Product, Website, Marketing Creative, and Presentation set. A non-empty startup
+catalog replaces the entire singlepage catalog so unrelated niches never mix.
+None may redefine an upstream decision.
 The framework repository writes the colocated `singlepage` sources; downstream
 repositories write the colocated `startup` sources. All project business context
 lives under `apps/studio/workspace/**`; only project-invariant role methods and
@@ -92,8 +124,11 @@ templates live under `.agents/**`.
 `apps/studio/workspace/config.yaml` defaults unknown repositories to `startup`
 and explicitly maps the canonical framework repository to `singlepage`.
 Layered startup index entries declare their base with `extends` and use
-`sections`, `replace`, `keyed`, or `scoped-keyed` resolution. Inherited
+`sections`, `replace`, `keyed`, `scoped-keyed`, or atomic `product-catalog`
+resolution. Inherited
 singlepage evidence is provenance only in a startup unless explicitly adopted.
+Studio consistently exposes `singlepage`, `startup`, and resolved `default`;
+agents edit only the active source layer and never write a default copy.
 
 The seven pre-development professions are executable custom agents, not merely
 Markdown references. Codex discovers them from `.codex/agents/*.toml` and Claude
@@ -161,14 +196,16 @@ Hard requirements for every provider: respect status gates, write artifacts at t
 - Each checkout has its own `.claude/.env` (gitignored) pointing at its own GitHub repository and its own GitHub Project.
 - Framework-level fixes discovered in a child project should be backported to `sps-lite`; project-specific behavior must stay in the child repository.
 
-### Token efficiency
+### Durable knowledge and continuity
 
-The workflow is designed to spend tokens once and reuse the result:
+The workflow prioritizes accurate, complete, reusable results. Do not skip
+questions, investigation, verification, or corrections to reduce response
+length, execution time, or token use:
 
 - Consult recorded knowledge before searching the codebase: follow `.agents/contracts/engineering/knowledge-first.md` (lookup order: process log → ticket → research/plans → READMEs → targeted search).
 - Each phase reads the previous phase's artifact instead of re-deriving it; artifacts must be self-contained for exactly this reason.
 - Incidents and their fixes are recorded once in the process log (`.agents/contracts/engineering/process-artifact.md`); future agents read them instead of re-debugging.
-- Documentation order (root `README.md` → module README → model/relation README) is the cheapest way to understand a module — read it before scanning code.
+- Documentation order (root `README.md` → module README → model/relation README) provides the canonical context before targeted code inspection.
 
 ## Test format (BDD)
 

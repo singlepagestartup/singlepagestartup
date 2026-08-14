@@ -1,0 +1,55 @@
+schema: singlepagestartup.github-reconciliation.v1
+remote: origin
+branch: default
+strategy_path: apps/studio/workspace/strategy/singlepage.md
+ignore_paths:
+  - apps/studio/workspace/pre-development/github/**
+rules:
+  - id: license-and-distribution
+    paths:
+      - LICENSE
+      - LICENSE.*
+      - COPYING*
+      - NOTICE*
+      - README.md
+      - package.json
+      - package-lock.json
+    affected_artifacts:
+      - singlepage.evidence
+      - singlepage.research
+      - singlepage.strategy
+      - singlepage.brand
+      - singlepage.products
+    earliest_stage: 00-business
+  - id: framework-capabilities
+    paths:
+      - apps/api/**
+      - apps/host/**
+      - apps/mcp/**
+      - libs/modules/**
+    affected_artifacts:
+      - singlepage.evidence
+      - singlepage.business
+      - singlepage.research
+      - singlepage.strategy
+      - singlepage.brand
+      - singlepage.products
+    earliest_stage: 00-business
+  - id: setup-release-and-runtime
+    paths:
+      - ai.sh
+      - up.sh
+      - .nvmrc
+      - docker-compose*.yaml
+      - docker-compose*.yml
+      - apps/db/**
+      - apps/redis/**
+    affected_artifacts:
+      - singlepage.evidence
+      - singlepage.business
+      - singlepage.research
+      - singlepage.strategy
+      - singlepage.brand
+      - singlepage.products
+    earliest_stage: 00-business
+reconciliations: []

@@ -7,6 +7,7 @@ export interface IMergedWorkspaceContent {
 
 export type WorkspaceMergeStrategy =
   | "keyed"
+  | "product-catalog"
   | "replace"
   | "scoped-keyed"
   | "sections";
@@ -203,6 +204,21 @@ export function mergeYaml(
   };
 }
 
+function productCount(source: string): number {
+  if (!source.trim()) return 0;
+  const value = parse(source) as { products?: unknown } | null;
+  return Array.isArray(value?.products) ? value.products.length : 0;
+}
+
+export function replaceProductCatalog(
+  base: string,
+  overlay: string,
+): IMergedWorkspaceContent {
+  return productCount(overlay) > 0
+    ? { content: overlay, overlayContributes: true }
+    : { content: base, overlayContributes: false };
+}
+
 export function mergeWorkspaceContent({
   base,
   kind,
@@ -222,6 +238,9 @@ export function mergeWorkspaceContent({
       : { content: base, overlayContributes: false };
   }
   if (strategy === "keyed") return mergeYaml(base, overlay);
+  if (strategy === "product-catalog") {
+    return replaceProductCatalog(base, overlay);
+  }
   if (strategy === "scoped-keyed") {
     return mergeEvidenceRegister(base, overlay);
   }

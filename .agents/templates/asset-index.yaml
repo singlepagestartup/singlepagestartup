@@ -1,8 +1,14 @@
 schema: singlepagestartup.asset-index.v1
 assets:
   - id: replace-with-stable-id
-    path: assets/replace-with-file
+    design_role: null
+    design_key: null
+    path: assets/<layer>/intake/replace-with-file
     source_type: client
+    intake_category: interface
+    preference_signal: replace-with-observable-liked-or-disliked-quality
+    lifecycle: null
+    proposal_id: null
     evidence: false
     rights_status: unknown
     purpose: replace-with-purpose
@@ -11,3 +17,27 @@ assets:
     prohibited_use: []
     prompt: null
     source_or_tool: replace-with-source
+# Register every materially used visual reference as source_type:
+# public-reference. Its purpose names the observable quality to pursue or avoid;
+# rights_status and prohibited_use make clear that preference does not grant
+# copying, derivation, publication, trademark, imagery, or source-file rights.
+# Every client or public-reference Design input declares one intake_category:
+# identity, interface, typography, photography, illustration, or
+# marketing-creative. `unclassified` is a temporary correction state and never
+# satisfies a Design gate. Store categorized inputs below
+# assets/<layer>/intake/<intake_category>/. When the owning decision rejects or
+# replaces an input, remove its exact file, registry row, and stale current links
+# after checking references. Git retains history.
+# Every categorized preference reference also records `preference_signal` as
+# the operator's exact observable liked or disliked quality. A category label or
+# file alone never authorizes an agent-inferred preference.
+# For source_type: generated, lifecycle is required and must be proposed or
+# approved. proposal_id must equal the design artifact's current Visual proposal
+# ID, and the path must be below assets/<layer>/generated/<proposal_id>/.
+# Rejected, withdrawn, superseded, stale, or obsolete generated outputs are
+# deleted with their registry entries; the active registry never archives them.
+# Reconcile brand references, registry rows, and the complete generated tree.
+# When an asset must appear in the reusable Design projection, design_role names
+# the renderer family (for example logo, photography, or motif) and design_key
+# is the stable semantic slot used by brand-derived data. React components must
+# never select a project asset by its full project-specific ID.

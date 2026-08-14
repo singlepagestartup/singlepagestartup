@@ -1,5 +1,6 @@
 provider: claude
 bindings:
+  github-repository-read: [Bash-git]
   artifact-read: [Read]
   artifact-write: [Edit, Write]
   web-research: [WebSearch, WebFetch]

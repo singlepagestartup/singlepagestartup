@@ -11,7 +11,11 @@ const config: StorybookConfig = {
     name: "@storybook/react-vite",
     options: {},
   },
-  staticDirs: ["../runtime", "../foundations"],
+  staticDirs: [
+    "../runtime",
+    "../foundations",
+    { from: "../workspace/assets", to: "/workspace-assets" },
+  ],
   viteFinal: (config) => ({
     ...config,
     css: {

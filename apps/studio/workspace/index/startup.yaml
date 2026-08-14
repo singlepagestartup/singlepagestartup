@@ -8,7 +8,7 @@ entries:
       extends: singlepage.brief,
       strategy: sections,
       description: "Source request, founder language, constraints, goals, and unknowns.",
-      uses: [startup.discovery],
+      uses: [startup.discovery, startup.asset-index],
     }
   - {
       id: startup.evidence,
@@ -76,30 +76,41 @@ entries:
       path: brand/startup.md,
       extends: singlepage.brand,
       strategy: sections,
-      description: "Communication system, visual identity, tokens, and identity outputs.",
+      description: "Brand meaning, message hierarchy, voice, naming, and governance.",
       uses:
         [
           startup.strategy,
           startup.research,
           startup.evidence,
-          startup.asset-index,
           startup.communication,
         ],
     }
   - {
-      id: startup.website,
-      kind: website,
-      path: website/startup.md,
-      extends: singlepage.website,
+      id: startup.design,
+      kind: design,
+      path: design/startup.md,
+      extends: singlepage.design,
       strategy: sections,
-      description: "Visitor path, final copy, form behavior, and Studio compositions.",
+      description: "Visual identity, reusable design rules, imagery, and approved outputs.",
+      uses: [startup.brief, startup.brand, startup.evidence, startup.asset-index],
+    }
+  - {
+      id: startup.products,
+      kind: products,
+      path: products/startup.yaml,
+      extends: singlepage.products,
+      strategy: product-catalog,
+      description: "Atomic catalog of products and their Product, Website, Marketing Creative, and Presentation sources.",
       uses:
         [
           startup.business,
           startup.strategy,
           startup.brand,
+          startup.design,
           startup.evidence,
           startup.asset-index,
+          startup.acquisition,
+          startup.communication,
         ],
     }
   - {
@@ -142,4 +153,8 @@ imports:
   - template.strategy
   - template.asset-index
   - template.brand
+  - template.design
+  - template.product
+  - template.products
   - template.website
+  - template.creative

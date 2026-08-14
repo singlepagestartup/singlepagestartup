@@ -1,2 +1,1411 @@
 schema: singlepagestartup.asset-index.v1
-assets: []
+assets:
+  - id: singlepage-legacy-orange-favicon
+    path: apps/host/public/images/favicon.svg
+    source_type: client
+    evidence: false
+    rights_status: "Unknown authorship, license, and trademark clearance; unapproved legacy reference."
+    purpose: Internal provenance audit of the orange/yellow geometric legacy favicon.
+    related_artifacts: [singlepage.design]
+    allowed_use:
+      - Internal visual comparison and ownership investigation only.
+    prohibited_use:
+      - Do not reuse, publish as approved identity, modify into the new mark, or claim ownership until provenance and rights are confirmed.
+      - Do not use as product proof or as a visual claim of speed, launch, acceleration, or performance.
+    prompt: null
+    source_or_tool: "Existing repository file inspected on 2026-08-09; original source and creation tool unknown."
+
+  - id: singlepage-legacy-pixel-wordmark
+    path: apps/studio/modules/website-builder/models/widget/singlepage/footer-default/assets/singlepagestartup-logo.svg
+    source_type: client
+    evidence: false
+    rights_status: "Unknown authorship, font/path license, and trademark clearance; unapproved legacy reference."
+    purpose: Internal provenance audit of the black pixel-grid footer wordmark.
+    related_artifacts: [singlepage.design]
+    allowed_use:
+      - Internal visual comparison and ownership investigation only.
+    prohibited_use:
+      - Do not reuse, publish as approved identity, modify into the new mark, or claim ownership until provenance and rights are confirmed.
+      - Do not use as product proof, a completeness map, or an integrated-module implication.
+    prompt: null
+    source_or_tool: "Existing repository file inspected on 2026-08-09; original source and creation tool unknown."
+
+  - id: singlepage-operator-logo-square-black
+    path: assets/singlepage/intake/operator-logo-square-black.svg
+    source_type: client
+    intake_category: identity
+    evidence: false
+    rights_status: "Operator-created draft; the operator confirms sufficient rights to use and modify it for SinglePageStartup. Trademark clearance remains unverified."
+    purpose: Preserve the supplied 200 by 200 near-black square mark as an identity-intake source; the operator wants to retain the mark geometry.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Intake inspection, geometry comparison, hash verification, and professional brand reconciliation including modification.
+    prohibited_use:
+      - Do not publish, deploy, or distribute as an approved identity until the brand is approved.
+      - Do not treat the observed #111111 neutral as the canonical brand color until the visual system resolves the supplied variants.
+    prompt: null
+    source_or_tool: "Exact copy of /Users/rogwild/Downloads/logo-square-black.svg supplied on 2026-08-11; SHA-256 a63249db05af3a2048cf0ee8131c5b0f79c0a4829c7087af983d86a65c12a34e."
+
+  - id: singlepage-operator-logo-square-white
+    path: assets/singlepage/intake/operator-logo-square-white.svg
+    source_type: client
+    intake_category: identity
+    evidence: false
+    rights_status: "Operator-created draft; the operator confirms sufficient rights to use and modify it for SinglePageStartup. Trademark clearance remains unverified."
+    purpose: Preserve the supplied 200 by 200 white square mark as the inverse identity-intake source; the operator wants to retain the mark geometry.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Intake inspection, inverse-use comparison, hash verification, and professional brand reconciliation including modification.
+    prohibited_use:
+      - Do not publish, deploy, or distribute as an approved identity until the brand is approved.
+      - Do not infer approved background, contrast, or small-size rules from this draft alone.
+    prompt: null
+    source_or_tool: "Exact copy of /Users/rogwild/Downloads/logo-square-white.svg supplied on 2026-08-11; SHA-256 1a4491b26233b385cd34db3fc84768fed796664fb5785f4179779d063d729359."
+
+  - id: singlepage-operator-logo-lockup-black
+    path: assets/singlepage/intake/operator-logo-lockup-black.svg
+    source_type: client
+    intake_category: identity
+    evidence: false
+    rights_status: "Operator-created outlined SVG draft; the operator confirms sufficient rights to use and modify it for SinglePageStartup. Source-font provenance and trademark clearance remain unverified."
+    purpose: Preserve the supplied 590 by 200 black lockup for mark-to-wordmark proportion study; its typeface may be replaced.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Intake inspection, proportion comparison, hash verification, and professional brand reconciliation including wordmark replacement or modification.
+    prohibited_use:
+      - Do not publish, deploy, or distribute as an approved identity until the wordmark treatment is reconciled and the brand is approved.
+      - Do not adopt its visually separated “Single Page Startup” wording as the product name; public naming remains exactly SinglePageStartup.
+    prompt: null
+    source_or_tool: "Exact copy of /Users/rogwild/Downloads/logo-black.svg supplied on 2026-08-11; SHA-256 cac3193250852c0af838022c017a86e9217ef5be1abf56344289d9797ec738be."
+
+  - id: singlepage-operator-logo-lockup-white
+    path: assets/singlepage/intake/operator-logo-lockup-white.svg
+    source_type: client
+    intake_category: identity
+    evidence: false
+    rights_status: "Operator-created outlined SVG draft; the operator confirms sufficient rights to use and modify it for SinglePageStartup. Source-font provenance and trademark clearance remain unverified."
+    purpose: Preserve the supplied 590 by 200 inverse lockup for mark-to-wordmark proportion study; its typeface may be replaced.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Intake inspection, inverse-use and proportion comparison, hash verification, and professional brand reconciliation including wordmark replacement or modification.
+    prohibited_use:
+      - Do not publish, deploy, or distribute as an approved identity until the wordmark treatment is reconciled and the brand is approved.
+      - Do not adopt its visually separated “Single Page Startup” wording as the product name; public naming remains exactly SinglePageStartup.
+    prompt: null
+    source_or_tool: "Exact copy of /Users/rogwild/Downloads/logo-white.svg supplied on 2026-08-11; SHA-256 f1d68675b08e88ffef5d65d2b7cda4a8743c35efd55f6cd7514d09b0ee43e0f5."
+
+  - id: singlepage-operator-accent-sample-bfef61
+    path: assets/singlepage/intake/identity/accent-sample-bfef61.png
+    source_type: client
+    intake_category: identity
+    evidence: false
+    rights_status: "Operator-supplied solid-color palette sample; permitted for SinglePageStartup Design use. It contains no third-party mark, text, or composition."
+    purpose: Record the exact selected accent RGB 191, 239, 97 (`#BFEF61`) for reproducible palette and asset generation.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Pixel inspection,
+        contrast testing,
+        palette specification,
+        and deterministic visual derivatives.,
+      ]
+    prohibited_use:
+      - Do not treat this sample as approval of the complete Design or downstream product materials.
+      - Do not use accent color alone to communicate status, evidence, or meaning.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied screenshot; 194 by 156 RGBA PNG; uniform RGB 191, 239, 97 (`#BFEF61`); SHA-256 95dc59ec5aab8907b6dec1b32f24dca2cedac83881f78d9b3201406ced3690e3; SP-EV-072."
+
+  - id: singlepage-interface-reference-risk-balance-landing
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/risk-balance-landing.png
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, marks, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a spacious editorial landing page with floating navigation, a centered message, restrained actions, a linear background field, and a three-card explanation.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy or marks,
+        reproduce its layout,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 1050 by 1336 PNG screenshot named Снимок экрана — 2026-08-13 в 23.47.06.png on 2026-08-13; SHA-256 755a12c6bdd1e24a1d7224268872ea15b7759a0bd549b5d7880ab0d63a2eedfb; original public source not supplied."
+
+  - id: singlepage-interface-reference-conduit-pricing-landing
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/conduit-pricing-landing.jpg
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, marks, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a sparse pricing page with a compact header, centered headline, large uninterrupted whitespace, and three horizontally aligned offer summaries.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy or marks,
+        reproduce its layout,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 1199 by 665 JPEG f5dc34a1267ba303727291d33fd53dc4.jpg on 2026-08-13; SHA-256 4b490a8cdedc26c1ed84d5a33df3485e96c0452b0421835ea39c67a90434b6e9; original public source not supplied."
+
+  - id: singlepage-interface-reference-dashboard-theme-settings
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/dashboard-theme-settings.png
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, marks, icons, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a dense application settings screen with an icon rail, labeled sidebar, section hierarchy, repeated choice cards, and explicit selected states.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy,
+        marks,
+        or icons,
+        reproduce its layout,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 1912 by 1356 PNG screenshot named Снимок экрана — 2026-08-13 в 23.43.43.png on 2026-08-13; SHA-256 614df39a4ef89de9ee927a9fc4d4f05f74a5dfffc248bfcf68eb6c42bb20365a; original public source not supplied."
+
+  - id: singlepage-interface-reference-dashboard-book-grid
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/dashboard-book-grid.png
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, imagery, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, marks, icons, imagery, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect an application catalog with stable left navigation, a compact page header, repeated media cards, labels, metadata, and a clear create-new state.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its content or icons,
+        reproduce its layout,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 2062 by 1382 PNG screenshot named Снимок экрана — 2026-08-13 в 23.43.04.png on 2026-08-13; SHA-256 19c54f832d9df1eb1bffb71dd2059cb87c71999555488bee45d106b7904735a9; original public source not supplied."
+
+  - id: singlepage-interface-reference-agency-portfolio-landing
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/agency-portfolio-landing.png
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, imagery, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, marks, imagery, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a centered landing hero with compact navigation, two pill actions, a small trust line, and overlapping product-preview cards used as visual proof context.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its content or marks,
+        reproduce its layout,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 1422 by 1020 PNG screenshot named Снимок экрана — 2026-08-13 в 23.42.03.png on 2026-08-13; SHA-256 49dfdb83eed373b0c15708aa3f793c81af9347a3ca096e52e8c7201a800dce0c; original public source not supplied."
+
+  - id: singlepage-interface-reference-pricing-plan-cards
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/pricing-plan-cards.png
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a three-option pricing comparison with a billing toggle, large numeric hierarchy, rounded panels, grouped features, and one strongly emphasized selection.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy,
+        reproduce its layout,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 1748 by 1136 PNG screenshot named Снимок экрана — 2026-08-13 в 23.41.26.png on 2026-08-13; SHA-256 bdfe5623c72890457975612e427299dfefeb3d6290980e312dba78ff27c95752; original public source not supplied."
+
+  - id: singlepage-interface-reference-onboarding-role-form
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/onboarding-role-form.png
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a focused multi-step form with visible progress, a single question, chip choices, large fields, and unambiguous backward and forward actions.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy,
+        reproduce its layout,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 1182 by 1346 PNG screenshot named Снимок экрана — 2026-08-13 в 23.38.23.png on 2026-08-13; SHA-256 ee8cc11dd8472b7d28fa17aee376f163d124bc8735e447e60a61c1266911ada4; original public source not supplied."
+
+  - id: singlepage-interface-reference-mobile-invoice-bottom-sheet
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/mobile-invoice-bottom-sheet.png
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, device trade dress, icons, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a mobile contextual bottom sheet over a dimmed document, with visible status, grouped data, a toggle, compact action icons, and separated destructive action.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its content or icons,
+        reproduce its layout or device trade dress,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 802 by 1590 PNG screenshot named Снимок экрана — 2026-08-13 в 23.38.10.png on 2026-08-13; SHA-256 63ea192c7fb4c43d9ecceee61b8d2c8df968629cd8c29782f0a5590dfe049ec1; original public source not supplied."
+
+  - id: singlepage-interface-reference-subscription-access-card
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/subscription-access-card.png
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, mark, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a compact rounded subscription card with one message, short explanation, generous padding, and one full-width primary action.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its mark or copy,
+        reproduce its layout,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 626 by 502 PNG screenshot named Снимок экрана — 2026-08-13 в 23.37.58.png on 2026-08-13; SHA-256 2b77fdfb0fc09214c0125151e07ec78423d52cecfd6a4df97603d9a09acf42df; original public source not supplied."
+
+  - id: singlepage-interface-reference-license-download-card
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/license-download-card.png
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, marks, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a compact purchase card with grouped option lists, clear selected and disabled states, price alignment, a full-width primary action, and a secondary external action.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its marks or copy,
+        reproduce its layout,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 636 by 834 PNG screenshot named Снимок экрана — 2026-08-13 в 23.37.55.png on 2026-08-13; SHA-256 aec38420e67b3593a7dd61b789f60a85a76b616c5fa59122ffcf06915d3736f8; original public source not supplied."
+
+  - id: singlepage-interface-reference-license-add-to-cart-card
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/license-add-to-cart-card.png
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a reduced purchase state with two license choices, strong radio selection, aligned prices, one full-width action, and secondary legal text.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy,
+        reproduce its layout,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 644 by 470 PNG screenshot named Снимок экрана — 2026-08-13 в 23.37.53.png on 2026-08-13; SHA-256 b15d30ed687fee715d41cbf72f47924d52251f8ae402a831f3d26dd7780ecbd0; original public source not supplied."
+
+  - id: singlepage-interface-reference-product-license-selection-card
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/interface/product-license-selection-card.png
+    source_type: public-reference
+    intake_category: interface
+    preference_signal: "Confirmed Interface preference: clear hierarchy, compact navigation, modular cards, rounded controls, restrained borders and shadows, explicit states, and one dominant action. Reference colors, typography, marks, copy, icons, and exact layouts are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect the complete option-selection state with grouped type and license choices, visible disabled options, aligned prices, one primary action, and secondary legal text.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed interface qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy,
+        reproduce its layout,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 648 by 800 PNG screenshot named Снимок экрана — 2026-08-13 в 23.37.50.png on 2026-08-13; SHA-256 2775ae5dbda9c7a0fb58b0fae7c19d579b9d8e37aba475d3177c483935fd3392; original public source not supplied."
+
+  - id: singlepage-photography-reference-motion-runner
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/photography/motion-runner-teal-orange.png
+    source_type: public-reference
+    intake_category: photography
+    preference_signal: "Liked: a human subject in real movement, deliberate directional motion blur, outdoor natural light, cool teal-blue fields, and warm skin or light highlights."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, and depicted-person release are unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a running subject, directional motion blur, outdoor context, and cool teal light with warm highlights as candidate photographic qualities.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review and later abstraction of operator-confirmed photographic qualities.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, derive a composition, identify the depicted person, or treat the reference as owned work or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 642 by 504 PNG screenshot named Снимок экрана — 2026-08-13 в 00.00.24.png on 2026-08-13; SHA-256 7d259afbf843b4edb1777fee2a30a790b43c1da7ae5a58272ca3a867e579ea89; original public source not supplied."
+
+  - id: singlepage-photography-reference-foliage-closeup-narrow
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/photography/foliage-closeup-narrow.png
+    source_type: public-reference
+    intake_category: photography
+    preference_signal: "Liked: intimate facial framing, foreground foliage occlusion, shallow depth of field, green natural light, and partial rather than fully explanatory visibility."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, and depicted-person release are unknown; operator-supplied preference screenshot only."
+    purpose: Inspect an intimate facial crop, foreground foliage occlusion, shallow focus, and green directional daylight as candidate photographic qualities.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review and later abstraction of operator-confirmed photographic qualities.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, derive a composition, identify the depicted person, or treat the reference as owned work or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 818 by 328 PNG screenshot named Снимок экрана — 2026-08-13 в 00.00.10.png on 2026-08-13; SHA-256 4c11968e90a381e2f7f32d59cbbb345e471ad8a57ffbc0d87935ac6a610b8f84; original public source not supplied."
+
+  - id: singlepage-photography-reference-foliage-closeup-wide
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/photography/foliage-closeup-wide.png
+    source_type: public-reference
+    intake_category: photography
+    preference_signal: "Liked: the same intimate portrait language with a wider crop, foreground occlusion, shallow focus, and soft green daylight."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, and depicted-person release are unknown; operator-supplied preference screenshot only."
+    purpose: Compare a wider crop of the same close portrait, retaining foreground occlusion, shallow focus, and green daylight as candidate photographic qualities.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review and later abstraction of operator-confirmed photographic qualities.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, derive a composition, identify the depicted person, or treat the reference as owned work or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 758 by 400 PNG screenshot named Снимок экрана — 2026-08-13 в 00.00.14.png on 2026-08-13; SHA-256 d643abe6fbe1170807cdbee97337a31002a68a4aa7cc8e62e36cf13edc9a6302; original public source not supplied."
+
+  - id: singlepage-photography-reference-motion-portrait
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/photography/motion-portrait-neutral.png
+    source_type: public-reference
+    intake_category: photography
+    preference_signal: "Liked: centered human portraiture made dynamic through intentional subject-motion blur, soft natural contrast, and a restrained cool background."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, and depicted-person release are unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a centered portrait with deliberate subject-motion blur, restrained cool background, and soft natural contrast as candidate photographic qualities.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review and later abstraction of operator-confirmed photographic qualities.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, derive a composition, identify the depicted person, or treat the reference as owned work or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 648 by 502 PNG screenshot named Снимок экрана — 2026-08-12 в 23.59.48.png on 2026-08-13; SHA-256 791217ed910df8dfde07f770b719c48c0e9ff9648eeab2fb6b46ccfc37f0c33f; original public source not supplied."
+
+  - id: singlepage-photography-reference-hand-light-streaks
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/photography/hand-light-streaks.png
+    source_type: public-reference
+    intake_category: photography
+    preference_signal: "Liked: a first-person viewpoint, a hand close to the lens, horizontal light streaks, atmospheric distance, and soft blue natural light."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, and depicted-person release are unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a first-person hand close to the lens, horizontal light streaks, atmospheric landscape, and soft blue daylight as candidate photographic qualities.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review and later abstraction of operator-confirmed photographic qualities.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, derive a composition, identify the depicted person, or treat the reference as owned work or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 646 by 628 PNG screenshot named Снимок экрана — 2026-08-12 в 23.59.44.png on 2026-08-13; SHA-256 9cdd5fd26334a2971f1ef490911a80ba28993435c828f1ec9f0d558fd1b8c946; original public source not supplied."
+
+  - id: singlepage-photography-reference-figure-light-streaks
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/photography/figure-light-streaks-dusk.png
+    source_type: public-reference
+    intake_category: photography
+    preference_signal: "Liked: a human figure seen from behind, bodily movement, horizontal light streaks, muted dusk color, and an open outdoor setting."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, and depicted-person release are unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a rear-facing human figure, horizontal light streaks, subject movement, and a low-contrast dusk landscape as candidate photographic qualities.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review and later abstraction of operator-confirmed photographic qualities.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, derive a composition, identify the depicted person, or treat the reference as owned work or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 634 by 624 PNG screenshot named Снимок экрана — 2026-08-12 в 23.59.41.png on 2026-08-13; SHA-256 9d7d49f5dbbd218dd2230f3f570d5e75e0cf15e8a3a99cd7ca35c3d708d44790; original public source not supplied."
+
+  - id: singlepage-photography-reference-low-angle-sunburst
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/photography/low-angle-sunburst-reference.png
+    source_type: public-reference
+    intake_category: photography
+    preference_signal: "Liked: the extreme low camera angle, hands close to the lens, strong spatial depth, and natural sun flare. The vivid advertising saturation and embedded prompt layout are not required style qualities."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, generation rights, license, and depicted-person status are unknown; operator-supplied Midjourney-reference screenshot only."
+    purpose: Inspect an extreme low camera angle, hands close to the lens, hard sunburst, vivid blue sky, and warm clothing as candidate photographic qualities; ignore the embedded text and branded prompt layout.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review of photographic angle, depth, light, and color only.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, derive its composition, reuse its embedded text, identify the depicted person, or treat it as owned work, an approved prompt, or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 1246 by 1672 PNG screenshot named Снимок экрана — 2026-08-13 в 00.25.06.png on 2026-08-13; SHA-256 e12a3de88afb863874269357adad62c8551be5d923415a08817e5dfb3de4ca10; visible Midjourney credit and prompt overlay retained only as source context; original public source not supplied."
+
+  - id: singlepage-illustration-reference-isometric-building
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/illustration/isometric-building-connection.png
+    source_type: public-reference
+    intake_category: illustration
+    preference_signal: "Liked: recognizable technical objects, sparse isometric construction, thin outlines, generous negative space, and construction guides. Line and accent colors must use the active SinglePageStartup palette rather than the reference colors."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, and license unknown; operator-supplied preference screenshot only."
+    purpose: Inspect sparse isometric linework, a recognizable building object, construction guides, and restrained accent use as structural qualities; reference colors are excluded from the preference signal.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review and later abstraction of operator-confirmed illustration qualities.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, reconstruct, derive its composition, or treat the reference as owned work or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 732 by 574 PNG screenshot named Снимок экрана — 2026-08-13 в 00.04.18.png on 2026-08-13; SHA-256 151191a6d3df9e90c79260a226db7b7802cc01af9be1eecdefbcb62c4dc97fc2; original public source not supplied."
+
+  - id: singlepage-illustration-reference-isometric-platform
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/illustration/isometric-circular-platform.png
+    source_type: public-reference
+    intake_category: illustration
+    preference_signal: "Liked: sparse isometric construction, circular repetition, dotted guides, shallow depth, and restrained accent use. Line and accent colors must use the active SinglePageStartup palette rather than the reference colors."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, and license unknown; operator-supplied preference screenshot only."
+    purpose: Inspect sparse isometric construction, circular repetition, dotted guide lines, shallow depth, and restrained accent use as structural qualities; reference colors are excluded from the preference signal.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review and later abstraction of operator-confirmed illustration qualities.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, reconstruct, derive its composition, or treat the reference as owned work or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 802 by 554 PNG screenshot named Снимок экрана — 2026-08-13 в 00.04.16.png on 2026-08-13; SHA-256 be5a846aebc09afe80f1787323a8a607c24a7af5fe83ed604407b52be4aca9b5; original public source not supplied."
+
+  - id: singlepage-illustration-reference-isometric-workflow
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/illustration/isometric-workflow-gears.png
+    source_type: public-reference
+    intake_category: illustration
+    preference_signal: "Liked: minimal process callouts, recognizable technical objects, thin construction lines, sparse detail, and a limited accent role. All colors must resolve through the active SinglePageStartup palette."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, and license unknown; operator-supplied preference screenshot only."
+    purpose: Inspect minimal process callouts, recognizable gears, thin construction lines, sparse detail, and a limited accent role; reference colors are excluded from the preference signal.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review and later abstraction of operator-confirmed illustration qualities.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, reconstruct, reuse its text, derive its composition, or treat the reference as owned work or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 386 by 358 PNG screenshot named Снимок экрана — 2026-08-13 в 00.03.49.png on 2026-08-13; SHA-256 182e011d72d8b906b01fd4f510229e645683ecc85bf8832d39da3925485b471a; original public source not supplied."
+
+  - id: singlepage-illustration-reference-isometric-ai-chip
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/illustration/isometric-ai-chip.png
+    source_type: public-reference
+    intake_category: illustration
+    preference_signal: "Liked: a recognizable technical metaphor, isometric depth, fine circuit linework, sparse detail, and a restrained accent role. All colors must resolve through the active SinglePageStartup palette."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, and license unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a recognizable brain-and-chip metaphor, isometric depth, fine circuit linework, sparse detail, and a restrained accent role; reference colors are excluded from the preference signal.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review and later abstraction of operator-confirmed illustration qualities.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, reconstruct, derive its composition, or treat the reference as owned work, AI-capability proof, or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 406 by 376 PNG screenshot named Снимок экрана — 2026-08-13 в 00.03.46.png on 2026-08-13; SHA-256 66d4841f56f1bc84e35e3fba23f238ada424ddbc6078568521fc33fbcb6b2585; original public source not supplied."
+
+  - id: singlepage-illustration-reference-isometric-devices
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/illustration/isometric-connected-devices.png
+    source_type: public-reference
+    intake_category: illustration
+    preference_signal: "Liked: recognizable connected devices, simple isometric volumes, routing lines, sparse detail, and restrained node accents. All colors must resolve through the active SinglePageStartup palette."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, and license unknown; operator-supplied preference screenshot only."
+    purpose: Inspect recognizable connected devices, simple isometric volumes, routing lines, sparse detail, and restrained node accents; reference colors are excluded from the preference signal.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      - Internal categorized preference review and later abstraction of operator-confirmed illustration qualities.
+    prohibited_use:
+      - Do not publish, redistribute, copy, trace, reconstruct, derive its composition, or treat the reference as owned work, integration proof, or product evidence.
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 380 by 368 PNG screenshot named Снимок экрана — 2026-08-13 в 00.03.44.png on 2026-08-13; SHA-256 17c9e0ac1c957db58fd4b22dfade0854b2827d872b9c7db5b89be483f6e1dc49; original public source not supplied."
+
+  - id: singlepage-marketing-reference-body-signal
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/marketing-creative/body-signal-water-overlay.png
+    source_type: public-reference
+    intake_category: marketing-creative
+    preference_signal: "Confirmed Marketing Creative taste reference: expressive image-led composition, concise hierarchy, controlled negative space, or restrained informational overlays. A photo-light or primarily typographic composition is also valid. Reference colors, fonts, marks, and copy are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, marks, copy, and depicted-person release unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a photo-led poster with a concise headline, thin explanatory connections, small pill labels, and a bounded brand footer.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed composition qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy or marks,
+        derive its composition,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 316 by 412 PNG screenshot named Снимок экрана — 2026-08-13 в 00.24.52.png on 2026-08-13; SHA-256 281de3508c71bdbd3e195ecbfc88dad0d861b1c2a45a0133675cdc646c059a5d; original public source not supplied."
+
+  - id: singlepage-marketing-reference-longevity-journey
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/marketing-creative/longevity-journey-portrait.png
+    source_type: public-reference
+    intake_category: marketing-creative
+    preference_signal: "Confirmed Marketing Creative taste reference: expressive image-led composition, concise hierarchy, controlled negative space, or restrained informational overlays. A photo-light or primarily typographic composition is also valid. Reference colors, fonts, marks, and copy are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, copy, and depicted-person release unknown; operator-supplied preference screenshot only."
+    purpose: Inspect an editorial close portrait with a compact headline and a concentric visual timeline layered directly over the subject.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed composition qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy,
+        derive its composition,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 308 by 414 PNG screenshot named Снимок экрана — 2026-08-13 в 00.24.43.png on 2026-08-13; SHA-256 5876920fdbd99afb00733e1e5c8c41b37e5e4dc90e022fc601afc35bb1e97416; original public source not supplied."
+
+  - id: singlepage-marketing-reference-low-energy
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/marketing-creative/low-energy-statement.png
+    source_type: public-reference
+    intake_category: marketing-creative
+    preference_signal: "Confirmed Marketing Creative taste reference: expressive image-led composition, concise hierarchy, controlled negative space, or restrained informational overlays. A photo-light or primarily typographic composition is also valid. Reference colors, fonts, marks, and copy are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, mark, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a highly reduced poster with one strong statement, a short explanation, a small top mark, and a soft image field.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed composition qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy or mark,
+        derive its composition,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 304 by 412 PNG screenshot named Снимок экрана — 2026-08-13 в 00.24.40.png on 2026-08-13; SHA-256 9820289c47a2db71e48f0cec5588e079a49695ddfbcf42b909e7c7fc8e6cfe03; original public source not supplied."
+
+  - id: singlepage-marketing-reference-signal-motion
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/marketing-creative/signal-motion-labels.png
+    source_type: public-reference
+    intake_category: marketing-creative
+    preference_signal: "Confirmed Marketing Creative taste reference: expressive image-led composition, concise hierarchy, controlled negative space, or restrained informational overlays. A photo-light or primarily typographic composition is also valid. Reference colors, fonts, marks, and copy are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, copy, and depicted-person release unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a moving human photograph with a large headline, lightweight labels, contour lines, and explanatory copy anchored below.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed composition qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy,
+        derive its composition,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 446 by 678 PNG screenshot named Снимок экрана — 2026-08-13 в 00.24.30.png on 2026-08-13; SHA-256 962b1c95782a71e37dcf46b5b5760c6c05a8fd222bfb490c89a17bb8233ea6b3; original public source not supplied."
+
+  - id: singlepage-marketing-reference-soft-guidance
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/marketing-creative/soft-guidance-notifications.png
+    source_type: public-reference
+    intake_category: marketing-creative
+    preference_signal: "Confirmed Marketing Creative taste reference: expressive image-led composition, concise hierarchy, controlled negative space, or restrained informational overlays. A photo-light or primarily typographic composition is also valid. Reference colors, fonts, marks, and copy are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, interface design, copy, and depicted-person release unknown; operator-supplied preference screenshot only."
+    purpose: Inspect dynamic photography combined with translucent notification cards, sparse metrics, a short headline, bottom copy, and a circular CTA.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed composition qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy or interface,
+        derive its composition,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 434 by 666 PNG screenshot named Снимок экрана — 2026-08-13 в 00.24.26.png on 2026-08-13; SHA-256 03ff26b197077d716319e5c7c394bfec0b752da5d43fafe8b89fb56f8260a6fa; original public source not supplied."
+
+  - id: singlepage-marketing-reference-connected-data
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/marketing-creative/connected-data-overlay.png
+    source_type: public-reference
+    intake_category: marketing-creative
+    preference_signal: "Confirmed Marketing Creative taste reference: expressive image-led composition, concise hierarchy, controlled negative space, or restrained informational overlays. A photo-light or primarily typographic composition is also valid. Reference colors, fonts, marks, and copy are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, interface design, copy, and depicted-person release unknown; operator-supplied preference screenshot only."
+    purpose: Inspect full-bleed motion photography with translucent data overlays, one central headline, and supporting copy near the lower edge.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed composition qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy or interface,
+        derive its composition,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 436 by 670 PNG screenshot named Снимок экрана — 2026-08-13 в 00.24.20.png on 2026-08-13; SHA-256 a9d08f64b087eff907d19ef71683c21cda0f55c3f7972496d5f31df8b517582a; original public source not supplied."
+
+  - id: singlepage-marketing-reference-expression-story
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/marketing-creative/expression-story-poster.png
+    source_type: public-reference
+    intake_category: marketing-creative
+    preference_signal: "Confirmed Marketing Creative taste reference: expressive image-led composition, concise hierarchy, controlled negative space, or restrained informational overlays. A photo-light or primarily typographic composition is also valid. Reference colors, fonts, marks, and copy are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, copy, and depicted-person release unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a blurred human image with a small top category label, vertically paced headline, bottom supporting statement, and understated text CTA.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed composition qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy,
+        derive its composition,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 658 by 936 PNG screenshot named Снимок экрана — 2026-08-13 в 00.24.12.png on 2026-08-13; SHA-256 4c562016e5b03de0a06cd1012e459ae4286c1981d92292c3d281045702abc858; original public source not supplied."
+
+  - id: singlepage-marketing-reference-archive-type
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/marketing-creative/archive-type-poster.png
+    source_type: public-reference
+    intake_category: marketing-creative
+    preference_signal: "Confirmed Marketing Creative taste reference: expressive image-led composition, concise hierarchy, controlled negative space, or restrained informational overlays. A photo-light or primarily typographic composition is also valid. Reference colors, fonts, marks, and copy are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, data, and copy unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a text-only poster with strong negative space, a small category label, a compact data block, bottom reflection, and text CTA.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed composition qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its data or copy,
+        derive its composition,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 652 by 928 PNG screenshot named Снимок экрана — 2026-08-13 в 00.24.10.png on 2026-08-13; SHA-256 c01dc0ec44046cb8ccd12eb8b2ecb176de58a2bd609965facdb87b66a8dff5a2; original public source not supplied."
+
+  - id: singlepage-marketing-reference-introspection
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/marketing-creative/introspection-blur-poster.png
+    source_type: public-reference
+    intake_category: marketing-creative
+    preference_signal: "Confirmed Marketing Creative taste reference: expressive image-led composition, concise hierarchy, controlled negative space, or restrained informational overlays. A photo-light or primarily typographic composition is also valid. Reference colors, fonts, marks, and copy are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, copy, and depicted-person release unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a blurred human portrait with a small top category label, one centered statement, bottom supporting copy, and understated text CTA.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed composition qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy,
+        derive its composition,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 648 by 930 PNG screenshot named Снимок экрана — 2026-08-13 в 00.24.07.png on 2026-08-13; SHA-256 8004e375929d4e26e76316bd424b0b6998b956c097972126bc55350d661df5ca; original public source not supplied."
+
+  - id: singlepage-marketing-reference-health-tags
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/marketing-creative/health-tags-landscape.png
+    source_type: public-reference
+    intake_category: marketing-creative
+    preference_signal: "Confirmed Marketing Creative taste reference: expressive image-led composition, concise hierarchy, controlled negative space, or restrained informational overlays. A photo-light or primarily typographic composition is also valid. Reference colors, fonts, marks, and copy are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, license, copy, and depicted-person release unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a landscape editorial composition with a blurred human photograph, outlined topic pills as the primary message, and a compact supporting paragraph.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized preference review and later abstraction of operator-confirmed composition qualities.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its copy,
+        derive its composition,
+        or treat it as owned work or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 1192 by 996 PNG screenshot named Снимок экрана — 2026-08-13 в 00.23.57.png on 2026-08-13; SHA-256 4f76006e6bc246ad89f63f9065f6384c9e354fbd93574c14c5706b15946ab983; original public source not supplied."
+
+  - id: singlepage-marketing-reference-low-angle-prompt
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/marketing-creative/low-angle-prompt-poster.png
+    source_type: public-reference
+    intake_category: marketing-creative
+    preference_signal: "Confirmed Marketing Creative taste reference: expressive image-led composition, concise hierarchy, controlled negative space, or restrained informational overlays. A photo-light or primarily typographic composition is also valid. The photographic role is recorded separately; reference colors, fonts, marks, and copy are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, creator, generation rights, license, copy, and depicted-person status unknown; operator-supplied Midjourney-reference screenshot only."
+    purpose: Inspect a full-bleed image-led instructional post with a large bottom label and compact prompt copy; its photographic qualities are handled by the Photography set.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [Internal categorized preference review of marketing composition only.]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        reuse its image or copy,
+        derive its composition,
+        or treat it as owned work,
+        an approved prompt,
+        or evidence.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 1246 by 1672 PNG screenshot named Снимок экрана — 2026-08-13 в 00.25.06.png on 2026-08-13; SHA-256 e12a3de88afb863874269357adad62c8551be5d923415a08817e5dfb3de4ca10; duplicated intentionally from categorized Photography intake for a distinct Marketing Creative composition review; original public source not supplied."
+
+  - id: singlepage-typography-reference-editorial-serif-italic-highlight
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/typography/editorial-serif-italic-highlight.png
+    source_type: public-reference
+    intake_category: typography
+    preference_signal: "Confirmed Typography preference: exactly two Google Fonts families; monospaced default text plus decorative primary headings with upright serif and short italic emphasis. Both families require open licenses and Latin plus Cyrillic. Reference family, wording, and layout are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, designer, font family, and license unknown; operator-supplied preference screenshot only."
+    purpose: Inspect the contrast between an upright editorial serif line, a short italic phrase, and a narrow highlighted emphasis without adopting the depicted family or copy.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized Typography preference analysis and independent abstraction of hierarchy,
+        serif character,
+        and italic emphasis.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        identify or reuse an unverified source family,
+        reproduce the wording or composition,
+        or treat it as owned work.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 648 by 178 PNG screenshot named Снимок экрана — 2026-08-14 в 00.12.20.png on 2026-08-14; SHA-256 71c65474fad4571d3a660ef696cd66d5903a70e5283736dc65a62984237a845a; original public source not supplied."
+
+  - id: singlepage-typography-reference-editorial-serif-italic-contrast
+    design_role: null
+    design_key: null
+    path: assets/singlepage/intake/typography/editorial-serif-italic-contrast.png
+    source_type: public-reference
+    intake_category: typography
+    preference_signal: "Confirmed Typography preference: exactly two Google Fonts families; monospaced default text plus decorative primary headings with upright serif and short italic emphasis. Both families require open licenses and Latin plus Cyrillic. Reference family, wording, and layout are excluded."
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: "Original source, designer, font family, and license unknown; operator-supplied preference screenshot only."
+    purpose: Inspect a large upright headline in which one short semantic word changes to an editorial serif italic without adopting the depicted family or copy.
+    related_artifacts: [singlepage.brief, singlepage.design]
+    allowed_use:
+      [
+        Internal categorized Typography preference analysis and independent abstraction of hierarchy,
+        serif character,
+        and italic emphasis.,
+      ]
+    prohibited_use:
+      [
+        Do not publish,
+        redistribute,
+        copy,
+        trace,
+        identify or reuse an unverified source family,
+        reproduce the wording or composition,
+        or treat it as owned work.,
+      ]
+    prompt: null
+    source_or_tool: "Exact copy of operator-supplied 688 by 150 PNG screenshot named Снимок экрана — 2026-08-14 в 00.12.08.png on 2026-08-14; SHA-256 68b3576a2f9493a2fee9bbd2d444891387a319512047f8080b0c9151b2c50f5f; original public source not supplied."
+
+  - id: singlepage-font-jetbrains-mono-variable
+    design_role: font
+    design_key: base
+    path: assets/singlepage/fonts/jetbrains-mono/JetBrainsMono-wght.ttf
+    source_type: stock
+    lifecycle: approved
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "JetBrains Mono variable font distributed under the SIL Open Font License 1.1; the exact license text is preserved at assets/singlepage/fonts/jetbrains-mono/OFL.txt."
+    purpose: Approved base typeface source for body text, controls, labels, and code in the SinglePageStartup visual system.
+    related_artifacts: [singlepage.design, singlepage.products]
+    allowed_use:
+      - Use and embed according to the adjacent SIL Open Font License 1.1 and the approved Design typography roles.
+      - Create review and publication derivatives that preserve required license and attribution notices.
+    prohibited_use:
+      - Do not claim authorship, trademark ownership, exclusivity, or rights beyond the SIL Open Font License 1.1.
+      - Do not use the font file as product evidence or remove required license notices from redistributed source bundles.
+    prompt: null
+    source_or_tool: "Previously stored with the SinglePageStartup Design source and moved into Assets without modification; SHA-256 48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda."
+
+  - id: singlepage-font-cormorant-garamond-variable
+    design_role: font
+    design_key: primary
+    path: assets/singlepage/fonts/cormorant-garamond/CormorantGaramond[wght].ttf
+    source_type: stock
+    lifecycle: approved
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "Cormorant Garamond upright and italic variable fonts distributed by Google Fonts under the SIL Open Font License 1.1; the exact license text is preserved at assets/singlepage/fonts/cormorant-garamond/OFL.txt."
+    purpose: Approved primary typeface source for headings and short italic emphasis in the SinglePageStartup visual system.
+    related_artifacts: [singlepage.design, singlepage.products]
+    allowed_use:
+      - Use and embed according to the adjacent SIL Open Font License 1.1 and the approved Design typography roles.
+      - Use weights 500–600 for headings and weight 500 italic only for short semantic emphasis.
+    prohibited_use:
+      - Do not claim authorship, trademark ownership, exclusivity, or rights beyond the SIL Open Font License 1.1.
+      - Do not use for body, UI, code, or below 32px; do not claim authorship or rights beyond OFL 1.1.
+    prompt: null
+    source_or_tool: "Official Google Fonts repository, commit 6d210fd3550b7358ca62d6ba3e354ec1ec940813; CormorantGaramond[wght].ttf SHA-256 b20b7d9626dd956b2c5e558692ad328b1f19e3275e2782db4fa07670d83f35e0; CormorantGaramond-Italic[wght].ttf SHA-256 0f48ea6abb2084537854f7174c470991a463b13036309e3b50a81511611c530d; OFL.txt SHA-256 60700d351cac4650c51f3f9db318d2a420f8b45052dba2715eb5fec41f0f6956. Google Fonts metadata declares OFL, weights 300–700, Latin/Latin Extended, Cyrillic/Cyrillic Extended, and normal plus italic styles; local fc-scan confirms Russian language support."
+
+  - id: singlepage-generated-measured-space-primary-lockup
+    design_role: logo
+    design_key: primary
+    path: assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "Proposed derivative of the operator-created mark under the use-and-modification rights confirmed in SP-EV-056. The outlined Cormorant Garamond Bold wordmark uses the registered Google Fonts source and adjacent SIL Open Font License 1.1. Trademark clearance and operator approval of this regenerated derivative remain unverified."
+    purpose: Proposed 1120 by 240 primary lockup preserving the supplied mark and applying the confirmed Cormorant Garamond primary typeface for operator visual review.
+    related_artifacts: [singlepage.design, singlepage.products]
+    allowed_use:
+      - Downstream design use, comparison with the operator intake, accessibility inspection, and deterministic raster QA.
+      - Publication only after applicable communication, claim, license, and launch gates pass.
+    prohibited_use:
+      - Do not publish, deploy, or redistribute before the applicable communication, claim, license, and launch gates pass.
+      - Do not use as evidence or proof of integration, production readiness, current MIT licensing, compatibility, speed, adoption, or support.
+      - Do not alter the SinglePageStartup spelling, recolor or rearrange mark cells, or derive the lockup from a public-reference composition.
+    prompt: "Compose a deterministic 1120 by 240 SVG primary lockup for the refined Measured Space proposal. Preserve the operator-created pixel-grid S geometry exactly in canonical #111111 and white; set the exact one-line name SinglePageStartup as Cormorant Garamond Bold 700 outlines with the entire wordmark inside the viewBox and at least 160 pixels of right safe margin; use no acronym, Lime recoloring, gradients, reference composition, product proof, or unsupported claim."
+    source_or_tool: "Hand-composed repo-native SVG; exact mark geometry preserved from assets/singlepage/intake/operator-logo-square-black.svg under SP-EV-056; exact wordmark shaped and converted to outlines from assets/singlepage/fonts/cormorant-garamond/CormorantGaramond[wght].ttf at weight 700 with HarfBuzz hb-view; the hb-view canvas background rectangle was removed during deterministic composition so the transparent wordmark cannot cover the mark; SVG SHA-256 70d787606e439d5133d1916a5456a2df61d0631cbfe7d70c593a13a721510fb4; generated on 2026-08-14."
+
+  - id: singlepage-generated-measured-space-avatar
+    design_role: logo
+    design_key: avatar
+    path: assets/singlepage/generated/measured-space/singlepagestartup-avatar.svg
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "Approved size adaptation of the operator-created mark under the use-and-modification rights confirmed in SP-EV-056 and the operator approval in SP-EV-058. Trademark clearance is unverified."
+    purpose: Approved 512 by 512 square avatar and app-tile asset retaining the recognizable operator mark.
+    related_artifacts: [singlepage.design, singlepage.products]
+    allowed_use:
+      - Downstream design use, geometry comparison, accessibility inspection, and deterministic raster QA.
+      - Publication only after applicable communication, claim, license, and launch gates pass.
+    prohibited_use:
+      - Do not publish, deploy, or redistribute before the applicable communication, claim, license, and launch gates pass.
+      - Do not use as evidence, a module map, an integration diagram, or proof of product completeness.
+      - Do not recolor or rearrange mark cells or derive variants from a public-reference composition.
+    prompt: "Compose a deterministic 512 by 512 SVG avatar for the Measured Space proposal. Preserve the operator-created rounded-square pixel-grid S geometry exactly in canonical #111111 and white, retain clear space, and add no text, accent, gradient, reference motif, or proof implication."
+    source_or_tool: "Hand-composed repo-native SVG adapted from assets/singlepage/intake/operator-logo-square-black.svg under SP-EV-056; visually inspected at 512 and 32 pixels on 2026-08-11."
+
+  - id: singlepage-generated-measured-space-favicon
+    design_role: logo
+    design_key: favicon
+    path: assets/singlepage/generated/measured-space/singlepagestartup-favicon.svg
+    source_type: generated
+    lifecycle: approved
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "Approved small-size adaptation of the operator-created mark under the use-and-modification rights confirmed in SP-EV-056 and the operator approval in SP-EV-058. Trademark clearance is unverified."
+    purpose: Approved 64 by 64 scalable browser icon retaining the recognizable operator mark at small sizes.
+    related_artifacts: [singlepage.design, singlepage.products]
+    allowed_use:
+      - Downstream design use, small-size legibility inspection, accessibility inspection, and deterministic raster QA.
+      - Publication only after applicable communication, claim, license, and launch gates pass.
+    prohibited_use:
+      - Do not publish, deploy, or redistribute before the applicable communication, claim, license, and launch gates pass.
+      - Do not use as evidence, a completeness signal, or proof of product behavior.
+      - Do not add initials, recolor or rearrange mark cells, or derive variants from a public-reference icon.
+    prompt: "Compose a deterministic 64 by 64 SVG favicon for the Measured Space proposal. Preserve the operator-created rounded-square pixel-grid S geometry in canonical #111111 and white, optimize only by proportional scaling and clear space, and add no text, accent, gradient, or unsupported implication."
+    source_or_tool: "Hand-composed repo-native SVG adapted from assets/singlepage/intake/operator-logo-square-black.svg under SP-EV-056; visually inspected at 64 and 16 pixels on 2026-08-11."
+
+  - id: singlepage-generated-measured-space-og
+    path: assets/singlepage/generated/measured-space/singlepagestartup-og-1200x630.svg
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "Proposed derivative of the operator-created mark under the use-and-modification rights confirmed in SP-EV-056. Outlined Cormorant Garamond SemiBold and JetBrains Mono typography uses registered sources under the SIL Open Font License 1.1. Trademark clearance and operator approval of this regenerated derivative remain unverified."
+    purpose: Proposed 1200 by 630 Open Graph graphic applying the confirmed typography system for operator visual review; it is not approved for publication.
+    related_artifacts: [singlepage.products]
+    allowed_use:
+      - Downstream design use, crop inspection, accessibility inspection, and deterministic raster QA.
+      - Publication only after applicable evidence, communication, claim, license, and launch gates pass.
+    prohibited_use:
+      - Do not publish, deploy, or redistribute before the applicable evidence, communication, claim, license, and launch gates pass.
+      - Do not use as evidence or imply current MIT licensing, integration, production readiness, compatibility, speed, adoption, customer proof, or support.
+      - Do not alter the exact SinglePageStartup name or registered copy, add unverified results, or derive the composition from a public reference.
+    prompt: "Compose a deterministic 1200 by 630 SVG Open Graph graphic for the Measured Space proposal using Paper #F7F6F2, Ink #111111, thin measurement rules, and one exact Accent #BFEF61 locator with an Ink boundary. Preserve the operator mark. Set the exact display copy in Cormorant Garamond SemiBold 600 outlines and the exact base copy in JetBrains Mono outlines: 'SinglePageStartup'; 'Evaluate the recurring foundations'; 'your product needs.'; 'One pinned version · one named product'; 'Rights, evidence, and limits stated'. Put no white content on Accent. Add no current MIT claim, product proof, performance claim, platform logo, reference composition, or generated interface."
+    source_or_tool: "Hand-composed repo-native SVG; exact mark geometry preserved from assets/singlepage/intake/operator-logo-square-black.svg under SP-EV-056; typography outlined from registered font assets; Accent updated from operator sample SP-EV-072; SVG SHA-256 b3b02261c5b6dd6644a3a3a0974bc12ff4ec77374fd1e27de79ef8039a5fc138; regenerated on 2026-08-14."
+
+  - id: singlepage-generated-measured-space-illustration-module-hierarchy
+    design_role: motif
+    design_key: clear-module-hierarchy
+    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-module-hierarchy.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "Text-prompted AI-generated illustration proposal with no image inputs. No third-party authorship, trademark, or publication clearance is claimed."
+    purpose: Proposed square illustration for a clear hierarchy of modules in a software project.
+    related_artifacts: [singlepage.design, singlepage.products]
+    allowed_use:
+      [Internal Storybook and downstream design review while proposed.]
+    prohibited_use:
+      [
+        Do not publish or use as implemented architecture,
+        module-completeness proof,
+        product evidence,
+        or a copied public-reference composition.,
+      ]
+    prompt: |-
+      Use case: stylized-concept. Asset type: reusable SinglePageStartup illustration master. Primary request: Clear hierarchy of reusable software modules around one developer-controlled foundation; communicate hierarchy and inspectability, not literal architecture or proof. Style/medium: sparse isometric technical illustration with recognizable minimal objects, almost no fill. Composition/framing: square; every line, connector and object inside the centered middle 50%; outer 25% empty Paper; model chooses forms and arrangement, no prescribed paths or coordinates. Color palette: #F7F6F2 Paper, #111111 primary line, #565656 secondary line, exactly one #BFEF61 locator smaller than 4% canvas. Construction: three to five module-like objects and one foundation, 3–5px strokes, dotted guides, limited isometric depth, max four details per object. Constraints: opaque square RGB PNG; no text, numbers, logos, mark, UI, shadows, gradients, texture, glow, photorealism, watermark. Avoid: flowchart, dense circuitry, copied composition, completeness claim.
+    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated and visually inspected on 2026-08-14; model/seed unavailable; standardized from 1254px source to 1024 by 1024 RGB PNG with sips; SHA-256 b4ce7c79062dbb67946aeedd575772a78f08a801967ba4b2f23db548b1e722e5."
+
+  - id: singlepage-generated-measured-space-illustration-framework-inheritance
+    design_role: motif
+    design_key: framework-inheritance
+    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-framework-inheritance.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "Text-prompted AI-generated illustration proposal with no image inputs. No third-party authorship, trademark, or publication clearance is claimed."
+    purpose: Proposed square illustration for framework inheritance with one focused project-specific override.
+    related_artifacts: [singlepage.design, singlepage.products]
+    allowed_use:
+      [Internal Storybook and downstream design review while proposed.]
+    prohibited_use:
+      [
+        Do not publish or use as a verified inheritance implementation,
+        merge result,
+        product evidence,
+        or copied public-reference composition.,
+      ]
+    prompt: |-
+      Use case: stylized-concept. Asset type: reusable SinglePageStartup illustration master. Primary request: A reusable framework inherited by one new project with one focused override; communicate continuity plus deliberate change, not a verified merge. Style/medium: sparse isometric technical illustration with recognizable minimal objects, almost no fill. Composition/framing: square; every line, connector and object inside the centered middle 50%; outer 25% empty Paper; model chooses objects/layout, no prescribed primitives, paths, coordinates. Color palette: #F7F6F2 Paper, #111111 primary line, #565656 secondary line, exactly one changed part in #BFEF61 smaller than 4% canvas. Construction: two to four recognizable objects, 3–5px strokes, dotted construction guides and one relationship, limited isometric depth. Constraints: opaque square RGB PNG; no text, numbers, logos, mark, UI, shadows, gradients, texture, glow, photorealism, watermark. Avoid: code diff screen, file-folder icon set, generic flowchart, proof claim.
+    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated and visually inspected on 2026-08-14; model/seed unavailable; standardized from 1254px source to 1024 by 1024 RGB PNG with sips; SHA-256 2b6f361ec4bf19e5bf644592c1a0d2598f8786d2fea6b8c42dd27baac1e2bb14."
+
+  - id: singlepage-generated-measured-space-illustration-coordinated-agents
+    design_role: motif
+    design_key: coordinated-ai-agents
+    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-coordinated-agents.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "Text-prompted AI-generated illustration proposal with no image inputs. No third-party authorship, trademark, or publication clearance is claimed."
+    purpose: Proposed square illustration for multiple AI agents coordinating toward one developer-controlled task.
+    related_artifacts: [singlepage.design, singlepage.products]
+    allowed_use:
+      [Internal Storybook and downstream design review while proposed.]
+    prohibited_use:
+      [
+        Do not publish or use as proof of agent authority,
+        working automation,
+        completed work,
+        or a copied public-reference composition.,
+      ]
+    prompt: |-
+      Use case: stylized-concept. Asset type: reusable SinglePageStartup illustration master. Primary request: One human developer retains control while exactly three AI assistants coordinate around one bounded task; accountability and coordination, not autonomous authority. Style/medium: sparse isometric technical illustration with recognizable minimal objects, almost no fill. Composition/framing: square; every line, connector and object inside the centered middle 50%; outer 25% empty Paper; model chooses objects/layout, no prescribed paths or coordinates. Color palette: #F7F6F2 Paper, #111111 primary line, #565656 secondary line, exactly one human-control locator in #BFEF61 smaller than 4% canvas. Construction: exactly one recognizable human-control object and exactly three distinct assistant objects, 3–5px strokes, dotted guides, limited isometric depth. Constraints: opaque square RGB PNG; no text, numbers, logos, mark, UI, shadows, gradients, texture, glow, photorealism, watermark. Avoid: humanoid robots, autonomous-control symbolism, org chart, copied composition, success claim.
+    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated and visually inspected on 2026-08-14; model/seed unavailable; standardized from 1254px source to 1024 by 1024 RGB PNG with sips; SHA-256 cce1cba48acdbbfd8b693f566e15e377097ba8b934818d802215ac3fa640f25f."
+
+  - id: singlepage-generated-measured-space-photography-open-laptop-work
+    design_role: photography
+    design_key: open-laptop-work
+    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-open-laptop-work.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "Text-prompted AI-generated photography proposal with no image inputs. No third-party authorship, trademark, likeness, or publication clearance is claimed."
+    purpose: Proposed editorial atmosphere for active software work on a recognizable open laptop in an urban digital workspace.
+    related_artifacts: [singlepage.design, singlepage.products]
+    allowed_use:
+      [Internal Storybook and downstream design review while proposed.]
+    prohibited_use:
+      [
+        Do not publish or use as a real developer,
+        customer,
+        product interface,
+        adoption,
+        performance,
+        or outcome claim.,
+      ]
+    prompt: |-
+      Use case: photorealistic-natural
+      Asset type: crop-safe reusable square SinglePageStartup editorial photography master
+      Primary request: Wide city-workspace editorial photograph of one adult developer actively using a fully recognizable open laptop. The laptop is visibly a real computer; surrounding architecture is only soft context.
+      Scene/backdrop: Contemporary glass urban digital-work lounge beside transit, distant soft commuter movement, no construction.
+      Subject/device: One developer visible from head to waist at a small table. One unbranded open 14-inch laptop shown from a high three-quarter side angle so the complete screen, continuous hinge, full realistic many-key keyboard with long spacebar, centered rectangular trackpad, and all device corners are simultaneously visible. One complete hand types; one complete hand rests on trackpad. Screen contains abstract blurred color fields only.
+      Composition/framing: One opaque square RGB image, very wide environmental view, 35–50mm. The entire developer-and-laptop group must fit inside a small imaginary centered square spanning x=32% to 68%, y=32% to 68%. Laptop spans 16–22% canvas width. Complete head, waist line, both hands, and all laptop parts remain inside that central 36%. Outer 32% on every side is only empty table edge, window, glass and soft transit environment. No important object crosses x=32%, x=68%, y=32%, or y=68%.
+      Style/medium: Photorealistic candid human-centered editorial photograph, slightly filmic, natural available light, soft-to-medium contrast, shallow focus, restrained distant motion blur.
+      Color palette: Natural Paper #F7F6F2 and Ink #111111-compatible palette; optional tiny #BFEF61 cable tag below 1%.
+      Constraints: Credible proportions, anatomy, hands, keyboard, trackpad, hinge and screen. One person and one laptop. No reference images, logos, brands, readable UI/text/code, watermark, claims, invented ports, toy/fake keyboard or missing device part.
+      Avoid: close crop, clipped device, laptop back hiding keyboard, tiny keyboard, missing keys/trackpad/hinge, construction site, blueprint, drawing, hard hat, drafting tool, architecture-led image, concrete as subject, nature-dominant scene, office-stock pose, cyberpunk, neon, staged success.
+    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated on 2026-08-14; selected from rejected crop/device variants; standardized from 1254px to 1024 by 1024 RGB PNG with sips; visually inspected at source, 96px, and centered 55% crop; SHA-256 6873759636feaeb1efa2dce257eeca0e935abd7afeaf009e88c733136d01f22a."
+
+  - id: singlepage-generated-measured-space-photography-smartphone-coordination
+    design_role: photography
+    design_key: smartphone-coordination
+    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-smartphone-coordination.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "Text-prompted AI-generated photography proposal with no image inputs. No third-party authorship, trademark, likeness, or publication clearance is claimed."
+    purpose: Proposed editorial atmosphere for active smartphone coordination in an urban technology workspace.
+    related_artifacts: [singlepage.design, singlepage.products]
+    allowed_use:
+      [Internal Storybook and downstream design review while proposed.]
+    prohibited_use:
+      [
+        Do not publish or use as a real developer,
+        customer,
+        application interface,
+        adoption,
+        performance,
+        or outcome claim.,
+      ]
+    prompt: |-
+      Use case: photorealistic-natural
+      Asset type: crop-safe reusable square SinglePageStartup editorial photography master
+      Primary request: Close subjective point-of-view photograph of an adult software developer coordinating work on a clearly recognizable modern smartphone in an urban technology workspace. The phone and the developer's hands are the complete human-device subject; no face is required.
+      Scene/backdrop: Softly blurred contemporary city coworking lounge beside transit, glass and available light, digital-work atmosphere, no construction.
+      Subject/device: Exactly two complete adult hands and forearms interacting with one generic unbranded 6.2-inch smartphone. Left hand supports the phone with plausible finger placement; right index finger taps. Entire phone shows credible scale, flat rectangular body, rounded corners, slim bezel, centered front camera dot, one side button, and abstract softly blurred screen with no readable UI. Sleeves are understated dark workwear.
+      Composition/framing: One opaque square RGB image, close subjective over-shoulder or chest-level view. Put both complete hands, every finger, both forearms to mid-forearm, and all four smartphone corners inside an imaginary centered square spanning x=30% to 70%, y=30% to 70%. Nothing important crosses that central 40% area. Phone spans 10–14% canvas width and remains recognizable at 96px. Outer 30% on all sides contains only blurred workspace/transit environment; no face or other body part is an important subject.
+      Style/medium: Photorealistic candid human-centered editorial photograph, lively, slightly filmic, 35–50mm, natural available light, shallow focus, gentle foreground occlusion outside central area, restrained distant motion blur.
+      Color palette: Natural Paper #F7F6F2 and Ink #111111-compatible palette; optional tiny #BFEF61 case locator below 1%.
+      Constraints: Two hands, one phone, plausible anatomy, grip, camera and button. No reference images, logos, brands, readable UI/text/code, watermark, claims, extra fingers, bent phone, invented buttons or fake silhouette.
+      Avoid: clipped hand/finger/device, construction site, blueprint, architectural drawing, hard hat, drafting tool, architecture-led image, concrete as subject, nature-dominant scene, office stock, cyberpunk, neon, staged success.
+    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated on 2026-08-14; selected from rejected crop/device variants; standardized from 1254px to 1024 by 1024 RGB PNG with sips; visually inspected at source, 96px, and centered 55% crop; SHA-256 122e38d8b5ccf580ce5ed7d1f540ac9ef5c40500e0dbaa90af6395b165caf179."
+
+  - id: singlepage-generated-measured-space-photography-connected-workstation
+    design_role: photography
+    design_key: connected-workstation
+    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-connected-workstation.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: measured-space
+    evidence: false
+    rights_status: "Text-prompted AI-generated photography proposal with no image inputs. No third-party authorship, trademark, likeness, or publication clearance is claimed."
+    purpose: Proposed editorial atmosphere for active work at a credible connected digital workstation.
+    related_artifacts: [singlepage.design, singlepage.products]
+    allowed_use:
+      [Internal Storybook and downstream design review while proposed.]
+    prohibited_use:
+      [
+        Do not publish or use as a real developer,
+        implemented infrastructure,
+        customer,
+        product interface,
+        performance,
+        or outcome claim.,
+      ]
+    prompt: |-
+      Use case: photorealistic-natural
+      Asset type: crop-safe reusable square SinglePageStartup editorial photography master
+      Primary request: Very wide city-studio editorial photograph of one adult developer actively operating a compact connected desktop workstation. The recognizable display, keyboard, network switch, mini-computer and hands are the semantic center.
+      Scene/backdrop: Contemporary urban window workspace with distant city light and one small table; room and architecture are secondary.
+      Subject/devices: One developer visible from head to waist. One generic unbranded 22-inch desktop display on a central stand with abstract unreadable colored blocks, one complete realistic compact keyboard with many keys and long spacebar, one normal mouse, one palm-sized rectangular network switch with exactly four aligned Ethernet sockets and two standard cables connected, and one separate plain mini-computer with one power cable. One hand types and one uses mouse. Credible device geometry, connectors, cable routing and anatomy.
+      Composition/framing: One opaque square RGB image, very wide view at desk height, 35–50mm. Put the entire human-and-workstation group inside a small imaginary centered square spanning x=32% to 68%, y=30% to 70%. Complete head and waist line, both hands, full display and stand, every keyboard edge, mouse, complete switch, both plugs and junctions, and complete mini-computer must remain inside that central area. Nothing important may cross those boundaries. The complete workstation spans 28–34% of canvas width. Outer 30% on all sides is only empty wall, window, floor and table.
+      Style/medium: Photorealistic candid human-centered editorial photograph, slightly filmic, natural available window/workspace light, soft-to-medium contrast, shallow focus, subtle hand motion only.
+      Color palette: Natural Paper #F7F6F2 and Ink #111111-compatible palette; optional tiny #BFEF61 cable label below 1%.
+      Constraints: One person, one display, one keyboard, one mouse, one four-port switch, one mini-computer; no laptop. Devices recognizable at 96px. No reference images, logos, brands, readable UI/text/code, metrics, watermark, claims, invented ports/buttons, impossible hands/cables, fake keyboard, server-rack proof.
+      Avoid: close crop, clipping, device outside central area, generic office stock, construction site, blueprint, architectural drawing, hard hat, drafting tool, architecture-led image, concrete as subject, nature-dominant scene, cyberpunk, neon, staged success.
+    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated on 2026-08-14; selected from rejected crop/device variants; standardized from 1254px to 1024 by 1024 RGB PNG with sips; visually inspected at source, 96px, and centered 55% crop; SHA-256 3b9116b1719d9c4658b7fa7a961532cd5a116b14c96f0be85ec31cee4cdba3fd."

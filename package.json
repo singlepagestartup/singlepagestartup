@@ -48,7 +48,10 @@
     "studio:design-system:dev": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:design-system:dev --",
     "studio:storybook": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:storybook --",
     "studio:storybook:build": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:storybook:build --",
-    "singlepagestartup:agents:validate": "bun tools/singlepagestartup/agents/validate.ts",
+    "studio:presentation:export": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:presentation:export --",
+    "studio:presentation:test": "bun test tools/studio/presentation/output.test.ts tools/studio/presentation/structure.test.ts apps/studio/workspace/components/ArtifactBrowser.test.tsx apps/studio/workspace/design/data.test.ts apps/studio/workspace/products/catalog.test.ts apps/studio/workspace/products/presentation-data.test.ts apps/studio/workspace/lib/resolveLayeredComponent.test.ts",
+    "singlepagestartup:github:check": "bun tools/singlepagestartup/github/check.ts",
+    "singlepagestartup:github:test": "node --test tools/singlepagestartup/github/check.test.mjs",
     "knowledge:index": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/knowledge:index --"
   },
   "dependencies": {

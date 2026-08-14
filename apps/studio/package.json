@@ -7,6 +7,7 @@
   "scripts": {
     "storybook": "npm --prefix ../.. run studio:storybook",
     "storybook:build": "npm --prefix ../.. run studio:storybook:build",
+    "presentation:export": "npm --prefix ../.. run studio:presentation:export",
     "inventory": "npm --prefix ../.. run studio:inventory",
     "validate": "npm --prefix ../.. run studio:validate"
   }

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import singlepage from "./singlepage.md?raw";
 import startup from "./startup.md?raw";
-import { ArtifactDocument } from "../ArtifactBrowser";
+import { ArtifactDocument } from "../components/ArtifactBrowser";
 import { projectArtifactWorkspaces } from "../project-source";
 
 const workspaces = projectArtifactWorkspaces({
@@ -12,16 +12,16 @@ const workspaces = projectArtifactWorkspaces({
 });
 
 const meta = {
-  title: "Workspace/Brand",
+  title: "Workspace/20 Brand/01 Brand",
   component: ArtifactDocument,
   parameters: { controls: { disable: true }, layout: "fullscreen" },
-  args: { workspace: workspaces.current, kind: "brand" },
+  args: { workspace: workspaces.default, kind: "brand" },
 } satisfies Meta<typeof ArtifactDocument>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Current: Story = { name: "current" };
+export const Default: Story = { name: "default" };
 export const Singlepage: Story = {
   name: "singlepage",
   args: { workspace: workspaces.singlepage },

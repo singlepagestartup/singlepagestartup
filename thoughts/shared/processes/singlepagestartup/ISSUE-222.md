@@ -154,9 +154,135 @@ learnings for the unified customer-delivery and artifact-system initiative.
 > Record only substantive incidents: debugging sessions, wrong assumptions,
 > tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 16 -->
+<!-- incident-count: 22 -->
 
-### Incident 16 — Layer-first paths and implicit merging left agent routing ambiguous
+### Incident 22 — Living documents accumulated session history and visual scope
+
+- **Phase**: Implement
+- **Occurrences**: Repeated across Brief, Business, Research, Brand, Evidence,
+  and the decision profile.
+- **Symptom**: Individually correct facts were appended after corrections,
+  producing 4,500-word Brief, 17,000-word Business, 6,300-word Research, and
+  7,300-word Brand documents that the operator could not review reliably.
+  Brand also owned photography, illustration, prompts, and generated outputs,
+  mixing customer meaning with its visual execution.
+- **Root Cause**: The workflow required completeness and kept evidence history,
+  but had no uniform human reading boundary or mandatory stale-statement
+  replacement step. Visual Brand and reusable Design were represented as one
+  source, and a growing automated validator encouraged more machine-oriented
+  specification rather than simpler operator review.
+- **Fix**: Limited every primary document to 1,400 words, required one current
+  decision per topic, regenerated Brief, Business, Research, Brand, Evidence,
+  and decision profile as current projections, created layered `design.md`,
+  moved fonts and visual ownership to Design, and removed the dedicated agent
+  prose/prompt validator. The durable cursor was intentionally unchanged.
+- **Preventive Action**: Every owner reports word count, replaces all stale
+  occurrences in one edit, keeps workflow metadata outside living documents,
+  and uses Brand only for meaning while Design owns visual execution. Operator
+  review through `singlepage`, empty `startup`, and resolved `current` is the
+  acceptance surface.
+- **References**: `.agents/contracts/artifact-lifecycle.md`;
+  `.agents/workflows/pre-development.md`; `.agents/templates/`;
+  `apps/studio/workspace/{brief,business,research,brand,design,evidence}/`;
+  `apps/studio/workspace/index/{singlepage,startup}.yaml`.
+
+### Incident 21 — Presentation surface hierarchy looked unrelated to the palette
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Although the slide field technically used the approved Paper
+  value, the warm field behind white cards read as an arbitrary presentation
+  background and the visible palette summary omitted the White Surface role.
+- **Root Cause**: The deck reused the website canvas-to-surface hierarchy
+  without making a medium-specific presentation choice or testing that all
+  slide surfaces resolve through documented semantic brand roles.
+- **Fix**: Assigned White Surface to the full slide field, Paper to cards and
+  inset information areas, exposed Surface in the visual-system slide, and
+  added the semantic surface token to the artifact-derived design data.
+- **Preventive Action**: Require every presentation field and surface to resolve
+  through the approved brand palette, and record any medium-specific role
+  hierarchy in the brand artifact before export.
+- **References**:
+  `apps/studio/workspace/components/ProjectPresentation.tsx`;
+  `apps/studio/workspace/brand/singlepage.md`;
+  `apps/studio/workspace/styles/singlepage.css`;
+  `tools/studio/presentation/structure.test.ts`;
+  `.agents/workflows/pre-development.md`.
+
+### Incident 20 — Slide content overlapped the presentation footer
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The third Deck slide rendered its audience markers over the
+  source and presentation footer in Storybook. Several other slides had smaller
+  footer-safety violations that were visible only at the fixed export size.
+- **Root Cause**: The fixed 1600×900 layout hid overflow, while the exporter
+  verified slide count and rendering readiness but did not verify the boundary
+  between the variable-height content area and footer.
+- **Fix**: Reduced vertical density, reserved a consistent footer-safe area on
+  every non-cover slide, and added semantic content/footer markers plus a
+  browser-layout assertion to the HTML-first exporter.
+- **Preventive Action**: Fail presentation export whenever any slide body
+  crosses the footer safety boundary, then inspect the generated PNG at its
+  native 1600×900 size before handoff.
+- **References**:
+  `apps/studio/workspace/components/ProjectPresentation.tsx`;
+  `tools/studio/presentation/export.ts`;
+  `.agents/workflows/pre-development.md`.
+
+### Incident 19 — The Deck rendered workflow diagnostics instead of the project
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The Presentation stories reused the Design projection, so the
+  Deck contained source-layer diagnostics and readiness placeholders instead of
+  SinglePageStartup's approved product, marketing strategy, experiment, and
+  brand decisions.
+- **Root Cause**: The workflow defined React/HTML rendering, export, and layer
+  inheritance, but did not define the semantic contract of a presentation. A
+  technically valid Design component was therefore treated as valid Deck
+  content.
+- **Fix**: Added artifact-derived presentation data and a dedicated thirteen-
+  slide React deck covering the product, audience, evaluation offer, module
+  inventory, demonstration service, acquisition route, signal ladder, bounded
+  experiment, evidence boundaries, brand identity, visual system, and launch
+  gates. The Deck no longer imports or renders `ProjectDesign`.
+- **Preventive Action**: Require a decision deck for the actual project and test
+  that Presentation cannot reuse Design diagnostics or placeholder language.
+  Keep component fallback and data fallback independent and startup-first.
+- **References**: `apps/studio/workspace/presentation/**`;
+  `apps/studio/workspace/components/ProjectPresentation.tsx`;
+  `tools/studio/presentation/structure.test.ts`;
+  `.agents/workflows/pre-development.md`.
+
+### Incident 18 — Presentation component inheritance and data inheritance diverged
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: With empty startup sources, the current presentation selected the
+  singlepage React component but regenerated its props as a separate `current`
+  projection. Consequently the singlepage and current decks displayed different
+  headlines, while the startup story reported only a missing component instead
+  of accurately reporting missing data.
+- **Root Cause**: The workflow specified startup-first component resolution but
+  did not define data resolution as an independent layered decision. The current
+  story therefore conflated effective workspace data with a third presentation
+  variant.
+- **Fix**: Separated component selection from data selection. Current now uses
+  an actual startup default component when present and otherwise the singlepage
+  component; independently, meaningful startup data uses the resolved workspace,
+  while empty startup sources pass the exact singlepage data through unchanged.
+  Startup inspection stories now report absent data and reuse the singlepage
+  component when data exists without a custom component.
+- **Preventive Action**: Test component and data fallback independently. An empty
+  startup must make current content deeply equal to singlepage content; startup
+  data must be reviewable before a custom React component exists.
+- **References**: `apps/studio/workspace/{design,presentation}/**`;
+  `apps/studio/workspace/design/data.ts`;
+  `tools/studio/presentation/structure.test.ts`;
+  `.agents/workflows/pre-development.md`.
+
+### Incident 17 — Layer-first paths and implicit merging left agent routing ambiguous
 
 - **Phase**: Implement
 - **Occurrences**: 1
@@ -183,6 +309,35 @@ learnings for the unified customer-delivery and artifact-system initiative.
   `apps/studio/workspace/index/{singlepage,startup}.yaml`;
   `.agents/contracts/{context-loading,evidence}.md`;
   `tools/studio/workspace/{loader,merge,validate}.ts`.
+
+### Incident 16 — React presentation bypassed startup priority
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Design and presentation created non-empty startup stories by
+  default, while current imported the shared component directly. A downstream
+  React implementation could therefore exist without replacing the singlepage
+  implementation in current.
+- **Root Cause**: Source-layer inspection was copied from Markdown/YAML into
+  React as three permanent story implementations instead of resolving React
+  source files with the same startup-over-singlepage priority.
+- **Fix**: Replaced the old startup design and presentation implementations with
+  inspection-only stories, added singlepage React source adapters, retained
+  startup directories with `.gitkeep` and empty TypeScript modules, and made
+  current prefer an actual startup default component export before falling back
+  to singlepage. Artifact-derived props continue to use the existing workspace
+  resolver.
+- **Preventive Action**: Treat React design and presentation files as layered
+  replace-strategy sources: the tracked startup module has no default export by
+  default, an actual startup default component wins, and current must never
+  import the singlepage implementation directly. Never use a null-rendering
+  placeholder as the override signal. Keep the startup Storybook inspection
+  branch visible without letting its empty state participate in resolution.
+  Validate both inheritance and override selection.
+- **References**: `apps/studio/workspace/{design,presentation}/**`;
+  `apps/studio/workspace/lib/resolveLayeredComponent.ts`;
+  `tools/studio/presentation/structure.test.ts`;
+  `.agents/workflows/pre-development.md`.
 
 ### Incident 15 — Decision profile violated uniform workspace inheritance
 
@@ -500,6 +655,12 @@ learnings for the unified customer-delivery and artifact-system initiative.
 
 ## Reusable Learnings
 
+- A living client artifact is a short current decision surface, not an agent
+  memory dump. Target five-to-seven-minute review, keep one answer per topic,
+  and rely on Evidence and Git instead of repeating history in prose.
+- Brand owns the meaning created in the audience's mind; a separate inherited
+  Design artifact owns visual execution and assets. Website and Marketing
+  Creative apply both without redefining them.
 - Keep the engineering issue workflow and the pre-development workflow separate;
   viewing them in one Studio does not require merging their gates or lifecycle
   semantics.

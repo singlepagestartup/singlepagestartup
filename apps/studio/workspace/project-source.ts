@@ -87,7 +87,7 @@ function sourceArtifact(
   };
 }
 
-function currentArtifact(definition: IProjectArtifactSource): IStudioArtifact {
+function defaultArtifact(definition: IProjectArtifactSource): IStudioArtifact {
   const singlepage = sourceArtifact(definition, "singlepage");
   const startup = sourceArtifact(definition, "startup");
   const merged = mergeWorkspaceContent({
@@ -111,11 +111,11 @@ function currentArtifact(definition: IProjectArtifactSource): IStudioArtifact {
 }
 
 function workspace(
-  id: "current" | WorkspaceLayer,
+  id: "default" | WorkspaceLayer,
   artifact: IStudioArtifact,
 ): IStudioWorkspace {
   const labels = {
-    current: "current project (resolved)",
+    default: "default (resolved)",
     singlepage: "singlepage source",
     startup: "startup overrides",
   } as const;
@@ -131,12 +131,12 @@ function workspace(
 }
 
 export function projectArtifactWorkspaces(definition: IProjectArtifactSource): {
-  current: IStudioWorkspace;
+  default: IStudioWorkspace;
   singlepage: IStudioWorkspace;
   startup: IStudioWorkspace;
 } {
   return {
-    current: workspace("current", currentArtifact(definition)),
+    default: workspace("default", defaultArtifact(definition)),
     singlepage: workspace(
       "singlepage",
       sourceArtifact(definition, "singlepage"),

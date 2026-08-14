@@ -1,6 +1,10 @@
 # Knowledge-First Contract
 
-This contract defines how workflow agents look up information. Its goal is to spend tokens once and reuse the result: consult recorded knowledge first, search the codebase last, and leave behind artifacts that make the next lookup cheaper.
+This contract defines how workflow agents look up information. Its goal is to
+preserve accurate knowledge across contexts: consult recorded knowledge first,
+verify every load-bearing claim, search further whenever quality requires it,
+and leave behind artifacts that make later work consistent. Never stop
+investigation merely to reduce response length, execution time, or token use.
 
 It applies to every workflow phase (`core/00-create` through `core/30-implement`) and to every provider executing the canonical commands.
 
@@ -15,7 +19,8 @@ Before any broad codebase search (repo-wide grep, exploratory sub-agent sweeps, 
 3. **Existing research and plans** — `thoughts/shared/research/<repo>/` and `thoughts/shared/plans/<repo>/`
    For this issue and for related issues (search by component/topic via `thoughts-locator` or filename). These contain verified `file:line` references — start from them.
 4. **Documentation order** — root `README.md` → `libs/modules/<module>/README.md` → `libs/modules/<module>/models/<model|relation>/README.md`
-   The cheapest way to understand a module's structure and conventions.
+   The canonical way to establish a module's structure and conventions before
+   targeted code inspection.
 5. **Targeted investigation** — `codebase-locator` / `codebase-analyzer` / `codebase-pattern-finder` sub-agents (or their provider equivalent) with a narrow, specific question.
 6. **Broad search** — only when the previous steps did not answer the question.
 
@@ -41,4 +46,5 @@ Every lookup that required real effort must make the next lookup cheaper:
 - Spawning sub-agents to "explore the codebase" without a specific question that steps 1–4 failed to answer.
 - Reading entire large files when the artifact already pins the relevant `file:line` range — read the pinned range plus minimal surrounding context. (Files explicitly named in the ticket or plan as required full reads are still read fully.)
 - Answering from memory of a previous session instead of from the artifacts — artifacts are the cross-session memory, chat history is not.
-- Leaving a hard-won answer only in the chat: if it is not in an artifact, the tokens spent finding it are lost.
+- Leaving a hard-won answer only in the chat instead of preserving it in the
+  artifact that future agents will read.

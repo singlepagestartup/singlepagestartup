@@ -1,5 +1,6 @@
 provider: codex
 bindings:
+  github-repository-read: [exec-command-git]
   artifact-read: [filesystem-read, attachment-read]
   artifact-write: [apply-patch]
   web-research: [web-search, web-open]

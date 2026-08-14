@@ -31,7 +31,9 @@
           "bun tools/studio/validate-manifests.ts",
           "bun tools/studio/design-system/validate.ts",
           "bun tools/studio/workspace/validate.ts --active-layer singlepage --self-check",
-          "bun tools/studio/workspace/validate.ts --active-layer startup"
+          "bun tools/studio/workspace/validate.ts --active-layer startup",
+          "npm run studio:presentation:test",
+          "npm run singlepagestartup:github:test"
         ],
         "parallel": false
       }
@@ -68,6 +70,13 @@
           "storybook build -c apps/studio/.storybook -o dist/studio/storybook"
         ],
         "parallel": false
+      }
+    },
+    "studio:presentation:export": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun tools/studio/presentation/export.ts",
+        "forwardAllArgs": true
       }
     },
     "local-registry": {

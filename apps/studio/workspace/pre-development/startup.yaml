@@ -1,5 +1,5 @@
 schema: singlepagestartup.pre-development-state.v1
-active_stage: 00-understand
+active_stage: 00-business
 status: not_started
 active_artifacts:
   - brief

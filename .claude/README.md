@@ -42,7 +42,7 @@ and local configuration for this project.
 ├── references/          # Workflow contracts shared by all phases and providers
 │   ├── repository-context-contract.md   # Target repo / Project resolution (upstream vs child repos)
 │   ├── process-artifact-contract.md     # Persistent cross-phase process log format
-│   └── knowledge-first-contract.md      # Lookup order and reuse rules (token efficiency)
+│   └── knowledge-first-contract.md      # Lookup order and reuse-with-verification rules
 ├── .env          # ⚠ Gitignored — per-project config (you must create this)
 ├── settings.local.json  # Local Claude Code settings
 └── README.md            # This file

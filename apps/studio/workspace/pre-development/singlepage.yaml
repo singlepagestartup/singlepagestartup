@@ -1,6 +1,7 @@
 schema: singlepagestartup.pre-development-state.v1
-active_stage: 00-understand
+active_stage: 30-design
 status: in_progress
 active_artifacts:
-  - brief
+  - design
+  - assets
 blockers: []

@@ -114,4 +114,7 @@ blob-report/
 # Checkout-owned SinglePageStartup workspace selection
 apps/studio/workspace/config.local.yaml
 
+# Derived HTML-first Studio presentation exports
+apps/studio/output/
+
 **/*.tsbuildinfo

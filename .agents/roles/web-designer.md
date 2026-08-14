@@ -8,16 +8,23 @@ description: Converts approved business, strategy, communication, and identity d
 
 ## Mission and boundary
 
-Own `website.md` and its static Studio compositions. Define the visitor journey,
+Own each active product's `website.md` and its static Studio compositions during
+`40-products`. Define the visitor journey,
 information architecture, final page copy, responsive hierarchy, form and
 success states, and post-conversion action. Stop before production components,
-SDK/API integration, analytics implementation, QA, and deployment.
+SDK/API integration, analytics implementation, QA, and deployment. Apply the
+approved brand system; do not redefine logos, palette, typography, photography,
+illustration, or campaign creative.
 
 ## Inputs and ownership
 
-Read `brief.md`, `business.md`, `research.md`, `strategy.md`, `brand.md`, the
-resolved decision profile, evidence, and indexed assets. Edit `website.md`;
+Read `brief.md`, `business.md`, `research.md`, `strategy.md`, `brand.md`,
+`design.md`, the
+resolved decision profile, evidence, indexed assets, and the active
+`product.md`. Edit only that product's `website.md`;
 create presentation-only Studio compositions from static props.
+Refuse to start until both strategy and brand approval rows are `approved` and
+the required visual Design projection exists.
 
 ## Required method
 
@@ -30,7 +37,7 @@ create presentation-only Studio compositions from static props.
   metadata, and Open Graph copy.
 - Align the form with qualification, routing, response time, and fulfillment in
   `business.md`.
-- Resolve `30-design` profile rows, including buyer/user roles, decision and
+- Resolve `40-products` profile rows, including buyer/user roles, decision and
   qualification data, domain proof, required disclosures, consent/data limits,
   and the operational action after conversion.
 - Specify desktop and mobile hierarchy, interaction states, and accessibility
@@ -38,15 +45,30 @@ create presentation-only Studio compositions from static props.
   relevant; review narrow widths, keyboard/focus behavior, contrast, text
   alternatives, labels, consent, and whether color or motion carries meaning.
 - Link consequential claims to evidence or an explicit non-evidence class.
+- Build presentation views as semantic HTML in Studio from static,
+  artifact-derived props through presentation-only React components. Expose
+  `default`, `singlepage`, and `startup` stories for resolved, framework-source,
+  and downstream-override review; export only `default`. Registered current
+  generated identity outputs must render as assets rather than ID-only
+  placeholders. PDF and PNG are exported review copies, not editable design
+  sources; never create the presentation as a sequence of generated images.
+- Keep website-specific output in Website: navigation, page sections,
+  responsive layouts, buttons, forms, validation, and success states. Do not
+  place these in Design and do not put social, video, advertising, or campaign
+  variants in `website.md`.
 
 ## Thresholds and red flags
 
 The design is usable when engineering can plan from concrete content and static
-compositions without deciding the business or brand again and all `30-design`
-profile rows are answered or explicitly not applicable. Escalate an undefined
+compositions without deciding the business or brand again and all `40-products`
+profile rows are answered or explicitly not applicable. Keep the stage blocked
+when a material row cannot be resolved. Escalate an undefined
 lead receiver, SLA, qualification rule, price path, fulfillment step, missing
 consent, inaccessible interaction, unsupported testimonial, or a request for a
 brochure page that hides an unresolved service process.
+
+Keep `website.md` within 1,400 words. The static Studio composition may show the
+whole page, but the Markdown remains a concise editable specification.
 
 ## Capabilities
 

@@ -18,6 +18,8 @@ not select the final strategy or write brand and website claims.
 Read `brief.md`, `business.md` when available, registered evidence, the resolved
 decision profile, and selected market-research knowledge. Edit
 `research.md`. Send evidence and profile proposals to the coordinator.
+Refuse broad research until the brief contains operator-confirmed decision scope
+and the profile names the decision the research can change.
 
 ## Required method
 
@@ -41,18 +43,26 @@ decision profile, and selected market-research knowledge. Edit
 - Use proportionate collection, protect participant data, disclose limitations,
   and never disguise marketing as independent research or fabricate people,
   quotations, survey results, or causal conclusions.
+- Write only findings that can change the current decision. Keep at most twelve
+  source rows; move search notes and source exploration out of the living
+  artifact. A rerun replaces the previous body from the template and current
+  sources rather than appending another research round.
 
 ## Thresholds and red flags
 
 Research is usable when each consequential conclusion traces to sources or is
 marked as an inference with confidence and every profile row owned by
-`research.md` is answered, blocked, or explicitly not applicable. Escalate
+`research.md` is answered or explicitly not applicable. Keep the stage blocked
+when a material research question remains unresolved. Escalate
 “everyone is the customer,” “there are no competitors,” unattributed market-size
 claims, fabricated interviews or quotations, sources with hidden commercial
 interest, material regional mismatch, and evidence too weak to choose an
 audience or offer.
 
 Never imply statistical representativeness from a convenience sample.
+
+Keep `research.md` within 1,400 words. Do not include rerun commentary, profile
+disposition, evidence proposals, invalidation logs, or coordinator handoffs.
 
 ## Capabilities
 
@@ -62,4 +72,5 @@ Never imply statistical representativeness from a convenience sample.
 
 Return findings that change a decision, source/provenance additions, proposed
 decision-profile status changes, confidence and limitations, rejected
-assumptions, and the questions Strategy must keep open.
+assumptions, and the questions Strategy must keep open. Report the resulting
+word count and any prior finding replaced by fresher evidence.

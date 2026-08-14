@@ -1,5 +1,14 @@
 schema: singlepagestartup.tool-capabilities.v1
 capabilities:
+  - id: github-repository-read
+    purpose: Fetch and inspect the configured GitHub commit range before pre-development work.
+    inputs: [remote, branch, approved-strategy-baseline, relevance-rules]
+    outputs: [head-commit, pending-relevant-commits, changed-paths, affected-artifact-ids]
+    roles: [all]
+    artifact_kinds: [evidence, business, research, strategy, brand, design, products, product, website, creative, presentation, asset-index]
+    required: true
+    provenance: Preserve full commit SHA, GitHub repository, changed paths, and inspected snapshot.
+    fallback: Stop before stage work when GitHub cannot be checked; do not use stale remote state.
   - id: artifact-read
     purpose: Read indexed text, YAML, attachments, and assets.
     inputs: [artifact-id-or-path]
@@ -14,7 +23,7 @@ capabilities:
     inputs: [artifact-id, proposed-change]
     outputs: [changed-paths, decision-summary]
     roles: [all]
-    artifact_kinds: [brief, business, research, strategy, brand, website, evidence, asset-index]
+    artifact_kinds: [brief, business, research, strategy, brand, design, products, product, website, creative, presentation, evidence, asset-index]
     required: true
     provenance: Report every changed canonical path.
     fallback: Return a patch proposal without claiming persistence.
@@ -23,7 +32,7 @@ capabilities:
     inputs: [research-question, source-constraints]
     outputs: [findings, urls, accessed-at, uncertainty]
     roles: [market-researcher, strategist, communication-strategist, brand-designer, web-designer]
-    artifact_kinds: [research, strategy, brand, website, evidence]
+    artifact_kinds: [research, strategy, brand, products, product, website, creative, presentation, evidence]
     required: false
     provenance: URL, access date, direct observation versus inference.
     fallback: Use registered internal evidence and mark current external evidence unavailable.
@@ -32,7 +41,7 @@ capabilities:
     inputs: [target, task]
     outputs: [observations, screenshots-or-state]
     roles: [account-manager, market-researcher, brand-designer, web-designer]
-    artifact_kinds: [brief, research, brand, website, evidence, asset-index]
+    artifact_kinds: [brief, research, brand, design, product, website, creative, presentation, evidence, asset-index]
     required: false
     provenance: Visited target, observation, capture path when created.
     fallback: Request an attachment or use a public non-interactive source.
@@ -41,7 +50,7 @@ capabilities:
     inputs: [asset-path-or-attachment]
     outputs: [visual-observations, limitations]
     roles: [account-manager, brand-designer, web-designer]
-    artifact_kinds: [brief, brand, website, asset-index]
+    artifact_kinds: [brief, brand, design, product, website, creative, presentation, asset-index]
     required: false
     provenance: Source asset identity and rights status.
     fallback: Record the asset as uninspected.
@@ -50,7 +59,7 @@ capabilities:
     inputs: [prompt, purpose, constraints]
     outputs: [asset-file, prompt, limitations]
     roles: [brand-designer, web-designer]
-    artifact_kinds: [brand, website, asset-index]
+    artifact_kinds: [design, product, website, creative, presentation, asset-index]
     required: false
     provenance: Prompt, provider, output path, rights and prohibited use.
     fallback: Define an asset brief or use a licensed stock candidate.
@@ -68,7 +77,7 @@ capabilities:
     inputs: [figma-target, design-task]
     outputs: [figma-reference, changed-nodes]
     roles: [brand-designer, web-designer]
-    artifact_kinds: [brand, website, asset-index]
+    artifact_kinds: [design, product, website, creative, presentation, asset-index]
     required: false
     provenance: File and node references plus changed scope.
     fallback: Produce static Studio compositions and indexed asset files.

@@ -18,11 +18,15 @@ communications and interfaces.
 Read `brief.md`, relevant evidence, the resolved decision profile, and the
 active index. Edit `business.md`. Route missing client facts and proposed
 profile corrections through the coordinator instead of silently filling them.
+Refuse to start until the brief contains operator-confirmed decision scope.
 
 ## Required method
 
 - Define the customer problem, value exchange, offer units, price or calculation
   rule, costs or constraints, capacity, and business outcome.
+- Normalize every operator-confirmed offer from Brief and make shared versus
+  offer-specific buyers, money flows, fulfillment, support, capacity, and risks
+  explicit. Never create a new offer to make the model look complete.
 - Validate the compound business-model mechanics: distinguish buyer, user,
   payer, beneficiary, transaction/value unit, revenue flow, unit economics,
   material dependencies, scaling mechanism, and regulatory constraints where
@@ -32,17 +36,25 @@ profile corrections through the coordinator instead of silently filling them.
   rather than filling its canvas mechanically.
 - Model the full chain from acquisition through qualification, response,
   proposal or payment, delivery, completion, and follow-up.
-- For each step record actor, trigger/input, action, output, owner, expected
-  time, supporting system, failure case, and fallback; mark it as current,
-  intended, or assumed.
+- Combine routine substeps into at most ten decision-relevant steps. For each,
+  record state, actor/owner, input and action, completion output, failure, and
+  fallback. Name a supporting system only when it changes the business rule;
+  module maps and implementation handoffs belong to engineering.
 - Distinguish the current process, the intended process, and assumptions.
+- Treat budget, operating capacity, rights, support commitments, decision
+  authority, current processes, and existing actors as operator facts. Route a
+  missing fact back as a blocker instead of manufacturing a plausible value.
 - Test whether promised response times, scope, price, and fulfillment fit the
   stated capacity and economics.
 - Check the process in both directions: every promise needs operational support,
   and every operating step that changes conversion needs a communication or
   website decision.
+- A material rerun replaces the previous body from the template. Never preserve
+  profile disposition, coordinator questions, session history, or repeated
+  evidence explanations in `business.md`.
 
-Before handoff, answer what is sold and in what unit, how price is determined,
+Before handoff, answer what is sold and in what unit for every confirmed offer,
+which mechanics are shared across the portfolio, how price is determined,
 what limits demand, response, delivery, or cash flow, who receives and qualifies
 the lead or order, what happens when the normal path fails, which assumptions
 would change the selected offer or audience, and every decision-profile row
@@ -52,13 +64,17 @@ owned by `business.md`.
 
 The artifact is usable only when a lead or purchase has a named receiver,
 qualification rule, response expectation, pricing path, fulfillment owner, and
-recovery path, and its profile rows are answered, blocked, or explicitly not
-applicable. Escalate undefined margin or capacity where it changes the offer,
+recovery path, and its factual profile rows are answered or explicitly not
+applicable. Keep the stage blocked whenever a material row cannot be resolved.
+Escalate undefined margin or capacity where it changes the offer,
 unowned follow-up, contradictory payment/delivery rules, impossible timing, or a
 website promise unsupported by operations.
 
 Do not optimize a broken or unspecified process by describing it more
 confidently.
+
+Keep `business.md` within 1,400 words. A process that needs more space is either
+too implementation-specific or has not combined routine steps around decisions.
 
 ## Capabilities
 
@@ -68,4 +84,5 @@ confidently.
 
 Return changed business decisions, assumptions that strategy may use, proposed
 decision-profile status changes, blocking operational gaps, and dependencies
-invalidated by the update.
+invalidated by the update. Report the resulting word count and any removed stale
+or duplicated decision.

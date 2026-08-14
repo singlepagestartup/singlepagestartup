@@ -17,7 +17,7 @@ adapters for older path references.
 | -------------------------------- | ---------------------------------------------------------------------------- |
 | `repository-context-contract.md` | Resolving the target repo/Project and artifact namespace (upstream vs child) |
 | `process-artifact-contract.md`   | Persistent cross-phase process log: incidents, fixes, reusable learnings     |
-| `knowledge-first-contract.md`    | Lookup order and reuse-with-verification rules (token efficiency)            |
+| `knowledge-first-contract.md`    | Lookup order and reuse-with-verification rules                               |
 
 Pre-development is exposed as `/singlepagestartup` and routes to
 `.agents/workflows/pre-development.md`.

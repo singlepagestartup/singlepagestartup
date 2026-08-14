@@ -1,0 +1,9 @@
+schema: singlepagestartup.product-catalog.v1
+products:
+  - id: singlepagestartup
+    name: Code Framework
+    summary: The inspectable reusable foundation from SinglePageStartup for products spanning ecommerce, billing, identity, content, CRM, messaging, analytics, and AI.
+    product: singlepagestartup/product.md
+    website: singlepagestartup/website.md
+    marketing_creative: singlepagestartup/marketing-creative.md
+    presentation: singlepagestartup/presentation/ProjectPresentation.tsx

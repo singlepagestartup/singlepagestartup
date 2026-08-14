@@ -1,181 +1,219 @@
 # Workspace
 
-Workspace is the durable pre-development memory of a project. It contains the
-business, market, communication, brand, and website-design decisions that AI
-agents create and update before engineering begins.
+Workspace is the durable pre-development memory of one business. AI agents edit
+the files in this directory; Storybook Studio renders the same files as a
+read-only review surface. There is no generated `default` file and no separate
+JSON content store.
 
-Storybook is a read-only review surface over these files. The Markdown and YAML
-files in this directory remain the source of truth.
+The owner should be able to review the project in order without understanding a
+marketing framework. Earlier stages change less often and have a wider effect.
+Product materials change more often and affect only their own offer.
+
+## Review order
+
+| Stage         | Review these documents                                            | Typical change rate | If it is wrong                                                                                                     |
+| ------------- | ----------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `00 Business` | Brief, Business, Research, Evidence                               | Rare after approval | Every later decision may be based on the wrong business, audience, facts, or constraints                           |
+| `10 Strategy` | Strategy                                                          | Occasional          | Brand, design, and product priorities may target the wrong opportunity                                             |
+| `20 Brand`    | Brand                                                             | Rare                | Every product may communicate the wrong meaning, promise, voice, or proof boundary                                 |
+| `30 Design`   | Design, Assets                                                    | Occasional          | Every product may use an inconsistent or unsuitable visual system                                                  |
+| `40 Products` | Product, Website, Marketing Creative, Presentation for each offer | Frequent            | Only that product's sales and communication materials need correction unless they expose an upstream contradiction |
+
+Review `default` first. Open `singlepage` or `startup` only when you need to see
+where a value came from.
 
 ## The three views
 
-Every project artifact has two editable sources and one resolved view:
+Every shared artifact has two editable sources and one resolved view:
 
-| View         | Purpose                                                             | Editable source                       |
-| ------------ | ------------------------------------------------------------------- | ------------------------------------- |
-| `singlepage` | The SinglePageStartup framework's own business and design knowledge | `<artifact>/singlepage.md` or `.yaml` |
-| `startup`    | The current downstream project's changes                            | `<artifact>/startup.md` or `.yaml`    |
-| `current`    | The effective result after applying the startup layer to singlepage | Read-only; assembled in memory        |
+| View         | Meaning                                                                     | Editable source                       |
+| ------------ | --------------------------------------------------------------------------- | ------------------------------------- |
+| `singlepage` | The SinglePageStartup framework project's own business and design decisions | `<artifact>/singlepage.md` or `.yaml` |
+| `startup`    | Changes owned by the current downstream project                             | `<artifact>/startup.md` or `.yaml`    |
+| `default`    | The effective result after startup overrides singlepage                     | Read-only; resolved in memory         |
 
-A new downstream project uses `startup` by default. Its startup files are
-initially empty, so `current` passes the complete singlepage source through.
-Agents write only the changes that belong to the active layer; they do not copy
-unchanged framework content into startup files.
+An empty startup shared document passes the complete singlepage document
+through. A downstream project writes only its changes to startup; it does not
+copy unchanged framework prose.
 
-## Active layer
+The canonical framework repository is mapped to `singlepage`. Unknown
+downstream repositories default to `startup` through `config.yaml`, so a user of
+the framework normally configures nothing.
 
-`config.yaml` selects which source agents may edit. Resolution order is:
-
-1. an explicit layer supplied by the operator;
-2. `active_layer` in the gitignored `config.local.yaml`;
-3. a matching repository entry in `config.yaml`;
-4. `default_layer`, which is `startup`.
-
-The canonical `singlepagestartup/singlepagestartup` repository is mapped to
-`singlepage`. Other repositories therefore work as startup projects without
-requiring an environment variable or initial configuration step.
-
-## Directory structure
+## File map
 
 ```text
 apps/studio/workspace/
-  config.yaml                       active-layer defaults and repository mapping
-  index/{singlepage,startup}.yaml   artifact graph and inheritance rules
-  pre-development/<layer>.yaml      minimal resumable workflow cursor
-
-  brief/                            founder request and constraints
-  evidence/                         claims, sources, scope, and state
-  business/                         model, economics, and operating process
-  research/                         audience, market, and alternatives
-  strategy/                         positioning, offer, and first experiment
-  brand/                            communication and visual identity system
-  website/                          visitor journey, final copy, and behavior
-  assets/                           provenance- and rights-aware asset registry
-
+  README.md
+  config.yaml
+  pre-development/
+    singlepage.yaml
+    startup.yaml
+  brief/{singlepage,startup}.md
+  business/{singlepage,startup}.md
+  research/{singlepage,startup}.md
+  evidence/{singlepage,startup}.md
+  strategy/{singlepage,startup}.md
+  brand/{singlepage,startup}.md
+  design/{singlepage,startup}.md
+  assets/{singlepage,startup}.yaml
+  assets/<layer>/{intake,generated}/
+  products/{singlepage,startup}.yaml
+  products/<layer>/<product-id>/
+    product.md
+    website.md
+    marketing-creative.md
+    presentation/ProjectPresentation.tsx
   knowledge/
-    decision-profile/               niche-specific completeness gates
-    discovery/                      project-specific intake findings
-    acquisition/                    project-specific channel decisions
-    communication/                  project-specific content decisions
-
-  design/                           current, singlepage, and startup compositions
-  legacy/                           temporary compatibility records only
+  index/
 ```
 
-Each artifact or knowledge folder contains sibling `singlepage` and `startup`
-sources. Final artifacts and working knowledge also expose Storybook stories.
+`knowledge/` contains project-specific decision routing used by agents. It is
+not a second owner-facing deliverable and therefore is not shown in the main
+Storybook navigation. `index/` describes dependency and inheritance rules; it
+does not contain business prose.
 
-## How inheritance works
+## Product catalogs
 
-Every layered entry in `index/startup.yaml` explicitly declares its
-`extends` target and merge `strategy`:
+Products use a stricter rule than shared documents because products from two
+different businesses must never be mixed.
 
-| Strategy       | Used for                                                | Behavior                                                                   |
-| -------------- | ------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `sections`     | Brief, business, research, strategy, brand, website     | Startup replaces matching non-empty Markdown sections and may add sections |
-| `keyed`        | Asset index                                             | Startup values replace or extend objects and arrays by stable ID           |
-| `scoped-keyed` | Evidence                                                | Rows merge by stable ID while retaining their project scope and state      |
-| `replace`      | Decision profile, discovery, acquisition, communication | Any meaningful startup content replaces the complete singlepage document   |
+- If `products/startup.yaml` contains `products: []`, `default` shows the entire
+  singlepage catalog.
+- If startup defines at least one product, `default` shows only startup
+  products. The complete singlepage catalog is replaced.
+- Every active product owns all four outputs in the same layer: Product,
+  Website, Marketing Creative, and Presentation.
+- There is no fallback from a partially defined startup product to a
+  singlepage product folder.
 
-Replacement is intentional for niche-specific knowledge. A hosting framework's
-market assumptions, acquisition research, or regulatory questions must not be
-combined with those of an unrelated commercial-property business.
+Example downstream catalog:
 
-## Evidence boundaries
-
-Every evidence row has a stable ID, `Scope`, and `State`.
-
-- Scope is `singlepage`, `startup`, or `shared`.
-- State is `active`, `not-applicable`, or `superseded`.
-- In a startup project, inherited singlepage evidence remains visible as
-  provenance but cannot support a startup claim.
-- To use, correct, or reject inherited evidence, add a startup-scoped row with a
-  stable ID and an explicit state.
-
-This prevents a downstream project from treating facts about the framework as
-facts about its own business.
-
-## Pre-development stages
-
-The `singlepagestartup` workflow uses four resumable stages:
-
-1. `00-understand` — brief, evidence, decision profile, business, and research;
-2. `10-decide` — positioning, offer, acquisition focus, and first experiment;
-3. `20-package` — communication system, identity, and registered assets;
-4. `30-design` — website content, conversion flow, and static Studio designs.
-
-`pre-development/<layer>.yaml` stores only the current stage, status, active
-artifacts, and blockers. It contains no duplicate business content or run
-history. On every launch, agents reconcile this cursor against the living
-artifacts, so work can continue in a fresh model context.
-
-## How to use it
-
-### Start or continue the project
-
-Ask Codex or ChatGPT to run `singlepagestartup`, or say in plain language that
-you want to start or continue pre-development. The coordinator will:
-
-1. resolve the active layer;
-2. reconcile the workflow cursor;
-3. load only the active artifacts and their declared dependencies;
-4. launch the relevant professional agents;
-5. write results into the active layer's Markdown or YAML sources;
-6. update the cursor and report unresolved questions.
-
-Separate commands for stages or roles are not required.
-
-### Change an existing decision
-
-Describe the correction in plain language. For example:
-
-```text
-Change the primary audience from agencies to independent product teams and
-update every affected pre-development artifact.
+```yaml
+schema: singlepagestartup.product-catalog.v1
+products:
+  - id: commercial-property-reletting
+    name: Commercial property reletting
+    summary: Find a more profitable replacement tenant and manage the change.
+    product: commercial-property-reletting/product.md
+    website: commercial-property-reletting/website.md
+    marketing_creative: commercial-property-reletting/marketing-creative.md
+    presentation: commercial-property-reletting/presentation/ProjectPresentation.tsx
 ```
 
-The coordinator updates the earliest artifact that owns the decision, computes
-reverse dependencies from the indexes, and revisits only contradicted downstream
-artifacts. There is no generic “edit document” command to remember.
+The product folder applies the approved Business, Strategy, Brand, and Design.
+It may narrow those decisions for one offer, but it must not silently redefine
+them.
 
-### Review the result
+## What each stage owns
 
-- Open `current` to review what the active project effectively uses.
-- Open `singlepage` to inspect the framework source.
-- Open `startup` to inspect only the downstream override.
-- Review `Workspace/Design/current` for the effective visual system and page
-  compositions.
-- Edit the source file shown in a story's `Sources` section, never the rendered
-  Storybook page or generated inventory.
+### 00 Business
 
-An empty startup view is expected. It means the corresponding current document
-is inherited completely from singlepage.
+- Brief records the confirmed subject, current situation, desired outcome,
+  scope, constraints, owner-controlled facts, and every current or intended
+  offer. Each offer is classified as a product candidate, supporting only, or
+  deferred so later agents cannot create products by inference.
+- Business records how value, money, delivery, responsibility, and capacity
+  work.
+- Research records only market and customer findings that can change a
+  decision.
+- Evidence is a concise source register, not a narrative report.
 
-## What belongs elsewhere
+An error here has the largest propagation cost. Do not continue from an
+unconfirmed scope or an invented operator fact.
 
-- Invariant professional methods: `.agents/roles/`
-- Reusable artifact shapes: `.agents/templates/`
-- Provider-neutral workflow and contracts: `.agents/workflows/` and
-  `.agents/contracts/`
-- Engineering tickets, research, plans, and handoffs: `thoughts/shared/`
-- Production components and APIs: `libs/`, `apps/host`, and `apps/api`
+### 10 Strategy
 
-Workspace intentionally ends at business, marketing, brand, and concrete static
-website design. Production engineering, testing, analytics, and deployment use
-the existing engineering workflow.
+Strategy selects one practical business-level direction, the exact product set
+that enters `40 Products`, and one primary product, audience, and situation for
+the first experiment. It also keeps supporting-only and deferred offers
+explicit. Positioning, commercial logic, acquisition focus, rejected
+alternatives, and the bounded experiment stay proposed until the operator
+approves or corrects them.
 
-## Validation
+### 20 Brand
 
-Run these checks after changing workspace structure or inheritance:
+Brand defines the meaning that should form in the customer's mind: intended
+perception, promise, proof boundary, objections, voice, naming, CTA, and
+governance. It does not contain colors, typography, photographs, illustrations,
+or page layouts.
 
-```bash
-npm run singlepagestartup:agents:validate
-npm run studio:validate
-npm run studio:storybook:build
-```
+### 30 Design
 
-For interactive review:
+Design translates approved Brand into a reusable visual system: identity,
+colors, typography, grid, shapes, photography, illustration, iconography,
+motion, accessibility, and usage rules. Assets records file provenance and
+rights. Accepted source files live in `assets/<layer>/intake/`; generated
+outputs live in `assets/<layer>/generated/<proposal-id>/`. Local font files and
+their licenses live in `assets/<layer>/fonts/`; an empty startup Assets layer
+inherits the singlepage font declarations without copying their files. Assets
+is a machine-readable YAML registry and is intentionally absent from the
+human-review Storybook sidebar.
 
-```bash
-npm run studio:storybook
-```
+Photography and Illustration use the same five blocks in `design.md`: purpose
+and evidence boundary, one objective style master prompt, production
+specification, a generation-example table linked to exact asset IDs, and a
+review/quality gate. Each active media family needs at least three materially
+different real examples reviewed together. One shared React template turns
+those Markdown tables and blockquotes into the Design page for `singlepage`,
+`startup`, and resolved `default`; project layers do not own React Design
+components. Their visual differences come only from Markdown/YAML decisions and
+the cascading tokens in `workspace/styles/`.
+
+Typography roles are table rows with an exact CSS family, weights, usage, and
+registered font asset ID. Review must load the real file and confirm the
+computed family; labels never stand in for font verification. Photography and
+illustration masters are always square, keep essential content in the centered
+crop-safe area, and appear uncropped as squares in Design. Grid, spacing,
+breakpoint, container, and radius rules use named Tailwind utilities rather
+than a separate arbitrary-pixel system.
+
+### 40 Products
+
+For each selected offer:
+
+1. Product defines the bounded offer, buyer, value, commercial model, delivery,
+   proof, constraints, and success.
+2. Website defines the visitor journey, final copy, page and interaction states,
+   responsive behavior, and post-conversion path.
+3. Marketing Creative defines only the formats and channels selected by
+   Strategy for this product.
+4. Presentation is semantic React/HTML derived from the same sources. PDF and
+   PNG are replaceable exports, not canonical knowledge.
+
+The catalog must equal the Strategy-selected product set. Every entry traces to
+an operator-confirmed Brief offer; a showcase, reference project, possible
+future payment, repository folder, or agent idea never becomes a product by
+inference.
+
+## Working with agents
+
+Invoke `singlepagestartup` or ask in plain language to start, continue, inspect,
+or change the active project. You do not run a separate command for every
+stage. The workflow reads `pre-development/<layer>.yaml`, checks the earliest
+incomplete prerequisite, reconciles existing documents with the current shared
+pipeline and templates, loads only affected dependencies, and asks for the
+highest-impact missing operator fact.
+
+After shared `.agents/**` changes are synchronized into this repository, the
+next ordinary invocation checks completed, active, and later non-empty artifacts
+for missing files, sections, schema keys, and newly required decisions. It moves
+the cursor to the earliest affected stage automatically. There is no pipeline
+version file, migration journal, or separate validation command.
+
+When correcting an existing decision, state the correction in ordinary
+language. The agent updates the earliest document that owns it and revisits only
+the downstream documents contradicted by the change. Git retains prior history;
+the living documents contain only the current decision, not an appended session
+log.
+
+Primary documents must stay readable in five to seven minutes. Repeated
+decisions, interview history, stale alternatives, and workflow handoffs do not
+belong in them. Evidence IDs and Git preserve provenance without forcing the
+owner to reread the same explanation in several files.
+
+## Boundaries
+
+Workspace stops before engineering. Production components, APIs, analytics
+implementation, QA, publication, and deployment remain in the normal code and
+engineering workflow under `thoughts/shared/**`.

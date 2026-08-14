@@ -1,7 +1,8 @@
 # Decision profile
 
-This is a project-specific routing contract, not a generic industry report or a
-ninth final deliverable. Keep only decision areas that can change an artifact,
+This is project-specific routing knowledge, not a generic industry report or a
+client-facing final deliverable. Keep it within 1,400 words and at most twelve
+material requirement rows. Keep only decision areas that can change an artifact,
 an experiment, or whether the business is viable. Do not copy an encyclopedia
 of business-model questions into this file.
 
@@ -29,21 +30,32 @@ source and limitations; do not name-drop a framework or copy its full checklist.
 
 ## Material decision requirements
 
-Use stable IDs. `answered` requires an artifact/evidence reference;
-`not-applicable` requires a reason. A `blocked` row prevents completion of its
-stage.
+Use stable IDs. Classify the required answer as an `operator-fact`,
+`research-question`, `professional-choice`, or `evidence-gap` in the required
+evidence or status text. `answered` requires an artifact/evidence reference;
+`proposed` is a professional decision awaiting the confirmation required by its
+stage; `approved` records that confirmation; `not-applicable` requires a reason.
+`required`, `blocked`, and `proposed` prevent completion of their stage. An
+`assumption` never answers an `operator-fact`.
 
 | ID  | Stage | Decision or question | Why material | Required evidence | Metric or threshold | Risks or regulation | Viability rule | Owner artifact | Status and reference |
 | --- | ----- | -------------------- | ------------ | ----------------- | ------------------- | ------------------- | -------------- | -------------- | -------------------- |
 
-Allowed status values: `required`, `answered`, `blocked`, `not-applicable`.
+Allowed status values: `required`, `blocked`, `proposed`, `answered`,
+`approved`, `not-applicable`.
 
 ## Stage gate
 
 | Stage | Required profile IDs | Blocking gaps | Gate result |
 | ----- | -------------------- | ------------- | ----------- |
 
-A stage passes only when every profile row assigned to it is `answered` or
-`not-applicable`, the referenced artifact contains a project-specific decision,
-and consequential claims are linked to evidence or an explicit non-evidence
-classification.
+A stage passes only when every factual row assigned to it is `answered`, every
+material direction that requires operator confirmation is `approved`, and every
+remaining row is explicitly `not-applicable`. The referenced artifact must
+contain the project-specific decision, and consequential claims must link to
+evidence or an explicit non-evidence classification. Every project profile must
+include a `00-business` scope-confirmation row, a `10-strategy`
+strategy-approval row, and a `20-brand` brand-approval row. Scope confirmation
+includes the complete current/intended offer inventory and its workflow
+classifications. Strategy approval includes the exact active product set and
+first priority selected from that inventory.

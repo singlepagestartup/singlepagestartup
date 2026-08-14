@@ -1,5 +1,7 @@
 # Website
 
+<!-- Final reviewable specification. Maximum 1,400 words. -->
+
 ## Objective and visitor paths
 
 - Primary situations, information needs, proof, objections, actions, sitemap
@@ -11,11 +13,18 @@
 
 ## Design constraints
 
-- Desktop/mobile hierarchy, interaction states, accessibility, indexed assets
+- Desktop/mobile hierarchy, interaction states, accessibility, and indexed
+  assets, applying the approved Design system without redefining its colors,
+  typography, logos, photography language, or illustration language
+- Website-only UI and journey decisions: navigation, page sections, responsive
+  layouts, buttons, forms, validation, empty/pending/error/success states, and
+  the post-conversion path
+- Do not add campaign formats, channel variants, advertising compositions, or
+  a second visual identity
 
 ## Metadata and review
 
 - Title, description, Open Graph copy, evidence links, Studio story references
-- Resolve all `30-design` decision-profile rows, including buyer roles, qualification,
+- Resolve all `40-products` decision-profile rows, including buyer roles, qualification,
   required disclosures, domain proof, data collection, and post-conversion
   operations

@@ -27,6 +27,9 @@ Accessed 2026-08-04 unless noted otherwise.
 ## Strategist
 
 - [O\*NET Marketing Managers 11-2021.00](https://www.onetonline.org/link/summary/11-2021.00) — commercial decision signals; CC BY 4.0.
+- [Christensen Institute: Jobs to Be Done Theory](https://www.christenseninstitute.org/theory/jobs-to-be-done/) — circumstances, functional/social/emotional forces, and desired progress; referenced, not copied. Accessed 2026-08-14.
+- [Strategyzer: Value Proposition Canvas](https://www.strategyzer.com/library/the-value-proposition-canvas) — customer jobs, pains, gains, products/services, pain relievers, and gain creators; referenced, not copied. Accessed 2026-08-14.
+- [April Dunford: A Quickstart Guide to Positioning](https://www.aprildunford.com/post/a-quickstart-guide-to-positioning) — competitive alternatives, differentiated capabilities, customer value, best-fit segment, and market category sequence; referenced, not copied. Accessed 2026-08-14.
 - [Domain Experts](https://domainexperts.dev/) — compact role-contract structure only; no role installed or copied.
 - `apps/studio/workspace/legacy/legacy-agency.md` — prioritization intent retained; forced multi-channel output rejected.
 
