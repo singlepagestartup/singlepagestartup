@@ -11,13 +11,13 @@ Product materials change more often and affect only their own offer.
 
 ## Review order
 
-| Stage         | Review these documents                                            | Typical change rate | If it is wrong                                                                                                     |
-| ------------- | ----------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `00 Business` | Brief, Business, Research, Evidence                               | Rare after approval | Every later decision may be based on the wrong business, audience, facts, or constraints                           |
-| `10 Strategy` | Strategy                                                          | Occasional          | Brand, design, and product priorities may target the wrong opportunity                                             |
-| `20 Brand`    | Brand                                                             | Rare                | Every product may communicate the wrong meaning, promise, voice, or proof boundary                                 |
-| `30 Design`   | Design, Assets                                                    | Occasional          | Every product may use an inconsistent or unsuitable visual system                                                  |
-| `40 Products` | Product, Website, Marketing Creative, Presentation for each offer | Frequent            | Only that product's sales and communication materials need correction unless they expose an upstream contradiction |
+| Stage         | Review these documents                                                                                    | Typical change rate | If it is wrong                                                                                           |
+| ------------- | --------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
+| `00 Business` | Brief, Portfolio, Business, global/direction Research, product Sales, Evidence                            | Rare after approval | Every later decision may be based on the wrong direction, sales process, audience, facts, or constraints |
+| `10 Strategy` | Strategy                                                                                                  | Occasional          | Brand, design, and product priorities may target the wrong opportunity                                   |
+| `20 Brand`    | Brand                                                                                                     | Rare                | Every product may communicate the wrong meaning, promise, voice, or proof boundary                       |
+| `30 Design`   | Design, Assets                                                                                            | Occasional          | Every product may use an inconsistent or unsuitable visual system                                        |
+| `40 Products` | Research, Sales, Product, Website, Marketing Creative, Presentation, and optional product-defined Content | Frequent            | Only that product's outputs need correction unless they expose an upstream contradiction                 |
 
 Review `default` first. Open `singlepage` or `startup` only when you need to see
 where a value came from.
@@ -52,6 +52,9 @@ apps/studio/workspace/
   brief/{singlepage,startup}.md
   business/{singlepage,startup}.md
   research/{singlepage,startup}.md
+  portfolio/{singlepage,startup}.yaml
+  portfolio/<layer>/<direction-id>/research.md
+  portfolio/<layer>/<active-product-id>/sales.yaml
   evidence/{singlepage,startup}.md
   strategy/{singlepage,startup}.md
   brand/{singlepage,startup}.md
@@ -64,6 +67,7 @@ apps/studio/workspace/
     website.md
     marketing-creative.md
     presentation/ProjectPresentation.tsx
+    content/Content.tsx # optional; supporting formats are product-defined
   knowledge/
   index/
 ```
@@ -75,6 +79,16 @@ does not contain business prose.
 
 ## Product catalogs
 
+Portfolio is the complete inventory and resolves atomically before Products:
+
+- Every direction uses role `product`, `audience-program`, or
+  `internal-operation` and lifecycle `active`, `future`, or `deferred`.
+- Every direction owns one Research file. Every active `product` also owns one
+  Sales process. No other row may own Sales.
+- If `portfolio/startup.yaml` is empty, default inherits all singlepage
+  directions. Once startup declares one direction, it owns the complete
+  Portfolio and all referenced files.
+
 Products use a stricter rule than shared documents because products from two
 different businesses must never be mixed.
 
@@ -82,8 +96,11 @@ different businesses must never be mixed.
   singlepage catalog.
 - If startup defines at least one product, `default` shows only startup
   products. The complete singlepage catalog is replaced.
-- Every active product owns all four outputs in the same layer: Product,
-  Website, Marketing Creative, and Presentation.
+- Every active product owns six joined core tabs in the same layer: Research,
+  Sales, Product, Website, Marketing Creative, and Presentation.
+- A product may add an optional Content tab through a React component. Its
+  supporting files may use any product-appropriate format; Content is not a
+  required Markdown artifact and is absent when the catalog does not declare it.
 - There is no fallback from a partially defined startup product to a
   singlepage product folder.
 
@@ -99,6 +116,8 @@ products:
     website: commercial-property-reletting/website.md
     marketing_creative: commercial-property-reletting/marketing-creative.md
     presentation: commercial-property-reletting/presentation/ProjectPresentation.tsx
+    # Optional flexible review surface:
+    # content: commercial-property-reletting/content/Content.tsx
 ```
 
 The product folder applies the approved Business, Strategy, Brand, and Design.
@@ -110,13 +129,13 @@ them.
 ### 00 Business
 
 - Brief records the confirmed subject, current situation, desired outcome,
-  scope, constraints, owner-controlled facts, and every current or intended
-  offer. Each offer is classified as a product candidate, supporting only, or
-  deferred so later agents cannot create products by inference.
-- Business records how value, money, delivery, responsibility, and capacity
-  work.
-- Research records only market and customer findings that can change a
-  decision.
+  scope, constraints, owner-controlled facts, and complete direction inventory.
+- Portfolio records one objective role and lifecycle for every direction, plus
+  the paths to its Research and, for active products, Sales.
+- Business records shared value, money, responsibility, capacity, and routing
+  rules. Each active product's Sales file owns its funnel and delivery states.
+- Global Research compares directions; each direction Research records its own
+  market, customer, alternatives, prices, channels, sources, and unknowns.
 - Evidence is a concise source register, not a narrative report.
 
 An error here has the largest propagation cost. Do not continue from an
@@ -124,10 +143,10 @@ unconfirmed scope or an invented operator fact.
 
 ### 10 Strategy
 
-Strategy selects one practical business-level direction, the exact product set
-that enters `40 Products`, and one primary product, audience, and situation for
-the first experiment. It also keeps supporting-only and deferred offers
-explicit. Positioning, commercial logic, acquisition focus, rejected
+Strategy names one audience-growth priority, one sales-product priority, the
+exact active product set that enters `40 Products`, and one experiment track.
+Priorities do not disable other active directions. Positioning, commercial
+logic, acquisition focus, rejected
 alternatives, and the bounded experiment stay proposed until the operator
 approves or corrects them.
 

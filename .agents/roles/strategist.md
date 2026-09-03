@@ -16,8 +16,9 @@ visual and interface solution.
 
 ## Inputs and ownership
 
-Read `brief.md`, `business.md`, `research.md`, the resolved decision profile,
-and relevant evidence. For product work, also read the approved `strategy.md`,
+Read `brief.md`, Portfolio, `business.md`, global and direction Research, each
+active product's Sales process, the resolved decision profile, and relevant
+evidence. For product work, also read the approved `strategy.md`,
 `brand.md`, `design.md`, and resolved Assets that constrain the selected offer.
 Edit `strategy.md` or the selected product's `product.md`, never both implicitly,
 and identify upstream assumptions that need correction.
@@ -39,11 +40,13 @@ Start from `.agents/templates/product.md` and replace the complete selected
 - Resolve only the `10-strategy` decision-profile rows, using their domain economics,
   regulation, risks, and viability thresholds as selection constraints rather
   than adding a generic tactic list.
-- Select the exact offers from the operator-confirmed Brief portfolio that enter
-  the active product catalog. Name one primary product, audience, and buying
-  situation for the first experiment; explicitly keep every other confirmed
-  offer active, supporting-only, or deferred. Never invent an offer from a
-  showcase, repository feature, possible monetization, or channel idea.
+- Select the exact active `product` rows from the operator-confirmed Portfolio
+  that enter the Products catalog. Name one audience-growth priority and one
+  sales-product priority; neither disables other active directions. Choose one
+  track for the first experiment: `audience-growth` or `sales`. Never put an
+  `audience-program` or `internal-operation` into the product catalog and never
+  invent an offer from a showcase, repository feature, possible monetization,
+  or channel idea.
 - State the offer, positioning, proof available now, proof still missing, main
   objections, and explicit non-goals.
 - Define one experiment with critical assumption, audience, offer, traffic
@@ -96,7 +99,8 @@ Start from `.agents/templates/product.md` and replace the complete selected
 ## Thresholds and red flags
 
 The strategy is reviewable when it makes choices that constrain communication
-and product design, names an exact product set traceable to Brief, its factual
+and product design, names separate audience-growth and sales-product priorities,
+and names an exact active product set traceable to Portfolio, its factual
 `10-strategy` rows are answered, and no
 operator-controlled constraint has been invented. It remains `proposed` until
 the operator confirms or corrects the compact strategic direction. It is usable
@@ -118,7 +122,7 @@ duplicated wording is invalid even when every individual statement is true.
 Return selected and rejected options with reasons, experiment decision rules,
 remaining operator-fact questions, proposed profile status changes, remaining
 evidence risks, and a compact approval summary in the operator's language,
-including the active product set and first priority. End
+including both priorities, the experiment track, and the active product set. End
 with exactly one question: the highest-impact missing operator fact when blocked,
 otherwise a request to approve or correct the direction. Brand and Design
 must not start from an unapproved strategy.

@@ -73,14 +73,16 @@ The pre-development workflow uses three consistently named Workspace views:
 Agents resolve `singlepage → startup → default`, but write only to the active
 repository-owned `singlepage` or `startup` source. They never create or edit a
 `default` Markdown, YAML, or generated content file. An empty startup source
-passes singlepage through unchanged; product catalogs follow the atomic
+passes singlepage through unchanged; Portfolio and product catalogs follow their atomic
 replacement rule defined in `workflows/pre-development.md`.
 
-Brief owns the operator-confirmed current/intended offer portfolio. Strategy
-selects the exact active product set and first priority from that portfolio, and
-Products must match it exactly. A showcase, reference project, possible future
-payment, repository folder, or agent idea never creates a catalog entry by
-inference.
+Brief owns the operator-confirmed direction inventory. Portfolio records one
+objective role and lifecycle for every direction, one Research path for every
+row, and one Sales path for every active product. Strategy names separate
+audience-growth and product priorities, one experiment track, and the exact
+active product set. Products must match that set and Portfolio exactly. A
+showcase, reference project, possible future payment, repository folder, or
+agent idea never creates a catalog entry by inference.
 
 The owner reviews `default` first in Storybook Studio and opens `singlepage` or
 `startup` only to inspect provenance or edit the corresponding canonical source.

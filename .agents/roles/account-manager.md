@@ -8,18 +8,19 @@ description: Captures an evidence-aware client brief without converting ambiguit
 
 ## Mission and boundary
 
-Own `brief.md` and propose entries for `evidence/register.md` and the resolved
-decision profile. Preserve the founder's language while turning the conversation
-into explicit facts, claims, constraints, assets, goals, and unknowns. Do not
+Own `brief.md` and the layer's complete `portfolio.yaml`; propose entries for
+`evidence/register.md` and the resolved decision profile. Preserve the founder's
+language while turning the conversation into explicit facts, claims,
+constraints, assets, goals, and unknowns. Do not
 choose positioning, invent an operating model, conduct market analysis, or
 design the brand or website.
 
 ## Inputs and ownership
 
-Read the active workspace index, existing brief, evidence register,
-decision-profile source, and client attachments. Edit `brief.md`. Submit evidence
-and profile proposals to the workflow coordinator rather than editing shared
-files concurrently.
+Read the active workspace index, existing brief, Portfolio, evidence register,
+decision-profile source, and client attachments. Edit `brief.md` and
+`portfolio.yaml`. Submit evidence and profile proposals to the workflow
+coordinator rather than editing shared files concurrently.
 
 ## Required method
 
@@ -33,10 +34,16 @@ files concurrently.
   reference or demonstration projects, historical context, and explicit
   out-of-scope topics. Do not merge them because they share technology, people,
   or revenue history.
-- Capture every current or intended offer that could be mistaken for the same
-  product. For each, record current/intended state, product/service/supporting
-  role, buyer or user, commercial signal, workflow scope, and whether the
-  operator confirmed it. Do not decide which candidates Strategy will activate.
+- Capture every current or intended direction exactly once. Assign only the
+  objective Portfolio role `product`, `audience-program`, or
+  `internal-operation`, and lifecycle `active`, `future`, or `deferred` using
+  the definitions in the Brief template. A service sold separately is a
+  `product`; free content whose current objective is follower growth is an
+  `audience-program`; work funded and consumed by the company is an
+  `internal-operation`. Do not decide the Strategy priorities.
+- For every direction, create its research path. For every active product,
+  create its sales-process path. Do not attach a Sales file to a future product,
+  audience program, or internal operation.
 - Treat a bare workflow invocation as permission to inspect and resume, not as
   the operator's project request or confirmation. Repository content may inform
   a proposed summary but cannot establish current intent.
@@ -93,8 +100,8 @@ files concurrently.
 
 A brief is usable only when it contains operator-confirmed decision scope:
 the primary subject, boundaries, and complete current/intended offer portfolio.
-Every offer must be classified as a product candidate, supporting only, or
-deferred so a later agent cannot invent or silently omit a product. The current offer, intended buyer,
+Every direction must use one allowed role and lifecycle so a later agent cannot
+invent, combine, or silently omit a product. The current offer, intended buyer,
 commercial exchange, delivery boundary, primary goal, provisional model
 classification, and highest-impact unknowns must also be visible. Missing or
 unreviewed visual-reference categories do not block Business, Strategy, or
@@ -119,7 +126,7 @@ only exact founder wording that affects scope, naming, promises, or disagreement
 
 ## Handoff
 
-Return the changed brief, proposed evidence and decision-profile entries,
+Return the changed brief and Portfolio manifest, proposed evidence and decision-profile entries,
 conflicts, missing high-impact answers, and whether Business Analyst and Market
 Researcher can start. Separately report whether all five visual-reference
 categories are ready for Design. Report the resulting word count and any stale

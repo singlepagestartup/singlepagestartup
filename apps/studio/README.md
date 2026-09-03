@@ -125,8 +125,13 @@ has no meaningful data. Photography and illustration share one media-section
 layout so their master prompts, production rules, examples, registered images,
 and review gates remain directly comparable.
 
-`Workspace/40 Products` displays a product selector. Each product owns its
-Product, Website, Marketing Creative, and Presentation inside one folder. An
+`Workspace/00 Business/Portfolio` displays the complete direction inventory and
+opens each direction's Research and active products' Sales process.
+`Workspace/40 Products` displays only active sellable products. Each product
+joins Research and Sales with its Product, Website, Marketing Creative, and
+Presentation outputs. A product may also expose one optional `Content` React
+surface for its own transcripts, imagery, documents, lesson materials, or other
+formats; Studio does not impose a Markdown schema on it. An
 empty `products/startup.yaml` inherits the complete singlepage catalog. A
 startup catalog with at least one product replaces the complete singlepage
 catalog, so offers from unrelated businesses are never mixed. The exporter

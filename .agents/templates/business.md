@@ -1,31 +1,35 @@
 # Business
 
-<!-- One current business model and one current/intended process. Maximum 1,400
-words. Do not include module maps, engineering handoffs, profile disposition,
-session history, or coordinator questions. -->
+<!-- One shared portfolio business model. Maximum 1,400 words. Product-specific
+sales and delivery workflows live in portfolio/<layer>/<product-id>/sales.yaml.
+Do not combine several products into one funnel here. -->
 
 ## Business model
 
 - Customer problem, value exchange, offer unit, price, costs, capacity, goals
-- Normalize the confirmed Brief portfolio: state which mechanics are shared
-  across offers and which have distinct buyers, money flows, delivery, support,
-  or capacity. Do not add an offer that the operator did not confirm in Brief.
+- Normalize the confirmed Portfolio: state which mechanics are shared across
+  directions. Keep distinct buyers, money flows, delivery, support, and capacity
+  in each active product's Sales process. Do not add a direction that the
+  operator did not confirm.
 - Buyer/user/payer/beneficiary roles, monetization mechanics, unit economics,
   material dependencies, and scaling constraints required by the active profile
 
-## Operating process
+## Shared operating process
 
-Cover acquisition → website entry → understanding → lead/purchase → qualification
-→ response → proposal/payment → delivery → completion → follow-up.
+Cover only company-wide routing, ownership, resource allocation, and handoffs
+that affect more than one direction. Product-specific inquiry → qualification →
+payment → delivery → completion belongs in that product's Sales file.
 
 Use at most ten decision-relevant steps. Combine routine substeps.
 
 | State | Step | Actor/owner | Input and action | Output/complete when | Failure and fallback |
 | ----- | ---- | ----------- | ---------------- | -------------------- | -------------------- |
 
-## Lead, payment, and delivery rules
+## Shared routing and control rules
 
-- Receiver, required data, qualification, price formation, SLA, fulfillment
+- Company-wide contact receiver, direction-routing fields, decision authority,
+  resource conflict rules, and cross-product constraints. Product-specific
+  qualification, price, SLA, payment, and fulfillment belong in Sales.
 
 ## Promises and constraints
 

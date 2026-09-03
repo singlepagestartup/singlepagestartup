@@ -67,8 +67,8 @@ function artifact(workspace: IStudioWorkspace, kind: string): string {
   );
 }
 
-function clean(value: string): string {
-  return value
+function clean(value: string | null | undefined): string {
+  return (value ?? "")
     .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1")
     .replace(/[`*_]/g, "")
     .replace(/\s+/g, " ")

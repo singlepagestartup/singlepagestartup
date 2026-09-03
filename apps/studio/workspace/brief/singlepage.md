@@ -28,12 +28,16 @@
 
 Current reality: the repository and documented module inventory exist, but no independently attributable external setup, successful use, repeat use, or adoption has been supplied. Desired future state: one pinned, openly licensed Code Framework release can be evaluated through a clear setup and capability check. SP-EV-009; SP-EV-075.
 
-## Product and offer portfolio
+## Business direction inventory
 
-| Offer                                     | State                                        | Role                                                                       | Buyer or user                                                                   | Commercial signal                                                 | Workflow scope                                 | Operator status        |
-| ----------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------- | ---------------------- |
-| Code Framework by SinglePageStartup       | Current framework                            | Primary product candidate                                                  | Accountable developer choosing a foundation for a new multi-feature web product | Free; founder-funded                                              | Candidate for the active product catalog       | `confirmed`; SP-EV-075 |
-| All-module AI-agent demonstration service | Intended; not yet assembled for external use | Supporting showcase and acquisition bridge; possible later service product | Prospective service user; exact paying segment remains unselected               | Token or paid-chat access is possible later; terms are unselected | Supporting only; not a current catalog product | `confirmed`; SP-EV-035 |
+`product` is a separately offered product; `audience-program` is activity whose
+current purpose is audience growth. `active` means offered now; `future` means
+intended but not operating now.
+
+| Direction (ID)                                       | Role               | Lifecycle | Buyer or user                                                                   | Commercial status                                                 | Operator status        |
+| ---------------------------------------------------- | ------------------ | --------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------- |
+| Code Framework (`singlepagestartup`)                 | `product`          | `active`  | Accountable developer choosing a foundation for a new multi-feature web product | Free and founder-funded                                           | `confirmed`; SP-EV-075 |
+| AI-agent demonstration service (`ai-agent-showcase`) | `audience-program` | `future`  | Prospective service user; exact paying segment remains unselected               | Token or paid-chat access is possible later; terms are unselected | `confirmed`; SP-EV-035 |
 
 ## Business and offer
 

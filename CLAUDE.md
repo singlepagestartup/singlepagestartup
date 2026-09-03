@@ -112,9 +112,12 @@ artifact. Use a named method or benchmark only with an authoritative source,
 explicit fit, and limitations for a material decision.
 Before business or market work starts, the operator confirms a compact brief
 that separates the primary decision subject, reference projects, historical
-context, and out-of-scope topics, and classifies every current or intended offer
-as a product candidate, supporting only, or deferred. Strategy selects an exact
-active product set from that confirmed portfolio and one first priority;
+context, and out-of-scope topics, and records every current or intended
+direction in an atomic Portfolio as `product`, `audience-program`, or
+`internal-operation` with lifecycle `active`, `future`, or `deferred`. Every
+direction owns Research; every active product owns a machine-readable Sales
+process. Strategy names separate audience-growth and sales-product priorities,
+one experiment track, and an exact active product set;
 `40-products` must match that set without inferred or omitted products. Unknowns are routed as operator facts,
 research questions, professional choices, or evidence gaps. An assumption never
 answers an operator-controlled fact such as budget, capacity, rights, support,
@@ -130,9 +133,14 @@ should form in the audience's mind. During `30-design`, a separate layered
 `design.md` translates approved Brand into visual identity, photography, and
 illustration decisions. Photography and illustration use the same objective
 prompt, production, example, and visual-review contract, and one shared React
-template renders both source layers. During `40-products`, each offer owns a self-contained
-Product, Website, Marketing Creative, and Presentation set. A non-empty startup
-catalog replaces the entire singlepage catalog so unrelated niches never mix.
+template renders both source layers. During `40-products`, each active product
+adds a self-contained Product, Website, Marketing Creative, and Presentation set
+to its existing Research and Sales tabs, plus an optional product-defined
+Content surface when needed. Content uses a React entry point and may organize
+transcripts, imagery, documents, or other product materials without a mandatory
+Markdown schema. Non-empty startup Portfolio and Product
+catalogs each replace their entire singlepage catalog so unrelated directions
+never mix.
 None may redefine an upstream decision.
 Workspace configuration defaults unknown repositories to `startup` and maps the
 canonical framework repository to `singlepage`. Inherited singlepage evidence

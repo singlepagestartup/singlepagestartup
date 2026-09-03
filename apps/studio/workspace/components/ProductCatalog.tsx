@@ -1,16 +1,28 @@
 import { useEffect, useState } from "react";
 
-import type { IProductCatalogView, IProductDocument } from "../products/source";
+import type {
+  IProductCatalogView,
+  IProductDocument,
+  IProductView,
+} from "../products/source";
 import { MarkdownDocument } from "./ArtifactBrowser";
 
-type ProductSection = IProductDocument["kind"] | "presentation";
+type ProductSection = IProductDocument["kind"] | "content" | "presentation";
 
-const sections: Array<{ id: ProductSection; label: string }> = [
-  { id: "product", label: "01 Product Overview" },
-  { id: "website", label: "02 Website" },
-  { id: "creative", label: "03 Marketing Creative" },
-  { id: "presentation", label: "04 Presentation" },
+const coreSections: Array<{ id: ProductSection; label: string }> = [
+  { id: "research", label: "01 Research" },
+  { id: "sales", label: "02 Sales" },
+  { id: "product", label: "03 Product Overview" },
+  { id: "website", label: "04 Website" },
+  { id: "creative", label: "05 Marketing Creative" },
+  { id: "presentation", label: "06 Presentation" },
 ];
+
+function sections(product: IProductView) {
+  return product.content
+    ? [...coreSections, { id: "content" as const, label: "07 Content" }]
+    : coreSections;
+}
 
 function requestedPresentation(view: IProductCatalogView) {
   if (typeof window === "undefined") return undefined;
@@ -26,11 +38,11 @@ export function ProductCatalog({ view }: { view: IProductCatalogView }) {
     view.products[0]?.id ?? "",
   );
   const [selectedSection, setSelectedSection] =
-    useState<ProductSection>("product");
+    useState<ProductSection>("research");
 
   useEffect(() => {
     setSelectedProductId(view.products[0]?.id ?? "");
-    setSelectedSection("product");
+    setSelectedSection("research");
   }, [view]);
 
   if (directPresentation) {
@@ -69,6 +81,8 @@ export function ProductCatalog({ view }: { view: IProductCatalogView }) {
     ({ kind }) => kind === selectedSection,
   );
   const Presentation = product.presentation.Component;
+  const Content = product.content?.Component;
+  const Website = product.websiteComponent?.Component;
 
   return (
     <main className="min-h-screen bg-slate-100 p-5 text-slate-950 md:p-10">
@@ -88,9 +102,9 @@ export function ProductCatalog({ view }: { view: IProductCatalogView }) {
           Products
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
-          Review each offer separately after the shared Business, Strategy,
-          Brand, and Design are approved. Product-specific files never redefine
-          those shared decisions.
+          Review one product at a time: its market evidence, sales process,
+          offer, website, creative, presentation, and product-specific content.
+          Shared Business, Strategy, Brand, and Design remain common inputs.
         </p>
       </header>
 
@@ -123,7 +137,7 @@ export function ProductCatalog({ view }: { view: IProductCatalogView }) {
                   key={candidate.id}
                   onClick={() => {
                     setSelectedProductId(candidate.id);
-                    setSelectedSection("product");
+                    setSelectedSection("research");
                   }}
                   role="tab"
                   title={candidate.summary}
@@ -148,7 +162,7 @@ export function ProductCatalog({ view }: { view: IProductCatalogView }) {
               className="mt-5 flex gap-1 overflow-x-auto"
               aria-label="Product documents"
             >
-              {sections.map((section) => (
+              {sections(product).map((section) => (
                 <button
                   className={`whitespace-nowrap border-b-2 px-3 py-3 text-sm font-semibold ${
                     selectedSection === section.id
@@ -165,9 +179,17 @@ export function ProductCatalog({ view }: { view: IProductCatalogView }) {
             </nav>
           </div>
 
-          {selectedSection === "presentation" ? (
+          {selectedSection === "website" && Website ? (
+            <div className="overflow-x-auto bg-black">
+              <Website />
+            </div>
+          ) : selectedSection === "presentation" ? (
             <div className="overflow-x-auto bg-black">
               <Presentation data={product.presentation.data} />
+            </div>
+          ) : selectedSection === "content" && Content ? (
+            <div className="overflow-x-auto bg-black">
+              <Content />
             </div>
           ) : document ? (
             <article className="px-5 py-7 md:px-10 md:py-10">

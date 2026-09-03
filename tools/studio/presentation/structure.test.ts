@@ -32,6 +32,7 @@ describe("Studio presentation structure", () => {
     for (const component of [
       "ArtifactBrowser",
       "LayerDataStatus",
+      "PortfolioCatalog",
       "ProjectDesign",
       "ProjectPresentation",
     ]) {
@@ -66,7 +67,14 @@ describe("Studio presentation structure", () => {
     expect(component).toContain('role="tablist"');
     expect(component).toContain('role="tab"');
     expect(component).toContain('role="tabpanel"');
-    expect(component).toContain('label: "01 Product Overview"');
+    expect(component).toContain('label: "01 Research"');
+    expect(component).toContain('label: "02 Sales"');
+    expect(component).toContain('label: "03 Product Overview"');
+    expect(component).toContain('label: "07 Content"');
+    expect(component).toContain("product.content");
+    expect(component).toContain("<Content />");
+    expect(component).toContain("product.websiteComponent");
+    expect(component).toContain("<Website />");
     expect(component).toContain('className="flex flex-col items-start gap-2"');
     expect(component).not.toContain("justify-between gap-x-6 gap-y-2");
     expect(component).not.toContain("lg:grid-cols-[280px_1fr]");
@@ -402,12 +410,12 @@ describe("Studio presentation structure", () => {
     expect(role).toContain("Design never duplicates that intake register");
     expect(briefRole).toContain("Record client taste references as five");
     expect(briefTemplate).toContain("## Visual reference intake");
-    expect(briefTemplate).toContain("| Marketing creative |");
+    expect(briefTemplate).toMatch(/^\| Marketing creative\s+\|/m);
     expect(briefTemplate).toContain("supplied-unreviewed");
     expect(briefTemplate).not.toContain("Existing asset IDs");
     expect(template).toContain("### Client visual preference profile");
     expect(template).not.toContain("Categorized reference intake");
-    expect(template).not.toContain("| Marketing creative |");
+    expect(template).not.toMatch(/^\| Marketing creative\s+\|/m);
     expect(template).toContain(
       "confirmation or correction before selecting the visual territory",
     );
@@ -422,7 +430,8 @@ describe("Studio presentation structure", () => {
     ).toHaveLength(2);
     expect(component).toContain("function MediaSection");
     expect(component.match(/<MediaSection/g)).toHaveLength(2);
-    expect(component).toContain("function PreferenceProfile");
+    expect(component).not.toContain("function PreferenceProfile");
+    expect(component).not.toContain('id="preference-profile"');
     expect(component).toContain("Reusable graphic language");
     expect(component).toContain('className="flex items-center gap-4"');
     expect(component).toContain("function PromptUsageTooltip");
@@ -510,7 +519,7 @@ describe("Studio presentation structure", () => {
     );
     const styles = source("apps/studio/workspace/styles/singlepage.css");
 
-    expect(template).toContain("| Role | CSS family | Weights |");
+    expect(template).toMatch(/^\| Role\s+\| CSS family\s+\| Weights\s+\|/m);
     expect(workflow).toContain("`document.fonts.check(...)`");
     expect(workflow).toContain("Tailwind `max-w-7xl` (`1280px`)");
     expect(design).toContain("singlepage-font-cormorant-garamond-variable");

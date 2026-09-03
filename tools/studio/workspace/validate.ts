@@ -58,10 +58,10 @@ async function writeFixture(
   ]);
   const singlepageIndex =
     options.singlepageIndex ??
-    `schema: fixture.v1\nlayer: singlepage\nentries:\n  - { id: template.base, kind: template, path: singlepage/base.md, description: Exported template., uses: [] }\n  - { id: singlepage.discovery, kind: discovery, path: singlepage/discovery.md, description: Framework discovery., uses: [] }\n  - { id: singlepage.secret, kind: brief, path: singlepage/secret.md, description: Private local artifact., uses: [singlepage.discovery] }\n  - { id: singlepage.evidence, kind: evidence, path: singlepage/evidence.md, description: Framework evidence., uses: [] }\n  - { id: singlepage.profile, kind: decision-profile, path: singlepage/profile.md, description: Framework profile., uses: [singlepage.secret, singlepage.evidence] }\n  - { id: singlepage.business, kind: business, path: singlepage/business.md, description: Framework business., uses: [singlepage.profile] }\n  - { id: singlepage.products, kind: products, path: singlepage/products.yaml, description: Framework products., uses: [singlepage.business] }\nexports: [template.base]\nimports: []\n`;
+    `schema: fixture.v1\nlayer: singlepage\nentries:\n  - { id: template.base, kind: template, path: singlepage/base.md, description: Exported template., uses: [] }\n  - { id: singlepage.discovery, kind: discovery, path: singlepage/discovery.md, description: Framework discovery., uses: [] }\n  - { id: singlepage.secret, kind: brief, path: singlepage/secret.md, description: Private local artifact., uses: [singlepage.discovery] }\n  - { id: singlepage.evidence, kind: evidence, path: singlepage/evidence.md, description: Framework evidence., uses: [] }\n  - { id: singlepage.profile, kind: decision-profile, path: singlepage/profile.md, description: Framework profile., uses: [singlepage.secret, singlepage.evidence] }\n  - { id: singlepage.business, kind: business, path: singlepage/business.md, description: Framework business., uses: [singlepage.profile] }\n  - { id: singlepage.portfolio, kind: portfolio, path: singlepage/portfolio.yaml, description: Framework portfolio., uses: [singlepage.business] }\n  - { id: singlepage.products, kind: products, path: singlepage/products.yaml, description: Framework products., uses: [singlepage.portfolio] }\nexports: [template.base]\nimports: []\n`;
   const startupIndex =
     options.startupIndex ??
-    `schema: fixture.v1\nlayer: startup\nentries:\n  - { id: startup.discovery, kind: discovery, path: startup/discovery.md, extends: singlepage.discovery, strategy: replace, description: Client discovery., uses: [] }\n  - { id: startup.brief, kind: brief, path: startup/brief.md, extends: singlepage.secret, strategy: sections, description: Local startup artifact., uses: [template.base, startup.discovery] }\n  - { id: startup.evidence, kind: evidence, path: startup/evidence.md, extends: singlepage.evidence, strategy: scoped-keyed, description: Client evidence., uses: [] }\n  - { id: startup.profile, kind: decision-profile, path: startup/profile.md, extends: singlepage.profile, strategy: replace, description: Client profile., uses: [startup.brief, startup.evidence] }\n  - { id: startup.business, kind: business, path: startup/business.md, extends: singlepage.business, strategy: sections, description: Client business., uses: [startup.profile] }\n  - { id: startup.products, kind: products, path: startup/products.yaml, extends: singlepage.products, strategy: product-catalog, description: Client products., uses: [startup.business] }\nexports: []\nimports: [template.base]\n`;
+    `schema: fixture.v1\nlayer: startup\nentries:\n  - { id: startup.discovery, kind: discovery, path: startup/discovery.md, extends: singlepage.discovery, strategy: replace, description: Client discovery., uses: [] }\n  - { id: startup.brief, kind: brief, path: startup/brief.md, extends: singlepage.secret, strategy: sections, description: Local startup artifact., uses: [template.base, startup.discovery] }\n  - { id: startup.evidence, kind: evidence, path: startup/evidence.md, extends: singlepage.evidence, strategy: scoped-keyed, description: Client evidence., uses: [] }\n  - { id: startup.profile, kind: decision-profile, path: startup/profile.md, extends: singlepage.profile, strategy: replace, description: Client profile., uses: [startup.brief, startup.evidence] }\n  - { id: startup.business, kind: business, path: startup/business.md, extends: singlepage.business, strategy: sections, description: Client business., uses: [startup.profile] }\n  - { id: startup.portfolio, kind: portfolio, path: startup/portfolio.yaml, extends: singlepage.portfolio, strategy: portfolio-catalog, description: Client portfolio., uses: [startup.business] }\n  - { id: startup.products, kind: products, path: startup/products.yaml, extends: singlepage.products, strategy: product-catalog, description: Client products., uses: [startup.portfolio] }\nexports: []\nimports: [template.base]\n`;
   await Promise.all([
     writeFile(path.join(indexRoot, "singlepage.yaml"), singlepageIndex),
     writeFile(path.join(indexRoot, "startup.yaml"), startupIndex),
@@ -105,6 +105,14 @@ async function writeFixture(
     writeFile(
       path.join(startupRoot, "business.md"),
       "# Business\n\n## Model\n\nStartup model.\n",
+    ),
+    writeFile(
+      path.join(singlepageRoot, "portfolio.yaml"),
+      "schema: singlepagestartup.portfolio.v1\ndirections:\n  - { id: framework-product, name: Framework product }\n",
+    ),
+    writeFile(
+      path.join(startupRoot, "portfolio.yaml"),
+      "schema: singlepagestartup.portfolio.v1\ndirections: []\n",
     ),
     writeFile(
       path.join(singlepageRoot, "products.yaml"),
@@ -323,6 +331,10 @@ async function runSelfCheck() {
       path.join(fixture.startupRoot, "products.yaml"),
       "schema: singlepagestartup.product-catalog.v1\nproducts:\n  - { id: startup-product, name: Startup product }\n",
     );
+    await writeFile(
+      path.join(fixture.startupRoot, "portfolio.yaml"),
+      "schema: singlepagestartup.portfolio.v1\ndirections:\n  - { id: startup-product, name: Startup product }\n",
+    );
     const graph = await loadWorkspace({
       ...fixture,
       activeLayer: "startup",
@@ -331,13 +343,19 @@ async function runSelfCheck() {
     const products = graph.loadedEntries.find(
       (entry) => entry.id === "startup.products",
     );
+    const portfolio = graph.loadedEntries.find(
+      (entry) => entry.id === "startup.portfolio",
+    );
     if (
       products?.resolution !== "merged" ||
       !products.content.includes("startup-product") ||
-      products.content.includes("framework-product")
+      products.content.includes("framework-product") ||
+      portfolio?.resolution !== "merged" ||
+      !portfolio.content.includes("startup-product") ||
+      portfolio.content.includes("framework-product")
     ) {
       throw new Error(
-        "valid fixture mixed singlepage and startup product catalogs",
+        "valid fixture mixed singlepage and startup portfolio or product catalogs",
       );
     }
   } finally {
@@ -419,7 +437,7 @@ async function runSelfCheck() {
     }),
   );
   console.log(
-    "Workspace validator self-check resolved declared section, replacement, keyed, scoped evidence, and atomic product-catalog strategies; routed active dependencies; passed empty startup files through; isolated source projections and fallbacks; then rejected invalid inheritance, evidence scope, IDs, files, imports, uses, and cycles.",
+    "Workspace validator self-check resolved declared section, replacement, keyed, scoped evidence, and atomic portfolio/product-catalog strategies; routed active dependencies; passed empty startup files through; isolated source projections and fallbacks; then rejected invalid inheritance, evidence scope, IDs, files, imports, uses, and cycles.",
   );
 }
 

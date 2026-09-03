@@ -1,21 +1,25 @@
 # Research
 
-<!-- Decision-changing findings only. Maximum 1,400 words and twelve source
-rows. Keep search history, rerun notes, profile disposition, and invalidation
-logs outside this document. -->
+<!-- Portfolio-level comparisons and shared findings only. Maximum 1,400 words
+and twelve source rows. Put product- or direction-specific audience,
+competition, price, and channel findings in that direction's research.md. -->
 
 ## Decision questions and method
 
 - Only material questions selected by the active decision profile
 - Decisions, source constraints, geography/date, limitations
 
-## Audience and purchase situations
+## Portfolio comparison
 
-- Triggers, anxieties, desired outcomes, decision criteria, alternatives
+- Compare directions on buyer or user, current objective, evidence strength,
+  capacity, dependencies, and unresolved questions without combining their
+  markets or competitors.
 
-## Market and competition
+## Shared market conditions
 
-- Category, direct competitors, substitutes, doing nothing, prices, channels
+- Only conditions that affect at least two directions. Link each direction to
+  its own `portfolio/<layer>/<direction-id>/research.md` for detailed audiences,
+  competitors, alternatives, prices, channels, and sources.
 
 ## Findings
 

@@ -1,0 +1,13 @@
+schema: singlepagestartup.portfolio.v1
+directions: []
+# The manifest is a complete, atomic inventory for one business layer. Every
+# operator-confirmed direction appears exactly once.
+#
+# directions:
+#   - id: replace-with-kebab-case-id
+#     name: Human-readable name
+#     summary: One objective sentence describing the direction.
+#     role: product # product | audience-program | internal-operation
+#     lifecycle: active # active | future | deferred
+#     research: replace-with-id/research.md
+#     sales: replace-with-id/sales.yaml # required only for active products

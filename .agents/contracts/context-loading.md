@@ -50,7 +50,17 @@ apps/studio/workspace/<artifact>/
 
 `<artifact>` is `brief`, `evidence`, `business`, `research`, `strategy`,
 `brand`, or `design`. Assets use the same layout with `singlepage.yaml` and
-`startup.yaml`. Product-local review sources use:
+`startup.yaml`. The complete direction inventory and its direction-specific
+Research and Sales sources use:
+
+```text
+apps/studio/workspace/portfolio/<layer>.yaml
+apps/studio/workspace/portfolio/<layer>/<direction-id>/research.md
+apps/studio/workspace/portfolio/<layer>/<product-id>/sales.yaml
+```
+
+Every direction has Research. Only an active `product` has Sales. Product-local
+delivery and communication sources use:
 
 ```text
 apps/studio/workspace/products/<layer>.yaml
@@ -59,7 +69,14 @@ apps/studio/workspace/products/<layer>/<product-id>/
   website.md
   marketing-creative.md
   presentation/ProjectPresentation.tsx
+  content/Content.tsx # optional; internal files and formats are product-owned
 ```
+
+The optional Content directory is a product-local context source rather than a
+fixed document contract. When a catalog entry declares `content`, load the
+entry component and only the supporting files relevant to the current product
+decision. Do not assume Markdown, a video schema, or a universal set of content
+types; follow the component's imports and the product's local organization.
 
 Project-specific working knowledge follows the same terminal
 layer pattern under `apps/studio/workspace/knowledge/<kind>/`. Resolve paths
@@ -69,8 +86,8 @@ second repository-root `workspace/` namespace.
 
 ## Project artifact resolution
 
-The `singlepage` brief, evidence, business, research, strategy, asset index,
-brand, design, and product catalog describe SinglePageStartup itself: its real
+The `singlepage` brief, evidence, business, portfolio, research, strategy, asset
+index, brand, design, and product catalog describe SinglePageStartup itself: its real
 business, direction, communication, design, and offers. They are not templates.
 Brand owns intended meaning and communication; Design is its medium-independent
 visual translation. Product-local Website, Marketing Creative, and Presentation
@@ -95,6 +112,9 @@ Every layered startup index entry explicitly names its singlepage source with
 - `keyed`: merge YAML objects and ID-keyed arrays with startup values winning;
 - `scoped-keyed`: merge evidence rows by stable ID while preserving scope and
   state;
+- `portfolio-catalog`: if startup has no directions, inherit the complete
+  singlepage Portfolio; otherwise use only the complete startup Portfolio and
+  never merge directions or their referenced files across business layers;
 - `product-catalog`: if startup has no products, inherit the complete
   singlepage catalog; otherwise use only the complete startup catalog and never
   merge entries across business layers;
@@ -107,8 +127,9 @@ evidence, or a startup row that explicitly adopts or supersedes a base row, may
 be used. `not-applicable` and `superseded` rows remain visible history but are
 excluded from active claim support.
 
-Each product-catalog entry owns all referenced files in its own layer. There is
-no per-product or per-file fallback after a startup catalog becomes active.
+Each Portfolio direction and product-catalog entry owns all referenced files in
+its own layer. There is no per-direction, per-product, or per-file fallback after
+the corresponding startup catalog becomes active.
 
 Do not write a resolved copy. Agents and Studio use the same in-memory result.
 An agent writes only the indexed source for the active layer. The operator reads

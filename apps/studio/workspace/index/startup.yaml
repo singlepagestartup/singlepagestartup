@@ -38,13 +38,28 @@ entries:
       uses: [startup.brief, startup.evidence, startup.decision-profile],
     }
   - {
+      id: startup.portfolio,
+      kind: portfolio,
+      path: portfolio/startup.yaml,
+      extends: singlepage.portfolio,
+      strategy: portfolio-catalog,
+      description: "Complete direction inventory with one research document per direction and one sales process per active product.",
+      uses: [startup.brief, startup.evidence, startup.decision-profile],
+    }
+  - {
       id: startup.research,
       kind: research,
       path: research/startup.md,
       extends: singlepage.research,
       strategy: sections,
       description: "Audiences, market, competitors, alternatives, sources, and inferences.",
-      uses: [startup.brief, startup.evidence, startup.decision-profile],
+      uses:
+        [
+          startup.brief,
+          startup.evidence,
+          startup.decision-profile,
+          startup.portfolio,
+        ],
     }
   - {
       id: startup.strategy,
@@ -56,6 +71,7 @@ entries:
       uses:
         [
           startup.business,
+          startup.portfolio,
           startup.research,
           startup.evidence,
           startup.acquisition,
@@ -104,6 +120,7 @@ entries:
       uses:
         [
           startup.business,
+          startup.portfolio,
           startup.strategy,
           startup.brand,
           startup.design,
@@ -149,6 +166,9 @@ imports:
   - template.evidence
   - template.decision-profile
   - template.business
+  - template.portfolio
+  - template.direction-research
+  - template.sales-process
   - template.research
   - template.strategy
   - template.asset-index

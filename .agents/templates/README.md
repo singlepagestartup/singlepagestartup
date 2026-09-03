@@ -8,18 +8,19 @@ sections; agents do not load this directory wholesale.
 
 ## Sequence
 
-| Stage       | Owner                                       | Template output                                                                      | Depends on                                                         |
-| ----------- | ------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
-| 00 Business | Account Manager and coordinator             | `brief.md` with confirmed offer portfolio, `decision-profile.md`, evidence proposals | founder request and existing materials                             |
-| 00 Business | Business Analyst                            | `business.md`, decision-profile proposals                                            | scope-confirmed brief, decision profile, evidence                  |
-| 00 Business | Market Researcher                           | `research.md`, decision-profile and evidence proposals                               | scope-confirmed brief and material research question               |
-| 10 Strategy | Strategist                                  | proposed, then approved `strategy.md` with active product set and priority           | brief, business, research, and evidence                            |
-| 20 Brand    | Communication Strategist and Brand Designer | proposed, then approved `brand.md`                                                   | approved strategy and evidence                                     |
-| 30 Design   | Brand Designer                              | `design.md`, `asset-index.yaml`                                                      | approved brand, confirmed existing assets and preferred references |
-| 40 Products | Strategist                                  | one `product.md` per catalog entry                                                   | approved shared decisions and exact Strategy-selected product set  |
-| 40 Products | Web Designer                                | product-local `website.md`                                                           | product, shared decisions, evidence, assets                        |
-| 40 Products | Brand Designer                              | product-local `marketing-creative.md`                                                | product, shared decisions, evidence, assets, selected channels     |
-| 40 Products | Communication Strategist and Brand Designer | product-local React/HTML presentation                                                | product and its approved review documents                          |
+| Stage       | Owner                                       | Template output                                                                   | Depends on                                                         |
+| ----------- | ------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 00 Business | Account Manager and coordinator             | `brief.md`, complete `portfolio.yaml`, `decision-profile.md`, evidence proposals  | founder request and existing materials                             |
+| 00 Business | Business Analyst                            | `business.md`, one `sales.yaml` per active product, decision-profile proposals    | scope-confirmed brief, portfolio, decision profile, evidence       |
+| 00 Business | Market Researcher                           | portfolio-level `research.md`, one direction `research.md` per portfolio row      | scope-confirmed brief, portfolio, material research questions      |
+| 10 Strategy | Strategist                                  | proposed, then approved `strategy.md` with separate audience and sales priorities | brief, portfolio, business, research, sales, and evidence          |
+| 20 Brand    | Communication Strategist and Brand Designer | proposed, then approved `brand.md`                                                | approved strategy and evidence                                     |
+| 30 Design   | Brand Designer                              | `design.md`, `asset-index.yaml`                                                   | approved brand, confirmed existing assets and preferred references |
+| 40 Products | Strategist                                  | one `product.md` per active product                                               | approved shared decisions and exact Strategy-selected product set  |
+| 40 Products | Web Designer                                | product-local `website.md`                                                        | product, shared decisions, evidence, assets                        |
+| 40 Products | Brand Designer                              | product-local `marketing-creative.md`                                             | product, shared decisions, evidence, assets, selected channels     |
+| 40 Products | Communication Strategist and Brand Designer | product-local React/HTML presentation                                             | product and its approved review documents                          |
+| 40 Products | Product owner for the applicable material   | optional product-local React `Content` surface                                    | product-owned sources in any appropriate format                    |
 
 The complete operating order, review rules, and invalidation behavior remain in
 `.agents/workflows/pre-development.md`. Templates describe shape only;
@@ -74,6 +75,10 @@ so these templates stay small and do not make an agent repeat a theatrical
 persona or a generic marketing process in every artifact.
 
 `brand.md` owns meaning, message, voice, and intended perception. `design.md`
-translates that approved meaning into the reusable visual system. Product-local
+translates that approved meaning into the reusable visual system. The Portfolio
+manifest is the complete inventory of products, audience-growth programs, and
+internal operations. Each direction has its own Research. Every active product
+also has its own machine-readable Sales process. Product-local `product.md`,
 `website.md`, `marketing-creative.md`, and the presentation apply those shared
-decisions to one offer. None may redefine the decisions owned by another.
+decisions to one active product. None may redefine decisions owned by another
+artifact.
