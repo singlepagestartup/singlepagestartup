@@ -16,6 +16,7 @@ import {
   combineProjectWorkspaces,
   projectArtifactWorkspaces,
 } from "../project-source";
+import { portfolioDocumentsForProduct } from "../portfolio/source";
 import singlepageStrategy from "../strategy/singlepage.md?raw";
 import startupStrategy from "../strategy/startup.md?raw";
 import type { IStudioArtifact, IStudioWorkspace } from "../types";
@@ -43,10 +44,30 @@ interface IPresentationModule {
   default?: ComponentType<{ data: IProjectPresentationData }>;
 }
 
+interface IProductSurfaceModule {
+  default?: ComponentType;
+}
+
 const presentationModules = import.meta.glob<IPresentationModule>(
   "./{singlepage,startup}/**/presentation/ProjectPresentation.tsx",
   { eager: true },
 );
+
+const websiteModules = import.meta.glob<IProductSurfaceModule>(
+  "./{singlepage,startup}/**/website/Website.tsx",
+  { eager: true },
+);
+
+const contentModules = {
+  ...import.meta.glob<IProductSurfaceModule>(
+    "./{singlepage,startup}/**/content/Content.tsx",
+    { eager: true },
+  ),
+  ...import.meta.glob<IProductSurfaceModule>(
+    "./{singlepage,startup}/**/video/Video.tsx",
+    { eager: true },
+  ),
+};
 
 const globalDefinitions = [
   projectArtifactWorkspaces({
@@ -100,12 +121,18 @@ const globalWorkspaces = {
 
 export interface IProductDocument {
   content: string;
-  kind: "product" | "website" | "creative";
-  label: "01 Product Overview" | "02 Website" | "03 Marketing Creative";
+  kind: "creative" | "product" | "research" | "sales" | "website";
+  label:
+    | "01 Research"
+    | "02 Sales"
+    | "03 Product Overview"
+    | "04 Website"
+    | "05 Marketing Creative";
   sourcePath: string;
 }
 
 export interface IProductView {
+  content?: IProductSurface;
   documents: IProductDocument[];
   id: string;
   name: string;
@@ -115,6 +142,12 @@ export interface IProductView {
     sourcePath: string;
   };
   summary: string;
+  websiteComponent?: IProductSurface;
+}
+
+interface IProductSurface {
+  Component: ComponentType;
+  sourcePath: string;
 }
 
 export interface IProductCatalogView {
@@ -178,6 +211,25 @@ function productWorkspace(
   };
 }
 
+function productSurface(
+  modules: Record<string, IProductSurfaceModule>,
+  layer: ProductCatalogLayer,
+  relativePath: string | undefined,
+  surface: string,
+): IProductSurface | undefined {
+  if (!relativePath) return undefined;
+  const Component = modules[moduleKey(layer, relativePath)]?.default;
+  if (!Component) {
+    throw new Error(
+      `Missing product ${surface}: products/${layer}/${relativePath}`,
+    );
+  }
+  return {
+    Component,
+    sourcePath: `apps/studio/workspace/products/${layer}/${relativePath}`,
+  };
+}
+
 function view(
   id: IProductCatalogView["id"],
   catalog: IProductCatalog,
@@ -187,6 +239,10 @@ function view(
   const projection: ProjectPresentationProjection = catalog.layer;
   const products = catalog.products.map((entry) => {
     const workspace = productWorkspace(base, entry, catalog.layer);
+    const portfolioDocuments = portfolioDocumentsForProduct(
+      catalog.layer,
+      entry.id,
+    );
     const presentationPath = moduleKey(catalog.layer, entry.presentation);
     const Component = presentationModules[presentationPath]?.default;
     if (!Component) {
@@ -195,23 +251,30 @@ function view(
       );
     }
     return {
+      content: productSurface(
+        contentModules,
+        catalog.layer,
+        entry.content,
+        "content",
+      ),
       documents: [
+        ...portfolioDocuments,
         {
           content: markdown(catalog.layer, entry.product),
           kind: "product" as const,
-          label: "01 Product Overview" as const,
+          label: "03 Product Overview" as const,
           sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.product}`,
         },
         {
           content: markdown(catalog.layer, entry.website),
           kind: "website" as const,
-          label: "02 Website" as const,
+          label: "04 Website" as const,
           sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.website}`,
         },
         {
           content: markdown(catalog.layer, entry.marketing_creative),
           kind: "creative" as const,
-          label: "03 Marketing Creative" as const,
+          label: "05 Marketing Creative" as const,
           sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.marketing_creative}`,
         },
       ],
@@ -223,6 +286,12 @@ function view(
         sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.presentation}`,
       },
       summary: entry.summary,
+      websiteComponent: productSurface(
+        websiteModules,
+        catalog.layer,
+        entry.website_component,
+        "website component",
+      ),
     };
   });
   return {

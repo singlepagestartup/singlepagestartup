@@ -74,6 +74,7 @@ const LAYERED_ENTRY_KINDS = [
   "brief",
   "evidence",
   "business",
+  "portfolio",
   "research",
   "strategy",
   "asset-index",
@@ -91,6 +92,7 @@ const STUDIO_WORKSPACE_ROOT = "apps/studio/workspace";
 const AGENT_RESOURCE_ROOT = ".agents";
 const WORKSPACE_MERGE_STRATEGIES = new Set<WorkspaceMergeStrategy>([
   "keyed",
+  "portfolio-catalog",
   "product-catalog",
   "replace",
   "scoped-keyed",
@@ -107,6 +109,7 @@ const EXPECTED_LAYERED_STRATEGIES: Record<string, WorkspaceMergeStrategy> = {
   "decision-profile": "replace",
   discovery: "replace",
   evidence: "scoped-keyed",
+  portfolio: "portfolio-catalog",
   products: "product-catalog",
   research: "sections",
   strategy: "sections",
@@ -195,7 +198,7 @@ function parseIndex(
         : undefined;
     if (entry.strategy != null && !strategy) {
       failures.push(
-        `${prefix}.strategy must be keyed, product-catalog, replace, scoped-keyed, or sections`,
+        `${prefix}.strategy must be keyed, portfolio-catalog, product-catalog, replace, scoped-keyed, or sections`,
       );
     }
     return {

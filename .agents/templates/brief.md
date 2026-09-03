@@ -22,16 +22,19 @@ stale answers instead of appending corrections. -->
 - Explicit out-of-scope topics
 - Current reality versus desired future state
 
-## Product and offer portfolio
+## Business direction inventory
 
-| Offer | State               | Role                                                     | Buyer or user | Commercial signal                  | Workflow scope                          | Operator status       |
-| ----- | ------------------- | -------------------------------------------------------- | ------------- | ---------------------------------- | --------------------------------------- | --------------------- |
-|       | current or intended | product, service, supporting showcase, or reference only |               | free, paid, calculated, or unknown | candidate, supporting only, or deferred | proposed or confirmed |
+| Direction | Role                                          | Lifecycle                   | Buyer or user | Commercial status                  | Operator status       |
+| --------- | --------------------------------------------- | --------------------------- | ------------- | ---------------------------------- | --------------------- |
+|           | product, audience-program, internal-operation | active, future, or deferred |               | free, paid, calculated, or unknown | proposed or confirmed |
 
-- Include every current or intended offer that could otherwise be mistaken for
-  the same product. Keep detailed value, delivery, proof, and channel decisions
-  out of Brief; their canonical home is Business, Strategy, and product-local
-  `product.md`.
+- Include every current or intended direction exactly once. `product` means a
+  separately sold offer; `audience-program` means activity whose current goal is
+  audience growth; `internal-operation` means work done for the company rather
+  than sold as an offer. `active` means operating or selling now, `future` means
+  intended but not operating now, and `deferred` means explicitly not being
+  worked on now. Keep detailed value, delivery, proof, and channel decisions in
+  Portfolio, Business, Strategy, and product-local files.
 
 ## Business and offer
 

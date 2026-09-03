@@ -36,7 +36,6 @@ export interface BlockManifestRecord {
 }
 
 export interface GeneratedModuleInventory {
-  generatedAt: string;
   modulesRoot: string;
   studioRoot: string;
   totals: {
@@ -314,7 +313,6 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
   const variants = entities.flatMap((entity) => entity.variants);
 
   return {
-    generatedAt: new Date().toISOString(),
     modulesRoot: toPosixPath(path.relative(ROOT, MODULES_ROOT)),
     studioRoot: toPosixPath(path.relative(ROOT, DESIGN_SYSTEM_ROOT)),
     totals: {
@@ -339,11 +337,26 @@ async function main(): Promise<void> {
     );
   }
 
-  await writeFile(OUTPUT_PATH, `${JSON.stringify(inventory, null, 2)}\n`);
+  const serializedInventory = `${JSON.stringify(inventory, null, 2)}\n`;
+  let currentInventory: string | null = null;
+
+  try {
+    currentInventory = await readFile(OUTPUT_PATH, "utf8");
+  } catch {
+    // A missing inventory is created below.
+  }
+
+  const changed = currentInventory !== serializedInventory;
+
+  if (changed) {
+    await writeFile(OUTPUT_PATH, serializedInventory);
+  }
 
   console.log(
     [
-      `Generated ${toPosixPath(path.relative(ROOT, OUTPUT_PATH))}`,
+      `${changed ? "Generated" : "Unchanged"} ${toPosixPath(
+        path.relative(ROOT, OUTPUT_PATH),
+      )}`,
       `modules=${inventory.totals.modules}`,
       `entities=${inventory.totals.entities}`,
       `variants=${inventory.totals.variants}`,

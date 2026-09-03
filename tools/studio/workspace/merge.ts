@@ -7,6 +7,7 @@ export interface IMergedWorkspaceContent {
 
 export type WorkspaceMergeStrategy =
   | "keyed"
+  | "portfolio-catalog"
   | "product-catalog"
   | "replace"
   | "scoped-keyed"
@@ -210,6 +211,21 @@ function productCount(source: string): number {
   return Array.isArray(value?.products) ? value.products.length : 0;
 }
 
+function directionCount(source: string): number {
+  if (!source.trim()) return 0;
+  const value = parse(source) as { directions?: unknown } | null;
+  return Array.isArray(value?.directions) ? value.directions.length : 0;
+}
+
+export function replacePortfolioCatalog(
+  base: string,
+  overlay: string,
+): IMergedWorkspaceContent {
+  return directionCount(overlay) > 0
+    ? { content: overlay, overlayContributes: true }
+    : { content: base, overlayContributes: false };
+}
+
 export function replaceProductCatalog(
   base: string,
   overlay: string,
@@ -238,6 +254,9 @@ export function mergeWorkspaceContent({
       : { content: base, overlayContributes: false };
   }
   if (strategy === "keyed") return mergeYaml(base, overlay);
+  if (strategy === "portfolio-catalog") {
+    return replacePortfolioCatalog(base, overlay);
+  }
   if (strategy === "product-catalog") {
     return replaceProductCatalog(base, overlay);
   }

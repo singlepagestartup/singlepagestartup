@@ -2,6 +2,8 @@ schema: singlepagestartup.product-catalog.v1
 products: []
 # Add complete products only. Every product belongs to exactly one layer and
 # keeps Product, Website, Marketing Creative, and Presentation sources together.
+# A product may additionally expose one flexible React Content surface whose
+# internal files and data model are owned entirely by that product.
 # If startup contains at least one product, the complete startup catalog
 # replaces the complete singlepage catalog in default; products never merge by
 # ID across layers.
@@ -14,3 +16,6 @@ products: []
 #     website: replace-with-id/website.md
 #     marketing_creative: replace-with-id/marketing-creative.md
 #     presentation: replace-with-id/presentation/ProjectPresentation.tsx
+#     # Optional product-local rendered review surfaces:
+#     # website_component: replace-with-id/website/Website.tsx
+#     # content: replace-with-id/content/Content.tsx

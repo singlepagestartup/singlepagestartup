@@ -17,7 +17,7 @@
 
 The model is intentionally compound: the free Code Framework seeks developer adoption, while the service is a bounded showcase and possible standalone service economy. Their ledgers and claims remain separate. SP-EV-075; SP-EV-045.
 
-## Operating process
+## Shared operating process
 
 | State    | Step                | Actor/owner  | Input and action                                                                                            | Output/complete when                                                                      | Failure and fallback                                                                               |
 | -------- | ------------------- | ------------ | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -31,7 +31,7 @@ The model is intentionally compound: the free Code Framework seeks developer ado
 | intended | 8. Request help     | User/founder | User reports through messenger; a CRM case is created or linked for founder visibility                      | Case is visible and may receive best-effort help                                          | Missing link, privacy, or capacity → preserve report, pause action, make no timing promise         |
 | intended | 9. Review evidence  | Founder      | Compare service activity, framework evaluation, successful use, adoption, cost, and founder time separately | Continue, repair, narrow, pivot, or stop decision                                         | Missing attribution or showcase outage → result is inconclusive, not positive or negative proof    |
 
-## Lead, payment, and delivery rules
+## Shared routing and control rules
 
 - Framework evaluation has no checkout or payment. GitHub is the delivery destination; a pinned version, current license, prerequisites, setup check, limitations, and capability check must agree.
 - Demonstration-service promotional use is capped at USD 1 actual provider cost per user per day and USD 200 aggregate. No recipient-count or per-recipient-day quota is preselected. Unused subsidy may continue after the three-week measurement window, but the cash and founder-time ceilings do not increase.

@@ -55,8 +55,9 @@ question, source check, professional review, or artifact correction to make the
 workflow shorter.
 
 The operator must be able to review and edit every primary document without
-reconstructing the agent session. `brief`, `business`, `research`, `strategy`,
-`brand`, `design`, and each product-local `product`, `website`, and `creative`
+reconstructing the agent session. `brief`, `business`, global and direction
+`research`, `strategy`, `brand`, `design`, and each product-local `product`,
+`website`, and `creative`
 document contain at most 1,400 words,
 including tables, so a normal review takes about five to seven minutes. This is
 a human-usability rule, not a token-saving rule. Evidence and assets are indexed
@@ -75,8 +76,9 @@ Classify every material unknown by who can resolve it:
 
 - `operator-fact`: current facts or constraints controlled or known by the
   operator, including the project boundary, existing customers or users,
-  the complete set of current or intended offers and which are product
-  candidates, supporting only, or deferred,
+  the complete set of current or intended directions and each direction's
+  objective role (`product`, `audience-program`, or `internal-operation`) and
+  lifecycle (`active`, `future`, or `deferred`),
   budget, available time and contacts, rights and license intent, support
   capacity, geography, decision authority, owned assets, preferred references,
   and non-goals;
@@ -281,9 +283,10 @@ Build and maintain the profile as follows:
    or an `assumption` written as an answer never passes the gate.
 
 Every project profile must contain three stable approval rows: scope confirmation
-at `00-business`, including the complete offer inventory and its workflow
-classifications; strategy approval at `10-strategy`, including the exact active
-product set and first priority; and brand approval at `20-brand`. During reconciliation, add a missing row and move the cursor back
+at `00-business`, including the complete Portfolio with objective roles and
+lifecycles; strategy approval at `10-strategy`, including separate
+audience-growth and sales-product priorities, the experiment track, and the exact
+active product set; and brand approval at `20-brand`. During reconciliation, add a missing row and move the cursor back
 to its stage. A prior cursor position or completed-looking artifact never implies
 approval.
 
@@ -298,13 +301,13 @@ profile, and invalidate every dependent artifact whose assumptions changed.
 **State**: `active_stage: 00-business`. Begin with
 `active_artifacts: [brief]`. After the brief is usable, use
 `active_artifacts: [decision-profile]`. Only after the initial profile passes its
-classification gate may the cursor name `business` and `research` together;
+classification gate may the cursor name `portfolio`, `business`, and `research` together;
 evidence and profile updates use serialized proposals.
 
 **Owners**: Account Manager, Business Analyst, Market Researcher.
 
 **Required inputs**: founder request, available attachments, active index,
-existing brief/evidence, the resolved decision profile when present, and
+existing brief/Portfolio/evidence, the resolved decision profile when present, and
 attributable market sources when research is available.
 
 **Capabilities**: artifact read/write, image inspection, browser interaction,
@@ -315,10 +318,9 @@ Analyst or Market Researcher starts, the brief must separate and name:
 
 - the primary decision subject being developed;
 - its current business or project goal;
-- every current or intended offer that may otherwise be confused with the
-  primary product, including its current/intended state, role, buyer or user,
-  commercial signal, and whether it is a product candidate, supporting only, or
-  deferred;
+- every current or intended business direction, including buyer or user,
+  commercial signal, one objective role (`product`, `audience-program`, or
+  `internal-operation`), and one lifecycle (`active`, `future`, or `deferred`);
 - any supporting reference or demonstration project;
 - historical context that is evidence but not the active model;
 - explicit out-of-scope topics;
@@ -334,33 +336,39 @@ Strategy, and Brand proceed; it becomes a blocking prerequisite only before
 Design generation. The files themselves remain in Assets, not in Brief.
 
 Return a compact scope summary in the operator's language and ask them to
-confirm or correct it, including the offer inventory and each offer's workflow
-scope. This confirmation is part of `00-business`, needs no special command,
+confirm or correct it, including the complete direction inventory, role, and
+lifecycle. This confirmation is part of `00-business`, needs no special command,
 and remains a blocker until received. Do not merge the
 framework, a reference implementation, a customer project, and a historical
 service model merely because they are related.
 
-After scope confirmation, update the active
+After scope confirmation, write the active layer's complete atomic Portfolio
+manifest. Give every direction one Research path. Give every active `product`
+one Sales path; no other role or lifecycle may have Sales. Then update the active
 layer's decision-profile source from the resolved brief and inherited profile,
 then let Business Analyst and Market Researcher propose corrections to it. They
 may work in parallel after the initial profile exists because they own different
 final files; the coordinator applies profile and evidence proposals serially.
-Complete the indexed `business` and `research` sources before strategic
-selection.
+Complete the indexed portfolio-level `business` and `research` sources, every
+direction Research, and every active-product Sales process before strategic
+selection. Global Business contains only shared business mechanics and
+cross-direction routing. Global Research contains only cross-direction
+comparison and shared market conditions. Product-specific workflows,
+competitors, alternatives, prices, and channels stay in that product's files.
 
 Evidence follows `.agents/contracts/evidence.md`. In an active startup,
 inherited rows scoped to `singlepage` remain provenance only and cannot support
 a startup claim. Use active `startup` or `shared` rows, or add an explicit
 startup row that adopts, supersedes, or marks an inherited row not applicable.
 
-Completion requires confirmed decision scope, a complete and bounded offer
-inventory with no ambiguous product/supporting/reference boundary, explicit
-operator facts and unknowns, a complete
-customer/service operating process, source-aware market/customer findings, and
+Completion requires confirmed decision scope, a complete Portfolio with no
+ambiguous role or lifecycle, explicit operator facts and unknowns, one complete
+sales process per active product, one bounded Research per direction,
+source-aware portfolio comparisons, and
 every `00-business` factual profile row answered, every scope approval row
 approved, and every other row explicitly not applicable or kept as a blocker.
-The canonical outputs are the active layer's colocated `brief`,
-`evidence`, `business`, and `research` files plus its project-specific decision
+The canonical outputs are the active layer's colocated `brief`, `portfolio`,
+`evidence`, `business`, global and direction `research`, product `sales`, plus its project-specific decision
 profile; project claims, external observations, and inferences remain distinct.
 
 When complete, persist `10-strategy`, `in_progress`, and `[strategy]` before
@@ -372,20 +380,22 @@ handoff.
 
 **Owner**: Strategist.
 
-**Required inputs**: completed Understand outputs, the resolved decision
-profile, the resolved acquisition knowledge for the active project, and only
-the shared professional references relevant to the decision.
+**Required inputs**: completed Business outputs including Portfolio, direction
+Research, and active-product Sales processes; the resolved decision profile,
+the resolved acquisition knowledge for the active project, and only the shared
+professional references relevant to the decision.
 
 **Capabilities**: artifact read/write, web research when a current assumption
 needs checking, and document export only when explicitly requested.
 
-Use the resolved `brief`, `business`, and `research` artifacts to update the
-active layer's `strategy` source with one business-level commercial direction,
-an exact active product set selected only from the operator-confirmed Brief
-portfolio, one primary product and audience for the first experiment,
-commercial logic, acquisition focus, evidence limits, and one bounded first
-experiment with decision rules. Explicitly keep supporting-only and deferred
-offers out of the active product set.
+Use the resolved Brief, Portfolio, Business, global and direction Research, and
+active-product Sales processes to update the active layer's Strategy. Name one
+audience-growth priority and one sales-product priority; these priorities order
+work and do not disable other active directions. Select the exact active product
+set only from Portfolio rows whose role is `product` and lifecycle is `active`.
+Choose `audience-growth` or `sales` as the first experiment track and define one
+bounded experiment with decision rules. Never treat an `audience-program` or
+`internal-operation` as a sellable product.
 
 `strategy.md` is a replacement projection, not an interview log. During fact
 collection, update the owning brief, evidence, business, research, and decision
@@ -396,8 +406,8 @@ the input batch is stable. On first generation or any full strategy rerun:
 2. Start from `.agents/templates/strategy.md` and replace the complete active
    strategy source from the approved upstream dependency closure.
 3. Use exactly the four template sections. Each decision has one canonical
-   home: approval state in Decision status, selection and trade-offs, including
-   the exact active product set and its priority, in Commercial choice,
+   home: approval state in Decision status; the audience-growth priority,
+   sales-product priority, exact active product set, and trade-offs in Commercial choice;
    execution and thresholds in First experiment, and only
    unresolved material boundaries in Risks and missing evidence.
    Experiment rows may refer to the selected audience, offer, and route by a
@@ -420,15 +430,15 @@ decision authority that the operator has not supplied, keep the stage blocked
 and ask for the highest-impact fact.
 
 Completion requires an exact active product set traceable to the confirmed
-Brief portfolio, one primary product with one selected audience and buying
-situation for the first experiment, explicit deferred or supporting-only
-offers, rejected options, operational and economic fit, a budget/time limit,
+Portfolio, one audience-growth priority, one sales-product priority, one selected
+experiment track and direction, explicit future/deferred directions and
+first-experiment exclusions, rejected options, operational and economic fit, a budget/time limit,
 useful signal, positive, negative, and stop rules. Every factual `10-strategy` profile
 row must be answered or explicitly not applicable, and the strategy approval
 row must be approved before the stage completes. The completed strategy is
 first a `proposed` professional direction. The strategy source itself must pass
 the operator-readable compactness and ownership review. Return a compact summary of the audience,
-offer, positioning, acquisition focus, experiment, material assumptions, and
+both priorities, active product set, positioning, acquisition focus, experiment, material assumptions, and
 rejected options in the operator's language. Keep `10-strategy` blocked on the
 strategy approval section until the operator confirms or corrects it. On
 confirmation, mark the approval row `approved` and only then persist
@@ -727,16 +737,17 @@ handoff.
 `website.md`; Brand Designer for each `marketing-creative.md`; Communication
 Strategist and Brand Designer for each presentation.
 
-**Required inputs**: the operator-confirmed Brief offer inventory, completed
-Business, approved Strategy containing the exact active product set and
-priority, approved Brand, approved Design, evidence, and the resolved asset
-registry.
+**Required inputs**: the operator-confirmed Portfolio, each active product's
+Research and Sales process, completed Business, approved Strategy containing the
+exact active product set and separate priorities, approved Brand, approved
+Design, evidence, and the resolved asset registry.
 
 **Capabilities**: artifact read/write, image inspection/generation and Figma
 when available, plus static Studio composition; no production data capability.
 
 Products are a catalog, not four global documents. Its layer index lives at
-`products/<layer>.yaml`. Every entry names exactly one self-contained folder:
+`products/<layer>.yaml`. Studio joins each entry to the matching Portfolio
+Research and Sales files, then to one self-contained output folder:
 
 ```text
 products/<layer>/<product-id>/
@@ -744,11 +755,12 @@ products/<layer>/<product-id>/
   website.md
   marketing-creative.md
   presentation/ProjectPresentation.tsx
+  content/Content.tsx # optional flexible product-local review surface
 ```
 
 Create catalog entries only for the Strategy's exact active product set. Every
-entry must trace to one operator-confirmed Brief offer and its normalized
-Business mechanics. Do not infer a product from a showcase, reference project,
+entry must match exactly one Portfolio row with role `product`, lifecycle
+`active`, Research, and Sales, plus its normalized Business mechanics. Do not infer a product from a showcase, reference project,
 web page, repository folder, possible future monetization, or an agent's idea.
 If the active set is absent or ambiguous, return to the earliest affected Brief,
 Business, or Strategy decision before creating product files. If product work
@@ -796,22 +808,39 @@ The presentation is semantic React/HTML derived from the same product and
 shared sources. It is not a second business document. PDF and PNG exports are
 derivatives only.
 
-Product-catalog inheritance is atomic. If `products/startup.yaml` has no
+`Content` is an optional product-local React surface declared by the catalog.
+It has one `content/Content.tsx` entry point, but the files and data model behind
+that component belong to the product: they may be transcripts, lesson data,
+images, covers, documents, interactive previews, or another content system.
+The framework does not require a Content Markdown document, prescribe content
+types, or show an empty tab when the product has no Content surface. When it is
+declared, agents updating Product, Website, Marketing Creative, or Presentation
+inspect the relevant product-owned Content sources because those sources may
+provide more precise language and proof boundaries; Content never silently
+overrides an approved upstream decision.
+
+Portfolio and product-catalog inheritance are independently atomic. If
+`portfolio/startup.yaml` has no directions, the Portfolio inherits singlepage;
+as soon as it has one direction, startup owns the whole Portfolio and every
+referenced direction file. If `products/startup.yaml` has no
 products, `default` is the complete singlepage catalog. As soon as startup
 defines at least one product, `default` contains only startup products. Never
 merge product entries across layers: products from different businesses must
 not leak into one catalog. Each startup product owns all four referenced files;
 there is no partial per-product fallback to a singlepage folder.
 
-Work through one selected product at a time. Product, Website, Marketing
-Creative, and Presentation may be reviewed separately, but the product is not
-complete until all applicable outputs are coherent with one another. Record an
+Work through one selected product at a time. Studio shows Research, Sales,
+Product, Website, Marketing Creative, and Presentation as that product's core
+tabs, plus Content only when the product declares that flexible surface.
+Outputs may be reviewed separately, but the product is not complete until all
+applicable files are coherent with one another. Record an
 explicit not-applicable decision instead of creating a placeholder. Stop before
 production components, APIs, analytics implementation, QA, publication, or
 deployment.
 
-Completion requires the catalog to match the approved Strategy active product
-set exactly, with neither omitted nor extra entries, and every catalog entry to
+Completion requires the catalog to match both the approved Strategy active
+product set and Portfolio's active `product` rows exactly, with neither omitted
+nor extra entries, and every catalog entry to
 have a bounded and reviewable
 `product.md`, concrete website design when in scope, complete selected-channel
 creative when in scope, a reviewable presentation when in scope, accessibility
@@ -820,8 +849,8 @@ explicitly not applicable.
 
 Studio remains a read-only review surface over the same sources. Shared
 artifacts keep empty `startup` as pass-through and resolve
-`singlepage → startup → default` in memory. Products use the atomic catalog rule
-above. React stories may render the result, but Markdown/YAML and the
+`singlepage → startup → default` in memory. Portfolio and Products use their
+independent atomic catalog rules above. React stories may render the result, but Markdown/YAML and the
 product-local presentation source remain what agents edit and operators review.
 
 When complete, keep `40-products`, set `status: complete`, and persist empty

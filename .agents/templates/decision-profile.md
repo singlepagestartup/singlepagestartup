@@ -56,6 +56,7 @@ contain the project-specific decision, and consequential claims must link to
 evidence or an explicit non-evidence classification. Every project profile must
 include a `00-business` scope-confirmation row, a `10-strategy`
 strategy-approval row, and a `20-brand` brand-approval row. Scope confirmation
-includes the complete current/intended offer inventory and its workflow
-classifications. Strategy approval includes the exact active product set and
-first priority selected from that inventory.
+includes the complete current/intended Portfolio with objective roles and
+lifecycles. Strategy approval includes separate audience-growth and
+sales-product priorities, the experiment track, and the exact active product
+set selected from that Portfolio.

@@ -62,4 +62,39 @@ describe("product catalog", () => {
       "client-product",
     ]);
   });
+
+  /**
+   * BDD Scenario: Add optional product-local review surfaces
+   * Given a startup product has a rendered website and flexible content
+   * When its catalog is parsed
+   * Then both safe component paths remain attached to that product
+   */
+  test("keeps optional website and content surfaces product-local", () => {
+    const source = catalog(["course"]).replace(
+      "presentation: course/presentation/ProjectPresentation.tsx",
+      "presentation: course/presentation/ProjectPresentation.tsx, website_component: course/website/Website.tsx, content: course/content/Content.tsx",
+    );
+    const parsed = parseProductCatalog(source, "startup");
+
+    expect(parsed.products[0].website_component).toBe(
+      "course/website/Website.tsx",
+    );
+    expect(parsed.products[0].content).toBe("course/content/Content.tsx");
+  });
+
+  /**
+   * BDD Scenario: Read a catalog created before the Content migration
+   * Given a product still declares its optional surface as video
+   * When the v1 catalog is parsed
+   * Then the path is exposed through the generic content contract
+   */
+  test("maps the legacy video surface to content", () => {
+    const source = catalog(["course"]).replace(
+      "presentation: course/presentation/ProjectPresentation.tsx",
+      "presentation: course/presentation/ProjectPresentation.tsx, video: course/video/Video.tsx",
+    );
+    const parsed = parseProductCatalog(source, "startup");
+
+    expect(parsed.products[0].content).toBe("course/video/Video.tsx");
+  });
 });

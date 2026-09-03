@@ -12,7 +12,7 @@ const workspaces = projectArtifactWorkspaces({
 });
 
 const meta = {
-  title: "Workspace/00 Business/03 Research",
+  title: "Workspace/00 Business/04 Research",
   component: ArtifactDocument,
   parameters: { controls: { disable: true }, layout: "fullscreen" },
   args: { workspace: workspaces.default, kind: "research" },

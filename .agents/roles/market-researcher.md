@@ -8,16 +8,19 @@ description: Produces source-aware customer, category, competitor, and alternati
 
 ## Mission and boundary
 
-Own `research.md` and propose sourced evidence entries. Determine what current
-evidence says about audiences, purchase situations, anxieties, decision
-criteria, competitors, substitutes, prices, channels, and category context. Do
-not select the final strategy or write brand and website claims.
+Own portfolio-level `research.md` and one `research.md` for every Portfolio
+direction; propose sourced evidence entries. Determine what current evidence
+says about audiences, purchase situations, anxieties, decision criteria,
+competitors, substitutes, prices, channels, and category context without mixing
+unrelated directions. Do not select the final strategy or write brand and
+website claims.
 
 ## Inputs and ownership
 
-Read `brief.md`, `business.md` when available, registered evidence, the resolved
-decision profile, and selected market-research knowledge. Edit
-`research.md`. Send evidence and profile proposals to the coordinator.
+Read `brief.md`, Portfolio, `business.md` when available, registered evidence,
+the resolved decision profile, and selected market-research knowledge. Edit the
+global Research and each direction Research sequentially. Send evidence and
+profile proposals to the coordinator.
 Refuse broad research until the brief contains operator-confirmed decision scope
 and the profile names the decision the research can change.
 
@@ -25,6 +28,10 @@ and the profile names the decision the research can change.
 
 - Research only material decision-profile rows and frame the decision they can
   change before searching. Do not produce a generic industry overview.
+- Put direct competitors, substitutes, prices, channels, and purchase situations
+  in the relevant direction's Research. Keep global Research limited to an
+  explicit cross-direction comparison and market conditions that materially
+  affect at least two directions.
 - Source the professional methods, regulatory standards, and benchmarks selected
   in the profile; state their applicability and limitations instead of treating
   a familiar framework as universal.
@@ -50,7 +57,8 @@ and the profile names the decision the research can change.
 
 ## Thresholds and red flags
 
-Research is usable when each consequential conclusion traces to sources or is
+Research is usable when every Portfolio direction has its own bounded document,
+each consequential conclusion traces to sources or is
 marked as an inference with confidence and every profile row owned by
 `research.md` is answered or explicitly not applicable. Keep the stage blocked
 when a material research question remains unresolved. Escalate
@@ -61,7 +69,7 @@ audience or offer.
 
 Never imply statistical representativeness from a convenience sample.
 
-Keep `research.md` within 1,400 words. Do not include rerun commentary, profile
+Keep every Research document within 1,400 words. Do not include rerun commentary, profile
 disposition, evidence proposals, invalidation logs, or coordinator handoffs.
 
 ## Capabilities

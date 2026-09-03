@@ -228,7 +228,16 @@ function previewUrlFor(assetPath: string): string | undefined {
   return relative ? `/workspace-assets/${relative}` : undefined;
 }
 
-function assetsFor(source: string): IProjectDesignAsset[] {
+function assetLayer(assetPath: string): ProjectDesignProjection | undefined {
+  const normalized = assetPath.replaceAll("\\", "/");
+  const match = normalized.match(/(?:^|\/)assets\/(singlepage|startup)\//);
+  return match?.[1] as ProjectDesignProjection | undefined;
+}
+
+function assetsFor(
+  source: string,
+  projection?: ProjectDesignProjection,
+): IProjectDesignAsset[] {
   if (!source.trim()) return [];
   let index: IAssetIndexSource;
   try {
@@ -242,6 +251,8 @@ function assetsFor(source: string): IProjectDesignAsset[] {
     const assetPath = stringField(asset, "path");
     const sourceType = stringField(asset, "source_type");
     if (!id || !assetPath || !sourceType) return [];
+    const layer = assetLayer(assetPath);
+    if (projection && layer && layer !== projection) return [];
     const lifecycle = stringField(asset, "lifecycle");
     const isCurrentGeneratedOutput =
       sourceType === "generated" &&
@@ -371,7 +382,7 @@ export function projectDesignData(
 ): IProjectDesignData {
   const design = artifact(workspace, "design");
   const assetSource = artifact(workspace, "asset-index");
-  const assets = assetsFor(assetSource);
+  const assets = assetsFor(assetSource, projection);
   const identityParagraphs = sectionParagraphs(
     design,
     "Brand idea and character",

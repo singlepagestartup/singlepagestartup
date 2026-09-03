@@ -140,37 +140,6 @@ function Shell({
   );
 }
 
-function PreferenceProfile({ data }: { data: IProjectDesignData }) {
-  if (!data.preferenceProfile) return null;
-
-  return (
-    <section
-      className="mx-auto max-w-7xl scroll-mt-6 border-t px-5 py-12 md:px-10 md:py-16"
-      id="preference-profile"
-      style={{ borderColor: paletteValue(data, "line") }}
-    >
-      <PageTitle
-        copy="The current interpretation of the client's categorized visual references and its unresolved choices."
-        data={data}
-        eyebrow="Design input analysis"
-      >
-        Client visual preference profile
-      </PageTitle>
-      <article
-        className="mt-10 rounded-3xl p-7 md:p-10"
-        style={{
-          backgroundColor: paletteValue(data, "primary"),
-          color: paletteValue(data, "surface"),
-        }}
-      >
-        <p className="max-w-5xl text-sm leading-7 opacity-85">
-          {data.preferenceProfile}
-        </p>
-      </article>
-    </section>
-  );
-}
-
 function Eyebrow({
   children,
   data,
@@ -313,36 +282,47 @@ function Logos({ data }: { data: IProjectDesignData }) {
         Logos
       </PageTitle>
       <div className="mt-10 grid gap-4 md:grid-cols-2">
-        {logos.map((asset) => (
-          <figure
-            className={`grid min-h-72 overflow-hidden rounded-3xl border ${
-              asset.designKey === "primary" ? "md:col-span-2" : ""
-            }`}
-            key={asset.id}
-            style={{
-              backgroundColor: paletteValue(data, "surface"),
-              borderColor: paletteValue(data, "line"),
-            }}
-          >
-            <div className="grid min-h-52 place-items-center p-8 md:p-12">
-              <img
-                alt={asset.purpose}
-                className={
-                  asset.designKey === "primary"
-                    ? "h-28 w-full object-contain"
-                    : "h-40 w-40 object-contain"
-                }
-                src={asset.previewUrl}
-              />
-            </div>
-            <figcaption
-              className="border-t p-5 text-xs leading-5"
-              style={{ borderColor: paletteValue(data, "line") }}
+        {logos.map((asset) => {
+          const darkSurface = asset.designKey?.includes("-dark") ?? false;
+
+          return (
+            <figure
+              className={`grid min-h-72 overflow-hidden rounded-3xl border ${
+                asset.designKey === "primary" ? "md:col-span-2" : ""
+              }`}
+              key={asset.id}
+              style={{
+                backgroundColor: paletteValue(data, "surface"),
+                borderColor: paletteValue(data, "line"),
+              }}
             >
-              {asset.purpose}
-            </figcaption>
-          </figure>
-        ))}
+              <div
+                className="grid min-h-52 place-items-center p-8 md:p-12"
+                style={
+                  darkSurface
+                    ? { backgroundColor: paletteValue(data, "primary") }
+                    : undefined
+                }
+              >
+                <img
+                  alt={asset.purpose}
+                  className={
+                    asset.designKey === "primary"
+                      ? "h-28 w-full object-contain"
+                      : "h-32 w-full max-w-lg object-contain"
+                  }
+                  src={asset.previewUrl}
+                />
+              </div>
+              <figcaption
+                className="border-t p-5 text-xs leading-5"
+                style={{ borderColor: paletteValue(data, "line") }}
+              >
+                {asset.purpose}
+              </figcaption>
+            </figure>
+          );
+        })}
       </div>
     </section>
   );
@@ -668,7 +648,6 @@ export default function ProjectDesign({ data }: IProjectDesignProps) {
   return (
     <Shell data={data}>
       <Overview data={data} />
-      <PreferenceProfile data={data} />
       <Logos data={data} />
       <Colors data={data} />
       <Typography data={data} />

@@ -30,6 +30,8 @@ Use the current workflow and active index to inspect:
 - the recorded active artifacts and their prerequisite closure;
 - every later non-empty living artifact, so an existing downstream document is
   not left on an obsolete shape merely because the cursor moved backward;
+- every direction in the active resolved Portfolio and all Research and Sales
+  files referenced by it;
 - every product entry already present in the active resolved catalog and all
   files referenced by that entry.
 
@@ -41,22 +43,26 @@ existing Workspace.
 For Markdown artifacts, the current artifact template's second-level headings
 are required structural sections unless the workflow explicitly says otherwise.
 For YAML artifacts, require the schema and keys used by the current template and
-workflow. For Products, require the atomic catalog shape and every referenced
+workflow. For Portfolio, require the atomic catalog shape, one Research file per
+direction, one Sales file per active product, and no Sales file on another role
+or lifecycle. For Products, require the atomic catalog shape and every referenced
 `product.md`, `website.md`, `marketing-creative.md`, and
-`presentation/ProjectPresentation.tsx`. Also compare the artifact's decisions
+`presentation/ProjectPresentation.tsx`. When a catalog entry declares optional
+`content`, require its referenced React entry point but do not require any
+particular supporting file extension or content schema. Also compare the artifact's decisions
 with the current stage completion rules and the decision-profile rows assigned
 to its owner. A changed requirement inside an existing heading is therefore
 still discoverable.
 
 The stage ownership map is:
 
-| Stage         | Existing artifacts to reconcile                       |
-| ------------- | ----------------------------------------------------- |
-| `00-business` | Brief, Business, Research, Evidence, Decision Profile |
-| `10-strategy` | Strategy                                              |
-| `20-brand`    | Brand                                                 |
-| `30-design`   | Design, Assets                                        |
-| `40-products` | Product catalog and every product-local output        |
+| Stage         | Existing artifacts to reconcile                                                                      |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| `00-business` | Brief, Portfolio, Business, global and direction Research, product Sales, Evidence, Decision Profile |
+| `10-strategy` | Strategy                                                                                             |
+| `20-brand`    | Brand                                                                                                |
+| `30-design`   | Design, Assets                                                                                       |
+| `40-products` | Product catalog and every product-local output                                                       |
 
 ## Layer and inheritance rules
 
@@ -81,6 +87,9 @@ sources.
 - Product catalogs retain atomic inheritance. Once startup owns any product,
   reconcile only the complete startup catalog; never repair it with a
   singlepage product fallback.
+- Portfolio catalogs follow the same atomic rule. Once startup owns any
+  direction, reconcile only the complete startup Portfolio and its referenced
+  files; never repair it with a singlepage direction fallback.
 
 ## Gap classification and repair
 

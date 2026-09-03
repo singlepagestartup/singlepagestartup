@@ -52,4 +52,20 @@ rules:
       - singlepage.brand
       - singlepage.products
     earliest_stage: 00-business
-reconciliations: []
+reconciliations:
+  - commit: 29fa75fec77941d97ad353f4f7cfc552966d6e6e
+    outcome: no-material-effect
+    summary: MCP JSON date coercion changes mutation input handling but no current business claim, offer boundary, experiment, or published product promise.
+    affected_artifacts: []
+  - commit: 961fe1bc37c3305c4bafcc4c671359d4b0afe548
+    outcome: no-material-effect
+    summary: The merge publishes the same MCP date-coercion change and introduces no additional current business or product decision.
+    affected_artifacts: []
+  - commit: ce874f3143d3bed3fb2e3abc884a11a92db84f52
+    outcome: no-material-effect
+    summary: The branch merge carries the same MCP date-coercion change without changing the current business, evidence boundary, or experiment.
+    affected_artifacts: []
+  - commit: 0f01a155342265c4b45915a8e8f2efc288d08a44
+    outcome: no-material-effect
+    summary: The published Studio and pre-development system matches the current checked-out living artifacts and adds no unreconciled claim beyond their recorded decisions and limitations.
+    affected_artifacts: []

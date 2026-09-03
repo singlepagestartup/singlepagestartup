@@ -31,12 +31,25 @@ entries:
         [singlepage.brief, singlepage.evidence, singlepage.decision-profile],
     }
   - {
+      id: singlepage.portfolio,
+      kind: portfolio,
+      path: portfolio/singlepage.yaml,
+      description: "Complete direction inventory with one research document per direction and one sales process per active product.",
+      uses:
+        [singlepage.brief, singlepage.evidence, singlepage.decision-profile],
+    }
+  - {
       id: singlepage.research,
       kind: research,
       path: research/singlepage.md,
       description: "Audiences, market, competitors, alternatives, sources, and inferences.",
       uses:
-        [singlepage.brief, singlepage.evidence, singlepage.decision-profile],
+        [
+          singlepage.brief,
+          singlepage.evidence,
+          singlepage.decision-profile,
+          singlepage.portfolio,
+        ],
     }
   - {
       id: singlepage.strategy,
@@ -46,6 +59,7 @@ entries:
       uses:
         [
           singlepage.business,
+          singlepage.portfolio,
           singlepage.research,
           singlepage.evidence,
           singlepage.acquisition,
@@ -87,6 +101,7 @@ entries:
       uses:
         [
           singlepage.business,
+          singlepage.portfolio,
           singlepage.strategy,
           singlepage.brand,
           singlepage.design,
@@ -162,6 +177,27 @@ entries:
       uses: [],
     }
   - {
+      id: template.portfolio,
+      kind: template,
+      path: .agents/templates/portfolio.yaml,
+      description: Complete direction-inventory structure.,
+      uses: [],
+    }
+  - {
+      id: template.direction-research,
+      kind: template,
+      path: .agents/templates/direction-research.md,
+      description: Research structure for one portfolio direction.,
+      uses: [],
+    }
+  - {
+      id: template.sales-process,
+      kind: template,
+      path: .agents/templates/sales-process.yaml,
+      description: Machine-readable sales-process structure for one active product.,
+      uses: [],
+    }
+  - {
       id: template.research,
       kind: template,
       path: .agents/templates/research.md,
@@ -230,6 +266,9 @@ exports:
   - template.evidence
   - template.decision-profile
   - template.business
+  - template.portfolio
+  - template.direction-research
+  - template.sales-process
   - template.research
   - template.strategy
   - template.asset-index

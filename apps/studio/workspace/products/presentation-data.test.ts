@@ -140,4 +140,19 @@ describe("project presentation data", () => {
       }),
     ).toEqual(projectPresentationData(singlepage, "singlepage"));
   });
+
+  /**
+   * BDD Scenario: Render a project while upstream decisions are incomplete
+   * Given startup contains living artifacts with partial tables during a blocked stage
+   * When presentation data is derived for the Products review
+   * Then missing optional cells become empty values instead of crashing Storybook
+   */
+  test("tolerates partial startup decision tables", () => {
+    const data = projectPresentationData(workspace("startup"), "startup");
+
+    expect(data.projection).toBe("startup");
+    expect(
+      data.risks.every((risk) => typeof risk.consequence === "string"),
+    ).toBe(true);
+  });
 });

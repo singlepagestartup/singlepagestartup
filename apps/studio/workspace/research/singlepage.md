@@ -11,13 +11,13 @@ Research is limited to decisions that can change the first audience, evaluation 
 
 Sources are current official documentation, primary license texts, and the repository snapshot. Vendor sources establish documented mechanisms, not representative demand. No customer interview, statistically representative sample, or independent adoption study exists.
 
-## Audience and purchase situations
+## Portfolio comparison
 
 The primary hypothesis is an accountable founder-developer or small product-team developer using AI assistance while selecting architecture for a new multi-feature web product. The trigger is an imminent decision that exposes the work required to assemble at least three recurring foundation families—identity and access; commerce and payments; content and sites; CRM and data capture; analytics; messaging, notifications, social, and Telegram; files; or AI, knowledge, and automation—before product-specific work can progress.
 
 Likely anxieties are inherited complexity, unclear prerequisites, dependency freshness, difficult customization, migration cost, security boundaries, documentation quality, and whether “included” capabilities actually work together. A credible evaluation therefore needs a pinned version, explicit rights, one setup path, inspectable source, declared limitations, and one capability check. These are reasoned hypotheses, not observed preferences.
 
-## Market and competition
+## Shared market conditions
 
 The relevant alternative set is broader than named frameworks:
 

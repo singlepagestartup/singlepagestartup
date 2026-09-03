@@ -117,4 +117,10 @@ apps/studio/workspace/config.local.yaml
 # Derived HTML-first Studio presentation exports
 apps/studio/output/
 
+# Agent-local scratch artifacts
+/.artifacts/
+
+# Local task output
+/output/
+
 **/*.tsbuildinfo

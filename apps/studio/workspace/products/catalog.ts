@@ -3,6 +3,7 @@ import { parse } from "yaml";
 export type ProductCatalogLayer = "singlepage" | "startup";
 
 export interface IProductCatalogEntry {
+  content?: string;
   id: string;
   marketing_creative: string;
   name: string;
@@ -10,6 +11,7 @@ export interface IProductCatalogEntry {
   product: string;
   summary: string;
   website: string;
+  website_component?: string;
 }
 
 export interface IProductCatalog {
@@ -28,6 +30,13 @@ function safeRelativePath(value: unknown, field: string): string {
     throw new Error(`${field} must be a safe layer-relative path`);
   }
   return value.replaceAll("\\", "/");
+}
+
+function optionalSafeRelativePath(
+  value: unknown,
+  field: string,
+): string | undefined {
+  return value === undefined ? undefined : safeRelativePath(value, field);
 }
 
 export function parseProductCatalog(
@@ -56,7 +65,16 @@ export function parseProductCatalog(
     if (!name || !summary) {
       throw new Error(`${layer} product ${id} needs name and summary`);
     }
+    if (product.content !== undefined && product.video !== undefined) {
+      throw new Error(
+        `${layer} product ${id} cannot define both content and legacy video`,
+      );
+    }
     return {
+      content: optionalSafeRelativePath(
+        product.content ?? product.video,
+        `${layer}.${id}.content`,
+      ),
       id,
       marketing_creative: safeRelativePath(
         product.marketing_creative,
@@ -70,6 +88,10 @@ export function parseProductCatalog(
       product: safeRelativePath(product.product, `${layer}.${id}.product`),
       summary,
       website: safeRelativePath(product.website, `${layer}.${id}.website`),
+      website_component: optionalSafeRelativePath(
+        product.website_component,
+        `${layer}.${id}.website_component`,
+      ),
     };
   });
   return {

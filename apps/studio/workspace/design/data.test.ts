@@ -176,12 +176,12 @@ The confirmed profile is derived from the five Brief reference sets.
   - id: font-base
     design_role: font
     design_key: default
-    path: assets/singlepage/fonts/base.ttf
+    path: assets/startup/fonts/base.ttf
     source_type: stock
   - id: font-display
     design_role: font
     design_key: primary
-    path: assets/singlepage/fonts/display.ttf
+    path: assets/startup/fonts/display.ttf
     source_type: stock
 `,
       ),
@@ -443,5 +443,61 @@ assets:
     });
 
     expect(data.projection).toBe("startup");
+  });
+
+  /**
+   * BDD Scenario: Keep framework identity out of a downstream Design review
+   * Given the resolved asset registry contains both singlepage and startup logos
+   * When the meaningful startup Design is rendered through the default projection
+   * Then only startup-layer identity assets are exposed to the project review
+   */
+  test("filters resolved identity assets to the active startup layer", () => {
+    const singlepage = workspace(
+      "# Design\n\nSinglePageStartup identity.",
+      `assets:
+  - id: singlepage-logo
+    design_role: logo
+    path: assets/singlepage/generated/identity/logo.svg
+    source_type: generated
+    lifecycle: approved
+    purpose: Framework logo.
+`,
+    );
+    const startup = workspace(
+      "# Design\n\nStartup identity.",
+      `assets:
+  - id: startup-logo
+    design_role: logo
+    path: assets/startup/generated/identity/logo.svg
+    source_type: generated
+    lifecycle: proposed
+    purpose: Project logo.
+`,
+    );
+    const resolved = workspace(
+      "# Design\n\nStartup identity.",
+      `assets:
+  - id: singlepage-logo
+    design_role: logo
+    path: assets/singlepage/generated/identity/logo.svg
+    source_type: generated
+    lifecycle: approved
+    purpose: Framework logo.
+  - id: startup-logo
+    design_role: logo
+    path: assets/startup/generated/identity/logo.svg
+    source_type: generated
+    lifecycle: proposed
+    purpose: Project logo.
+`,
+    );
+
+    const data = resolvedProjectDesignData({
+      default: resolved,
+      singlepage,
+      startup,
+    });
+
+    expect(data.assets.map((asset) => asset.id)).toEqual(["startup-logo"]);
   });
 });
