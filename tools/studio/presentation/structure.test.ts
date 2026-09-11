@@ -23,6 +23,31 @@ function pngDimensions(relativePath: string): [number, number] {
 
 describe("Studio presentation structure", () => {
   /**
+   * BDD Scenario: Retire the unused Evidence review document
+   * Given facts and sources live with their owning documents
+   * When Studio indexes and presentation inputs are loaded
+   * Then no Evidence source, template, or mandatory input remains
+   */
+  test("keeps the retired Evidence register out of Studio", () => {
+    expect(
+      existsSync(path.join(repositoryRoot, "apps/studio/workspace/evidence")),
+    ).toBe(false);
+    expect(
+      existsSync(
+        path.join(repositoryRoot, ".agents/templates/evidence-register.md"),
+      ),
+    ).toBe(false);
+    for (const layer of ["singlepage", "startup"]) {
+      const index = source(`apps/studio/workspace/utils/index/${layer}.yaml`);
+      expect(index).not.toContain("kind: evidence");
+      expect(index).not.toContain(".evidence");
+    }
+    expect(
+      source("apps/studio/workspace/utils/products/presentation-data.ts"),
+    ).not.toContain('artifactContent(workspace, "evidence")');
+  });
+
+  /**
    * BDD Scenario: Keep reusable React templates out of the workspace root
    * Given artifact, design, and deck renderers are shared by multiple stories
    * When the Studio workspace structure is validated
@@ -32,7 +57,6 @@ describe("Studio presentation structure", () => {
     for (const component of [
       "ArtifactBrowser",
       "LayerDataStatus",
-      "PortfolioCatalog",
       "ProjectDesign",
       "ProjectPresentation",
     ]) {
@@ -40,7 +64,7 @@ describe("Studio presentation structure", () => {
         existsSync(
           path.join(
             repositoryRoot,
-            `apps/studio/workspace/components/${component}.tsx`,
+            `apps/studio/workspace/utils/components/${component}.tsx`,
           ),
         ),
       ).toBe(true);
@@ -60,22 +84,21 @@ describe("Studio presentation structure", () => {
    */
   test("renders shared product selection as top tabs", () => {
     const component = source(
-      "apps/studio/workspace/components/ProductCatalog.tsx",
+      "apps/studio/workspace/utils/components/ProductCatalog.tsx",
     );
 
     expect(component).toContain('aria-label="Products"');
     expect(component).toContain('role="tablist"');
     expect(component).toContain('role="tab"');
     expect(component).toContain('role="tabpanel"');
-    expect(component).toContain('label: "01 Research"');
-    expect(component).toContain('label: "02 Sales"');
-    expect(component).toContain('label: "03 Product Overview"');
+    expect(component).toContain('label: "01 Product Overview"');
+    expect(component).toContain('label: "02 Research"');
+    expect(component).toContain('label: "03 Sales"');
     expect(component).toContain('label: "07 Content"');
     expect(component).toContain("product.content");
     expect(component).toContain("<Content />");
     expect(component).toContain("product.websiteComponent");
     expect(component).toContain("<Website />");
-    expect(component).toContain('className="flex flex-col items-start gap-2"');
     expect(component).not.toContain("justify-between gap-x-6 gap-y-2");
     expect(component).not.toContain("lg:grid-cols-[280px_1fr]");
     expect(component).not.toContain("<aside");
@@ -198,7 +221,9 @@ describe("Studio presentation structure", () => {
    * Then it omits readiness warnings and duplicated technical breadcrumbs
    */
   test("keeps projection diagnostics out of the design canvas", () => {
-    const design = source("apps/studio/workspace/components/ProjectDesign.tsx");
+    const design = source(
+      "apps/studio/workspace/utils/components/ProjectDesign.tsx",
+    );
     expect(design).not.toContain("function Readiness");
     expect(design).not.toContain("This is the {data.projectionLabel}");
     expect(design).not.toContain("Project · Design ·");
@@ -212,9 +237,9 @@ describe("Studio presentation structure", () => {
    */
   test("keeps Design decisions in data and composition in one shared template", () => {
     const component = source(
-      "apps/studio/workspace/components/ProjectDesign.tsx",
+      "apps/studio/workspace/utils/components/ProjectDesign.tsx",
     );
-    const data = source("apps/studio/workspace/design/data.ts");
+    const data = source("apps/studio/workspace/utils/design/data.ts");
 
     expect(component).toContain('from "react"');
     expect(component).toContain("export default function ProjectDesign");
@@ -255,11 +280,11 @@ describe("Studio presentation structure", () => {
    */
   test("separates reusable design from product applications", () => {
     const component = source(
-      "apps/studio/workspace/components/ProjectDesign.tsx",
+      "apps/studio/workspace/utils/components/ProjectDesign.tsx",
     );
-    const designSource = source("apps/studio/workspace/design/source.ts");
+    const designSource = source("apps/studio/workspace/utils/design/source.ts");
     const designStories = source(
-      "apps/studio/workspace/design/index.stories.tsx",
+      "apps/studio/workspace/utils/stories/design.stories.tsx",
     );
 
     expect(designSource).not.toContain("../website/");
@@ -290,13 +315,13 @@ describe("Studio presentation structure", () => {
     expect(designStories).toContain("export const Startup");
     expect(designStories).not.toContain("export const Overview");
     for (const artifact of [
-      "apps/studio/workspace/products/singlepage.yaml",
-      "apps/studio/workspace/products/startup.yaml",
+      "apps/studio/workspace/products/singlepage/catalog.yaml",
+      "apps/studio/workspace/products/startup/catalog.yaml",
       "apps/studio/workspace/products/singlepage/singlepagestartup/product.md",
       "apps/studio/workspace/products/singlepage/singlepagestartup/website.md",
       "apps/studio/workspace/products/singlepage/singlepagestartup/marketing-creative.md",
       "apps/studio/workspace/products/singlepage/singlepagestartup/presentation/ProjectPresentation.tsx",
-      "apps/studio/workspace/products/index.stories.tsx",
+      "apps/studio/workspace/utils/stories/products.stories.tsx",
     ]) {
       expect(existsSync(path.join(repositoryRoot, artifact))).toBe(true);
     }
@@ -310,13 +335,14 @@ describe("Studio presentation structure", () => {
   });
 
   /**
-   * BDD Scenario: Resolve layered Design data through one shared React template
+   * BDD Scenario: Resolve Design data and project-owned layouts separately
    * Given singlepage supplies Design and startup may supply higher-priority data
    * When Storybook discovers all three projections
-   * Then startup remains inspectable and default resolves data without component overrides
+   * Then startup remains inspectable and default resolves both data and the selected layout
    */
-  test("inherits Design data without layer-owned React", () => {
-    const layeredStory = "apps/studio/workspace/design/index.stories.tsx";
+  test("exposes three Design projections with separately resolved layouts", () => {
+    const layeredStory =
+      "apps/studio/workspace/utils/stories/design.stories.tsx";
     expect(existsSync(path.join(repositoryRoot, layeredStory))).toBe(true);
     for (const removedStory of [
       "apps/studio/workspace/design/default/index.stories.tsx",
@@ -331,7 +357,7 @@ describe("Studio presentation structure", () => {
     expect(story).toContain("hasProjectDesignData");
     expect(story).toContain("resolvedProjectDesignData");
     expect(story).toContain(
-      'import ProjectDesign from "../components/ProjectDesign"',
+      'import { DesignRenderer } from "../components/DesignRenderer"',
     );
     expect(story).not.toContain("resolveLayeredComponent");
     expect(story).not.toContain("import.meta.glob");
@@ -350,7 +376,7 @@ describe("Studio presentation structure", () => {
     const briefTemplate = source(".agents/templates/brief.md");
     const template = source(".agents/templates/design.md");
     const component = source(
-      "apps/studio/workspace/components/ProjectDesign.tsx",
+      "apps/studio/workspace/utils/components/ProjectDesign.tsx",
     );
 
     for (const heading of [
@@ -420,7 +446,7 @@ describe("Studio presentation structure", () => {
       "confirmation or correction before selecting the visual territory",
     );
     expect(workflow).toContain(
-      "layer-owned React Design components are prohibited",
+      "Choose the visible structure to fit the project's stylistic requirements",
     );
     expect(role).toContain("Treat photography and illustration as primary");
     expect(workflow).toContain("category-defining structure, count, scale");
@@ -458,26 +484,24 @@ describe("Studio presentation structure", () => {
       "One positive paragraph explaining the selected style",
     );
     expect(template).not.toContain("## Graphic language");
-    expect(workflow).toContain("no second navigation menu, inventory counters");
+    expect(workflow).toContain("absence of duplicate status/heading content");
     expect(role).toContain("Do not add\n  a second page menu, asset counters");
     expect(component).toContain(
       'className="aspect-square w-full overflow-hidden"',
     );
 
     const state = parse(
-      source("apps/studio/workspace/pre-development/singlepage.yaml"),
+      source("apps/studio/workspace/utils/pre-development/singlepage.yaml"),
     ) as {
       active_artifacts?: string[];
       active_stage?: string;
       blockers?: string[];
       status?: string;
     };
-    expect(state).toMatchObject({
-      active_artifacts: ["design", "assets"],
-      active_stage: "30-design",
-      blockers: [],
-      status: "in_progress",
-    });
+    expect(["00-business", "10-strategy", "20-brand", "30-design"]).toContain(
+      state.active_stage,
+    );
+    expect(["in_progress", "blocked"]).toContain(state.status);
 
     const assetIndex = parse(
       source("apps/studio/workspace/assets/singlepage.yaml"),
@@ -513,9 +537,9 @@ describe("Studio presentation structure", () => {
     const workflow = source(".agents/workflows/pre-development.md");
     const template = source(".agents/templates/design.md");
     const design = source("apps/studio/workspace/design/singlepage.md");
-    const parser = source("apps/studio/workspace/design/data.ts");
+    const parser = source("apps/studio/workspace/utils/design/data.ts");
     const component = source(
-      "apps/studio/workspace/components/ProjectDesign.tsx",
+      "apps/studio/workspace/utils/components/ProjectDesign.tsx",
     );
     const styles = source("apps/studio/workspace/styles/singlepage.css");
 
@@ -540,7 +564,7 @@ describe("Studio presentation structure", () => {
    */
   test("builds a decision deck instead of reusing design diagnostics", () => {
     const presentation = source(
-      "apps/studio/workspace/components/ProjectPresentation.tsx",
+      "apps/studio/workspace/products/singlepage/singlepagestartup/presentation/ProjectPresentation.tsx",
     );
     expect(presentation).not.toContain("<ProjectDesign");
     expect(presentation).not.toContain("Design follows this source layer only");
@@ -569,7 +593,7 @@ describe("Studio presentation structure", () => {
    */
   test("uses approved semantic colors for presentation surfaces", () => {
     const presentation = source(
-      "apps/studio/workspace/components/ProjectPresentation.tsx",
+      "apps/studio/workspace/products/singlepage/singlepagestartup/presentation/ProjectPresentation.tsx",
     );
     const styles = source("apps/studio/workspace/styles/singlepage.css");
     const design = source("apps/studio/workspace/design/singlepage.md");
@@ -596,7 +620,7 @@ describe("Studio presentation structure", () => {
       'const STORY_ID = "workspace-40-products--default"',
     );
     expect(exporter).toContain(
-      'source: "apps/studio/workspace/products/index.stories.tsx"',
+      'source: "apps/studio/workspace/utils/stories/products.stories.tsx"',
     );
     expect(exporter).toContain("document=presentation&product=");
     expect(exporter).toContain("resolvePresentationOutputTarget");

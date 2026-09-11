@@ -18,13 +18,13 @@ illustration, or campaign creative.
 
 ## Inputs and ownership
 
-Read `brief.md`, `business.md`, `research.md`, `strategy.md`, `brand.md`,
-`design.md`, the
-resolved decision profile, evidence, indexed assets, and the active
+Read `brief.md`, `business.md`, the current product's Research, `strategy.md`, `brand.md`,
+`design.md`, attributed facts, indexed assets, and the active
 `product.md`. Edit only that product's `website.md`;
 create presentation-only Studio compositions from static props.
-Refuse to start until both strategy and brand approval rows are `approved` and
-the required visual Design projection exists.
+Refuse to start until Strategy and Brand have valid confirmation metadata for
+the active project layer and the required visual Design projection exists. Resolve inherited approval
+under `.agents/contracts/document-confirmation.md`.
 
 ## Required method
 
@@ -37,7 +37,7 @@ the required visual Design projection exists.
   metadata, and Open Graph copy.
 - Align the form with qualification, routing, response time, and fulfillment in
   `business.md`.
-- Resolve `40-products` profile rows, including buyer/user roles, decision and
+- Resolve material Website questions, including buyer/user roles, decision and
   qualification data, domain proof, required disclosures, consent/data limits,
   and the operational action after conversion.
 - Specify desktop and mobile hierarchy, interaction states, and accessibility
@@ -60,9 +60,9 @@ the required visual Design projection exists.
 ## Thresholds and red flags
 
 The design is usable when engineering can plan from concrete content and static
-compositions without deciding the business or brand again and all `40-products`
-profile rows are answered or explicitly not applicable. Keep the stage blocked
-when a material row cannot be resolved. Escalate an undefined
+compositions without deciding the business or brand again and material Website
+questions are answered or explicitly inapplicable. Keep the stage blocked
+when a material question cannot be resolved. Escalate an undefined
 lead receiver, SLA, qualification rule, price path, fulfillment step, missing
 consent, inaccessible interaction, unsupported testimonial, or a request for a
 brochure page that hides an unresolved service process.
@@ -78,5 +78,5 @@ whole page, but the Markdown remains a concise editable specification.
 ## Handoff
 
 Return changed visitor and conversion decisions, Studio composition references,
-proposed profile status changes, evidence gaps, responsive/accessibility
+remaining material questions, evidence gaps, responsive/accessibility
 constraints, and explicit engineering inputs still outside this workflow.

@@ -1,22 +1,33 @@
+---
+confirmation:
+  confirmed: true
+  by: operator
+  at: 2026-08-11
+  source: Existing explicit operator approval; semantic decisions unchanged.
+  content_sha256: d5832fea9d6f4995d90b780efb5a8889ead9fe63e13d26620fb8a6c4538a3d78
+review:
+  dependencies:
+    strategy: f40d55a6c706beca2fef975dc69910119c09da34d3d463f8d77c6b6aebcd75c6
+---
+
 # Brand
 
 ## Decision status
 
-| Field                 | Current value                                              |
-| --------------------- | ---------------------------------------------------------- |
-| Strategy prerequisite | `approved`; SP-EV-053                                      |
-| Brand status          | `approved`; operator confirmation on 2026-08-11; SP-EV-058 |
-| Public name           | SinglePageStartup                                          |
-| Current product       | Code Framework                                             |
-| Naming construction   | Code Framework by SinglePageStartup                        |
-| Scope                 | Meaning, message, voice, naming, and governance only       |
+| Field                 | Current value                                        |
+| --------------------- | ---------------------------------------------------- |
+| Strategy prerequisite | Approved in Strategy                                 |
+| Public name           | SinglePageStartup                                    |
+| Current product       | Code Framework                                       |
+| Naming construction   | Code Framework by SinglePageStartup                  |
+| Scope                 | Meaning, message, voice, naming, and governance only |
 
 Brand describes what should form in the audience's mind. The separate Design
 artifact owns visual execution.
 
 ## Intended perception
 
-SinglePageStartup should be understood as a project that creates **inspectable, deliberate tools for accountable developers building multi-feature web products**. Its current primary product is Code Framework, a reusable code foundation. The name SinglePageStartup belongs to the overall project and brand rather than to that product alone. SP-EV-075.
+SinglePageStartup should be understood as a project that creates **inspectable, deliberate tools for accountable developers building multi-feature web products**. Its current primary product is Code Framework, a reusable code foundation. The name SinglePageStartup belongs to the overall project and brand rather than to that product alone.
 
 The audience should remember three ideas:
 
@@ -74,6 +85,6 @@ Prohibited claims include current MIT licensing, complete integration, easy or z
 - Design translates approved Brand into reusable visual rules without changing its meaning.
 - Website owns page journey, final copy, navigation, forms, states, and post-conversion behavior.
 - Marketing Creative owns only formats selected by Strategy.
-- Evidence owns provenance; Assets owns file rights and lifecycle. Generated imagery is never proof.
+- Material sources stay with their owning claims; Assets owns file rights and lifecycle. Generated imagery is never proof.
 
 Any change to audience, promise, public name, proof boundary, or primary action requires Brand review. Visual or format changes that preserve these decisions remain in Design, Website, or Marketing Creative.

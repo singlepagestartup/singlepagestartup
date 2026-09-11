@@ -1,0 +1,81 @@
+schema: singlepagestartup.workspace-index.v1
+layer: startup
+entries:
+  - id: startup.brief
+    kind: brief
+    path: brief/startup.md
+    extends: singlepage.brief
+    strategy: sections
+    description: Source request, founder language, constraints, goals, and unknowns.
+    uses:
+      - startup.asset-index
+  - id: startup.business
+    kind: business
+    path: business/startup.md
+    extends: singlepage.business
+    strategy: sections
+    description:
+      Client-supplied business facts, shared operations, capacity, and
+      constraints.
+    uses:
+      - startup.brief
+  - id: startup.strategy
+    kind: strategy
+    path: strategy/startup.md
+    extends: singlepage.strategy
+    strategy: sections
+    description: Positioning, offer, commercial focus, and first experiment.
+    uses:
+      - startup.business
+  - id: startup.asset-index
+    kind: asset-index
+    path: assets/startup.yaml
+    extends: singlepage.asset-index
+    strategy: keyed
+    description: Provenance, rights, purpose, and usage limits for assets.
+    uses: []
+  - id: startup.brand
+    kind: brand
+    path: brand/startup.md
+    extends: singlepage.brand
+    strategy: sections
+    description: Brand meaning, message hierarchy, voice, naming, and governance.
+    uses:
+      - startup.strategy
+  - id: startup.design
+    kind: design
+    path: design/startup.md
+    extends: singlepage.design
+    strategy: sections
+    description: Visual identity, reusable design rules, imagery, and approved outputs.
+    uses:
+      - startup.brief
+      - startup.brand
+      - startup.asset-index
+  - id: startup.products
+    kind: products
+    path: products/startup/catalog.yaml
+    extends: singlepage.products
+    strategy: product-catalog
+    description: Atomic catalog of products and their Research, Sales, Product,
+      Website, Marketing Creative, and Presentation sources.
+    uses:
+      - startup.business
+      - startup.strategy
+      - startup.brand
+      - startup.design
+      - startup.asset-index
+exports: []
+imports:
+  - template.brief
+  - template.business
+  - template.product-research
+  - template.sales-process
+  - template.strategy
+  - template.asset-index
+  - template.brand
+  - template.design
+  - template.product
+  - template.products
+  - template.website
+  - template.creative

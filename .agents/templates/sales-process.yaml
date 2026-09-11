@@ -1,5 +1,7 @@
+confirmation:
+  confirmed: false
 schema: singlepagestartup.sales-process.v1
-product_id: replace-with-portfolio-id
+product_id: replace-with-product-id
 readiness: blocked # blocked | ready
 owner: Name the person accountable for the complete sales process
 seller: Name the legal or operating seller, or write unknown

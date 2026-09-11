@@ -9,7 +9,6 @@ import {
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { PROJECT_PRESENTATION_SLIDES } from "../../../apps/studio/workspace/components/ProjectPresentation";
 import { resolvePresentationOutputTarget } from "./output";
 
 const STORY_ID = "workspace-40-products--default";
@@ -161,13 +160,14 @@ async function launchChrome(repositoryRoot: string) {
 
 async function navigateToPresentation(options: {
   client: CdpClient;
-  expectedSlideCount: number;
+  expectedSlideCount?: number;
   url: string;
 }) {
   await options.client.send("Page.navigate", { url: options.url });
   const expression = `(async () => {
     await document.fonts.ready;
-    return document.querySelectorAll('[data-slide-id]').length === ${options.expectedSlideCount};
+    const count = ${options.expectedSlideCount ?? 'Number(document.querySelector("[data-presentation-ready]")?.getAttribute("data-slide-count"))'};
+    return count > 0 && document.querySelectorAll('[data-slide-id]').length === count;
   })()`;
   for (let attempt = 0; attempt < 100; attempt += 1) {
     try {
@@ -304,6 +304,7 @@ async function main() {
   rmSync(presentationAssets, { recursive: true, force: true });
   cpSync(buildRoot, presentationAssets, { recursive: true });
 
+  let slides: Array<{ id: string }> = [];
   const server = startStaticServer(buildRoot);
   const chrome = await launchChrome(repositoryRoot);
   try {
@@ -318,9 +319,25 @@ async function main() {
     });
     await navigateToPresentation({
       client: chrome.client,
-      expectedSlideCount: PROJECT_PRESENTATION_SLIDES.length,
       url: `${baseUrl}&export=html`,
     });
+    const renderedSlides = await chrome.client.send<{
+      result: { value: Array<{ id: string }> };
+    }>("Runtime.evaluate", {
+      expression:
+        "Array.from(document.querySelectorAll('[data-slide-id]'), element => ({id: element.getAttribute('data-slide-id')}))",
+      returnByValue: true,
+    });
+    slides = renderedSlides.result.value;
+    if (
+      !slides.length ||
+      slides.some((slide) => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slide.id)) ||
+      new Set(slides.map((slide) => slide.id)).size !== slides.length
+    ) {
+      throw new Error(
+        "Presentation slide IDs must be unique, non-empty kebab-case identifiers.",
+      );
+    }
     await assertPresentationLayout(chrome.client);
     const evaluated = await chrome.client.send<{
       result: { value: string };
@@ -343,7 +360,7 @@ async function main() {
     });
     writeFileSync(target.pdfPath, Buffer.from(pdf.data, "base64"));
 
-    for (const [index, slide] of PROJECT_PRESENTATION_SLIDES.entries()) {
+    for (const [index, slide] of slides.entries()) {
       const number = String(index + 1).padStart(2, "0");
       await navigateToPresentation({
         client: chrome.client,
@@ -377,7 +394,7 @@ async function main() {
         formats: {
           html: path.relative(target.outputDirectory, target.htmlPath),
           pdf: path.relative(target.outputDirectory, target.pdfPath),
-          png: PROJECT_PRESENTATION_SLIDES.map((slide, index) =>
+          png: slides.map((slide, index) =>
             path.relative(
               target.outputDirectory,
               path.join(
@@ -391,7 +408,7 @@ async function main() {
         presentationId: target.presentationId,
         repositoryIdentity: target.repositoryIdentity ?? null,
         slideSize: { height: HEIGHT, width: WIDTH },
-        source: "apps/studio/workspace/products/index.stories.tsx",
+        source: "apps/studio/workspace/utils/stories/products.stories.tsx",
         storyId: STORY_ID,
       },
       null,
@@ -400,7 +417,7 @@ async function main() {
   );
 
   console.log(
-    `Generated ${PROJECT_PRESENTATION_SLIDES.length} HTML-first presentation slides in ${path.relative(repositoryRoot, target.outputDirectory)} (${target.layer}).`,
+    `Generated ${slides.length} HTML-first presentation slides in ${path.relative(repositoryRoot, target.outputDirectory)} (${target.layer}).`,
   );
 }
 

@@ -1,3 +1,5 @@
+confirmation:
+  confirmed: false
 schema: singlepagestartup.asset-index.v1
 assets:
   - id: replace-with-stable-id

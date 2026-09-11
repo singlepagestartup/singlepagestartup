@@ -1,3 +1,8 @@
+import {
+  documentConfirmation,
+  parseDocument,
+} from "../../studio/workspace/document";
+import { mergeMarkdown } from "../../studio/workspace/merge";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
@@ -25,7 +30,6 @@ export interface IGitHubReconciliationRecord {
   commit: string;
   outcome: "material" | "no-material-effect";
   summary: string;
-  evidence_ids?: string[];
   affected_artifacts?: string[];
 }
 
@@ -224,7 +228,7 @@ function validateConfig(
 function loadConfig(repositoryRoot: string, layer: WorkspaceLayer) {
   const configPath = path.join(
     repositoryRoot,
-    "apps/studio/workspace/pre-development/github",
+    "apps/studio/workspace/utils/pre-development/github",
     `${layer}.yaml`,
   );
   if (!existsSync(configPath)) {
@@ -284,7 +288,27 @@ export function findApprovedStrategyBaseline(
       ["cat-file", "-p", `${commit}:${strategyPath}`],
       true,
     );
-    if (/^\|\s*Status\s*\|\s*`?approved`?\s*\|\s*$/m.test(source)) {
+    const layer = strategyPath.endsWith("/startup.md")
+      ? "startup"
+      : "singlepage";
+    if (parseDocument(source).metadata.confirmation !== undefined) {
+      const base =
+        layer === "startup"
+          ? runGit(
+              repositoryRoot,
+              [
+                "cat-file",
+                "-p",
+                `${commit}:${strategyPath.replace(/startup\.md$/, "singlepage.md")}`,
+              ],
+              true,
+            )
+          : "";
+      const resolved =
+        layer === "startup" ? mergeMarkdown(base, source).content : source;
+      if (documentConfirmation(resolved, layer).confirmed) return commit;
+    } else if (/^\|\s*Status\s*\|\s*`?approved`?\s*\|\s*$/m.test(source)) {
+      // Published strategies predating document metadata retain their baseline.
       return commit;
     }
   }

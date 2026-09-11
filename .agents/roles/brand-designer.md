@@ -16,7 +16,7 @@ outputs, page UI, or channel formats into `brand.md`.
 
 ## Inputs and ownership
 
-Read approved upstream artifacts, decision-profile, evidence, assets, and design
+Read approved upstream artifacts, relevant product Research, assets, and design
 knowledge. Brand meaning requires an approved strategy. Visual Design
 additionally requires a complete `Visual reference intake` in
 `brief/<layer>.md` and the corresponding files and rights records in Assets.
@@ -140,10 +140,14 @@ discovery, or an agent assumption does not confirm intake.
   category-defining structure, count, scale, and proportions. Reject a merely
   similar silhouette or an invented, truncated, or implausible substitute
   unless abstraction or simplification is explicitly required.
-- Build semantic React Studio review across `default`, `singlepage`, and
-  `startup` through the one shared project-neutral Design template; render
-  permitted assets, not IDs. Layer-specific visual decisions belong only in
-  structured Markdown, the asset registry, and layered CSS tokens. Design
+- Build Studio review across `default`, `singlepage`, and `startup` using the
+  project's `design/<layer>/layout.yaml`. Select/order relevant built-in blocks,
+  add Markdown/React/HTML/media sections, or provide a complete layer-owned TSX/JSX
+  template. Empty startup inherits the layout; a populated startup layout replaces
+  it with files from that layer only. Keep shared code in utils and project
+  components/data in `design/<layer>/`. The workspace README defines the schema.
+  Render permitted assets, not IDs. Review the actual custom layout and semantic
+  impact; its existence does not establish approval or resolve missing decisions. Design
   contains only reusable logos, color, typography, photography, illustration,
   graphic language, motion, and usage rules—never pages, buttons, forms,
   success states, or acquisition formats. State the concept once as a positive,

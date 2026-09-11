@@ -1,3 +1,8 @@
+---
+confirmation:
+  confirmed: false
+---
+
 # Brief
 
 <!-- Current client facts only. Maximum 1,400 words; target 700-1,000. Replace
@@ -22,30 +27,19 @@ stale answers instead of appending corrections. -->
 - Explicit out-of-scope topics
 - Current reality versus desired future state
 
-## Business direction inventory
-
-| Direction | Role                                          | Lifecycle                   | Buyer or user | Commercial status                  | Operator status       |
-| --------- | --------------------------------------------- | --------------------------- | ------------- | ---------------------------------- | --------------------- |
-|           | product, audience-program, internal-operation | active, future, or deferred |               | free, paid, calculated, or unknown | proposed or confirmed |
-
-- Include every current or intended direction exactly once. `product` means a
-  separately sold offer; `audience-program` means activity whose current goal is
-  audience growth; `internal-operation` means work done for the company rather
-  than sold as an offer. `active` means operating or selling now, `future` means
-  intended but not operating now, and `deferred` means explicitly not being
-  worked on now. Keep detailed value, delivery, proof, and channel decisions in
-  Portfolio, Business, Strategy, and product-local files.
-
 ## Business and offer
 
-- Current offer, audience, price or calculation rule, delivery and capacity
+- Current or intended products in scope, stable IDs, audience, price or
+  calculation rule, delivery, capacity, and availability
+- Keep supporting acquisition activities and internal work in the scope section;
+  do not create a second catalog or classify every initiative as a product
 
 ## Business-model signals
 
 - Primary and secondary value exchange or transaction mechanisms
 - Buyer, user, payer, beneficiary, and decision authority when they differ
 - Monetization, delivery, cost/capacity, scaling, and regulatory signals
-- Preserve uncertainty here; normalization belongs in the decision profile
+- Preserve uncertainty here; Business consolidates only client-supplied mechanics
 
 ## Existing evidence and assets
 

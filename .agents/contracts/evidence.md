@@ -1,4 +1,4 @@
-# Evidence and asset contract
+# Claim sources and asset contract
 
 ## Claims
 
@@ -19,7 +19,7 @@ to evidence or keeps an explicit non-evidence classification.
 A GitHub commit and file snapshot may verify the exact committed content at its
 full SHA. A changed path alone is not a changed claim, and committed source does
 not by itself verify runtime behavior, integration, compatibility, adoption, or
-outcomes. Record those limitations when GitHub reconciliation creates evidence.
+outcomes. Record those limitations beside the affected claim during GitHub reconciliation.
 
 For workflow routing, separately classify who can resolve an unknown:
 
@@ -35,14 +35,24 @@ An `assumption` may make a proposal explicit but cannot satisfy an
 customers or users, rights and license intent, support capacity, geography,
 decision authority, assets, or non-goals.
 
-Every evidence row also declares `Scope` as `singlepage`, `startup`, or
-`shared`, and `State` as `active`, `not-applicable`, or `superseded`. When the
-active layer is startup, inherited singlepage rows are provenance only: they do
-not support startup claims unless a startup row explicitly adopts or supersedes
-them. Reuse a stable ID to correct a row. Keep the living register within 1,400
-words: consolidate evidence that supports the same current decision and let Git
-retain replaced singlepage history. Use a minimal non-active startup row only
-when it must suppress an inherited framework claim.
+## Source ownership
+
+There is no separate project Evidence document or global fact/change register.
+Record client answers and material constraints once in Brief or Business. The
+dialogue and explicit document confirmation establish the user's decisions;
+do not create a second record of every question, answer, edit, or approval.
+Keep only source attribution or limitations needed to interpret a current claim.
+
+External market findings, dated sources, inference, and missing proof belong to
+the relevant product Research. File origin and usage rights belong to Assets.
+Document metadata owns confirmation and upstream review status. Git retains
+previous wording and change history. Current documents must be self-contained;
+do not force agents to reread Git history for ordinary stage work.
+
+Inherited framework facts are reference context, not automatically the client's
+facts. Record applicable client answers in the startup owner and obtain the
+required project-specific confirmation. A research finding cannot silently
+overwrite client input; ask when it contradicts that input.
 
 ## Assets
 
@@ -60,11 +70,10 @@ or upstream invalidation removes both the generated file and its registry entry;
 do not add a `withdrawn`, `rejected`, `superseded`, `stale`, or provenance-only
 lifecycle. Git is the history for committed outputs.
 
-An operator rejection is a durable decision fact. Record it before cleanup as
-`The operator rejected visual proposal <proposal_id>.`, with the stable proposal
-ID in backticks, classification `client-claim`, and the normal source, date,
-limitations, and consumers. It cannot remain current in the design source,
-registry, or generated tree.
+Before cleanup, preserve the current constraint in its owning Design/Brief
+section and identify the exact retired proposal in the change description. Git
+retains the rejection history; do not create a second rejection register. The
+retired proposal cannot remain current in Design, Assets, or generated files.
 
 Before visual Design generation, record whether existing project assets and preferred
 external references were supplied or explicitly absent. For owned materials,

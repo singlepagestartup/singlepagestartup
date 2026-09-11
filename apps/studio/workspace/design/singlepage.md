@@ -1,14 +1,23 @@
+---
+confirmation:
+  confirmed: false
+review:
+  dependencies:
+    asset-index: 62c40075601691ae7c3d7270b63268e3973e8be65a7c7091ce2dcabb6e329298
+    brand: d5832fea9d6f4995d90b780efb5a8889ead9fe63e13d26620fb8a6c4538a3d78
+    brief: 3bfbc769cf05602249af173264b5bbad1b5b4bbfc5aea26eedfcea76b43d34db
+---
+
 # Design
 
 ## Decision status
 
-| Field                 | Current value                                                                                              |
-| --------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Brand prerequisite    | Approved on 2026-08-11; SP-EV-058                                                                          |
-| Design status         | `proposed`                                                                                                 |
-| Client style analysis | `confirmed`; SP-EV-071                                                                                     |
-| Operator confirmation | Fonts, accent, and digital-first Photography confirmed; complete Design awaits review; SP-EV-071–SP-EV-074 |
-| Visual proposal ID    | `measured-space`                                                                                           |
+| Field                 | Current value                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| Brand prerequisite    | Approved on 2026-08-11;                                                               |
+| Client style analysis | `confirmed`;                                                                          |
+| Partial decisions     | Fonts, accent, and digital-first Photography confirmed; complete Design awaits review |
+| Visual proposal ID    | `measured-space`                                                                      |
 
 ## Design intent
 
@@ -16,11 +25,11 @@
 
 | Dimension                             | Confirmed preference or professional inference                                                                                                              | Source                                                                   | Confidence or unresolved conflict                       |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------- |
-| Contrast and palette                  | Near-monochrome fields with one sharp light-green locator; palette colors come from SinglePageStartup, not reference brands                                 | categorized interface, marketing, illustration references; accent sample | Explicit; SP-EV-071, SP-EV-072                          |
+| Contrast and palette                  | Near-monochrome fields with one sharp light-green locator; palette colors come from SinglePageStartup, not reference brands                                 | categorized interface, marketing, illustration references; accent sample | Explicit;,                                              |
 | Density, whitespace, grid, and rhythm | Spacious editorial landings and structured, denser work screens; clear alignment and limited hierarchy levels                                               | interface set                                                            | Explicit                                                |
 | Surface, shape, and motion            | Restrained borders, rounded controls, selective translucency; motion blur communicates movement                                                             | interface and photography sets                                           | Explicit                                                |
 | Typography                            | Monospaced copy with a serif for headings and italic emphasis                                                                                               | typography set                                                           | Explicit; JetBrains Mono + Cormorant Garamond confirmed |
-| Photography and illustration          | References define camera/motion; project context requires recognizable device use with secondary architecture. Illustration uses minimal isometric linework | categorized photography and illustration sets; project context           | Explicit; SP-EV-074                                     |
+| Photography and illustration          | References define camera/motion; project context requires recognizable device use with secondary architecture. Illustration uses minimal isometric linework | categorized photography and illustration sets; project context           | Explicit;                                               |
 | Marketing composition                 | Photography-led vertical compositions with sparse copy, overlays, one dominant statement and one action                                                     | marketing set                                                            | Explicit                                                |
 
 ### Brand idea and character

@@ -1,3 +1,8 @@
+---
+confirmation:
+  confirmed: false
+---
+
 # Product Overview
 
 <!-- One product or service offered by the business. Maximum 1,400 words. -->
@@ -52,11 +57,11 @@ fit without customer evidence.
 
 ## Evidence and decision rules
 
-| Decision area             | Current evidence or hypothesis         | Objection or risk                                | Metric or threshold              | Consequence                |
-| ------------------------- | -------------------------------------- | ------------------------------------------------ | -------------------------------- | -------------------------- |
-| Demand and fit            | Evidence IDs or explicit missing proof | Why the customer may not act                     | Useful signal                    | Continue, revise, or stop  |
-| Value and differentiation | Evidence IDs or explicit inference     | Why alternatives may remain preferable           | Validation condition             | Keep or change positioning |
-| Delivery and adoption     | Evidence IDs or explicit missing proof | Capacity, support, rights, safety, or usage risk | Success and repeat-use condition | Scale, constrain, or stop  |
+| Decision area             | Current evidence or hypothesis          | Objection or risk                                | Metric or threshold              | Consequence                |
+| ------------------------- | --------------------------------------- | ------------------------------------------------ | -------------------------------- | -------------------------- |
+| Demand and fit            | Owning source or explicit missing proof | Why the customer may not act                     | Useful signal                    | Continue, revise, or stop  |
+| Value and differentiation | Owning source or explicit inference     | Why alternatives may remain preferable           | Validation condition             | Keep or change positioning |
+| Delivery and adoption     | Owning source or explicit missing proof | Capacity, support, rights, safety, or usage risk | Success and repeat-use condition | Scale, constrain, or stop  |
 
 End with the next bounded product decision. Apply approved Strategy, Brand,
 Design, and Assets without redefining them.

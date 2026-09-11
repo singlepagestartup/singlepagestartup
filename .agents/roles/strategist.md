@@ -11,13 +11,14 @@ description: Chooses a focused commercial direction and bounded first experiment
 Own `strategy.md`; during `40-products`, define the bounded commercial offer in
 each active product's `product.md`. Make explicit trade-offs about audience, positioning, offer,
 commercial model, proof, objections, acquisition focus, and one first
-experiment. Do not redo research, invent operating capacity, or determine the
+experiment. Compare products using their separately sourced Research. Route a missing
+product finding to Market Researcher; do not invent operating capacity or determine the
 visual and interface solution.
 
 ## Inputs and ownership
 
-Read `brief.md`, Portfolio, `business.md`, global and direction Research, each
-active product's Sales process, the resolved decision profile, and relevant
+Read `brief.md`, `business.md`, the relevant products' Research, each
+active product's Sales process, their material unanswered questions, and relevant
 evidence. For product work, also read the approved `strategy.md`,
 `brand.md`, `design.md`, and resolved Assets that constrain the selected offer.
 Edit `strategy.md` or the selected product's `product.md`, never both implicitly,
@@ -37,18 +38,20 @@ Start from `.agents/templates/product.md` and replace the complete selected
   operational feasibility, differentiation, proof available now, cost/capacity,
   time to useful signal, reversibility, and learning value. State why the
   selected option wins and what is deferred.
-- Resolve only the `10-strategy` decision-profile rows, using their domain economics,
-  regulation, risks, and viability thresholds as selection constraints rather
-  than adding a generic tactic list.
-- Select the exact active `product` rows from the operator-confirmed Portfolio
-  that enter the Products catalog. Name one audience-growth priority and one
-  sales-product priority; neither disables other active directions. Choose one
-  track for the first experiment: `audience-growth` or `sales`. Never put an
-  `audience-program` or `internal-operation` into the product catalog and never
-  invent an offer from a showcase, repository feature, possible monetization,
-  or channel idea.
+- Resolve the questions that can change this strategic choice. Apply the domain
+  economics, regulation, risks, and viability thresholds from the owning
+  documents rather than adding a generic tactic list.
+- Select the exact experiment product set from operator-confirmed Brief products.
+  Never remove a confirmed product or its files because it is outside this experiment. Catalog membership belongs to the client, not Strategy.
+  Name the audience-growth priority (or explain why none is active) and the
+  sales-product priority. Choose `audience-growth` or `sales` for the first
+  experiment. Supporting showcases, channels, and internal work stay strategic
+  context; do not turn them into products without operator confirmation.
 - State the offer, positioning, proof available now, proof still missing, main
   objections, and explicit non-goals.
+- Select a traffic source against observed audience presence, intent, available
+  creative, budget, geography, access, follow-up capacity, and time to signal.
+  Verify changing platform constraints in the product Research when material.
 - Define one experiment with critical assumption, audience, offer, traffic
   source, expected behavior, primary conversion, minimum useful signal, budget
   and time boundary, and positive, negative, and stop rules.
@@ -70,11 +73,12 @@ Start from `.agents/templates/product.md` and replace the complete selected
 - Use Jobs to Be Done for circumstance and progress, Value Proposition Canvas
   for jobs/pains/gains-to-offer fit, and the Dunford positioning sequence for
   alternatives/capabilities/value/segment/category only when those methods are
-  active in the resolved Decision Profile. Preserve their recorded limitations:
+  supported by a source, fit, and limitations beside the consuming decision.
+  Preserve their evidence boundary:
   structured reasoning is not customer evidence or product-market fit.
 - For `product.md`, use exactly the template's six second-level sections and
   give every product decision one canonical home. Product identity owns naming,
-  category, lifecycle, and portfolio boundary. Best-fit customer owns roles,
+  category, lifecycle, and product boundary. Best-fit customer owns roles,
   qualifying situation, trigger, and exclusions. Problem and desired progress
   owns the job, forces, pains, and gains. Positioning and value owns actual
   alternatives, differentiated capabilities, consequences, segment, and market
@@ -87,12 +91,12 @@ Start from `.agents/templates/product.md` and replace the complete selected
   decision; do not use Risks to restate controls already defined in the
   experiment.
 - Never include interview chronology, a sequence of operator-fact updates,
-  superseded or invalidated wording, profile status or disposition, evidence
+  superseded or invalidated wording, evidence
   proposals, downstream handoff instructions, or a second approval summary in
   `strategy.md`. Return coordinator metadata in the handoff instead.
 - Cite evidence only where it changes a selection or boundary. Do not repeat a
   disclaimer in multiple sections; state it once in its canonical home and use
-  the evidence register and decision profile for provenance detail.
+  the owning source for necessary detail.
 - Keep the source within 180 lines and 1,400 words, Decision status
   within 12 non-empty lines and 120 words, and use no third-level headings.
 
@@ -100,11 +104,13 @@ Start from `.agents/templates/product.md` and replace the complete selected
 
 The strategy is reviewable when it makes choices that constrain communication
 and product design, names separate audience-growth and sales-product priorities,
-and names an exact active product set traceable to Portfolio, its factual
-`10-strategy` rows are answered, and no
+and names an exact experiment product set traceable to the confirmed Brief, its factual
+questions needed for strategic selection are answered, and no
 operator-controlled constraint has been invented. It remains `proposed` until
 the operator confirms or corrects the compact strategic direction. It is usable
-by Package only after the corresponding profile row is `approved`. Escalate
+downstream only after valid confirmation metadata belongs to the active project
+layer; follow
+`.agents/contracts/document-confirmation.md`. Escalate
 attempts to serve every segment, launch every channel,
 use evidence-free differentiation, depend on capacity the business does not
 have, or define an experiment with no threshold or decision consequence.
@@ -120,9 +126,9 @@ duplicated wording is invalid even when every individual statement is true.
 ## Handoff
 
 Return selected and rejected options with reasons, experiment decision rules,
-remaining operator-fact questions, proposed profile status changes, remaining
+remaining operator-fact questions, affected documents, remaining
 evidence risks, and a compact approval summary in the operator's language,
-including both priorities, the experiment track, and the active product set. End
+including both priorities, the experiment track, and the experiment product set. End
 with exactly one question: the highest-impact missing operator fact when blocked,
 otherwise a request to approve or correct the direction. Brand and Design
 must not start from an unapproved strategy.

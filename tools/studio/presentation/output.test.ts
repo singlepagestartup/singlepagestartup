@@ -19,9 +19,9 @@ function createRepository(): string {
   );
   temporaryRoots.push(repositoryRoot);
   const workspaceRoot = path.join(repositoryRoot, "apps/studio/workspace");
-  mkdirSync(workspaceRoot, { recursive: true });
+  mkdirSync(path.join(workspaceRoot, "utils"), { recursive: true });
   writeFileSync(
-    path.join(workspaceRoot, "config.yaml"),
+    path.join(workspaceRoot, "utils/config.yaml"),
     "active_layer: auto\ndefault_layer: startup\nrepository_layers:\n  singlepagestartup/singlepagestartup: singlepage\n",
   );
   return repositoryRoot;

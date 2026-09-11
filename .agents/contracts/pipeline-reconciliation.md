@@ -21,6 +21,23 @@ This process checks compatibility and routes missing work. It is not an
 automated prose-quality score and it never marks a professional artifact
 complete merely because headings exist.
 
+## Retiring the former Decision Profile
+
+Do not recreate `knowledge/decision-profile/<layer>.md` or its template. If an
+older checkout still has it, inspect that active layer once during migration.
+Move only unique current facts, questions, constraints, sources, and partial
+client decisions into their owning documents; omit duplicated or stale stage
+summaries. Reusable rules belong in `.agents/`, never in another workspace
+checklist. Preserve whole-document approvals in source metadata; profile-only
+approval rows do not establish approval of a complete document.
+
+Remove the retired source, template bindings, index entries, `uses` references,
+and obsolete review fingerprints after reconciling its consumers. Preserve
+remaining semantic dependencies and unresolved impact. If an old cursor names
+`decision-profile`, route it to the earliest affected owning document in
+`00-business` or a later stage; do not infer completion from deleting the file.
+Empty startup overrides and atomic product-catalog inheritance remain unchanged.
+
 ## Inspection scope
 
 Use the current workflow and active index to inspect:
@@ -30,8 +47,8 @@ Use the current workflow and active index to inspect:
 - the recorded active artifacts and their prerequisite closure;
 - every later non-empty living artifact, so an existing downstream document is
   not left on an obsolete shape merely because the cursor moved backward;
-- every direction in the active resolved Portfolio and all Research and Sales
-  files referenced by it;
+- product Research and Sales already created for confirmed Brief products,
+  including sources prepared before the Products catalog;
 - every product entry already present in the active resolved catalog and all
   files referenced by that entry.
 
@@ -40,29 +57,43 @@ Load full artifact content only for a discovered gap and its dependency closure.
 This preserves decision-scoped context while still checking the complete
 existing Workspace.
 
+Primary review sources also need document-owned confirmation metadata per
+`.agents/contracts/document-confirmation.md`. Migrate only existing attributable
+whole-document approvals; otherwise use false. Empty startup remains pass-through.
+Remove duplicated approval-status prose after preserving any partial decisions.
+
 For Markdown artifacts, the current artifact template's second-level headings
 are required structural sections unless the workflow explicitly says otherwise.
 For YAML artifacts, require the schema and keys used by the current template and
-workflow. For Portfolio, require the atomic catalog shape, one Research file per
-direction, one Sales file per active product, and no Sales file on another role
-or lifecycle. For Products, require the atomic catalog shape and every referenced
-`product.md`, `website.md`, `marketing-creative.md`, and
-`presentation/ProjectPresentation.tsx`. When a catalog entry declares optional
+workflow. For Products, require both `products/singlepage/catalog.yaml` and
+`products/startup/catalog.yaml`. When migrating the earlier flat layer-named
+catalog files, move each existing catalog into its own layer folder, preserving
+its content and approval metadata, and update the index and source imports.
+Keep the empty startup catalog as an explicit extension point; do not populate
+it with framework product copies. Resolve every document and component field under
+`products/<layer>/`, then require the atomic catalog shape and every referenced
+`research.md`, `sales.yaml`, `product.md`, `website.md`, `marketing-creative.md`, and
+`presentation/ProjectPresentation.tsx` and its own `presentation/data.yaml` source declared by `presentation_data`. When a catalog entry declares optional
 `content`, require its referenced React entry point but do not require any
-particular supporting file extension or content schema. Also compare the artifact's decisions
-with the current stage completion rules and the decision-profile rows assigned
-to its owner. A changed requirement inside an existing heading is therefore
+particular supporting file extension or content schema. For optional `sections`,
+recursively validate unique navigation IDs, page sources inside their selected
+product folder, and file existence. A section using a core ID augments that tab;
+other IDs add tabs. Do not recreate removed pages from the base catalog in startup.
+React PDF pages must keep the shared mounted-slide contract. No extra section
+is required merely because the template demonstrates one. Also compare the artifact's decisions
+with the current stage completion rules and the material questions and
+constraints in the owning document. A changed requirement inside an existing heading is therefore
 still discoverable.
 
 The stage ownership map is:
 
-| Stage         | Existing artifacts to reconcile                                                                      |
-| ------------- | ---------------------------------------------------------------------------------------------------- |
-| `00-business` | Brief, Portfolio, Business, global and direction Research, product Sales, Evidence, Decision Profile |
-| `10-strategy` | Strategy                                                                                             |
-| `20-brand`    | Brand                                                                                                |
-| `30-design`   | Design, Assets                                                                                       |
-| `40-products` | Product catalog and every product-local output                                                       |
+| Stage         | Existing artifacts to reconcile                      |
+| ------------- | ---------------------------------------------------- |
+| `00-business` | Brief, client-factual Business, product Sales intake |
+| `10-strategy` | Product Research, then Strategy                      |
+| `20-brand`    | Brand                                                |
+| `30-design`   | Design, Assets                                       |
+| `40-products` | Product catalog and every product-local output       |
 
 ## Layer and inheritance rules
 
@@ -74,7 +105,7 @@ sources.
   project-specific repairs only to `startup` sources.
 - An empty startup source remains valid pass-through until that artifact becomes
   active for the downstream project. It cannot satisfy a project-specific scope,
-  approval, evidence, or decision-profile gate merely by inheriting an unrelated
+  approval or evidence gate merely by inheriting an unrelated
   SinglePageStartup decision.
 - When a newly added section is inherited from singlepage, inspect whether its
   content is genuinely applicable to the downstream project. Keep valid
@@ -87,9 +118,27 @@ sources.
 - Product catalogs retain atomic inheritance. Once startup owns any product,
   reconcile only the complete startup catalog; never repair it with a
   singlepage product fallback.
-- Portfolio catalogs follow the same atomic rule. Once startup owns any
-  direction, reconcile only the complete startup Portfolio and its referenced
-  files; never repair it with a singlepage direction fallback.
+  When an existing product uses an earlier directory layout, relocate its existing
+  Research and Sales into its product folder and update the catalog references.
+  Use only that layer's attributable sources, preserve product IDs and current
+  content, and check references before removing obsolete owned files. Supporting
+  activities stay in Brief/Strategy; they do not need a replacement registry.
+
+When retiring a shared Research document, move each attributable finding and its
+sources into the product it actually describes. Preserve source dates and IDs;
+relocation is not fresh verification. Ask only when product attribution cannot
+be established. Remove obsolete global index, sidebar, and dependency references
+after updating consumers. Put unresolved research questions in the named
+product Research for `10-strategy`. Separate market hypotheses and designed funnels from client
+Business facts; preserve confirmed intentions with attribution. Keep existing
+approvals unless the underlying decision changed.
+
+When retiring the Evidence register, keep only material current facts, source
+attribution, and constraints in their existing owners; preserve document approval
+metadata. Replace remaining register links and presentation data bindings, then
+remove the source, story, template, index entries, and mandatory loading steps.
+Do not copy the register into another knowledge file or a duplicate log. Git
+retains history; client dialogue and document confirmation remain the review flow.
 
 ## Gap classification and repair
 
@@ -133,3 +182,24 @@ Report whether reconciliation was a no-op or found gaps, the earliest affected
 stage, repaired and still-missing sections, downstream artifacts invalidated,
 and the resumed stage. Do not expose routine heading-by-heading checks when no
 gap exists.
+
+## Preserve product identity during structural migrations
+
+Compare the client-confirmed product inventory before and after every Portfolio
+or catalog migration. Move each confirmed product's attributable materials into
+its own Products folder. Supporting acquisition value, lack of readiness, a
+future launch, or exclusion from the current experiment never authorizes dropping
+a confirmed product. Membership changes require an explicit client decision.
+
+When migrating a derived presentation, capture its current displayed content in
+its own presentation/data.yaml, register presentation_data, and remove runtime
+extraction. Preserve the existing rendering where possible. Do not mark the new
+independent document confirmed without attributable whole-presentation approval.
+
+Design layout compatibility is checked separately from document decisions.
+`design/<layer>/layout.yaml` selects ordered blocks or a custom template; its
+absence/blank content can use inherited defaults. Do not restore omitted starter
+blocks solely because a project intentionally changes its visual scope. Check
+that declared section/template files exist in the selected layout layer, and
+that actual in-scope decisions remain complete. Run the workspace validator and
+browser review for structure changes. A new layout does not renew confirmation.

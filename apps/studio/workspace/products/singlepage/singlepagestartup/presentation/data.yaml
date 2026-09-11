@@ -1,0 +1,205 @@
+schema: singlepagestartup.product-presentation.v1
+product_id: singlepagestartup
+content:
+  acquisition: After readiness, publish one founder-led YouTube walkthrough of
+    evidenced demonstration-service behavior. The service visibly identifies
+    SinglePageStartup and provides one tracked bridge to the pinned GitHub
+    evaluation path. The two relevant personal contacts test comprehension
+    before launch; GitHub is the destination, while other video platforms,
+    Instagram, and a possible Telegram channel are deferred.
+  audience: Founder-developers and similarly accountable developers using AI
+    assistance while choosing the architecture for a new multi-feature web
+    product. The human developer owns product decisions, credentials, data,
+    testing, deployment, and AI authorization. Established-product migration is
+    deferred.
+  brand:
+    character: []
+    doDont:
+      - do: “Evaluate the foundations for one named product.”
+        dont: “Everything your startup needs.”
+      - do: “Current proof is limited to the repository and declared checks.”
+        dont: “Production-ready and proven.”
+      - do: “The developer owns permissions, review, tests, and acceptance.”
+        dont: “Let AI launch the product autonomously.”
+      - do: “Founder help is best effort when capacity permits.”
+        dont: “Dedicated support whenever you need it.”
+    idea: SinglePageStartup should be understood as a project that creates
+      inspectable, deliberate tools for accountable developers building
+      multi-feature web products. Its current primary product is Code Framework,
+      a reusable code foundation. The name SinglePageStartup belongs to the
+      overall project and brand rather than to that product alone.
+    primaryLogoUrl: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg
+  experiment:
+    assumption: The selected showcase-led route will move some target developers
+      from credible service proof to intentional framework evaluation and
+      successful use. Service engagement without that transition does not test
+      the assumption.
+    budget: Begin only after service, measurement, support-route, framework-bridge,
+      MIT-publication, and clean-setup readiness. Measure for three calendar
+      weeks, at no more than six founder hours per week and 18 total, with USD 0
+      paid media. Subsidized provider cost is capped at USD 1 per promotional
+      user per day and USD 200 aggregate, with no preset recipient-count or
+      per-recipient-day limit. Unspent subsidy may continue until exhaustion,
+      but measurement, founder work, marketing, availability, and support do not
+      extend.
+    facts:
+      - 3 weeks
+      - 6 h / week
+      - 18 h total
+      - $0 paid media
+      - $200 token subsidy
+      - $1 / promo user / day
+    minimumSignal: Five target developers reach the Code Framework explanation from
+      the showcase, and at least three record an evaluation-start, reject, or
+      defer decision with a reason.
+    negativeDecision: If the minimum signal is reached but fewer than two
+      evaluations start, change the audience-message-bridge combination. If two
+      setup attempts fail on the same controllable readiness blocker, repair the
+      product path before further acquisition.
+    positiveDecision: Continue this direction if the minimum signal is reached, at
+      least two qualified evaluations start, and at least one independent
+      developer passes setup and the declared capability check. The next test
+      should examine repeat use; this result alone is not general adoption.
+    stopRule: Stop at any approved time or cost cap; an unpassed readiness gate;
+      conflicting license or prerequisite information; an unenforceable
+      provider-cost control; a rights, privacy, security, secret, or
+      AI-authority issue; mixed service and framework measurement; support
+      becoming product implementation; or the same controllable blocker
+      affecting two independent participants.
+  modules:
+    - agent
+    - analytic
+    - billing
+    - blog
+    - broadcast
+    - crm
+    - ecommerce
+    - file-storage
+    - host
+    - knowledge
+    - notification
+    - rbac
+    - social
+    - startup
+    - telegram
+    - website-builder
+  name: Code Framework
+  nonGoals: ""
+  offer: "A free evaluation of one pinned Code Framework release for one named
+    product: compare required foundations with the documented inventory, verify
+    rights and prerequisites, run the setup check, and exercise one predeclared
+    capability. Founder help is best effort through the demonstration service's
+    messenger-linked CRM case within available capacity, without a response-time
+    or implementation commitment."
+  positioning: Code Framework by SinglePageStartup is an inspectable, reusable
+    foundation to evaluate when several recurring web-product capabilities
+    should begin in one consistent codebase. It competes with prior codebases,
+    starters, generators, composed services, and AI-generated scaffolding on
+    coherent fit, not on unproven speed or superiority.
+  productLogic: Code Framework stays free, founder-funded, and without framework
+    revenue. The MIT License is selected but not yet published. Adoption and
+    successful use are primary; stars and awareness are secondary.
+    Demonstration-service payments remain separate service economics. A future
+    subscriber may incur provider cost up to USD 3 per day, but that path is
+    outside the first experiment and proves neither price nor demand.
+  projection: singlepage
+  proof: Current proof is limited to a dated public GitHub repository and release
+    snapshot, repository guidance for developers and AI assistance, and a
+    generated inventory reporting 16 modules and 156 model/relation
+    entities.  Ecommerce contributes 7 models and 19 relations connecting
+    catalog, store, cart-order, currency, payment-intent, file, and
+    website-content data.  Inventory and code presence do not prove complete
+    integration, runtime readiness, or outcomes.
+  promise: Evaluate one pinned Code Framework release for one named product need
+    through explicit inventory, rights, prerequisites, setup, and one capability
+    check
+  risks:
+    - boundary: The selected service lacks assembled, packaged, externally usable,
+        instrumented behavior and verified attribution.
+      consequence: Delay the experiment; if readiness cannot be achieved within a
+        separately approved engineering scope, replace the showcase route with a
+        direct GitHub evaluation test.
+      title: Showcase readiness
+    - boundary: MIT publication, notice retention, dependency compatibility,
+        effective-version evidence, and one authoritative prerequisite contract
+        remain incomplete; README and package metadata conflict.
+      consequence: Withhold the walkthrough-to-evaluation launch and all current-MIT
+        or easy-setup language until both gates pass.
+      title: License and setup readiness
+    - boundary: No external demand, YouTube reach, content baseline, or channel
+        conversion is evidenced.
+      consequence: Treat positioning and channel as testable choices; insufficient
+        qualified exposure is inconclusive rather than evidence against the
+        product.
+      title: Audience and channel fit
+    - boundary: The tracked service-to-framework bridge and event instruments do not
+        yet exist.
+      consequence: Do not interpret the experiment unless service usage, attention,
+        evaluation, successful use, and adoption remain attributable and
+        distinct.
+      title: Measurement integrity
+    - boundary: Provider-day rules, eligibility, concurrency, privacy, AI permissions,
+        incident ownership, and ongoing support capacity are unresolved.
+      consequence: Pause affected access or promotion whenever cost, authority, data
+        protection, recovery, or founder capacity cannot be bounded.
+      title: Operating safety and capacity
+  showcase:
+    description: The intended AI-agent demonstration service is a
+      showcase/acquisition bridge. Possible service payments belong to that
+      service and are not framework revenue
+    outcome: The approved experiment defines successful use as setup plus one
+      relevant capability check; adoption requires repeat use or a retain
+      decision. This is a measurement definition, not an observed outcome
+    status: No independent external setup, capability-use, adoption, time-saving,
+      reliability, or value result has been supplied; no channel-conversion
+      baseline is available.
+    steps:
+      - Discover the service
+      - Evaluate an agent and its knowledge boundary
+      - Register a profile
+      - Use a promotional grant or paid access
+      - Ask one question in chat
+      - Receive one agent answer
+      - Repeat, seek support, or leave
+  signals:
+    - detail: tracked service activity; not framework adoption
+      title: demonstration-service usage
+    - detail: views or stars
+      title: repository attention
+    - detail: license or documentation review plus retrieval or setup attempt
+      title: evaluation intent
+    - detail: passing setup and one capability check
+      title: successful use
+    - detail: repeat use or an attributable decision to retain Code Framework as the
+        product foundation.
+      title: adoption
+  trigger: "An imminent architecture decision exposes the cost and risk of
+    assembling several recurring capability families before product-specific
+    work can progress: ecommerce (product catalogs, stores, carts, and orders);
+    billing and payments; identity and access; content and sites; CRM and data
+    capture; analytics; messaging, notifications, and social; files; and AI,
+    knowledge, and automation. The first case should need at least three
+    documented families."
+  visual:
+    palette:
+      accent: "#BFEF61"
+      background: "#F7F6F2"
+      foreground: "#111111"
+      line: "#CBC9C3"
+      muted: "#565656"
+      primary: "#111111"
+      surface: "#FFFFFF"
+    displayType: '"Cormorant Garamond", serif'
+    bodyType: '"JetBrains Mono", monospace'
+    displayTypeLabel: Cormorant Garamond
+    bodyTypeLabel: JetBrains Mono
+confirmation:
+  confirmed: false
+review:
+  dependencies:
+    brand: d5832fea9d6f4995d90b780efb5a8889ead9fe63e13d26620fb8a6c4538a3d78
+    design: 1c79d3a18cbee1ce687a7d583e70018acf5d4930604d9e4decc55fcc0a320f08
+    product.singlepagestartup.presentation-renderer: fe0d94a0c84bb6ff402e6df0287fa5362564367a13ee91a5f29e4728d3614e7d
+    product.singlepagestartup.product: dfdeb35a0cac6981f105a69b34a0765a1f4ae5e7498d189c24c9bd8d158ac26e
+    product.singlepagestartup.research: ea5c88d23c21b82ce7d8a5d8a916557e59f9cc04344c4f17755f802c8c38a289
+    product.singlepagestartup.sales: 55772cf4836b99bff5a50065b7b71f4f394d125c80f88675a754ed074dd8c446

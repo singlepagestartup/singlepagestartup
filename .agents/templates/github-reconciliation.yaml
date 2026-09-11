@@ -3,7 +3,7 @@ remote: origin
 branch: default
 strategy_path: apps/studio/workspace/strategy/<layer>.md
 ignore_paths:
-  - apps/studio/workspace/pre-development/github/**
+  - apps/studio/workspace/utils/pre-development/github/**
 rules:
   - id: relevant-source-group
     paths: []

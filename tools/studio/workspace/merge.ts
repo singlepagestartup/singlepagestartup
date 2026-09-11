@@ -1,16 +1,16 @@
 import { parse, stringify } from "yaml";
+import { parseDocument, renderDocument, type DocumentLayer } from "./document";
 
 export interface IMergedWorkspaceContent {
   content: string;
   overlayContributes: boolean;
+  confirmationLayer?: DocumentLayer;
 }
 
 export type WorkspaceMergeStrategy =
   | "keyed"
-  | "portfolio-catalog"
   | "product-catalog"
   | "replace"
-  | "scoped-keyed"
   | "sections";
 
 function hasMeaningfulMarkdown(value: string): boolean {
@@ -64,7 +64,7 @@ function renderMarkdown(head: string, sections: IMarkdownSection[]): string {
     .join("\n\n")}\n`;
 }
 
-export function mergeMarkdown(
+function mergeMarkdownBody(
   base: string,
   overlay: string,
 ): IMergedWorkspaceContent {
@@ -114,49 +114,47 @@ export function mergeMarkdown(
   };
 }
 
-export function mergeEvidenceRegister(
+function mergeDocument(
+  base: string,
+  overlay: string,
+  mergeBody: (base: string, overlay: string) => IMergedWorkspaceContent,
+): IMergedWorkspaceContent {
+  const baseDocument = parseDocument(base);
+  const overlayDocument = parseDocument(overlay);
+  const merged = mergeBody(baseDocument.body, overlayDocument.body);
+  const ownsConfirmation = Object.hasOwn(
+    overlayDocument.metadata,
+    "confirmation",
+  );
+  const metadata = { ...baseDocument.metadata, ...overlayDocument.metadata };
+  // A changed body never inherits approval of the previous document.
+  if (
+    merged.overlayContributes &&
+    !ownsConfirmation &&
+    baseDocument.metadata.confirmation !== undefined
+  ) {
+    metadata.confirmation = { confirmed: false };
+  }
+  if (
+    merged.overlayContributes &&
+    !Object.hasOwn(overlayDocument.metadata, "review")
+  )
+    delete metadata.review;
+  return {
+    content: renderDocument({ body: merged.content, metadata }),
+    overlayContributes:
+      merged.overlayContributes ||
+      Object.keys(overlayDocument.metadata).length > 0,
+    confirmationLayer:
+      ownsConfirmation || merged.overlayContributes ? "startup" : "singlepage",
+  };
+}
+
+export function mergeMarkdown(
   base: string,
   overlay: string,
 ): IMergedWorkspaceContent {
-  function table(source: string) {
-    const lines = source.split("\n");
-    const start = lines.findIndex((line) => line.trimStart().startsWith("|"));
-    if (start < 0) return undefined;
-    let end = start;
-    while (end < lines.length && lines[end].trimStart().startsWith("|")) {
-      end += 1;
-    }
-    return {
-      after: lines.slice(end).join("\n").trim(),
-      before: lines.slice(0, start).join("\n").trim(),
-      header: lines.slice(start, Math.min(start + 2, end)),
-      rows: lines.slice(Math.min(start + 2, end), end),
-    };
-  }
-
-  const baseTable = table(base);
-  const overlayTable = table(overlay);
-  if (!baseTable || !overlayTable) return mergeMarkdown(base, overlay);
-  const overlayRows = overlayTable.rows.filter((row) => row.trim());
-  if (!overlayRows.length) return { content: base, overlayContributes: false };
-
-  function rowId(row: string) {
-    return row.split("|")[1]?.trim() ?? row;
-  }
-
-  const rows = new Map(
-    baseTable.rows.filter((row) => row.trim()).map((row) => [rowId(row), row]),
-  );
-  for (const row of overlayRows) rows.set(rowId(row), row);
-  const content = [
-    baseTable.before || overlayTable.before,
-    ...baseTable.header,
-    ...rows.values(),
-    overlayTable.after || baseTable.after,
-  ]
-    .filter(Boolean)
-    .join("\n");
-  return { content: `${content}\n`, overlayContributes: true };
+  return mergeDocument(base, overlay, mergeMarkdownBody);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -194,14 +192,34 @@ export function mergeYaml(
   base: string,
   overlay: string,
 ): IMergedWorkspaceContent {
-  const baseData = parse(base);
-  const overlayData = parse(overlay);
+  const baseDocument = parseDocument(base, "yaml");
+  const overlayDocument = parseDocument(overlay, "yaml");
+  const baseData = parse(baseDocument.body);
+  const overlayData = parse(overlayDocument.body);
   const merged = mergeData(baseData, overlayData);
+  const bodyChanges = JSON.stringify(merged) !== JSON.stringify(baseData);
+  const ownsConfirmation = Object.hasOwn(
+    overlayDocument.metadata,
+    "confirmation",
+  );
+  const metadata = { ...baseDocument.metadata, ...overlayDocument.metadata };
+  if (
+    bodyChanges &&
+    !ownsConfirmation &&
+    baseDocument.metadata.confirmation !== undefined
+  )
+    metadata.confirmation = { confirmed: false };
+  if (bodyChanges && !Object.hasOwn(overlayDocument.metadata, "review"))
+    delete metadata.review;
   const overlayContributes =
-    JSON.stringify(merged) !== JSON.stringify(baseData);
+    bodyChanges || Object.keys(overlayDocument.metadata).length > 0;
   return {
-    content: overlayContributes ? stringify(merged) : base,
+    content: overlayContributes
+      ? stringify({ ...(merged as Record<string, unknown>), ...metadata })
+      : base,
     overlayContributes,
+    confirmationLayer:
+      bodyChanges || ownsConfirmation ? "startup" : "singlepage",
   };
 }
 
@@ -209,21 +227,6 @@ function productCount(source: string): number {
   if (!source.trim()) return 0;
   const value = parse(source) as { products?: unknown } | null;
   return Array.isArray(value?.products) ? value.products.length : 0;
-}
-
-function directionCount(source: string): number {
-  if (!source.trim()) return 0;
-  const value = parse(source) as { directions?: unknown } | null;
-  return Array.isArray(value?.directions) ? value.directions.length : 0;
-}
-
-export function replacePortfolioCatalog(
-  base: string,
-  overlay: string,
-): IMergedWorkspaceContent {
-  return directionCount(overlay) > 0
-    ? { content: overlay, overlayContributes: true }
-    : { content: base, overlayContributes: false };
 }
 
 export function replaceProductCatalog(
@@ -249,22 +252,17 @@ export function mergeWorkspaceContent({
   strategy?: WorkspaceMergeStrategy;
 }): IMergedWorkspaceContent {
   if (strategy === "replace") {
-    return hasMeaningfulMarkdown(overlay)
-      ? { content: overlay, overlayContributes: true }
-      : { content: base, overlayContributes: false };
+    return mergeDocument(base, overlay, (baseBody, overlayBody) =>
+      hasMeaningfulMarkdown(overlayBody)
+        ? { content: overlayBody, overlayContributes: true }
+        : { content: baseBody, overlayContributes: false },
+    );
   }
   if (strategy === "keyed") return mergeYaml(base, overlay);
-  if (strategy === "portfolio-catalog") {
-    return replacePortfolioCatalog(base, overlay);
-  }
   if (strategy === "product-catalog") {
     return replaceProductCatalog(base, overlay);
   }
-  if (strategy === "scoped-keyed") {
-    return mergeEvidenceRegister(base, overlay);
-  }
   if (strategy === "sections") return mergeMarkdown(base, overlay);
   if (sourcePath.endsWith(".yaml")) return mergeYaml(base, overlay);
-  if (kind === "evidence") return mergeEvidenceRegister(base, overlay);
   return mergeMarkdown(base, overlay);
 }

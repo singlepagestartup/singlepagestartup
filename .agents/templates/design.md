@@ -1,4 +1,15 @@
+---
+confirmation:
+  confirmed: false
+---
+
 # Design
+
+<!-- This is a starting document structure, not a fixed page layout. Choose
+in-scope visual families from the brief. Configure visible blocks, additional
+Markdown/React/HTML/media sections, or a full TSX/JSX template in
+design/<layer>/layout.yaml; see workspace/README.md. Files are layer-owned.
+Changing the layout does not approve content or resolve omitted requirements. -->
 
 <!-- Reusable visual translation of approved Brand. Maximum 1,400 words. Keep
 pages and forms in product-local website.md; keep channel formats in
@@ -10,9 +21,7 @@ five-part schema because Studio renders both through one media template. -->
 | Field                 | Current value                   |
 | --------------------- | ------------------------------- |
 | Brand prerequisite    | Approved status and evidence ID |
-| Design status         | `proposed` or `approved`        |
 | Client style analysis | `proposed` or `confirmed`       |
-| Operator confirmation | Current attributable decision   |
 | Visual proposal ID    | One kebab-case ID               |
 
 ## Design intent
