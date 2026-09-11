@@ -1,26 +1,32 @@
 # Pre-development artifact templates
 
-These files define the minimum structure of the business and design artifacts,
-plus one compact project-specific decision-profile structure. They are not
+These files define the minimum structure of the business and design artifacts.
+They are not
 project data, role instructions, or a separate methodology. The workflow loads
 one template only when it creates an artifact or repairs missing required
 sections; agents do not load this directory wholesale.
 
+Primary review documents start with `confirmation: { confirmed: false }` in
+frontmatter (or the YAML root for Sales). Follow
+`.agents/contracts/document-confirmation.md` before recording user confirmation;
+partial startup overrides bind to the complete resolved body. Empty startup
+files stay empty until they intentionally override content or confirmation.
+
 ## Sequence
 
-| Stage       | Owner                                       | Template output                                                                   | Depends on                                                         |
-| ----------- | ------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| 00 Business | Account Manager and coordinator             | `brief.md`, complete `portfolio.yaml`, `decision-profile.md`, evidence proposals  | founder request and existing materials                             |
-| 00 Business | Business Analyst                            | `business.md`, one `sales.yaml` per active product, decision-profile proposals    | scope-confirmed brief, portfolio, decision profile, evidence       |
-| 00 Business | Market Researcher                           | portfolio-level `research.md`, one direction `research.md` per portfolio row      | scope-confirmed brief, portfolio, material research questions      |
-| 10 Strategy | Strategist                                  | proposed, then approved `strategy.md` with separate audience and sales priorities | brief, portfolio, business, research, sales, and evidence          |
-| 20 Brand    | Communication Strategist and Brand Designer | proposed, then approved `brand.md`                                                | approved strategy and evidence                                     |
-| 30 Design   | Brand Designer                              | `design.md`, `asset-index.yaml`                                                   | approved brand, confirmed existing assets and preferred references |
-| 40 Products | Strategist                                  | one `product.md` per active product                                               | approved shared decisions and exact Strategy-selected product set  |
-| 40 Products | Web Designer                                | product-local `website.md`                                                        | product, shared decisions, evidence, assets                        |
-| 40 Products | Brand Designer                              | product-local `marketing-creative.md`                                             | product, shared decisions, evidence, assets, selected channels     |
-| 40 Products | Communication Strategist and Brand Designer | product-local React/HTML presentation                                             | product and its approved review documents                          |
-| 40 Products | Product owner for the applicable material   | optional product-local React `Content` surface                                    | product-owned sources in any appropriate format                    |
+| Stage             | Owner                                       | Template output                                                                   | Depends on                                                         |
+| ----------------- | ------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 00 Client Request | Account Manager and coordinator             | `brief.md`, source notes in the owning document                                   | founder request and existing materials                             |
+| 00 Client Request | Business Analyst                            | `business.md`, one `sales.yaml` per active product                                | scope-confirmed brief, attributed facts                            |
+| 10 Strategy       | Market Researcher                           | product-local `research.md`                                                       | completed fact intake, product-specific decision questions         |
+| 10 Strategy       | Strategist                                  | proposed, then approved `strategy.md` with separate audience and sales priorities | brief, business, product research, and sales                       |
+| 20 Brand          | Communication Strategist and Brand Designer | proposed, then approved `brand.md`                                                | approved strategy and product research                             |
+| 30 Design         | Brand Designer                              | `design.md`, `asset-index.yaml`                                                   | approved brand, confirmed existing assets and preferred references |
+| 40 Products       | Strategist                                  | one `product.md` per active product                                               | approved shared decisions and client-confirmed product inventory   |
+| 40 Products       | Web Designer                                | product-local `website.md`                                                        | product, shared decisions, research, assets                        |
+| 40 Products       | Brand Designer                              | product-local `marketing-creative.md`                                             | product, shared decisions, research, assets, selected channels     |
+| 40 Products       | Communication Strategist and Brand Designer | product-local React/HTML presentation                                             | product and its approved review documents                          |
+| 40 Products       | Product owner for the applicable material   | optional nested product sections/pages (legacy `Content` supported)               | product-owned sources in any appropriate format                    |
 
 The complete operating order, review rules, and invalidation behavior remain in
 `.agents/workflows/pre-development.md`. Templates describe shape only;
@@ -40,20 +46,18 @@ Every primary review document is limited to 1,400 words so the operator can read
 and edit it in five to seven minutes. This is a usability rule rather than a
 token budget.
 In particular, `strategy.md` uses exactly its four second-level sections and
-does not contain interview chronology, profile disposition, invalidation logs,
-evidence proposals, or coordinator handoff prose.
+does not contain interview chronology, invalidation logs,
+or coordinator handoff prose.
 
 `github-reconciliation.yaml` is an operational template, not a living business
 artifact. Each layer instantiates it under `pre-development/github/` to define
 GitHub relevance rules and record the outcome of each reconciled relevant
 commit. The normal stage cursor remains minimal and contains no commit history.
 
-`decision-profile.md` is working knowledge, not a client-facing final artifact. It
-records the compound business-model classification and only the domain
-questions, metrics, evidence, risks, regulations, and viability conditions that
-can change a decision. Its singlepage source describes SinglePageStartup; its
-startup source is initially empty and replaces the complete domain profile once
-populated. Consumers read only the resolved profile.
+Material questions and constraints stay in the documents that need their
+answers. AI methods and completion checks live in the canonical roles and
+workflow; document metadata owns confirmation. There is no separate decision
+checklist template or second approval summary.
 
 Natural-language confirmations, not stage commands, approve the decision scope,
 strategy, and brand direction. Professional roles still make the substantive
@@ -75,10 +79,14 @@ so these templates stay small and do not make an agent repeat a theatrical
 persona or a generic marketing process in every artifact.
 
 `brand.md` owns meaning, message, voice, and intended perception. `design.md`
-translates that approved meaning into the reusable visual system. The Portfolio
-manifest is the complete inventory of products, audience-growth programs, and
-internal operations. Each direction has its own Research. Every active product
-also has its own machine-readable Sales process. Product-local `product.md`,
+translates that approved meaning into the reusable visual system. Each active
+product owns Research and a machine-readable Sales process. Product-local `product.md`,
 `website.md`, `marketing-creative.md`, and the presentation apply those shared
 decisions to one active product. None may redefine decisions owned by another
 artifact.
+
+Design presentation structure is project-owned in `design/<layer>/layout.yaml`.
+Use ordered built-in/custom sections or a full TSX/JSX template; see the workspace
+README for the exact schema. Empty startup inherits; a populated startup layout
+replaces the base, using its own files. Keep the applicable visual decisions in
+the Design document and Assets; do not force every project into starter blocks.

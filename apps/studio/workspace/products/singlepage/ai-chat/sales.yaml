@@ -1,0 +1,74 @@
+schema: singlepagestartup.sales-process.v1
+product_id: ai-chat
+readiness: blocked
+owner: Founder; detailed operational responsibilities remain unconfirmed.
+seller: AI Chat service operator; legal seller and commercial terms remain unconfirmed.
+pricing: Token or paid-chat access was discussed as a possibility; no customer
+  price is selected. Prior promotional provider-cost limits are USD 1 per
+  user/day and USD 200 aggregate, not a price list.
+capacity: Prior experiment allows six founder hours/week, 18 hours total over
+  three weeks. Continuing support capacity is unknown; no response-time promise.
+stages:
+  - id: access
+    name: Registration and access
+    owner: Founder; operational delegate unconfirmed
+    entry_conditions:
+      - Identity and eligibility can be checked
+      - Provider-cost and authority controls are defined
+    required_fields:
+      - User identity
+      - Eligibility
+      - Access basis
+      - Applicable cost limit
+    action: Register the user and grant only eligible promotional access. A purchase
+      route requires separately approved terms.
+    exit_condition: Access basis and applicable limits are recorded.
+    failure: Pause or deny access if eligibility, cost, capacity or authority is
+      unclear.
+    metric: Eligible access grants and refused grants with a reason; no target
+      selected.
+  - id: interaction
+    name: Agent interaction
+    owner: Service operator; incident ownership unconfirmed
+    entry_conditions:
+      - Valid access
+      - Agent and knowledge boundary are visible
+    required_fields:
+      - Agent choice
+      - Question
+      - Access balance or allowance
+      - Interaction outcome
+    action: Accept a question within the defined boundary and return an answer,
+      bounded refusal or recorded failure.
+    exit_condition: The outcome and affected usage units are recorded.
+    failure: Preserve unaffected balances and reconcile affected units; pause
+      repeated or unbounded failures.
+    metric: Completed answers, refusals, failures and actual provider cost; value is
+      assessed separately.
+  - id: follow-up
+    name: Repeat use and support
+    owner: Founder, subject to available capacity
+    entry_conditions:
+      - Recorded interaction outcome
+    required_fields:
+      - Repeat-use or exit decision
+      - Support case when requested
+    action: Allow eligible repeat use or route a support request through
+      messenger-linked CRM visibility.
+    exit_condition: The next interaction, support case or exit is attributable.
+    failure: Explain unavailable support without promising a response time;
+      escalation rules remain to be confirmed.
+    metric: Repeat use and unresolved support cases, separate from framework
+      evaluation.
+blockers:
+  - Exact customer problem, user segment and offer remain unselected.
+  - Eligibility, payment, privacy/retention, AI authority, day reset and
+    reconciliation require confirmation.
+  - Continuing support, incident/security and refund/reversal owners remain
+    unconfirmed.
+  - The intended service flow has no supplied independent external verification.
+confirmation:
+  confirmed: false
+review:
+  dependencies:
+    business: a91d74583bcc0dd5699980a5d03d063a72c463cc6c0b9d7b7896f67c62d8a5e0

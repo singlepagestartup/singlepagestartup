@@ -1,9 +1,13 @@
+# Save at products/<layer>/catalog.yaml; keep both layer catalogs from the outset.
+# All catalog paths (documents, data, and React entry points) use products/<layer>/.
 schema: singlepagestartup.product-catalog.v1
 products: []
-# Add complete products only. Every product belongs to exactly one layer and
-# keeps Product, Website, Marketing Creative, and Presentation sources together.
-# A product may additionally expose one flexible React Content surface whose
-# internal files and data model are owned entirely by that product.
+# Keep every client-confirmed product, including drafts and products outside the current experiment. Every product belongs to exactly one layer and
+# keeps Research, Sales, Product, Website, Marketing Creative, and Presentation together.
+# Optional sections augment core tabs or add tabs; nested pages may use any
+# supported working format. Shared utilities live in utils/products/, while
+# product pages, components, and supporting files stay in their layer folder.
+# Legacy content and website_component fields remain supported.
 # If startup contains at least one product, the complete startup catalog
 # replaces the complete singlepage catalog in default; products never merge by
 # ID across layers.
@@ -12,10 +16,34 @@ products: []
 #   - id: replace-with-kebab-case-id
 #     name: Replace with product name
 #     summary: Replace with one-sentence product summary.
+#     research: replace-with-id/research.md
+#     sales: replace-with-id/sales.yaml
 #     product: replace-with-id/product.md
 #     website: replace-with-id/website.md
 #     marketing_creative: replace-with-id/marketing-creative.md
 #     presentation: replace-with-id/presentation/ProjectPresentation.tsx
+#     presentation_data: replace-with-id/presentation/data.yaml
 #     # Optional product-local rendered review surfaces:
 #     # website_component: replace-with-id/website/Website.tsx
 #     # content: replace-with-id/content/Content.tsx
+#     # Optional nested pages; source paths are relative to the selected layer.
+#     # sections:
+#     #   - id: website # core ID adds pages beside its existing Overview
+#     #     title: Website
+#     #     pages:
+#     #       - id: landing
+#     #         title: Landing page
+#     #         source: replace-with-id/website/index.html
+#     #   - id: academy # custom ID creates an additional tab
+#     #     title: Academy
+#     #     pages:
+#     #       - id: course
+#     #         title: Course
+#     #         children:
+#     #           - id: lesson
+#     #             title: Introduction
+#     #             source: replace-with-id/content/course/lesson.md
+#     #           - id: deck
+#     #             title: Lesson slides
+#     #             source: replace-with-id/content/course/Deck.tsx
+#     #             export: pdf

@@ -17,7 +17,8 @@ const preview: Preview = {
           "Workspace",
           [
             "README",
-            "00 Business",
+            "00 Client Request",
+            ["01 Brief", "02 Business"],
             "10 Strategy",
             "20 Brand",
             "30 Design",

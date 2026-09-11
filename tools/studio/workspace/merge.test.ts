@@ -7,39 +7,40 @@
 
 import { describe, expect, test } from "bun:test";
 
-import { replacePortfolioCatalog, replaceProductCatalog } from "./merge";
+import { replaceProductCatalog } from "./merge";
 
 describe("atomic workspace catalogs", () => {
   /**
-   * BDD Scenario: Keep a complete portfolio together
-   * Given a framework portfolio and an empty startup portfolio
-   * When the portfolio-catalog strategy resolves them
+   * BDD Scenario: Keep a complete product catalog together
+   * Given a framework catalog and an empty startup catalog
+   * When the product-catalog strategy resolves them
    * Then the framework source passes through unchanged
    */
-  test("inherits the framework portfolio when startup is empty", () => {
+  test("inherits the framework products when startup is empty", () => {
     const base =
-      "schema: singlepagestartup.portfolio.v1\ndirections:\n  - { id: framework-product }\n";
-    const overlay = "schema: singlepagestartup.portfolio.v1\ndirections: []\n";
+      "schema: singlepagestartup.product-catalog.v1\nproducts:\n  - { id: framework-product }\n";
+    const overlay =
+      "schema: singlepagestartup.product-catalog.v1\nproducts: []\n";
 
-    expect(replacePortfolioCatalog(base, overlay)).toEqual({
+    expect(replaceProductCatalog(base, overlay)).toEqual({
       content: base,
       overlayContributes: false,
     });
   });
 
   /**
-   * BDD Scenario: Replace a framework portfolio with the project portfolio
-   * Given startup declares one project direction
-   * When the portfolio-catalog strategy resolves it
-   * Then no framework direction is merged into the project inventory
+   * BDD Scenario: Replace framework products with project products
+   * Given startup declares one project product
+   * When the product-catalog strategy resolves it
+   * Then no framework product is merged into the project inventory
    */
-  test("replaces the whole portfolio when startup is non-empty", () => {
+  test("replaces all products when startup is non-empty", () => {
     const base =
-      "schema: singlepagestartup.portfolio.v1\ndirections:\n  - { id: framework-product }\n";
+      "schema: singlepagestartup.product-catalog.v1\nproducts:\n  - { id: framework-product }\n";
     const overlay =
-      "schema: singlepagestartup.portfolio.v1\ndirections:\n  - { id: project-product }\n";
+      "schema: singlepagestartup.product-catalog.v1\nproducts:\n  - { id: project-product }\n";
 
-    expect(replacePortfolioCatalog(base, overlay)).toEqual({
+    expect(replaceProductCatalog(base, overlay)).toEqual({
       content: overlay,
       overlayContributes: true,
     });

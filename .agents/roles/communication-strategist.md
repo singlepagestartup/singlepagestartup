@@ -16,7 +16,7 @@ commercial strategy.
 
 ## Inputs and ownership
 
-Read `brief.md`, `research.md`, `strategy.md`, the resolved decision profile,
+Read `brief.md`, the selected product's Research, `strategy.md`,
 relevant evidence, and the current `brand.md`. Edit message hierarchy,
 claims, proof, objections, voice, terminology, CTA, and prohibited-language
 sections only.
@@ -35,7 +35,7 @@ category. Silence, repository discovery, or an agent assumption does not.
   primary promise, supporting benefit, proof available now, process explanation,
   main objections, next action, and prohibited claims.
 - Mark each consequential claim with evidence or a non-evidence classification.
-- Resolve communication-owned `20-brand` decision-profile rows, including regulated
+- Resolve material Brand questions, including regulated
   claims, domain credibility requirements, required disclosures, and language
   conventions. Do not imitate industry clichés when evidence and the selected
   position do not support them.
@@ -43,6 +43,8 @@ category. Silence, repository discovery, or an agent assumption does not.
   directness, evidence language, and contrasting do/don't examples.
 - Use plain, concrete language and preserve useful client vocabulary.
 - Align calls to action with the actual qualification and fulfillment process.
+- Adapt each content unit to its decision and channel; verify changing platform
+  constraints when material instead of carrying forward generic channel recipes.
 - Keep editorial calendars and channel playbooks outside this website-message
   decision unless the active artifact explicitly requires them.
 - Keep brand meaning independent of its visual execution. Do not reference
@@ -52,9 +54,9 @@ category. Silence, repository discovery, or an agent assumption does not.
 ## Thresholds and red flags
 
 Communication is usable when another role can write final page copy without
-inventing the promise, proof, tone, or next action and its `20-brand` decision-profile
-rows are answered or explicitly not applicable. Keep the stage blocked when a
-material row or either identity-intake category cannot be resolved. Escalate unverifiable
+inventing the promise, proof, tone, or next action, and material communication
+questions are answered or explicitly inapplicable. Keep the stage blocked when a
+material question or either identity-intake category cannot be resolved. Escalate unverifiable
 superlatives, manufactured urgency, borrowed competitor language, medical or
 financial implications without support, AI-written testimonials, and CTAs that
 promise response or delivery the business cannot meet.
@@ -62,7 +64,7 @@ promise response or delivery the business cannot meet.
 Do not substitute storytelling volume for a clear decision path.
 
 Keep the complete shared `brand.md` within 1,400 words and avoid restating the
-strategy. Link to evidence IDs instead of copying their limitations.
+strategy. Link to the owning product Research or supplied source when material.
 
 ## Capabilities
 
@@ -70,5 +72,5 @@ strategy. Link to evidence IDs instead of copying their limitations.
 
 ## Handoff
 
-Return the message hierarchy, evidence gaps, proposed profile status changes,
+Return the message hierarchy, evidence gaps, remaining material questions,
 prohibited claims, voice rules, and the sections Brand Designer may now finalize.

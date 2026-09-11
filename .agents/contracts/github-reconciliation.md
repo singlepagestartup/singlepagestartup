@@ -25,9 +25,9 @@ no changes exist from a stale local remote-tracking ref.
 Repository routing is strict:
 
 - `singlepagestartup/singlepagestartup` resolves to `singlepage` and may update
-  only `singlepage` state, ledger, evidence, and living sources;
+  only `singlepage` state, ledger, and living sources;
 - an unlisted downstream repository resolves to `startup` and may update only
-  `startup` state, ledger, evidence, and living sources;
+  `startup` state, ledger, and living sources;
 - a conflicting gitignored `active_layer` is a hard failure and cannot override
   a detected repository identity;
 - every strategy path and affected artifact ID in a reconciliation config must
@@ -46,12 +46,14 @@ The automatically resolved layer's committed configuration and reconciliation
 ledger is:
 
 ```text
-apps/studio/workspace/pre-development/github/<layer>.yaml
+apps/studio/workspace/utils/pre-development/github/<layer>.yaml
 ```
 
 The baseline is discovered on every invocation as the earliest commit on the
-configured GitHub branch whose layer strategy contains an approved Decision
-status. Do not guess or store a chat-derived baseline. Before that commit is
+configured GitHub branch whose layer Strategy has valid user-confirmation
+metadata. Historical sources without metadata retain their legacy approved
+Decision status support. Present but false/stale metadata is authoritative;
+see `.agents/contracts/document-confirmation.md`. Do not guess or store a chat-derived baseline. Before that commit is
 published, `waiting-for-baseline` is expected and the normal workflow may
 continue; report that GitHub monitoring is not active yet.
 
@@ -79,20 +81,21 @@ Classify the result:
 
 For a material result:
 
-1. Add or correct active evidence with the full commit SHA, GitHub path or URL,
-   observed content, access date, and limitations. A committed file proves only
-   its content at that SHA; it does not prove runtime behavior, adoption,
-   compatibility, or outcomes.
+1. Identify the current fact, decision, or limitation affected by the commit.
+   Preserve a commit/path reference beside that statement only when needed to
+   support its meaning. A committed file proves its content, not runtime
+   behavior or outcomes. Do not create an Evidence row or a duplicate changelog.
 2. Update the earliest owning artifact.
-3. Compute reverse dependencies from the workspace index and rerun only
-   contradicted owners.
+3. Resolve reverse dependencies, including product files, under the document
+   confirmation contract. Review `stale` inputs and rerun only contradicted
+   owners; refresh dependency snapshots only after checking the impact.
 4. Move the stage cursor to the earliest incomplete affected stage.
-5. Record the commit, `material` outcome, evidence IDs, affected artifacts, and
+5. Record the commit, `material` outcome, affected artifacts, and
    a compact English summary in the layer ledger only after every required side
    effect succeeds.
 
 For `no-material-effect`, record the commit and a concrete English reason after
-inspection. Do not create evidence or move the stage cursor merely because a
+inspection. Do not add document prose or move the stage cursor merely because a
 configured path changed.
 
 If any side effect fails, do not add the reconciliation row. The commit must
@@ -107,5 +110,6 @@ approved audience, offer, acquisition focus, and experiment may remain intact.
 
 When a GitHub change alters an approved audience, offer, positioning,
 acquisition focus, budget, threshold, or other material direction, mark that
-professional artifact `proposed`, invalidate its approval row, move the cursor
-to its stage, and require fresh operator approval before downstream work.
+professional artifact stale under the document-confirmation contract, move the
+cursor to its stage, and require fresh operator approval of the corrected
+document before downstream work.

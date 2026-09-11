@@ -7,6 +7,7 @@
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -45,7 +46,7 @@ function reconciliationConfig(layer) {
 remote: origin
 branch: default
 strategy_path: apps/studio/workspace/strategy/${layer}.md
-ignore_paths: [apps/studio/workspace/pre-development/github/**]
+ignore_paths: [apps/studio/workspace/utils/pre-development/github/**]
 rules:
   - id: license
     paths: [LICENSE, NOTICE*]
@@ -74,7 +75,7 @@ function createRepository(
   );
   write(
     repositoryRoot,
-    "apps/studio/workspace/config.yaml",
+    "apps/studio/workspace/utils/config.yaml",
     `schema: singlepagestartup.workspace-config.v1
 default_layer: startup
 repository_layers:
@@ -84,7 +85,7 @@ repository_layers:
   for (const layer of ["singlepage", "startup"]) {
     write(
       repositoryRoot,
-      `apps/studio/workspace/pre-development/github/${layer}.yaml`,
+      `apps/studio/workspace/utils/pre-development/github/${layer}.yaml`,
       reconciliationConfig(layer),
     );
   }
@@ -129,6 +130,79 @@ function check(repositoryRoot, expectedLayer) {
 
 describe("GitHub pre-development reconciliation", () => {
   /**
+   * BDD Scenario: Use document-owned approval instead of an obsolete prose row
+   * Given a strategy body still contains a legacy approved row
+   * When metadata says false or its content fingerprint is stale
+   * Then only a later valid user confirmation establishes the baseline
+   */
+  test("requires valid confirmation when strategy metadata is present", () => {
+    const { repositoryRoot } = createRepository("proposed");
+    const strategyPath = "apps/studio/workspace/strategy/singlepage.md";
+    const body =
+      "# Strategy\n\n| Status | approved |\n\n## Choice\n\nOne bounded experiment.\n";
+    write(
+      repositoryRoot,
+      strategyPath,
+      `---\nconfirmation: { confirmed: false }\n---\n\n${body}`,
+    );
+    commit(repositoryRoot, "unconfirmed strategy with a legacy row");
+    assert.equal(check(repositoryRoot).baseline_commit, null);
+    const stamp = (hash) =>
+      `---\nconfirmation:\n  confirmed: true\n  by: operator\n  at: \"2026-09-11\"\n  content_sha256: ${hash}\n---\n\n${body}`;
+    write(repositoryRoot, strategyPath, stamp("stale-fingerprint"));
+    commit(repositoryRoot, "edit a previously reviewed body");
+    assert.equal(check(repositoryRoot).baseline_commit, null);
+    write(
+      repositoryRoot,
+      strategyPath,
+      stamp(createHash("sha256").update(body.trim()).digest("hex")),
+    );
+    const approved = commit(repositoryRoot, "confirm the current strategy");
+    assert.equal(check(repositoryRoot).baseline_commit, approved);
+  });
+
+  /**
+   * BDD Scenario: Confirm the inherited strategy for a downstream project
+   * Given the startup strategy initially contains no own confirmation
+   * When the operator explicitly adopts the complete singlepage strategy
+   * Then the metadata-only startup commit establishes its own baseline
+   */
+  test("evaluates startup adoption against its base at the same commit", () => {
+    const { repositoryRoot } = createRepository(
+      "proposed",
+      "example/client-product",
+    );
+    const body = "# Strategy\n\n## Choice\n\nOne bounded experiment.\n";
+    const hash = createHash("sha256").update(body.trim()).digest("hex");
+    const metadata = `---\nconfirmation:\n  confirmed: true\n  by: operator\n  at: \"2026-09-11\"\n  content_sha256: ${hash}\n---\n`;
+    write(
+      repositoryRoot,
+      "apps/studio/workspace/strategy/singlepage.md",
+      `${metadata}\n${body}`,
+    );
+    write(repositoryRoot, "apps/studio/workspace/strategy/startup.md", "");
+    commit(repositoryRoot, "inherit a framework strategy");
+    assert.equal(check(repositoryRoot).baseline_commit, null);
+    write(
+      repositoryRoot,
+      "apps/studio/workspace/strategy/startup.md",
+      metadata,
+    );
+    const adoption = commit(
+      repositoryRoot,
+      "confirm the inherited strategy for startup",
+    );
+    assert.equal(check(repositoryRoot).baseline_commit, adoption);
+    write(
+      repositoryRoot,
+      "apps/studio/workspace/strategy/singlepage.md",
+      `${metadata}\n${body.replace("One bounded", "Another")}`,
+    );
+    commit(repositoryRoot, "change base after the historical approval");
+    assert.equal(check(repositoryRoot).baseline_commit, adoption);
+  });
+
+  /**
    * BDD Scenario: Resolve the writable layer from repository identity
    * Given the canonical framework repository and an unknown downstream repository
    * When the preflight starts without a caller-selected layer
@@ -160,7 +234,7 @@ describe("GitHub pre-development reconciliation", () => {
 
     write(
       framework.repositoryRoot,
-      "apps/studio/workspace/config.local.yaml",
+      "apps/studio/workspace/utils/config.local.yaml",
       "active_layer: startup\n",
     );
     assert.throws(
@@ -170,7 +244,7 @@ describe("GitHub pre-development reconciliation", () => {
 
     write(
       framework.repositoryRoot,
-      "apps/studio/workspace/config.local.yaml",
+      "apps/studio/workspace/utils/config.local.yaml",
       "repository_layers:\n  singlepagestartup/singlepagestartup: startup\n",
     );
     assert.throws(
@@ -189,7 +263,7 @@ describe("GitHub pre-development reconciliation", () => {
     const downstream = createRepository("approved", "example/client-product");
     const configPath = path.join(
       downstream.repositoryRoot,
-      "apps/studio/workspace/pre-development/github/startup.yaml",
+      "apps/studio/workspace/utils/pre-development/github/startup.yaml",
     );
     const invalidConfig = readFileSync(configPath, "utf8").replace(
       "startup.strategy]",
@@ -237,7 +311,7 @@ describe("GitHub pre-development reconciliation", () => {
 
     const configPath = path.join(
       approved.repositoryRoot,
-      "apps/studio/workspace/pre-development/github/singlepage.yaml",
+      "apps/studio/workspace/utils/pre-development/github/singlepage.yaml",
     );
     const config = readFileSync(configPath, "utf8").replace(
       "reconciliations: []",
@@ -245,7 +319,6 @@ describe("GitHub pre-development reconciliation", () => {
   - commit: ${licenseCommit}
     outcome: material
     summary: MIT License publication was reconciled.
-    evidence_ids: [TEST-EV-001]
     affected_artifacts: [singlepage.research, singlepage.strategy]`,
     );
     writeFileSync(configPath, config);

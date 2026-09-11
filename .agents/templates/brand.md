@@ -1,3 +1,8 @@
+---
+confirmation:
+  confirmed: false
+---
+
 # Brand
 
 <!-- Brand creates meaning in the customer's mind. Maximum 1,400 words. Colors,
@@ -7,9 +12,6 @@ belong to design.md and the asset registry. -->
 ## Decision status
 
 - Requires an approved strategy
-- Status: `proposed` until the operator confirms or corrects the brand meaning
-  and communication direction; `approved` only after that confirmation
-- Operator confirmation: attributable wording or unresolved correction
 - Brand name: exact public name used by every derived Design projection
 - Website and visual design cannot start before brand approval
 
@@ -32,6 +34,6 @@ belong to design.md and the asset registry. -->
 
 - Approval, evidence limits, naming authority, and which decisions Design,
   Website, and Marketing Creative may apply but not redefine
-- Resolve all `20-brand` decision-profile rows, including domain credibility,
+- Address material Brand constraints, including domain credibility,
   regulated claims, conventions that must be followed, and clichés that should
   be rejected

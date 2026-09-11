@@ -55,8 +55,8 @@ export function resolveRepositoryIdentity(
 export function readWorkspaceConfig(repositoryRoot: string): IWorkspaceConfig {
   const workspaceRoot = path.join(repositoryRoot, "apps/studio/workspace");
   const failures: string[] = [];
-  const configPath = path.join(workspaceRoot, "config.yaml");
-  const localPath = path.join(workspaceRoot, "config.local.yaml");
+  const configPath = path.join(workspaceRoot, "utils/config.yaml");
+  const localPath = path.join(workspaceRoot, "utils/config.local.yaml");
   const parseConfig = (sourcePath: string) => {
     if (!existsSync(sourcePath)) return {} as Record<string, unknown>;
     const parsed = parse(readFileSync(sourcePath, "utf8"));

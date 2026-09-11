@@ -1,0 +1,84 @@
+schema: singlepagestartup.github-reconciliation.v1
+remote: origin
+branch: default
+strategy_path: apps/studio/workspace/strategy/singlepage.md
+ignore_paths:
+  - apps/studio/workspace/utils/pre-development/github/**
+rules:
+  - id: license-and-distribution
+    paths:
+      - LICENSE
+      - LICENSE.*
+      - COPYING*
+      - NOTICE*
+      - README.md
+      - package.json
+      - package-lock.json
+    affected_artifacts:
+      - singlepage.strategy
+      - singlepage.brand
+      - singlepage.products
+    earliest_stage: 00-business
+  - id: framework-capabilities
+    paths:
+      - apps/api/**
+      - apps/host/**
+      - apps/mcp/**
+      - libs/modules/**
+    affected_artifacts:
+      - singlepage.business
+      - singlepage.strategy
+      - singlepage.brand
+      - singlepage.products
+    earliest_stage: 00-business
+  - id: setup-release-and-runtime
+    paths:
+      - ai.sh
+      - up.sh
+      - .nvmrc
+      - docker-compose*.yaml
+      - docker-compose*.yml
+      - apps/db/**
+      - apps/redis/**
+    affected_artifacts:
+      - singlepage.business
+      - singlepage.strategy
+      - singlepage.brand
+      - singlepage.products
+    earliest_stage: 00-business
+reconciliations:
+  - commit: 40c799f86ca5a45388931a9f3b0182c55c782ea7
+    outcome: no-material-effect
+    summary: Portfolio migration preserves the recorded framework offer, supporting
+      showcase, audience, budget, and proof boundaries. Package changes only
+      extend Studio tests. Incomplete document ownership and presentation
+      bindings are pipeline compatibility work, not new evidence of runtime
+      capability or adoption; the stage cursor was reconciled separately.
+    affected_artifacts: []
+  - commit: 99e3037f085283f666d96654750cff5ecb5ac620
+    outcome: no-material-effect
+    summary: The merge publishes the inspected portfolio migration with a tree
+      identical to 40c799f86ca5a45388931a9f3b0182c55c782ea7 and no additional
+      business decision or runtime claim.
+    affected_artifacts: []
+  - commit: 29fa75fec77941d97ad353f4f7cfc552966d6e6e
+    outcome: no-material-effect
+    summary: MCP JSON date coercion changes mutation input handling but no current
+      business claim, offer boundary, experiment, or published product promise.
+    affected_artifacts: []
+  - commit: 961fe1bc37c3305c4bafcc4c671359d4b0afe548
+    outcome: no-material-effect
+    summary: The merge publishes the same MCP date-coercion change and introduces no
+      additional current business or product decision.
+    affected_artifacts: []
+  - commit: ce874f3143d3bed3fb2e3abc884a11a92db84f52
+    outcome: no-material-effect
+    summary: The branch merge carries the same MCP date-coercion change without
+      changing the current business, evidence boundary, or experiment.
+    affected_artifacts: []
+  - commit: 0f01a155342265c4b45915a8e8f2efc288d08a44
+    outcome: no-material-effect
+    summary: The published Studio and pre-development system matches the current
+      checked-out living artifacts and adds no unreconciled claim beyond their
+      recorded decisions and limitations.
+    affected_artifacts: []

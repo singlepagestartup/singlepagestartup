@@ -1,0 +1,81 @@
+schema: singlepagestartup.product-presentation.v1
+product_id: ai-chat
+content:
+  name: AI Chat
+  subtitle: AI-agent conversations
+  slides:
+    - id: product
+      label: The product
+      title: Choose an agent. Ask a question.
+      lead: AI Chat is an intended service for interacting with AI agents within their
+        stated knowledge and authority boundaries.
+      points:
+        - AI Chat and Code Framework are two separate SinglePageStartup products.
+        - Service use is distinct from evaluating or adopting the framework.
+        - Product identity is confirmed; the offer and external availability
+          still need review.
+    - id: experience
+      label: Intended experience
+      title: One interaction, with an explicit outcome.
+      lead: The recorded service flow starts with registration and eligible access.
+      points:
+        - Choose an agent and inspect its boundary.
+        - Submit a question within that boundary.
+        - Receive an answer, a bounded refusal, or a recorded failure.
+        - Repeat with valid access, seek support, or leave.
+    - id: access
+      label: Access and cost
+      title: Access terms come before a paid offer.
+      lead: Token or paid-chat mechanics were discussed as possibilities. No customer
+        price is selected.
+      points:
+        - The prior experiment caps promotional provider cost at USD 1 per
+          user/day and USD 200 aggregate.
+        - Those experimental caps are not a customer price or a continuing
+          commercial entitlement.
+        - Eligibility, reset rules, reconciliation and refund or reversal
+          handling remain to be confirmed.
+    - id: audience
+      label: Customer decision
+      title: Define the problem this service should solve.
+      lead: The intended user, paying segment and purchase trigger remain unselected.
+      points:
+        - A question and answer alone do not establish useful customer progress.
+        - Select a concrete user problem before making a service-specific
+          competitive comparison.
+        - Define successful use and a reason to return before claiming value or
+          demand.
+    - id: readiness
+      label: Delivery readiness
+      title: Demonstrate the complete service boundary.
+      lead: No independent external availability, successful-use or repeat-use result
+        has been supplied.
+      points:
+        - Confirm privacy, retention, AI authority and cost enforcement.
+        - Assign incident, security, reconciliation and support responsibility.
+        - Founder support is best effort; no response-time commitment is
+          approved.
+        - Preserve unaffected balances when an interaction fails.
+    - id: next-decision
+      label: Next decision
+      title: Agree on a bounded service offer.
+      lead: The customer problem, access terms and delivery responsibilities remain to
+        be agreed before launch.
+      points:
+        - Define the intended user and concrete problem.
+        - Confirm access and delivery terms before publishing a purchase or
+          registration route.
+        - Measure service usage, payment and provider cost separately from
+          framework adoption.
+        - Sources are recorded client scope and experiment decisions from August
+          2026, with product identity clarified on 2026-09-11.
+confirmation:
+  confirmed: false
+review:
+  dependencies:
+    brand: d5832fea9d6f4995d90b780efb5a8889ead9fe63e13d26620fb8a6c4538a3d78
+    design: 1c79d3a18cbee1ce687a7d583e70018acf5d4930604d9e4decc55fcc0a320f08
+    product.ai-chat.presentation-renderer: 829cf1a0cca98ea1e767b25153a17e75f3e17ec64ac2eb6fed59702cdc193406
+    product.ai-chat.product: 1740fb3b42a1085283cea0eb2b935d2411a3279442e9703b5391e7dde420df45
+    product.ai-chat.research: 0eeca26295676d608899f743de785f7b327aab7f38804290526a4cba244ade7c
+    product.ai-chat.sales: 73d27f0445aeed22eb1ae045d3988369499d069e70584cd5f5dcde376296daed

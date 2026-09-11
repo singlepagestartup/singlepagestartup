@@ -1,3 +1,8 @@
+---
+confirmation:
+  confirmed: false
+---
+
 # Website
 
 <!-- Final reviewable specification. Maximum 1,400 words. -->
@@ -25,6 +30,6 @@
 ## Metadata and review
 
 - Title, description, Open Graph copy, evidence links, Studio story references
-- Resolve all `40-products` decision-profile rows, including buyer roles, qualification,
+- Address material Website constraints, including buyer roles, qualification,
   required disclosures, domain proof, data collection, and post-conversion
   operations

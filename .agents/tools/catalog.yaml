@@ -5,7 +5,7 @@ capabilities:
     inputs: [remote, branch, approved-strategy-baseline, relevance-rules]
     outputs: [head-commit, pending-relevant-commits, changed-paths, affected-artifact-ids]
     roles: [all]
-    artifact_kinds: [evidence, business, research, strategy, brand, design, products, product, website, creative, presentation, asset-index]
+    artifact_kinds: [ business, research, strategy, brand, design, products, product, website, creative, presentation, asset-index]
     required: true
     provenance: Preserve full commit SHA, GitHub repository, changed paths, and inspected snapshot.
     fallback: Stop before stage work when GitHub cannot be checked; do not use stale remote state.
@@ -23,7 +23,7 @@ capabilities:
     inputs: [artifact-id, proposed-change]
     outputs: [changed-paths, decision-summary]
     roles: [all]
-    artifact_kinds: [brief, business, research, strategy, brand, design, products, product, website, creative, presentation, evidence, asset-index]
+    artifact_kinds: [brief, business, research, strategy, brand, design, products, product, website, creative, presentation, asset-index]
     required: true
     provenance: Report every changed canonical path.
     fallback: Return a patch proposal without claiming persistence.
@@ -32,16 +32,16 @@ capabilities:
     inputs: [research-question, source-constraints]
     outputs: [findings, urls, accessed-at, uncertainty]
     roles: [market-researcher, strategist, communication-strategist, brand-designer, web-designer]
-    artifact_kinds: [research, strategy, brand, products, product, website, creative, presentation, evidence]
+    artifact_kinds: [research, strategy, brand, products, product, website, creative, presentation]
     required: false
     provenance: URL, access date, direct observation versus inference.
-    fallback: Use registered internal evidence and mark current external evidence unavailable.
+    fallback: Use attributed supplied materials and mark current external evidence unavailable.
   - id: browser-interaction
     purpose: Inspect pages that require interactive or authenticated browser state.
     inputs: [target, task]
     outputs: [observations, screenshots-or-state]
     roles: [account-manager, market-researcher, brand-designer, web-designer]
-    artifact_kinds: [brief, research, brand, design, product, website, creative, presentation, evidence, asset-index]
+    artifact_kinds: [brief, research, brand, design, product, website, creative, presentation, asset-index]
     required: false
     provenance: Visited target, observation, capture path when created.
     fallback: Request an attachment or use a public non-interactive source.

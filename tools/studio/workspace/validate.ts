@@ -1,6 +1,9 @@
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { parseProductCatalog } from "../../../apps/studio/workspace/utils/products/catalog";
+import { validateProductSectionFiles } from "../products/validate";
+import { validateDesignLayouts } from "../design/validate";
 
 import {
   loadWorkspace,
@@ -48,7 +51,7 @@ async function writeFixture(
   } = {},
 ) {
   const workspaceRoot = path.join(root, "workspace");
-  const indexRoot = path.join(workspaceRoot, "index");
+  const indexRoot = path.join(workspaceRoot, "utils/index");
   const singlepageRoot = path.join(workspaceRoot, "singlepage");
   const startupRoot = path.join(workspaceRoot, "startup");
   await Promise.all([
@@ -58,10 +61,10 @@ async function writeFixture(
   ]);
   const singlepageIndex =
     options.singlepageIndex ??
-    `schema: fixture.v1\nlayer: singlepage\nentries:\n  - { id: template.base, kind: template, path: singlepage/base.md, description: Exported template., uses: [] }\n  - { id: singlepage.discovery, kind: discovery, path: singlepage/discovery.md, description: Framework discovery., uses: [] }\n  - { id: singlepage.secret, kind: brief, path: singlepage/secret.md, description: Private local artifact., uses: [singlepage.discovery] }\n  - { id: singlepage.evidence, kind: evidence, path: singlepage/evidence.md, description: Framework evidence., uses: [] }\n  - { id: singlepage.profile, kind: decision-profile, path: singlepage/profile.md, description: Framework profile., uses: [singlepage.secret, singlepage.evidence] }\n  - { id: singlepage.business, kind: business, path: singlepage/business.md, description: Framework business., uses: [singlepage.profile] }\n  - { id: singlepage.portfolio, kind: portfolio, path: singlepage/portfolio.yaml, description: Framework portfolio., uses: [singlepage.business] }\n  - { id: singlepage.products, kind: products, path: singlepage/products.yaml, description: Framework products., uses: [singlepage.portfolio] }\nexports: [template.base]\nimports: []\n`;
+    `schema: fixture.v1\nlayer: singlepage\nentries:\n  - { id: template.base, kind: template, path: singlepage/base.md, description: Exported template., uses: [] }\n  - { id: singlepage.discovery, kind: discovery, path: singlepage/discovery.md, description: Framework discovery., uses: [] }\n  - { id: singlepage.secret, kind: brief, path: singlepage/secret.md, description: Private local artifact., uses: [singlepage.discovery] }\n  - { id: singlepage.business, kind: business, path: singlepage/business.md, description: Framework business., uses: [singlepage.secret] }\n  - { id: singlepage.products, kind: products, path: singlepage/products.yaml, description: Framework products., uses: [singlepage.business] }\nexports: [template.base]\nimports: []\n`;
   const startupIndex =
     options.startupIndex ??
-    `schema: fixture.v1\nlayer: startup\nentries:\n  - { id: startup.discovery, kind: discovery, path: startup/discovery.md, extends: singlepage.discovery, strategy: replace, description: Client discovery., uses: [] }\n  - { id: startup.brief, kind: brief, path: startup/brief.md, extends: singlepage.secret, strategy: sections, description: Local startup artifact., uses: [template.base, startup.discovery] }\n  - { id: startup.evidence, kind: evidence, path: startup/evidence.md, extends: singlepage.evidence, strategy: scoped-keyed, description: Client evidence., uses: [] }\n  - { id: startup.profile, kind: decision-profile, path: startup/profile.md, extends: singlepage.profile, strategy: replace, description: Client profile., uses: [startup.brief, startup.evidence] }\n  - { id: startup.business, kind: business, path: startup/business.md, extends: singlepage.business, strategy: sections, description: Client business., uses: [startup.profile] }\n  - { id: startup.portfolio, kind: portfolio, path: startup/portfolio.yaml, extends: singlepage.portfolio, strategy: portfolio-catalog, description: Client portfolio., uses: [startup.business] }\n  - { id: startup.products, kind: products, path: startup/products.yaml, extends: singlepage.products, strategy: product-catalog, description: Client products., uses: [startup.portfolio] }\nexports: []\nimports: [template.base]\n`;
+    `schema: fixture.v1\nlayer: startup\nentries:\n  - { id: startup.discovery, kind: discovery, path: startup/discovery.md, extends: singlepage.discovery, strategy: replace, description: Client discovery., uses: [] }\n  - { id: startup.brief, kind: brief, path: startup/brief.md, extends: singlepage.secret, strategy: sections, description: Local startup artifact., uses: [template.base, startup.discovery] }\n  - { id: startup.business, kind: business, path: startup/business.md, extends: singlepage.business, strategy: sections, description: Client business., uses: [startup.brief] }\n  - { id: startup.products, kind: products, path: startup/products.yaml, extends: singlepage.products, strategy: product-catalog, description: Client products., uses: [startup.business] }\nexports: []\nimports: [template.base]\n`;
   await Promise.all([
     writeFile(path.join(indexRoot, "singlepage.yaml"), singlepageIndex),
     writeFile(path.join(indexRoot, "startup.yaml"), startupIndex),
@@ -83,36 +86,12 @@ async function writeFixture(
       "# Brief\n\n## Shared direction\n\n## Client detail\n\nClient override.\n",
     ),
     writeFile(
-      path.join(singlepageRoot, "evidence.md"),
-      "# Evidence register\n\n| ID | Scope | State | Claim |\n| --- | --- | --- | --- |\n| E-1 | singlepage | active | Framework fact |\n| E-2 | singlepage | active | Framework assumption |\n",
-    ),
-    writeFile(
-      path.join(startupRoot, "evidence.md"),
-      "# Evidence register\n\n| ID | Scope | State | Claim |\n| --- | --- | --- | --- |\n| E-2 | startup | superseded | Client correction |\n| E-3 | startup | active | Client fact |\n",
-    ),
-    writeFile(
-      path.join(singlepageRoot, "profile.md"),
-      "# Decision profile\n\n## Business model\n\nFramework business model.\n\n## Capacity\n\nFramework capacity rule.\n",
-    ),
-    writeFile(
-      path.join(startupRoot, "profile.md"),
-      "# Decision profile\n\n## Business model\n\nStartup business model.\n\n## Capacity\n",
-    ),
-    writeFile(
       path.join(singlepageRoot, "business.md"),
       "# Business\n\n## Model\n\nFramework model.\n",
     ),
     writeFile(
       path.join(startupRoot, "business.md"),
       "# Business\n\n## Model\n\nStartup model.\n",
-    ),
-    writeFile(
-      path.join(singlepageRoot, "portfolio.yaml"),
-      "schema: singlepagestartup.portfolio.v1\ndirections:\n  - { id: framework-product, name: Framework product }\n",
-    ),
-    writeFile(
-      path.join(startupRoot, "portfolio.yaml"),
-      "schema: singlepagestartup.portfolio.v1\ndirections: []\n",
     ),
     writeFile(
       path.join(singlepageRoot, "products.yaml"),
@@ -186,20 +165,6 @@ async function runSelfCheck() {
         "valid fixture did not resolve the startup brief overlay",
       );
     }
-    const effectiveEvidence = graph.loadedEntries.find(
-      (entry) => entry.id === "startup.evidence",
-    );
-    if (
-      effectiveEvidence?.resolution !== "merged" ||
-      !effectiveEvidence.content.includes("Framework fact") ||
-      !effectiveEvidence.content.includes("Client correction") ||
-      !effectiveEvidence.content.includes("Client fact") ||
-      effectiveEvidence.content.includes("Framework assumption")
-    ) {
-      throw new Error(
-        "valid fixture did not resolve evidence rows by stable ID",
-      );
-    }
     const effectiveDiscovery = graph.loadedEntries.find(
       (entry) => entry.id === "startup.discovery",
     );
@@ -213,9 +178,6 @@ async function runSelfCheck() {
         "valid fixture did not resolve project-specific knowledge by active layer",
       );
     }
-    const effectiveProfile = graph.loadedEntries.find(
-      (entry) => entry.id === "startup.profile",
-    );
     const effectiveBusiness = graph.loadedEntries.find(
       (entry) => entry.id === "startup.business",
     );
@@ -223,16 +185,11 @@ async function runSelfCheck() {
       (entry) => entry.id === "startup.products",
     );
     if (
-      effectiveProfile?.resolution !== "merged" ||
-      !effectiveProfile.content.includes("Startup business model.") ||
-      effectiveProfile.content.includes("Framework capacity rule.") ||
-      effectiveProfile.content.includes("Framework business model.") ||
-      graph.visibleEntries.some((entry) => entry.id === "singlepage.profile") ||
-      !effectiveBusiness?.uses.includes("startup.profile") ||
-      effectiveBusiness.uses.includes("singlepage.profile")
+      !effectiveBusiness?.uses.includes("startup.brief") ||
+      effectiveBusiness.uses.includes("singlepage.secret")
     ) {
       throw new Error(
-        "valid fixture did not resolve the decision-profile overlay or route dependencies to it",
+        "valid fixture did not route Business directly to the resolved Brief",
       );
     }
     if (
@@ -275,9 +232,7 @@ async function runSelfCheck() {
     const fixture = await writeFixture(emptyOverlayRoot);
     await Promise.all([
       writeFile(path.join(fixture.startupRoot, "brief.md"), ""),
-      writeFile(path.join(fixture.startupRoot, "evidence.md"), ""),
       writeFile(path.join(fixture.startupRoot, "discovery.md"), ""),
-      writeFile(path.join(fixture.startupRoot, "profile.md"), ""),
     ]);
     const [resolvedGraph, sourceGraph] = await Promise.all([
       loadWorkspace({
@@ -301,18 +256,13 @@ async function runSelfCheck() {
     const resolvedDiscovery = resolvedGraph.loadedEntries.find(
       (entry) => entry.id === "startup.discovery",
     );
-    const resolvedProfile = resolvedGraph.loadedEntries.find(
-      (entry) => entry.id === "startup.profile",
-    );
     if (
       resolvedBrief?.resolution !== "inherited" ||
       !resolvedBrief.content.includes("Framework direction.") ||
       startupBrief?.resolution !== "local" ||
       startupBrief.content !== "" ||
       resolvedDiscovery?.resolution !== "inherited" ||
-      !resolvedDiscovery.content.includes("Framework question.") ||
-      resolvedProfile?.resolution !== "inherited" ||
-      !resolvedProfile.content.includes("Framework business model.")
+      !resolvedDiscovery.content.includes("Framework question.")
     ) {
       throw new Error(
         "valid fixture did not pass SinglePageStartup through an empty startup overlay",
@@ -331,10 +281,6 @@ async function runSelfCheck() {
       path.join(fixture.startupRoot, "products.yaml"),
       "schema: singlepagestartup.product-catalog.v1\nproducts:\n  - { id: startup-product, name: Startup product }\n",
     );
-    await writeFile(
-      path.join(fixture.startupRoot, "portfolio.yaml"),
-      "schema: singlepagestartup.portfolio.v1\ndirections:\n  - { id: startup-product, name: Startup product }\n",
-    );
     const graph = await loadWorkspace({
       ...fixture,
       activeLayer: "startup",
@@ -343,19 +289,13 @@ async function runSelfCheck() {
     const products = graph.loadedEntries.find(
       (entry) => entry.id === "startup.products",
     );
-    const portfolio = graph.loadedEntries.find(
-      (entry) => entry.id === "startup.portfolio",
-    );
     if (
       products?.resolution !== "merged" ||
       !products.content.includes("startup-product") ||
-      products.content.includes("framework-product") ||
-      portfolio?.resolution !== "merged" ||
-      !portfolio.content.includes("startup-product") ||
-      portfolio.content.includes("framework-product")
+      products.content.includes("framework-product")
     ) {
       throw new Error(
-        "valid fixture mixed singlepage and startup portfolio or product catalogs",
+        "valid fixture mixed singlepage and startup product catalogs",
       );
     }
   } finally {
@@ -368,7 +308,7 @@ async function runSelfCheck() {
   try {
     const fixture = await writeFixture(fallbackRoot, {
       startupIndex:
-        "schema: fixture.v1\nlayer: startup\nentries:\n  - { id: startup.profile, kind: decision-profile, path: startup/profile.md, extends: singlepage.profile, strategy: replace, description: Local profile., uses: [] }\nexports: []\nimports: [template.base]\n",
+        "schema: fixture.v1\nlayer: startup\nentries:\n  - { id: startup.discovery, kind: discovery, path: startup/discovery.md, extends: singlepage.discovery, strategy: replace, description: Local discovery., uses: [] }\nexports: []\nimports: [template.base]\n",
     });
     const graph = await loadWorkspace({
       ...fixture,
@@ -409,15 +349,6 @@ async function runSelfCheck() {
       startupIndex: `schema: fixture.v1\nlayer: startup\nentries:\n  - { id: startup.brief, kind: brief, path: startup/brief.md, extends: singlepage.secret, strategy: replace, description: Local., uses: [] }\nexports: []\nimports: []\n`,
     }),
   );
-  await expectFailure("invalid evidence scope", async (root) =>
-    writeFixture(root).then(async (fixture) => {
-      await writeFile(
-        path.join(fixture.startupRoot, "evidence.md"),
-        "# Evidence register\n\n| ID | Scope | State | Claim |\n| --- | --- | --- | --- |\n| E-3 | singlepage | active | Wrong scope |\n",
-      );
-      return fixture;
-    }),
-  );
   await expectFailure("invalid import", async (root) =>
     writeFixture(root, {
       startupIndex: `schema: fixture.v1\nlayer: startup\nentries:\n  - { id: startup.brief, kind: brief, path: brief.md, description: Local., uses: [template.missing] }\nexports: []\nimports: [template.missing]\n`,
@@ -437,7 +368,7 @@ async function runSelfCheck() {
     }),
   );
   console.log(
-    "Workspace validator self-check resolved declared section, replacement, keyed, scoped evidence, and atomic portfolio/product-catalog strategies; routed active dependencies; passed empty startup files through; isolated source projections and fallbacks; then rejected invalid inheritance, evidence scope, IDs, files, imports, uses, and cycles.",
+    "Workspace validator self-check resolved declared section, replacement, keyed, and atomic product-catalog strategy; routed active dependencies; passed empty startup files through; isolated source projections and fallbacks; then rejected invalid inheritance, IDs, files, imports, uses, and cycles.",
   );
 }
 
@@ -448,6 +379,19 @@ async function main() {
     repositoryIdentity: options.repositoryIdentity,
     workspaceRoot: options.workspaceRoot,
   });
+  await validateDesignLayouts(graph.workspaceRoot);
+  for (const entry of graph.loadedEntries.filter(
+    (entry) => entry.kind === "products",
+  )) {
+    const catalog = parseProductCatalog(
+      entry.content,
+      entry.inherited ? "singlepage" : graph.activeLayer,
+    );
+    await validateProductSectionFiles(
+      catalog,
+      path.dirname(entry.absolutePath),
+    );
+  }
   console.log(
     `Workspace ${graph.activeLayer} is valid: ${graph.visibleEntries.length} visible entries, ${graph.imports.length} imports, ${graph.exports.length} exports.`,
   );

@@ -11,7 +11,7 @@ language to start, continue, inspect, or change the active project before
 engineering begins.
 
 Resolve the active layer through the shared repository-layer resolver using
-`apps/studio/workspace/config.yaml` and its safety-checked gitignored
+`apps/studio/workspace/utils/config.yaml` and its safety-checked gitignored
 `config.local.yaml`. A detected repository identity is authoritative and a
 conflicting local layer is an error. The configured default is `startup`; the
 canonical `singlepagestartup/singlepagestartup` repository is explicitly mapped
@@ -49,21 +49,25 @@ silently replaced by a stale local comparison.
 
 ## Quality and interaction rules
 
+Follow `.agents/contracts/document-confirmation.md` for the document-owned user
+confirmation parameter, source-layer inheritance, content fingerprints, and
+header status. Scope or partial decisions never imply whole-document approval.
+
 Quality, correctness, and a decision-ready result take precedence over response
 length, number of turns, execution time, or token use. Never skip a material
 question, source check, professional review, or artifact correction to make the
 workflow shorter.
 
 The operator must be able to review and edit every primary document without
-reconstructing the agent session. `brief`, `business`, global and direction
+reconstructing the agent session. `brief`, `business`, each product
 `research`, `strategy`, `brand`, `design`, and each product-local `product`,
 `website`, and `creative`
 document contain at most 1,400 words,
 including tables, so a normal review takes about five to seven minutes. This is
-a human-usability rule, not a token-saving rule. Evidence and assets are indexed
-reference registers; agents load only the rows used by the active decision.
-Every primary artifact states each decision once and points to evidence IDs
-instead of copying evidence limitations into several sections.
+a human-usability rule, not a token-saving rule. Assets is a reference index,
+loaded only when relevant. State each decision once; retain material attribution
+with that statement and historical versions in Git. No standalone Evidence
+register or mandatory global source ledger is created.
 
 Use the operator's language for questions and handoffs unless they request
 otherwise. Use the requested artifact language independently: translate and
@@ -76,9 +80,8 @@ Classify every material unknown by who can resolve it:
 
 - `operator-fact`: current facts or constraints controlled or known by the
   operator, including the project boundary, existing customers or users,
-  the complete set of current or intended directions and each direction's
-  objective role (`product`, `audience-program`, or `internal-operation`) and
-  lifecycle (`active`, `future`, or `deferred`),
+  the current or intended products in scope and the role of supporting
+  acquisition activities or internal work,
   budget, available time and contacts, rights and license intent, support
   capacity, geography, decision authority, owned assets, preferred references,
   and non-goals;
@@ -106,7 +109,7 @@ After the GitHub preflight succeeds, read the active layer's state before
 loading project content:
 
 ```text
-apps/studio/workspace/pre-development/<layer>.yaml
+apps/studio/workspace/utils/pre-development/<layer>.yaml
 ```
 
 The state is a durable cursor, not a second source of business truth. It contains
@@ -123,8 +126,8 @@ not_started | in_progress | blocked | complete
 ```
 
 The state is layer-local and never inherited: the framework reads
-`pre-development/singlepage.yaml`; a downstream project reads
-`pre-development/startup.yaml`.
+`utils/pre-development/singlepage.yaml`; a downstream project reads
+`utils/pre-development/startup.yaml`.
 
 ## Pipeline compatibility reconciliation
 
@@ -142,8 +145,8 @@ singlepage-to-startup inheritance: keep applicable inheritance, write only
 project-specific startup changes, and never let unrelated inherited project
 facts satisfy an active startup approval or scope gate.
 
-Route every missing file, section, schema key, current requirement, or stable
-approval row to its earliest owning stage. Repair it from attributable current
+Route every missing file, section, schema key, current requirement, or required
+approval record to its earliest owning stage. Repair it from attributable current
 facts when possible; otherwise classify and ask for the highest-impact missing
 input. Move and persist the cursor before downstream work. An unchanged pipeline
 and compatible Workspace make this reconciliation a no-op.
@@ -176,8 +179,8 @@ At every launch, reconcile the cursor before doing work:
    reconciliation, and reconcile the cursor; report the resulting stage,
    status, and active artifacts.
 2. Load only the dependency closure of those active artifacts. Living sources
-   are colocated with `index.stories.tsx` under
-   `apps/studio/workspace/<artifact>/`; project-specific working knowledge uses
+   live under `apps/studio/workspace/<artifact>/`; their read-only stories and
+   rendering code live in `apps/studio/workspace/utils/`. Optional project-specific context uses
    `apps/studio/workspace/knowledge/<kind>/`.
 3. Classify unresolved items as `operator-fact`, `research-question`,
    `professional-choice`, or `evidence-gap`. Ask for the highest-impact missing
@@ -189,7 +192,7 @@ At every launch, reconcile the cursor before doing work:
    contains both professional responsibility and method; load only the resolved
    project dependencies and capability bindings required for this decision.
 5. Update the earliest canonical artifact directly. During initial interview,
-   do not repeatedly regenerate business, research, strategy, brand, website, or
+   do not repeatedly regenerate Business, product Research, Strategy, Brand, Website, or
    marketing creative
    from each partial answer. Propagate a batch only after the decision subject
    and affected upstream section are stable or when a confirmed correction
@@ -210,7 +213,13 @@ At every launch, reconcile the cursor before doing work:
 1. Classify the request as a correction, new evidence, changed constraint, or
    requested presentation change.
 2. Update the earliest canonical artifact that owns the changed fact or decision.
-3. Compute reverse dependencies from the workspace index.
+3. Resolve document statuses and reverse dependencies with the shared review
+   resolver, including product-local inputs. Follow
+   `.agents/contracts/document-confirmation.md`: changed inputs produce `stale`;
+   review their semantic impact before use. Refresh a dependency snapshot after
+   a no-material-effect review without re-requesting unchanged approval. For a
+   material effect, record `review.stale` until the owning correction and required
+   confirmation are complete. Never refresh hashes merely to hide stale work.
 4. Re-run only owners whose artifacts are now contradicted or stale. A narrowly
    scoped request may explicitly freeze unaffected upstream decisions.
    A full owner rerun replaces the owned artifact from its template and current
@@ -231,183 +240,173 @@ Do not require separate commands for stages, roles, or document editing.
 
 ## Domain adaptation and quality gate
 
-The artifact templates guarantee shape only. A populated heading, fluent prose,
-or a generic list of best practices is not evidence that useful work happened.
-Before Business Analyst or Market Researcher begins, create or update the
-active project's routing contract:
+Rules for AI judgment live in `.agents/roles/`, templates, and this workflow.
+Project facts, decisions, questions, and constraints live in their owning
+workspace documents. Do not create a separate decision checklist, gate table,
+or approval register in workspace, and do not copy project business content into
+`.agents/`.
 
-```text
-apps/studio/workspace/knowledge/decision-profile/<layer>.md
-```
+Before completing a stage, its owner applies these checks to the actual content:
 
-Use `.agents/templates/decision-profile.md` only to create or repair its shape.
-Resolve this file through its indexed `extends` relationship. An empty startup
-source inherits the complete SinglePageStartup profile; once meaningful startup
-content exists, it replaces the profile as one domain-specific unit. Agents read
-the resolved profile but write changes only to the active layer's source. This
-prevents requirements from the infrastructure niche leaking into an unrelated
-business while preserving transparent pass-through before classification.
+1. Describe the current or intended business model from client inputs in
+   Brief/Business. Identify distinct users, buyers, payers, beneficiaries,
+   transaction/value units, money flow, capacity, geography, and material limits
+   only where they change a decision. Allow compound models; unknown facts stay
+   unknown instead of being forced into a familiar category.
+2. Record each material unanswered question once, in the document that needs
+   its answer. Classify it as `operator-fact`, `research-question`,
+   `professional-choice`, or `evidence-gap`. State the decision it blocks and
+   any later-stage or launch boundary. Ask the client for operator facts;
+   research external questions within the named product; let the responsible
+   professional propose choices. An assumption never resolves a client fact.
+3. Keep source attribution, applicable metrics, risks, regulation, and viability
+   conditions beside the owning decision. General checklists, role instructions,
+   and stage rules remain in `.agents/`. Use a named method or benchmark only
+   when the consuming document explains its source, fit, limitations, and effect
+   on a material decision. Familiar terminology is not evidence.
+4. Check the active stage's required content, actual inputs, source limitations,
+   and semantic dependency status. Resolve material questions needed for the next
+   decision; retain later unknowns explicitly without falsely marking them
+   answered. Explain inapplicability where material. A completed heading or
+   fluent generic prose never establishes quality or readiness.
+5. Read scope confirmation in Brief and required whole-document confirmations
+   from source metadata under `.agents/contracts/document-confirmation.md`.
+   Never duplicate approval in a second checklist. Scope confirmation does not
+   approve the whole Brief; whole-document confirmation does not verify market
+   claims. Strategy, Brand, and complete Design remain proposals until the
+   active project's user confirmation is valid.
+6. Derive the current stage from these criteria and the living documents, then
+   update only the minimal layer-local workflow cursor. When a changed premise
+   affects downstream content, follow semantic impact review rather than
+   importing or automatically rewriting another document.
 
-Build and maintain the profile as follows:
+Ask one highest-impact unanswered question at a time. Write usable answers into
+their owning sections and replace stale assertions rather than adding a dialogue
+log. Research only questions that can change the current decision. Project-specific
+constraints remain reviewable in the operator's ordinary documents.
 
-1. Classify the business model from the brief. Allow compound classifications;
-   for example, a developer framework monetized through infrastructure is not
-   forced into only “SaaS” or only “hosting”. Identify buyer, user, payer,
-   beneficiary, value/transaction unit, money flow, cost/capacity mechanism,
-   geography, regulation, and material dependencies.
-2. Add only decision areas that can change an artifact, experiment, or viability
-   judgment. Each row records the question, why it matters, required evidence,
-   metric or threshold, risks/regulation, viability rule, owning artifact, and
-   stage. Do not create a generic industry encyclopedia.
-3. Select fit-for-purpose professional methods or benchmarks only when they
-   constrain a material decision. Record an authoritative source, why the method
-   fits this business model, and its limitations. Do not name-drop Business
-   Model Canvas, JTBD, underwriting, unit economics, Service Blueprint, or any
-   other framework without applying it to a specific profile row.
-4. Use `required`, `blocked`, `proposed`, `answered`, `approved`, or
-   `not-applicable`. `answered` is for a resolved factual requirement and must
-   reference an artifact and evidence or an explicit non-evidence class.
-   `proposed` is a professional choice awaiting the confirmation required by
-   its stage. `approved` records operator acceptance of a material direction.
-   `not-applicable` must explain why. `required`, `blocked`, and `proposed`
-   prevent stage completion.
-5. Account Manager proposes the initial classification; Business Analyst and
-   Market Researcher propose economic, operational, market, legal, and evidence
-   corrections. Later owners propose new rows only when a discovered constraint
-   can change their output. The coordinator serializes profile updates just as
-   it serializes evidence-register updates.
-6. Before completing any stage, review only the rows assigned to that stage.
-   Factual rows must be `answered`, approval rows must be `approved`, and any
-   other row must be explicitly `not-applicable`. Its owning artifact must
-   contain the project-specific decision. Structural completeness, fluent prose,
-   or an `assumption` written as an answer never passes the gate.
-
-Every project profile must contain three stable approval rows: scope confirmation
-at `00-business`, including the complete Portfolio with objective roles and
-lifecycles; strategy approval at `10-strategy`, including separate
-audience-growth and sales-product priorities, the experiment track, and the exact
-active product set; and brand approval at `20-brand`. During reconciliation, add a missing row and move the cursor back
-to its stage. A prior cursor position or completed-looking artifact never implies
-approval.
-
-Ask one highest-impact unanswered question at a time. Research only material
-profile rows, write an answer into its owning artifact as soon as it is usable,
-and do not ask or research it again unless new evidence contradicts it. If the
-model classification changes, move the cursor to `00-business`, update the
-profile, and invalidate every dependent artifact whose assumptions changed.
-
-## 00 — Business
+## 00 — Client Request
 
 **State**: `active_stage: 00-business`. Begin with
-`active_artifacts: [brief]`. After the brief is usable, use
-`active_artifacts: [decision-profile]`. Only after the initial profile passes its
-classification gate may the cursor name `portfolio`, `business`, and `research` together;
-evidence and profile updates use serialized proposals.
+`active_artifacts: [brief]`, then `[business]`.
 
-**Owners**: Account Manager, Business Analyst, Market Researcher.
+**Owners**: Account Manager, then Business Analyst.
 
-**Required inputs**: founder request, available attachments, active index,
-existing brief/Portfolio/evidence, the resolved decision profile when present, and
-attributable market sources when research is available.
+**Required inputs**: founder request, client conversation, supplied documents
+and assets, existing project records, and the active index.
 
-**Capabilities**: artifact read/write, image inspection, browser interaction,
-and web research according to each role binding.
+**Capabilities**: artifact read/write, inspection of supplied materials, and
+browser interaction to read a client-provided source. No external market search
+or Market Researcher work belongs to this stage.
 
-Capture the indexed `brief` and `evidence` sources first. Before Business
-Analyst or Market Researcher starts, the brief must separate and name:
+Capture `brief` first. Before Business Analyst starts, the brief
+must separate and name:
 
-- the primary decision subject being developed;
-- its current business or project goal;
-- every current or intended business direction, including buyer or user,
-  commercial signal, one objective role (`product`, `audience-program`, or
-  `internal-operation`), and one lifecycle (`active`, `future`, or `deferred`);
-- any supporting reference or demonstration project;
-- historical context that is evidence but not the active model;
-- explicit out-of-scope topics;
-- current reality versus desired future state.
+- the primary decision subject and current business/project goal;
+- current or intended products, their stable IDs, client-stated buyer/user,
+  availability, price, and delivery mechanics where known;
+- supporting reference or demonstration projects;
+- historical context and explicit out-of-scope topics;
+- current reality, client intentions, and unknowns.
 
-Brief also owns the operator's visual-reference input inventory. Record five
-separately labeled sets for interface and website appearance, typography,
-photography, illustration, and marketing creative, together with reference
-asset IDs, liked or disliked examples, observable qualities, and a category
-status. Existing project materials and their rights remain canonical in Assets
-and are summarized once outside this intake table when relevant. This inventory may remain incomplete while Business,
-Strategy, and Brand proceed; it becomes a blocking prerequisite only before
-Design generation. The files themselves remain in Assets, not in Brief.
+Obtain a compact natural-language scope confirmation including the products in
+scope. Existing attributable confirmation remains valid until scope changes.
+Do not merge a framework, reference implementation, customer project, and
+historical service model because they share people or technology.
 
-Return a compact scope summary in the operator's language and ask them to
-confirm or correct it, including the complete direction inventory, role, and
-lifecycle. This confirmation is part of `00-business`, needs no special command,
-and remains a blocker until received. Do not merge the
-framework, a reference implementation, a customer project, and a historical
-service model merely because they are related.
+Brief also records five separate visual-reference sets: interface/website,
+typography, photography, illustration, and marketing creative. Record asset IDs,
+client likes/dislikes, and category status; Assets owns files and rights. This
+intake may remain incomplete during Business, Strategy, and Brand, but all five
+categories must be ready before Design generation.
 
-After scope confirmation, write the active layer's complete atomic Portfolio
-manifest. Give every direction one Research path. Give every active `product`
-one Sales path; no other role or lifecycle may have Sales. Then update the active
-layer's decision-profile source from the resolved brief and inherited profile,
-then let Business Analyst and Market Researcher propose corrections to it. They
-may work in parallel after the initial profile exists because they own different
-final files; the coordinator applies profile and evidence proposals serially.
-Complete the indexed portfolio-level `business` and `research` sources, every
-direction Research, and every active-product Sales process before strategic
-selection. Global Business contains only shared business mechanics and
-cross-direction routing. Global Research contains only cross-direction
-comparison and shared market conditions. Product-specific workflows,
-competitors, alternatives, prices, and channels stay in that product's files.
+After scope confirmation, describe the business model from client inputs in
+Business and place material questions in the documents that need their answers. `00-business` owns only
+operator facts and observations of supplied materials. External research
+questions belong to a named product at `10-strategy` or a later consuming stage;
+professional proposals belong to their owning later stage. Do not block factual
+intake on market research and do not use research to answer an operator fact.
 
-Evidence follows `.agents/contracts/evidence.md`. In an active startup,
-inherited rows scoped to `singlepage` remain provenance only and cannot support
-a startup claim. Use active `startup` or `shared` rows, or add an explicit
-startup row that adopts, supersedes, or marks an inherited row not applicable.
+Business consolidates client-supplied shared mechanics, ownership, resources,
+and constraints. Record each material assertion's source and state: client
+statement, supplied-material observation, confirmed intention, explicit
+calculation from supplied inputs, or unknown. A client's belief about demand
+remains a client claim. A proposed funnel, benchmark, segment, or forecast must
+not be presented as a current business fact.
 
-Completion requires confirmed decision scope, a complete Portfolio with no
-ambiguous role or lifecycle, explicit operator facts and unknowns, one complete
-sales process per active product, one bounded Research per direction,
-source-aware portfolio comparisons, and
-every `00-business` factual profile row answered, every scope approval row
-approved, and every other row explicitly not applicable or kept as a blocker.
-The canonical outputs are the active layer's colocated `brief`, `portfolio`,
-`evidence`, `business`, global and direction `research`, product `sales`, plus its project-specific decision
-profile; project claims, external observations, and inferences remain distinct.
+Record each active product's supplied current or client-confirmed intended
+sales process in `products/<layer>/<product-id>/sales.yaml`. Use confirmed Brief
+IDs or existing catalog paths; do not load delivery drafts to reconstruct facts.
+Mark missing operational details in Sales blockers instead of inventing them.
+Missing details block `00-business` only when the next strategic decision needs
+an operator fact; otherwise retain their exact later-stage or launch gate.
+Improvements to the process are later product/strategy proposals.
 
-When complete, persist `10-strategy`, `in_progress`, and `[strategy]` before
-handoff.
+Claim sources follow `.agents/contracts/evidence.md`. Current client facts stay
+in Brief/Business, external findings and sources in product Research, and asset
+rights in Assets. Approvals and current dependency review are source metadata
+under `.agents/contracts/document-confirmation.md`; Git owns prior versions.
+Do not create Evidence, a transcript register, or a substitute fact/change log.
+Client approval does not make a market hypothesis true. Inherited framework
+facts require client confirmation of applicability in the owning startup source.
+
+Completion requires confirmed scope and products, attributable current facts
+and intentions, explicit unknowns, and answers to the operator facts needed for
+the next strategic decision. Scope confirmation belongs in Brief. Outputs are
+Brief, Business, and product Sales intake. There is no business-wide Research artifact.
+
+When complete, persist `10-strategy`, `in_progress`, and `[product-research]`.
 
 ## 10 — Strategy
 
-**State**: `active_stage: 10-strategy`, `active_artifacts: [strategy]`.
+**State**: `active_stage: 10-strategy`. Begin with
+`active_artifacts: [product-research]`, then `[strategy]` once research inputs
+are sufficient. `product-research` is a cursor task: resolve exact product paths
+from confirmed Brief IDs or existing catalog entries; it is not a global document.
 
-**Owner**: Strategist.
+**Owners**: Market Researcher for each product, then Strategist.
 
-**Required inputs**: completed Business outputs including Portfolio, direction
-Research, and active-product Sales processes; the resolved decision profile,
-the resolved acquisition knowledge for the active project, and only the shared
-professional references relevant to the decision.
+**Required inputs**: completed client fact intake, confirmed Brief products,
+product Sales intake, and only relevant project knowledge
+and professional references.
 
-**Capabilities**: artifact read/write, web research when a current assumption
-needs checking, and document export only when explicitly requested.
+**Capabilities**: artifact read/write, decision-led external research, and
+optional document export only when requested.
 
-Use the resolved Brief, Portfolio, Business, global and direction Research, and
-active-product Sales processes to update the active layer's Strategy. Name one
-audience-growth priority and one sales-product priority; these priorities order
-work and do not disable other active directions. Select the exact active product
-set only from Portfolio rows whose role is `product` and lifecycle is `active`.
-Choose `audience-growth` or `sales` as the first experiment track and define one
-bounded experiment with decision rules. Never treat an `audience-program` or
-`internal-operation` as a sellable product.
+Before strategic selection, research each product whose audience, alternatives,
+pricing, channel, demand, or viability evidence can change the current choice.
+Each active product needs a bounded `products/<layer>/<product-id>/research.md`;
+include a future product only when comparing it is material to the current
+choice. Use `.agents/templates/product-research.md`. Do not perform blanket
+research on all possible products. A material unsupported claim remains an
+explicit gap or experiment question, never an invented answer.
+
+Work one product at a time. Scope sources, observations, inferences, and unknowns
+to that product. Cross-product comparison belongs to Strategy and cites the
+relevant product findings; there is no shared market-research summary. A source
+may inform multiple products only when its applicability is stated separately.
+Do not copy product market findings into Business or a shared register. A contradiction with a client statement becomes a question linked
+from product Research; only attributable client clarification or corrected
+supplied material updates the factual intake.
+
+Use Brief, Business, the relevant product Research and Sales, and approved
+constraints to update Strategy. Name the audience-growth priority (or why none
+is active) and sales-product priority. Select the exact experiment product set from
+confirmed Brief products, choose `audience-growth` or `sales` as the first
+experiment track, and define one bounded experiment. Supporting activities
+remain strategic context unless explicitly defined as separate offers.
 
 `strategy.md` is a replacement projection, not an interview log. During fact
-collection, update the owning brief, evidence, business, research, and decision
-profile sources; do not invoke the Strategist after each answer. Invoke it once
+collection, update the owning Brief, Business, product Research, or Sales; do not invoke the Strategist after each answer. Invoke it once
 the input batch is stable. On first generation or any full strategy rerun:
 
 1. Treat the previous strategy body as invalid and do not load it as an input.
 2. Start from `.agents/templates/strategy.md` and replace the complete active
    strategy source from the approved upstream dependency closure.
 3. Use exactly the four template sections. Each decision has one canonical
-   home: approval state in Decision status; the audience-growth priority,
-   sales-product priority, exact active product set, and trade-offs in Commercial choice;
+   home: approval state in confirmation metadata and remaining blockers in
+   Decision status; the audience-growth priority,
+   sales-product priority, exact experiment product set, and trade-offs in Commercial choice;
    execution and thresholds in First experiment, and only
    unresolved material boundaries in Risks and missing evidence.
    Experiment rows may refer to the selected audience, offer, and route by a
@@ -415,9 +414,9 @@ the input batch is stable. On first generation or any full strategy rerun:
    must not repeat a decided limit merely to explain it again and are capped at
    the five gaps most likely to change the decision.
 4. Do not add interview chronology, repeated operator-fact lists, superseded or
-   invalidated wording, profile disposition, evidence proposals, downstream
-   instructions, or handoff prose to the artifact. Those belong to Git,
-   evidence, the decision profile, dependency invalidation, or the response.
+   invalidated wording, downstream instructions, or handoff prose to the
+   artifact. Use Git for history, document metadata for review state, and the
+   response for coordination.
 5. Keep the source within 180 lines and 1,400 words, keep Decision status within
    12 non-empty lines and 120 words, and do not add third-level headings.
 6. Read the complete current strategy as the operator will see it. A
@@ -429,22 +428,22 @@ channel access, license intent, support capacity, response commitments, or
 decision authority that the operator has not supplied, keep the stage blocked
 and ask for the highest-impact fact.
 
-Completion requires an exact active product set traceable to the confirmed
-Portfolio, one audience-growth priority, one sales-product priority, one selected
+Completion requires an exact experiment product set traceable to the confirmed
+Brief, an audience-growth priority or justified absence, one sales-product priority, one selected
 experiment track and direction, explicit future/deferred directions and
 first-experiment exclusions, rejected options, operational and economic fit, a budget/time limit,
-useful signal, positive, negative, and stop rules. Every factual `10-strategy` profile
-row must be answered or explicitly not applicable, and the strategy approval
-row must be approved before the stage completes. The completed strategy is
+useful signal, positive, negative, and stop rules. Facts needed to select the
+experiment must be answered or explicitly inapplicable; unresolved evidence
+must have a bounded decision rule. Strategy requires valid user confirmation
+before the stage completes. The completed strategy is
 first a `proposed` professional direction. The strategy source itself must pass
 the operator-readable compactness and ownership review. Return a compact summary of the audience,
-both priorities, active product set, positioning, acquisition focus, experiment, material assumptions, and
+both priorities, experiment product set, positioning, acquisition focus, experiment, material assumptions, and
 rejected options in the operator's language. Keep `10-strategy` blocked on the
 strategy approval section until the operator confirms or corrects it. On
-confirmation, mark the approval row `approved` and only then persist
-`20-brand`, `in_progress`, and `[brand]`.
-Record the confirmation in both the strategy artifact's Decision status section
-and the profile approval row.
+confirmation, record approval in the Strategy source metadata and only then
+persist `20-brand`, `in_progress`, and `[brand]`. Do not duplicate the document
+approval in body prose.
 
 No separate stage command is required; a natural-language approval or
 correction is sufficient.
@@ -455,8 +454,10 @@ correction is sufficient.
 
 **Owners**: Communication Strategist, then Brand Designer.
 
-**Required inputs**: operator-approved strategy, research/evidence, the resolved
-decision profile, resolved communication knowledge, and the current `brand`.
+**Required inputs**: operator-approved strategy, relevant product Research and
+client evidence, any indexed project-specific communication context relevant to
+this decision, and the current `brand`. Generic communication methods come from
+the role; a separate knowledge file is not a prerequisite.
 
 **Capabilities**: artifact read/write and selective web research.
 
@@ -473,19 +474,18 @@ old body as generation input. Keep the result within 1,400 words and state every
 meaning or communication decision once.
 
 Completion requires a reviewable intended perception, message hierarchy, proof
-limits, objections, voice, naming, governance, every factual `20-brand`
-profile row answered or explicitly not applicable, and the brand approval row
-approved. The canonical output is `brand/<layer>.md`.
+limits, objections, voice, naming, governance, resolved material claim and
+disclosure questions, and valid Brand confirmation metadata. The canonical output is `brand/<layer>.md`.
 
 The Communication Strategist and Brand Designer make the professional
 communication and visual choices; do not ask the operator to design the answer
 for them. Return the resulting direction for confirmation, however, because
 website work must not silently freeze an unreviewed brand. Until confirmation,
 keep `20-brand` blocked on the brand approval section and treat the brand and
-its meaning as proposed. On confirmation, mark the approval row `approved`, then
-persist `30-design`, `in_progress`, and `[design, assets]`.
-Record the confirmation in both the brand artifact's Decision status section
-and the profile approval row.
+its meaning as proposed. On confirmation, record it in the brand artifact's
+metadata under `.agents/contracts/document-confirmation.md`, then persist
+`30-design`, `in_progress`, and `[design, assets]`. Do not duplicate its status
+in the body.
 
 ## 30 — Design
 
@@ -494,8 +494,8 @@ and the profile approval row.
 
 **Owner**: Brand Designer.
 
-**Required inputs**: business, approved strategy, approved brand, evidence, the
-resolved decision profile, a complete categorized visual-reference intake in
+**Required inputs**: business, approved strategy, approved brand,
+a complete categorized visual-reference intake in
 the resolved Brief, matching registered Assets, and every upstream correction
 triggered during design.
 
@@ -693,20 +693,39 @@ Return Design for operator review. Once its current direction is confirmed,
 record that status in `design.md`. No automated prose or prompt validator is
 part of this workflow.
 
-Studio presents the complete reusable Design system as one scrollable page per
-projection (`default`, `singlepage`, and `startup`). One project-neutral React
-template renders the structured Markdown and registered assets for every
-projection; layer-owned React Design components are prohibited. Layering occurs
-only in `design/<layer>.md`, `assets/<layer>.yaml`, and
-`styles/<layer>.css`, with startup data and tokens taking priority in the
-resolved projection. The page has no second navigation menu, inventory counters,
-or repeated concept summary because Storybook already owns navigation and those
-elements do not help a design decision. Its opening block states the visual
-concept once as a positive explanation of the selected style, never as a list
-of rejected options, provenance, rights, or process notes, and immediately
-applies the reusable graphic-language and do/don't rules; logos, colors,
-typography, photography, and illustration follow on the same page. Photography
-and illustration use the same media-section component.
+Studio exposes Design through `default`, `singlepage`, and `startup` projections.
+Choose the visible structure to fit the project's stylistic requirements using
+`design/<layer>/layout.yaml`. The ordered `sections` array may select, reorder,
+or omit built-in overview, logos, colors, typography, photography, and illustration
+blocks, and add sections with an `id`, `title`, and layer-relative `source`.
+Markdown, TSX/JSX, HTML, images, and media are supported. Additional Markdown
+headings alone do not create visible sections. A default-exported TSX/JSX
+`template` may replace the whole page and receive the resolved Design document,
+asset registry, confirmation, and declared section children. With `sections: []`,
+it can use its own structure without the legacy field schema. Use Tailwind and
+layered styles; do not edit the shared template for one project's requirements.
+
+Empty startup layout inherits the complete singlepage layout. A non-empty
+startup layout replaces it completely; all declared files must exist in its
+own layer. Document section inheritance in `design/<layer>.md`, Assets resolution,
+and CSS cascading remain independent. An inherited base layout can present
+startup data and tokens. Project-specific components/data live in
+`design/<layer>/`; technical support lives in `utils/design/` and shared components.
+See the workspace README for the exact schema and component props. Keep source
+inspection separate from the resolved default and preserve the document status.
+
+The default template is a reusable starting point. Choose relevant visual families
+from the client brief; do not retain photography, illustration, or another block
+solely because the starter includes it. Hiding a block does not satisfy an
+unresolved requirement or out-of-scope decision. Review custom templates/sections
+in a browser and check layer ownership, relative assets, responsive behavior, and
+the absence of duplicate status/heading content. Primary document confirmation
+does not automatically approve additional components or media. Review semantic
+impact after changes and mark affected documents stale until resolved.
+
+The default opening block states the visual concept once and applies reusable
+graphic-language and do/don't rules. Its photography and illustration blocks
+share one reusable media-section component.
 Their Production specification is exposed through an accessible information
 tooltip beside `Style master prompt`, never as a separate card. Their Review and
 quality gate remains in canonical Markdown for agent validation but is not
@@ -719,8 +738,8 @@ photography, illustration, and marketing creative, or an explicit out-of-scope
 decision for a genuinely unused family; an operator-confirmed Client visual preference profile; a
 reusable visual system; the symmetric photography and illustration contract
 above; at least three visually reviewed examples for each active media family;
-a reconciled asset registry; accessibility and evidence boundaries; and every
-`30-design` profile row answered or explicitly not applicable. Design must stay
+a reconciled asset registry; accessibility and evidence boundaries; resolved
+material design constraints; and valid confirmation of the complete Design. Design must stay
 reusable across products: marketing references inform its cross-channel visual
 language, but it does not contain a product page, campaign, sales deck, or other
 offer-specific composition. The canonical outputs are `design/<layer>.md`,
@@ -737,33 +756,38 @@ handoff.
 `website.md`; Brand Designer for each `marketing-creative.md`; Communication
 Strategist and Brand Designer for each presentation.
 
-**Required inputs**: the operator-confirmed Portfolio, each active product's
+**Required inputs**: the operator-confirmed Brief products, each active product's
 Research and Sales process, completed Business, approved Strategy containing the
-exact active product set and separate priorities, approved Brand, approved
-Design, evidence, and the resolved asset registry.
+exact experiment product set and separate priorities, approved Brand, approved
+Design, the product Research, and the resolved asset registry.
 
 **Capabilities**: artifact read/write, image inspection/generation and Figma
 when available, plus static Studio composition; no production data capability.
 
 Products are a catalog, not four global documents. Its layer index lives at
-`products/<layer>.yaml`. Studio joins each entry to the matching Portfolio
-Research and Sales files, then to one self-contained output folder:
+`products/<layer>/catalog.yaml`. Keep both `singlepage` and `startup` folders
+with their own catalog from the outset, matching the explicit extension boundary
+in `libs/modules`. An empty startup catalog inherits the base; its first product
+replaces the complete base catalog. Do not create duplicate framework products
+under startup. Each product owns these data sources:
+the Research prepared before strategic selection and Sales intake recorded during Business:
 
 ```text
 products/<layer>/<product-id>/
+  research.md
+  sales.yaml
   product.md
   website.md
   marketing-creative.md
-  presentation/ProjectPresentation.tsx
-  content/Content.tsx # optional flexible product-local review surface
+  presentation/data.yaml
+  content/ # optional product-owned supporting data
 ```
 
-Create catalog entries only for the Strategy's exact active product set. Every
-entry must match exactly one Portfolio row with role `product`, lifecycle
-`active`, Research, and Sales, plus its normalized Business mechanics. Do not infer a product from a showcase, reference project,
+Create catalog entries for every operator-confirmed Brief product, regardless of launch or experiment priority. Every
+entry must trace to a confirmed Brief product and own Research and Sales,
+plus its normalized Business mechanics. Do not infer a product from a showcase, reference project,
 web page, repository folder, possible future monetization, or an agent's idea.
-If the active set is absent or ambiguous, return to the earliest affected Brief,
-Business, or Strategy decision before creating product files. If product work
+If product identity is absent or ambiguous, return to Brief before creating product files. Missing commercial decisions remain explicit in the owned documents and do not hide a confirmed product. If product work
 uncovers a genuinely new offer, add and confirm it upstream first; never append
 it directly to the catalog.
 
@@ -784,8 +808,8 @@ Dunford's positioning sequence to relate actual competitive alternatives,
 differentiated capabilities, customer value, best-fit customers, and market
 category; an internal positioning exercise does not replace observed customer
 choices. Record the authoritative sources, project fit, limitations, and effect
-on a material decision in the resolved Decision Profile before applying a named
-method.
+on a material decision beside that decision in the consuming document. General
+method instructions remain in the canonical role.
 
 On first generation or any full `product.md` rerun, do not load the previous
 product body. Start from `.agents/templates/product.md` and replace the complete
@@ -804,13 +828,28 @@ message, proof/disclosure, composition, dimensions, crop or timing behavior,
 variants, prompts, indexed assets, rights, accessibility, destination, tracking
 event, owner, and review state.
 
-The presentation is semantic React/HTML derived from the same product and
-shared sources. It is not a second business document. PDF and PNG exports are
-derivatives only.
+React Presentation, Website, and optional Content entry points live beside
+their product documents under `products/<layer>/<product-id>/`. Every catalog
+path resolves below `products/<layer>/`; Sales and Presentation data YAML
+remain with the product documents.
 
-`Content` is an optional product-local React surface declared by the catalog.
-It has one `content/Content.tsx` entry point, but the files and data model behind
-that component belong to the product: they may be transcripts, lesson data,
+Every document owns its complete content. Presentation has its own `presentation/data.yaml` and a React entry point; Studio must never extract its text from Strategy, Product, Business, Brand, or another document. Shared rendering components and style tokens remain reusable. PDF and PNG exports are derivatives only. Agents may consult relevant documents during authoring, but update the owned source explicitly after semantic review.
+
+Products can extend any core tab or add arbitrary sections using the optional
+catalog `sections` tree (`id`, `title`, `pages`; page `source` and/or nested
+`children`). JSX/TSX, HTML, Markdown, images, media, and other working files stay
+in the product's layer folder. Shared parsers and loaders stay in
+`utils/products/`. Preserve existing core documents and their Overview view.
+Do not create empty sections or add every helper file to navigation. Validate
+all declared page files with the Studio validator and browser-check relative
+assets, nested navigation, and the chosen source layer. React presentations may
+compose imported TSX pages; retain the shared slide contract and PDF export.
+Additional React decks opt into PDF with `export: pdf`. Follow the workspace
+README examples and keep page trees inside the atomically selected catalog.
+
+Legacy `content` is still an optional product-local React surface declared by the
+catalog. Its entry point can live in any nested product folder; the files and data
+model behind that component belong to the product: they may be transcripts, lesson data,
 images, covers, documents, interactive previews, or another content system.
 The framework does not require a Content Markdown document, prescribe content
 types, or show an empty tab when the product has no Content surface. When it is
@@ -819,38 +858,34 @@ inspect the relevant product-owned Content sources because those sources may
 provide more precise language and proof boundaries; Content never silently
 overrides an approved upstream decision.
 
-Portfolio and product-catalog inheritance are independently atomic. If
-`portfolio/startup.yaml` has no directions, the Portfolio inherits singlepage;
-as soon as it has one direction, startup owns the whole Portfolio and every
-referenced direction file. If `products/startup.yaml` has no
+Product-catalog inheritance is atomic. If `products/startup/catalog.yaml` has no
 products, `default` is the complete singlepage catalog. As soon as startup
 defines at least one product, `default` contains only startup products. Never
 merge product entries across layers: products from different businesses must
-not leak into one catalog. Each startup product owns all four referenced files;
+not leak into one catalog. Each startup product owns every referenced document, presentation data and React entry point;
 there is no partial per-product fallback to a singlepage folder.
 
-Work through one selected product at a time. Studio shows Research, Sales,
-Product, Website, Marketing Creative, and Presentation as that product's core
-tabs, plus Content only when the product declares that flexible surface.
+Work through one selected product at a time. Studio opens Product Overview first,
+then shows Research, Sales, Website, Marketing Creative, and Presentation as core
+tabs, followed by explicitly declared additional sections (or legacy Content).
+Supporting pages may have arbitrary nesting and do not need Markdown wrappers.
 Outputs may be reviewed separately, but the product is not complete until all
 applicable files are coherent with one another. Record an
 explicit not-applicable decision instead of creating a placeholder. Stop before
 production components, APIs, analytics implementation, QA, publication, or
 deployment.
 
-Completion requires the catalog to match both the approved Strategy active
-product set and Portfolio's active `product` rows exactly, with neither omitted
-nor extra entries, and every catalog entry to
+Completion requires the catalog to match the client-confirmed Brief product inventory, with neither omitted nor inferred entries, and every catalog entry to
 have a bounded and reviewable
 `product.md`, concrete website design when in scope, complete selected-channel
 creative when in scope, a reviewable presentation when in scope, accessibility
-and evidence boundaries, and every `40-products` profile row answered or
-explicitly not applicable.
+and evidence boundaries, with material offer, delivery, and communication
+questions resolved or explicitly inapplicable in their owning documents.
 
 Studio remains a read-only review surface over the same sources. Shared
 artifacts keep empty `startup` as pass-through and resolve
-`singlepage → startup → default` in memory. Portfolio and Products use their
-independent atomic catalog rules above. React stories may render the result, but Markdown/YAML and the
+`singlepage → startup → default` in memory. Products uses the atomic
+catalog rule above. React stories may render the result, but Markdown/YAML and the
 product-local presentation source remain what agents edit and operators review.
 
 When complete, keep `40-products`, set `status: complete`, and persist empty
@@ -860,8 +895,8 @@ When complete, keep `40-products`, set `status: complete`, and persist empty
 
 - One specialist owns one living artifact at a time.
 - Two agents never edit the same file concurrently.
-- Only the workflow coordinator serializes index, evidence-register, and
-  decision-profile changes; there is no separate coordinator role.
+- Only the workflow coordinator serializes index changes; there is no separate
+  coordinator role.
 - A downstream specialist must challenge an upstream assumption when new
   evidence invalidates it, then route the correction to the owning artifact.
 - The coordinator updates that earliest owner first, computes reverse

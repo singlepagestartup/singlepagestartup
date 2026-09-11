@@ -15,9 +15,8 @@ discovery metadata and adapters to these files.
   boundary, professional method, completion criteria, capabilities, and
   handoff. `roles/SOURCES.md` is provenance only and is not routine context.
 - `templates/` contains one structural schema per living artifact and documents
-  their agreed pre-development sequence in `templates/README.md`; its compact
-  decision-profile template routes project-specific domain depth without
-  becoming a client-facing final artifact.
+  their agreed pre-development sequence in `templates/README.md`. Questions and
+  constraints belong in their owning document, not a separate checklist.
 - `contracts/` contains rules that apply across roles and workflows.
 - `tools/` defines provider-neutral capabilities and provider bindings.
 
@@ -34,18 +33,18 @@ professional review.
 
 Primary living documents remain operator-readable: no more than 1,400 words,
 one current decision per topic, and no interview chronology or workflow history.
-Evidence and assets are reference registers and are loaded by current use.
+Assets is a reference register and are loaded by current use.
 
 Start with the active workflow and resolve the repository-owned layer. Run the
 mandatory GitHub preflight before reading the layer-local
-`apps/studio/workspace/pre-development/<layer>.yaml` cursor. Reconcile the cursor
+`apps/studio/workspace/utils/pre-development/<layer>.yaml` cursor. Reconcile the cursor
 against the current pipeline using `contracts/pipeline-reconciliation.md`, then
 against its artifact prerequisite closure, and only then load the active
-consolidated role and the resolved decision-profile rows assigned to that stage
-and owner. Read the singlepage-to-startup resolution but write changes only to
+consolidated role, the current stage criteria, and material questions in the
+owning documents. Read the singlepage-to-startup resolution but write changes only to
 the repository-owned layer's source. Domain-specific knowledge replaces the
 base once startup content is meaningful. Do not load all workflows, roles,
-profile stages, knowledge, templates, or both complete project layers into one
+unrelated stages, knowledge, templates, or both complete project layers into one
 context.
 
 Pipeline reconciliation runs on every invocation. It compares current templates,
@@ -73,16 +72,17 @@ The pre-development workflow uses three consistently named Workspace views:
 Agents resolve `singlepage → startup → default`, but write only to the active
 repository-owned `singlepage` or `startup` source. They never create or edit a
 `default` Markdown, YAML, or generated content file. An empty startup source
-passes singlepage through unchanged; Portfolio and product catalogs follow their atomic
+passes singlepage through unchanged; product catalogs follow their atomic
 replacement rule defined in `workflows/pre-development.md`.
 
-Brief owns the operator-confirmed direction inventory. Portfolio records one
-objective role and lifecycle for every direction, one Research path for every
-row, and one Sales path for every active product. Strategy names separate
-audience-growth and product priorities, one experiment track, and the exact
-active product set. Products must match that set and Portfolio exactly. A
-showcase, reference project, possible future payment, repository folder, or
-agent idea never creates a catalog entry by inference.
+Brief records the products in scope and the limited role of supporting
+activities. Business records only client facts, supplied materials, and confirmed
+intentions. Each product owns Research and Sales in its product folder; external
+research starts before strategic selection at `10-strategy`, not during intake.
+Strategy names acquisition and product priorities, one experiment track, and
+the exact experiment product set; Products retains every client-confirmed product regardless of experiment priority. A showcase,
+reference project, possible future payment, repository folder, or agent idea
+never creates a catalog entry by inference.
 
 The owner reviews `default` first in Storybook Studio and opens `singlepage` or
 `startup` only to inspect provenance or edit the corresponding canonical source.

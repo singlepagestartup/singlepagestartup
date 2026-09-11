@@ -1,3 +1,8 @@
+---
+confirmation:
+  confirmed: false
+---
+
 # Marketing Creative
 
 <!-- Selected formats only. Maximum 1,400 words. -->
@@ -31,5 +36,5 @@
   dimensions, export target, naming, and owner
 - Claim/evidence review, accessibility review, channel QA, tracking event, and
   approval state before publication
-- Resolve all `40-products` decision-profile rows owned by marketing creative;
+- Address material Marketing Creative constraints and unresolved questions;
   unselected formats remain absent rather than filled with placeholders

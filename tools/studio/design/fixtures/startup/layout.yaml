@@ -1,0 +1,6 @@
+template: Layout.tsx
+sections:
+  - { id: colors, builtin: colors }
+  - { id: icons, title: Icons, source: icons/Icons.tsx }
+  - { id: motion, title: Motion, source: motion/rules.md }
+  - { id: preview, title: HTML preview, source: preview/index.html }

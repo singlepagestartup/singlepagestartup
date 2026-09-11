@@ -1,0 +1,50 @@
+{
+  "name": "@sps/shared-frontend-client-pdf",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/frontend/client/pdf/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "tsc:build": {
+      "options": {
+        "tsConfig": "libs/shared/frontend/client/pdf/tsconfig.lib.json",
+        "transformers": []
+      },
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tsconfig.base.json"
+      ]
+    },
+    "eslint:lint": {
+      "options": {
+        "lintFilePatterns": [
+          "libs/shared/frontend/client/pdf/**/*.{ts,tsx}"
+        ],
+        "eslintConfig": "libs/shared/frontend/client/pdf/eslint.config.mjs"
+      }
+    },
+    "jest:test": {
+      "options": {
+        "passWithNoTests": false
+      },
+      "inputs": [
+        "default",
+        "{workspaceRoot}/jest.client-preset.js"
+      ]
+    },
+    "visual:serve": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "vite --config libs/shared/frontend/client/pdf/visual/vite.config.ts"
+      }
+    },
+    "visual:test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node libs/shared/frontend/client/pdf/visual/run.test.mjs",
+        "forwardAllArgs": true
+      }
+    }
+  }
+}

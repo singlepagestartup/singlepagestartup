@@ -1,0 +1,8 @@
+# Ordered default blocks. A startup layout may reorder, omit, or replace any block.
+sections:
+  - { id: overview, builtin: overview }
+  - { id: logos, builtin: logos }
+  - { id: colors, builtin: colors }
+  - { id: typography, builtin: typography }
+  - { id: photography, builtin: photography }
+  - { id: illustration, builtin: illustration }

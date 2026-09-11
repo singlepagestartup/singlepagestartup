@@ -1,9 +1,16 @@
+import {
+  documentConfirmation,
+  parseDocument,
+  type IDocumentConfirmation,
+} from "./document";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parse } from "yaml";
 
 import { mergeWorkspaceContent, type WorkspaceMergeStrategy } from "./merge";
+import { loadDocumentReviews } from "./review-loader";
+import { reviewId } from "./review";
 import {
   resolveWorkspaceLayer,
   type WorkspaceLayer,
@@ -48,6 +55,8 @@ export interface IResolvedWorkspaceEntry extends IWorkspaceIndexEntry {
 
 export interface ILoadedWorkspaceEntry extends IResolvedWorkspaceEntry {
   content: string;
+  confirmation: IDocumentConfirmation;
+  reviewDependencies?: Record<string, string>;
 }
 
 export interface IWorkspaceGraph {
@@ -72,10 +81,7 @@ export interface ILoadWorkspaceOptions {
 
 const LAYERED_ENTRY_KINDS = [
   "brief",
-  "evidence",
   "business",
-  "portfolio",
-  "research",
   "strategy",
   "asset-index",
   "brand",
@@ -84,7 +90,6 @@ const LAYERED_ENTRY_KINDS = [
   "discovery",
   "acquisition",
   "communication",
-  "decision-profile",
 ] as const;
 
 const LAYERED_ENTRY_KIND_SET = new Set<string>(LAYERED_ENTRY_KINDS);
@@ -92,10 +97,8 @@ const STUDIO_WORKSPACE_ROOT = "apps/studio/workspace";
 const AGENT_RESOURCE_ROOT = ".agents";
 const WORKSPACE_MERGE_STRATEGIES = new Set<WorkspaceMergeStrategy>([
   "keyed",
-  "portfolio-catalog",
   "product-catalog",
   "replace",
-  "scoped-keyed",
   "sections",
 ]);
 const EXPECTED_LAYERED_STRATEGIES: Record<string, WorkspaceMergeStrategy> = {
@@ -106,12 +109,8 @@ const EXPECTED_LAYERED_STRATEGIES: Record<string, WorkspaceMergeStrategy> = {
   brief: "sections",
   business: "sections",
   communication: "replace",
-  "decision-profile": "replace",
   discovery: "replace",
-  evidence: "scoped-keyed",
-  portfolio: "portfolio-catalog",
   products: "product-catalog",
-  research: "sections",
   strategy: "sections",
 };
 
@@ -198,7 +197,7 @@ function parseIndex(
         : undefined;
     if (entry.strategy != null && !strategy) {
       failures.push(
-        `${prefix}.strategy must be keyed, portfolio-catalog, product-catalog, replace, scoped-keyed, or sections`,
+        `${prefix}.strategy must be keyed, product-catalog, replace, or sections`,
       );
     }
     return {
@@ -244,7 +243,7 @@ async function readIndex(
   workspaceRoot: string,
   layer: WorkspaceLayer,
 ): Promise<IWorkspaceIndex> {
-  const indexPath = path.join(workspaceRoot, "index", `${layer}.yaml`);
+  const indexPath = path.join(workspaceRoot, "utils/index", `${layer}.yaml`);
   if (!existsSync(indexPath)) {
     throw new WorkspaceValidationError([
       `${toPosix(indexPath)}: index file does not exist`,
@@ -352,67 +351,15 @@ function computeReverseDependencies(
   return reverse;
 }
 
-function validateEvidenceContent(
-  source: string,
-  layer: WorkspaceLayer,
-  sourcePath: string,
-): void {
-  if (!source.trim()) return;
-  const rows = source
-    .split("\n")
-    .filter((line) => line.trimStart().startsWith("|"));
-  if (rows.length < 2) {
-    throw new WorkspaceValidationError([
-      `${toPosix(sourcePath)}: evidence must contain a Markdown table`,
-    ]);
-  }
-  const cells = (row: string) =>
-    row
-      .split("|")
-      .slice(1, -1)
-      .map((cell) => cell.trim());
-  const header = cells(rows[0]);
-  const scopeIndex = header.indexOf("Scope");
-  const stateIndex = header.indexOf("State");
-  const idIndex = header.indexOf("ID");
-  if (idIndex < 0 || scopeIndex < 0 || stateIndex < 0) {
-    throw new WorkspaceValidationError([
-      `${toPosix(sourcePath)}: evidence columns must include ID, Scope, and State`,
-    ]);
-  }
-  const failures: string[] = [];
-  for (const row of rows.slice(2)) {
-    const values = cells(row);
-    if (!values.some(Boolean)) continue;
-    const id = values[idIndex] || "<missing ID>";
-    const scope = values[scopeIndex];
-    const state = values[stateIndex];
-    if (![layer, "shared"].includes(scope)) {
-      failures.push(
-        `${toPosix(sourcePath)}: ${id} scope must be ${layer} or shared`,
-      );
-    }
-    if (!["active", "not-applicable", "superseded"].includes(state)) {
-      failures.push(
-        `${toPosix(sourcePath)}: ${id} has invalid evidence state ${state || "<empty>"}`,
-      );
-    }
-  }
-  if (failures.length) throw new WorkspaceValidationError(failures);
-}
-
 async function loadEntryContent(
   entry: IResolvedWorkspaceEntry,
+  sourceBase?: IResolvedWorkspaceEntry,
 ): Promise<ILoadedWorkspaceEntry> {
   if (entry.baseAbsolutePath && entry.overlayAbsolutePath) {
     const [base, overlay] = await Promise.all([
       readFile(entry.baseAbsolutePath, "utf8"),
       readFile(entry.overlayAbsolutePath, "utf8"),
     ]);
-    if (entry.kind === "evidence") {
-      validateEvidenceContent(base, "singlepage", entry.baseAbsolutePath);
-      validateEvidenceContent(overlay, "startup", entry.overlayAbsolutePath);
-    }
     const merged = mergeWorkspaceContent({
       base,
       kind: entry.kind,
@@ -426,17 +373,33 @@ async function loadEntryContent(
         ? entry.overlayAbsolutePath
         : entry.baseAbsolutePath,
       content: merged.content,
+      confirmation: documentConfirmation(
+        merged.content,
+        merged.confirmationLayer ??
+          (merged.overlayContributes ? "startup" : "singlepage"),
+        entry.absolutePath.endsWith(".yaml") ? "yaml" : "markdown",
+      ),
       inherited: !merged.overlayContributes,
       resolution: merged.overlayContributes ? "merged" : "inherited",
     };
   }
   const content = await readFile(entry.absolutePath, "utf8");
-  if (entry.kind === "evidence") {
-    validateEvidenceContent(content, entry.layer, entry.absolutePath);
-  }
+  const format = entry.absolutePath.endsWith(".yaml") ? "yaml" : "markdown";
+  const confirmationSource =
+    sourceBase &&
+    parseDocument(content, format).metadata.confirmation !== undefined
+      ? mergeWorkspaceContent({
+          base: await readFile(sourceBase.absolutePath, "utf8"),
+          overlay: content,
+          kind: entry.kind,
+          sourcePath: entry.absolutePath,
+          strategy: entry.strategy,
+        }).content
+      : content;
   return {
     ...entry,
     content,
+    confirmation: documentConfirmation(confirmationSource, entry.layer, format),
   };
 }
 
@@ -696,8 +659,28 @@ export async function loadWorkspace(
 
   const dependencyClosure = computeClosure(visibleById, requestedIds);
   const loadedEntries = await Promise.all(
-    dependencyClosure.map((id) => loadEntryContent(visibleById.get(id)!)),
+    dependencyClosure.map((id) => {
+      const entry = visibleById.get(id)!;
+      return loadEntryContent(
+        entry,
+        entry.extends ? singlepageById.get(entry.extends) : undefined,
+      );
+    }),
   );
+
+  const reviews = await loadDocumentReviews(workspaceRoot, activeLayer);
+  for (const entry of loadedEntries) {
+    const review = reviews.get(reviewId(entry.extends ?? entry.id));
+    if (
+      !review ||
+      (projection === "source" &&
+        activeLayer === "startup" &&
+        !entry.content.trim())
+    )
+      continue;
+    entry.confirmation = review.confirmation;
+    entry.reviewDependencies = review.dependencies;
+  }
 
   return {
     activeLayer,

@@ -11,7 +11,7 @@ Accessed 2026-08-04 unless noted otherwise.
 
 - [UK Government Digital and Data Profession: Business Analyst](https://ddat-capability-framework.service.gov.uk/role/business-analyst) — stakeholder relationship practices; Open Government Licence unless otherwise stated.
 - [O\*NET Sales Managers 11-2022.00](https://www.onetonline.org/link/summary/11-2022.00) — client coordination signals only; CC BY 4.0.
-- `apps/studio/workspace/legacy/legacy-agency.md` — repository migration input; discovery ownership retained and premature creative decisions rejected.
+- Retired agency workflow, preserved in Git history — repository migration input; discovery ownership retained and premature creative decisions rejected.
 
 ## Business Analyst
 
@@ -31,7 +31,7 @@ Accessed 2026-08-04 unless noted otherwise.
 - [Strategyzer: Value Proposition Canvas](https://www.strategyzer.com/library/the-value-proposition-canvas) — customer jobs, pains, gains, products/services, pain relievers, and gain creators; referenced, not copied. Accessed 2026-08-14.
 - [April Dunford: A Quickstart Guide to Positioning](https://www.aprildunford.com/post/a-quickstart-guide-to-positioning) — competitive alternatives, differentiated capabilities, customer value, best-fit segment, and market category sequence; referenced, not copied. Accessed 2026-08-14.
 - [Domain Experts](https://domainexperts.dev/) — compact role-contract structure only; no role installed or copied.
-- `apps/studio/workspace/legacy/legacy-agency.md` — prioritization intent retained; forced multi-channel output rejected.
+- Retired agency workflow, preserved in Git history — prioritization intent retained; forced multi-channel output rejected.
 
 ## Communication Strategist
 
