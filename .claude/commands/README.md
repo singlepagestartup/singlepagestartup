@@ -50,11 +50,12 @@ After PR merge: manually move the issue to "Done" in GitHub Project.
 
 Supporting commands used by the main workflow:
 
-| Command                          | Purpose                                                                            |
-| -------------------------------- | ---------------------------------------------------------------------------------- |
-| `utilities/commit.md`            | Create git commits (used by implement phase)                                       |
-| `utilities/describe_pr.md`       | Generate PR descriptions (used by implement phase)                                 |
-| `utilities/post_commit_retro.md` | Analyze workflow friction after a commit/session and propose reusable improvements |
+| Command                          | Purpose                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------------ |
+| `utilities/commit.md`            | Create git commits (used by implement phase)                                         |
+| `adapt-upstream.md`              | Explicitly adapt already integrated upstream changes using local commit instructions |
+| `utilities/describe_pr.md`       | Generate PR descriptions (used by implement phase)                                   |
+| `utilities/post_commit_retro.md` | Analyze workflow friction after a commit/session and propose reusable improvements   |
 
 ## Special Purpose Commands
 

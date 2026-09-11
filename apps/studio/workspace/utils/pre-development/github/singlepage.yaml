@@ -47,9 +47,27 @@ rules:
       - singlepage.products
     earliest_stage: 00-business
 reconciliations:
+  - commit: 160ba863151c2c668bfc7014367682ac5d2ef4ef
+    outcome: no-material-effect
+    summary:
+      Published Studio restructuring is already represented in the current
+      client facts, two-product catalog, review metadata, and owning documents.
+      Package changes add browser PDF export and update Studio test paths; they
+      do not publish the planned framework license or establish runtime,
+      integration, customer, or adoption proof. No additional business correction
+      is needed for this GitHub reconciliation.
+    affected_artifacts: []
+  - commit: 3e876a215903ec1658c4689e77599adc5b5347fa
+    outcome: no-material-effect
+    summary:
+      PR 235 merges the already inspected Studio restructuring and document
+      parser correction. Its tree matches the current checkout; the merge adds
+      no separate business decision, license publication, or product outcome.
+    affected_artifacts: []
   - commit: 40c799f86ca5a45388931a9f3b0182c55c782ea7
     outcome: no-material-effect
-    summary: Portfolio migration preserves the recorded framework offer, supporting
+    summary:
+      Portfolio migration preserves the recorded framework offer, supporting
       showcase, audience, budget, and proof boundaries. Package changes only
       extend Studio tests. Incomplete document ownership and presentation
       bindings are pipeline compatibility work, not new evidence of runtime
@@ -63,12 +81,14 @@ reconciliations:
     affected_artifacts: []
   - commit: 29fa75fec77941d97ad353f4f7cfc552966d6e6e
     outcome: no-material-effect
-    summary: MCP JSON date coercion changes mutation input handling but no current
+    summary:
+      MCP JSON date coercion changes mutation input handling but no current
       business claim, offer boundary, experiment, or published product promise.
     affected_artifacts: []
   - commit: 961fe1bc37c3305c4bafcc4c671359d4b0afe548
     outcome: no-material-effect
-    summary: The merge publishes the same MCP date-coercion change and introduces no
+    summary:
+      The merge publishes the same MCP date-coercion change and introduces no
       additional current business or product decision.
     affected_artifacts: []
   - commit: ce874f3143d3bed3fb2e3abc884a11a92db84f52

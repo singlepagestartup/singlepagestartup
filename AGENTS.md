@@ -254,6 +254,23 @@ All test files (`*.spec.*`, `*.test.*`, `*.e2e.*`) must use the repository BDD f
 - Behavior-first test naming; avoid inline `Given/When/Then` comments in test bodies.
 - JSDoc with `BDD Suite` or `BDD Scenario` above test case.
 
+### Downstream adaptation command
+
+Every agent-created commit follows
+`.agents/contracts/engineering/downstream-migrations.md`: preserve conversation
+intent, applicability, actions, and verification in the commit message.
+
+Run `.agents/workflows/engineering/adapt-upstream.md` only when the user requests
+`adapt-upstream` or explicitly asks to review/adapt already integrated upstream
+changes. This separate command reads local Git history and adapts owned code and
+documents. It never fetches, merges, pushes, downloads dependencies, or calls
+remote services. Missing local history/tooling leaves adaptation pending.
+
+Ordinary upstream synchronization and new agent tasks do not invoke migration
+checks automatically and do not depend on an adaptation checkpoint or agent
+availability. There are no migration hooks on merge/rewrite. Keep Git sync and
+adaptation outcomes separate; a pending adaptation does not make a merge fail.
+
 ## Code Review Checklist
 
 - Enforce TypeScript interface-first style, PascalCase components, and consistent export order.

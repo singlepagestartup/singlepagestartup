@@ -57,10 +57,9 @@ Current reality: the repository and documented module inventory exist, but no in
 
 ## Existing evidence and assets
 
-- Repository observations, license intent, setup contradictions, and external sources are recorded in the product Research.
-- The founder states use/modification rights for four supplied SVG identity drafts; inspected files and limitations are recorded in Assets.
-- Categorized visual-reference decisions are recorded below and in Assets.
-- Current Brand meaning is approved; visual rules and generated outputs are owned by Design and Assets, not Brief.
+- **Repository and research:** the recorded inventory establishes declared modules and entities, not working integration or adoption. Code Framework Research explains the unverified setup, the mismatch between intended MIT distribution and recorded restrictive terms, and the absence of independent developer results.
+- **Supplied identity:** on 2026-08-11 the founder stated use/modification rights for four SVG drafts and required the pixel-grid S as the identity foundation, while allowing replacement wordmark typography. File inspection found two 200×200 symbols and two 590×200 lockups; Assets records paths and limits. The rights statement is client-supplied, not independent clearance.
+- **Approved Brand meaning:** the 2026-08-11 review selected the full SinglePageStartup name, accountable human developers, explicit proof limits, direct explanatory language, and an evaluation-first call to action. This approval covers meaning and communication; visual execution and generated files require their own review.
 
 ## Visual reference intake
 

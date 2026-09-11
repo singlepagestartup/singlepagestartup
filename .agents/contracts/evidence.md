@@ -49,6 +49,15 @@ Document metadata owns confirmation and upstream review status. Git retains
 previous wording and change history. Current documents must be self-contained;
 do not force agents to reread Git history for ordinary stage work.
 
+In a current document, a source title, retired register code, or phrase such as
+"operator confirmation" is not enough on its own. State the relevant fact,
+decision, or observation in a short sentence beside the reference, with its
+source/date and scope or limitation where needed. For an approval, say what was
+approved and what remains outside it. Keep working links and asset IDs for
+navigation, but never make their labels the only explanation. When retiring a
+source, recover only the material meaning from attributable records; do not
+invent missing context or copy its full history into the document.
+
 Inherited framework facts are reference context, not automatically the client's
 facts. Record applicable client answers in the startup owner and obtain the
 required project-specific confirmation. A research finding cannot silently

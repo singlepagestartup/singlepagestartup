@@ -3,7 +3,7 @@ confirmation:
   confirmed: true
   by: operator
   at: 2026-08-10
-  source: Existing explicit operator approval; semantic decisions unchanged.
+  source: Operator review on 2026-08-10 approved the developer audience, free framework evaluation offer, showcase-to-GitHub acquisition route, bounded experiment, thresholds, and exclusions. It did not verify demand, readiness, or outcomes.
   content_sha256: f40d55a6c706beca2fef975dc69910119c09da34d3d463f8d77c6b6aebcd75c6
 review:
   dependencies:
@@ -22,7 +22,7 @@ review:
 
 ## Commercial choice
 
-Product evidence: `products/singlepage/singlepagestartup/research.md`; findings retain their recorded uncertainty.
+Code Framework Research compares templates, generators, starters, and AI scaffolding. It supports the existence of alternatives, not superiority or demand; its recorded license/setup conflicts remain launch gates. See `products/singlepage/singlepagestartup/research.md` for dated sources and limitations.
 
 | Decision                 | Selected direction                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

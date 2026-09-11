@@ -140,6 +140,15 @@ remove the source, story, template, index entries, and mandatory loading steps.
 Do not copy the register into another knowledge file or a duplicate log. Git
 retains history; client dialogue and document confirmation remain the review flow.
 
+Also scan the child-owned Brief, Business, Strategy, Brand, Design, nested
+product Markdown/YAML, and data bindings for dangling register paths and old
+row codes (including `ST-EV-*` and `SP-EV-*`). Recover each material meaning from
+that child's earlier Git sources and replace the code with a short explanation
+and attribution, retaining dates and limits where relevant. Deleting the code
+or substituting only a document title loses context. Keep valid local Research
+and asset references and historical engineering records. See
+`engineering/downstream-migrations.md` for the general upstream review procedure.
+
 ## Gap classification and repair
 
 Classify each discovered incompatibility before changing content:

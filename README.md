@@ -557,12 +557,44 @@ Scenario tests are namespaced by project and issue:
 
 ## Attaching Upstream
 
-After creating repository based on singlepagestartup template, call command:
+After creating a project from the template, configure the framework source:
 
 ```bash
 git remote add upstream https://github.com/singlepagestartup/singlepagestartup.git
-git pull upstream main
 ```
+
+Synchronize upstream with your existing Git process. For example, when the
+configured branch is `main` and merging is the project's chosen strategy:
+
+```bash
+git fetch upstream
+git merge upstream/main
+```
+
+Synchronization has no dependency on an AI agent or migration review. Fetching
+needs access to the remote; integrating already fetched commits remains a local
+Git operation.
+
+When you want to adapt project-owned code and documents afterward, run the
+separate agent command **`adapt-upstream`** in Codex or **`/adapt-upstream`** in
+Claude. Its [workflow](.agents/workflows/engineering/adapt-upstream.md) reads
+migration instructions from already integrated local commits, checks relevance,
+applies needed changes, and verifies the result. It does not fetch, merge, push,
+or download dependencies. It is not invoked by Git hooks or new agent tasks.
+
+To inspect the local adaptation queue without running an agent:
+
+```bash
+npm run adapt-upstream:check -- --ref refs/remotes/upstream/main --report /tmp/upstream-review.json
+```
+
+The helper reports pending commits (exit 2), including old commits without
+migration notes. That status belongs to the separate adaptation command and
+does not block synchronization. Completion is recorded after the agent reviews,
+commits, and verifies adaptations. Missing local history or tooling can be
+resolved later, then the command can be resumed. See the
+[downstream contract](.agents/contracts/engineering/downstream-migrations.md)
+for the message format, initial compatibility audit, and checkpoint behavior.
 
 After the downstream project has its own `origin`, update the project MCP name from the GitHub repository name:
 
@@ -576,39 +608,11 @@ Use the same helper without flags to print Claude and Codex MCP setup commands f
 tools/mcp/setup-project-mcp.sh
 ```
 
-When you get an error
-
-```
-remote: Enumerating objects: 308477, done.
-remote: Counting objects: 100% (6142/6142), done.
-remote: Compressing objects: 100% (3918/3918), done.
-remote: Total 308477 (delta 2275), reused 5196 (delta 1633), pack-reused 302335 (from 3)
-Receiving objects: 100% (308477/308477), 195.68 MiB | 3.53 MiB/s, done.
-Resolving deltas: 100% (140381/140381), done.
-From https://github.com/singlepagestartup/singlepagestartup
- * branch                  main       -> FETCH_HEAD
- * [new branch]            main       -> upstream/main
-hint: You have divergent branches and need to specify how to reconcile them.
-hint: You can do so by running one of the following commands sometime before
-hint: your next pull:
-hint:
-hint:   git config pull.rebase false  # merge
-hint:   git config pull.rebase true   # rebase
-hint:   git config pull.ff only       # fast-forward only
-hint:
-hint: You can replace "git config" with "git config --global" to set a default
-hint: preference for all repositories. You can also pass --rebase, --no-rebase,
-hint: or --ff-only on the command line to override the configured default per
-hint: invocation.
-fatal: Need to specify how to reconcile divergent branches.
-```
-
-Call:
-
-```bash
-git config pull.rebase false
-git pull upstream main --allow-unrelated-histories
-```
+If Git reports divergent branches, choose the integration strategy according to
+the project's history. Unrelated histories require explicit inspection before
+merging; do not enable `--allow-unrelated-histories` as a routine fallback. Keep
+the original source range for cherry-pick or squash imports, since ancestry alone
+cannot identify their migration instructions afterward.
 
 ## Documentation
 

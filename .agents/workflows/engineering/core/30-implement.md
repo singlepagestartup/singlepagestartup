@@ -294,8 +294,11 @@ gh pr view PR_NUMBER --json state,mergedAt
 
 # Delete operational handoff file
 rm thoughts/shared/handoffs/REPO_NAME/ISSUE-{NUMBER}-progress.md
-git add -A && git commit -m "chore: clean up handoff file for #ISSUE_NUMBER (merged)"
 ```
+
+Follow `.agents/workflows/engineering/utilities/commit.md` to commit only the
+handoff removal with an explained downstream-impact decision. Do not stage
+unrelated changes during cleanup.
 
 The progress file is deleted because its operational tracking content is already captured in git history. The ticket, research, plan, and persistent process files are kept permanently.
 
