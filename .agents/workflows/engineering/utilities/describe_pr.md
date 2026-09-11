@@ -42,6 +42,9 @@ You are tasked with generating a comprehensive pull request description followin
    - Understand the purpose and impact of each change
    - Identify user-facing changes vs internal implementation details
    - Look for breaking changes or migration requirements
+   - Read `.agents/contracts/engineering/downstream-migrations.md` and collect
+     every commit's downstream trailers. For legacy commits inspect the diff
+     for child adaptation needs; missing trailers do not mean no impact.
 
 6. **Handle verification requirements:**
 
@@ -62,6 +65,11 @@ You are tasked with generating a comprehensive pull request description followin
      - Include technical details in appropriate sections
      - Write a concise changelog entry
    - Ensure all checklist items are addressed (checked or explained)
+   - Include a concise **Downstream migration** section with the reason,
+     affected child conditions, concrete actions, and verification, reconciled
+     against the final diff. Keep an equivalent final trailer paragraph ready
+     for an authorized squash/reword so the instructions survive in Git, not
+     solely in the PR body. Never merge as part of description generation.
 
 8. **Save and sync the description:**
 

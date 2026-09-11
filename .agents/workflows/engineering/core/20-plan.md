@@ -265,12 +265,10 @@ fi
 
    f. **Create a commit** confirming the update:
 
-   ```bash
-   git add "$PLAN_FILE"
-   git commit -m "docs: update plan for #ISSUE_NUMBER based on GitHub discussion
-
-   - [Bullet list of changes made]"
-   ```
+   Follow `.agents/workflows/engineering/utilities/commit.md` for the exact
+   changed plan file. Use a subject such as `docs: update plan for #ISSUE_NUMBER
+based on GitHub discussion`, summarize the changes, and include validated
+   downstream trailers based on the updated plan's actual implications.
 
    Only create the commit after all edits are complete. If the commit fails, do NOT post a GitHub comment.
 

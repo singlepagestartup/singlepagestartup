@@ -135,7 +135,8 @@ Issue #NUMBER is complete (status: Done).
 
 Post-merge cleanup (if not done yet):
   rm thoughts/shared/handoffs/REPO_NAME/ISSUE-{NUMBER}-progress.md
-  git add -A && git commit -m "chore: clean up handoff file for #ISSUE_NUMBER (merged)"
+  Follow .agents/workflows/engineering/utilities/commit.md to commit only that
+  removal with an explained downstream-impact decision.
 ```
 
 ## Exit

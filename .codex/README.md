@@ -26,7 +26,7 @@ current thread using the tool mapping in `AGENTS.md`.
 ## Skills
 
 - Core: `core-next`, `core-00-create`, `core-10-research`, `core-20-plan`, `core-30-implement`
-- Utility: `github`, `github-status`, `validate-plan`, `create-handoff`, `resume-handoff`, `implement-plan`, `commit`, `describe-pr`, `post-commit-retro`
+- Utility: `github`, `github-status`, `validate-plan`, `create-handoff`, `resume-handoff`, `implement-plan`, `commit`, `describe-pr`, `post-commit-retro`, `adapt-upstream`
 - Pre-development: `singlepagestartup`
 - Legacy aliases: `ralph-research`, `ralph-plan`, `ralph-impl`, `oneshot`, `oneshot-plan` (hyphenated names only; they delegate to `core-*` semantics)
 

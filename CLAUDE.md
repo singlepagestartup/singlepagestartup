@@ -194,6 +194,23 @@ role, which contains responsibility and professional method in one file. Source
 URLs in `.agents/roles/SOURCES.md` are provenance only. The agent researches
 external sources only when the current project needs fresh evidence.
 
+### Downstream adaptation command
+
+Every agent-created commit follows
+`.agents/contracts/engineering/downstream-migrations.md`: preserve conversation
+intent, applicability, actions, and verification in the commit message.
+
+Run `.agents/workflows/engineering/adapt-upstream.md` only when the user requests
+`adapt-upstream` or explicitly asks to review/adapt already integrated upstream
+changes. This separate command reads local Git history and adapts owned code and
+documents. It never fetches, merges, pushes, downloads dependencies, or calls
+remote services. Missing local history/tooling leaves adaptation pending.
+
+Ordinary upstream synchronization and new agent tasks do not invoke migration
+checks automatically and do not depend on an adaptation checkpoint or agent
+availability. There are no migration hooks on merge/rewrite. Keep Git sync and
+adaptation outcomes separate; a pending adaptation does not make a merge fail.
+
 ## Code Review Checklist
 
 - Enforce TypeScript interface-first style, PascalCase components, and consistent export order.

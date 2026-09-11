@@ -23,6 +23,14 @@ discovery metadata and adapters to these files.
 Executable GitHub helpers remain under `.claude/helpers/` for path compatibility;
 they are shared runtime utilities, not Claude-owned process definitions.
 
+Shared-change propagation uses `contracts/engineering/downstream-migrations.md`:
+the commit workflow preserves adaptation instructions in Git, and
+the separately requested `workflows/engineering/adapt-upstream.md` applies them
+to child-owned code and documents using local history. Synchronization and agent
+startup do not run this adaptation command or depend on its completion.
+`tools/upstream/migrations.mjs` checks integrated history and maintains a small
+checkout-local Git cursor; it does not store project facts or run commit text.
+
 ## Loading rule
 
 Context selection exists to prevent project and role collisions, not to limit
