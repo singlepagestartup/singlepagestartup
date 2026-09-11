@@ -7,6 +7,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { parse, stringify } from "yaml";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import {
@@ -382,4 +383,123 @@ describe("document confirmation", () => {
     expect(result).toContain("## Offer");
     expect(result).toContain("## Capacity");
   });
+
+  /**
+   * BDD Scenario: Reject documents with no visible content
+   * Given a matching approval stamp covers only headings, whitespace, or comments
+   * When confirmation is evaluated, including an unclosed comment
+   * Then hidden text cannot make the empty document confirmed
+   */
+  test("does not confirm headings or comment-only documents", () => {
+    for (const source of [
+      "# Title\n\n<!-- note -->\n## Section\n<!-- multiline\ncomment -->",
+      "<!-- first --><!-- second -->\n# Title",
+      "# Title\n\n<!-- unclosed comment containing text",
+      "<!--".repeat(10000),
+      "#\n##\t\n###",
+    ]) {
+      expect(
+        documentConfirmation(confirmed(source), "singlepage").confirmed,
+      ).toBe(false);
+    }
+  });
+
+  /**
+   * BDD Scenario: Recognize real content without rewriting it
+   * Given approved text follows comments or an empty heading or includes literal delimiters
+   * When document presence and the fingerprint are checked
+   * Then visible content remains confirmed and its review text stays unchanged
+   */
+  test("checks content presence without stripping or joining text", () => {
+    for (const source of [
+      "# \nVisible paragraph.",
+      "<!-- note -->\n# Title\n\n<!-- hidden -->Visible paragraph.",
+      "<!<!-- hidden -->--",
+      "```html\n<!-- example -->\n```",
+      "####### Plain text, not a heading",
+    ]) {
+      const stamped = confirmed(source);
+      expect(documentConfirmation(stamped, "singlepage").confirmed).toBe(true);
+      expect(documentReviewBody(stamped).trim()).toBe(source);
+    }
+  });
+
+  /**
+   * BDD Scenario: Hide a leading title after comments
+   * Given comments precede an H1 with either LF or CRLF line endings
+   * When the page already supplies the title
+   * Then comments, paragraphs, and later headings retain their original text
+   */
+  test("preserves comments and sections while removing only the leading H1", () => {
+    for (const newline of ["\n", "\r\n"]) {
+      const prefix = `<!-- first -->${newline}<!-- second${newline}line -->${newline}`;
+      const content = `${newline}Paragraph.${newline}## Section${newline}# Later title`;
+      expect(
+        documentReviewBody(`${prefix}# Title${newline}${content}`, true),
+      ).toBe(prefix + content);
+      expect(documentReviewBody(`${prefix}# Title`, true)).toBe(prefix);
+    }
+  });
+
+  /**
+   * BDD Scenario: Preserve text when a leading title is absent
+   * Given a paragraph, code fence, section heading, or unclosed comment comes first
+   * When the review requests title suppression
+   * Then no later heading or comment content is removed
+   */
+  test("leaves non-leading titles and malformed comments untouched", () => {
+    for (const source of [
+      "Paragraph.\n# Later title",
+      "## Section\n# Later title",
+      "```markdown\n# Example\n```",
+      "<!-- unclosed\n# Hidden title",
+      "<!-- note -->\n# \nParagraph.",
+    ]) {
+      expect(documentReviewBody(source, true)).toBe(source);
+      expect(documentReviewBody(source, false)).toBe(source);
+    }
+  });
+
+  /**
+   * BDD Scenario: Bound work for adversarial comment sequences
+   * Given thousands of comments, whitespace characters, and unclosed comment starts
+   * When the actual document helpers run in an isolated V8 process
+   * Then they finish within the process deadline and preserve the expected content and status
+   */
+  test("handles adversarial comments without blocking document review", () => {
+    const result = spawnSync(
+      "node",
+      [
+        "--experimental-strip-types",
+        "--input-type=module",
+        "--eval",
+        `
+        import assert from "node:assert/strict";
+        const { documentReviewBody, documentConfirmation, documentFingerprint, renderDocument } = await import(process.argv[1]);
+        const comments = "<!--" + "--><!--".repeat(20000) + "-->";
+        const paragraph = comments + "\\nPlain paragraph without a title";
+        assert.equal(documentReviewBody(paragraph, true), paragraph);
+        assert.equal(documentReviewBody(comments + "\\n# Title\\nText", true), comments + "\\nText");
+        assert.equal(documentReviewBody(" ".repeat(100000) + "No title", true), "No title");
+        for (const source of [comments, "<!--".repeat(20000)]) {
+          const stamped = renderDocument({ body: source, metadata: { confirmation: {
+            confirmed: true, by: "operator", at: "2026-09-11", content_sha256: documentFingerprint(source)
+          } } });
+          assert.equal(documentConfirmation(stamped, "singlepage").confirmed, false);
+        }
+      `,
+        new URL("./document.ts", import.meta.url).href,
+      ],
+      { encoding: "utf8", timeout: 5000 },
+    );
+    expect({
+      error: result.error?.message,
+      stderr: result.stderr,
+      status: result.status,
+    }).toEqual({
+      error: undefined,
+      stderr: "",
+      status: 0,
+    });
+  }, 10000);
 });

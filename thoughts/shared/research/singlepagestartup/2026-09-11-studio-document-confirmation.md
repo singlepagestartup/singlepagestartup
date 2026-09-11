@@ -82,3 +82,55 @@ decisions, whole-document approvals, market findings, Git commits, or remote
 writes were created. Existing local PDF/export work was preserved. Evidence
 removal remains an earlier analysis/recommendation in
 `2026-09-11-studio-evidence-audit.md`; this change only adds its review status.
+
+## PR 235 CodeQL review, 2026-09-11
+
+Inspected the bot review against PR head `266b1da29f`. The aggregate CodeQL
+check fails on two new high-severity alerts; the analysis jobs themselves
+completed successfully. This review did not modify runtime code or dismiss
+either alert.
+
+- [Alert 115](https://github.com/singlepagestartup/singlepagestartup/security/code-scanning/115)
+  (`js/redos`) is reproducible in `tools/studio/workspace/document.ts:144`.
+  `documentReviewBody(input, true)` uses an ambiguous repeated comment pattern
+  to suppress a leading H1. Calling the actual function under Node with
+  `"<!--" + "--><!--".repeat(n) + "-->\nplain paragraph without a title"`
+  took approximately 0.58, 6.76, 104.77, and 1693.2 ms for n=12, 16, 20, and 24
+  (123–207 characters). The n=28 subprocess exceeded a two-second timeout and
+  was terminated. `MarkdownDocument` calls this helper during rendering
+  (`apps/studio/workspace/utils/components/ArtifactBrowser.tsx:93`), so affected
+  repository-authored Markdown can stall Studio. Replace the ambiguous regex
+  with a forward-only scan and cover repeated comments without a title.
+- [Alert 116](https://github.com/singlepagestartup/singlepagestartup/security/code-scanning/116)
+  (`js/incomplete-multi-character-sanitization`) flags comment removal at
+  `tools/studio/workspace/document.ts:124`. In this function the resulting text
+  is only an operand of `Boolean(...)` to test document non-emptiness; it is
+  never returned as HTML or used to sanitize rendered content. The reported
+  injection is therefore a false positive for this specific use. A direct
+  content-presence check would make the purpose clearer without pretending
+  to provide HTML sanitization. This finding is not a general HTML-renderer
+  security audit.
+
+### Correction
+
+Replaced both regex-based checks with forward-only scanning in `document.ts`.
+Each comment is skipped to its first closing delimiter once; an unterminated
+comment hides the remaining text for content-presence checks and is preserved
+unchanged for rendering. The title helper only slices out the leading H1 and
+its line ending, retaining comments, paragraphs, and subsequent headings.
+The content predicate returns a boolean and never sanitizes or joins fragments.
+YAML presence is evaluated separately, and fingerprint calculation is unchanged.
+
+Added five BDD regressions for comment-only documents, actual text after empty
+headings, literal delimiters and code examples, preserved comments/line endings,
+non-leading headings, malformed comments, and long adversarial inputs. The
+performance regression runs the actual helper in an isolated Node/V8 subprocess
+with a five-second kill deadline, so the original exponential pattern fails
+without hanging the test runner. It covers 20,000 repeated comments, 100,000
+spaces, and 20,000 unclosed comment starts.
+
+Verification after the correction: 95 Studio tests and 453 assertions passed;
+Studio TypeScript and workspace validator self-checks passed for both source
+layers. The isolated adversarial regression completed in approximately 86 ms
+including Node startup. No project document bodies, approval fingerprints,
+catalogs, or inheritance configuration were changed.

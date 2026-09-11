@@ -98,6 +98,56 @@ export function documentFingerprint(
   return SHA256(body).toString();
 }
 
+/** Advance once through whitespace and comments; an unclosed comment hides the rest. */
+function skipDocumentTrivia(body: string, offset = 0): number {
+  while (offset < body.length) {
+    if (/\s/.test(body[offset])) {
+      offset++;
+      continue;
+    }
+    if (!body.startsWith("<!--", offset)) break;
+    const end = body.indexOf("-->", offset + 4);
+    if (end === -1) return body.length;
+    offset = end + 3;
+  }
+  return offset;
+}
+
+function documentLineEnd(body: string, offset: number): number {
+  while (
+    offset < body.length &&
+    body[offset] !== "\r" &&
+    body[offset] !== "\n"
+  ) {
+    offset++;
+  }
+  return offset;
+}
+
+/** A content-presence check, not HTML sanitization; never returns rewritten text. */
+function hasMarkdownContent(body: string): boolean {
+  let offset = 0;
+  while (offset < body.length) {
+    offset = skipDocumentTrivia(body, offset);
+    if (offset === body.length) return false;
+    const lineStart = offset === 0 || /[\r\n]/.test(body[offset - 1]);
+    let markerEnd = offset;
+    while (body[markerEnd] === "#" && markerEnd - offset < 7) markerEnd++;
+    const markerCount = markerEnd - offset;
+    if (
+      lineStart &&
+      markerCount >= 1 &&
+      markerCount <= 6 &&
+      (markerEnd === body.length || /[ \t\r\n]/.test(body[markerEnd]))
+    ) {
+      offset = documentLineEnd(body, markerEnd);
+      continue;
+    }
+    return true;
+  }
+  return false;
+}
+
 export function documentConfirmation(
   source: string,
   layer: DocumentLayer,
@@ -119,10 +169,7 @@ export function documentConfirmation(
   const by = typeof confirmation.by === "string" ? confirmation.by : undefined;
   const at = typeof confirmation.at === "string" ? confirmation.at : undefined;
   const confirmed = Boolean(
-    body
-      .replace(/^#{1,6}\s+.*$/gm, "")
-      .replace(/<!--[\s\S]*?-->/g, "")
-      .trim() &&
+    (format === "yaml" ? body.trim() : hasMarkdownContent(body)) &&
       by?.trim() &&
       at?.trim() &&
       confirmation.content_sha256 === documentFingerprint(source, format),
@@ -139,9 +186,13 @@ export function documentConfirmation(
 /** Remove only the document title; keep every section and nested heading. */
 export function documentReviewBody(source: string, hideTitle = false): string {
   const body = parseDocument(source).body;
-  return hideTitle
-    ? body
-        .replace(/^(\s*(?:<!--[\s\S]*?-->\s*)*)# [^\r\n]+(?:\r?\n|$)/, "$1")
-        .trimStart()
-    : body;
+  if (!hideTitle) return body;
+  const titleStart = skipDocumentTrivia(body);
+  if (!body.startsWith("# ", titleStart)) return body.trimStart();
+  const titleEnd = documentLineEnd(body, titleStart + 2);
+  if (titleEnd === titleStart + 2) return body.trimStart();
+  let contentStart = titleEnd;
+  if (body[contentStart] === "\r") contentStart++;
+  if (body[contentStart] === "\n") contentStart++;
+  return (body.slice(0, titleStart) + body.slice(contentStart)).trimStart();
 }

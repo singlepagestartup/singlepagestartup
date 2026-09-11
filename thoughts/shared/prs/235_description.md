@@ -6,6 +6,7 @@ Studio now keeps client facts and product work separate and lets downstream proj
 
 - Replace Portfolio, the standalone Evidence register, global Research, and workspace knowledge profiles with client-request documents and product-local Research/Sales. Keep reusable agent methods in `.agents` and update the workflow, roles, templates, and provider entry points.
 - Add document confirmation and review states (`unconfirmed`, `confirmed`, `changed`, `stale`). Track semantic upstream changes without importing another document's content or automatically granting approval; display resolved status without repeated headings and badges.
+- Scan Markdown comments and leading headings in forward order, avoiding regex backtracking. Check content presence without rewriting text, and cover adversarial inputs in an isolated process with a timeout.
 - Move technical workspace code and configuration into `utils`. Restore Code Framework and AI Chat as independent products, open Product Overview first, and keep presentation content within each product.
 - Introduce explicit `products/<layer>/catalog.yaml` catalogs. An empty startup catalog inherits the framework catalog; any startup product replaces the entire catalog, preventing unrelated framework products and files from leaking into a client project.
 - Support nested product sections containing Markdown, React, HTML, images, and other media. Allow Design to reorder or replace built-in sections, add custom sources, or use a complete project-owned React template through `design/<layer>/layout.yaml`.
@@ -13,7 +14,7 @@ Studio now keeps client facts and product work separate and lets downstream proj
 
 ## Verification
 
-- [x] `npm run studio:presentation:test` — 90 tests and 423 assertions passed.
+- [x] `npm run studio:presentation:test` — 95 tests and 453 assertions passed, including the CodeQL regression cases.
 - [x] `npx tsc --project apps/studio/tsconfig.json --noEmit`.
 - [x] Workspace validator with `--self-check` for both `singlepage` and `startup`.
 - [x] Studio manifest and design-system validators.
