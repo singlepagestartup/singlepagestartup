@@ -3,7 +3,7 @@ confirmation:
   confirmed: true
   by: operator
   at: 2026-08-11
-  source: Existing explicit operator approval; semantic decisions unchanged.
+  source: Operator review on 2026-08-11 approved the full SinglePageStartup name, developer accountability, restrained proof claims, direct explanatory voice, evaluation-first call to action, and founder-led governance. Visual choices and generated assets were outside this approval.
   content_sha256: d5832fea9d6f4995d90b780efb5a8889ead9fe63e13d26620fb8a6c4538a3d78
 review:
   dependencies:
