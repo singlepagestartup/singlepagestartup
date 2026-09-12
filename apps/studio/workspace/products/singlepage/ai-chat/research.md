@@ -2,14 +2,18 @@
 confirmation:
   confirmed: false
 review:
+  stale:
+    reason: Business ownership migrated to Product, Sales and Operations & Economics; review the actual new inputs.
+    sources: [model.framework-service]
   dependencies:
     brief: e890b56080b80919caf6111e3a17c7b5cf42b0cccf4b27e5235b577c0da96f51
-    business: a91d74583bcc0dd5699980a5d03d063a72c463cc6c0b9d7b7896f67c62d8a5e0
 ---
 
 # AI Chat research
 
 ## Decision and scope
+
+Model `framework-service`: test `bridge`, `capacity` and `service-viability` only where they affect this product. The [model source](../models/framework-service/model.md#assumptions-and-decision-rules) owns these assumptions; findings, contrary observations and sources stay in this Research.
 
 AI Chat is a separate product alongside Code Framework, as the client explicitly clarified on 2026-09-11. Its use as a demonstration and acquisition route does not remove its product identity. The next research decision is which user problem and paying segment, if any, justify the service independently.
 
@@ -29,7 +33,7 @@ AI assistants and composed agent products were category context only. A service-
 
 Token sales or paid-chat access were possible later mechanics, with no selected commercial terms or verified demand. The recorded YouTube route concerns a demonstration followed by attributable framework evaluation. It does not establish an independent AI Chat acquisition channel's performance.
 
-The approved earlier experiment allowed at most USD 1 actual provider cost per promotional user/day and USD 200 aggregate, within three weeks, six founder hours/week and 18 total. These are experimental cost limits, not a customer price or general commercial entitlement.
+The supplied experiment economics and their limits are owned by [Operations & Economics](../models/framework-service/model.md#cost-structure). They are constraints for research, not observed customer willingness to pay.
 
 ## Findings and unknowns
 

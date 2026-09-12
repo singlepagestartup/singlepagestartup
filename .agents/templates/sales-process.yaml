@@ -3,18 +3,20 @@ confirmation:
 schema: singlepagestartup.sales-process.v1
 product_id: replace-with-product-id
 readiness: blocked # blocked | ready
-owner: Name the person accountable for the complete sales process
-seller: Name the legal or operating seller, or write unknown
-pricing: State the price or calculation rule, or write unknown
-capacity: State the current process limit, or write unknown
-blockers: []
-stages:
-  - id: inquiry
-    name: Inquiry received
-    owner: Name one responsible person
-    entry_conditions: []
-    required_fields: []
-    action: State the action taken at this stage.
-    exit_condition: State the observable condition for leaving this stage.
-    failure: State rejection, timeout, recovery, or fallback behavior.
-    metric: State one count, duration, rate, or value used to manage this stage.
+owner: unknown # Client-supplied person accountable for the whole process.
+seller: unknown # Legal or operating seller; do not infer.
+pricing: Reference the owning model Revenue Streams row for this product.
+capacity: Reference shared model resources and record only process-specific limits here.
+blockers:
+  - Client-supplied process, owners and operational details have not been recorded.
+stages: [] # Valid blocked intake; never invent a process to populate this array.
+# Once supplied, preserve the complete sequence and each stage:
+# - id: stable-stage-id
+#   name: Stage name
+#   owner: Responsible person
+#   entry_conditions: []
+#   required_fields: []
+#   action: Supplied action and handoff to the next responsible participant.
+#   exit_condition: Observable transition condition.
+#   failure: Rejection, error, timeout, unfinished work, recovery or fallback.
+#   metric: Supplied count, duration, rate or value; unknown if not provided.

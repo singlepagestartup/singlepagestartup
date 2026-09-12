@@ -106,8 +106,13 @@ shared-pipeline change therefore routes missing files, sections, schema keys, or
 decisions to the earliest affected stage in both framework and downstream
 repositories without a separate command or stored pipeline version.
 AI methods, question-routing rules, and stage completion criteria live in
-`.agents/`. During `00-business`, Brief and Business describe the potentially
-compound business model from client inputs. Material questions, metrics, risks,
+`.agents/`. During `00-business`, confirmed Brief is followed by initial Product, shared
+Operations & Economics model sources, and whole Sales intake from client inputs.
+There is no standalone Business document. Models have stable catalog IDs and
+may serve several products; sources live in `products/<layer>/models/<id>/`.
+Product owns Customer Segments and Value Propositions; Sales owns the complete
+customer process; model sources own resources, activities, partnerships, revenue,
+costs and financing. Follow `.agents/contracts/product-models.md`. Material questions, metrics, risks,
 constraints, and sources stay in the documents that own those decisions;
 confirmation stays in source metadata. Do not maintain a separate workspace
 decision checklist or approval summary. Template headings or generic prose
@@ -161,12 +166,12 @@ and layered CSS stay separate. Shared support stays in `utils/design/` and
 `utils/components/`; project templates and section data stay in `design/<layer>/`. During `40-products`, each active product
 adds a self-contained Product, Website, Marketing Creative, and Presentation set
 to its existing Research and Sales tabs, plus an optional product-defined
-Content surface when needed. Products may extend any core tab or add sections with nested Markdown, HTML,
+Product Content surface when needed. Products may extend any core tab or add sections with nested Markdown, HTML,
 JSX/TSX, image, and media pages through the catalog. Product-specific files stay
 in their layer folder; shared loaders and tests live in `utils/products/`.
 React presentations compose TSX pages and retain PDF export. No mandatory
 Markdown schema applies to additional pages. A non-empty startup Product catalog replaces the entire
-singlepage catalog so unrelated products never mix.
+singlepage catalog including models so unrelated products and models never mix.
 None may redefine an upstream decision.
 The framework repository writes the `singlepage` sources; downstream
 repositories write the `startup` sources. Workspace keeps `assets/`, `products/`,

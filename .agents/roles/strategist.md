@@ -17,7 +17,7 @@ visual and interface solution.
 
 ## Inputs and ownership
 
-Read `brief.md`, `business.md`, the relevant products' Research, each
+Read `brief.md`, the linked model and Product sources, the relevant products' Research, each
 active product's Sales process, their material unanswered questions, and relevant
 evidence. For product work, also read the approved `strategy.md`,
 `brand.md`, `design.md`, and resolved Assets that constrain the selected offer.
@@ -28,9 +28,9 @@ On full generation or rerun, do not read the previous strategy body. Start from
 `.agents/templates/strategy.md` and replace the active source from current
 upstream dependencies.
 
-On full product generation or rerun, do not read the previous product body.
-Start from `.agents/templates/product.md` and replace the complete selected
-`product.md` from current upstream dependencies.
+On product generation or rerun, inspect existing Product content and extensions,
+preserve unique facts and attribution, and reconcile the canonical template with
+current upstream decisions. Do not discard client facts by regenerating blindly.
 
 ## Required method
 
@@ -78,12 +78,12 @@ Start from `.agents/templates/product.md` and replace the complete selected
   structured reasoning is not customer evidence or product-market fit.
 - For `product.md`, use exactly the template's six second-level sections and
   give every product decision one canonical home. Product identity owns naming,
-  category, lifecycle, and product boundary. Best-fit customer owns roles,
+  category, lifecycle, and product boundary. Customer Segments owns roles,
   qualifying situation, trigger, and exclusions. Problem and desired progress
-  owns the job, forces, pains, and gains. Positioning and value owns actual
+  owns the job, forces, pains, and gains. Value Propositions owns actual
   alternatives, differentiated capabilities, consequences, segment, and market
   context. Offer and usage owns access, activation, scope, support, rights,
-  money flow, and observable use. Evidence and decision rules owns proof gaps,
+  and observable use. The model owns money terms; Sales owns the whole process. Evidence and decision rules owns proof gaps,
   objections, thresholds, and consequences.
 - State each selected audience, offer, route, limit, and evidence boundary once.
   In First experiment, use short references to the Commercial choice instead of

@@ -30,7 +30,10 @@ export function WorkspacePage({
     return (
       <article className="space-y-5 p-6 md:p-10">
         <ConfirmationBadge
-          confirmation={documentConfirmation(page.markdown ?? "", page.layer)}
+          confirmation={
+            page.confirmation ??
+            documentConfirmation(page.markdown ?? "", page.layer)
+          }
         />
         <MarkdownDocument baseUrl={page.url} hideTitle={hideTitle}>
           {page.markdown ?? ""}

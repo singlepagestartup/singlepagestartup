@@ -2,37 +2,39 @@
 confirmation:
   confirmed: false
 review:
+  stale:
+    reason: Business ownership migrated to Product, Sales and Operations & Economics; review the actual new inputs.
+    sources: [model.framework-service]
   dependencies:
-    business: d75723ec8f3df79a9d8c9d09084d3860b375b0e9e245e2bae91f984dfef0d37f
     product.singlepagestartup.research: dd546bfedfa03de69aa068dd46b945b8f7e665eb0b907d1324851aa69a725c92
     product.singlepagestartup.sales: 55772cf4836b99bff5a50065b7b71f4f394d125c80f88675a754ed074dd8c446
     strategy: f40d55a6c706beca2fef975dc69910119c09da34d3d463f8d77c6b6aebcd75c6
 ---
 
-# Product Overview
+# Product
 
 ## Product identity
 
-| Decision          | Current definition                                                                                                                                                                                                                                                                                                                                                                        |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Brand and product | **SinglePageStartup** is the project and brand. **Code Framework by SinglePageStartup** is its reusable code foundation for accountable developers building multi-feature web products.                                                                                                                                                                                                   |
-| Category          | An inspectable developer framework for building multi-feature web products, distributed as source code through GitHub.                                                                                                                                                                                                                                                                    |
-| Lifecycle         | Code Framework remains the first evaluation experiment priority. AI Chat is the other client-confirmed product; experiment priority does not remove either from the catalog. This Strategist-owned definition is `proposed`. Strategy and Brand are approved; complete Design and proposal `measured-space` remain proposed, so `40-products` is incomplete and publication unauthorized. |
-| Boundary          | The product is the framework and its free bounded evaluation. SinglePageStartup is its parent brand. AI Chat is a separate intended service product that also supports demonstration and acquisition; its revenue, usage, and adoption remain separate from the framework. Historical services, engineering, Website, Marketing Creative, and Presentation are outside this definition.   |
+| Decision          | Current definition                                                                                                                                                                                                                                                                                                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Brand and product | **SinglePageStartup** is the project and brand. **Code Framework by SinglePageStartup** is its reusable code foundation for accountable developers building multi-feature web products.                                                                                                                                                                                            |
+| Category          | An inspectable developer framework for building multi-feature web products, distributed as source code through GitHub.                                                                                                                                                                                                                                                             |
+| Lifecycle         | Current evaluation product; owner: founder. Strategy selects experiment priority; the next offer decision is stated below.                                                                                                                                                                                                                                                         |
+| Boundary          | The product is the framework and its bounded evaluation. SinglePageStartup is its parent brand. AI Chat is a separate intended service product that also supports demonstration and acquisition; its revenue, usage, and adoption remain separate from the framework. Historical services, engineering, Website, Marketing Creative, and Presentation are outside this definition. |
 
-## Best-fit customer
+## Customer Segments
 
 | Role           | Definition                                                                                                                                                                                                             |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | User           | An accountable developer, including one using AI assistance, who inspects, sets up, checks, and may retain the framework.                                                                                              |
 | Buyer          | No purchase occurs; the person evaluating architectural fit performs the buyer-like role.                                                                                                                              |
-| Payer          | None for Code Framework; the founder funds it. Any later payment for demonstration-service access belongs to the separate service ledger.                                                                              |
+| Payer          | No customer payer for Code Framework. [Operations & Economics](../models/framework-service/model.md#revenue-streams) owns funding and per-product revenue terms.                                                       |
 | Beneficiary    | The developer and product team if fit is established; benefit remains a hypothesis.                                                                                                                                    |
 | Decision-maker | The human founder-developer or technical owner controls architecture, credentials, data, AI permissions, tests, deployment, and acceptance. User, evaluator, and decision-maker usually coincide in the first segment. |
 
-The qualifying situation is an imminent architecture decision for a new product needing at least three capability families: ecommerce (product catalogs, stores, and cart/orders); billing/payments; identity/access; content/sites; CRM/data capture; analytics; messaging/notifications/social; files; and AI/knowledge/automation. The trigger is having to choose these foundations before product-specific work. This customer values coherent fit, explicit rights, prerequisites, and an inspectable exit decision across several capabilities.
+The qualifying situation is an imminent architecture decision for a new product needing at least three of the [capability families below](#value-propositions). The trigger is having to choose these foundations before product-specific work. This customer values coherent fit, explicit rights, prerequisites, and an inspectable exit decision across several capabilities.
 
-Exclude established-product migrations, projects needing fewer than three foundations, hosted turnkey-service buyers, guaranteed implementation or support, and autonomous AI authority. Prior code, a starter, composed vendors, generated scaffolding, a narrower first feature, or deferral remain valid alternatives.
+Exclude established-product migrations, projects needing fewer than three foundations, hosted turnkey-service buyers, guaranteed implementation or support, and autonomous AI authority.
 
 ## Problem and desired progress
 
@@ -46,15 +48,13 @@ Exclude established-product migrations, projects needing fewer than three founda
 
 [Jobs to Be Done](https://www.christenseninstitute.org/theory/jobs-to-be-done/) structures the circumstance and progress but does not establish demand; these forces remain hypotheses until attributable developers act.
 
-## Positioning and value
+## Value Propositions
 
 | Element                     | Selected position                                                                                                                                                                                       |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Competitive alternatives    | Prior internal code, repository templates or SaaS starters, generators, separately composed services, AI-generated foundations, building only the first feature, or postponing architecture.            |
 | Differentiated capabilities | A dated inventory makes cross-domain structure inspectable; a bounded evaluation joins version, rights, prerequisites, limits, setup, and one capability check; human authority stays explicit with AI. |
 | Customer value              | Compare several foundations in one bounded decision, inspect declared cross-domain connections, surface disqualifiers before retention, and produce an attributable fit or exit result.                 |
-| Best-fit segment            | Accountable founder-developers and similarly responsible small-team developers choosing architecture for a new multi-feature web product and needing at least three documented foundations.             |
-| Market category             | The inspectable developer-framework category defined in Product identity.                                                                                                                               |
 
 The commercially readable inventory families are ecommerce; billing/payments; identity/access; content/sites; CRM/data capture; analytics; messaging/notifications/social; files; and AI/knowledge/automation. Its 16 modules are `agent`, `analytic`, `billing`, `blog`, `broadcast`, `crm`, `ecommerce`, `file-storage`, `host`, `knowledge`, `notification`, `rbac`, `social`, `startup`, `telegram`, and `website-builder`. Ecommerce is a concrete cross-module contour: 7 models and 19 relations cover catalogs/products, categories, stores, attributes, and cart-order data linked to billing currencies/payment intents, files, and website-builder content.
 
@@ -62,14 +62,14 @@ The commercially readable inventory families are ecommerce; billing/payments; id
 
 ## Offer and usage
 
-| Part                   | Definition                                                                                                                                                                                                                                                          |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Access unit            | Free evaluation of one pinned release for one named need. Current source retains its restrictive terms; MIT must be published and verified before unrestricted use is offered.                                                                                      |
-| Activation             | Confirm at least three needed foundations; review inventory, effective license, prerequisites, evidence, limits, and exit conditions; retrieve the version and begin the authoritative setup.                                                                       |
-| Normal usage loop      | Run setup, check one relevant capability, inspect constraints, then retain, reject, or defer with a reason. Retained use stays subject to effective rights and developer-owned testing, security, data, credentials, deployment, and acceptance.                    |
-| Included and excluded  | Includes source, documentation, the bounded check, and best-effort founder help through messenger-linked CRM when capacity permits. Excludes implementation, migration, hosting, SLA, guaranteed resolution, assurances, and showcase access.                       |
-| Failure handling       | License or prerequisite conflict stops launch. The same controllable blocker in two independent attempts pauses acquisition. Help preserves the report without a timing promise.                                                                                    |
-| Money and dependencies | Price and revenue are zero; framework costs remain separate from service economics. Launch requires effective MIT terms, consistent setup, a pinned version, attribution, and bounded support and safety. Design assets remain limited by their registry lifecycle. |
+| Part                   | Definition                                                                                                                                                                                                                                                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Access unit            | Evaluation of one pinned release for one named need; commercial terms are in [Revenue Streams](../models/framework-service/model.md#revenue-streams). Current source retains its restrictive terms; MIT must be published and verified before unrestricted use is offered.                                                     |
+| Activation             | Confirm at least three needed foundations; review inventory, effective license, prerequisites, evidence, limits, and exit conditions; retrieve the version and begin the authoritative setup.                                                                                                                                  |
+| Normal usage loop      | Run setup, check one relevant capability, inspect constraints, then retain, reject, or defer with a reason. Retained use stays subject to effective rights and developer-owned testing, security, data, credentials, deployment, and acceptance.                                                                               |
+| Included and excluded  | Includes source, documentation, the bounded check, and best-effort founder help through messenger-linked CRM when capacity permits. Excludes implementation, migration, hosting, SLA, guaranteed resolution, assurances, and showcase access.                                                                                  |
+| Failure handling       | License or prerequisite conflict stops launch. The same controllable blocker in two independent attempts pauses acquisition. Help preserves the report without a timing promise.                                                                                                                                               |
+| Money and dependencies | [Operations & Economics](../models/framework-service/model.md) owns revenue, funding and shared capacity; no product page changes those terms. Launch requires effective MIT terms, consistent setup, a pinned version, attribution, and bounded support and safety. Design assets remain limited by their registry lifecycle. |
 
 | Usage state           | Observable condition                                                                                                                      |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |

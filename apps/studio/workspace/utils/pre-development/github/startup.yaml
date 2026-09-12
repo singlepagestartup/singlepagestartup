@@ -29,7 +29,7 @@ rules:
       - apps/**
       - libs/**
     affected_artifacts:
-      - startup.business
+      - startup.products
       - startup.strategy
       - startup.brand
       - startup.products
@@ -42,7 +42,7 @@ rules:
       - docker-compose*.yaml
       - docker-compose*.yml
     affected_artifacts:
-      - startup.business
+      - startup.products
       - startup.strategy
       - startup.brand
       - startup.products

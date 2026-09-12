@@ -2,6 +2,10 @@ import { parse } from "yaml";
 
 export type ProductCatalogLayer = "singlepage" | "startup";
 
+export function productStoryId(layer: ProductCatalogLayer, productId: string) {
+  return `workspace-40-products-${layer}--product-${productId}`;
+}
+
 export interface IProductPage {
   id: string;
   title: string;
@@ -17,25 +21,36 @@ export interface IProductSection {
 }
 
 export interface IProductCatalogEntry {
+  model?: string;
   sections: IProductSection[];
   content?: string;
   id: string;
-  marketing_creative: string;
+  marketing_creative?: string;
   name: string;
-  presentation: string;
-  presentation_data: string;
+  presentation?: string;
+  presentation_data?: string;
   product: string;
   research: string;
   sales: string;
   summary: string;
-  website: string;
+  website?: string;
   website_component?: string;
 }
 
 export interface IProductCatalog {
+  models: IProductModel[];
   layer: ProductCatalogLayer;
   products: IProductCatalogEntry[];
-  schema: "singlepagestartup.product-catalog.v1";
+  schema:
+    | "singlepagestartup.product-catalog.v1"
+    | "singlepagestartup.product-catalog.v2";
+}
+
+export interface IProductModel {
+  id: string;
+  name: string;
+  source: string;
+  uses: string[];
 }
 
 function safeRelativePath(value: unknown, field: string): string {
@@ -132,12 +147,56 @@ export function parseProductCatalog(
   layer: ProductCatalogLayer,
 ): IProductCatalog {
   const value = parse(source) as Record<string, unknown> | null;
-  if (value?.schema !== "singlepagestartup.product-catalog.v1") {
+  if (
+    value?.schema !== "singlepagestartup.product-catalog.v1" &&
+    value?.schema !== "singlepagestartup.product-catalog.v2"
+  ) {
     throw new Error(`${layer} products use an unsupported schema`);
   }
   if (!Array.isArray(value.products)) {
     throw new Error(`${layer} products must be an array`);
   }
+  const modelIds = new Set<string>();
+  if (value.models !== undefined && !Array.isArray(value.models))
+    throw new Error(`${layer}.models must be an array`);
+  const models: IProductModel[] = ((value.models ?? []) as unknown[]).map(
+    (raw) => {
+      const model = record(raw, `${layer} model`);
+      const id = typeof model.id === "string" ? model.id.trim() : "";
+      const name = typeof model.name === "string" ? model.name.trim() : "";
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id) || modelIds.has(id) || !name)
+        throw new Error(`${layer} model needs a unique kebab-case id and name`);
+      modelIds.add(id);
+      const source = safeRelativePath(model.source, `${layer}.${id}.source`);
+      if (
+        !source.startsWith(`models/${id}/`) ||
+        !source.endsWith(".md") ||
+        /[?#%:]/.test(source)
+      )
+        throw new Error(
+          `${layer}.${id} model source must be Markdown in models/${id}/`,
+        );
+      if (
+        model.uses !== undefined &&
+        (!Array.isArray(model.uses) ||
+          model.uses.some((item) => typeof item !== "string"))
+      )
+        throw new Error(`${layer}.${id}.uses must contain model IDs`);
+      return { id, name, source, uses: (model.uses ?? []) as string[] };
+    },
+  );
+  const visitModel = (id: string, trail: string[] = []) => {
+    if (trail.includes(id))
+      throw new Error(`Model dependency cycle: ${[...trail, id].join(" -> ")}`);
+    const model = models.find((candidate) => candidate.id === id);
+    if (!model) throw new Error(`${layer} references missing model ${id}`);
+    model.uses.forEach((dependency) => visitModel(dependency, [...trail, id]));
+  };
+  models.forEach(({ id }) => visitModel(id));
+  if (!value.products.length && models.length)
+    throw new Error(
+      `${layer} empty product catalog cannot define orphan models`,
+    );
   const ids = new Set<string>();
   const products = value.products.map((raw, index) => {
     const product = raw as Record<string, unknown>;
@@ -145,7 +204,7 @@ export function parseProductCatalog(
     const name = typeof product.name === "string" ? product.name.trim() : "";
     const summary =
       typeof product.summary === "string" ? product.summary.trim() : "";
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id) || id === "models") {
       throw new Error(`${layer} products[${index}].id must be kebab-case`);
     }
     if (ids.has(id)) throw new Error(`${layer} repeats product ${id}`);
@@ -153,6 +212,20 @@ export function parseProductCatalog(
     if (!name || !summary) {
       throw new Error(`${layer} product ${id} needs name and summary`);
     }
+    const model = typeof product.model === "string" ? product.model : undefined;
+    if (
+      (value.schema === "singlepagestartup.product-catalog.v2" && !model) ||
+      (model && !modelIds.has(model))
+    )
+      throw new Error(`${layer}.${id} needs a model from its own catalog`);
+    if (Boolean(product.presentation) !== Boolean(product.presentation_data))
+      throw new Error(
+        `${layer}.${id} presentation and presentation_data must be declared together`,
+      );
+    const materialPath =
+      value.schema === "singlepagestartup.product-catalog.v2"
+        ? optionalSafeRelativePath
+        : safeRelativePath;
     if (product.content !== undefined && product.video !== undefined) {
       throw new Error(
         `${layer} product ${id} cannot define both content and legacy video`,
@@ -167,40 +240,64 @@ export function parseProductCatalog(
         `${layer}.${id} cannot define both content and sections.content`,
       );
     return {
+      model,
       sections: productSections,
       content: optionalSafeRelativePath(
         product.content ?? product.video,
         `${layer}.${id}.content`,
       ),
       id,
-      marketing_creative: safeRelativePath(
+      marketing_creative: materialPath(
         product.marketing_creative,
         `${layer}.${id}.marketing_creative`,
       ),
       name,
-      presentation: safeRelativePath(
+      presentation: materialPath(
         product.presentation,
         `${layer}.${id}.presentation`,
       ),
       product: safeRelativePath(product.product, `${layer}.${id}.product`),
-      presentation_data: safeRelativePath(
+      presentation_data: materialPath(
         product.presentation_data,
         `${layer}.${id}.presentation_data`,
       ),
       research: safeRelativePath(product.research, `${layer}.${id}.research`),
       sales: safeRelativePath(product.sales, `${layer}.${id}.sales`),
       summary,
-      website: safeRelativePath(product.website, `${layer}.${id}.website`),
+      website: materialPath(product.website, `${layer}.${id}.website`),
       website_component: optionalSafeRelativePath(
         product.website_component,
         `${layer}.${id}.website_component`,
       ),
     };
   });
+  for (const product of products) {
+    for (const field of [
+      "product",
+      "research",
+      "sales",
+      "website",
+      "marketing_creative",
+      "presentation",
+      "presentation_data",
+      "content",
+      "website_component",
+    ] as const) {
+      const source = product[field];
+      if (
+        source &&
+        (!source.startsWith(`${product.id}/`) || /[?#%:]/.test(source))
+      )
+        throw new Error(
+          `${layer}.${product.id}.${field} must stay inside its product folder`,
+        );
+    }
+  }
   return {
+    models,
     layer,
     products,
-    schema: "singlepagestartup.product-catalog.v1",
+    schema: value.schema,
   };
 }
 

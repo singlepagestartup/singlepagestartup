@@ -1,6 +1,6 @@
 ---
 name: business-analyst
-description: Defines the client's viable business model and end-to-end operating process from evidence and explicit assumptions.
+description: Defines product business models, shared economics and complete customer processes from attributed inputs and explicit unknowns.
 ---
 
 # Claude role adapter

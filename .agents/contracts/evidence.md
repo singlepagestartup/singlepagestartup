@@ -38,7 +38,7 @@ decision authority, assets, or non-goals.
 ## Source ownership
 
 There is no separate project Evidence document or global fact/change register.
-Record client answers and material constraints once in Brief or Business. The
+Record client answers and material constraints once in Brief or product models. The
 dialogue and explicit document confirmation establish the user's decisions;
 do not create a second record of every question, answer, edit, or approval.
 Keep only source attribution or limitations needed to interpret a current claim.

@@ -2,14 +2,18 @@
 confirmation:
   confirmed: false
 review:
+  stale:
+    reason: Business ownership migrated to Product, Sales and Operations & Economics; review the actual new inputs.
+    sources: [model.framework-service]
   dependencies:
     brief: e890b56080b80919caf6111e3a17c7b5cf42b0cccf4b27e5235b577c0da96f51
-    business: a91d74583bcc0dd5699980a5d03d063a72c463cc6c0b9d7b7896f67c62d8a5e0
 ---
 
 # Code Framework research
 
 ## Decision and scope
+
+Model `framework-service`: test `bridge`, `capacity` and `service-viability` only where they affect this product. The [model source](../models/framework-service/model.md#assumptions-and-decision-rules) owns these assumptions; findings, contrary observations and sources stay in this Research.
 
 **Product:** Code Framework (`singlepagestartup`). Determine which developers have a reason to evaluate this free framework, what they compare it with, and what proof the evaluation needs. AI Chat is a separate product and can also serve as this product's intended acquisition bridge. Its buyers, pricing, and demand are researched separately.
 

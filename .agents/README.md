@@ -84,7 +84,7 @@ passes singlepage through unchanged; product catalogs follow their atomic
 replacement rule defined in `workflows/pre-development.md`.
 
 Brief records the products in scope and the limited role of supporting
-activities. Business records only client facts, supplied materials, and confirmed
+activities. product models records only client facts, supplied materials, and confirmed
 intentions. Each product owns Research and Sales in its product folder; external
 research starts before strategic selection at `10-strategy`, not during intake.
 Strategy names acquisition and product priorities, one experiment track, and

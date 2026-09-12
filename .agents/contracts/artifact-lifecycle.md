@@ -50,7 +50,7 @@
   of turns, execution time, or token use. Never skip a material question,
   research step, specialist review, or correction to make the workflow shorter.
 - Primary review documents are written for an operator, not for the workflow.
-  `brief`, `business`, `strategy`, `brand`, `design`, each product Research, and every
+  `brief`, model sources, `strategy`, `brand`, `design`, each product Research, and every
   product-local `product`, `website`, and `marketing-creative` document must
   each remain readable in five to seven minutes: at most 1,400
   words including tables. This is a usability boundary, not a token budget.

@@ -18,7 +18,7 @@ illustration, or campaign creative.
 
 ## Inputs and ownership
 
-Read `brief.md`, `business.md`, the current product's Research, `strategy.md`, `brand.md`,
+Read `brief.md`, the linked model and Product sources, the current product's Research, `strategy.md`, `brand.md`,
 `design.md`, attributed facts, indexed assets, and the active
 `product.md`. Edit only that product's `website.md`;
 create presentation-only Studio compositions from static props.
@@ -36,7 +36,7 @@ under `.agents/contracts/document-confirmation.md`.
   principle, proof, process, FAQ, CTA, form labels, consent copy, success message,
   metadata, and Open Graph copy.
 - Align the form with qualification, routing, response time, and fulfillment in
-  `business.md`.
+  the complete product Sales process; model terms and Product own the promises.
 - Resolve material Website questions, including buyer/user roles, decision and
   qualification data, domain proof, required disclosures, consent/data limits,
   and the operational action after conversion.

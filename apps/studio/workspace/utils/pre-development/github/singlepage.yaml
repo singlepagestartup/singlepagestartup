@@ -26,7 +26,7 @@ rules:
       - apps/mcp/**
       - libs/modules/**
     affected_artifacts:
-      - singlepage.business
+      - singlepage.products
       - singlepage.strategy
       - singlepage.brand
       - singlepage.products
@@ -41,7 +41,7 @@ rules:
       - apps/db/**
       - apps/redis/**
     affected_artifacts:
-      - singlepage.business
+      - singlepage.products
       - singlepage.strategy
       - singlepage.brand
       - singlepage.products

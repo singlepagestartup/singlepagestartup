@@ -80,21 +80,17 @@ describe("Studio presentation structure", () => {
    * BDD Scenario: Preserve the content width of every product catalog
    * Given singlepage and startup catalogs use the same workspace renderer
    * When products are selected in Studio
-   * Then product choices render as top tabs without a permanent sidebar
+   * Then product materials retain the full page width and optional surfaces
    */
-  test("renders shared product selection as top tabs", () => {
+  test("preserves product materials without adding a permanent content sidebar", () => {
     const component = source(
       "apps/studio/workspace/utils/components/ProductCatalog.tsx",
     );
 
-    expect(component).toContain('aria-label="Products"');
-    expect(component).toContain('role="tablist"');
-    expect(component).toContain('role="tab"');
-    expect(component).toContain('role="tabpanel"');
-    expect(component).toContain('label: "01 Product Overview"');
-    expect(component).toContain('label: "02 Research"');
-    expect(component).toContain('label: "03 Sales"');
-    expect(component).toContain('label: "07 Content"');
+    expect(component).toContain('label: "Product"');
+    expect(component).toContain('label: "Research"');
+    expect(component).toContain('label: "Sales"');
+    expect(component).toContain('label: "Product Content"');
     expect(component).toContain("product.content");
     expect(component).toContain("<Content />");
     expect(component).toContain("product.websiteComponent");
@@ -113,9 +109,9 @@ describe("Studio presentation structure", () => {
   test("enforces the six-section Product Overview contract", () => {
     const expectedSections = [
       "Product identity",
-      "Best-fit customer",
+      "Customer Segments",
       "Problem and desired progress",
-      "Positioning and value",
+      "Value Propositions",
       "Offer and usage",
       "Evidence and decision rules",
     ];

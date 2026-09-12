@@ -58,8 +58,16 @@ export function parseSalesProcess(
   if (!["blocked", "ready"].includes(String(readiness))) {
     throw new Error(`${productId} sales readiness must be blocked or ready`);
   }
-  if (!Array.isArray(value.stages) || value.stages.length === 0) {
-    throw new Error(`${productId} sales process needs at least one stage`);
+  if (
+    !Array.isArray(value.stages) ||
+    (value.stages.length === 0 &&
+      (readiness !== "blocked" ||
+        !Array.isArray(value.blockers) ||
+        !value.blockers.length))
+  ) {
+    throw new Error(
+      `${productId} sales needs stages, or blocked intake with explicit unknowns`,
+    );
   }
   const ids = new Set<string>();
   const stages = value.stages.map((raw, index) => {

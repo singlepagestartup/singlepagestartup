@@ -1,0 +1,54 @@
+<script>
+  // Keep old bookmarks while the visible tree groups products by source layer.
+  (async () => {
+    const url = new URL(location.href);
+    const previous = url.searchParams.get("id") || "";
+    const match = previous.match(
+      /^workspace-(40-products(?:-(.+))?|00-business-03-business|00-client-request-02-business|business)--(default|singlepage|startup)$/,
+    );
+    if (!match) return;
+    const response = await fetch(new URL("index.json", location.href));
+    if (!response.ok) return;
+    const entries = Object.values((await response.json()).entries);
+    const products = entries.filter((entry) =>
+      entry.tags?.includes("sps-product"),
+    );
+    const layer =
+      match[3] === "default"
+        ? products.some((entry) => entry.tags.includes("sps-source-startup"))
+          ? "startup"
+          : "singlepage"
+        : match[3];
+    const available = products
+      .filter((entry) => entry.tags.includes("sps-source-" + layer))
+      .sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { numeric: true }),
+      );
+    const product = match[2] || url.searchParams.get("product");
+    const selected = product
+      ? available.find(
+          (entry) =>
+            entry.id ===
+            "workspace-40-products-" + layer + "--product-" + product,
+        )
+      : available[0];
+    let destination;
+    if (product && !selected) {
+      // A removed/other-layer product must never be silently replaced by another.
+      destination = "workspace-40-products--" + match[3];
+      if (previous === destination) return;
+    } else {
+      destination =
+        selected?.id || "workspace-40-products-" + layer + "--empty";
+    }
+    if (product) url.searchParams.set("product", product);
+    url.searchParams.set("id", destination);
+    if (!match[1].startsWith("40-products")) {
+      url.searchParams.set("section", "model");
+      url.searchParams.delete("document");
+    }
+    location.replace(url);
+  })().catch((error) =>
+    console.warn("Product bookmark could not be resolved", error),
+  );
+</script>

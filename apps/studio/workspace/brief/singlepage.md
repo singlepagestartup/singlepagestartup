@@ -37,23 +37,13 @@ review:
 
 Current reality: the repository and documented module inventory exist, but no independently attributable external setup, successful use, repeat use, or adoption has been supplied. Desired future state: one pinned, openly licensed Code Framework release can be evaluated through a clear setup and capability check.
 
-## Business and offer
+## Products in scope
 
-- **Code Framework offer:** free evaluation and use; the framework currently earns no revenue.
-- **AI Chat offer:** intended AI-agent chat service. Token sales or paid chat access were discussed as possible service mechanics; price, paying segment, and delivery terms remain unselected.
-- **Founder-stated value hypothesis:** avoid rebuilding common foundations such as accounts, payments, publishing, profiles, messaging, CRM, AI, and MCP when several are needed in one product.
-- **Price and funding:** framework price is zero; founder time and money fund development. No time, cost, reliability, or speed benefit is yet proven.
-- **Distribution:** GitHub repository and releases. The intended license is MIT, but the current published license remains restrictive until engineering applies and publishes the change.
-- **Approved acquisition intention:** one founder-led YouTube walkthrough, the demonstration-service bridge, direct preflight with at most two relevant contacts, and GitHub as the evaluation destination.
-- **Support:** best-effort founder help when capacity permits; no response-time, resolution-time, availability, or implementation commitment.
+The product inventory and boundaries are recorded in Decision subject and scope. [Code Framework Product](../products/singlepage/singlepagestartup/product.md) and [AI Chat Product](../products/singlepage/ai-chat/product.md) own the complete offers; their shared [Operations & Economics](../products/singlepage/models/framework-service/model.md) owns revenue, financing, resources and costs.
 
-## Business-model signals
+## Initial context
 
-- **Model:** founder-funded developer framework plus a separate intended AI-agent chat service; payment is a possibility, not a confirmed current offer.
-- **Buyer/user/payer:** the developer decides framework adoption; no framework payer exists. AI Chat's exact user, payer, and purchase situation remain unselected.
-- **Value unit:** framework setup plus one declared capability check for a named product need; repeat use or an attributable retain decision is adoption. AI Chat's service value unit remains undefined.
-- **Cost/capacity:** first experiment is three weeks, at most six founder hours per week and 18 total, USD 0 paid media, and up to USD 200 of subsidized provider usage.
-- **Material dependencies:** published MIT terms, one authoritative setup contract, showcase readiness, attribution, support boundaries, privacy/security decisions, and independent developer behavior.
+The founder intends a reusable framework and a separate agent-chat service, with the service also helping acquisition. The intended avoidance of rebuilding common foundations is a client value hypothesis, not a verified benefit. The project starts from supplied repository and identity materials. Product Research owns market questions; Sales owns each supplied process. Model economics and offer details are maintained at those sources rather than repeated in Brief.
 
 ## Existing evidence and assets
 
@@ -65,7 +55,7 @@ Current reality: the repository and documented module inventory exist, but no in
 
 These are client taste inputs, not Design decisions. Assets owns files, rights,
 and usage limits; Brief records intake status. Incomplete rows do not block
-Business, Strategy, or Brand, but block Design generation.
+model intake, Strategy, or Brand, but block Design generation.
 
 | Category                         | Required client reference set                                       | Reference asset IDs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Operator likes/dislikes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Status  |
 | -------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |

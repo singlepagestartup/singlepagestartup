@@ -102,7 +102,7 @@ the primary subject, boundaries, and current/intended products in scope.
 A later agent must not invent, combine, or silently omit a confirmed product. The current offer, intended buyer,
 commercial exchange, delivery boundary, primary goal, provisional model
 classification, and highest-impact unknowns must also be visible. Missing or
-unreviewed visual-reference categories do not block Business, Strategy, or
+unreviewed visual-reference categories do not block product models, Strategy, or
 Brand. They do block Design generation: all five Brief rows must be `ready`,
 with their files registered in Assets, before the Brand Designer may analyze
 the references or propose a style. Escalate conflicting stakeholder statements,

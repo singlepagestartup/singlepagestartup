@@ -9,16 +9,6 @@ entries:
     description: Source request, founder language, constraints, goals, and unknowns.
     uses:
       - startup.asset-index
-  - id: startup.business
-    kind: business
-    path: business/startup.md
-    extends: singlepage.business
-    strategy: sections
-    description:
-      Client-supplied business facts, shared operations, capacity, and
-      constraints.
-    uses:
-      - startup.brief
   - id: startup.strategy
     kind: strategy
     path: strategy/startup.md
@@ -26,7 +16,7 @@ entries:
     strategy: sections
     description: Positioning, offer, commercial focus, and first experiment.
     uses:
-      - startup.business
+      - startup.brief
   - id: startup.asset-index
     kind: asset-index
     path: assets/startup.yaml
@@ -60,7 +50,7 @@ entries:
     description: Atomic catalog of products and their Research, Sales, Product,
       Website, Marketing Creative, and Presentation sources.
     uses:
-      - startup.business
+      - startup.brief
       - startup.strategy
       - startup.brand
       - startup.design
@@ -68,7 +58,7 @@ entries:
 exports: []
 imports:
   - template.brief
-  - template.business
+  - template.product-model
   - template.product-research
   - template.sales-process
   - template.strategy

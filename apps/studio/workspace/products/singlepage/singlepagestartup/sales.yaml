@@ -3,8 +3,8 @@ product_id: singlepagestartup
 readiness: blocked
 owner: Founder
 seller: No seller; the framework is free and founder-funded
-pricing: Free evaluation and use; no framework payment
-capacity: First experiment is limited to six founder hours per week and eighteen total
+pricing: "See [Revenue Streams](../models/framework-service/model.md#revenue-streams), row singlepagestartup. Sales executes these terms; it does not set a second price."
+capacity: "See [shared resources and cost limits](../models/framework-service/model.md#delivery-and-resources). This process uses the common allowance, not a separate allocation."
 blockers:
   - Publish the selected license and one authoritative setup contract before
     acquisition starts.
@@ -50,7 +50,8 @@ stages:
       - setup-started-at
     action: Retrieve the pinned version and begin the documented setup.
     exit_condition: Setup begins for the named product need.
-    failure: Record the blocking prerequisite or rejection reason; founder help is
+    failure:
+      Record the blocking prerequisite or rejection reason; founder help is
       best effort.
     metric: Qualified evaluation starts
   - id: capability-checked
@@ -64,7 +65,8 @@ stages:
       - check-result
     action: Exercise one capability declared before the evaluation.
     exit_condition: Setup and capability results are attributable and recorded.
-    failure: Two independent failures on one controllable blocker pause acquisition
+    failure:
+      Two independent failures on one controllable blocker pause acquisition
       for repair.
     metric: Independent successful-use checks
   - id: adoption-decided
@@ -76,7 +78,8 @@ stages:
       - retain-or-reject
       - reason
       - follow-up-date
-    action: Record repeat use or an attributable decision to retain or reject the
+    action:
+      Record repeat use or an attributable decision to retain or reject the
       framework.
     exit_condition: The developer records a decision with a reason.
     failure: No follow-up is reported as missing evidence, never inferred adoption.
@@ -84,5 +87,7 @@ stages:
 confirmation:
   confirmed: false
 review:
-  dependencies:
-    business: a91d74583bcc0dd5699980a5d03d063a72c463cc6c0b9d7b7896f67c62d8a5e0
+  stale:
+    reason: Business ownership migrated to Product, Sales and Operations & Economics; review the actual new inputs.
+    sources: [model.framework-service]
+  dependencies: {}

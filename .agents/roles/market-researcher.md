@@ -18,11 +18,11 @@ website claims.
 
 ## Inputs and ownership
 
-Read `brief.md`, `business.md` when available, attributed source material, and
+Read `brief.md`, the linked model and Product sources when available, attributed source material, and
 questions in the selected product's documents that can change the decision.
 Edit one product Research at a time. Keep external observations, source IDs, and
 inferences in that file. Send client-clarification questions and proposed
-corrections to the coordinator; never rewrite client facts in Business from
+corrections to the coordinator; never rewrite client facts in product models from
 external findings.
 Refuse broad research until the brief contains operator-confirmed decision scope
 and the product Research scope names the decision the research can change.

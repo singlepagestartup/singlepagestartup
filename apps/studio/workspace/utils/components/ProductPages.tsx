@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import type { IProductPageView } from "../products/pages";
 import { WorkspacePage } from "./WorkspacePage";
+import { parseDocument } from "../../../../../tools/studio/workspace/document";
 
 function flatten(pages: IProductPageView[]): IProductPageView[] {
   return pages.flatMap((page) => [page, ...flatten(page.children)]);
@@ -72,7 +73,15 @@ export function ProductPages({
             <h2 className="border-b border-slate-200 px-6 py-4 text-lg font-semibold text-slate-950">
               {page.title}
             </h2>
-            <WorkspacePage page={page} />
+            <WorkspacePage
+              page={page}
+              hideTitle={
+                page.kind === "markdown" &&
+                parseDocument(page.markdown ?? "").body.match(
+                  /^# (.+)$/m,
+                )?.[1] === page.title
+              }
+            />
             <p className="break-all border-t border-slate-200 px-6 py-4 text-xs text-slate-500">
               Source: {page.sourcePath}
             </p>

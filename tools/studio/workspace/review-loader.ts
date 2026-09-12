@@ -6,6 +6,7 @@ import {
   resolveDocumentReviews,
   workspaceRelativePath,
   workspaceReviewDocuments,
+  productReviewPages,
   type IReviewIndexEntry,
 } from "./review";
 
@@ -62,6 +63,7 @@ export async function loadDocumentReviews(
   const catalog = entry
     ? (parse(sources[workspaceRelativePath(entry.path)]) as {
         products?: Array<Record<string, string>>;
+        models?: Array<{ source: string }>;
       } | null)
     : undefined;
   await Promise.all(
@@ -77,6 +79,18 @@ export async function loadDocumentReviews(
       ]
         .filter((field) => typeof product[field] === "string")
         .map((field) => read(`products/${catalogLayer}/${product[field]}`)),
+    ),
+  );
+  await Promise.all(
+    (catalog?.models ?? []).map((model) =>
+      read(`products/${catalogLayer}/${model.source}`),
+    ),
+  );
+  await Promise.all(
+    (catalog?.products ?? []).flatMap((product) =>
+      productReviewPages(product).map((page) =>
+        read(`products/${catalogLayer}/${page.source}`),
+      ),
     ),
   );
   return resolveDocumentReviews(

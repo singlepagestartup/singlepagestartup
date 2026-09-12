@@ -34,6 +34,29 @@ stages:
 
 describe("sales process", () => {
   /**
+   * BDD Scenario: Preserve an unknown process during initial intake.
+   * Given: the client has not supplied the process and a blocker names the gap.
+   * When: intake is parsed without stages.
+   * Then: blocked intake is accepted, but it cannot be called ready or gap-free.
+   */
+  test("accepts explicit unknown intake without inventing stages", () => {
+    const intake = source.split("stages:")[0] + "stages: []\n";
+    expect(parseSalesProcess(intake).stages).toEqual([]);
+    expect(() =>
+      parseSalesProcess(
+        intake.replace("readiness: blocked", "readiness: ready"),
+      ),
+    ).toThrow();
+    expect(() =>
+      parseSalesProcess(
+        intake.replace(
+          "blockers:\n  - Contract is not approved",
+          "blockers: []",
+        ),
+      ),
+    ).toThrow();
+  });
+  /**
    * BDD Scenario: Preserve process controls in the Studio document
    * Given a valid sales-process source for the expected product
    * When it is rendered as Markdown

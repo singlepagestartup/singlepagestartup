@@ -1,7 +1,9 @@
 import type { ComponentType } from "react";
+import type { IDocumentConfirmation } from "../../../../tools/studio/workspace/document";
 export type WorkspacePageLayer = "singlepage" | "startup";
 
 export interface IWorkspacePageView {
+  confirmation?: IDocumentConfirmation;
   id: string;
   title: string;
   kind:

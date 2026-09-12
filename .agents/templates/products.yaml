@@ -1,6 +1,7 @@
 # Save at products/<layer>/catalog.yaml; keep both layer catalogs from the outset.
 # All catalog paths (documents, data, and React entry points) use products/<layer>/.
-schema: singlepagestartup.product-catalog.v1
+schema: singlepagestartup.product-catalog.v2
+models: []
 products: []
 # Keep every client-confirmed product, including drafts and products outside the current experiment. Every product belongs to exactly one layer and
 # keeps Research, Sales, Product, Website, Marketing Creative, and Presentation together.
@@ -12,13 +13,20 @@ products: []
 # replaces the complete singlepage catalog in default; products never merge by
 # ID across layers.
 #
+# models:
+#   - id: replace-with-model-id
+#     name: Model name
+#     source: models/replace-with-model-id/model.md
+#     uses: [] # optional IDs of other models owning shared resources; no cycles
 # products:
 #   - id: replace-with-kebab-case-id
+#     model: replace-with-model-id
 #     name: Replace with product name
 #     summary: Replace with one-sentence product summary.
 #     research: replace-with-id/research.md
 #     sales: replace-with-id/sales.yaml
 #     product: replace-with-id/product.md
+#     # Materials below are optional until their stage; declared files must exist.
 #     website: replace-with-id/website.md
 #     marketing_creative: replace-with-id/marketing-creative.md
 #     presentation: replace-with-id/presentation/ProjectPresentation.tsx
@@ -34,8 +42,8 @@ products: []
 #     #       - id: landing
 #     #         title: Landing page
 #     #         source: replace-with-id/website/index.html
-#     #   - id: academy # custom ID creates an additional tab
-#     #     title: Academy
+#     #   - id: content # optional delivered product materials
+#     #     title: Product Content
 #     #     pages:
 #     #       - id: course
 #     #         title: Course
@@ -47,3 +55,8 @@ products: []
 #     #             title: Lesson slides
 #     #             source: replace-with-id/content/course/Deck.tsx
 #     #             export: pdf
+
+# Every v2 product needs a model from this same catalog. Reuse one model ID for
+# shared models; distinct models get distinct IDs. All model sources live under
+# models/<model-id>/ in this layer. Empty startup inherits models AND products.
+# Never create Business/Portfolio or a mandatory duplicate canvas overview.

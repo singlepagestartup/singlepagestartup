@@ -15,7 +15,11 @@ import singlepageCatalogSource from "../../products/singlepage/catalog.yaml?raw"
 import startupCatalogSource from "../../products/startup/catalog.yaml?raw";
 import { parseSalesProcess, salesProcessMarkdown } from "./sales";
 import { parseProductPresentation } from "./presentation-data";
-import { resolveProductSections, type IProductSectionView } from "./pages";
+import {
+  resolveProductSections,
+  type IProductSectionView,
+  type IProductPageView,
+} from "./pages";
 
 const documentSources = import.meta.glob<string>(
   [
@@ -67,23 +71,19 @@ const pageSources = {
 export interface IProductDocument {
   confirmation: IDocumentConfirmation;
   content: string;
-  kind: "creative" | "product" | "research" | "sales" | "website";
-  label:
-    | "01 Product Overview"
-    | "02 Research"
-    | "03 Sales"
-    | "04 Website"
-    | "05 Marketing Creative";
+  kind: "creative" | "product" | "research" | "sales" | "website" | "model";
+  label: string;
   sourcePath: string;
 }
 
 export interface IProductView {
+  model?: { id: string; name: string; products: string[] };
   sections: IProductSectionView[];
   content?: IProductSurface;
   documents: IProductDocument[];
   id: string;
   name: string;
-  presentation: {
+  presentation?: {
     Component: ComponentType<{ content: Record<string, unknown> }>;
     content: Record<string, unknown>;
     confirmation: IDocumentConfirmation;
@@ -149,9 +149,12 @@ function view(
   inherited: boolean,
 ): IProductCatalogView {
   const products = catalog.products.map((entry) => {
-    const presentationContent = parseProductPresentation<
-      Record<string, unknown>
-    >(documentSource(catalog.layer, entry.presentation_data), entry.id);
+    const presentationContent = entry.presentation_data
+      ? parseProductPresentation<Record<string, unknown>>(
+          documentSource(catalog.layer, entry.presentation_data),
+          entry.id,
+        )
+      : {};
     const confirmation = (
       kind: IProductDocument["kind"] | "presentation",
       relativePath: string,
@@ -164,19 +167,44 @@ function view(
         catalog.layer,
         relativePath.endsWith(".yaml") ? "yaml" : "markdown",
       );
-    const presentationPath = moduleKey(catalog.layer, entry.presentation);
+    const presentationPath = entry.presentation
+      ? moduleKey(catalog.layer, entry.presentation)
+      : "";
     const Component = presentationModules[presentationPath]?.default;
-    if (!Component) {
+    if (entry.presentation && !Component) {
       throw new Error(
         `Missing product presentation: products/${catalog.layer}/${entry.presentation}`,
       );
     }
+    const model = catalog.models.find(({ id }) => id === entry.model);
+    const sections = resolveProductSections(
+      entry.sections,
+      catalog.layer,
+      pageSources,
+    );
+    for (const section of sections) {
+      const attach = (pages: IProductPageView[]) =>
+        pages.forEach((page) => {
+          page.confirmation = workspaceReviews[
+            id === "singlepage" ? "singlepage" : "default"
+          ].get(
+            `product.${entry.id}.page.${section.id}.${page.id}`,
+          )?.confirmation;
+          attach(page.children);
+        });
+      attach(section.pages);
+    }
     return {
-      sections: resolveProductSections(
-        entry.sections,
-        catalog.layer,
-        pageSources,
-      ),
+      model: model
+        ? {
+            id: model.id,
+            name: model.name,
+            products: catalog.products
+              .filter((product) => product.model === model.id)
+              .map(({ name }) => name),
+          }
+        : undefined,
+      sections,
       content: productSurface(
         contentModules,
         catalog.layer,
@@ -184,11 +212,30 @@ function view(
         "content",
       ),
       documents: [
+        ...(model
+          ? [
+              {
+                content: documentSource(catalog.layer, model.source),
+                kind: "model" as const,
+                label: "02 Operations & Economics",
+                confirmation:
+                  workspaceReviews[
+                    id === "singlepage" ? "singlepage" : "default"
+                  ].get(`model.${model.id}`)?.confirmation ??
+                  documentConfirmation(
+                    documentSource(catalog.layer, model.source),
+                    catalog.layer,
+                    "markdown",
+                  ),
+                sourcePath: `apps/studio/workspace/products/${catalog.layer}/${model.source}`,
+              },
+            ]
+          : []),
         {
           content: documentSource(catalog.layer, entry.product),
           kind: "product" as const,
           confirmation: confirmation("product", entry.product),
-          label: "01 Product Overview" as const,
+          label: "01 Product" as const,
           sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.product}`,
         },
         {
@@ -210,30 +257,50 @@ function view(
           label: "03 Sales" as const,
           sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.sales}`,
         },
-        {
-          content: documentSource(catalog.layer, entry.website),
-          kind: "website" as const,
-          confirmation: confirmation("website", entry.website),
-          label: "04 Website" as const,
-          sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.website}`,
-        },
-        {
-          content: documentSource(catalog.layer, entry.marketing_creative),
-          kind: "creative" as const,
-          confirmation: confirmation("creative", entry.marketing_creative),
-          label: "05 Marketing Creative" as const,
-          sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.marketing_creative}`,
-        },
+        ...(entry.website
+          ? [
+              {
+                content: documentSource(catalog.layer, entry.website),
+                kind: "website" as const,
+                confirmation: confirmation("website", entry.website),
+                label: "04 Website" as const,
+                sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.website}`,
+              },
+            ]
+          : []),
+        ...(entry.marketing_creative
+          ? [
+              {
+                content: documentSource(
+                  catalog.layer,
+                  entry.marketing_creative,
+                ),
+                kind: "creative" as const,
+                confirmation: confirmation(
+                  "creative",
+                  entry.marketing_creative,
+                ),
+                label: "05 Marketing Creative" as const,
+                sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.marketing_creative}`,
+              },
+            ]
+          : []),
       ],
       id: entry.id,
       name: entry.name,
-      presentation: {
-        Component,
-        content: presentationContent,
-        confirmation: confirmation("presentation", entry.presentation_data),
-        dataSourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.presentation_data}`,
-        sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.presentation}`,
-      },
+      presentation:
+        Component && entry.presentation && entry.presentation_data
+          ? {
+              Component,
+              content: presentationContent,
+              confirmation: confirmation(
+                "presentation",
+                entry.presentation_data,
+              ),
+              dataSourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.presentation_data}`,
+              sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.presentation}`,
+            }
+          : undefined,
       summary: entry.summary,
       websiteComponent: productSurface(
         websiteModules,

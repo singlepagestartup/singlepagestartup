@@ -3,11 +3,8 @@ product_id: ai-chat
 readiness: blocked
 owner: Founder; detailed operational responsibilities remain unconfirmed.
 seller: AI Chat service operator; legal seller and commercial terms remain unconfirmed.
-pricing: Token or paid-chat access was discussed as a possibility; no customer
-  price is selected. Prior promotional provider-cost limits are USD 1 per
-  user/day and USD 200 aggregate, not a price list.
-capacity: Prior experiment allows six founder hours/week, 18 hours total over
-  three weeks. Continuing support capacity is unknown; no response-time promise.
+pricing: "See [Revenue Streams](../models/framework-service/model.md#revenue-streams), row ai-chat. Sales executes these terms; it does not set a second price."
+capacity: "See [shared resources and cost limits](../models/framework-service/model.md#delivery-and-resources). This process uses the common allowance, not a separate allocation."
 stages:
   - id: access
     name: Registration and access
@@ -20,7 +17,8 @@ stages:
       - Eligibility
       - Access basis
       - Applicable cost limit
-    action: Register the user and grant only eligible promotional access. A purchase
+    action:
+      Register the user and grant only eligible promotional access. A purchase
       route requires separately approved terms.
     exit_condition: Access basis and applicable limits are recorded.
     failure: Pause or deny access if eligibility, cost, capacity or authority is
@@ -43,7 +41,8 @@ stages:
     exit_condition: The outcome and affected usage units are recorded.
     failure: Preserve unaffected balances and reconcile affected units; pause
       repeated or unbounded failures.
-    metric: Completed answers, refusals, failures and actual provider cost; value is
+    metric:
+      Completed answers, refusals, failures and actual provider cost; value is
       assessed separately.
   - id: follow-up
     name: Repeat use and support
@@ -70,5 +69,7 @@ blockers:
 confirmation:
   confirmed: false
 review:
-  dependencies:
-    business: a91d74583bcc0dd5699980a5d03d063a72c463cc6c0b9d7b7896f67c62d8a5e0
+  stale:
+    reason: Business ownership migrated to Product, Sales and Operations & Economics; review the actual new inputs.
+    sources: [model.framework-service]
+  dependencies: {}

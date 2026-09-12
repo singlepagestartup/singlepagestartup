@@ -1,8 +1,14 @@
-schema: singlepagestartup.product-catalog.v1
+schema: singlepagestartup.product-catalog.v2
+models:
+  - id: framework-service
+    name: Framework and AI service
+    source: models/framework-service/model.md
 products:
   - id: singlepagestartup
+    model: framework-service
     name: Code Framework
-    summary: The inspectable reusable foundation from SinglePageStartup for products
+    summary:
+      The inspectable reusable foundation from SinglePageStartup for products
       spanning ecommerce, billing, identity, content, CRM, messaging, analytics,
       and AI.
     research: singlepagestartup/research.md
@@ -12,9 +18,21 @@ products:
     marketing_creative: singlepagestartup/marketing-creative.md
     presentation: singlepagestartup/presentation/ProjectPresentation.tsx
     presentation_data: singlepagestartup/presentation/data.yaml
+    sections:
+      - id: content
+        title: Product Content
+        pages:
+          - id: evaluation
+            title: Evaluation materials
+            children:
+              - id: record
+                title: Evaluation record
+                source: singlepagestartup/content/evaluation-record.md
   - id: ai-chat
+    model: framework-service
     name: AI Chat
-    summary: An intended AI-agent chat service with registration, agent selection,
+    summary:
+      An intended AI-agent chat service with registration, agent selection,
       bounded access, and support.
     research: ai-chat/research.md
     sales: ai-chat/sales.yaml
@@ -24,9 +42,11 @@ products:
     presentation: ai-chat/presentation/ProjectPresentation.tsx
     presentation_data: ai-chat/presentation/data.yaml
 review:
+  stale:
+    reason: Business ownership migrated to Product, Sales and Operations & Economics; review the actual new inputs.
+    sources: [model.framework-service]
   dependencies:
     asset-index: 62c40075601691ae7c3d7270b63268e3973e8be65a7c7091ce2dcabb6e329298
     brand: d5832fea9d6f4995d90b780efb5a8889ead9fe63e13d26620fb8a6c4538a3d78
-    business: d75723ec8f3df79a9d8c9d09084d3860b375b0e9e245e2bae91f984dfef0d37f
     design: 1c79d3a18cbee1ce687a7d583e70018acf5d4930604d9e4decc55fcc0a320f08
     strategy: f40d55a6c706beca2fef975dc69910119c09da34d3d463f8d77c6b6aebcd75c6

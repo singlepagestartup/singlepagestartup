@@ -188,3 +188,5 @@ accessibility risks, approval summary, and—when active—selected creative plu
 intentionally omitted formats. Report each changed document's word count.
 Website and Marketing Creative must not start from an unapproved brand or an
 unresolved visual Design decision they need.
+
+For product materials, use the linked Product, model and whole Sales as the owners of customer/value, economics and process decisions. Advertising/deck copy may apply approved facts but never establishes a second price, scope or support commitment; inspect stale dependencies before reusing claims.

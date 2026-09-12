@@ -51,10 +51,12 @@ export function MarkdownDocument({
   children,
   hideTitle = false,
   baseUrl,
+  resolveLink,
 }: {
   children: string;
   hideTitle?: boolean;
   baseUrl?: string;
+  resolveLink?: (url: string) => string | { href: string; target: "_top" };
 }) {
   const assetUrl = (value: string = "") => {
     if (!baseUrl || /^(?:[a-z][a-z0-9+.-]*:|\/|#)/i.test(value)) return value;
@@ -81,9 +83,18 @@ export function MarkdownDocument({
                     component: ({
                       href,
                       ...props
-                    }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-                      <a {...props} href={assetUrl(href)} />
-                    ),
+                    }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+                      const resolved =
+                        resolveLink?.(assetUrl(href)) ?? assetUrl(href);
+                      return (
+                        <a
+                          {...props}
+                          {...(typeof resolved === "string"
+                            ? { href: resolved }
+                            : resolved)}
+                        />
+                      );
+                    },
                   },
                 },
               }

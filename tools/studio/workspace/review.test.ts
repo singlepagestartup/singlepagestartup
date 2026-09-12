@@ -378,18 +378,19 @@ describe("product and layer review graph", () => {
    * BDD Scenario: One product's delivery changes
    * Given two products share Strategy but own separate Product and Website sources
    * When Product A changes
-   * Then its website becomes stale and Product B stays unaffected
+   * Then its website and shared Strategy consumers need review while Product B itself stays unchanged
    */
-  test("isolates product-local dependencies", () => {
+  test("keeps product decisions local while reviewing shared strategy consumers", () => {
     const documents = workspaceReviewDocuments(catalogFixture());
     for (const document of documents) inspect(documents, document.id);
     documents.find(({ id }) => id === "product.a.product")!.source +=
       "\nDelivery changed.";
     const reviews = resolveDocumentReviews(documents);
     expect(reviews.get("product.a.website")!.confirmation.state).toBe("stale");
-    expect(reviews.get("product.b.website")!.confirmation.state).toBe(
+    expect(reviews.get("product.b.product")!.confirmation.state).toBe(
       "unconfirmed",
     );
+    expect(reviews.get("product.b.website")!.confirmation.state).toBe("stale");
   });
 
   /**

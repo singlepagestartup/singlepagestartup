@@ -27,19 +27,17 @@ stale answers instead of appending corrections. -->
 - Explicit out-of-scope topics
 - Current reality versus desired future state
 
-## Business and offer
+## Products in scope
 
-- Current or intended products in scope, stable IDs, audience, price or
-  calculation rule, delivery, capacity, and availability
-- Keep supporting acquisition activities and internal work in the scope section;
-  do not create a second catalog or classify every initiative as a product
+- Current/intended product IDs, names, state and concise boundaries. Link their
+  owning Product documents; do not copy price, offer or process descriptions.
+- Supporting acquisition/internal activities remain context, not inferred products.
 
-## Business-model signals
+## Initial context
 
-- Primary and secondary value exchange or transaction mechanisms
-- Buyer, user, payer, beneficiary, and decision authority when they differ
-- Monetization, delivery, cost/capacity, scaling, and regulatory signals
-- Preserve uncertainty here; Business consolidates only client-supplied mechanics
+- Supplied context needed to understand the request and model boundaries.
+- Detailed actors/value/terms go to Product, model economics and Sales after
+  scope confirmation. Do not move the retired Business wholesale into Brief.
 
 ## Existing evidence and assets
 
@@ -57,7 +55,7 @@ stale answers instead of appending corrections. -->
   provenance, rights, and usage limits in Assets; Brief records only the five
   required categories and their intake status.
 - Use only `missing`, `supplied-unreviewed`, or `ready`. Design generation may
-  begin only when every row is `ready`. Incomplete rows do not block Business,
+  begin only when every row is `ready`. Incomplete rows do not block model intake,
   Strategy, or Brand.
 
 | Category                         | Required client reference set                                         | Reference asset IDs | Operator likes/dislikes                             | Status |

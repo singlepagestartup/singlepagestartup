@@ -11,13 +11,13 @@ Product materials change more often and affect only their own offer.
 
 ## Review order
 
-| Stage               | Review these documents                                                                                    | Typical change rate | If it is wrong                                                                                           |
-| ------------------- | --------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
-| `00 Client Request` | Brief, client-factual Business                                                                            | Rare after approval | Every later decision may be based on the wrong direction, sales process, audience, facts, or constraints |
-| `10 Strategy`       | Product Research, then Strategy                                                                           | Occasional          | Brand, design, and product priorities may target the wrong opportunity                                   |
-| `20 Brand`          | Brand                                                                                                     | Rare                | Every product may communicate the wrong meaning, promise, voice, or proof boundary                       |
-| `30 Design`         | Design, Assets                                                                                            | Occasional          | Every product may use an inconsistent or unsuitable visual system                                        |
-| `40 Products`       | Research, Sales, Product, Website, Marketing Creative, Presentation, and optional product-defined Content | Frequent            | Only that product's outputs need correction unless they expose an upstream contradiction                 |
+| Stage               | Review these documents                                                                                                    | Typical change rate | If it is wrong                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
+| `00 Client Request` | Brief, then initial Product/models and Sales intake                                                                       | Rare after approval | Every later decision may be based on the wrong direction, sales process, audience, facts, or constraints |
+| `10 Strategy`       | Product Research, then Strategy                                                                                           | Occasional          | Brand, design, and product priorities may target the wrong opportunity                                   |
+| `20 Brand`          | Brand                                                                                                                     | Rare                | Every product may communicate the wrong meaning, promise, voice, or proof boundary                       |
+| `30 Design`         | Design, Assets                                                                                                            | Occasional          | Every product may use an inconsistent or unsuitable visual system                                        |
+| `40 Products`       | Product, Operations & Economics, Sales, Research, Website, Marketing Creative, Presentation, and optional Product Content | Frequent            | Only that product's outputs need correction unless they expose an upstream contradiction                 |
 
 Review `default` first. Open `singlepage` or `startup` only when you need to see
 where a value came from.
@@ -34,7 +34,7 @@ belongs to that confirmation. The badge shows one of four states:
 | `changed` — Needs confirmation again | The document changed since confirmation                   |
 | `stale` — Review upstream changes    | An input changed or has an unresolved material effect     |
 
-For example, a capacity change in Business makes Strategy stale even while its
+For example, a capacity change in a shared model makes Strategy stale even while its
 text stays unchanged; Brand and product materials can become stale through that
 same dependency chain. The agent reviews the actual impact. If the decision is
 unaffected, it updates only the input snapshot and preserves the prior approval.
@@ -70,7 +70,7 @@ the framework normally configures nothing.
 
 ## File map
 
-The workspace root contains document folders (`brief`, `business`, `strategy`,
+The workspace root contains document folders (`brief`, `strategy`,
 `brand`, `design`), `assets`, `products`, `styles`, its README, and `utils`.
 Assets and font licenses remain directly accessible. Products keep their catalog,
 Markdown, YAML data, and product-specific React entry points together. Layered
@@ -86,6 +86,7 @@ apps/studio/workspace/
   assets/<layer>/{fonts,intake,generated}/
   styles/{singlepage,startup,default}.css
   products/{singlepage,startup}/catalog.yaml
+  products/<layer>/models/<model-id>/model.md
   products/<layer>/<product-id>/
     product.md
     research.md
@@ -145,11 +146,19 @@ maps, the product catalog is replaced as a whole under the rules below.
   singlepage catalog.
 - If startup defines at least one product, `default` shows only startup
   products. The complete singlepage catalog is replaced.
-- Every catalog product owns six core tabs in the same layer, displayed as
-  Product Overview, Research, Sales, Website, Marketing Creative, and Presentation.
-  Opening the catalog or switching products starts with Product Overview so the
-  reader sees the product, audience, and offer first. This reading order does not
-  change the workflow's research and decision dependencies.
+- Products start with Product, Operations & Economics, Sales and Research. The
+  shared model is read from its single source; Website, Marketing Creative and
+  Presentation appear when their files are prepared. All declared files must exist.
+- `40 Products` is a sidebar folder. It contains sibling `singlepage` and `startup`
+  groups, each listing only products from its own catalog. An empty source has a
+  `No products` state. There is no visible default branch and no per-product layer list.
+  The computed default catalog retains its inheritance/replacement semantics.
+  Opening a product starts with Product; its page contains only document navigation.
+  Shared-model context is plain text inside Operations & Economics, without a
+  second menu of canvas blocks. A missing source view never falls back to another product.
+- Storybook derives its product stories into `.storybook/.generated/products/`
+  on startup/build and updates them when a catalog changes. These ignored files
+  contain references only; edit names/order/membership in the owning catalog.
 - A product may extend any core tab and add more tabs through `sections`, with
   nested `pages` and `children`. Page files may be Markdown, HTML, JSX/TSX,
   images, video, audio, or downloadable files. The legacy `content` and
@@ -160,9 +169,14 @@ maps, the product catalog is replaced as a whole under the rules below.
 Example downstream catalog:
 
 ```yaml
-schema: singlepagestartup.product-catalog.v1
+schema: singlepagestartup.product-catalog.v2
+models:
+  - id: reletting-service
+    name: Reletting service model
+    source: models/reletting-service/model.md
 products:
   - id: commercial-property-reletting
+    model: reletting-service
     name: Commercial property reletting
     summary: Find a more profitable replacement tenant and manage the change.
     research: commercial-property-reletting/research.md
@@ -176,7 +190,7 @@ products:
     # content: commercial-property-reletting/content/Content.tsx
 ```
 
-The product folder applies the approved Business, Strategy, Brand, and Design.
+The product folder links its model and applies approved Strategy, Brand, and Design.
 It may narrow those decisions for one offer, but it must not silently redefine
 them.
 
@@ -187,10 +201,10 @@ loaders, and their tests live in `utils/products/`. Product-specific React
 components, HTML pages, campaign images, data, and nested folders stay beside
 their owning documents in `products/<layer>/<product-id>/`.
 
-Add `sections` to a catalog product. IDs `product`, `research`, `sales`,
+Add `sections` to a catalog product. IDs `product`, `model`, `research`, `sales`,
 `website`, `creative`, and `presentation` add pages to the existing core tab;
 its main document/deck remains available as **Overview**. Other IDs create
-additional tabs in declaration order, numbered from 07. A page with `children`
+additional tabs in declaration order, numbered after the available core tabs. A page with `children`
 may be a group or have its own `source`. Page IDs are unique within their section;
 `overview` is reserved for the core document. Titles are explicit display labels.
 
@@ -269,8 +283,8 @@ The internal workflow stage ID remains `00-business`.
   scope, constraints, owner-controlled facts, and products in scope. Supporting
   acquisition activities and internal work remain brief context in Brief and
   Strategy.
-- Business records client-supplied value, money, responsibility, capacity, and
-  routing facts. Distinguish reported reality, confirmed intention, inspected
+- Business Analyst records initial Product and Operations & Economics model
+  sources, with client-supplied value, money, responsibility, capacity and routing. Distinguish reported reality, confirmed intention, inspected
   supplied materials, calculations, and unknowns, with sources. Each product's
   Sales intake records its supplied process and missing details.
 - Keep material source attribution with each owning statement. Product Research
@@ -444,15 +458,21 @@ Workspace stops before engineering. Production components, APIs, analytics
 implementation, QA, publication, and deployment remain in the normal code and
 engineering workflow under `thoughts/shared/**`.
 
-### Independent documents and semantic review
+### Source ownership and semantic review
 
-Every document stores its own content. Agents read related documents as context;
-Studio does not import their decisions into another document at render time.
-For example, a Business price change triggers a Product impact review: update
-Product's own price if affected, otherwise retain its content. `stale` requests
-that review; it is not automatic content propagation. Presentation owns its
-content and confirmation in the catalog's `presentation_data` YAML source.
+Product owns customer/value/offer decisions; Operations & Economics owns model
+resources, per-product prices, costs and funding; Sales owns the whole customer
+process. Website, Marketing Creative and Presentation apply these facts in their
+own authored materials. They never establish a competing source for price or
+scope. A changed source makes dependent materials stale for semantic review;
+Studio does not automatically replace their copy or renew confirmation.
 
-Structural migrations preserve every confirmed product. One product in startup
-replaces the entire singlepage product catalog in default, including its
-documents, presentations and optional surfaces. No product-level fallback is allowed.
+Presentation keeps its own data and React entry point, with the same preview and
+PDF export. Additional pages keep the existing format/nesting support. Use
+**Product Content** for delivered lessons, episodes, templates or files, separately
+from marketing. Its structure remains product-defined and optional.
+
+See [product-model migration](../../../tools/studio/products/MIGRATION.md) for the
+page/transfer maps, old bookmarks, automatic structural steps, semantic decisions
+and verification. Business is retired after content attribution, not copied into
+Brief. The `00-business` stage ID remains compatible for initial Brief/model work.

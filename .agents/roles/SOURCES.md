@@ -18,6 +18,11 @@ Accessed 2026-08-04 unless noted otherwise.
 - [UK Government Digital and Data Profession: Business Analyst](https://ddat-capability-framework.service.gov.uk/role/business-analyst) — role and method reference; Open Government Licence unless otherwise stated.
 - [IIBA global business analysis standards](https://www.iiba.org/career-resources/a-business-analysis-professionals-foundation-for-success/global-business-analysis-standards-regulations-and-best-practices/) — public BACCM framing paraphrased; proprietary competency text not copied.
 
+- [Business Model Generation](https://www.strategyzer.com/library/business-model-generation) — Osterwalder/Pigneur model design provenance.
+- [Business Model Canvas](https://www.strategyzer.com/library/the-business-model-canvas) — one model and its interconnected nine blocks.
+- [Official nine-block definitions](https://www.strategyzer.com/business-models-the-toolkit-to-design-a-disruptive-company) — canonical terms and scope.
+- [Value Proposition Canvas](https://www.strategyzer.com/library/the-value-proposition-canvas) — customer jobs, pains and gains connected to value; mapping is not validation.
+
 ## Market Researcher
 
 - [O\*NET Market Research Analysts and Marketing Specialists 13-1161.00](https://www.onetonline.org/link/summary/13-1161.00) — professional task reference; CC BY 4.0.

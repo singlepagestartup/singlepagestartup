@@ -12,13 +12,14 @@ const preview: Preview = {
     },
     options: {
       storySort: {
+        method: "alphabetical",
         order: [
           "Modules",
           "Workspace",
           [
             "README",
             "00 Client Request",
-            ["01 Brief", "02 Business"],
+            ["01 Brief"],
             "10 Strategy",
             "20 Brand",
             "30 Design",

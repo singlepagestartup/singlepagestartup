@@ -59,7 +59,7 @@ question, source check, professional review, or artifact correction to make the
 workflow shorter.
 
 The operator must be able to review and edit every primary document without
-reconstructing the agent session. `brief`, `business`, each product
+reconstructing the agent session. `brief`, each model, each product
 `research`, `strategy`, `brand`, `design`, and each product-local `product`,
 `website`, and `creative`
 document contain at most 1,400 words,
@@ -192,15 +192,15 @@ At every launch, reconcile the cursor before doing work:
    contains both professional responsibility and method; load only the resolved
    project dependencies and capability bindings required for this decision.
 5. Update the earliest canonical artifact directly. During initial interview,
-   do not repeatedly regenerate Business, product Research, Strategy, Brand, Website, or
+   do not repeatedly regenerate product models, product Research, Strategy, Brand, Website, or
    marketing creative
    from each partial answer. Propagate a batch only after the decision subject
    and affected upstream section are stable or when a confirmed correction
    invalidates an existing downstream decision.
-   When a professional artifact is generated or fully rerun, replace its body
-   from the template and stable upstream dependencies. The previous body is not
-   an input and must not be summarized, compressed, or incrementally amended.
-   Git retains its history.
+   On a full professional rerun use the canonical template and stable upstream
+   dependencies. For Product/model migration, first inspect existing unique facts,
+   whole topics, source attribution and extensions; preserve them at their owners.
+   Never discard a client fact merely because a template changed. Git retains history.
    Before saving, search the document for every earlier statement about the
    changed fact and replace or remove all stale occurrences in the same edit.
    Never append a corrected answer below an obsolete answer.
@@ -249,7 +249,7 @@ or approval register in workspace, and do not copy project business content into
 Before completing a stage, its owner applies these checks to the actual content:
 
 1. Describe the current or intended business model from client inputs in
-   Brief/Business. Identify distinct users, buyers, payers, beneficiaries,
+   Brief and the owning Product/model. Identify distinct users, buyers, payers, beneficiaries,
    transaction/value units, money flow, capacity, geography, and material limits
    only where they change a decision. Allow compound models; unknown facts stay
    unknown instead of being forced into a familiar category.
@@ -288,7 +288,7 @@ constraints remain reviewable in the operator's ordinary documents.
 ## 00 — Client Request
 
 **State**: `active_stage: 00-business`. Begin with
-`active_artifacts: [brief]`, then `[business]`.
+`active_artifacts: [brief]`, then `[product-models]`. Resolve model/product files through the catalog; `product-models` is a cursor task, not a global document.
 
 **Owners**: Account Manager, then Business Analyst.
 
@@ -317,17 +317,17 @@ historical service model because they share people or technology.
 Brief also records five separate visual-reference sets: interface/website,
 typography, photography, illustration, and marketing creative. Record asset IDs,
 client likes/dislikes, and category status; Assets owns files and rights. This
-intake may remain incomplete during Business, Strategy, and Brand, but all five
+intake may remain incomplete during product models, Strategy, and Brand, but all five
 categories must be ready before Design generation.
 
 After scope confirmation, describe the business model from client inputs in
-Business and place material questions in the documents that need their answers. `00-business` owns only
+Product, Operations & Economics and Sales; place material questions in the documents that need their answers. `00-business` owns only
 operator facts and observations of supplied materials. External research
 questions belong to a named product at `10-strategy` or a later consuming stage;
 professional proposals belong to their owning later stage. Do not block factual
 intake on market research and do not use research to answer an operator fact.
 
-Business consolidates client-supplied shared mechanics, ownership, resources,
+Operations & Economics consolidates client-supplied shared mechanics, ownership, resources,
 and constraints. Record each material assertion's source and state: client
 statement, supplied-material observation, confirmed intention, explicit
 calculation from supplied inputs, or unknown. A client's belief about demand
@@ -343,7 +343,7 @@ an operator fact; otherwise retain their exact later-stage or launch gate.
 Improvements to the process are later product/strategy proposals.
 
 Claim sources follow `.agents/contracts/evidence.md`. Current client facts stay
-in Brief/Business, external findings and sources in product Research, and asset
+in Brief and the owning Product/model, external findings and sources in product Research, and asset
 rights in Assets. Approvals and current dependency review are source metadata
 under `.agents/contracts/document-confirmation.md`; Git owns prior versions.
 Do not create Evidence, a transcript register, or a substitute fact/change log.
@@ -353,7 +353,17 @@ facts require client confirmation of applicability in the owning startup source.
 Completion requires confirmed scope and products, attributable current facts
 and intentions, explicit unknowns, and answers to the operator facts needed for
 the next strategic decision. Scope confirmation belongs in Brief. Outputs are
-Brief, Business, and product Sales intake. There is no business-wide Research artifact.
+Brief, v2 catalog with all confirmed products and model IDs, initial Product,
+Operations & Economics, and product Sales intake. Practical materials need not
+exist before their stage. Research intake may record questions without findings. There is no business-wide Research artifact.
+
+Before Strategy, Business Analyst creates or reconciles the v2 catalog and initial
+Product/model sources. Apply `.agents/contracts/product-models.md` for source
+ownership, model boundaries, funding and cost allocation. No business model is
+inferred solely from the catalog's product count. The existing `00-business`
+stage ID remains compatible but it has no Business output. A cursor naming
+`business` resumes as `product-models` after content-aware migration; never mark
+intake complete because the old document was deleted.
 
 When complete, persist `10-strategy`, `in_progress`, and `[product-research]`.
 
@@ -385,11 +395,11 @@ Work one product at a time. Scope sources, observations, inferences, and unknown
 to that product. Cross-product comparison belongs to Strategy and cites the
 relevant product findings; there is no shared market-research summary. A source
 may inform multiple products only when its applicability is stated separately.
-Do not copy product market findings into Business or a shared register. A contradiction with a client statement becomes a question linked
+Do not copy product market findings into product models or a shared register. A contradiction with a client statement becomes a question linked
 from product Research; only attributable client clarification or corrected
 supplied material updates the factual intake.
 
-Use Brief, Business, the relevant product Research and Sales, and approved
+Use Brief, product models, the relevant product Research and Sales, and approved
 constraints to update Strategy. Name the audience-growth priority (or why none
 is active) and sales-product priority. Select the exact experiment product set from
 confirmed Brief products, choose `audience-growth` or `sales` as the first
@@ -397,7 +407,7 @@ experiment track, and define one bounded experiment. Supporting activities
 remain strategic context unless explicitly defined as separate offers.
 
 `strategy.md` is a replacement projection, not an interview log. During fact
-collection, update the owning Brief, Business, product Research, or Sales; do not invoke the Strategist after each answer. Invoke it once
+collection, update the owning Brief, product models, product Research, or Sales; do not invoke the Strategist after each answer. Invoke it once
 the input batch is stable. On first generation or any full strategy rerun:
 
 1. Treat the previous strategy body as invalid and do not load it as an input.
@@ -494,7 +504,7 @@ in the body.
 
 **Owner**: Brand Designer.
 
-**Required inputs**: business, approved strategy, approved brand,
+**Required inputs**: product models, approved strategy, approved brand,
 a complete categorized visual-reference intake in
 the resolved Brief, matching registered Assets, and every upstream correction
 triggered during design.
@@ -752,25 +762,25 @@ handoff.
 
 **State**: `active_stage: 40-products`, `active_artifacts: [products]`.
 
-**Owners**: Strategist for each `product.md`; Web Designer for each
+**Owners**: Business Analyst for model coherence and process; Strategist refines each `product.md`; Web Designer for each
 `website.md`; Brand Designer for each `marketing-creative.md`; Communication
 Strategist and Brand Designer for each presentation.
 
 **Required inputs**: the operator-confirmed Brief products, each active product's
-Research and Sales process, completed Business, approved Strategy containing the
+Research and Sales process, initial product models, approved Strategy containing the
 exact experiment product set and separate priorities, approved Brand, approved
 Design, the product Research, and the resolved asset registry.
 
 **Capabilities**: artifact read/write, image inspection/generation and Figma
 when available, plus static Studio composition; no production data capability.
 
-Products are a catalog, not four global documents. Its layer index lives at
+Products are a catalog, not four global documents. Its catalog and models are created during `00-business`; its layer index lives at
 `products/<layer>/catalog.yaml`. Keep both `singlepage` and `startup` folders
 with their own catalog from the outset, matching the explicit extension boundary
 in `libs/modules`. An empty startup catalog inherits the base; its first product
 replaces the complete base catalog. Do not create duplicate framework products
 under startup. Each product owns these data sources:
-the Research prepared before strategic selection and Sales intake recorded during Business:
+the Research prepared before strategic selection and Sales intake recorded during product models:
 
 ```text
 products/<layer>/<product-id>/
@@ -783,17 +793,17 @@ products/<layer>/<product-id>/
   content/ # optional product-owned supporting data
 ```
 
-Create catalog entries for every operator-confirmed Brief product, regardless of launch or experiment priority. Every
+Retain the catalog entries created during `00-business` for every operator-confirmed Brief product, regardless of launch or experiment priority. Every
 entry must trace to a confirmed Brief product and own Research and Sales,
-plus its normalized Business mechanics. Do not infer a product from a showcase, reference project,
+plus its normalized product models mechanics. Do not infer a product from a showcase, reference project,
 web page, repository folder, possible future monetization, or an agent's idea.
 If product identity is absent or ambiguous, return to Brief before creating product files. Missing commercial decisions remain explicit in the owned documents and do not hide a confirmed product. If product work
 uncovers a genuinely new offer, add and confirm it upstream first; never append
 it directly to the catalog.
 
-`product.md` is a decision-ready product definition with exactly six
-second-level sections: Product identity; Best-fit customer; Problem and desired
-progress; Positioning and value; Offer and usage; and Evidence and decision
+`product.md` is a decision-ready product definition with six canonical
+second-level sections: Product identity; Customer Segments; Problem and desired
+progress; Value Propositions; Offer and usage; and Evidence and decision
 rules. It distinguishes brand from product, user from buyer and payer, access
 from successful use and adoption, current evidence from hypothesis, and the
 product from related showcases or supporting offers. It applies the shared
@@ -811,9 +821,10 @@ choices. Record the authoritative sources, project fit, limitations, and effect
 on a material decision beside that decision in the consuming document. General
 method instructions remain in the canonical role.
 
-On first generation or any full `product.md` rerun, do not load the previous
-product body. Start from `.agents/templates/product.md` and replace the complete
-file from the approved upstream dependency closure. Keep it within 1,400 words,
+On generation or rerun, inspect the existing Product, unique extensions and
+source attribution before editing. Use `.agents/templates/product.md` for the
+canonical sections; preserve every material fact and whole topic. Reconcile
+changes with the approved dependency closure; never discard old content blindly. Keep it within 1,400 words,
 state each decision once, and leave unknown proof explicitly missing rather
 than filling a section with generic product language.
 
@@ -828,12 +839,12 @@ message, proof/disclosure, composition, dimensions, crop or timing behavior,
 variants, prompts, indexed assets, rights, accessibility, destination, tracking
 event, owner, and review state.
 
-React Presentation, Website, and optional Content entry points live beside
+React Presentation, Website, and optional Product Content entry points live beside
 their product documents under `products/<layer>/<product-id>/`. Every catalog
 path resolves below `products/<layer>/`; Sales and Presentation data YAML
 remain with the product documents.
 
-Every document owns its complete content. Presentation has its own `presentation/data.yaml` and a React entry point; Studio must never extract its text from Strategy, Product, Business, Brand, or another document. Shared rendering components and style tokens remain reusable. PDF and PNG exports are derivatives only. Agents may consult relevant documents during authoring, but update the owned source explicitly after semantic review.
+Every document owns its complete content. Presentation has its own `presentation/data.yaml` and a React entry point; Studio must never extract its text from Strategy, Product, product models, Brand, or another document. Shared rendering components and style tokens remain reusable. PDF and PNG exports are derivatives only. Agents may consult relevant documents during authoring, but update the owned source explicitly after semantic review.
 
 Products can extend any core tab or add arbitrary sections using the optional
 catalog `sections` tree (`id`, `title`, `pages`; page `source` and/or nested
@@ -865,9 +876,15 @@ merge product entries across layers: products from different businesses must
 not leak into one catalog. Each startup product owns every referenced document, presentation data and React entry point;
 there is no partial per-product fallback to a singlepage folder.
 
-Work through one selected product at a time. Studio opens Product Overview first,
-then shows Research, Sales, Website, Marketing Creative, and Presentation as core
-tabs, followed by explicitly declared additional sections (or legacy Content).
+Work through one selected product at a time. Studio groups sources under the
+`40 Products` sidebar folder: singlepage and startup are siblings, each listing
+only its own products. Empty sources remain visible with a No products state.
+Default resolution remains available to loaders without a third sidebar branch.
+Groups are derived from catalogs; never maintain a second product inventory in stories.
+The selected product opens Product first,
+then shows Operations & Economics, Sales, Research, Website, Marketing Creative,
+and Presentation when their sources exist, followed by optional Product Content
+and explicitly declared additional sections. Shared models have one source.
 Supporting pages may have arbitrary nesting and do not need Markdown wrappers.
 Outputs may be reviewed separately, but the product is not complete until all
 applicable files are coherent with one another. Record an

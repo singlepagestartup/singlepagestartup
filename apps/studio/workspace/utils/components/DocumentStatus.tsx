@@ -7,11 +7,11 @@ const purposes: Record<string, { purpose: string; usage: string }> = {
     usage:
       "Use it to agree on the project scope and identify the client answers needed before making decisions.",
   },
-  business: {
+  model: {
     purpose:
-      "Records how the business operates: its products, funding, responsibilities, resources, and constraints, as supplied by the client.",
+      "Explains the linked model's revenue, funding, resources, activities, partnerships and costs.",
     usage:
-      "Use it to check whether proposed product and strategy decisions fit the client's actual capabilities and confirmed intentions.",
+      "Edit common facts here once. Per-product terms retain their product IDs; Sales owns the complete customer process.",
   },
   strategy: {
     purpose:

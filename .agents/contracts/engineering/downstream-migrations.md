@@ -73,8 +73,8 @@ are separate from semantic dependency checks.
 
 For existing repositories without a checkpoint, also audit current project
 compatibility against the checked-out contracts. In particular, Evidence removal
-requires scanning owned Brief, Business, Strategy, Brand, Design, nested product
-documents/data, and their bindings for obsolete paths and IDs such as `ST-EV-*`
+requires scanning owned Brief, product models, Strategy, Brand, Design, nested product
+documents/data (and any legacy Business awaiting content-aware migration), and their bindings for obsolete paths and IDs such as `ST-EV-*`
 or `SP-EV-*`. Recover meaning from the child's old Git sources; keep a short
 description, attribution, date, and limits where material. Do not merely delete
 the identifier, replace it with another opaque title, or import framework client

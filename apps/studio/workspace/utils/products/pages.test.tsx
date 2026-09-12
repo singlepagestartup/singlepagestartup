@@ -11,6 +11,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { parseProductCatalog, resolveProductCatalog } from "./catalog";
 import { resolveProductSections, type IProductPageSources } from "./pages";
 import { ProductPages } from "../components/ProductPages";
+import { ProductCatalog } from "../components/ProductCatalog";
+import type { IProductCatalogView } from "./source";
 import { extensionProduct } from "../../../../../tools/studio/products/fixtures/catalog";
 import { validateProductSectionFiles } from "../../../../../tools/studio/products/validate";
 
@@ -53,6 +55,63 @@ function sources(layer: "startup" | "singlepage"): IProductPageSources {
 }
 
 describe("product pages", () => {
+  /**
+   * BDD Scenario: Show an extension before its core material is prepared.
+   * Given: an initial product has a Website extension but no Website document.
+   * When: the reader opens the Website section.
+   * Then: its real page opens immediately without an empty Overview or deck tab.
+   */
+  test("opens declared material pages without requiring empty core documents", () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, "window");
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: {
+        location: {
+          search: "?section=website",
+          href: "http://localhost/iframe.html?section=website",
+        },
+      },
+    });
+    try {
+      const view: IProductCatalogView = {
+        id: "startup",
+        label: "startup",
+        inherited: false,
+        sourcePaths: [],
+        products: [
+          {
+            id: "early",
+            name: "Early product",
+            summary: "Client intake",
+            documents: [],
+            sections: [
+              {
+                id: "website",
+                title: "Website",
+                pages: [
+                  {
+                    id: "landing",
+                    title: "Landing",
+                    kind: "markdown",
+                    layer: "startup",
+                    children: [],
+                    markdown: "# Landing\n\nActual visitor page.",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      const html = renderToStaticMarkup(<ProductCatalog view={view} />);
+      expect(html).toContain("Actual visitor page.");
+      expect(html).not.toContain(">Overview<");
+      expect(html).not.toContain(">Presentation<");
+    } finally {
+      if (descriptor) Object.defineProperty(globalThis, "window", descriptor);
+      else Reflect.deleteProperty(globalThis, "window");
+    }
+  });
   /** BDD Scenario: Agent validation uses the catalog's own directory
    * Given a complete nested source tree
    * When the filesystem validator checks it and then a missing layer root

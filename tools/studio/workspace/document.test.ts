@@ -22,7 +22,7 @@ import { loadWorkspace } from "./loader";
 import { reviewDocument } from "./document-review";
 
 const body =
-  "# Business\n\n## Offer\n\nFree framework.\n\n## Capacity\n\nSix hours.\n";
+  "# Brief\n\n## Offer\n\nFree framework.\n\n## Capacity\n\nSix hours.\n";
 
 function confirmed(source: string, resolvedBody = source) {
   return renderDocument({
@@ -53,11 +53,11 @@ async function workspaceFixture(startup: string) {
   );
   fixtureRoots.push(repositoryRoot);
   const workspaceRoot = path.join(repositoryRoot, "apps/studio/workspace");
-  for (const directory of ["utils/index", "business"]) {
+  for (const directory of ["utils/index", "brief"]) {
     await mkdir(path.join(workspaceRoot, directory), { recursive: true });
   }
   for (const layer of ["singlepage", "startup"]) {
-    const entries = ["business"].map(
+    const entries = ["brief"].map(
       (kind) =>
         `  - { id: ${layer}.${kind}, kind: ${kind}, path: ${kind}/${layer}.md, description: Review document, uses: []${layer === "startup" ? `, extends: singlepage.${kind}, strategy: sections` : ""} }`,
     );
@@ -67,10 +67,10 @@ async function workspaceFixture(startup: string) {
     );
   }
   await writeFile(
-    path.join(workspaceRoot, "business/singlepage.md"),
+    path.join(workspaceRoot, "brief/singlepage.md"),
     confirmed(body),
   );
-  await writeFile(path.join(workspaceRoot, "business/startup.md"), startup);
+  await writeFile(path.join(workspaceRoot, "brief/startup.md"), startup);
   return { repositoryRoot, workspaceRoot, activeLayer: "startup" as const };
 }
 
@@ -82,43 +82,41 @@ describe("document confirmation", () => {
    * Then both report the same confirmation while source content stays local
    */
   test("keeps loader and review helper aligned on the composed document", async () => {
-    const override = "# Business\n\n## Offer\n\nPaid service.";
+    const override = "# Brief\n\n## Offer\n\nPaid service.";
     const resolved = mergeMarkdown(body, override).content;
     const fixture = await workspaceFixture(confirmed(override, resolved));
     const merged = await loadWorkspace(fixture);
     const source = await loadWorkspace({ ...fixture, projection: "source" });
-    const business = merged.loadedEntries.find(
-      (entry) => entry.kind === "business",
-    )!;
+    const brief = merged.loadedEntries.find((entry) => entry.kind === "brief")!;
     const startup = source.loadedEntries.find(
-      (entry) => entry.kind === "business",
+      (entry) => entry.kind === "brief",
     )!;
-    expect(business.confirmation).toMatchObject({
+    expect(brief.confirmation).toMatchObject({
       confirmed: true,
       layer: "startup",
     });
-    expect(startup.confirmation).toEqual(business.confirmation);
-    expect(business.content).toContain("Six hours.");
+    expect(startup.confirmation).toEqual(brief.confirmation);
+    expect(brief.content).toContain("Six hours.");
     expect(startup.content).not.toContain("Six hours.");
     const review = await reviewDocument(
-      "apps/studio/workspace/business/startup.md",
+      "apps/studio/workspace/brief/startup.md",
       fixture.repositoryRoot,
     );
     expect(review).toMatchObject({
-      confirmation: business.confirmation,
+      confirmation: brief.confirmation,
       content_sha256: documentFingerprint(resolved),
     });
   });
 
   /**
    * BDD Scenario: Review an unchanged local approval after an input changes
-   * Given startup confirmed an inherited Strategy against its local Business
-   * When that Business changes and agents inspect either projection
+   * Given startup confirmed an inherited Strategy against its local Brief
+   * When that Brief changes and agents inspect either projection
    * Then the helper and both projections report stale and identify the dependent
    */
   test("aligns upstream staleness across loader projections and the helper", async () => {
     const fixture = await workspaceFixture(
-      "# Business\n\n## Offer\n\nPaid service.",
+      "# Brief\n\n## Offer\n\nPaid service.",
     );
     const strategyBody = "# Strategy\n\nCurrent commercial decision.";
     await mkdir(path.join(fixture.workspaceRoot, "strategy"));
@@ -133,20 +131,20 @@ describe("document confirmation", () => {
         kind: "strategy",
         path: `strategy/${layer}.md`,
         description: "Strategy",
-        uses: [`${layer}.business`],
+        uses: [`${layer}.brief`],
         ...(layer === "startup"
           ? { extends: "singlepage.strategy", strategy: "sections" }
           : {}),
       });
       await writeFile(file, stringify(index));
     }
-    const effectiveBusiness = mergeMarkdown(
+    const effectiveBrief = mergeMarkdown(
       body,
-      "# Business\n\n## Offer\n\nPaid service.",
+      "# Brief\n\n## Offer\n\nPaid service.",
     ).content;
     const local = parseDocument(confirmed("", strategyBody));
     local.metadata.review = {
-      dependencies: { business: documentFingerprint(effectiveBusiness) },
+      dependencies: { brief: documentFingerprint(effectiveBrief) },
     };
     await writeFile(
       path.join(fixture.workspaceRoot, "strategy/singlepage.md"),
@@ -162,8 +160,8 @@ describe("document confirmation", () => {
       )!.confirmation.state,
     ).toBe("confirmed");
     await writeFile(
-      path.join(fixture.workspaceRoot, "business/startup.md"),
-      "# Business\n\n## Offer\n\nChanged service.",
+      path.join(fixture.workspaceRoot, "brief/startup.md"),
+      "# Brief\n\n## Offer\n\nChanged service.",
     );
     const resolved = (await loadWorkspace(fixture)).loadedEntries.find(
       ({ kind }) => kind === "strategy",
@@ -178,13 +176,13 @@ describe("document confirmation", () => {
     expect(resolved.confirmation).toMatchObject({
       state: "stale",
       layer: "startup",
-      sources: ["business"],
+      sources: ["brief"],
     });
     expect(source.confirmation).toEqual(resolved.confirmation);
     expect(helper.confirmation).toEqual(resolved.confirmation);
     expect(helper.content_sha256).toBe(documentFingerprint(strategyBody));
     const impact = await reviewDocument(
-      "apps/studio/workspace/business/startup.md",
+      "apps/studio/workspace/brief/startup.md",
       fixture.repositoryRoot,
     );
     expect(impact.dependents).toContainEqual({
@@ -217,7 +215,7 @@ describe("document confirmation", () => {
   test("requires confirmation for a partial override", () => {
     const merged = mergeMarkdown(
       confirmed(body),
-      "# Business\n\n## Offer\n\nPaid service.",
+      "# Brief\n\n## Offer\n\nPaid service.",
     );
     expect(merged.content).toContain("Six hours.");
     expect(merged.content).toContain("Paid service.");
@@ -250,7 +248,7 @@ describe("document confirmation", () => {
    * Then its own confirmation is valid until a contributing section changes
    */
   test("binds startup confirmation to the complete resolved body", () => {
-    const override = "# Business\n\n## Offer\n\nPaid service.";
+    const override = "# Brief\n\n## Offer\n\nPaid service.";
     const resolved = mergeMarkdown(body, override).content;
     const startup = confirmed(override, resolved);
     const merged = mergeMarkdown(confirmed(body), startup);
@@ -286,7 +284,7 @@ describe("document confirmation", () => {
    * Then the effective reviewed body and confirmation remain unchanged
    */
   test("ignores base changes outside the effective document", () => {
-    const override = "# Business\n\n## Offer\n\nPaid service.";
+    const override = "# Brief\n\n## Offer\n\nPaid service.";
     const startup = confirmed(override, mergeMarkdown(body, override).content);
     const merged = mergeMarkdown(
       body.replace("Free framework.", "Different base offer."),
@@ -338,8 +336,8 @@ describe("document confirmation", () => {
   test("resets confirmation for replacement documents", () => {
     const merged = mergeWorkspaceContent({
       base: confirmed(body),
-      overlay: "# Business\n\nNew model.",
-      kind: "business",
+      overlay: "# Brief\n\nNew model.",
+      kind: "brief",
       sourcePath: "startup.md",
       strategy: "replace",
     });
@@ -379,7 +377,7 @@ describe("document confirmation", () => {
   test("keeps section headings while hiding metadata and the duplicate title", () => {
     const result = documentReviewBody(confirmed(body), true);
     expect(result).not.toContain("confirmation:");
-    expect(result).not.toMatch(/^# Business/);
+    expect(result).not.toMatch(/^# Brief/);
     expect(result).toContain("## Offer");
     expect(result).toContain("## Capacity");
   });

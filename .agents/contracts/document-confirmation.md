@@ -42,9 +42,9 @@ again. Hashing ignores metadata and outer whitespace, not body edits.
 ## Content ownership and semantic dependencies
 
 Each document owns its content. A dependency is a semantic review relationship,
-not a runtime import, formula, or text substitution. If Business changes a price,
-mark the affected Product stale, compare the meaning, edit Product's own price
-when needed, and obtain any required renewed confirmation. Do not rewrite its
+not a runtime import, formula, or text substitution. If a model changes a price,
+mark affected product materials stale, compare their claims with the model,
+and edit their derived wording when needed, and obtain any required renewed confirmation. Do not rewrite its
 body automatically or update its approval hash from another document. A source
 change with no material effect needs only an impact review and snapshot refresh.
 Presentation follows the same rule with its own content and confirmation.
@@ -71,24 +71,22 @@ Each document records its last reviewed direct inputs in its own metadata:
 ```yaml
 review:
   dependencies:
-    business: "fingerprint returned by the read-only review helper"
+    model.example: "fingerprint returned by the read-only review helper"
     product.example.research: "fingerprint returned by the helper"
   # Add only while a material impact remains unresolved:
   stale:
     reason: "The client changed capacity; the launch scope needs revision."
-    sources: [business]
+    sources: [model.example]
 ```
 
 The review helper above returns both `content_sha256` and the current
 `review.dependencies`, plus transitive `dependents` with paths and current states
 for impact review. The shared workspace index `uses` graph defines shared
 inputs. The resolver adds product inputs from the selected atomic catalog:
-Research uses Brief/Business; Sales uses Business; Strategy uses the selected
-products' Research/Sales; Product uses Business/Strategy and its own
-Research/Sales; Website uses its Product/Sales and Brand/Design; Creative uses
-its Product/Website and Brand/Design. References to templates or roles are not
-project-fact dependencies. A product cannot silently reuse another product's
-research. Presentation owns its `presentation/data.yaml`, confirmation, and semantic review inputs (its Product, Research, Sales, Brand and Design). It never imports their content at render time. The product-owned React entry point is also fingerprinted as a semantic input, so changing slide copy in that file cannot leave a confirmed presentation silently current.
+Model and product review edges follow `product-models.md`. Model sources are
+registered once as `model.<id>` and shared changes propagate to their actual
+consumers. Research remains the evidence owner; tested-assumption links never
+create reciprocal approval dependencies. Added or removed inputs require review.
 
 Before consuming an artifact, inspect its resolved status with the workspace
 loader or review helper. After editing an owning upstream document:

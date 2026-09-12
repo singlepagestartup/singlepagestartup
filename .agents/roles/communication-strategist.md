@@ -74,3 +74,5 @@ strategy. Link to the owning product Research or supplied source when material.
 
 Return the message hierarchy, evidence gaps, remaining material questions,
 prohibited claims, voice rules, and the sections Brand Designer may now finalize.
+
+For product materials, use the linked Product, model and whole Sales as the owners of customer/value, economics and process decisions. Advertising/deck copy may apply approved facts but never establishes a second price, scope or support commitment; inspect stale dependencies before reusing claims.

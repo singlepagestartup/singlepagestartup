@@ -38,6 +38,28 @@ remaining semantic dependencies and unresolved impact. If an old cursor names
 `00-business` or a later stage; do not infer completion from deleting the file.
 Empty startup overrides and atomic product-catalog inheritance remain unchanged.
 
+## Retiring standalone Business
+
+Apply `product-models.md` before accepting an old cursor or stage completion.
+Inspect the active layer's old Business, Product Overview, Research, Sales,
+custom pages and bindings. Make a section/field transfer map before deleting
+anything. Brief receives request/authority/initial constraints; Product receives
+customer/value/offer/acceptance; model sources receive revenue/resources/costs/
+funding; whole processes stay in Sales; Research keeps connected evidence.
+Unique material, source IDs and uncertainty must survive. Do not automatically
+split a whole topic across BMC blocks or copy facts into every model.
+
+A cursor with `active_artifacts: [business]` resumes at `00-business` with
+`[product-models]`. A later cursor must also return there if initial model
+membership or client-factual coverage is incomplete; only affected decisions
+are blocked. `00-business` remains the stage ID, never a new Business page.
+V1 catalogs remain readable while content attribution is pending. Upgrade to v2
+only after model boundaries are explicitly chosen and sources created. Preserve
+all products and extensions; empty startup stays empty. Remove Business sources,
+stories, template/index/uses entries and obsolete fingerprints only after the
+transfer is checked; mark affected consumers stale without copying new hashes.
+Legacy bookmarks redirect to Products at the same source projection.
+
 ## Inspection scope
 
 Use the current workflow and active index to inspect:
@@ -72,8 +94,10 @@ its content and approval metadata, and update the index and source imports.
 Keep the empty startup catalog as an explicit extension point; do not populate
 it with framework product copies. Resolve every document and component field under
 `products/<layer>/`, then require the atomic catalog shape and every referenced
-`research.md`, `sales.yaml`, `product.md`, `website.md`, `marketing-creative.md`, and
-`presentation/ProjectPresentation.tsx` and its own `presentation/data.yaml` source declared by `presentation_data`. When a catalog entry declares optional
+`research.md`, `sales.yaml`, `product.md`, and every declared model source.
+Website, Creative and Presentation are required at their delivery stage, not
+at initial intake; if declared, their files must exist, including both
+Presentation React entry and `presentation_data`. When a catalog entry declares optional
 `content`, require its referenced React entry point but do not require any
 particular supporting file extension or content schema. For optional `sections`,
 recursively validate unique navigation IDs, page sources inside their selected
@@ -87,13 +111,13 @@ still discoverable.
 
 The stage ownership map is:
 
-| Stage         | Existing artifacts to reconcile                      |
-| ------------- | ---------------------------------------------------- |
-| `00-business` | Brief, client-factual Business, product Sales intake |
-| `10-strategy` | Product Research, then Strategy                      |
-| `20-brand`    | Brand                                                |
-| `30-design`   | Design, Assets                                       |
-| `40-products` | Product catalog and every product-local output       |
+| Stage         | Existing artifacts to reconcile                                       |
+| ------------- | --------------------------------------------------------------------- |
+| `00-business` | Brief, catalog/model membership, initial Product/models, Sales intake |
+| `10-strategy` | Product Research, then Strategy                                       |
+| `20-brand`    | Brand                                                                 |
+| `30-design`   | Design, Assets                                                        |
+| `40-products` | Product catalog and every product-local output                        |
 
 ## Layer and inheritance rules
 
@@ -130,7 +154,7 @@ relocation is not fresh verification. Ask only when product attribution cannot
 be established. Remove obsolete global index, sidebar, and dependency references
 after updating consumers. Put unresolved research questions in the named
 product Research for `10-strategy`. Separate market hypotheses and designed funnels from client
-Business facts; preserve confirmed intentions with attribution. Keep existing
+product models facts; preserve confirmed intentions with attribution. Keep existing
 approvals unless the underlying decision changed.
 
 When retiring the Evidence register, keep only material current facts, source
@@ -140,7 +164,7 @@ remove the source, story, template, index entries, and mandatory loading steps.
 Do not copy the register into another knowledge file or a duplicate log. Git
 retains history; client dialogue and document confirmation remain the review flow.
 
-Also scan the child-owned Brief, Business, Strategy, Brand, Design, nested
+Also scan the child-owned Brief, product models, Strategy, Brand, Design, nested
 product Markdown/YAML, and data bindings for dangling register paths and old
 row codes (including `ST-EV-*` and `SP-EV-*`). Recover each material meaning from
 that child's earlier Git sources and replace the code with a short explanation
