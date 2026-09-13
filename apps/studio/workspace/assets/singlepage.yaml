@@ -1182,8 +1182,8 @@ assets:
     lifecycle: proposed
     proposal_id: measured-space
     evidence: false
-    rights_status: "Approved size adaptation of the operator-created mark under the use-and-modification rights stated by the operator for the supplied source mark on 2026-08-11; Brand approval does not establish separate approval of an asset adaptation. Trademark clearance is unverified."
-    purpose: Approved 512 by 512 square avatar and app-tile asset retaining the recognizable operator mark.
+    rights_status: "Proposed size adaptation of the operator-created mark under the use-and-modification rights stated by the operator for the supplied source mark on 2026-08-11; Brand approval does not establish separate approval of an asset adaptation. Trademark clearance is unverified."
+    purpose: Proposed 512 by 512 square avatar and app-tile asset retaining the recognizable operator mark.
     related_artifacts: [singlepage.design, singlepage.products]
     allowed_use:
       - Downstream design use, geometry comparison, accessibility inspection, and deterministic raster QA.
@@ -1238,176 +1238,205 @@ assets:
   - id: singlepage-generated-measured-space-illustration-module-hierarchy
     design_role: motif
     design_key: clear-module-hierarchy
-    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-module-hierarchy.png
+    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-module-hierarchy-v2.png
     source_type: generated
     lifecycle: proposed
     proposal_id: measured-space
     evidence: false
-    rights_status: "Text-prompted AI-generated illustration proposal with no image inputs. No third-party authorship, trademark, or publication clearance is claimed."
-    purpose: Proposed square illustration for a clear hierarchy of modules in a software project.
-    related_artifacts: [singlepage.design, singlepage.products]
+    rights_status: AI-generated conceptual illustration using operator-supplied style references.
+    purpose: Show reusable software modules joined to a common code foundation, using simple component blocks. Make the shared base and the modules’ relationship clear.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
     allowed_use:
-      [Internal Storybook and downstream design review while proposed.]
+      - Internal design review and preparation of project materials.
     prohibited_use:
-      [
-        Do not publish or use as implemented architecture,
-        module-completeness proof,
-        product evidence,
-        or a copied public-reference composition.,
-      ]
+      - Do not present the conceptual diagram as verified implementation or product functionality.
+    reference_asset_ids:
+      - singlepage-illustration-reference-isometric-building
+      - singlepage-illustration-reference-isometric-platform
+      - singlepage-illustration-reference-isometric-workflow
+      - singlepage-illustration-reference-isometric-ai-chip
+      - singlepage-illustration-reference-isometric-devices
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 8dc4acd063be7b202844871024d99d12109401892e2fed169046646872557770
+    style_master_sha256: be315e2fd67911a88bfd9380748fd7fa843399951b68d9b3a91c32f2d0265ae7
     prompt: |-
-      Use case: stylized-concept. Asset type: reusable SinglePageStartup illustration master. Primary request: Clear hierarchy of reusable software modules around one developer-controlled foundation; communicate hierarchy and inspectability, not literal architecture or proof. Style/medium: sparse isometric technical illustration with recognizable minimal objects, almost no fill. Composition/framing: square; every line, connector and object inside the centered middle 50%; outer 25% empty Paper; model chooses forms and arrangement, no prescribed paths or coordinates. Color palette: #F7F6F2 Paper, #111111 primary line, #565656 secondary line, exactly one #BFEF61 locator smaller than 4% canvas. Construction: three to five module-like objects and one foundation, 3–5px strokes, dotted guides, limited isometric depth, max four details per object. Constraints: opaque square RGB PNG; no text, numbers, logos, mark, UI, shadows, gradients, texture, glow, photorealism, watermark. Avoid: flowchart, dense circuitry, copied composition, completeness claim.
-    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated and visually inspected on 2026-08-14; model/seed unavailable; standardized from 1254px source to 1024 by 1024 RGB PNG with sips; SHA-256 b4ce7c79062dbb67946aeedd575772a78f08a801967ba4b2f23db548b1e722e5."
+      Create airy isometric line art on warm off-white, using fine black contours, light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Borrow line treatment and spatial lightness from the references; derive the objects from the content brief.
+
+      Content brief: Show reusable software modules joined to a common code foundation, using simple component blocks. Make the shared base and the modules’ relationship clear.
+      Use: a conceptual illustration for the SinglePageStartup Design examples. Square image, without text or logos.
+      Images 1–5 are original style references.
+    source_or_tool: Built-in image_gen.imagegen with five original style references; generated on 2026-09-13 and visually compared with the selected reference style and previous examples. Original 1254 by 1254 PNG copied unchanged; model and seed unavailable.
 
   - id: singlepage-generated-measured-space-illustration-framework-inheritance
     design_role: motif
     design_key: framework-inheritance
-    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-framework-inheritance.png
+    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-framework-inheritance-v2.png
     source_type: generated
     lifecycle: proposed
     proposal_id: measured-space
     evidence: false
-    rights_status: "Text-prompted AI-generated illustration proposal with no image inputs. No third-party authorship, trademark, or publication clearance is claimed."
-    purpose: Proposed square illustration for framework inheritance with one focused project-specific override.
-    related_artifacts: [singlepage.design, singlepage.products]
+    rights_status: AI-generated conceptual illustration using operator-supplied style references.
+    purpose: Show a software framework reused by a new product, with a visibly changed module and a preserved common foundation. Use simple software blocks and connections.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
     allowed_use:
-      [Internal Storybook and downstream design review while proposed.]
+      - Internal design review and preparation of project materials.
     prohibited_use:
-      [
-        Do not publish or use as a verified inheritance implementation,
-        merge result,
-        product evidence,
-        or copied public-reference composition.,
-      ]
+      - Do not present the conceptual diagram as verified implementation or product functionality.
+    reference_asset_ids:
+      - singlepage-illustration-reference-isometric-building
+      - singlepage-illustration-reference-isometric-platform
+      - singlepage-illustration-reference-isometric-workflow
+      - singlepage-illustration-reference-isometric-ai-chip
+      - singlepage-illustration-reference-isometric-devices
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 56d89060e1e37e7105462a66b38815087065633d0fdca750a4aae2bb0ada72c8
+    style_master_sha256: be315e2fd67911a88bfd9380748fd7fa843399951b68d9b3a91c32f2d0265ae7
     prompt: |-
-      Use case: stylized-concept. Asset type: reusable SinglePageStartup illustration master. Primary request: A reusable framework inherited by one new project with one focused override; communicate continuity plus deliberate change, not a verified merge. Style/medium: sparse isometric technical illustration with recognizable minimal objects, almost no fill. Composition/framing: square; every line, connector and object inside the centered middle 50%; outer 25% empty Paper; model chooses objects/layout, no prescribed primitives, paths, coordinates. Color palette: #F7F6F2 Paper, #111111 primary line, #565656 secondary line, exactly one changed part in #BFEF61 smaller than 4% canvas. Construction: two to four recognizable objects, 3–5px strokes, dotted construction guides and one relationship, limited isometric depth. Constraints: opaque square RGB PNG; no text, numbers, logos, mark, UI, shadows, gradients, texture, glow, photorealism, watermark. Avoid: code diff screen, file-folder icon set, generic flowchart, proof claim.
-    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated and visually inspected on 2026-08-14; model/seed unavailable; standardized from 1254px source to 1024 by 1024 RGB PNG with sips; SHA-256 2b6f361ec4bf19e5bf644592c1a0d2598f8786d2fea6b8c42dd27baac1e2bb14."
+      Create airy isometric line art on warm off-white, using fine black contours, light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Borrow line treatment and spatial lightness from the references; derive the objects from the content brief.
+
+      Content brief: Show a software framework reused by a new product, with a visibly changed module and a preserved common foundation. Use simple software blocks and connections.
+      Use: a conceptual illustration for the SinglePageStartup Design examples. Square image, without text or logos.
+      Images 1–5 are original style references.
+    source_or_tool: Built-in image_gen.imagegen with five original style references; generated on 2026-09-13 and visually compared with the selected reference style and previous examples. Original 1254 by 1254 PNG copied unchanged; model and seed unavailable.
 
   - id: singlepage-generated-measured-space-illustration-coordinated-agents
     design_role: motif
     design_key: coordinated-ai-agents
-    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-coordinated-agents.png
+    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-coordinated-agents-v2.png
     source_type: generated
     lifecycle: proposed
     proposal_id: measured-space
     evidence: false
-    rights_status: "Text-prompted AI-generated illustration proposal with no image inputs. No third-party authorship, trademark, or publication clearance is claimed."
-    purpose: Proposed square illustration for multiple AI agents coordinating toward one developer-controlled task.
-    related_artifacts: [singlepage.design, singlepage.products]
+    rights_status: AI-generated conceptual illustration using operator-supplied style references.
+    purpose: Show a person directing AI coding assistants toward a shared software task. Represent assistants as software panels and tool symbols, with the person clearly guiding their contributions.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
     allowed_use:
-      [Internal Storybook and downstream design review while proposed.]
+      - Internal design review and preparation of project materials.
     prohibited_use:
-      [
-        Do not publish or use as proof of agent authority,
-        working automation,
-        completed work,
-        or a copied public-reference composition.,
-      ]
+      - Do not present the conceptual diagram as verified implementation or product functionality.
+    reference_asset_ids:
+      - singlepage-illustration-reference-isometric-building
+      - singlepage-illustration-reference-isometric-platform
+      - singlepage-illustration-reference-isometric-workflow
+      - singlepage-illustration-reference-isometric-ai-chip
+      - singlepage-illustration-reference-isometric-devices
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 81b201498eb1901c92e51e5ea7b57e12bc90103f8a7e5e2e4fcb56348774b6de
+    style_master_sha256: be315e2fd67911a88bfd9380748fd7fa843399951b68d9b3a91c32f2d0265ae7
     prompt: |-
-      Use case: stylized-concept. Asset type: reusable SinglePageStartup illustration master. Primary request: One human developer retains control while exactly three AI assistants coordinate around one bounded task; accountability and coordination, not autonomous authority. Style/medium: sparse isometric technical illustration with recognizable minimal objects, almost no fill. Composition/framing: square; every line, connector and object inside the centered middle 50%; outer 25% empty Paper; model chooses objects/layout, no prescribed paths or coordinates. Color palette: #F7F6F2 Paper, #111111 primary line, #565656 secondary line, exactly one human-control locator in #BFEF61 smaller than 4% canvas. Construction: exactly one recognizable human-control object and exactly three distinct assistant objects, 3–5px strokes, dotted guides, limited isometric depth. Constraints: opaque square RGB PNG; no text, numbers, logos, mark, UI, shadows, gradients, texture, glow, photorealism, watermark. Avoid: humanoid robots, autonomous-control symbolism, org chart, copied composition, success claim.
-    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated and visually inspected on 2026-08-14; model/seed unavailable; standardized from 1254px source to 1024 by 1024 RGB PNG with sips; SHA-256 cce1cba48acdbbfd8b693f566e15e377097ba8b934818d802215ac3fa640f25f."
+      Create airy isometric line art on warm off-white, using fine black contours, light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Borrow line treatment and spatial lightness from the references; derive the objects from the content brief.
 
-  - id: singlepage-generated-measured-space-photography-open-laptop-work
-    design_role: photography
-    design_key: open-laptop-work
-    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-open-laptop-work.png
-    source_type: generated
-    lifecycle: proposed
-    proposal_id: measured-space
-    evidence: false
-    rights_status: "Text-prompted AI-generated photography proposal with no image inputs. No third-party authorship, trademark, likeness, or publication clearance is claimed."
-    purpose: Proposed editorial atmosphere for active software work on a recognizable open laptop in an urban digital workspace.
-    related_artifacts: [singlepage.design, singlepage.products]
-    allowed_use:
-      [Internal Storybook and downstream design review while proposed.]
-    prohibited_use:
-      [
-        Do not publish or use as a real developer,
-        customer,
-        product interface,
-        adoption,
-        performance,
-        or outcome claim.,
-      ]
-    prompt: |-
-      Use case: photorealistic-natural
-      Asset type: crop-safe reusable square SinglePageStartup editorial photography master
-      Primary request: Wide city-workspace editorial photograph of one adult developer actively using a fully recognizable open laptop. The laptop is visibly a real computer; surrounding architecture is only soft context.
-      Scene/backdrop: Contemporary glass urban digital-work lounge beside transit, distant soft commuter movement, no construction.
-      Subject/device: One developer visible from head to waist at a small table. One unbranded open 14-inch laptop shown from a high three-quarter side angle so the complete screen, continuous hinge, full realistic many-key keyboard with long spacebar, centered rectangular trackpad, and all device corners are simultaneously visible. One complete hand types; one complete hand rests on trackpad. Screen contains abstract blurred color fields only.
-      Composition/framing: One opaque square RGB image, very wide environmental view, 35–50mm. The entire developer-and-laptop group must fit inside a small imaginary centered square spanning x=32% to 68%, y=32% to 68%. Laptop spans 16–22% canvas width. Complete head, waist line, both hands, and all laptop parts remain inside that central 36%. Outer 32% on every side is only empty table edge, window, glass and soft transit environment. No important object crosses x=32%, x=68%, y=32%, or y=68%.
-      Style/medium: Photorealistic candid human-centered editorial photograph, slightly filmic, natural available light, soft-to-medium contrast, shallow focus, restrained distant motion blur.
-      Color palette: Natural Paper #F7F6F2 and Ink #111111-compatible palette; optional tiny #BFEF61 cable tag below 1%.
-      Constraints: Credible proportions, anatomy, hands, keyboard, trackpad, hinge and screen. One person and one laptop. No reference images, logos, brands, readable UI/text/code, watermark, claims, invented ports, toy/fake keyboard or missing device part.
-      Avoid: close crop, clipped device, laptop back hiding keyboard, tiny keyboard, missing keys/trackpad/hinge, construction site, blueprint, drawing, hard hat, drafting tool, architecture-led image, concrete as subject, nature-dominant scene, office-stock pose, cyberpunk, neon, staged success.
-    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated on 2026-08-14; selected from rejected crop/device variants; standardized from 1254px to 1024 by 1024 RGB PNG with sips; visually inspected at source, 96px, and centered 55% crop; SHA-256 6873759636feaeb1efa2dce257eeca0e935abd7afeaf009e88c733136d01f22a."
+      Content brief: Show a person directing AI coding assistants toward a shared software task. Represent assistants as software panels and tool symbols, with the person clearly guiding their contributions.
+      Use: a conceptual illustration for the SinglePageStartup Design examples. Square image, without text or logos.
+      Images 1–5 are original style references.
+    source_or_tool: Built-in image_gen.imagegen with five original style references; generated on 2026-09-13 and visually compared with the selected reference style and previous examples. Original 1254 by 1254 PNG copied unchanged; model and seed unavailable.
 
-  - id: singlepage-generated-measured-space-photography-smartphone-coordination
+  - id: singlepage-generated-measured-space-photography-business-conversation
     design_role: photography
-    design_key: smartphone-coordination
-    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-smartphone-coordination.png
+    design_key: business-conversation
+    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-business-conversation.png
     source_type: generated
     lifecycle: proposed
     proposal_id: measured-space
     evidence: false
-    rights_status: "Text-prompted AI-generated photography proposal with no image inputs. No third-party authorship, trademark, likeness, or publication clearance is claimed."
-    purpose: Proposed editorial atmosphere for active smartphone coordination in an urban technology workspace.
-    related_artifacts: [singlepage.design, singlepage.products]
+    rights_status: AI-generated fictional scene using operator-supplied images as style references. No real customer identity or endorsement is asserted.
+    purpose: Expressive editorial photograph of two business partners exchanging an idea, with a moving gesture and warm light.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
     allowed_use:
-      [Internal Storybook and downstream design review while proposed.]
+      - Internal design review and preparation of project materials.
     prohibited_use:
-      [
-        Do not publish or use as a real developer,
-        customer,
-        application interface,
-        adoption,
-        performance,
-        or outcome claim.,
-      ]
+      - Do not present the fictional scene as a customer testimonial or observed product outcome.
+    reference_asset_ids:
+      - singlepage-photography-reference-motion-runner
+      - singlepage-photography-reference-motion-portrait
+      - singlepage-photography-reference-figure-light-streaks
+    dimensions:
+      width: 1536
+      height: 1024
+    content_sha256: b6bd84d2c747d23eb2f251eae38bbfd5f93a55065cf49effff3cb17a10eade1c
     prompt: |-
-      Use case: photorealistic-natural
-      Asset type: crop-safe reusable square SinglePageStartup editorial photography master
-      Primary request: Close subjective point-of-view photograph of an adult software developer coordinating work on a clearly recognizable modern smartphone in an urban technology workspace. The phone and the developer's hands are the complete human-device subject; no face is required.
-      Scene/backdrop: Softly blurred contemporary city coworking lounge beside transit, glass and available light, digital-work atmosphere, no construction.
-      Subject/device: Exactly two complete adult hands and forearms interacting with one generic unbranded 6.2-inch smartphone. Left hand supports the phone with plausible finger placement; right index finger taps. Entire phone shows credible scale, flat rectangular body, rounded corners, slim bezel, centered front camera dot, one side button, and abstract softly blurred screen with no readable UI. Sleeves are understated dark workwear.
-      Composition/framing: One opaque square RGB image, close subjective over-shoulder or chest-level view. Put both complete hands, every finger, both forearms to mid-forearm, and all four smartphone corners inside an imaginary centered square spanning x=30% to 70%, y=30% to 70%. Nothing important crosses that central 40% area. Phone spans 10–14% canvas width and remains recognizable at 96px. Outer 30% on all sides contains only blurred workspace/transit environment; no face or other body part is an important subject.
-      Style/medium: Photorealistic candid human-centered editorial photograph, lively, slightly filmic, 35–50mm, natural available light, shallow focus, gentle foreground occlusion outside central area, restrained distant motion blur.
-      Color palette: Natural Paper #F7F6F2 and Ink #111111-compatible palette; optional tiny #BFEF61 case locator below 1%.
-      Constraints: Two hands, one phone, plausible anatomy, grip, camera and button. No reference images, logos, brands, readable UI/text/code, watermark, claims, extra fingers, bent phone, invented buttons or fake silhouette.
-      Avoid: clipped hand/finger/device, construction site, blueprint, architectural drawing, hard hat, drafting tool, architecture-led image, concrete as subject, nature-dominant scene, office stock, cyberpunk, neon, staged success.
-    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated on 2026-08-14; selected from rejected crop/device variants; standardized from 1254px to 1024 by 1024 RGB PNG with sips; visually inspected at source, 96px, and centered 55% crop; SHA-256 122e38d8b5ccf580ce5ed7d1f540ac9ef5c40500e0dbaa90af6395b165caf179."
+      Expressive editorial photography of people, with natural light, tactile color and a film-like feel. Capture presence, gesture and movement rather than posed perfection. Let framing and focus vary; blur, foreground softness, backlight or light trails can add energy when they suit the moment.
 
-  - id: singlepage-generated-measured-space-photography-connected-workstation
+      Generate a new photorealistic editorial photograph for SinglePageStartup. Scene: two small-business partners exchange an idea at a shared worktable in their independent creative studio, one mid-gesture and the other listening. A few unbranded work samples and paper notes quietly establish real business work. Capture the conversation as a lively passing moment, with expressive motion and warm late-afternoon light against cooler surroundings. Let movement soften parts of the frame while the human exchange remains legible. Landscape 3:2. No added text or logos.
+
+      Attached images are style references only: learn their photographic treatment, light, motion and proximity. Create different people and a new business scene; do not reproduce their subjects, exact compositions, typography or marks.
+    source_or_tool: Built-in image_gen.imagegen; original photography references attached; generated and visually inspected on 2026-09-13. Original 1536 by 1024 PNG copied unchanged; model and seed unavailable.
+
+  - id: singlepage-generated-measured-space-photography-moment-of-focus
     design_role: photography
-    design_key: connected-workstation
-    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-connected-workstation.png
+    design_key: moment-of-focus
+    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-moment-of-focus.png
     source_type: generated
     lifecycle: proposed
     proposal_id: measured-space
     evidence: false
-    rights_status: "Text-prompted AI-generated photography proposal with no image inputs. No third-party authorship, trademark, likeness, or publication clearance is claimed."
-    purpose: Proposed editorial atmosphere for active work at a credible connected digital workstation.
-    related_artifacts: [singlepage.design, singlepage.products]
+    rights_status: AI-generated fictional scene using operator-supplied images as style references. No real customer identity or endorsement is asserted.
+    purpose: Intimate editorial portrait of a business owner pausing to consider an idea, seen through soft foreground reflections.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
     allowed_use:
-      [Internal Storybook and downstream design review while proposed.]
+      - Internal design review and preparation of project materials.
     prohibited_use:
-      [
-        Do not publish or use as a real developer,
-        implemented infrastructure,
-        customer,
-        product interface,
-        performance,
-        or outcome claim.,
-      ]
+      - Do not present the fictional scene as a customer testimonial or observed product outcome.
+    reference_asset_ids:
+      - singlepage-photography-reference-foliage-closeup-wide
+      - singlepage-photography-reference-motion-portrait
+      - singlepage-photography-reference-hand-light-streaks
+    dimensions:
+      width: 1122
+      height: 1402
+    content_sha256: 5c1e2904db42228e8c3b7706a30b5db6d990e49deb6ecd5994aecb9b96d27d92
     prompt: |-
-      Use case: photorealistic-natural
-      Asset type: crop-safe reusable square SinglePageStartup editorial photography master
-      Primary request: Very wide city-studio editorial photograph of one adult developer actively operating a compact connected desktop workstation. The recognizable display, keyboard, network switch, mini-computer and hands are the semantic center.
-      Scene/backdrop: Contemporary urban window workspace with distant city light and one small table; room and architecture are secondary.
-      Subject/devices: One developer visible from head to waist. One generic unbranded 22-inch desktop display on a central stand with abstract unreadable colored blocks, one complete realistic compact keyboard with many keys and long spacebar, one normal mouse, one palm-sized rectangular network switch with exactly four aligned Ethernet sockets and two standard cables connected, and one separate plain mini-computer with one power cable. One hand types and one uses mouse. Credible device geometry, connectors, cable routing and anatomy.
-      Composition/framing: One opaque square RGB image, very wide view at desk height, 35–50mm. Put the entire human-and-workstation group inside a small imaginary centered square spanning x=32% to 68%, y=30% to 70%. Complete head and waist line, both hands, full display and stand, every keyboard edge, mouse, complete switch, both plugs and junctions, and complete mini-computer must remain inside that central area. Nothing important may cross those boundaries. The complete workstation spans 28–34% of canvas width. Outer 30% on all sides is only empty wall, window, floor and table.
-      Style/medium: Photorealistic candid human-centered editorial photograph, slightly filmic, natural available window/workspace light, soft-to-medium contrast, shallow focus, subtle hand motion only.
-      Color palette: Natural Paper #F7F6F2 and Ink #111111-compatible palette; optional tiny #BFEF61 cable label below 1%.
-      Constraints: One person, one display, one keyboard, one mouse, one four-port switch, one mini-computer; no laptop. Devices recognizable at 96px. No reference images, logos, brands, readable UI/text/code, metrics, watermark, claims, invented ports/buttons, impossible hands/cables, fake keyboard, server-rack proof.
-      Avoid: close crop, clipping, device outside central area, generic office stock, construction site, blueprint, architectural drawing, hard hat, drafting tool, architecture-led image, concrete as subject, nature-dominant scene, cyberpunk, neon, staged success.
-    source_or_tool: "Built-in image_gen.imagegen; no image inputs; generated on 2026-08-14; selected from rejected crop/device variants; standardized from 1254px to 1024 by 1024 RGB PNG with sips; visually inspected at source, 96px, and centered 55% crop; SHA-256 3b9116b1719d9c4658b7fa7a961532cd5a116b14c96f0be85ec31cee4cdba3fd."
+      Expressive editorial photography of people, with natural light, tactile color and a film-like feel. Capture presence, gesture and movement rather than posed perfection. Let framing and focus vary; blur, foreground softness, backlight or light trails can add energy when they suit the moment.
+
+      Generate a new photorealistic editorial photograph for SinglePageStartup. Scene: a small-business owner pauses during a workday, considering an idea beside the window of a modest working studio. An intimate portrait caught as they turn toward a colleague just outside the frame. Soft foreground reflections and layered daylight give the personal, thoughtful feeling of the references; the space remains a quiet context. Human expression is the subject. Portrait 4:5. No added text or logos.
+
+      Attached images are style references only: learn their photographic treatment, light, motion and proximity. Create different people and a new business scene; do not reproduce their subjects, exact compositions, typography or marks.
+    source_or_tool: Built-in image_gen.imagegen; original photography references attached; generated and visually inspected on 2026-09-13. Original 1122 by 1402 PNG copied unchanged; model and seed unavailable.
+
+  - id: singlepage-generated-measured-space-photography-work-in-motion
+    design_role: photography
+    design_key: work-in-motion
+    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-work-in-motion.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: measured-space
+    evidence: false
+    rights_status: AI-generated fictional scene using operator-supplied images as style references. No real customer identity or endorsement is asserted.
+    purpose: Close, low-viewpoint editorial photograph of a small-business owner handing over a prepared order in bright daylight.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Internal design review and preparation of project materials.
+    prohibited_use:
+      - Do not present the fictional scene as a customer testimonial or observed product outcome.
+    reference_asset_ids:
+      - singlepage-photography-reference-low-angle-sunburst
+      - singlepage-photography-reference-motion-runner
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 275d897de928031f4ee6b9a4ec992bf5e19310539fa3d24b53c9e6dc0081de0c
+    prompt: |-
+      Expressive editorial photography of people, with natural light, tactile color and a film-like feel. Capture presence, gesture and movement rather than posed perfection. Let framing and focus vary; blur, foreground softness, backlight or light trails can add energy when they suit the moment.
+
+      Generate a new photorealistic editorial photograph for SinglePageStartup. Scene: a small-business owner finishes packing an order and slides the parcel across a shared worktable to a colleague in a sunlit independent studio. Use the close, energetic low viewpoint and warm living color of the references; catch hands, expression and the movement of the exchange as a spontaneous moment of real work. Bright daylight, tactile cardboard and fabric, a sense of progress. Square frame, a different composition from a static seated office scene. No added text or logos.
+
+      Attached images are style references only: learn their photographic treatment, light, motion and proximity. Create different people and a new business scene; do not reproduce their subjects, exact compositions, typography or marks.
+    source_or_tool: Built-in image_gen.imagegen; original photography references attached; generated and visually inspected on 2026-09-13. Original 1254 by 1254 PNG copied unchanged; model and seed unavailable.

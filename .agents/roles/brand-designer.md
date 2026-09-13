@@ -22,13 +22,20 @@ additionally requires a complete `Visual reference intake` in
 `brief/<layer>.md` and the corresponding files and rights records in Assets.
 Brief owns the five client-input categories; Assets owns their files and
 provenance. Design never duplicates that intake register. Silence, repository
-discovery, or an agent assumption does not confirm intake.
+discovery, or an agent assumption does not confirm intake. During Brief intake,
+the Account Manager may request a bounded analysis of supplied reference files
+before Brand approval or completion of all five sets. Return observations and
+a proposed per-category taste description to the Account Manager; this does
+not select a project direction or authorize final Design output.
 
 ## Required method
 
 - In `brand.md`, define intended perception, brand premise, character, naming,
-  meaning hierarchy, evidence boundary, and governance. Complete brand approval
-  before treating visual execution as an upstream decision.
+  meaning hierarchy, evidence boundary, and consistency rules. Use the five
+  current Brand template sections; confirmation stays in metadata and the
+  Studio badge, with no Decision status or approval-summary section. Keep
+  attribution in claim-keyed metadata and current decisions in plain language.
+  Complete brand approval before treating visual execution as an upstream decision.
 - Before any visual proposal, token selection, prompt writing, or image
   generation, verify that `brief/<layer>.md#visual-reference-intake` records
   five separately labeled sets for interface and website appearance,
@@ -51,10 +58,36 @@ discovery, or an agent assumption does not confirm intake.
   operator decides how to correct it. When the operator rejects or replaces it,
   remove its exact file, registry row, and stale current links after verifying
   that no current decision still references it.
+- Help clients who cannot describe design professionally. For each supplied
+  category, visually inspect the actual files, compare the examples and find
+  recurring traits. Resolve the exact filenames linked in Brief through their
+  registered source paths; do not use the prose description as a substitute for
+  opening the source images. Pass those files to a generation model as reference
+  inputs when it supports them and the owning task permits generation. For new
+  files, inspect the changed category and reconcile its description before use;
+  retain unaffected categories and their scoped confirmations. Accept font screenshots, interface fragments, photographs,
+  illustrations/infographics, banners, social posts and printed/handout layouts
+  in their declared categories. New photography intake needs more than three
+  photographs (minimum four, usually five). Do not count crops/duplicates as
+  independent examples. Preserve previously confirmed descriptions unless the
+  references or client preference changed; do not restart approved discovery
+  simply because the Brief was shortened.
+- Return one concise plain-language description per category, with asset IDs
+  supporting the shared traits. Discuss meaningful disagreement within a set
+  instead of averaging incompatible styles. Distinguish user statements from
+  your visual inference and obtain confirmation or correction. The client can
+  respond in ordinary words; they need not identify a font class, lighting
+  setup or composition technique. Analyze supplied sets independently while
+  other categories are still being collected. The Account Manager owns the
+  resulting confirmed intake in Brief.
 - Translate every materially used reference into observable criteria such as
   contrast, density, rhythm, grid, whitespace, surface, shape, typography,
   imagery, motion, and tone. Write a concise `Client visual preference profile`
-  as the first Design analysis after Brief intake is complete. It cites Brief
+  as the first Design synthesis after Brief intake is complete. Keep distinct
+  descriptions for all five categories before identifying cross-category
+  coherence; never collapse photography and illustration into one direction.
+  Reuse reviewed intake descriptions and refine only unresolved decisions.
+  It cites Brief
   statements and Assets IDs, separates explicit preference from professional
   inference, identifies conflicts and unknowns, and describes the coherent
   style the client appears to want. Discover and systematize the client's taste;
@@ -68,14 +101,10 @@ discovery, or an agent assumption does not confirm intake.
   setting or narrative by default. Before generation, reject or rewrite any
   content brief whose depicted world conflicts with the project even when its
   visual treatment matches the reference set.
-- For Photography intended to communicate software or digital technology, do
-  not accept architecture, transport, concrete, blueprints, or generic built
-  infrastructure as sufficient domain cues. Require visible, correctly
-  proportioned computing artifacts or active digital interaction. When the
-  operator names computers, laptops, smartphones, or another device category,
-  include those categories across the example set and reject construction-led
-  substitutes, invented controls, implausible keyboards, or unreadable device
-  silhouettes.
+- Derive photographic subjects from people, work and business meaning in the
+  approved project context. Devices are optional scene props unless explicitly
+  required by the current operator direction. Do not turn a previous failed
+  generation into permanent negative lists or device-led style rules.
 - Compare two or three plausible visual territories for credibility,
   distinctiveness, cost, accessibility, and evidence risk. Select one and record
   concise rejection rationales.
@@ -94,18 +123,35 @@ discovery, or an agent assumption does not confirm intake.
   quality gates. Give each the same five-part structure: purpose and evidence
   boundary, objective style master prompt, production specification,
   generation-example table with exact asset IDs, and review/quality gate.
-  Subjective style labels never replace observable output, palette, lighting or
-  stroke, material or shape, density, negative-space, crop, and exclusion
-  constraints. Example briefs state what must be communicated without fixing
-  primitive coordinates or pretending that generated imagery is product
-  evidence.
+  Keep each master prompt compact: describe recurring light, color, texture,
+  movement or line/shape qualities, with room for different compositions.
+  Distinguish optional effects from shared traits. Keep subjects and props in
+  individual briefs and quality checks in the internal review block. Do not
+  add fixed object counts, accent percentages, crop coordinates, dimensions or
+  anatomy/device checklists without a specific operator requirement. The usage
+  tooltip explains how to combine the style prompt, a scene or relationship,
+  and source references. Example briefs state what must be communicated without
+  fixing primitive coordinates or pretending imagery is product evidence.
+- After changing a reusable media master, test its exact current wording on
+  at least three different content briefs using the documented reference inputs.
+  Compare the outputs with the selected style, correct material drift and
+  regenerate before presenting the prompt as tested. Replace the displayed
+  examples with actual outputs from that master; old examples are comparison
+  material only. Preserve exact prompts and reference asset IDs in provenance.
+- Choose illustration backgrounds for the project and intended placement;
+  transparency is not mandatory. Preserve original generated masters. Compare
+  processed derivatives with the originals for thin lines, secondary detail,
+  color and contrast at source and display size; reject degraded derivatives.
+  Restoring a previously tested prompt can reuse its unchanged original outputs
+  and provenance when they still fit the brief.
 - Record typography as exact role rows: CSS family, available weights, usage,
   and registered font asset ID. Verify the loaded file with
   `document.fonts.check(...)` and inspect the rendered specimen's computed
   family; never accept a browser fallback because the label looks correct.
-- Generate photography and illustration masters as `1:1` rasters, preserve
-  every important subject inside the centered `55% × 55%` crop-safe area, and
-  review the uncropped square in Design before testing derivative crops.
+- Choose format and framing per image and intended use. Show every original
+  aspect ratio uncropped in Design; check derivative crops only when requested
+  by an actual output. Do not enforce the same center, margins or composition
+  across a visual family.
 - Express spacing, containers, responsive columns, breakpoints, and radii with
   named Tailwind utilities and their resolved values. Do not invent a second
   arbitrary-pixel token system in the Design document.
@@ -116,7 +162,10 @@ discovery, or an agent assumption does not confirm intake.
   rights, limitations, and prohibited use for generated, stock, and reference
   imagery. Register material external examples as `public-reference`; reference
   status never grants reuse rights.
-- Give each proposal one kebab-case `Visual proposal ID` in `design.md`. Register every output
+- Keep each proposal's kebab-case ID in `design.md` frontmatter as `proposal_id`.
+  Record scoped visual approvals in metadata; keep current visual decisions in
+  the body and confirmation in the Studio badge, without a Decision status
+  table or approval chronology. Register every output
   with that `proposal_id`, `lifecycle: proposed`, and a path below
   `assets/<layer>/generated/<proposal_id>/`. Change lifecycle to `approved` only
   after operator approval.
@@ -146,6 +195,12 @@ discovery, or an agent assumption does not confirm intake.
   template. Empty startup inherits the layout; a populated startup layout replaces
   it with files from that layer only. Keep shared code in utils and project
   components/data in `design/<layer>/`. The workspace README defines the schema.
+  Preserve the shared neutral document header above the visual canvas in every
+  non-empty projection, including startup custom templates: one Design H1,
+  confirmation badge, purpose and usage. Scope project visual styles to the
+  canvas, start its headings at H2, and keep repeated titles, statuses and
+  process metadata out of the mockup. The shared renderer owns this boundary;
+  changing a project's visual identity must not restyle the Workspace header.
   Render permitted assets, not IDs. Review the actual custom layout and semantic
   impact; its existence does not establish approval or resolve missing decisions. Design
   contains only reusable logos, color, typography, photography, illustration,
@@ -162,17 +217,22 @@ discovery, or an agent assumption does not confirm intake.
 - When a product-local `marketing-creative.md` is active, create only strategy-selected formats. Apply the
   approved brand and communication without redefining either; record exact copy,
   composition, variants, dimensions, prompts, rights, accessibility,
-  destination, tracking, and review state.
+  destination, tracking, and review state. Treat the product set as the prospective
+  business plan defined in `.agents/contracts/product-models.md`. Creative and
+  Presentation communicate the intended value to customers or business audiences;
+  plans and generated imagery cannot imply measured results. Do not turn them
+  into internal QA checklists or gate them on installation/runtime tests or
+  release/license-source audits. Visual review of the actual materials remains required.
 
 ## Thresholds and red flags
 
 The brand is reviewable when its meaning, message, voice, governance, and
-factual `20-brand` rows are complete; keep it within 1,400 words. Design is
+factual `20-brand` rows are complete; prefer about 1,400 words without omitting material decisions. Design is
 reviewable only after brand approval, all five Brief-owned reference-intake
 families are confirmed or explicitly excluded and reconciled with Assets, the
 Client visual preference profile is confirmed, each active media family has a separately selected direction,
-mandatory assets and references have dispositions, and its reusable rules fit
-within 1,400 words. Escalate copied identity, inaccessible essentials,
+mandatory assets and references have dispositions, and its reusable rules are concise
+(preferably about 1,400 words, with material information preserved). Escalate copied identity, inaccessible essentials,
 unsupported visual claims, generated proof, reference-led derivatives, retired
 generated entries, or orphaned generated files.
 

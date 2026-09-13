@@ -43,7 +43,10 @@ export async function reviewDocument(
     for (const [id, candidate] of reviews) {
       if (
         affected.has(id) ||
-        !candidate.document.uses.some((input) => affected.has(input))
+        ![
+          ...candidate.document.uses,
+          ...(candidate.document.observes ?? []),
+        ].some((input) => affected.has(input))
       )
         continue;
       affected.add(id);

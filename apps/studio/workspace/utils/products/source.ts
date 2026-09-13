@@ -13,7 +13,13 @@ import {
 } from "./catalog";
 import singlepageCatalogSource from "../../products/singlepage/catalog.yaml?raw";
 import startupCatalogSource from "../../products/startup/catalog.yaml?raw";
-import { parseSalesProcess, salesProcessMarkdown } from "./sales";
+import {
+  parseSalesProcess,
+  salesOverviewMarkdown,
+  validateSalesSegments,
+} from "./sales";
+import { parseDocument } from "../../../../../tools/studio/workspace/document";
+import { salesSegmentPages } from "../components/SalesSegment";
 import { parseProductPresentation } from "./presentation-data";
 import {
   resolveProductSections,
@@ -190,9 +196,31 @@ function view(
           ].get(
             `product.${entry.id}.page.${section.id}.${page.id}`,
           )?.confirmation;
+          if (page.representations)
+            page.representations.text.confirmation = page.confirmation;
           attach(page.children);
         });
       attach(section.pages);
+    }
+    const sales = parseSalesProcess(
+      documentSource(catalog.layer, entry.sales),
+      entry.id,
+    );
+    validateSalesSegments(
+      sales,
+      parseDocument(documentSource(catalog.layer, entry.product)).metadata
+        .customer_segments,
+    );
+    const segmentPages = salesSegmentPages(
+      sales,
+      catalog.layer,
+      `apps/studio/workspace/products/${catalog.layer}/${entry.sales}`,
+      confirmation("sales", entry.sales),
+    );
+    if (segmentPages.length) {
+      const extension = sections.find((section) => section.id === "sales");
+      if (extension) extension.pages = [...segmentPages, ...extension.pages];
+      else sections.push({ id: "sales", title: "Sales", pages: segmentPages });
     }
     return {
       model: model
@@ -246,12 +274,7 @@ function view(
           sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.research}`,
         },
         {
-          content: salesProcessMarkdown(
-            parseSalesProcess(
-              documentSource(catalog.layer, entry.sales),
-              entry.id,
-            ),
-          ),
+          content: salesOverviewMarkdown(sales),
           kind: "sales" as const,
           confirmation: confirmation("sales", entry.sales),
           label: "03 Sales" as const,

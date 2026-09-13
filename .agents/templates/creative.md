@@ -5,7 +5,7 @@ confirmation:
 
 # Marketing Creative
 
-<!-- Selected formats only. Maximum 1,400 words. -->
+<!-- Selected formats only. Prefer about 1,400 words per page; preserve material information if longer. -->
 
 ## Objective and selected distribution
 
@@ -38,3 +38,9 @@ confirmation:
   approval state before publication
 - Address material Marketing Creative constraints and unresolved questions;
   unselected formats remain absent rather than filled with placeholders
+
+<!-- Register actual selected covers, article/post copy, storyboards and optional
+motion as product-owned catalog pages with Text/Layout. Compose editable HTML
+text over registered images. Use shared utils/media artboards, PNG, and optional
+Remotion/MP4 instead of project-specific export engines. This overview owns the
+campaign direction; canonical material copy lives once in each material source. -->

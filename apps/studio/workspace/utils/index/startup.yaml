@@ -6,15 +6,14 @@ entries:
     path: brief/startup.md
     extends: singlepage.brief
     strategy: sections
-    description: Source request, founder language, constraints, goals, and unknowns.
-    uses:
-      - startup.asset-index
+    description: Current project, products, customers, value, business resources, goals and client visual preferences.
+    uses: []
   - id: startup.strategy
     kind: strategy
     path: strategy/startup.md
     extends: singlepage.strategy
     strategy: sections
-    description: Positioning, offer, commercial focus, and first experiment.
+    description: Marketing goals, positioning, product roles, channels, customer journeys, and growth.
     uses:
       - startup.brief
   - id: startup.asset-index

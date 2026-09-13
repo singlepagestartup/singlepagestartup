@@ -134,3 +134,23 @@ Studio TypeScript and workspace validator self-checks passed for both source
 layers. The isolated adversarial regression completed in approximately 86 ms
 including Node startup. No project document bodies, approval fingerprints,
 catalogs, or inheritance configuration were changed.
+
+## Design review header, 2026-09-13
+
+The operator found that Design started with the styled concept rather than the
+standard document header. `ProjectDesign.tsx` rendered status and guidance inside
+its optional overview and used the concept name as H1. `DesignRenderer.tsx`
+provided a partial status-only header for custom layouts.
+
+`DocumentHeader` in `utils/components/DocumentStatus.tsx` now supplies the same
+title, badge, purpose and usage markup to `ArtifactBrowser.tsx` and
+`DesignRenderer.tsx`. Design always renders this neutral header outside the
+project-styled canvas. Its concept heading is H2, and the overview no longer
+duplicates status. This applies when overview is omitted or a complete custom
+template is selected; custom templates should start their own headings at H2.
+Workspace README records that boundary. Business document bodies, assets and
+approval metadata were not changed by this presentation correction.
+
+Verification: Studio validation and TypeScript passed. Browser review confirmed
+one Design H1, one status badge, Measured Space as H2, preserved project styling,
+and readable wrapping at the 320px mobile viewport. Normal viewport restored.

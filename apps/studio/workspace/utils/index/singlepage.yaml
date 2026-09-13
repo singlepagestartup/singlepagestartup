@@ -4,13 +4,12 @@ entries:
   - id: singlepage.brief
     kind: brief
     path: brief/singlepage.md
-    description: Source request, founder language, constraints, goals, and unknowns.
-    uses:
-      - singlepage.asset-index
+    description: Current project, products, customers, value, business resources, goals and client visual preferences.
+    uses: []
   - id: singlepage.strategy
     kind: strategy
     path: strategy/singlepage.md
-    description: Positioning, offer, commercial focus, and first experiment.
+    description: Marketing goals, positioning, product roles, channels, customer journeys, and growth.
     uses:
       - singlepage.brief
   - id: singlepage.asset-index
@@ -66,7 +65,7 @@ entries:
   - id: template.strategy
     kind: template
     path: .agents/templates/strategy.md
-    description: Commercial strategy and first-experiment structure.
+    description: Project-wide marketing strategy structure.
     uses: []
   - id: template.asset-index
     kind: template

@@ -6,7 +6,7 @@ confirmation:
 # Operations & Economics
 
 <!-- One stable model ID, one source in products/<layer>/models/<model-id>/model.md.
-Maximum 1,400 words. The model may serve multiple products. Record facts,
+Prefer about 1,400 words per page; preserve material information if longer. The model may serve multiple products. Record facts,
 confirmed intentions and explicitly sourced assumptions; headings are not evidence.
 Never duplicate Product or Sales here. -->
 

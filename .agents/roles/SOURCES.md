@@ -13,6 +13,9 @@ Accessed 2026-08-04 unless noted otherwise.
 - [O\*NET Sales Managers 11-2022.00](https://www.onetonline.org/link/summary/11-2022.00) — client coordination signals only; CC BY 4.0.
 - Retired agency workflow, preserved in Git history — repository migration input; discovery ownership retained and premature creative decisions rejected.
 
+- [Design Council: Design Buyers’ Guide](https://www.designcouncil.org.uk/fileadmin/uploads/dc/Documents/Design%2520Buyers%2527%2520Guide.pdf) — concise business context, objectives and practical constraints in a shared brief; design commissioning scope, not a complete business model. Accessed 2026-09-12.
+- [US SBA: Write your business plan](https://www.sba.gov/business-guide/plan-your-business/write-your-business-plan) — compact lean planning covers customers/value, operations and finances; not a fixed word limit or evidence of validation. Accessed 2026-09-12.
+
 ## Business Analyst
 
 - [UK Government Digital and Data Profession: Business Analyst](https://ddat-capability-framework.service.gov.uk/role/business-analyst) — role and method reference; Open Government Licence unless otherwise stated.

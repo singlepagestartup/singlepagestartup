@@ -43,9 +43,9 @@ notes. Studio names the resolved singlepage-plus-startup view `default`. A full
 generation or rerun starts from the owning template and replaces
 the previous body from stable upstream dependencies; Product/model migrations
 first inspect and preserve unique client facts, sources and extensions. Git retains prior versions.
-Every primary review document is limited to 1,400 words so the operator can read
-and edit it in five to seven minutes. This is a usability rule rather than a
-token budget.
+Strongly prefer a five-to-seven-minute review (about 1,400 words) per primary
+page. This is not a word, line, source, segment or aggregate YAML/corpus cap.
+Follow `.agents/contracts/document-readability.md`; completeness takes precedence.
 In particular, `strategy.md` uses exactly its four second-level sections and
 does not contain interview chronology, invalidation logs,
 or coordinator handoff prose.
@@ -91,3 +91,8 @@ Use ordered built-in/custom sections or a full TSX/JSX template; see the workspa
 README for the exact schema. Empty startup inherits; a populated startup layout
 replaces the base, using its own files. Keep the applicable visual decisions in
 the Design document and Assets; do not force every project into starter blocks.
+
+Research uses `product-research.md` as its primary summary, with adaptable
+`product-research-segment.md` and `product-research-competitors.md` detail starters.
+Register detail under the shared Research tree; apply
+`.agents/contracts/research-sales-audit.md` to validate the preceding Sales proposal.

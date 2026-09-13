@@ -34,16 +34,15 @@ describe("product presentation sources", () => {
   test("loads the restored products from their own content", () => {
     const code = parseProductPresentation<{
       name: string;
-      modules: string[];
-      offer: string;
+      slides: Array<{ id: string; title: string }>;
     }>(framework, "singlepagestartup");
     const ai = parseProductPresentation<{ name: string; slides: unknown[] }>(
       chat,
       "ai-chat",
     );
     expect(code.name).toBe("Code Framework");
-    expect(code.modules).toHaveLength(16);
-    expect(code.offer).toContain("free evaluation");
+    expect(code.slides).toHaveLength(10);
+    expect(code.slides[0].title).toContain("foundation you can reuse");
     expect(ai.name).toBe("AI Chat");
     expect(ai.slides).toHaveLength(6);
   });

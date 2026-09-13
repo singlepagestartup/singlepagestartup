@@ -1,52 +1,62 @@
 ---
+finding_prefix: AC
 confirmation:
   confirmed: false
 review:
-  stale:
-    reason: Business ownership migrated to Product, Sales and Operations & Economics; review the actual new inputs.
-    sources: [model.framework-service]
   dependencies:
-    brief: e890b56080b80919caf6111e3a17c7b5cf42b0cccf4b27e5235b577c0da96f51
+    brief: bf0f72b61cb12fc4a6fea78bd136dddb34e57921a7d8dbb528c25f85f30e68e1
+    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
 ---
 
 # AI Chat research
 
 ## Decision and scope
 
-Model `framework-service`: test `bridge`, `capacity` and `service-viability` only where they affect this product. The [model source](../models/framework-service/model.md#assumptions-and-decision-rules) owns these assumptions; findings, contrary observations and sources stay in this Research.
+For `ai-chat`, inform the business proposition and commercial model within the approved organic marketing direction: how people discover useful business answers, understand the offer, become repeat token buyers and optionally discover the framework. Model `framework-service` owns `service-viability`, `channel-access` and `bridge`; the project owner decides the commercial offer.
 
-AI Chat is a separate product alongside Code Framework, as the client explicitly clarified on 2026-09-11. Its use as a demonstration and acquisition route does not remove its product identity. The next research decision is which user problem and paying segment, if any, justify the service independently.
-
-This document restores existing service findings. It is not a fresh market study. The previous research assessed acquisition for Code Framework; those findings cannot establish demand for AI Chat.
+This comparison uses confirmed audience/value/flow scope and official documentation accessed 2026-09-13. Two online alternatives show whether supplying business knowledge is distinctive; platform guidance explains video, search and community mechanics. This purposive review establishes neither country-specific availability, representative demand, channel performance nor comparative answer quality.
 
 ## Buyer and purchase situation
 
-The intended user registers, chooses an agent, submits a question, and receives an answer, a bounded refusal, or a recorded failure. The exact user segment, buyer, payer, purchase trigger, and expected repeat-use situation remain unselected. No customer interviews or willingness-to-pay observations were supplied.
+**AC-SPS-01 — client-claim, confirmed intention.** People upload their business facts and documents, configure knowledge and ask questions. Each chat has separately scoped vector knowledge; retrieval supplies relevant context. Useful business-specific answers are the central value. The intended purchase is more tokens to continue using the hosted service. The user may also pay; actual buyers and purchasing authority have not been observed. [C1]
+
+A plausible repeat-use trigger is another question requiring the same business facts (**assumption; medium confidence**). One useful answer establishes neither recurring need nor willingness to pay.
 
 ## Alternatives and competition
 
-The earlier acquisition comparison considered documentation, repository walkthroughs, a sample application, technical articles, an account-free demo, and no showcase. These are alternatives to demonstrating the framework, not a validated competitive set for a standalone chat service.
+**AC-SPS-02 — verified-fact, high confidence in documented features.** ChatGPT Projects shares uploaded files, instructions and connected sources across its chats. Chatbase accepts documents, text, websites and business-specific Q&A as agent knowledge. ChatGPT is a general assistant substitute; Chatbase is an adjacent business-knowledge agent builder serving overlapping information needs. Neither source measures this audience's preference. [S1, S2]
 
-AI assistants and composed agent products were category context only. A service-specific comparison must follow selection of the customer problem; no superiority or differentiated customer outcome is established.
+**Inference, high confidence:** uploading files or using retrieval alone does not establish differentiation. Useful answers grounded in a person's business remain a valid product goal; superior results require comparison. Informal alternatives include manually finding the answer in documents, pasting selected facts into an existing assistant, asking a colleague, or postponing the question. These are comparison candidates, not observed customer behavior.
 
 ## Price, channels, and evidence
 
-Token sales or paid-chat access were possible later mechanics, with no selected commercial terms or verified demand. The recorded YouTube route concerns a demonstration followed by attributable framework evaluation. It does not establish an independent AI Chat acquisition channel's performance.
+**AC-SPS-03 — client-claim.** Token purchases are the selected monetization direction. Price, currency, token unit, packs and billing terms are unresolved commercial decisions for the project owner. Professional recommendations can inform them; competitor subscription prices would not establish a viable SPS token price. [C1]
 
-The supplied experiment economics and their limits are owned by [Operations & Economics](../models/framework-service/model.md#cost-structure). They are constraints for research, not observed customer willingness to pay.
+**AC-SPS-04 — assumption, medium confidence.** Content showing a real business question, supplied facts and resulting answer can lead to the hosted chat. YouTube demonstrations are part of the approved channel plan, without assumed existing account reach. Long-form descriptions support clickable external links when advanced features are enabled; Shorts descriptions do not. This is a publication mechanic, not an acquisition forecast. [S3]
+
+The following findings support the selected organic channel system. Their effectiveness remains a hypothesis; publication frequency and resource commitments are unset:
+
+- **AC-SPS-07 — verified-fact / inference.** YouTube can turn eligible uploaded public videos into Shorts linked to the original video (**high confidence in mechanics**). Business-result demonstrations and tutorials provide the planned full explanation, while short extracts introduce a useful result and lead to that explanation, then hosted chat (**medium-confidence fit**). Use an actual question, its necessary facts and the answer; a production demonstration is not a customer-success story. [S3, S4]
+- **AC-SPS-08 — verified-fact / inference.** Google recommends helpful content, audience search terms in descriptive headings and crawlable links; compliance does not guarantee indexing or visibility (**high confidence**). Search-oriented use-case pages are intended to explain the business question, needed documents, answer and limitations, linking the matching tutorial and hosted experience (**medium-confidence fit**). No keyword volume or existing search traffic has been established. [S5]
+- **AC-SPS-09 — verified-fact / inference.** Reddit recommends authentic participation and recognizes additional community rules; repetitive business-link promotion may be spam (**high confidence for Reddit only**). Contextual answers in relevant business/AI communities are intended to demonstrate understanding and reveal recurring questions, with a relevant example link where permitted (**medium-confidence fit**). Reddit is a documented example, not a confirmed audience concentration, moderator endorsement or universal community rule. [S6]
 
 ## Findings and unknowns
 
-- Product membership is confirmed; the complete research document and offer are not.
-- Service usage, payment, provider cost, repeat use, and framework evaluation require separate measurements.
-- No independently verified external availability, successful use, adoption, value result, or channel conversion baseline has been supplied.
-- Eligibility, payment terms, provider-cost enforcement, privacy/retention, AI authority, day reset, reconciliation, support, and incident ownership remain launch gates.
-- The next useful research step is to test a concrete user problem and alternatives after the client supplies the intended segment and delivery boundary.
+- **AC-SPS-05 — professional-choice:** learn which business questions recur, what users consider a useful answer and whether answers grounded in their materials offer enough value to return and pay. Compare alternatives using the same question and facts; a favorable example supports that case, not blanket superiority. [AC-SPS-02]
+- **AC-SPS-06 — client-claim / missing-evidence:** users may continue buying tokens or follow **Развернуть проект на своей машине** to GitHub. Distinguish useful answers, repeat use and purchases from maker interest and framework adoption. The planned paid service can also demonstrate the framework; its commercial value must stand on its own. [C1]
+- **AC-SPS-10 — assumption, medium confidence:** a demonstrated business use case can connect community answers, searchable explanation, full tutorial and short extract to the same hosted experience. Continued questions and updated business facts give users reasons to return and purchase tokens; real usage questions can improve explanations and future content. This is the proposed growth and retention mechanism, not an observed loop. Only publish material permitted for public use. Channel attention, useful chat use, repeat purchases and framework handoffs remain separate outcomes. [C1, AC-SPS-07, AC-SPS-08, AC-SPS-09]
+- **Business evidence gaps:** willingness to pay, repeat use, acceptable price and token unit, purchase conditions and attributable service costs remain unresolved. Learn users' expectations for business-data use, access, retention and support. These questions inform the offer and economics; no paying-customer, retention or margin forecast is established.
 
 ## Sources
 
-| Source                                                                                                               | What it supports                                                      | Limitation                                                                  |
-| -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Client correction, 2026-09-11                                                                                        | AI Chat and Code Framework are two products                           | Does not select an offer or confirm this entire document                    |
-| Service research preserved in Git commit `40c799f86c`, formerly `portfolio/singlepage/ai-agent-showcase/research.md` | Recorded acquisition hypothesis, alternatives, and unknowns           | Historical analysis of a supporting role; not standalone service validation |
-| Client scope and experiment decisions, 2026-08-09–10                                                                 | Intended chat flow, separate accounting, and bounded promotional cost | Intentions and limits, not verified runtime behavior                        |
+Source IDs in this table are local to this document.
+
+| ID  | Source and date                                                                                                                    | Application and limits                                                                                                                                             |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| C1  | [Brief](../../../brief/singlepage.md), operator scoped correction 2026-09-13                                                       | Audience, knowledge-chat value, token monetization and GitHub path; client intentions, not observed demand or willingness to pay.                                  |
+| S1  | OpenAI, [Projects and chats](https://learn.chatgpt.com/docs/projects), accessed 2026-09-13                                         | ChatGPT file/context substitute, AC-SPS-02; global documentation, no user sample; vendor commercial interest; no comparative quality evidence.                     |
+| S2  | Chatbase, [Data sources](https://www.chatbase.co/docs/user-guides/chatbot/data-sources), accessed 2026-09-13                       | Business-knowledge alternative, AC-SPS-02; global documentation, no user sample; vendor commercial interest; features do not establish outcomes.                   |
+| S3  | Google/YouTube, [Sharing links with your audiences](https://support.google.com/youtube/answer/13748639?hl=en), accessed 2026-09-13 | Hosted-chat acquisition-link mechanics, AC-SPS-04; global platform guidance, no audience sample; platform interest; no SPS channel or conversion evidence.         |
+| S4  | Google/YouTube, [Create Shorts from your videos](https://support.google.com/youtube/answer/12836917?hl=en), accessed 2026-09-13    | AC-SPS-07 reuses a business demonstration for discovery; creator-platform interest, global guidance, no sample; eligible own public uploads, not guaranteed reach. |
+| S5  | Google, [Search Essentials](https://developers.google.com/search/docs/essentials), updated 2025-12-10, accessed 2026-09-13         | AC-SPS-08 business-question content and navigation; global search-platform guidance, commercial interest, no audience sample; no indexing/ranking guarantee.       |
+| S6  | Reddit, [Spam](https://support.reddithelp.com/hc/en-us/articles/360043504051-Spam), updated 2026-05-19, accessed 2026-09-13        | AC-SPS-09 contextual business-community participation; platform policy, global scope, commercial interest, no buyer sample; each community's rules still apply.    |

@@ -11,7 +11,8 @@ description: Describes product business models and complete customer processes f
 Own initial Product, catalog model membership, Operations & Economics and Sales
 intake after Brief scope confirmation, before strategic selection. Maintain
 models and related processes through later changes. There is no standalone
-Business document. Do not invent facts, prices, capacity, authority or processes.
+Business document. Never present invented facts, prices, capacity, authority or
+processes as client inputs. Later process designs remain explicit proposals.
 
 ## Inputs and ownership
 
@@ -33,17 +34,30 @@ Product; it does not establish demand or require another document.
   link all participating products, and distinguish shared and product-specific
   terms. Sources live in products/<layer>/models/<id>/, never a global Business.
 - Product owns Customer Segments, Value Propositions, identity, roles, offer,
-  usage, acceptance, rights and support promises. Preserve user/buyer/payer/
+  intended usage, rights, support promises, business goals and metrics. Preserve user/buyer/payer/
   beneficiary/decision-maker, material social/emotional forces and alternatives.
 - Operations & Economics owns Revenue Streams, Key Resources, Key Activities,
   Key Partnerships and Cost Structure, including funding separately from revenue.
   Shared resource IDs and explicit allocation prevent double-counting. Do not
   invent a shared model solely because two products share a founder or technology.
-- Sales keeps the entire process from awareness/evaluation through acquisition,
-  delivery, support/retention and recovery, including actors, input data,
-  transitions/handoffs, refusal, errors, unfinished work, metrics and constraints.
-  Channels and Customer Relationships are coverage of this whole process, not
-  separate prose copies. Unknown processes remain blocked intake, not invented steps.
+- Sales uses the shared v2 segment workspace, with an overview and one page per
+  Product customer segment. Connect pains/needs, decision motives and criteria,
+  objections/arguments, acquisition messages and the Customer Journey Map (CJM).
+  Build each map from one actor's goal, actions, questions, desired experience and
+  touchpoints, while preserving business responses, owners, handoffs and metrics.
+  Map future experience from approved direction; do not invent customer psychology
+  or interview evidence. Use the method and limitations in product-models.md.
+- Sales keeps the entire intended process from discovery and consideration
+  through acquisition, use, help and retention, including actors, customer data,
+  transitions, commercial alternatives, metrics and constraints. Channels and
+  Customer Relationships are coverage of this whole process, not separate copies.
+  Unknown initial processes remain explicit intake; during product formation,
+  propose professional choices from approved direction without inventing client facts.
+- Apply `.agents/contracts/product-models.md`: `40-products` is a prospective
+  business plan. Sales readiness means its material business decisions are complete,
+  even before implementation. Its failure paths cover declined or unavailable offers,
+  abandonment, alternatives and help. Setup checks, software bugs, runtime tests
+  and release/license-source audits never determine business-process readiness.
 - Attribute assertions as client fact, confirmed intention, supplied observation,
   explicit calculation, hypothesis or unknown. Preserve dates for fact conditions
   and evidence; edit history and approval chronology belong in Git/metadata.
@@ -51,9 +65,11 @@ Product; it does not establish demand or require another document.
   investigation and its findings; model/product owners reference those findings.
   Confirmation of a model is not proof of demand.
 - Ask only for operator facts required by the present decision. Other unknowns
-  retain their exact strategy, material-production or launch gates. Do not block
+  retain their owning commercial decision boundary; implementation tasks belong
+  to engineering. Do not block
   known-product intake on market research or an unrelated product's missing price.
-- Keep each primary page within 1,400 words, readable as one whole topic. Remove
+- Prefer about 1,400 words per primary page, readable as one whole topic;
+  preserve material information under `.agents/contracts/document-readability.md`. Remove
   repeated assertions only after proving their source owner and preserving meaning.
 
 ## Thresholds and red flags

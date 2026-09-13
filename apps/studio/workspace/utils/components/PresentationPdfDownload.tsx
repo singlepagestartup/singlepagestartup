@@ -16,13 +16,23 @@ interface IPresentationPdfDownloadProps {
 const rasterScale = 2;
 const pointsPerCssPixel = 72 / 96;
 
+/** Shared decks provide a complete export copy; the selected preview is not another PDF page. */
+export function presentationPdfElements(
+  container: HTMLElement | null,
+): HTMLElement[] {
+  const deck =
+    container?.querySelector<HTMLElement>("[data-presentation-pdf-deck]") ??
+    container;
+  return Array.from(
+    deck?.querySelectorAll<HTMLElement>("[data-slide-id]") ?? [],
+  );
+}
+
 function pdfOptions(
   container: HTMLElement | null,
   title: string,
 ): ICreatePdfFromElementsOptions {
-  const elements = Array.from(
-    container?.querySelectorAll<HTMLElement>("[data-slide-id]") ?? [],
-  );
+  const elements = presentationPdfElements(container);
   const first = elements[0];
   if (!first) {
     throw new Error("This presentation has no pages to export.");

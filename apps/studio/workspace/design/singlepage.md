@@ -1,62 +1,145 @@
 ---
 confirmation:
-  confirmed: false
+  confirmed: true
+  by: operator
+  at: 2026-09-13
+  source: "Operator explicitly approved the current Design in chat: «Так, всё, подтверди дизайн. Окей, будем с этим работать. Идём дальше»."
+  content_sha256: 99ab863f73ba4c069a79fceb3cedfc3fb0b0c91c51d50185f15779c1a8aec0b7
+proposal_id: measured-space
 review:
   dependencies:
-    asset-index: 62c40075601691ae7c3d7270b63268e3973e8be65a7c7091ce2dcabb6e329298
-    brand: d5832fea9d6f4995d90b780efb5a8889ead9fe63e13d26620fb8a6c4538a3d78
-    brief: 3bfbc769cf05602249af173264b5bbad1b5b4bbfc5aea26eedfcea76b43d34db
+    asset-index: 3959f399ca7ce73eb67531f94dc5349d1cfd3a03e7fb9921627e4c09252b1f41
+    brand: 691ec9f7a801d77e97daa4266fbd617c95568804eefb1ed07c3848dfd8add19d
+    brief: bf0f72b61cb12fc4a6fea78bd136dddb34e57921a7d8dbb528c25f85f30e68e1
+scoped_confirmations:
+  preference_profile:
+    confirmed: true
+    by: operator
+    at: 2026-09-13
+    source: "Operator explicitly approved the current Design in chat: «Так, всё, подтверди дизайн. Окей, будем с этим работать. Идём дальше»."
+    scope: Approves the five-category Client visual preference profile contained in the current Design.
+  selected_elements:
+    confirmed: true
+    by: operator
+    at: 2026-08-14
+    source: Operator-selected JetBrains Mono and Cormorant Garamond, supplied Accent BFEF61 and mandatory pixel-grid S.
+    scope: Selected identity, font pairing and accent.
+  media_direction:
+    confirmed: true
+    by: operator
+    at: 2026-09-13
+    source: Operator requests people-and-business imagery, optional devices, compact flexible master prompts and replacement of the three photographs.
+    scope: Authorizes reference reanalysis and photo production; generated outputs remain proposed.
+  illustration_background:
+    confirmed: true
+    by: operator
+    at: 2026-09-13
+    source: Operator selects the existing warm off-white illustration background and requires preservation of line detail and image quality.
+    scope: Use the original illustrations with their existing background; processing must preserve visual quality.
+sources:
+  visual_profile:
+    classification: supplied-material-observation
+    source: apps/studio/workspace/brief/singlepage.md#visual-reference-intake
+    source_keys:
+      - sources.photography_reanalysis
+      - sources.other_visual_reference_reanalysis
+      - visual_references
+    inspected_files: 42
+    photography_files: 7
+    distinct_photographic_compositions: 6
+    summary: Direct inspection of all original files; recurring treatment and meaningful variation inform the revised five-category profile. No original photograph requires a digital device.
+    interpretation_status: proposed
+  meaning_translation:
+    classification: assumption
+    resolution: professional-choice
+    source: apps/studio/workspace/brand/singlepage.md
+    sections:
+      - Intended perception
+      - Meaning and message hierarchy
+      - Consistency rules
+    supports: "People working on their business: attention, conversations and collaboration for the chat audience; reusable foundations and human-directed agent work for interested makers."
+    limitation: Editorial images and conceptual diagrams do not prove useful answers, adoption, implemented architecture or successful setup.
+media_review:
+  source: Coordinator visual review of current media; independent Brand Designer comparison of the three regenerated illustrations, 2026-09-13.
+  photography:
+    status: proposed
+    asset_ids:
+      - singlepage-generated-measured-space-photography-business-conversation
+      - singlepage-generated-measured-space-photography-moment-of-focus
+      - singlepage-generated-measured-space-photography-work-in-motion
+    reference_fit: Conversation uses gesture and motion blur; portrait uses close framing and soft foreground layers; order handoff uses a low viewpoint and bright backlight. Natural warm/cool color and human presence connect the set. Business scenes and aspect ratios vary.
+    display: Original aspect ratios; no automatic square crop.
+  illustration:
+    status: proposed
+    source: Three fresh generations using the exact current master, three software content briefs and the five original illustration references.
+    asset_ids:
+      - singlepage-generated-measured-space-illustration-module-hierarchy
+      - singlepage-generated-measured-space-illustration-framework-inheritance
+      - singlepage-generated-measured-space-illustration-coordinated-agents
+    prompt_verification:
+      status: visually-verified
+      style_master_sha256: be315e2fd67911a88bfd9380748fd7fa843399951b68d9b3a91c32f2d0265ae7
+      reference_asset_ids:
+        - singlepage-illustration-reference-isometric-building
+        - singlepage-illustration-reference-isometric-platform
+        - singlepage-illustration-reference-isometric-workflow
+        - singlepage-illustration-reference-isometric-ai-chip
+        - singlepage-illustration-reference-isometric-devices
+      method: Compare all three generated originals with the source references and former examples for linework, open surfaces, restrained accent, readable relationships and cross-example consistency. Validate the same prompt-plus-brief-plus-references procedure described in the tooltip.
+      scope: Style consistency across these three briefs; not pixel-identical composition or a guarantee for every future generation.
+    reference_fit:
+      module-hierarchy: Fine black isometric contours, pale guides and open unshaded blocks retain the reference line language; restrained green links connect software modules to a shared base without importing reference buildings.
+      framework-inheritance: Black and gray line hierarchy, light open forms and a changed green module reproduce the established family while translating continuity into software reuse.
+      coordinated-agents: Outlined software panels, pale dotted connections and restrained green marks stay consistent with the family; the person directs the shared task, with robot icons used as software symbols rather than physical characters.
+    display: Original aspect ratio without automatic crop.
+  product_asset_impact:
+    asset_id: singlepage-generated-measured-space-og
+    source: Exact immutable copy in apps/studio/workspace/assets/singlepage.yaml.
+    issue: Existing copy about evaluating recurring foundations, one pinned version and stated rights no longer applies the approved Brand. Product-specific OG copy needs revision in its owning product work; this asset is not a reusable Design output.
 ---
 
 # Design
-
-## Decision status
-
-| Field                 | Current value                                                                                                                                                                                        |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Brand prerequisite    | Brand meaning and communication approved on 2026-08-11: accountable developers, inspectable foundations, and claims bounded by available proof                                                       |
-| Client style analysis | Operator confirmed the cross-category preference profile on 2026-08-14; this approves the style analysis, not the complete Design or generated assets                                                |
-| Partial decisions     | On 2026-08-14 the operator selected JetBrains Mono + Cormorant Garamond, supplied Accent #BFEF61, and required visible computer/phone use with architecture secondary. Complete Design awaits review |
-| Visual proposal ID    | `measured-space`                                                                                                                                                                                     |
 
 ## Design intent
 
 ### Client visual preference profile
 
-| Dimension                             | Confirmed preference or professional inference                                                                                                              | Source                                                                   | Confidence or unresolved conflict                                                                                                             |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Contrast and palette                  | Near-monochrome fields with one sharp light-green locator; palette colors come from SinglePageStartup, not reference brands                                 | categorized interface, marketing, illustration references; accent sample | Operator confirmed the profile and supplied the light-green accent sample on 2026-08-14; this does not approve the entire palette             |
-| Density, whitespace, grid, and rhythm | Spacious editorial landings and structured, denser work screens; clear alignment and limited hierarchy levels                                               | interface set                                                            | Explicit                                                                                                                                      |
-| Surface, shape, and motion            | Restrained borders, rounded controls, selective translucency; motion blur communicates movement                                                             | interface and photography sets                                           | Explicit                                                                                                                                      |
-| Typography                            | Monospaced copy with a serif for headings and italic emphasis                                                                                               | typography set                                                           | Operator selected both font families on 2026-08-14                                                                                            |
-| Photography and illustration          | References define camera/motion; project context requires recognizable device use with secondary architecture. Illustration uses minimal isometric linework | categorized photography and illustration sets; project context           | Operator required recognizable digital device use and secondary architecture on 2026-08-14; illustration colors come from the project palette |
-| Marketing composition                 | Photography-led vertical compositions with sparse copy, overlays, one dominant statement and one action                                                     | marketing set                                                            | Explicit                                                                                                                                      |
+| Family                        | Visual preference                                                                                                                                                                                                                           |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Interface appearance          | Light neutral surfaces, generous spacing and clear hierarchy; expressive landing headlines, aligned work grids, compact navigation, rounded cards and restrained borders and shadows.                                                       |
+| Typography                    | Monospaced body copy with upright serif headings and short italic emphasis; Latin and Cyrillic.                                                                                                                                             |
+| Photography                   | Human presence, gestures and movement; natural light, film-like texture, warm skin and varied warm or cool surroundings. Close details and wider views vary; blur, foreground softness, backlight and light trails are optional techniques. |
+| Illustration and infographics | Airy isometric drawings, fine defining contours, pale secondary connections, dotted guides and restrained color; composition and detail follow the idea.                                                                                    |
+| Marketing visual language     | Expressive human photography, varied viewpoints or spare typographic compositions; short prominent text, thin diagrams, light labels and selective translucent overlays.                                                                    |
+
+Neutral interface fields and the light-green accent connect these families. Photography keeps its natural colors; spacious rhythm keeps expressive imagery and technical detail readable.
 
 ### Brand idea and character
 
-**Measured Space** combines technical precision with editorial expression. Light layouts, serif headlines, monospaced text, restrained diagrams, and a vivid green accent create a technology aesthetic. Photography shows digital work; minimal illustrations explain connections.
+**Measured Space** makes digital work feel approachable and considered. Spacious light fields, expressive serif headings and orderly monospaced text help people focus on a question or a useful change. A vivid green accent guides attention. Human photography brings everyday business work into view; sparse diagrams explain how a maker can reuse a foundation.
 
 ### Reusable graphic language
 
 - Use Tailwind `gap-2/4/6/8`, `py-12/16/24`, `max-w-7xl` (`1280px`), `px-4 sm:px-6 lg:px-8`, four/eight/twelve columns at base/`md`/`lg`, and `rounded-md/xl/3xl` for tags, controls, and panels.
-- Use a 24px icon grid with 2px strokes. Dashed lines mean intended or unverified. Code and terminal output must be real, selectable, dated, and limitation-aware.
-- Use opaque surfaces by default. Reserve translucency for temporary overlays with a solid fallback and verified contrast. Presentations use White fields, Paper insets, Ink content, and Accent `#BFEF61` locators.
-- Use motion only to explain state, within `120–240ms`, with reduced-motion alternatives. Preserve visible focus, semantic structure, alternatives, and adjacent disclosures.
-- Across every medium, use one dominant statement and one Accent locator; never let visual polish or proof-like UI imply readiness, adoption, or evidence.
+- Use a 24px icon grid with 2px strokes. Diagrams explain one relationship at a time; dashed lines denote a proposed connection. Keep conceptual diagrams distinct from actual product captures.
+- Presentations use White fields, Paper insets, Ink content, and Accent `#BFEF61` locators. Reserve translucency for small overlays with a solid fallback and verified contrast.
+- Use motion only to explain change, within `120–240ms`, with reduced-motion alternatives. Preserve visible focus, semantic structure and text alternatives.
 
 ### Do and do not
 
-| Do                                                    | Do not                                               |
-| ----------------------------------------------------- | ---------------------------------------------------- |
-| Use one dominant statement and one Accent locator     | Fill layouts with accent or decorative proof-like UI |
-| Render only registered assets within lifecycle limits | Treat proposals as published identity or evidence    |
-| Keep claims adjacent to limits                        | Let polish imply readiness or adoption               |
+| Do                                                                  | Do not                                                            |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Use one dominant statement and one Accent locator                   | Fill the composition with competing emphasis                      |
+| Show people exchanging ideas, making decisions and doing their work | Reduce every business story to a device demonstration             |
+| Use actual product captures to explain an observed result           | Present generated screens or diagrams as working product evidence |
 
 ## Identity application
 
 ### Naming and lockups
 
-Use **SinglePageStartup**, never an acronym. Preserve the operator-created pixel-grid S. The primary lockup pairs it with outlined Cormorant Garamond Bold; avatar and favicon use the mark alone. Keep one mark-width clear space. Accent never recolors the mark.
+- Use the exact **SinglePageStartup** name in lockups. AI Chat and Code Framework are accompanying product names, separate from the mark.
+- Preserve the pixel-grid S. The primary lockup pairs it with outlined Cormorant Garamond Bold; avatar and favicon use the mark alone.
+- Keep one mark-width clear space. Retain the black or white mark; Accent never recolors it.
 
 ## Visual system
 
@@ -87,54 +170,54 @@ Body uses `16/26`; labels `12/16`; headings use `40/42` mobile and `64/64` deskt
 
 ### Purpose and evidence boundary
 
-Photography shows people using digital tools; it never proves software outcomes.
+Photography brings people and their business into view: conversations, concentration, collaboration and work taking shape. Devices can appear when they belong to the scene. These editorial images provide atmosphere rather than customer testimony.
 
 ### Style master prompt
 
-> OUTPUT: one opaque `1024 × 1024px` sRGB PNG. TECHNIQUE: candid, human-centered, dynamic, slightly filmic, `35–50mm`, available city/workspace light; use controlled blur, shallow focus, occlusion, close viewpoint, or low angle. SUBJECT: a person actively uses a recognizable digital device; digital work is unmistakable and architecture stays secondary. COMPOSITION: every important human part and category-defining device part fits centered `55% × 55%`; keep `22.5%` secondary environment per side. DEVICE QA: credible scale, anatomy, grip, keys, trackpad, hinge, screen, buttons, cameras, ports, and cables as applicable; reject missing, invented, or unreadable silhouettes. COLOR: natural Paper/Ink-compatible scene; one tiny Accent locator optional. EXCLUDE: construction, blueprints, architectural drawings, hard hats, drafting tools, architecture-led compositions, nature-dominant scenes, readable UI/text/code, logos, branded devices, cyberpunk, stock posing, staged success, and product proof.
+> Expressive editorial photography of people, with natural light, tactile color and a film-like feel. Capture presence, gesture and movement rather than posed perfection. Let framing and focus vary; blur, foreground softness, backlight or light trails can add energy when they suit the moment.
 
 ### Production specification
 
-Append device, action, setting, and technique. Retain `1:1`; verify crop, geometry, anatomy, and alt text.
+Copy the style prompt, add who is in the scene, what is happening and where the image will be used. Attach the relevant original photographs as style references. Choose the format for that use.
 
 ### Generation examples
 
-| Example                 | Use                | Content brief                                                                | Avoid                             | Asset ID                                                                  |
-| ----------------------- | ------------------ | ---------------------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------- |
-| Open-laptop work        | Editorial opener   | Developer types on a credible open laptop beside an urban transit interior   | fake keyboard, device crop        | `singlepage-generated-measured-space-photography-open-laptop-work`        |
-| Smartphone coordination | Coordination story | Developer taps a credible smartphone in a city technology workspace          | impossible grip, readable UI      | `singlepage-generated-measured-space-photography-smartphone-coordination` |
-| Connected workstation   | Technical story    | Developer uses display, keyboard, switch, and mini-computer in a city studio | invented ports, server-rack proof | `singlepage-generated-measured-space-photography-connected-workstation`   |
+| Example               | Use                        | Content brief                                                                                        | Avoid                   | Asset ID                                                                |
+| --------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------- | ----------------------------------------------------------------------- |
+| Business conversation | Collaboration              | Two partners exchange an idea at a worktable; gesture, motion and warm light carry the scene         | posed meeting stock     | `singlepage-generated-measured-space-photography-business-conversation` |
+| Moment of focus       | Human attention            | An intimate portrait of a business owner considering an idea, through soft foreground reflections    | generic office portrait | `singlepage-generated-measured-space-photography-moment-of-focus`       |
+| Work in motion        | Everyday business progress | A business owner passes a prepared order across a worktable; close low viewpoint and bright daylight | staged success claim    | `singlepage-generated-measured-space-photography-work-in-motion`        |
 
 ### Review and quality gate
 
-Three masters passed source, 1024px, 96px, centered 55% crop, device/anatomy, cross-set, provenance, and lifecycle QA. Publication remains pending.
+Compare the images directly with their source references for light, color, movement and closeness to people. Review them together at their intended display size: the treatment should connect them while scenes and framing vary. Display each original aspect ratio without cropping; prepare any derivative crop for its actual placement.
 
 ## Illustration and diagrams
 
 ### Purpose and evidence boundary
 
-Illustration explains a relationship, inheritance, or bounded coordination. It never represents implemented architecture, module completeness, autonomous authority, or product proof.
+Illustration explains reusable functions, a focused product change or human-directed agent work for makers. These conceptual relationships do not represent chat knowledge retrieval, implemented architecture, complete functionality or autonomous authority.
 
 ### Style master prompt
 
-> OUTPUT: one opaque `1024 × 1024px` sRGB PNG on Paper `#F7F6F2`. LINE: Ink `#111111` primary and Muted `#565656` secondary, `3–5px`, with dotted construction guides. ACCENT: exactly one `#BFEF61` locator smaller than `4%` of canvas. FORM: sparse isometric technical linework, two–five recognizable minimal objects, no more than four identifying details per object, limited depth, almost no fill. COMPOSITION: every object and connector inside the centered `55% × 55%`; outer area empty. EXCLUDE: text, numbers, logos, UI chrome, shadows, gradients, texture, glow, photorealism, copied composition, and the SinglePageStartup mark. The content brief states meaning and required object counts, never paths, primitives, coordinates, or layout.
+> Create airy isometric line art on warm off-white, using fine black contours, light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Borrow line treatment and spatial lightness from the references; derive the objects from the content brief.
 
 ### Production specification
 
-Add one relationship, required objects/counts, and the false implication to avoid. Retain a `1:1` master; verify source, 1024px, 96px, and crops. Describe the relationship in alt text.
+Copy the style prompt and describe the idea or relationship to explain. Name helpful objects, attach the original illustration references and specify the intended use. Take drawing style from the references; choose objects from your brief.
 
 ### Generation examples
 
-| Example               | Use                    | Content brief                                                       | Avoid                | Asset ID                                                                 |
-| --------------------- | ---------------------- | ------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------------------ |
-| Module hierarchy      | Architecture explainer | Reusable modules around one developer-controlled foundation         | completeness claim   | `singlepage-generated-measured-space-illustration-module-hierarchy`      |
-| Framework inheritance | Documentation          | Base inherited by one project with one focused override             | verified merge claim | `singlepage-generated-measured-space-illustration-framework-inheritance` |
-| Coordinated agents    | AI workflow explainer  | One human controls exactly three assistants around one bounded task | autonomous authority | `singlepage-generated-measured-space-illustration-coordinated-agents`    |
+| Example               | Use                     | Content brief                                                                                                                                                                              | Avoid                | Asset ID                                                                 |
+| --------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- | ------------------------------------------------------------------------ |
+| Module hierarchy      | Reusable foundation     | Show reusable software modules joined to a common code foundation, using simple component blocks. Make the shared base and the modules’ relationship clear.                                | completeness claim   | `singlepage-generated-measured-space-illustration-module-hierarchy`      |
+| Framework inheritance | Product adaptation      | Show a software framework reused by a new product, with a visibly changed module and a preserved common foundation. Use simple software blocks and connections.                            | verified merge claim | `singlepage-generated-measured-space-illustration-framework-inheritance` |
+| Coordinated agents    | Maker task coordination | Show a person directing AI coding assistants toward a shared software task. Represent assistants as software panels and tool symbols, with the person clearly guiding their contributions. | autonomous authority | `singlepage-generated-measured-space-illustration-coordinated-agents`    |
 
 ### Review and quality gate
 
-Three masters passed source, 1024px, 96px, crop, object-count, line, Accent, evidence, provenance, and lifecycle review; operator approval remains pending.
+Compare linework, secondary detail, color and contrast with the source references at source and display size. Keep the warm off-white background and unchanged original PNG masters. Reject processing that loses lines or detail. Preserve the original aspect ratio.
 
 ## Outputs and provenance
 
-Outputs are the registered primary lockup, avatar, favicon, updated OG graphic, three Photography masters, and three Illustration masters under proposal `measured-space`. Exact prompts, hashes, rights, allowed use, and lifecycle remain in Assets. Product, presentations, and campaign formats remain outside Design.
+Reusable outputs are the registered primary lockup, avatar, favicon and the six masters named above. Exact prompts, hashes, rights and lifecycle remain in Assets. The font pairing and favicon retain their existing approvals; the lockup, avatar and media remain proposed.

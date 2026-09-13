@@ -40,7 +40,11 @@ files are layer-local and are not inherited. The latter stores
 only the durable pre-development cursor defined by
 `.agents/workflows/pre-development.md`.
 
-The indexes are registries, not content stores.
+The indexes are registries, not content stores. Brief is the root client input
+and has no semantic `uses` dependencies on later decisions, including Assets.
+Its raw client attachments and exact reference asset IDs are provenance, not
+approval edges. Inspect them when the intake requires it; do not reconstruct
+Brief facts from Product, model, Research, Strategy, Brand or Design decisions.
 
 The workspace root contains document folders (`brief`, `strategy`,
 `brand`, `design`), `assets`, `products`, `styles`, its README, and `utils`.

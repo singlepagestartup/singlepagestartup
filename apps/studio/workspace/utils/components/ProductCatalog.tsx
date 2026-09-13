@@ -4,7 +4,7 @@ import { productStoryId } from "../products/catalog";
 import type { IProductCatalogView, IProductView } from "../products/source";
 import { MarkdownDocument } from "./ArtifactBrowser";
 import { ConfirmationBadge, documentPurpose } from "./DocumentStatus";
-import { PresentationPdfDownload } from "./PresentationPdfDownload";
+import { PresentationWorkspace } from "./PresentationWorkspace";
 import { ProductPages } from "./ProductPages";
 
 type ProductSection = string;
@@ -155,11 +155,31 @@ export function ProductCatalog({
   const Website = product.websiteComponent?.Component;
 
   const resolveDocumentLink = (href: string) => {
-    if (
-      typeof window === "undefined" ||
-      !href.startsWith("/workspace-products/")
-    )
-      return href;
+    if (typeof window === "undefined") return href;
+    const shared = href.match(
+      /^\/(brief|strategy|brand|design)\/(singlepage|startup)\.md(#.*)?$/,
+    );
+    if (shared) {
+      const stories = {
+        brief: "workspace-00-business-01-brief",
+        strategy: "workspace-10-strategy-01-strategy",
+        brand: "workspace-20-brand-01-brand",
+        design: "workspace-30-design",
+      };
+      const url = new URL(window.location.href);
+      url.pathname = url.pathname.replace(/iframe\.html$/, "");
+      url.search = "";
+      url.searchParams.set(
+        "path",
+        `/story/${stories[shared[1] as keyof typeof stories]}--${shared[2]}`,
+      );
+      url.hash = shared[3] ?? "";
+      return {
+        href: url.pathname + url.search + url.hash,
+        target: "_top" as const,
+      };
+    }
+    if (!href.startsWith("/workspace-products/")) return href;
     const target = new URL(href, window.location.href);
     const sourcePath = `apps/studio/workspace/products/${decodeURIComponent(target.pathname.slice("/workspace-products/".length))}`;
     // Prefer the current product when several products point at the same model.
@@ -310,6 +330,7 @@ export function ProductCatalog({
 
           <ProductPages
             key={`${product.id}.${selectedSection}`}
+            resolveLink={resolveDocumentLink}
             pages={
               product.sections.find(({ id }) => id === selectedSection)
                 ?.pages ?? []
@@ -344,25 +365,16 @@ export function ProductCatalog({
             ) : selectedSection === "presentation" &&
               Presentation &&
               product.presentation ? (
-              <div>
-                <div className="px-5 pt-6 md:px-8">
-                  <ConfirmationBadge
-                    confirmation={product.presentation.confirmation}
-                  />
-                </div>
-                <PresentationPdfDownload
-                  key={product.id}
-                  fileName={`${product.id}-presentation.pdf`}
-                  title={product.name}
-                >
-                  <div className="overflow-x-auto bg-black">
-                    <Presentation content={product.presentation.content} />
-                  </div>
-                </PresentationPdfDownload>
-                <div className="border-t border-slate-200 px-5 py-5 text-xs text-slate-500 md:px-8">
-                  Source: {product.presentation.dataSourcePath}
-                </div>
-              </div>
+              <PresentationWorkspace
+                key={product.id}
+                name={product.name}
+                fileName={`${product.id}-presentation`}
+                content={product.presentation.content}
+                confirmation={product.presentation.confirmation}
+                dataSourcePath={product.presentation.dataSourcePath}
+              >
+                <Presentation content={product.presentation.content} />
+              </PresentationWorkspace>
             ) : selectedSection === "content" && Content ? (
               <div className="overflow-x-auto bg-black">
                 <Content />

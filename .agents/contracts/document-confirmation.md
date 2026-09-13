@@ -22,7 +22,10 @@ Only an attributable user decision authorizes setting true. This metadata is
 not a digital signature or independent proof of the document's factual claims.
 Approval of scope, one font, one asset, or another partial decision does not
 confirm an entire document. Partial decisions remain explicitly scoped in their
-owning sections. Existing explicit whole-document Strategy/Brand confirmations
+owning source, including frontmatter when status prose would clutter the body.
+Brief may retain `intake.scope` with its confirmed subject/product IDs and
+attributable source; this is not whole-document `confirmation` and must be
+revisited when that scope changes. Existing explicit whole-document Strategy/Brand confirmations
 may be migrated without asking the operator to repeat unchanged decisions.
 
 Get the current fingerprint without changing approval:
@@ -87,6 +90,13 @@ Model and product review edges follow `product-models.md`. Model sources are
 registered once as `model.<id>` and shared changes propagate to their actual
 consumers. Research remains the evidence owner; tested-assumption links never
 create reciprocal approval dependencies. Added or removed inputs require review.
+A Research summary uses its registered Research detail pages, so changed evidence
+invalidates downstream decisions. Under `research-sales-audit.md`, Research also
+observes Sales as the hypothesis being tested: the raw body fingerprint is stored
+in `review.dependencies`, but Sales approval/staleness is not recursively inherited
+through that observation. A changed Sales body requests a fresh audit without a
+Research → Product → Sales approval cycle. Only regular `uses` edges propagate
+upstream stale states; both edge kinds detect changed/missing inspected content.
 
 Before consuming an artifact, inspect its resolved status with the workspace
 loader or review helper. After editing an owning upstream document:

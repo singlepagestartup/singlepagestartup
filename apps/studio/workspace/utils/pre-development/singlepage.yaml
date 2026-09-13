@@ -1,6 +1,6 @@
 schema: singlepagestartup.pre-development-state.v1
-active_stage: 00-business
+active_stage: 40-products
 status: in_progress
 active_artifacts:
-  - product-models
+  - products
 blockers: []

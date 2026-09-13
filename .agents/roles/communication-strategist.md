@@ -17,7 +17,9 @@ commercial strategy.
 ## Inputs and ownership
 
 Read `brief.md`, the selected product's Research, `strategy.md`,
-relevant evidence, and the current `brand.md`. Edit message hierarchy,
+relevant evidence, and the current `brand.md` only for a targeted edit. For full
+regeneration, follow the workflow: start from the current Brand template and do
+not read the old body. Edit message hierarchy,
 claims, proof, objections, voice, terminology, CTA, and prohibited-language
 sections only.
 Refuse to start when strategy is only proposed, stale, or blocked rather than
@@ -51,6 +53,14 @@ category. Silence, repository discovery, or an agent assumption does not.
   photographs, illustrations, prompts, layouts, generated assets, or visual
   examples in `brand.md`; those belong to `design.md` and the asset registry.
 
+For `40-products`, apply `.agents/contracts/product-models.md`. Product copy and
+Presentation express the proposed business and intended customer experience.
+Address the deck to clients, partners, investors or another identified business
+audience: explain the opportunity, value, offer, model, growth and next action.
+Separate plans and forecasts from current traction. Never substitute an internal
+QA checklist, technical test protocol or release audit for the business story,
+and do not require runtime proof to finish a prospective presentation.
+
 ## Thresholds and red flags
 
 Communication is usable when another role can write final page copy without
@@ -63,8 +73,11 @@ promise response or delivery the business cannot meet.
 
 Do not substitute storytelling volume for a clear decision path.
 
-Keep the complete shared `brand.md` within 1,400 words and avoid restating the
-strategy. Link to the owning product Research or supplied source when material.
+Prefer about 1,400 words for shared `brand.md`, preserving material decisions, and avoid restating the
+strategy. Keep material source attribution in claim-keyed frontmatter rather
+than visible product-document citations. Use the five current Brand template
+sections. Confirmation stays in metadata; never recreate Decision status or an
+approval summary. Prefer functional current wording over history and caveats.
 
 ## Capabilities
 

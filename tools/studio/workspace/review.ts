@@ -24,6 +24,8 @@ export interface IReviewDocument {
   layer: DocumentLayer;
   format: "markdown" | "yaml";
   uses: string[];
+  /** Hypotheses inspected as source text, without inheriting their approval state. */
+  observes?: string[];
 }
 
 export interface IDocumentReview {
@@ -39,14 +41,20 @@ export function productReviewPages(
   const result: Array<{ id: string; source: string; owner: string }> = [];
   for (const section of (product.sections ?? []) as Array<{
     id: string;
-    pages: Array<{ id: string; source?: string; children?: unknown[] }>;
+    pages: Array<{
+      id: string;
+      source?: string;
+      representations?: { text: string; preview?: string };
+      children?: unknown[];
+    }>;
   }>) {
     const visit = (pages: typeof section.pages) => {
       for (const page of pages) {
-        if (page.source?.endsWith(".md"))
+        const source = page.representations?.text ?? page.source;
+        if (source?.endsWith(".md"))
           result.push({
             id: `product.${product.id}.page.${section.id}.${page.id}`,
-            source: page.source,
+            source,
             owner: section.id,
           });
         if (page.children) visit(page.children as typeof section.pages);
@@ -90,7 +98,9 @@ export function resolveDocumentReviews(
       | undefined;
     const dependencies: Record<string, string> = {};
     const affected = new Set<string>();
-    for (const dependencyId of [...new Set(document.uses)].sort()) {
+    for (const dependencyId of [
+      ...new Set([...document.uses, ...(document.observes ?? [])]),
+    ].sort()) {
       const dependency = byId.get(dependencyId);
       if (!dependency) {
         affected.add(dependencyId);
@@ -100,7 +110,10 @@ export function resolveDocumentReviews(
         dependency.source,
         dependency.format,
       );
-      if (resolve(dependencyId).confirmation.state === "stale")
+      if (
+        document.uses.includes(dependencyId) &&
+        resolve(dependencyId).confirmation.state === "stale"
+      )
         affected.add(dependencyId);
       if (
         (review?.dependencies || confirmation.confirmed) &&
@@ -263,7 +276,7 @@ export function workspaceReviewDocuments({
     sales: ["$product"],
     product: ["brief", "$research"],
     website: ["$product", "$sales", "strategy", "brand", "design"],
-    creative: ["$product", "$website", "brand", "design"],
+    creative: ["$product", "$sales", "$website", "brand", "design"],
     presentation: [
       "$product",
       "$research",
@@ -287,6 +300,10 @@ export function workspaceReviewDocuments({
         source: sources[sourcePath],
         layer: catalogLayer,
         format: sourcePath.endsWith(".yaml") ? "yaml" : "markdown",
+        ...(kind === "research" &&
+        parseDocument(sources[sourcePath]).metadata.sales_audit === true
+          ? { observes: [`product.${product.id}.sales`] }
+          : {}),
         uses: [
           ...inputRules[kind as keyof typeof inputRules],
           ...(product.model && kind !== "presentation-renderer"
@@ -307,12 +324,19 @@ export function workspaceReviewDocuments({
         documents.find(({ id }) => id === "strategy")?.uses.push(id);
     }
     for (const page of productReviewPages(product)) {
+      if (page.owner === "research" && page.source === product.research)
+        continue;
       const sourcePath = `products/${catalogLayer}/${page.source}`;
       if (!Object.hasOwn(sources, sourcePath))
         throw new Error(`Missing review source: ${sourcePath}`);
       const owner = Object.hasOwn(productFields, page.owner)
         ? page.owner
         : "product";
+      const isResearch = owner === "research";
+      if (isResearch)
+        documents
+          .find(({ id }) => id === `product.${product.id}.research`)
+          ?.uses.push(page.id);
       documents.push({
         id: page.id,
         path: sourcePath,
@@ -320,9 +344,15 @@ export function workspaceReviewDocuments({
         layer: catalogLayer,
         format: "markdown",
         uses: [
-          `product.${product.id}.${owner}`,
+          ...(isResearch
+            ? ["brief"].filter((id) => documents.some((doc) => doc.id === id))
+            : [`product.${product.id}.${owner}`]),
           ...(product.model ? [`model.${product.model}`] : []),
         ],
+        ...(isResearch &&
+        parseDocument(sources[sourcePath]).metadata.sales_segment
+          ? { observes: [`product.${product.id}.sales`] }
+          : {}),
       });
     }
   }

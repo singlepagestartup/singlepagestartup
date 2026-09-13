@@ -7,15 +7,19 @@ import { PresentationPdfDownload } from "./PresentationPdfDownload";
 export function WorkspacePage({
   page,
   hideTitle = false,
+  hideConfirmation = false,
+  resolveLink,
 }: {
   page: IWorkspacePageView;
   hideTitle?: boolean;
+  hideConfirmation?: boolean;
+  resolveLink?: (url: string) => string | { href: string; target: "_top" };
 }) {
   const Component = page.Component;
   if (Component) {
     const content = (
       <div className="overflow-x-auto">
-        <Component />
+        <Component text={page.text} />
       </div>
     );
     return page.export === "pdf" ? (
@@ -29,13 +33,19 @@ export function WorkspacePage({
   if (page.kind === "markdown")
     return (
       <article className="space-y-5 p-6 md:p-10">
-        <ConfirmationBadge
-          confirmation={
-            page.confirmation ??
-            documentConfirmation(page.markdown ?? "", page.layer)
-          }
-        />
-        <MarkdownDocument baseUrl={page.url} hideTitle={hideTitle}>
+        {!hideConfirmation && (
+          <ConfirmationBadge
+            confirmation={
+              page.confirmation ??
+              documentConfirmation(page.markdown ?? "", page.layer)
+            }
+          />
+        )}
+        <MarkdownDocument
+          baseUrl={page.url}
+          hideTitle={hideTitle}
+          resolveLink={resolveLink}
+        >
           {page.markdown ?? ""}
         </MarkdownDocument>
       </article>

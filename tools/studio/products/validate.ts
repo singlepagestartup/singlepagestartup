@@ -1,11 +1,16 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { validateResearchFindingIds } from "./research-ids";
+import type { IResearchFindingDocument } from "./research-ids";
 import type {
   IProductCatalog,
   IProductPage,
 } from "../../../apps/studio/workspace/utils/products/catalog";
 import { parseDocument } from "../workspace/document";
-import { parseSalesProcess } from "../../../apps/studio/workspace/utils/products/sales";
+import {
+  parseSalesProcess,
+  validateSalesSegments,
+} from "../../../apps/studio/workspace/utils/products/sales";
 import { parseProductPresentation } from "../../../apps/studio/workspace/utils/products/presentation-data";
 
 export const productHeadings = [
@@ -14,7 +19,7 @@ export const productHeadings = [
   "Problem and desired progress",
   "Value Propositions",
   "Offer and usage",
-  "Evidence and decision rules",
+  "Business goals and metrics",
 ];
 export const modelHeadings = [
   "Model scope",
@@ -47,15 +52,10 @@ export async function validateProductCatalogFiles(
       throw new Error(
         `${source} must use canonical sections: ${headings.join(", ")}; preserve project extensions in catalog pages`,
       );
-    const words = body
-      .replace(/<!--[^]*?-->/g, "")
-      .split(/\s+/)
-      .filter(Boolean).length;
-    if (words > 1400)
-      throw new Error(`${source} exceeds 1,400 words (${words})`);
   }
   for (const model of catalog.models)
     await primary(model.source, modelHeadings);
+  const researchDocuments: IResearchFindingDocument[] = [];
   for (const product of catalog.products) {
     for (const field of [
       "research",
@@ -79,9 +79,45 @@ export async function validateProductCatalogFiles(
     }
     if (catalog.schema.endsWith(".v2"))
       await primary(product.product, productHeadings);
-    parseSalesProcess(
+    const productResearch: IResearchFindingDocument[] = [
+      {
+        layer: catalog.layer,
+        productId: product.id,
+        sourcePath: product.research,
+        source: await readFile(await requireFile(product.research), "utf8"),
+      },
+    ];
+    async function collectResearch(page: IProductPage): Promise<void> {
+      const source = page.representations?.text ?? page.source;
+      if (
+        source?.endsWith(".md") &&
+        !productResearch.some((doc) => doc.sourcePath === source)
+      )
+        productResearch.push({
+          layer: catalog.layer,
+          productId: product.id,
+          sourcePath: source,
+          source: await readFile(await requireFile(source), "utf8"),
+        });
+      for (const child of page.children) await collectResearch(child);
+    }
+    for (const section of product.sections.filter(
+      (section) => section.id === "research",
+    ))
+      for (const page of section.pages) await collectResearch(page);
+    researchDocuments.push(...productResearch);
+    const sales = parseSalesProcess(
       await readFile(await requireFile(product.sales), "utf8"),
       product.id,
+    );
+    validateSalesSegments(
+      sales,
+      parseDocument(await readFile(await requireFile(product.product), "utf8"))
+        .metadata.customer_segments,
+    );
+    validateResearchSalesCoverage(
+      productResearch,
+      sales.segments.map((segment) => segment.id),
     );
     if (product.presentation_data)
       parseProductPresentation(
@@ -89,6 +125,57 @@ export async function validateProductCatalogFiles(
         product.id,
       );
   }
+  validateResearchFindingIds(researchDocuments);
+}
+
+export const salesResearchDimensions = [
+  "needs",
+  "motivations",
+  "purchase_trigger",
+  "decision_criteria",
+  "objections",
+  "acquisition",
+  "journey",
+] as const;
+
+/** Audited Research covers every Sales segment; large catalogs have no count or word cap. */
+export function validateResearchSalesCoverage(
+  documents: IResearchFindingDocument[],
+  segmentIds: string[],
+) {
+  if (parseDocument(documents[0].source).metadata.sales_audit !== true) return;
+  if (!segmentIds.length)
+    throw new Error(
+      `${documents[0].sourcePath}: Sales audit requires segment profiles`,
+    );
+  const covered = new Set<string>();
+  for (const document of documents) {
+    const metadata = parseDocument(document.source).metadata;
+    if (metadata.sales_segment === undefined) continue;
+    const segment = metadata.sales_segment;
+    if (typeof segment !== "string" || !segmentIds.includes(segment))
+      throw new Error(
+        `${document.sourcePath}: Unknown Sales segment ${String(segment)}`,
+      );
+    if (covered.has(segment))
+      throw new Error(`Duplicate Research audit for Sales segment ${segment}`);
+    covered.add(segment);
+    const dimensions = metadata.sales_dimensions;
+    if (
+      !Array.isArray(dimensions) ||
+      salesResearchDimensions.some(
+        (dimension) => !dimensions.includes(dimension),
+      )
+    )
+      throw new Error(
+        `${document.sourcePath}: Research must inspect all Sales dimensions: ${salesResearchDimensions.join(", ")}`,
+      );
+  }
+  const missing = segmentIds.filter((segment) => !covered.has(segment));
+  if (missing.length)
+    throw new Error(
+      `Research is missing Sales segments: ${missing.join(", ")}`,
+    );
 }
 
 export async function validateProductSectionFiles(
@@ -96,13 +183,15 @@ export async function validateProductSectionFiles(
   layerRoot: string,
 ) {
   async function visit(page: IProductPage): Promise<void> {
-    if (page.source) {
-      const file = path.resolve(layerRoot, page.source);
+    for (const source of [
+      page.source,
+      page.representations?.text,
+      page.representations?.preview,
+    ].filter((value): value is string => Boolean(value))) {
+      const file = path.resolve(layerRoot, source);
       const info = await stat(file).catch(() => undefined);
       if (!info?.isFile())
-        throw new Error(
-          `Missing product page: ${catalog.layer}/${page.source}`,
-        );
+        throw new Error(`Missing product page: ${catalog.layer}/${source}`);
     }
     await Promise.all(page.children.map(visit));
   }

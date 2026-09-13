@@ -5,31 +5,55 @@ confirmation:
 
 # Website
 
-<!-- Final reviewable specification. Maximum 1,400 words. -->
+<!-- A prospective website specification within the product's business plan.
+Prefer about 1,400 words per page; preserve material information if longer. Describe the visitor experience engineering should build;
+production implementation and runtime tests do not gate this document. -->
 
 ## Objective and visitor paths
 
-- Primary situations, information needs, proof, objections, actions, sitemap
+- Audience, visitor situations, information needs, value and intended conversion
+- Site tree with page names, routes, purpose and next customer action
 
 ## Final page specification
 
-- Headline, subheadline, offer, inclusions, price principle, proof, process, FAQ
-- CTA, form labels, consent, errors, success message, post-conversion action
+- Author each site's page text in its own product-owned Markdown file: headings,
+  offer, inclusions, price principle, process, FAQ, CTA and relevant form/state copy
+- Register one page-tree node per route with `representations.text` and an optional
+  `representations.preview` (React or HTML). Do not create separate sibling entries
+  for the same page's text and layout. Groups use `children`; routes use `route`.
+- Work on text first. Studio opens Text and provides Layout for the same page;
+  text-only nodes remain usable before a layout exists.
+- Keep a page's copy in one source. React previews receive its Markdown through
+  the optional `text` prop and derive visible copy from it. Changes to copy then
+  appear in both representations. A layout edit that changes wording must edit
+  that same Markdown in the same change. A separately authored HTML preview must
+  be updated together with its text; there is no automatic HTML rewrite.
+- Keep this overview about the journey and page responsibilities; final page copy
+  belongs to the page text, not a second duplicated block in the overview.
 
 ## Design constraints
 
-- Desktop/mobile hierarchy, interaction states, accessibility, and indexed
-  assets, applying the approved Design system without redefining its colors,
-  typography, logos, photography language, or illustration language
-- Website-only UI and journey decisions: navigation, page sections, responsive
-  layouts, buttons, forms, validation, empty/pending/error/success states, and
-  the post-conversion path
-- Do not add campaign formats, channel variants, advertising compositions, or
-  a second visual identity
+- Apply approved Design, assets, typography and visual language
+- Specify responsive hierarchy, navigation, interactions, accessible labels and
+  the intended post-conversion experience, including relevant empty/pending/
+  success/unavailable states. These describe product behavior, not a QA plan.
+- Keep the document header and Text/Layout controls in Studio's review shell;
+  the layout itself contains only the customer-facing page.
+- Campaign formats belong to Marketing Creative; do not create another identity.
 
 ## Metadata and review
 
-- Title, description, Open Graph copy, evidence links, Studio story references
-- Address material Website constraints, including buyer roles, qualification,
-  required disclosures, domain proof, data collection, and post-conversion
-  operations
+- Title, description, Open Graph copy, material sources and Studio destinations
+- Review text/layout consistency, links, responsive and accessible presentation
+  as properties of these materials; do not require a deployed product.
+- Markdown pages own confirmation metadata. Rendering a layout never approves
+  its wording or an upstream document. Preserve project ownership and the atomic
+  startup catalog; no implicit copy, source or approval fallback from the framework.
+
+See `apps/studio/workspace/README.md` for the catalog and component contracts.
+
+<!-- For multilingual projects, specify the source language and supported
+locales inside Metadata and review. Use the existing internationalization
+configuration and localized vocabulary fields. Translate all page copy,
+actions, navigation, status messages, accessibility labels and metadata as one
+version. Text/Layout/export must use the same locale and canonical wording. -->

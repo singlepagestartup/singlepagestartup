@@ -2,67 +2,190 @@
 confirmation:
   confirmed: true
   by: operator
-  at: 2026-08-10
-  source: Operator review on 2026-08-10 approved the developer audience, free framework evaluation offer, showcase-to-GitHub acquisition route, bounded experiment, thresholds, and exclusions. It did not verify demand, readiness, or outcomes.
-  content_sha256: f40d55a6c706beca2fef975dc69910119c09da34d3d463f8d77c6b6aebcd75c6
+  at: 2026-09-13
+  source: "Operator explicitly confirmed the current Strategy in chat: «теперь статус поставь, что подтверждена стратегия и идем дальше»."
+  content_sha256: 2622dc1d9ee86e33532abfba58728e3b1999c2ac9759162cd5d9f3ec07887cc0
 review:
-  stale:
-    reason: Business ownership migrated to Product, Sales and Operations & Economics; review the actual new inputs.
-    sources: [model.framework-service]
   dependencies:
-    product.singlepagestartup.research: dd546bfedfa03de69aa068dd46b945b8f7e665eb0b907d1324851aa69a725c92
-    product.singlepagestartup.sales: 55772cf4836b99bff5a50065b7b71f4f394d125c80f88675a754ed074dd8c446
+    brief: bf0f72b61cb12fc4a6fea78bd136dddb34e57921a7d8dbb528c25f85f30e68e1
+    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
+    product.ai-chat.research: 4a33b01f4414eff99200a5c8a73981a17b8e48873f296848faaec8bd02b363f2
+    product.ai-chat.sales: cb92e6d326152867bfe7aa6a3ff103fa32db30a176cb92cb88f1430a50239afb
+    product.singlepagestartup.research: 8445093c77d7cc877f76752e5ee3d0f616facdc6fa81e6bb1844d2d42ef3644f
+    product.singlepagestartup.sales: 5f4d91f14898077c62d3576a0dd298c4393d3aa788e05df4d42bf6d85b0cbf13
+sources:
+  strategic_direction_and_products:
+    classification: client-claim
+    source: apps/studio/workspace/brief/singlepage.md
+    source_keys:
+      - intake.scope
+      - intake.audience_value_and_flow
+      - sources.audience_value_and_flow
+      - sources.funding
+      - sources.current_business
+    date: 2026-09-13
+    supports: Business-data AI Chat as hosted entry and token revenue; free framework; novice makers, agent editing and human UI review; optional GitHub branch and next-product reuse; recognition and contribution goals.
+    limitation: Scoped facts authorize this revision; changed whole-Brief confirmation is unrenewed. Intended journey does not establish public service readiness, customer results, automatic deployment or paid adoption.
+  reusable_foundation:
+    classification: client-claim
+    source: apps/studio/workspace/brief/singlepage.md
+    source_keys:
+      - sources.current_business
+    date: 2026-09-12
+    supports: Registration, carts and payments configured and tested together; reuse benefit.
+    limitation: Client-reported team testing is not quantified time/token savings or external novice-completion evidence.
+  positioning_and_quality:
+    classification: verified-fact
+    research: apps/studio/workspace/products/singlepage/ai-chat/research.md
+    finding_ids:
+      - AC-SPS-01
+      - AC-SPS-02
+      - AC-SPS-05
+      - AC-SPS-06
+    accessed: 2026-09-13
+    urls:
+      - https://learn.chatgpt.com/docs/projects
+      - https://www.chatbase.co/docs/user-guides/chatbot/data-sources
+    supports: Competing tools already accept files/context; grounded usefulness must establish preference.
+    limitation: Vendor documentation verifies features, not preference, relative answer quality or willingness to pay.
+  demonstration_and_short_content:
+    classification: assumption
+    resolution: professional-choice
+    research:
+      - apps/studio/workspace/products/singlepage/ai-chat/research.md
+      - apps/studio/workspace/products/singlepage/singlepagestartup/research.md
+    finding_ids:
+      - AC-SPS-04
+      - AC-SPS-07
+      - CF-SPS-04
+      - CF-SPS-08
+    accessed: 2026-09-13
+    urls:
+      - https://support.google.com/youtube/answer/13748639?hl=en
+      - https://support.google.com/youtube/answer/12836917?hl=en
+    supports: Demonstrations lead to hosted chat; eligible own public videos can supply Shorts linked to the full video; clickable external descriptions require advanced features.
+    limitation: Platform mechanics are verified; channel fit is inferred. No operating account, existing reach, publication quota or performance is asserted.
+  searchable_explanations:
+    classification: assumption
+    resolution: professional-choice
+    research:
+      - apps/studio/workspace/products/singlepage/ai-chat/research.md
+      - apps/studio/workspace/products/singlepage/singlepagestartup/research.md
+    finding_ids:
+      - AC-SPS-08
+      - CF-SPS-09
+    accessed: 2026-09-13
+    urls:
+      - https://developers.google.com/search/docs/essentials
+    supports: Helpful use-case pages and maker task guidance connect search intent to demonstrations, hosted chat and repository onboarding.
+    limitation: Official content/link guidance supports mechanics; demand, existing traffic, indexing and ranking are unestablished.
+  community_participation:
+    classification: assumption
+    resolution: professional-choice
+    research:
+      - apps/studio/workspace/products/singlepage/ai-chat/research.md
+      - apps/studio/workspace/products/singlepage/singlepagestartup/research.md
+    finding_ids:
+      - AC-SPS-09
+      - CF-SPS-10
+    accessed: 2026-09-13
+    urls:
+      - https://support.reddithelp.com/hc/en-us/articles/360043504051-Spam
+    supports: Contextual helpful participation and permitted relevant links; real questions can improve explanations.
+    limitation: Reddit is a bounded policy example, not universal community rules, confirmed audience concentration or access.
+  growth_and_retention:
+    classification: assumption
+    resolution: professional-choice
+    research:
+      - apps/studio/workspace/products/singlepage/ai-chat/research.md
+      - apps/studio/workspace/products/singlepage/singlepagestartup/research.md
+    finding_ids:
+      - AC-SPS-03
+      - AC-SPS-06
+      - AC-SPS-10
+      - CF-SPS-02
+      - CF-SPS-05
+      - CF-SPS-07
+      - CF-SPS-11
+      - CF-SPS-12
+    accessed: 2026-09-13
+    urls:
+      - https://code.claude.com/docs/en/overview
+    supports: Coordinated discovery and use; new questions and knowledge updates support repeat paid use; optional agent-assisted setup, adaptation, reuse and contributions strengthen future explanations.
+    limitation: Proposed mechanism, not observed retention or self-sustaining growth. Agent capabilities establish neither automatic setup nor independent agent selection of SPS. Use only publishable materials for examples.
+  resources_and_measurement:
+    classification: assumption
+    resolution: professional-choice
+    source: apps/studio/workspace/brief/singlepage.md
+    crosscheck: apps/studio/workspace/products/singlepage/models/framework-service/model.md
+    source_keys:
+      - sources.funding
+      - sources.current_business
+      - sources.ai_chat_commercial_terms
+    date: 2026-09-13
+    supports: Prioritize usefulness and reuse of organic material, then expand effort based on activation, paid retention and adoption; separate attention, use, revenue and contributions.
+    limitation: Ongoing capacity/budget, token terms and operating costs remain unselected. No scoped experiment ceiling becomes a recurring commitment.
+  release_license:
+    classification: client-claim
+    source: apps/studio/workspace/brief/singlepage.md
+    source_keys:
+      - sources.license
+    date: 2026-09-12
+    inspected_snapshot: https://github.com/singlepagestartup/singlepagestartup/blob/48fff95f2ffe5c6fcfb435ae50700df029608bbe/LICENSE
+    limitation: Operator selected MIT and reported publication; inspected local HEAD and origin/main contained proprietary terms. Match a release claim to its exact source; no claim here that inspected main is MIT.
 ---
 
 # Strategy
 
-## Decision status
+## Strategic direction
 
-| Field                   | Current value |
-| ----------------------- | ------------- |
-| Blocking operator facts | None          |
+Grow SinglePageStartup through repeat token revenue and lasting adoption of its free framework. The **audience-growth priority** is recognition through visible business results; the **sales-product priority** is AI Chat.
 
-## Commercial choice
+Position SinglePageStartup as a practical route from solving a business task with AI to building a product on tested common functions. The hosted service must stand on its own for consumers; building is an optional second outcome.
 
-Code Framework Research compares templates, generators, starters, and AI scaffolding. It supports the existence of alternatives, not superiority or demand; its recorded license/setup conflicts remain launch gates. See `products/singlepage/singlepagestartup/research.md` for dated sources and limitations.
+Earn preference through useful answers grounded in the user's materials and demonstrations of working products. Concentrate production effort on showing business outcomes and adaptation through coding agents.
 
-| Decision                 | Selected direction                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Audience-growth priority | None is active. The AI-agent showcase is a future acquisition activity and a prerequisite for the selected route. Repository awareness remains a secondary signal.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| Sales-product priority   | `singlepagestartup`: move accountable developers from an attributable product need to framework evaluation, successful use, and a retain or reject decision. The product is free, so Sales manages conversion and adoption rather than payment.                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Audience and situation   | Founder-developers and similarly accountable developers using AI assistance while choosing the architecture for a new multi-feature web product. The human developer owns product decisions, credentials, data, testing, deployment, and AI authorization. Established-product migration is deferred.                                                                                                                                                                                                                                                                                                                                                                                      |
-| Problem and trigger      | An imminent architecture decision exposes the cost and risk of assembling several recurring capability families before product-specific work can progress: ecommerce (product catalogs, stores, carts, and orders); billing and payments; identity and access; content and sites; CRM and data capture; analytics; messaging, notifications, and social; files; and AI, knowledge, and automation. The first case should need at least three documented families.                                                                                                                                                                                                                          |
-| Positioning              | Code Framework by SinglePageStartup is an inspectable, reusable foundation to evaluate when several recurring web-product capabilities should begin in one consistent codebase. It competes with prior codebases, starters, generators, composed services, and AI-generated scaffolding on coherent fit, not on unproven speed or superiority.                                                                                                                                                                                                                                                                                                                                             |
-| Offer                    | A free evaluation of one pinned Code Framework release for one named product: compare required foundations with the documented inventory, verify rights and prerequisites, run the setup check, and exercise one predeclared capability. Founder help is best effort through the demonstration service's messenger-linked CRM case within available capacity, without a response-time or implementation commitment.                                                                                                                                                                                                                                                                        |
-| Experiment product set   | `singlepagestartup` (Code Framework) remains the selected evaluation experiment. The client-confirmed catalog also contains `ai-chat` (AI Chat); this experiment does not remove its product or documents.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Proof available now      | Current proof is limited to a dated public GitHub repository and release snapshot, repository guidance for developers and AI assistance, and a generated inventory reporting 16 modules and 156 model/relation entities. Ecommerce contributes 7 models and 19 relations connecting catalog, store, cart-order, currency, payment-intent, file, and website-content data. Inventory and code presence do not prove complete integration, runtime readiness, or outcomes. There is no independently attributable external setup, capability use, repeat use, adoption, time saving, or value. The service foundation is a founder claim; the service is not assembled or externally usable. |
-| Acquisition focus        | After readiness, publish one founder-led YouTube walkthrough of evidenced demonstration-service behavior. The service visibly identifies SinglePageStartup and provides one tracked bridge to the pinned GitHub evaluation path. The two relevant personal contacts test comprehension before launch; GitHub is the destination, while other video platforms, Instagram, and a possible Telegram channel are deferred.                                                                                                                                                                                                                                                                     |
-| Commercial logic         | Pursue evaluation and retention of Code Framework under its [Product](../products/singlepage/singlepagestartup/product.md) and [model revenue/funding terms](../products/singlepage/models/framework-service/model.md#revenue-streams). Keep service outcomes separately attributable. AI Chat paid launch is outside this experiment.                                                                                                                                                                                                                                                                                                                                                     |
-| Non-goals and exclusions | An independent AI Chat commercial launch is outside this experiment; AI Chat remains a separate catalog product. Reject multi-channel launch, paid promotion, a two-contact quantitative cohort, stars as conversion, service activity as framework adoption, and migration as the first use case. Do not claim current MIT licensing, complete integration, broad compatibility, production readiness, proven time saving, established adoption, or open-ended support.                                                                                                                                                                                                                   |
+## Audiences and product roles
 
-## First experiment
+| Audience and situation                                                    | Value and promise                                                                                                                                           | Product role and desired behavior                                                                                                                                       |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| People with a current business question and relevant facts or documents   | Configure business knowledge and receive answers that use it. Each chat has a separately scoped vector knowledge base; retrieval supplies relevant context. | **AI Chat (`ai-chat`)**: primary hosted entry, token-based revenue and a live demonstration of the framework. Earn continued use through useful answers.                |
+| Novice makers, including vibe coders, who want to build their own product | Reuse team-tested registration, carts, payments and other common functions while concentrating on their product's logic.                                    | **Code Framework (`singlepagestartup`)**: free code and documentation for local deployment, adaptation and reuse. Adoption and community improvements are its outcomes. |
 
-| Field                  | Decision                                                                                                                                                                                                                                                                                                                                                                             |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Track                  | `sales`: validate the Code Framework conversion and adoption process; payment is not part of this free product.                                                                                                                                                                                                                                                                      |
-| Critical assumption    | The selected showcase-led route will move some target developers from credible service proof to intentional framework evaluation and successful use. Service engagement without that transition does not test the assumption.                                                                                                                                                        |
-| Direction and audience | `singlepagestartup`; use only the selected accountable-developer audience and bounded evaluation defined above. No secondary segment, migration case, or paid framework offer enters the test.                                                                                                                                                                                       |
-| Traffic source         | Use the selected YouTube-to-showcase-to-GitHub route with one tracked link chain. The two relevant personal contacts are preflight participants and are excluded from thresholds.                                                                                                                                                                                                    |
-| Expected behavior      | Record five distinct stages: demonstration-service usage; repository attention such as views or stars; evaluation intent shown by license or documentation review plus retrieval or setup attempt; successful use shown by passing setup and one capability check; adoption shown only by repeat use or an attributable decision to retain Code Framework as the product foundation. |
-| Primary conversion     | Qualified evaluation start: an attributable target developer with a named or confidentiality-safe product need reviews the pinned version's license, prerequisites, evidence, and limits, retrieves it, and begins setup.                                                                                                                                                            |
-| Minimum useful signal  | Five target developers reach the Code Framework explanation from the showcase, and at least three record an evaluation-start, reject, or defer decision with a reason.                                                                                                                                                                                                               |
-| Budget and time limit  | Begin only after service, measurement, support-route, framework-bridge, license-publication and clean-setup readiness. Apply the shared [resource and cost limits](../products/singlepage/models/framework-service/model.md#cost-structure) once across this experiment; they do not extend with unused subsidy.                                                                     |
-| Positive decision      | Continue this direction if the minimum signal is reached, at least two qualified evaluations start, and at least one independent developer passes setup and the declared capability check. The next test should examine repeat use; this result alone is not general adoption.                                                                                                       |
-| Negative decision      | If the minimum signal is reached but fewer than two evaluations start, change the audience-message-bridge combination. If two setup attempts fail on the same controllable readiness blocker, repair the product path before further acquisition.                                                                                                                                    |
-| Inconclusive result    | Fewer than five exposures, fewer than three recorded decisions, missing attribution, or material showcase unavailability is inconclusive. Do not add channels or reinterpret attention to manufacture a decision.                                                                                                                                                                    |
-| Stop rule              | Stop at any approved time or cost cap; an unpassed readiness gate; conflicting license or prerequisite information; an unenforceable provider-cost control; a rights, privacy, security, secret, or AI-authority issue; mixed service and framework measurement; support becoming product implementation; or the same controllable blocker affecting two independent participants.   |
+Agents independently selecting SPS are a longer-term audience; clear documentation and reliable functions support that goal.
 
-## Risks and missing evidence
+## Growth system
 
-| Risk or missing evidence      | Current boundary                                                                                                                                                                              | Decision consequence                                                                                                                                                   |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Showcase readiness            | The selected service lacks assembled, packaged, externally usable, instrumented behavior and verified attribution.                                                                            | Delay the experiment; if readiness cannot be achieved within a separately approved engineering scope, replace the showcase route with a direct GitHub evaluation test. |
-| License and setup readiness   | MIT publication, notice retention, dependency compatibility, effective-version evidence, and one authoritative prerequisite contract remain incomplete; README and package metadata conflict. | Withhold the walkthrough-to-evaluation launch and all current-MIT or easy-setup language until both gates pass.                                                        |
-| Audience and channel fit      | No external demand, YouTube reach, content baseline, or channel conversion is evidenced.                                                                                                      | Treat positioning and channel as testable choices; insufficient qualified exposure is inconclusive rather than evidence against the product.                           |
-| Measurement integrity         | The tracked service-to-framework bridge and event instruments do not yet exist.                                                                                                               | Do not interpret the experiment unless service usage, attention, evaluation, successful use, and adoption remain attributable and distinct.                            |
-| Operating safety and capacity | Provider-day rules, eligibility, concurrency, privacy, AI permissions, incident ownership, and ongoing support capacity are unresolved.                                                       | Pause affected access or promotion whenever cost, authority, data protection, recovery, or founder capacity cannot be bounded.                                         |
+Lead the proposed organic system with working demonstrations. Short content and searchable explanations extend each example; community answers connect it to relevant questions.
+
+| Channel or mechanism                             | Role and audience                                                     | Content or value                                                                                                        | Destination and contribution                                                                           |
+| ------------------------------------------------ | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| YouTube demonstrations and tutorials             | Explain the value to business users; show makers what they can build. | A real business question, supporting facts and resulting answer; complementary tutorials show a working product change. | **Try AI Chat** is the main CTA; lead viewers into the hosted experience.                              |
+| Repurposed short videos                          | Introduce one understandable result to new viewers.                   | Extract a useful moment from the full demonstration.                                                                    | Link the Short to its full video, where viewers can understand the example and continue into the chat. |
+| Searchable use-case pages and task documentation | Help people actively looking for an answer or building guidance.      | Explain the business task or maker's goal, required context, outcome and limitations.                                   | Connect to the matching demonstration and chat; maker guidance also leads to repository onboarding.    |
+| Contextual community participation               | Meet relevant business and maker questions.                           | Give useful answers; include an example when relevant and permitted by the community.                                   | Lead to the matching explanation and discover questions needing better guidance.                       |
+
+Reuse one demonstrated task across these channels. Useful experiences create return visits, recommendations and maker interest; their questions, adaptations and voluntary improvements supply better examples and documentation. This cycle strengthens the next discovery and use experience.
+
+## Customer journey
+
+1. **Discover and understand.** A demonstration, search result or relevant answer leads to a use case and the hosted chat.
+2. **Get a useful result.** Supply business materials and ask a real question. Judge whether the answer is supported and useful.
+3. **Continue as a consumer.** Return with further questions or updated knowledge; buy tokens when continued use is valuable. Clear balance and purchase terms support confidence.
+4. **Choose to build.** After a positive experience, interested makers use **Развернуть проект на своей машине** to reach GitHub. This branch does not require a token purchase.
+5. **Adapt and retain.** Ask Claude Code or Codex Desktop to deploy locally and make changes through conversation. The agent edits the code; the person reviews the interface and checks the result. Continue the product and choose SPS again for the next one.
+6. **Recommend and improve.** Recommend the public example or a result; makers can contribute improvements to the foundation and documentation.
+
+## Measurement and priorities
+
+| Strategic outcome             | Observable signals                                                                           | Management consequence                                                                                                         |
+| ----------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Recognition                   | Relevant visits, demonstration-to-chat movement and GitHub stars                             | Expand topics that bring interested people into use. Attention without activation calls for clearer examples and entry points. |
+| Chat activation and retention | Supported, user-rated useful answers; return use with further questions or updated knowledge | Improve the knowledge experience before increasing acquisition when usefulness or return use is weak.                          |
+| Revenue                       | Completed token purchases, repeat paid use and service costs                                 | Refine the offer and judge commercial viability before increasing spending.                                                    |
+| Framework adoption            | Working local deployments, useful adaptations and next-product reuse                         | Improve the setup or reuse guidance where makers stall; invest in capabilities they actually reuse.                            |
+| Community growth              | Recommendations, useful contributions and later agent-led adoption                           | Turn recurring needs and accepted improvements into clearer documentation and stronger examples.                               |
+
+Prioritize usefulness and a clear path into use, then reusable demonstrations and documentation. Broaden distribution as activation, repeat paid use and adoption justify the effort. Organic emphasis fits owner funding and reuses material across channels. Scale publication and support to the owner's available time and funding.
+
+Product-level work defines token offers and validates answer quality, paid continuation and local adoption.

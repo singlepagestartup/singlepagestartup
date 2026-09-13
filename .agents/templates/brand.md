@@ -5,15 +5,18 @@ confirmation:
 
 # Brand
 
-<!-- Brand creates meaning in the customer's mind. Maximum 1,400 words. Colors,
+<!-- Brand creates meaning in the customer's mind. Prefer about 1,400 words per page; preserve material information if longer. Colors,
 type, logos, layouts, photography, illustration, prompts, and generated outputs
-belong to design.md and the asset registry. -->
+belong to design.md and the asset registry. Confirmation and review state stay
+in metadata and the Studio badge. Use current facts and concrete communication
+choices; sources stay in claim-keyed metadata, without visible downstream
+citations, interview history, approval summaries or generic caveats. -->
 
-## Decision status
+## Brand identity
 
-- Requires an approved strategy
-- Brand name: exact public name used by every derived Design projection
-- Website and visual design cannot start before brand approval
+- Exact public brand name, its relationship to product names, and naming usage
+- A supplied or selected verbal signature only when useful; a slogan is optional
+- Keep visual identity and existing asset descriptions in their owning Design/input sources
 
 ## Intended perception
 
@@ -30,10 +33,9 @@ belong to design.md and the asset registry. -->
 - Naming, preferred vocabulary, sentence and evidence rules, prohibited claims,
   and concise do/don't examples
 
-## Governance
+## Consistency rules
 
-- Approval, evidence limits, naming authority, and which decisions Design,
-  Website, and Marketing Creative may apply but not redefine
-- Address material Brand constraints, including domain credibility,
-  regulated claims, conventions that must be followed, and clichés that should
-  be rejected
+- Concrete rules for naming, consistent promises and credible evidence across products
+- Preserve the approved product scope, money terms and support commitments
+- Include only material domain constraints and claims requiring specific proof;
+  keep production handoffs, approval mechanics and generic warnings outside the body

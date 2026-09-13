@@ -1,11 +1,12 @@
 ---
+finding_prefix: EX
 confirmation:
   confirmed: false
 ---
 
 # Product research
 
-<!-- One named product, maximum 1,400 words. Prepared before its strategic
+<!-- One named product, preferably about 1,400 words per page, without a hard cap. Prepared before its strategic
 selection and maintained with the product. No business-wide Research document.
 Sources and findings remain here; they do not become client facts in Product or a model. -->
 
@@ -38,8 +39,23 @@ Consequential findings with stable references, observation/inference class,
 confidence, decision impact, contrary evidence, and unresolved gaps. Link client
 contradictions as questions rather than silently correcting client facts.
 
+Set `finding_prefix` to a stable uppercase product prefix, replacing the example
+`EX`. It must start with a letter, contain only letters/digits, and be unique
+among products in the same source-layer catalog. Give each finding the short ID
+`<product-prefix>-<SPS|S>-<number>`: `EX-SPS-01` belongs to `singlepage`, and
+`EX-S-01` belongs to `startup`. Use at least two digits for the number. Keep the
+source marker when inherited; `default` never owns findings. Declare findings
+as bold IDs at the start of a paragraph, list item or table row. Use the complete
+short ID in every citation and metadata `finding_ids` entry; spell out ranges as
+complete IDs. Dotted namespaces and unqualified IDs are not valid.
+
 ## Sources
 
-At most twelve compact source rows: stable ID, attributable source/link,
+As many compact source rows as material findings need, with no hard cap: stable ID, attributable source/link,
 original access date, supported finding, and limitation. Sources shared by
 products need an explicit applicability statement in each consuming product.
+Source IDs may be local to this document; cross-document source references must
+include its Research path. Include repository identity when combining repositories.
+
+Apply `.agents/contracts/research-sales-audit.md` for segment-by-segment Sales
+validation, competitor detail, evidence verdicts and the reusable Research tree.

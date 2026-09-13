@@ -10,6 +10,8 @@ export interface IProductPage {
   id: string;
   title: string;
   source?: string;
+  route?: string;
+  representations?: { text: string; preview?: string };
   export?: "pdf";
   children: IProductPage[];
 }
@@ -103,16 +105,50 @@ function pages(
       node.source,
       `${productId}.${id}.source`,
     );
-    if (
-      source &&
-      (!source.startsWith(`${productId}/`) || /[?#%:]/.test(source))
-    )
-      throw new Error(
-        `${productId}.${id} source must stay inside its product folder`,
+    const owned = (path: string | undefined) => {
+      if (path && (!path.startsWith(`${productId}/`) || /[?#%:]/.test(path)))
+        throw new Error(
+          `${productId}.${id} source must stay inside its product folder`,
+        );
+      return path;
+    };
+    owned(source);
+    let representations: IProductPage["representations"];
+    if (node.representations !== undefined) {
+      if (source)
+        throw new Error(
+          `${productId}.${id} cannot mix source and representations`,
+        );
+      const variants = record(
+        node.representations,
+        `${productId}.${id}.representations`,
       );
+      const text = owned(
+        safeRelativePath(variants.text, `${productId}.${id}.text`),
+      )!;
+      const preview = owned(
+        optionalSafeRelativePath(
+          variants.preview,
+          `${productId}.${id}.preview`,
+        ),
+      );
+      if (!/\.md$/i.test(text))
+        throw new Error(`${productId}.${id} text must be Markdown`);
+      if (preview && !/\.(tsx|jsx|html|htm)$/i.test(preview))
+        throw new Error(`${productId}.${id} preview must be React or HTML`);
+      representations = { text, preview };
+    }
+    const route = node.route;
+    if (
+      route !== undefined &&
+      (typeof route !== "string" ||
+        !route.startsWith("/") ||
+        /[\s?#]/.test(route))
+    )
+      throw new Error(`${productId}.${id} route must be a site path`);
     const children =
       node.children === undefined ? [] : pages(node.children, productId, ids);
-    if (!source && !children.length)
+    if (!source && !representations && !children.length)
       throw new Error(`${productId}.${id} needs a source or children`);
     if (
       node.export !== undefined &&
@@ -123,6 +159,8 @@ function pages(
       id,
       title,
       source,
+      route: route as string | undefined,
+      representations,
       children,
       export: node.export as "pdf" | undefined,
     };

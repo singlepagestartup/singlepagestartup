@@ -60,6 +60,137 @@ stories, template/index/uses entries and obsolete fingerprints only after the
 transfer is checked; mark affected consumers stale without copying new hashes.
 Legacy bookmarks redirect to Products at the same source projection.
 
+## Compact Brief migration
+
+Use the six current Brief template sections. Consolidate legacy Source request,
+Founder wording, Decision subject and scope, Products in scope and Initial
+context into current Project/products, Customers/value and Current state facts.
+Restore the concise client-supplied business/resource facts formerly replaced
+by links; do not derive them from later professional proposals. Transfer useful
+goals/constraints into their owning section and retain visual preferences.
+Compaction must preserve all five reference categories and their separately
+reviewed descriptions, not merely keep file IDs. Do not discard or restart
+confirmed visual discovery. Missing per-category analysis is completed from
+supplied images by the professional owner; the client need not write it.
+Preserve exact source and asset IDs, category readiness and unchanged scope
+confirmation in frontmatter. Discuss contradictions with the operator; retain
+only a material unresolved discrepancy in source metadata. Do not restore the
+retired quotation, scope-status or unknowns sections to satisfy old headings.
+Remove Brief's downstream `uses` edges and obsolete snapshots after inspection.
+
+Review downstream impact before consuming it. Pure relocation is not a new
+business decision; changed value, support, goals or facts can require substantive
+model, research, strategy or brand work. Preserve unresolved stale markers and
+valid partial decisions; never renew document approval during this migration.
+
+## Compact Strategy migration
+
+Strategy uses the five current template sections and owns the project-wide
+marketing direction: goals, audiences, positioning, product roles, coordinated
+channels, customer journey, retention, measurement and resource priorities.
+Replace an experiment-centric legacy strategy instead of just renaming its
+headings. Preserve current facts and strategic choices. Keep still-applicable
+operator-supplied trial limits in their owning product/model sources; do not
+promote them to ongoing budgets. Retire unapproved proposed test mechanics.
+Detailed campaign and business-learning plans belong to product work; engineering
+tests and runtime verification remain in the engineering workflow.
+
+Remove a legacy Decision status section after retaining material unresolved
+decisions beside their owning choice. Confirmation and stale state belong to
+metadata and the Studio badge. Move consequential attribution to decision-keyed
+frontmatter; remove empty blocker tables, downstream-document citations and
+interview-history qualifiers. Update cursor anchors from `#decision-status`,
+`#commercial-choice` or `#first-experiment` to `#strategic-direction`. This does
+not renew approval. Review affected Brand, Design and product consumers.
+
+## Strategy consistency across projects
+
+The five sections in `.agents/templates/strategy.md` and the substantive
+completion criteria in `pre-development.md` apply to both source layers.
+There is no reduced downstream version of the marketing strategy.
+
+- For a new downstream project, use its own Brief and relevant external
+  research to author `strategy/startup.md`. The imported `template.strategy`
+  supplies the common structure. An empty startup file can show the framework
+  example in Studio, but cannot complete that project's Strategy stage.
+- Reuse the method, not the example's business choices. Do not inherit its
+  product count, audiences, monetization, channels, human/agent roles, metrics
+  or resource commitments without project-specific grounds. Describe only
+  outcomes and cross-product paths that fit the actual project.
+- For an existing downstream project, the next `singlepagestartup` invocation
+  after the shared files are synchronized checks the resolved Strategy even
+  when the cursor is already later than `10-strategy`. Missing sections or an
+  experiment-centric/tactic-only body route back to Strategy unless an earlier
+  affected input also needs work. Repair the startup source, preserve applicable
+  facts and flag materially affected dependents for review.
+- Inherited sections may remain only when their applicability is explicitly
+  confirmed in the owning startup source. Framework confirmation never approves
+  a startup Strategy. Changed wording requires that project's review under the
+  document-confirmation contract; synchronization does not renew approval.
+- Section presence is necessary but insufficient. Review whether the goals,
+  audiences, positioning, product roles, channels, journey, continued use and
+  measures form a coherent project-specific direction. Do not claim that a
+  structural validator alone certifies strategic quality.
+
+These rules take effect in a checkout when it receives the shared workflow,
+role and template changes. They do not update unsynchronized repositories or
+require a separate stored pipeline version or manual migration command.
+
+## Business-plan product consistency across projects
+
+Apply the current `40-products` business-planning contract to both framework and
+downstream product sets, including non-empty documents whose cursor is later or
+whose previous headings already passed validation. Product defines the intended
+offer and experience; its sixth H2 is `Business goals and metrics`. The complete
+set forms a prospective business plan for later engineering.
+
+- Inspect Product, model, Sales, Research, Website, Creative, Presentation and
+  optional customer content for implementation-audit framing. Installation
+  checks, runtime acceptance matrices, bug repair, release/license-source audits
+  and next-verification tasks cannot substitute for business decisions or gate
+  this stage. Route affected product documents to `40-products`, not back to
+  unchanged Brief, Strategy, Brand or Design merely because runtime proof is absent.
+- Replace the former `Evidence and decision rules` section with project-specific
+  goals, intended outcomes and useful business metrics. Preserve attributable
+  client facts, market findings and commercial choices; distinguish planned
+  outcomes and forecasts from measured results. Never invent operator figures.
+- Reinterpret Sales `readiness` as completeness of the intended business process.
+  Remove implementation-only blockers and replace technical `failure` text with
+  relevant commercial alternatives, abandonment and help or continuation paths.
+  Re-evaluate real business gaps; do not mark a process ready just by renaming fields.
+- For a product Website with concrete pages, reconcile navigation into a site
+  tree. Keep the journey in Overview and pair each route's Markdown text and
+  optional React/HTML layout in one node using `representations`. Preserve actual
+  copy and existing compositions when separating mixed overview/text/layout
+  entries. Begin with Text; wire React to the same text source or update separate
+  HTML alongside it. Missing layout does not prevent work on text. Apply this
+  structure within the owning product layer; generic optional content stays free
+  to use the existing mixed-format page contract.
+- Keep Research focused on market and business decisions and Presentation focused
+  on its business audience. Preserve material technical observations in source
+  metadata when useful; Git retains removed history. Do not require customer
+  guides, debugging material or test plans to complete the product set.
+- Preserve valid approvals of unchanged upstream decisions. Review the semantic
+  impact of revised product material, refresh only genuinely inspected dependency
+  snapshots when there is no material effect, and keep changed document approvals
+  unrenewed. Never copy a new hash to approve the rewritten plan.
+- Apply changes only to the repository-owned layer and retain the atomic product
+  catalog. A startup receives the method, not framework-specific customers,
+  business targets, channels or product content.
+
+This reconciliation runs after shared files are synchronized on the next normal
+invocation, without a separate command, stored version or blanket approval reset.
+
+## Compact Brand migration
+
+Use the five current Brand template sections. Replace Decision status with
+Brand identity, retaining exact names and brand/product relationships. Replace
+process-heavy Governance with material Consistency rules. Approval records and
+source attribution stay in metadata; preserve current meaning, messages, claims
+and any scoped naming decisions. Route old Brand approval anchors to
+`#intended-perception`. A changed meaning requires review and cannot inherit an
+old body approval; valid visual inputs remain in Brief and Assets for Design.
+
 ## Inspection scope
 
 Use the current workflow and active index to inspect:
@@ -221,7 +352,7 @@ gap exists.
 Compare the client-confirmed product inventory before and after every Portfolio
 or catalog migration. Move each confirmed product's attributable materials into
 its own Products folder. Supporting acquisition value, lack of readiness, a
-future launch, or exclusion from the current experiment never authorizes dropping
+future launch, or a lower marketing priority never authorizes dropping
 a confirmed product. Membership changes require an explicit client decision.
 
 When migrating a derived presentation, capture its current displayed content in
@@ -236,3 +367,35 @@ blocks solely because a project intentionally changes its visual scope. Check
 that declared section/template files exist in the selected layout layer, and
 that actual in-scope decisions remain complete. Run the workspace validator and
 browser review for structure changes. A new layout does not renew confirmation.
+The neutral Workspace header stays outside every project visual template: one
+Design H1, status badge, purpose and usage, with content headings starting at H2.
+Check this in inherited and populated startup layouts, including custom
+templates and layouts without overview. Correct missing or duplicated headers
+and project styles leaking into the review shell without changing or renewing
+business-document confirmations when their meaning is unaffected.
+
+## Sales segment compatibility
+
+When Sales is revised in its owning layer, inspect Product Customer Segments and
+migrate flat v1 intake to v2 under product-models.md. Declare stable Product IDs
+in customer_segments metadata; preserve unique client facts, source attribution,
+commercial unknowns, responsibilities and continuation paths. Add missing segment
+profiles, motivations, acquisition and customer-perspective CJMs from attributable
+facts or explicit professional proposals. Validate coverage so no Product segment
+silently disappears. Shared rendering supplies the tree and selected segment;
+never copy framework personas or create a project-specific navigation utility.
+Keep empty blocked intake explicit. V1 readability is migration support, not proof
+that an existing document meets the segmented Sales method. The owning stage is
+00-business for missing factual intake or 40-products for professional development
+of the confirmed audience. Review Website, Creative and Presentation impact;
+preserve unchanged strategic direction and do not renew approval hashes.
+
+## Material workspace compatibility
+
+At the next invocation, inspect product materials in the owned layer. Split
+undifferentiated creative galleries into meaningful selected outputs with paired
+Text/Layout, preserving unique copy and assets. Adopt shared artboard/PNG tools;
+use shared motion playback/MP4 only when selected. Presentations expose individual
+slides and retain full-deck PDF. Content stays optional and free-form. Preserve
+source-layer finding namespaces and whole-document confirmations. Changes to
+layout utilities alone do not rewrite or reconfirm unchanged business decisions.
