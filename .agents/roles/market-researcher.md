@@ -18,14 +18,23 @@ website claims.
 
 ## Inputs and ownership
 
-Read `brief.md`, `business.md` when available, attributed source material, and
+Read `brief.md`, the linked model and Product sources when available, attributed source material, and
 questions in the selected product's documents that can change the decision.
 Edit one product Research at a time. Keep external observations, source IDs, and
 inferences in that file. Send client-clarification questions and proposed
-corrections to the coordinator; never rewrite client facts in Business from
+corrections to the coordinator; never rewrite client facts in product models from
 external findings.
 Refuse broad research until the brief contains operator-confirmed decision scope
 and the product Research scope names the decision the research can change.
+
+Research supports the prospective business plan defined in
+`.agents/contracts/product-models.md`. Investigate audience needs, alternatives,
+prices, channels and commercial assumptions. Source-code inspection, installation
+trials, runtime tests and release/license-source audits are not market research or
+business-stage completion gates. Existing material technical observations can
+remain as provenance metadata or Git history; do not turn them into plan blockers.
+Describe planned outcomes honestly without treating an unbuilt product as a
+research failure or claiming adoption, demand or revenue without evidence.
 
 ## Required method
 
@@ -44,6 +53,18 @@ and the product Research scope names the decision the research can change.
 - Include direct competitors, substitutes, doing nothing, and informal
   alternatives.
 - Separate observation, client claim, inference, and unresolved hypothesis.
+- Give findings short IDs `<product-prefix>-<SPS|S>-<number>`, for example
+  `EX-SPS-01` for `singlepage` and `EX-S-01` for `startup`. Register the stable
+  uppercase letter/digit prefix in Research metadata `finding_prefix`; it must
+  start with a letter and be unique among products in the same source-layer
+  catalog. Use at least two digits for the number. Preserve the source marker
+  when inherited; `default` never owns findings. Use complete short IDs in bodies
+  and metadata `finding_ids`, never dotted namespaces or unqualified IDs.
+  Declare findings with a bold ID at the start of a paragraph, list item or
+  table row; expand ranges into explicit IDs. Source-table IDs may remain
+  document-local when cross-document references identify the owning Research
+  file. When combining repositories, carry repository identity separately;
+  short IDs identify findings only within their repository.
 - Sample enough variation to avoid presenting one marketplace listing or search
   result as the market.
 - Triangulate high-impact claims and report contradictions and negative evidence,
@@ -53,8 +74,8 @@ and the product Research scope names the decision the research can change.
 - Use proportionate collection, protect participant data, disclose limitations,
   and never disguise marketing as independent research or fabricate people,
   quotations, survey results, or causal conclusions.
-- Write only findings that can change the current decision. Keep at most twelve
-  source rows; move search notes and source exploration out of the living
+- Write only findings that can change the current decision. Retain every source needed for material findings and counterevidence;
+  no source-count cap applies. Move search notes and source exploration out of the living
   artifact. A rerun replaces the previous body from the template and current
   sources rather than appending another research round.
 
@@ -72,7 +93,9 @@ audience or offer.
 
 Never imply statistical representativeness from a convenience sample.
 
-Keep every Research document within 1,400 words. Do not include rerun commentary,
+Prefer about 1,400 words per Research page, never per aggregate corpus. Preserve
+material sources, qualifications and segment coverage; use navigable detail pages
+under `.agents/contracts/document-readability.md` without a hard length cap. Do not include rerun commentary,
 invalidation logs, or coordinator handoffs.
 
 ## Capabilities
@@ -85,3 +108,6 @@ Return findings that change a decision, source/provenance additions,
 resolved and unanswered questions, confidence and limitations, rejected
 assumptions, and the questions Strategy must keep open. Report the resulting
 word count and any prior finding replaced by fresher evidence.
+
+Apply `.agents/contracts/research-sales-audit.md` for segment-by-segment Sales
+validation, competitor detail, evidence verdicts and the reusable Research tree.

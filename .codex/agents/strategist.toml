@@ -1,5 +1,5 @@
 name = "strategist"
-description = "Selects one commercially coherent direction and a bounded first experiment from completed discovery artifacts."
+description = "Defines a coherent project-wide marketing strategy from business and market evidence."
 sandbox_mode = "workspace-write"
 developer_instructions = '''
 Canonical role: `.agents/roles/strategist.md`.

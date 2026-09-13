@@ -1,64 +1,64 @@
 ---
 confirmation:
   confirmed: false
+sources:
+  message: Current Product, shared Operations & Economics, Sales, approved Strategy and Brand; reviewed 2026-09-13.
+  channel_mechanics: Research CF-SPS-04, CF-SPS-08, CF-SPS-09 and CF-SPS-10; official YouTube, Google and Reddit documentation checked 2026-09-13.
+  example: The six-unit minimum-order request illustrates a possible business rule; it is not a reported customer outcome.
+  assets: Approved Design Measured Space; original registered human photography and opaque illustrations. No new image generation or background removal.
 review:
   dependencies:
-    brand: d5832fea9d6f4995d90b780efb5a8889ead9fe63e13d26620fb8a6c4538a3d78
-    design: 1c79d3a18cbee1ce687a7d583e70018acf5d4930604d9e4decc55fcc0a320f08
-    product.singlepagestartup.product: f77384c8090e5eedfd06d5df14795f55d68cdf00f58b928525b284dfa1b5ca23
-    product.singlepagestartup.website: 875fc7d8324f8b6ffba49e2c99de9e85e1064f0568a730bac1aa6a208dc49db6
+    brand: 691ec9f7a801d77e97daa4266fbd617c95568804eefb1ed07c3848dfd8add19d
+    design: 99ab863f73ba4c069a79fceb3cedfc3fb0b0c91c51d50185f15779c1a8aec0b7
+    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
+    product.singlepagestartup.product: 08586629928e54c1700f059e4b5c8304b78451448389b8603bc8a8665499bcf2
+    product.singlepagestartup.website: 50f5e45e7c5a9ea720638596fb96b3f7c09876e8e51b85c3ba90c1559b9d5303
+  stale:
+    reason: Bind each selected creative to its Sales segment and journey or acquisition context; review messages and proof against that profile.
+    sources:
+      - product.singlepagestartup.sales
 ---
 
 # Marketing Creative
 
 ## Objective and selected distribution
 
-| Field                 | Current decision                                                                                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Status                | `in-progress`; the artifact boundary and first-experiment formats are selected, but final production files and publication approval do not yet exist         |
-| Objective             | Move an accountable developer from one bounded demonstration or explanation to an intentional evaluation of a pinned Code Framework release on GitHub        |
-| Selected distribution | Founder-led YouTube walkthrough, direct personal sharing, the demonstration-service bridge, and GitHub as the evaluation destination                         |
-| Paid media            | None; paid promotion and media-buying formats are excluded                                                                                                   |
-| Deferred channels     | Telegram, Instagram, VK Video, RuTube, Yandex Zen, and other channels remain possible later but receive no placeholder creative before strategy selects them |
-| Measurement boundary  | Views and clicks are attention. Evaluation starts only when a qualified developer retrieves the pinned version and begins setup for a named need             |
+Attract people who want their own web product and show why starting with a reusable foundation is useful. The central message is **your business idea, common functions already provided, changes through conversation with an agent**.
+
+Demonstrations lead the organic promotion. Short videos introduce one useful idea; searchable articles and guides answer maker questions; relevant community contributions connect a need to an example. GitHub receives people ready to build. AI Chat introduces the foundation through a business service and offers interested users a route to their own project.
 
 ## Message-to-format plan
 
-| Channel and format                 | Role                                                                                                                             | Exact message or copy                                                                                                                                                                                                 | Action and destination                                                     | Required boundary                                                                                                   |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| YouTube 16:9 walkthrough           | Demonstrate one bounded behavior, identify Code Framework by SinglePageStartup as its foundation, and explain how to evaluate it | Title: “Evaluating a multi-feature web foundation with Code Framework.” Cover line: “Inspect the foundations before architecture is fixed.”                                                                           | “Evaluate Code Framework on GitHub.” Link to the pinned evaluation package | Do not call the demonstration service live, complete, integrated, or production-ready until matched evidence exists |
-| YouTube thumbnail                  | Make the walkthrough identifiable without inventing proof                                                                        | “Inspect the foundation.” plus the exact SinglePageStartup lockup                                                                                                                                                     | Opens the walkthrough                                                      | One promise, one Lime locator, no fake interface, code result, metric, customer, or platform logo                   |
-| GitHub social preview, 1200 by 630 | Identify the repository when a link is shared                                                                                    | Existing approved wording in `singlepage-generated-measured-space-og`                                                                                                                                                 | Opens the pinned repository evaluation                                     | Reverify copy against the published license and launch state before use                                             |
-| Direct personal message            | Give a known developer enough context to choose whether to inspect the repository                                                | “I am building Code Framework by SinglePageStartup as a reusable foundation for multi-feature web products. If that matches a product you are starting, you can inspect the pinned version and its limits on GitHub.” | Tracked GitHub evaluation link                                             | Keep this as plain text; do not turn two reachable contacts into a scale or demand claim                            |
+The initial materials follow one business example: a store needs a minimum order of six units. The maker describes that rule to a coding agent and builds on the framework's common account, cart and payment functions.
+
+| Material                                                                                                  | Role and destination                                                                                                            |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| [Walkthrough cover](marketing-creative/walkthrough-cover.md)                                              | Introduce a full explanation of building a product with an agent. The video description leads to the framework and maker guide. |
+| [Repository preview](marketing-creative/repository-preview.md)                                            | Identify the reusable foundation and its value when the GitHub link is shared.                                                  |
+| [Short cover](marketing-creative/short-cover.md) and [storyboard](marketing-creative/short-storyboard.md) | Introduce the idea in a 30-second vertical story and lead to the related full video.                                            |
+| [Article](marketing-creative/article.md)                                                                  | Explain what to reuse and what to change for a business. Lead to the framework.                                                 |
+| [Social post](marketing-creative/social-post.md)                                                          | Open a conversation around a concrete business rule and link to Code Framework.                                                 |
+
+The AI Chat bridge uses **Want to build your own version? Start with the foundation behind this chat.** Its action, **Run the project on your machine**, leads to GitHub without requiring a chat purchase. Community replies answer the actual question, then offer the relevant example where links are welcome.
 
 ## Creative system application
 
-- Use only the approved SinglePageStartup identity: Paper, White, Ink, one Lime
-  locator, JetBrains Mono for base information, Cormorant Garamond for headings
-  and short italic emphasis, the approved lockup, thin measurement rules, and
-  generous whitespace.
-- YouTube safe area: keep the lockup and cover line inside the central 80% of a
-  1920 by 1080 frame; preserve a 96-pixel outer margin and a 160-pixel lower
-  caption area. The thumbnail must remain legible at 320 pixels wide.
-- The walkthrough may use real, dated captures only after their version,
-  environment, verification, and limitation are recorded. Otherwise use the
-  brand's code-native foundation-map illustration, not a fabricated interface.
-- Provide burned-in or uploaded captions, a transcript, meaningful thumbnail
-  alt text where supported, and no information carried by Lime or motion alone.
-- The demonstration-service page and its interface remain Website/Product
-  design. Marketing Creative owns only the message and route that lead to it or
-  from it; it does not own navigation, forms, chat UI, or success states.
+Apply the approved Measured Space identity: light fields, dark text, lime accents, Cormorant Garamond headings, JetBrains Mono supporting text and the SinglePageStartup lockup. Photographs communicate people and business intent; illustrations explain the reusable foundation.
+
+| Composition                | Format                          | Material                                                                          |
+| -------------------------- | ------------------------------- | --------------------------------------------------------------------------------- |
+| Walkthrough cover          | 1280 × 720                      | Business-conversation photograph with editable headline and supporting text.      |
+| Animated walkthrough cover | 1280 × 720 · 3 seconds · 30 fps | The same copy and artwork with separate photograph and text motion; MP4 download. |
+| Repository preview         | 1200 × 630                      | Module-hierarchy illustration with the product's value statement.                 |
+| Short cover                | 1080 × 1920                     | Work-in-motion photograph with a request-to-result message.                       |
+| Social post                | 1080 × 1080                     | A typographic explanation of the business example and an action.                  |
+
+Use the registered original images with their current backgrounds and proportions. Each material has its own Text and Layout view. Markdown owns the copy; the visual composition adds typography, image placement and spacing. Cover and social layouts provide PNG downloads; the animated cover provides playback and MP4 export. The article and storyboard remain readable, editable documents.
 
 ## Production and review
 
-| Output                                    | Source and production instruction                                                                                                                                  | State                                                          |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
-| YouTube cover and thumbnail               | Compose in React/HTML from the approved lockup, typography, palette, and the brand's foundation-map illustration. Export 1920 by 1080 and 1280 by 720 derivatives. | Specification only; no file generated                          |
-| Walkthrough title, chapter, and end cards | Reuse one 16:9 grid. Opening identifies the bounded evaluation; chapters use JetBrains Mono labels; the end card has one GitHub action.                            | Specification only; no file generated                          |
-| GitHub social preview                     | `singlepage-generated-measured-space-og`; rights and limitations remain in `assets/singlepage.yaml`.                                                               | Existing approved visual output; publication gate remains open |
-| Direct message                            | Plain text from the message-to-format table; no visual production required.                                                                                        | Ready for claim review after the pinned link exists            |
+The project owner produces and distributes the material within available time and funding. One business example supplies a walkthrough, short extracts, a searchable explanation and useful community answers. Questions from the audience inform subsequent topics.
 
-Before publication, verify the pinned version, effective license wording,
-destination, tracking event, captions or text alternatives, crop behavior, claim
-limits, and asset rights. Selected outputs may receive project-specific React
-stories after their exact content is approved. Unselected formats remain absent.
+Measure attention, visits to the matching product, framework adoption and reuse separately. Prioritize materials that help people understand the offer and begin their own product. Publication frequency and campaign spending are not fixed.
+
+Track campaign outcomes and use measured results to refine future messages.

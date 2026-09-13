@@ -11,13 +11,13 @@ Product materials change more often and affect only their own offer.
 
 ## Review order
 
-| Stage               | Review these documents                                                                                    | Typical change rate | If it is wrong                                                                                           |
-| ------------------- | --------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
-| `00 Client Request` | Brief, client-factual Business                                                                            | Rare after approval | Every later decision may be based on the wrong direction, sales process, audience, facts, or constraints |
-| `10 Strategy`       | Product Research, then Strategy                                                                           | Occasional          | Brand, design, and product priorities may target the wrong opportunity                                   |
-| `20 Brand`          | Brand                                                                                                     | Rare                | Every product may communicate the wrong meaning, promise, voice, or proof boundary                       |
-| `30 Design`         | Design, Assets                                                                                            | Occasional          | Every product may use an inconsistent or unsuitable visual system                                        |
-| `40 Products`       | Research, Sales, Product, Website, Marketing Creative, Presentation, and optional product-defined Content | Frequent            | Only that product's outputs need correction unless they expose an upstream contradiction                 |
+| Stage               | Review these documents                                                                                                    | Typical change rate | If it is wrong                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
+| `00 Client Request` | Brief, then initial Product/models and Sales intake                                                                       | Rare after approval | Every later decision may be based on the wrong direction, sales process, audience, facts, or constraints |
+| `10 Strategy`       | Product Research, then Strategy                                                                                           | Occasional          | Brand, design, and product priorities may target the wrong opportunity                                   |
+| `20 Brand`          | Brand                                                                                                                     | Rare                | Every product may communicate the wrong meaning, promise, voice, or proof boundary                       |
+| `30 Design`         | Design, Assets                                                                                                            | Occasional          | Every product may use an inconsistent or unsuitable visual system                                        |
+| `40 Products`       | Product, Operations & Economics, Sales, Research, Website, Marketing Creative, Presentation, and optional Product Content | Frequent            | Only that product's outputs need correction unless they expose an upstream contradiction                 |
 
 Review `default` first. Open `singlepage` or `startup` only when you need to see
 where a value came from.
@@ -34,7 +34,17 @@ belongs to that confirmation. The badge shows one of four states:
 | `changed` — Needs confirmation again | The document changed since confirmation                   |
 | `stale` — Review upstream changes    | An input changed or has an unresolved material effect     |
 
-For example, a capacity change in Business makes Strategy stale even while its
+Design uses the same neutral document header as Brief, Strategy and Brand:
+status, the title `Design`, purpose and usage. The selected visual layout starts
+below that header and applies the project's fonts, colors and imagery there.
+The shared `DesignRenderer` owns the header even when the overview block is
+omitted or a project supplies a complete custom template. Custom templates
+start their content headings at H2 and do not repeat the document title or badge.
+This boundary applies to inherited and project-owned startup layouts. Scope
+project styles to the visual canvas so a new identity does not restyle the
+Workspace header. Keep process metadata out of the mockup itself.
+
+For example, a capacity change in a shared model makes Strategy stale even while its
 text stays unchanged; Brand and product materials can become stale through that
 same dependency chain. The agent reviews the actual impact. If the decision is
 unaffected, it updates only the input snapshot and preserves the prior approval.
@@ -70,7 +80,7 @@ the framework normally configures nothing.
 
 ## File map
 
-The workspace root contains document folders (`brief`, `business`, `strategy`,
+The workspace root contains document folders (`brief`, `strategy`,
 `brand`, `design`), `assets`, `products`, `styles`, its README, and `utils`.
 Assets and font licenses remain directly accessible. Products keep their catalog,
 Markdown, YAML data, and product-specific React entry points together. Layered
@@ -86,12 +96,16 @@ apps/studio/workspace/
   assets/<layer>/{fonts,intake,generated}/
   styles/{singlepage,startup,default}.css
   products/{singlepage,startup}/catalog.yaml
+  products/<layer>/models/<model-id>/model.md
   products/<layer>/<product-id>/
     product.md
-    research.md
-    sales.yaml
-    website.md
-    marketing-creative.md
+    research.md                 # research overview
+    research/                   # segment audits and competitor detail
+    sales.yaml                  # all segment profiles and CJMs; UI pages are derived
+    website.md                  # website overview
+    website/                    # page copy and product-specific layouts
+    marketing-creative.md       # creative overview
+    marketing-creative/         # covers, articles, storyboards and motion scenes
     presentation/
       data.yaml
       ProjectPresentation.tsx
@@ -101,9 +115,18 @@ apps/studio/workspace/
     index/{singlepage,startup}.yaml
     pre-development/{singlepage,startup}.yaml
     pre-development/github/{singlepage,startup}.yaml
-    components/
+    components/                 # shared review shell, trees, slides and exports
+    products/                   # catalog, Sales and presentation data resolvers
+    design/                     # shared design data/layout resolvers
+    media/                      # shared artboards, PNG and MP4
     stories/<artifact>.stories.tsx
 ```
+
+The [Products directory guide](products/README.md) explains the distinction
+between shared business models and product folders, naming and startup reuse.
+`models` contains Operations & Economics sources, not application/backend modules.
+A primary `.md` beside a same-named folder is its overview; the folder owns detail
+and authored layouts. Generated Sales pages are not duplicated as Markdown files.
 
 All catalog paths, including document data and React entry points, resolve below
 `products/<layer>/`. Components accept their own product data and may import
@@ -145,11 +168,19 @@ maps, the product catalog is replaced as a whole under the rules below.
   singlepage catalog.
 - If startup defines at least one product, `default` shows only startup
   products. The complete singlepage catalog is replaced.
-- Every catalog product owns six core tabs in the same layer, displayed as
-  Product Overview, Research, Sales, Website, Marketing Creative, and Presentation.
-  Opening the catalog or switching products starts with Product Overview so the
-  reader sees the product, audience, and offer first. This reading order does not
-  change the workflow's research and decision dependencies.
+- Products start with Product, Operations & Economics, Sales and Research. The
+  shared model is read from its single source; Website, Marketing Creative and
+  Presentation appear when their files are prepared. All declared files must exist.
+- `40 Products` is a sidebar folder. It contains sibling `singlepage` and `startup`
+  groups, each listing only products from its own catalog. An empty source has a
+  `No products` state. There is no visible default branch and no per-product layer list.
+  The computed default catalog retains its inheritance/replacement semantics.
+  Opening a product starts with Product; its page contains only document navigation.
+  Shared-model context is plain text inside Operations & Economics, without a
+  second menu of canvas blocks. A missing source view never falls back to another product.
+- Storybook derives its product stories into `.storybook/.generated/products/`
+  on startup/build and updates them when a catalog changes. These ignored files
+  contain references only; edit names/order/membership in the owning catalog.
 - A product may extend any core tab and add more tabs through `sections`, with
   nested `pages` and `children`. Page files may be Markdown, HTML, JSX/TSX,
   images, video, audio, or downloadable files. The legacy `content` and
@@ -160,9 +191,14 @@ maps, the product catalog is replaced as a whole under the rules below.
 Example downstream catalog:
 
 ```yaml
-schema: singlepagestartup.product-catalog.v1
+schema: singlepagestartup.product-catalog.v2
+models:
+  - id: reletting-service
+    name: Reletting service model
+    source: models/reletting-service/model.md
 products:
   - id: commercial-property-reletting
+    model: reletting-service
     name: Commercial property reletting
     summary: Find a more profitable replacement tenant and manage the change.
     research: commercial-property-reletting/research.md
@@ -176,7 +212,7 @@ products:
     # content: commercial-property-reletting/content/Content.tsx
 ```
 
-The product folder applies the approved Business, Strategy, Brand, and Design.
+The product folder links its model and applies approved Strategy, Brand, and Design.
 It may narrow those decisions for one offer, but it must not silently redefine
 them.
 
@@ -187,10 +223,10 @@ loaders, and their tests live in `utils/products/`. Product-specific React
 components, HTML pages, campaign images, data, and nested folders stay beside
 their owning documents in `products/<layer>/<product-id>/`.
 
-Add `sections` to a catalog product. IDs `product`, `research`, `sales`,
+Add `sections` to a catalog product. IDs `product`, `model`, `research`, `sales`,
 `website`, `creative`, and `presentation` add pages to the existing core tab;
 its main document/deck remains available as **Overview**. Other IDs create
-additional tabs in declaration order, numbered from 07. A page with `children`
+additional tabs in declaration order, numbered after the available core tabs. A page with `children`
 may be a group or have its own `source`. Page IDs are unique within their section;
 `overview` is reserved for the core document. Titles are explicit display labels.
 
@@ -199,12 +235,20 @@ sections:
   - id: website
     title: Website
     pages:
-      - id: landing
-        title: Landing page
-        source: my-product/website/index.html
-      - id: checkout
-        title: Checkout
-        source: my-product/website/pages/Checkout.jsx
+      - id: site-pages
+        title: Site pages
+        children:
+          - id: landing
+            title: Landing page
+            route: /
+            representations:
+              text: my-product/website/landing.md
+              preview: my-product/website/Landing.tsx
+          - id: checkout
+            title: Checkout
+            route: /checkout
+            representations:
+              text: my-product/website/checkout.md
   - id: creative
     title: Marketing Creative
     pages:
@@ -237,12 +281,32 @@ to the selected layer and must stay in that product's folder. Missing declared
 files fail validation; files from another layer are never used as fallback.
 Supporting files appear in navigation only when declared as pages.
 
+Website navigation is an expandable page tree with keyboard arrows, Home and End.
+Select a route, then switch **Text / Layout** without leaving that page. Text opens
+first; a missing preview disables Layout so copy can be developed before design.
+A node uses either `source` or `representations`; the latter requires Markdown
+`text` and accepts optional React/HTML `preview`. Both paths follow the same
+product/layer ownership rules. Legacy `source` pages and mixed content still work.
+
+Keep each page's wording in its Markdown source. React previews receive the full
+Markdown, including frontmatter, through the optional `text?: string` prop and
+parse their own content structure. Use stable section identifiers when binding
+copy to a layout so wording and heading edits do not break that binding. Copy
+edits then feed both Text and Layout. Layout edits that alter wording must update
+the same Markdown in the same change. For separately authored HTML, update both
+files together and review their consistency; Studio does not rewrite arbitrary
+HTML. The Website overview owns the journey and sitemap, not duplicate page copy.
+
 React pages default-export a component without required props. They may import
 their own nested components, data, images, and the shared Studio layout. The core
 Presentation entry point still receives its own YAML `{ content }` prop. It can
 compose any number of imported TSX slide components; slide files are not required
 to be individually registered as pages. Use `utils/components/ProjectPresentation`
-to wrap the deck, or retain its `data-slide-id` and uniform fixed-size page contract.
+to wrap the deck for per-slide navigation, Text/Layout and PNG. Existing custom
+decks may retain `data-slide-id` and uniform fixed-size pages: the shared outer
+Presentation workspace preserves their complete-deck PDF. Arbitrary rendered HTML
+is not parsed back into editable text; adopting the shared slide adapter exposes
+those additional controls while retaining the project's own slide composition.
 The existing Presentation tab offers PDF export; additional React decks enable
 the same export with `export: pdf`. Export captures all mounted slide elements in
 DOM order. HTML and image pages do not automatically become PDF decks.
@@ -269,8 +333,8 @@ The internal workflow stage ID remains `00-business`.
   scope, constraints, owner-controlled facts, and products in scope. Supporting
   acquisition activities and internal work remain brief context in Brief and
   Strategy.
-- Business records client-supplied value, money, responsibility, capacity, and
-  routing facts. Distinguish reported reality, confirmed intention, inspected
+- Business Analyst records initial Product and Operations & Economics model
+  sources, with client-supplied value, money, responsibility, capacity and routing. Distinguish reported reality, confirmed intention, inspected
   supplied materials, calculations, and unknowns, with sources. Each product's
   Sales intake records its supplied process and missing details.
 - Keep material source attribution with each owning statement. Product Research
@@ -373,7 +437,7 @@ sections: []
 `Layout.tsx` default-exports a component typed with `IDesignTemplateProps` from
 `workspace/utils/design/layout.ts`. It receives the resolved `document` Markdown,
 `assetIndex` YAML, document `confirmation`, and `children` for declared sections.
-It can render those children in its own shell or build the page itself. Parsed
+It can render those children in its own canvas below the shared document header. Parsed
 legacy `data` is supplied only when built-in blocks are used; an entirely custom
 template does not require the old Markdown field schema. Use Tailwind utilities
 and the project's layered styles. Shared loader/rendering code stays in utils;
@@ -390,22 +454,52 @@ select the required visual families from the client brief and record scope there
 Typography roles are table rows with an exact CSS family, weights, usage, and
 registered font asset ID. Review must load the real file and confirm the
 computed family; labels never stand in for font verification. Photography and
-illustration masters are always square, keep essential content in the centered
-crop-safe area, and appear uncropped as squares in Design. Grid, spacing,
+illustration masters retain their original aspect ratio and appear uncropped
+in Design. Choose composition and format per image; derivative crops follow
+the actual product output. Keep style prompts compact and reference-derived;
+the tooltip explains how to add a scene or relationship and source references.
+After a master prompt changes, regenerate at least three different content
+briefs with its exact current wording and documented reference inputs. Compare
+their style and correct material drift before marking the prompt tested. Show
+those actual outputs in Design; old images cannot verify a new prompt.
+Choose illustration backgrounds for the project's visual direction and intended
+placement; transparency is optional. Preserve original generated masters and
+compare derivatives with them for thin lines, secondary detail, color and
+contrast. Reject processing that degrades the image. Restoring a previously
+tested prompt can reuse its unchanged original outputs and provenance when they
+still fit the brief.
+Device requirements, fixed margins and numerical limits are not universal style
+rules. Grid, spacing,
 breakpoint, container, and radius rules use named Tailwind utilities rather
 than a separate arbitrary-pixel system.
 
 ### 40 Products
 
+The product set is a prospective business plan and requirements for later
+engineering. Describe the intended offer and experience, distinguish plans from
+observed results, and use supplied figures or clearly based forecasts. Installation
+checks, software bugs and release audits do not gate these business documents.
+The same method applies to framework and downstream projects.
+
 For each client-confirmed product:
 
-1. Product defines the bounded offer, buyer, value, commercial model, delivery,
-   proof, constraints, and success.
-2. Website defines the visitor journey, final copy, page and interaction states,
-   responsive behavior, and post-conversion path.
-3. Marketing Creative defines only the formats and channels selected by
-   Strategy for this product.
-4. Presentation owns its content in `presentation/data.yaml` and its React entry point. Shared components provide layout and export only; no text is extracted from another document. PDF and PNG are replaceable exports.
+1. Product defines identity, customers, their problem, value, offer and usage,
+   ending with Business goals and metrics.
+2. Operations & Economics defines revenue, resources, activities, partners,
+   costs and funding in the owning shared model.
+3. Sales defines the complete intended customer process. Readiness means its
+   business decisions are complete, even before implementation.
+4. Research supplies audience, competitor, price, channel and business evidence.
+5. Website defines visitor journeys and a site tree. Each page has its own Text
+   and Layout representations with consistent copy.
+6. Marketing Creative provides messages and compositions for selected channels.
+7. Presentation explains the business to clients, partners or investors. It owns
+   `presentation/data.yaml` and its React entry; PDF/PNG are replaceable exports.
+8. Optional Product Content contains materials customers receive or use.
+
+Review business coherence and the actual static materials. Engineering tests and
+runtime verification remain in the engineering workflow. Unchanged approved
+Brief, Strategy, Brand and Design decisions retain their approval.
 
 The catalog retains every client-confirmed product, including products outside the current experiment. Strategy never filters or deletes products. Every entry traces to
 an operator-confirmed Brief product; a showcase, reference project, possible
@@ -433,7 +527,10 @@ the downstream documents contradicted by the change. Git retains prior history;
 the living documents contain only the current decision, not an appended session
 log.
 
-Primary documents must stay readable in five to seven minutes. Repeated
+Strongly prefer a five-to-seven-minute review per page (about 1,400 words),
+without a hard word, line, source or segment cap. Preserve material information,
+using navigable detail pages where useful. Aggregate Sales YAML and Research
+corpora are not single review pages. Repeated
 decisions, interview history, stale alternatives, and workflow handoffs do not
 belong in them. Keep material attribution with the owning decision and historical
 versions in Git; do not repeat the same explanation in several files.
@@ -444,15 +541,117 @@ Workspace stops before engineering. Production components, APIs, analytics
 implementation, QA, publication, and deployment remain in the normal code and
 engineering workflow under `thoughts/shared/**`.
 
-### Independent documents and semantic review
+### Source ownership and semantic review
 
-Every document stores its own content. Agents read related documents as context;
-Studio does not import their decisions into another document at render time.
-For example, a Business price change triggers a Product impact review: update
-Product's own price if affected, otherwise retain its content. `stale` requests
-that review; it is not automatic content propagation. Presentation owns its
-content and confirmation in the catalog's `presentation_data` YAML source.
+Product owns customer/value/offer decisions; Operations & Economics owns model
+resources, per-product prices, costs and funding; Sales owns the whole customer
+process. Website, Marketing Creative and Presentation apply these facts in their
+own authored materials. They never establish a competing source for price or
+scope. A changed source makes dependent materials stale for semantic review;
+Studio does not automatically replace their copy or renew confirmation.
 
-Structural migrations preserve every confirmed product. One product in startup
-replaces the entire singlepage product catalog in default, including its
-documents, presentations and optional surfaces. No product-level fallback is allowed.
+Presentation keeps its own data and React entry point, with the same preview and
+PDF export. Additional pages keep the existing format/nesting support. Use
+**Product Content** for delivered lessons, episodes, templates or files, separately
+from marketing. Its structure remains product-defined and optional.
+
+See [product-model migration](../../../tools/studio/products/MIGRATION.md) for the
+page/transfer maps, old bookmarks, automatic structural steps, semantic decisions
+and verification. Business is retired after content attribution, not copied into
+Brief. The `00-business` stage ID remains compatible for initial Brief/model work.
+
+### Producing and exporting product materials
+
+The page tree and Text/Layout contract applies to Marketing Creative and optional
+Product Content as well as Website. Register real deliverables: separate covers,
+articles, posts, storyboards or other selected content. Related items form groups.
+A paired layout receives canonical Markdown through `text?: string`; static and
+animated variants can consume the same copy. Text download strips review metadata.
+Agents author files in the current project conversation; Studio previews them.
+
+Use [ArtifactFrame](utils/media/ArtifactFrame.tsx) for editable fixed-size HTML
+artboards and PNG downloads. Use [MotionPreview](utils/media/MotionPreview.tsx)
+for Remotion playback, seeking and browser MP4 rendering with progress/cancel.
+See [the shared media API](utils/media/README.md). Utilities ship with the framework;
+project-specific graphics and content remain in their layer folders.
+
+Presentation has its own slide tree and Text/Layout view. YAML remains the source
+of its words; existing React components provide slide layout. Generic/custom
+decks can supply slide Markdown or a formatter. A selected slide exports to PNG;
+full PDF retains every slide. The review header owns confirmation, so no badge
+or editing control becomes part of a cover, slide or exported video.
+
+Content is free-form. A GitHub-style README is one example; a course or another
+product can register lessons, handouts, image/video sequences or arbitrary pages.
+No full repository import and no universal README requirement are introduced.
+
+### Language and vocabulary
+
+Material localization reuses `internationalization` from
+`@sps/shared-configuration` (`libs/shared/configuration/src/lib/internationalization/index.ts`),
+currently English `en` and Russian `ru`, English by default. Runtime content
+already stores translated fields by language key and renders the selected
+language; see the Website Builder button component and `saveLanguageContext`.
+
+Keep all customer-facing text in the language of its page, slide or material,
+including actions, navigation, tooltips, error/progress messages, accessibility
+labels and metadata. Preserve product names and stable content keys. Short
+vocabulary fields use the existing `{ en: string, ru: string }` shape; longer
+copy may use separate Markdown sources per locale. Text, Layout and exports
+must select the same locale. A translation sent for operator review does not
+add a runtime language switch or confer approval. Follow the Language and
+vocabulary rules in `.agents/contracts/product-models.md` for new projects.
+
+## Sales customer segments and CJM
+
+Sales v2 uses the same internal page tree as Website and Marketing Creative:
+Overview → Customer segments → one page per Product segment. Each page contains
+the customer/situation, needs and pains, motives, decision trigger and criteria,
+value proposition, objections and sales arguments, acquisition/message matrix,
+and Customer Journey Map (CJM). The map shows customer goals, actions, questions,
+desired experience, touchpoints, business responses, transitions, relationships
+and metrics across the journey. Operational responsibility and handoffs remain
+available in a collapsible section. These are intended business experiences;
+proposed motives are not reported as observed customer psychology.
+
+Use `singlepagestartup.sales-process.v2` in the product's `sales.yaml`. Keep shared
+owner, seller, pricing, capacity, blockers and confirmation once. Put profiles in
+`segments`, each with an `id` matching Product frontmatter `customer_segments`.
+Every ready Product segment needs a Sales profile; unknown/duplicate IDs fail
+validation. Each profile has `name`, `audience`, `roles`, `needs`, `motivations`,
+`decision_criteria`, `purchase_trigger`, `value_proposition`, `objections`,
+`acquisition` and `journey`. The exact fields and attribution guidance are in
+`.agents/templates/sales-process.yaml`. Ready means business completeness.
+Empty intake is blocked with `segments: []` and explicit business unknowns.
+
+Shared `utils/products/sales.ts` parses both legacy v1 and current v2. V1 remains
+readable; migrate it when revising its owned Sales rather than inventing profiles
+on load. `utils/components/SalesSegment.tsx` builds the segment pages and map;
+`ProductPages` owns navigation, header confirmation and the compact `.md` export.
+The selected segment export contains only its profile and CJM, with no review
+metadata. All segment pages display whole-Sales confirmation; selecting a page
+never approves it. Additional catalog Sales pages remain supported. Generated IDs
+`sales-customer-segments` and `sales-segment-<id>` are reserved for this navigation.
+The source stays in the atomically selected product layer. An empty startup
+inherits base examples; a populated startup uses only its own products/profiles.
+
+Website and Creative authors use the relevant segment's needs, decision motives,
+objections and CJM moment, recording target segment and journey/acquisition IDs
+in the material's metadata. Sales is a direct review input of Website, Creative
+and Presentation. Changes prompt impact review; they do not silently replace
+material copy or renew approved Strategy/Brand/Design.
+
+### Research audits of Sales segments
+
+Use the shared Research tab with Overview, Customer segments and Competitors and
+alternatives. Register Markdown detail pages in catalog section `research`.
+Each completed segment audit identifies `sales_segment` and all seven
+`sales_dimensions`; the main `research.md` opts in with `sales_audit: true`.
+See `.agents/contracts/research-sales-audit.md` for evidence, verdict, competitor
+and traceability requirements. Finding prefixes and unique IDs cover all declared
+Research pages. Every Sales segment is checked, without an arbitrary count cap.
+
+Research detail feeds its summary and downstream decisions. Research observes
+the Sales body as a hypothesis, storing its fingerprint without recursively
+inheriting Sales approval; this avoids the Research → Product → Sales review
+cycle. Changes still request a new audit. No snapshot update grants user approval.

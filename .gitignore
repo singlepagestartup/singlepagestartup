@@ -117,6 +117,9 @@ apps/studio/workspace/utils/config.local.yaml
 # Derived HTML-first Studio presentation exports
 apps/studio/output/
 
+# Derived Storybook product navigation
+apps/studio/.storybook/.generated/
+
 # Agent-local scratch artifacts
 /.artifacts/
 

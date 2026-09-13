@@ -1,9 +1,17 @@
 import type { ComponentType } from "react";
+import type { IDocumentConfirmation } from "../../../../tools/studio/workspace/document";
 export type WorkspacePageLayer = "singlepage" | "startup";
+export interface IWorkspacePageProps {
+  text?: string;
+}
 
 export interface IWorkspacePageView {
+  confirmation?: IDocumentConfirmation;
   id: string;
   title: string;
+  route?: string;
+  representations?: { text: IWorkspacePageView; preview?: IWorkspacePageView };
+  text?: string;
   kind:
     | "group"
     | "react"
@@ -14,8 +22,9 @@ export interface IWorkspacePageView {
     | "audio"
     | "file";
   children: IWorkspacePageView[];
-  Component?: ComponentType;
+  Component?: ComponentType<IWorkspacePageProps>;
   markdown?: string;
+  downloadName?: string;
   sourcePath?: string;
   url?: string;
   export?: "pdf";
@@ -23,7 +32,7 @@ export interface IWorkspacePageView {
 }
 
 export interface IWorkspacePageSources {
-  components: Record<string, { default?: ComponentType }>;
+  components: Record<string, { default?: ComponentType<IWorkspacePageProps> }>;
   markdown: Record<string, string>;
   files: ReadonlySet<string>;
 }
@@ -32,6 +41,8 @@ export interface IWorkspacePage {
   id: string;
   title: string;
   source?: string;
+  route?: string;
+  representations?: { text: string; preview?: string };
   children: IWorkspacePage[];
   export?: "pdf";
 }
@@ -46,6 +57,7 @@ export function resolveWorkspacePage(
   const result: IWorkspacePageView = {
     id: page.id,
     title: page.title,
+    route: page.route,
     kind: "group",
     layer,
     children: page.children.map((child) =>
@@ -53,6 +65,21 @@ export function resolveWorkspacePage(
     ),
     export: page.export,
   };
+  if (page.representations) {
+    const representation = (source: string) =>
+      resolveWorkspacePage(
+        { ...page, source, representations: undefined, children: [] },
+        layer,
+        sources,
+        root,
+      );
+    const text = representation(page.representations.text);
+    const preview = page.representations.preview
+      ? representation(page.representations.preview)
+      : undefined;
+    if (preview) preview.text = text.markdown;
+    return { ...result, kind: text.kind, representations: { text, preview } };
+  }
   if (!page.source) return result;
   const key = `${layer}/${page.source}`;
   const extension = page.source.split(".").pop()?.toLowerCase();

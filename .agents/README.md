@@ -39,7 +39,7 @@ length, number of turns, execution time, or token use. Load additional relevant
 material whenever it is needed to verify a material claim or complete the
 professional review.
 
-Primary living documents remain operator-readable: no more than 1,400 words,
+Primary living documents remain operator-readable: preferably about 1,400 words per page (not a hard cap),
 one current decision per topic, and no interview chronology or workflow history.
 Assets is a reference register and are loaded by current use.
 
@@ -84,11 +84,13 @@ passes singlepage through unchanged; product catalogs follow their atomic
 replacement rule defined in `workflows/pre-development.md`.
 
 Brief records the products in scope and the limited role of supporting
-activities. Business records only client facts, supplied materials, and confirmed
+activities. product models records only client facts, supplied materials, and confirmed
 intentions. Each product owns Research and Sales in its product folder; external
 research starts before strategic selection at `10-strategy`, not during intake.
-Strategy names acquisition and product priorities, one experiment track, and
-the exact experiment product set; Products retains every client-confirmed product regardless of experiment priority. A showcase,
+Strategy connects marketing goals, audiences, positioning, product roles,
+coordinated channels, customer journeys and measurable growth. Detailed
+campaigns and tests belong to product work. Products retains every
+client-confirmed product regardless of marketing priority. A showcase,
 reference project, possible future payment, repository folder, or agent idea
 never creates a catalog entry by inference.
 

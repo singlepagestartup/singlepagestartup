@@ -26,7 +26,7 @@ rules:
       - apps/mcp/**
       - libs/modules/**
     affected_artifacts:
-      - singlepage.business
+      - singlepage.products
       - singlepage.strategy
       - singlepage.brand
       - singlepage.products
@@ -41,12 +41,27 @@ rules:
       - apps/db/**
       - apps/redis/**
     affected_artifacts:
-      - singlepage.business
+      - singlepage.products
       - singlepage.strategy
       - singlepage.brand
       - singlepage.products
     earliest_stage: 00-business
 reconciliations:
+  - commit: 193531f0c384cac7c6889ff47d3e203a568f5a04
+    outcome: no-material-effect
+    summary: README and package changes add an explicitly invoked offline
+      downstream-adaptation workflow and its checks. They do not change the
+      framework license, offer, selected experiment, resource limits, or proof
+      of runtime behavior and adoption.
+    affected_artifacts: []
+  - commit: 48fff95f2ffe5c6fcfb435ae50700df029608bbe
+    outcome: no-material-effect
+    summary: PR 236 publishes the inspected adaptation workflow and restores
+      dated source context in existing Workspace statements. These editorial
+      clarifications preserve the two-product scope, commercial decisions,
+      partial design approvals, and unresolved proof limits. Existing document
+      staleness remains for semantic pipeline review; no approval is renewed.
+    affected_artifacts: []
   - commit: 160ba863151c2c668bfc7014367682ac5d2ef4ef
     outcome: no-material-effect
     summary:

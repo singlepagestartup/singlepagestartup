@@ -2,7 +2,10 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { parseProductCatalog } from "../../../apps/studio/workspace/utils/products/catalog";
-import { validateProductSectionFiles } from "../products/validate";
+import {
+  validateProductCatalogFiles,
+  validateProductSectionFiles,
+} from "../products/validate";
 import { validateDesignLayouts } from "../design/validate";
 
 import {
@@ -61,10 +64,10 @@ async function writeFixture(
   ]);
   const singlepageIndex =
     options.singlepageIndex ??
-    `schema: fixture.v1\nlayer: singlepage\nentries:\n  - { id: template.base, kind: template, path: singlepage/base.md, description: Exported template., uses: [] }\n  - { id: singlepage.discovery, kind: discovery, path: singlepage/discovery.md, description: Framework discovery., uses: [] }\n  - { id: singlepage.secret, kind: brief, path: singlepage/secret.md, description: Private local artifact., uses: [singlepage.discovery] }\n  - { id: singlepage.business, kind: business, path: singlepage/business.md, description: Framework business., uses: [singlepage.secret] }\n  - { id: singlepage.products, kind: products, path: singlepage/products.yaml, description: Framework products., uses: [singlepage.business] }\nexports: [template.base]\nimports: []\n`;
+    `schema: fixture.v1\nlayer: singlepage\nentries:\n  - { id: template.base, kind: template, path: singlepage/base.md, description: Exported template., uses: [] }\n  - { id: singlepage.discovery, kind: discovery, path: singlepage/discovery.md, description: Framework discovery., uses: [] }\n  - { id: singlepage.secret, kind: brief, path: singlepage/secret.md, description: Private local artifact., uses: [singlepage.discovery] }\n  - { id: singlepage.brand, kind: brand, path: singlepage/brand.md, description: Framework brand., uses: [singlepage.secret] }\n  - { id: singlepage.products, kind: products, path: singlepage/products.yaml, description: Framework products., uses: [singlepage.brand] }\nexports: [template.base]\nimports: []\n`;
   const startupIndex =
     options.startupIndex ??
-    `schema: fixture.v1\nlayer: startup\nentries:\n  - { id: startup.discovery, kind: discovery, path: startup/discovery.md, extends: singlepage.discovery, strategy: replace, description: Client discovery., uses: [] }\n  - { id: startup.brief, kind: brief, path: startup/brief.md, extends: singlepage.secret, strategy: sections, description: Local startup artifact., uses: [template.base, startup.discovery] }\n  - { id: startup.business, kind: business, path: startup/business.md, extends: singlepage.business, strategy: sections, description: Client business., uses: [startup.brief] }\n  - { id: startup.products, kind: products, path: startup/products.yaml, extends: singlepage.products, strategy: product-catalog, description: Client products., uses: [startup.business] }\nexports: []\nimports: [template.base]\n`;
+    `schema: fixture.v1\nlayer: startup\nentries:\n  - { id: startup.discovery, kind: discovery, path: startup/discovery.md, extends: singlepage.discovery, strategy: replace, description: Client discovery., uses: [] }\n  - { id: startup.brief, kind: brief, path: startup/brief.md, extends: singlepage.secret, strategy: sections, description: Local startup artifact., uses: [template.base, startup.discovery] }\n  - { id: startup.brand, kind: brand, path: startup/brand.md, extends: singlepage.brand, strategy: sections, description: Client brand., uses: [startup.brief] }\n  - { id: startup.products, kind: products, path: startup/products.yaml, extends: singlepage.products, strategy: product-catalog, description: Client products., uses: [startup.brand] }\nexports: []\nimports: [template.base]\n`;
   await Promise.all([
     writeFile(path.join(indexRoot, "singlepage.yaml"), singlepageIndex),
     writeFile(path.join(indexRoot, "startup.yaml"), startupIndex),
@@ -86,12 +89,12 @@ async function writeFixture(
       "# Brief\n\n## Shared direction\n\n## Client detail\n\nClient override.\n",
     ),
     writeFile(
-      path.join(singlepageRoot, "business.md"),
-      "# Business\n\n## Model\n\nFramework model.\n",
+      path.join(singlepageRoot, "brand.md"),
+      "# Brand\n\n## Model\n\nFramework model.\n",
     ),
     writeFile(
-      path.join(startupRoot, "business.md"),
-      "# Business\n\n## Model\n\nStartup model.\n",
+      path.join(startupRoot, "brand.md"),
+      "# Brand\n\n## Model\n\nStartup model.\n",
     ),
     writeFile(
       path.join(singlepageRoot, "products.yaml"),
@@ -178,18 +181,18 @@ async function runSelfCheck() {
         "valid fixture did not resolve project-specific knowledge by active layer",
       );
     }
-    const effectiveBusiness = graph.loadedEntries.find(
-      (entry) => entry.id === "startup.business",
+    const effectiveBrand = graph.loadedEntries.find(
+      (entry) => entry.id === "startup.brand",
     );
     const effectiveProducts = graph.loadedEntries.find(
       (entry) => entry.id === "startup.products",
     );
     if (
-      !effectiveBusiness?.uses.includes("startup.brief") ||
-      effectiveBusiness.uses.includes("singlepage.secret")
+      !effectiveBrand?.uses.includes("startup.brief") ||
+      effectiveBrand.uses.includes("singlepage.secret")
     ) {
       throw new Error(
-        "valid fixture did not route Business directly to the resolved Brief",
+        "valid fixture did not route Brand directly to the resolved Brief",
       );
     }
     if (
@@ -386,6 +389,10 @@ async function main() {
     const catalog = parseProductCatalog(
       entry.content,
       entry.inherited ? "singlepage" : graph.activeLayer,
+    );
+    await validateProductCatalogFiles(
+      catalog,
+      path.dirname(entry.absolutePath),
     );
     await validateProductSectionFiles(
       catalog,

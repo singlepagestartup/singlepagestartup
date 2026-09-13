@@ -1,0 +1,91 @@
+schema: singlepagestartup.sales-process.v2
+product_id: example
+readiness: ready
+owner: Course team
+seller: Course provider
+pricing: "Fixture price: 40 units per learner."
+capacity: Two scheduled sessions.
+blockers: []
+confirmation:
+  confirmed: false
+segments:
+  - id: learners
+    name: Individual learners
+    audience: People learning a new skill.
+    roles: Participant uses the course; the enrolment owner decides.
+    needs:
+      - Understand the course outcome.
+    motivations:
+      - Apply a new skill.
+    decision_criteria:
+      - Relevant content and a suitable schedule.
+    purchase_trigger: A new learning goal.
+    value_proposition: Practise a skill with a clear next step.
+    objections:
+      - concern: Does the course suit this goal?
+        response: Compare the learning outcome and schedule.
+        evidence: Course outline.
+    acquisition:
+      - id: course-guide
+        channel: Course guide
+        context: A person considers training.
+        message: See what you can learn.
+        cta: Read the outline
+        destination: Course page.
+    journey:
+      - id: choose-course
+        name: Choose a course
+        customer_goal: Find suitable training.
+        customer_action: Read the course outline.
+        customer_question: Will this help with my goal?
+        experience: An informed choice.
+        touchpoint: Course page.
+        owner: Enrolment owner
+        entry_conditions:
+          - A learning goal.
+        required_fields:
+          - Preferred subject.
+        action: Explain the learning outcome.
+        exit_condition: A course is chosen or declined.
+        failure: Choose another course.
+        metric: Course choices.
+  - id: teams
+    name: Training teams
+    audience: Teams choosing a learning programme.
+    roles: Participant uses the course; the enrolment owner decides.
+    needs:
+      - Understand the course outcome.
+    motivations:
+      - Apply a new skill.
+    decision_criteria:
+      - Relevant content and a suitable schedule.
+    purchase_trigger: A new learning goal.
+    value_proposition: Practise a skill with a clear next step.
+    objections:
+      - concern: Does the course suit this goal?
+        response: Compare the learning outcome and schedule.
+        evidence: Course outline.
+    acquisition:
+      - id: course-guide
+        channel: Course guide
+        context: A person considers training.
+        message: See what you can learn.
+        cta: Read the outline
+        destination: Course page.
+    journey:
+      - id: choose-course
+        name: Choose a course
+        customer_goal: Find suitable training.
+        customer_action: Read the course outline.
+        customer_question: Will this help with my goal?
+        experience: An informed choice.
+        touchpoint: Course page.
+        owner: Enrolment owner
+        entry_conditions:
+          - A learning goal.
+        required_fields:
+          - Preferred subject.
+        action: Explain the learning outcome.
+        exit_condition: A course is chosen or declined.
+        failure: Choose another course.
+        metric: Course choices.

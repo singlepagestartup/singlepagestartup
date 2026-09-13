@@ -1,89 +1,162 @@
 ---
+customer_segments:
+  - makers
+  - developer-agents
 confirmation:
   confirmed: false
+sources:
+  product_scope_and_testing:
+    classification: client-claim
+    source: apps/studio/workspace/brief/singlepage.md
+    keys:
+      - sources.product_scope
+      - sources.current_business
+      - sources.funding
+    date: 2026-09-12
+    supports: Existing team-developed foundation; common registration, carts and payments configured and tested together; free code, owner funding and best-effort support.
+    limitation: Team testing does not establish measured customer savings or successful independent novice use.
+  audience_and_journey:
+    classification: client-claim
+    source: apps/studio/workspace/brief/singlepage.md
+    keys:
+      - intake.audience_value_and_flow
+      - sources.audience_value_and_flow
+    date: 2026-09-13
+    supports: Novice makers direct Claude Code or Codex Desktop and inspect the UI; useful AI Chat can lead through GitHub to local deployment, adaptation and next-product reuse without a token purchase.
+    limitation: Selected product journey; public chat readiness, automatic setup and measured conversion are not established.
+  approved_direction:
+    classification: constraint
+    sources:
+      - apps/studio/workspace/strategy/singlepage.md
+      - apps/studio/workspace/brand/singlepage.md
+      - apps/studio/workspace/design/singlepage.md
+    date: 2026-09-13
+    supports: Useful business outcomes, human-directed changes, free reusable foundation and separate hosted service; approachable language and actual UI evidence.
+  included_scope:
+    classification: verified-fact
+    research: apps/studio/workspace/products/singlepage/singlepagestartup/research.md
+    findings:
+      - CF-SPS-11
+    source_id: R1
+    inspected_at: 2026-09-13
+    source_paths:
+      - libs/modules/ecommerce/README.md
+      - libs/modules/billing/README.md
+    supports: Repository documentation describes catalog, cart, order and payment functions and related interfaces.
+    limitation: Documented source scope; runtime testing remains the separately attributed client claim.
+  agent_onboarding:
+    classification: verified-fact
+    research: apps/studio/workspace/products/singlepage/singlepagestartup/research.md
+    findings:
+      - CF-SPS-02
+      - CF-SPS-05
+      - CF-SPS-11
+    inspected:
+      - AGENTS.md
+      - CLAUDE.md
+      - .agents/workflows/pre-development.md
+    urls:
+      - https://code.claude.com/docs/en/overview
+      - https://learn.chatgpt.com/docs/environments/modes
+      - https://learn.chatgpt.com/docs/agent-configuration/agents-md
+    accessed: 2026-09-13
+    supports: The repository supplies recurring project instructions and workflows; coding agents can inspect files, edit and run commands.
+    limitation: Availability of instructions and agent capabilities does not prove the SPS novice setup path succeeds.
+  competitive_choice:
+    classification: assumption
+    resolution: professional-choice
+    research: apps/studio/workspace/products/singlepage/singlepagestartup/research.md
+    findings:
+      - CF-SPS-02
+      - CF-SPS-13
+    urls:
+      - https://code.claude.com/docs/en/overview
+      - https://github.com/nextjs/saas-starter/blob/main/README.md
+      - https://shipfa.st/
+    accessed: 2026-09-13
+    supports: Compare a coordinated foundation and guided reuse with prior projects, generic agent scaffolding and other starters; common auth/payment functions are not exclusive to SPS.
+    limitation: Alternative capabilities are documented; customer preference and comparative savings are unmeasured.
+  business_goals:
+    classification: assumption
+    resolution: professional-choice
+    research: apps/studio/workspace/products/singlepage/singlepagestartup/research.md
+    findings:
+      - CF-SPS-05
+      - CF-SPS-07
+    supports: Product adoption, continued use, next-product reuse and community improvements are distinct business outcomes.
+    limitation: Planned business outcomes and measurement categories, without invented targets or reported customer results.
+  license:
+    classification: client-claim
+    source: apps/studio/workspace/brief/singlepage.md#sources.license
+    date: 2026-09-12
+    supports: MIT is the selected distribution license and publication is reported.
+    inspected_snapshot: https://github.com/singlepagestartup/singlepagestartup/blob/48fff95f2ffe5c6fcfb435ae50700df029608bbe/LICENSE
+    limitation: The inspected local HEAD and origin/main contain proprietary terms; MIT remains the operator-selected distribution model.
+  inventory:
+    classification: verified-fact
+    source: Brief repository observation, 2026-09-12.
+    supports: Sixteen modules, 65 models and 91 relations describe repository scope.
+    limitation: Earlier supplied 1836 frontend variants and 24 Studio examples are not used as current product counts; Research owns revalidation.
 review:
   dependencies:
-    business: d75723ec8f3df79a9d8c9d09084d3860b375b0e9e245e2bae91f984dfef0d37f
-    product.singlepagestartup.research: dd546bfedfa03de69aa068dd46b945b8f7e665eb0b907d1324851aa69a725c92
-    product.singlepagestartup.sales: 55772cf4836b99bff5a50065b7b71f4f394d125c80f88675a754ed074dd8c446
-    strategy: f40d55a6c706beca2fef975dc69910119c09da34d3d463f8d77c6b6aebcd75c6
+    brief: bf0f72b61cb12fc4a6fea78bd136dddb34e57921a7d8dbb528c25f85f30e68e1
+    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
+    product.singlepagestartup.research: 8445093c77d7cc877f76752e5ee3d0f616facdc6fa81e6bb1844d2d42ef3644f
 ---
 
-# Product Overview
+# Product
 
 ## Product identity
 
-| Decision          | Current definition                                                                                                                                                                                                                                                                                                                                                                        |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Brand and product | **SinglePageStartup** is the project and brand. **Code Framework by SinglePageStartup** is its reusable code foundation for accountable developers building multi-feature web products.                                                                                                                                                                                                   |
-| Category          | An inspectable developer framework for building multi-feature web products, distributed as source code through GitHub.                                                                                                                                                                                                                                                                    |
-| Lifecycle         | Code Framework remains the first evaluation experiment priority. AI Chat is the other client-confirmed product; experiment priority does not remove either from the catalog. This Strategist-owned definition is `proposed`. Strategy and Brand are approved; complete Design and proposal `measured-space` remain proposed, so `40-products` is incomplete and publication unauthorized. |
-| Boundary          | The product is the framework and its free bounded evaluation. SinglePageStartup is its parent brand. AI Chat is a separate intended service product that also supports demonstration and acquisition; its revenue, usage, and adoption remain separate from the framework. Historical services, engineering, Website, Marketing Creative, and Presentation are outside this definition.   |
+| Decision              | Definition                                                                                                                                                            |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Brand and product     | **SinglePageStartup Code Framework** (`singlepagestartup`): a reusable foundation for building web products with a coding agent.                                      |
+| Category              | A boilerplate combining common business functions, documentation and instructions for agents.                                                                         |
+| Development direction | Build on the existing team-developed codebase to make SPS a convenient starting point for a maker's current and future products. The project owner defines its scope. |
+| Boundary              | Code Framework supplies the foundation. **AI Chat** is a separate hosted service and its planned public demonstration.                                                |
 
-## Best-fit customer
+## Customer Segments
 
-| Role           | Definition                                                                                                                                                                                                             |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| User           | An accountable developer, including one using AI assistance, who inspects, sets up, checks, and may retain the framework.                                                                                              |
-| Buyer          | No purchase occurs; the person evaluating architectural fit performs the buyer-like role.                                                                                                                              |
-| Payer          | None for Code Framework; the founder funds it. Any later payment for demonstration-service access belongs to the separate service ledger.                                                                              |
-| Beneficiary    | The developer and product team if fit is established; benefit remains a hypothesis.                                                                                                                                    |
-| Decision-maker | The human founder-developer or technical owner controls architecture, credentials, data, AI permissions, tests, deployment, and acceptance. User, evaluator, and decision-maker usually coincide in the first segment. |
+The primary segment, `makers`, is novice creators and vibe coders who want their own product. They mainly communicate with Claude Code or Codex Desktop; the agent changes code while the person directs the work and reviews the interface.
 
-The qualifying situation is an imminent architecture decision for a new product needing at least three capability families: ecommerce (product catalogs, stores, and cart/orders); billing/payments; identity/access; content/sites; CRM/data capture; analytics; messaging/notifications/social; files; and AI/knowledge/automation. The trigger is having to choose these foundations before product-specific work. This customer values coherent fit, explicit rights, prerequisites, and an inspectable exit decision across several capabilities.
+The maker or adopting team is the user, beneficiary and decision-maker. There is no framework buyer; the maker separately pays for chosen coding tools and infrastructure. People seeking only hosted answers use AI Chat.
 
-Exclude established-product migrations, projects needing fewer than three foundations, hosted turnkey-service buyers, guaranteed implementation or support, and autonomous AI authority. Prior code, a starter, composed vendors, generated scaffolding, a narrower first feature, or deferral remain valid alternatives.
+The longer-term segment, `developer-agents`, is agents selecting SPS as a foundation for assigned projects. Clear project instructions and reusable functions support that direction.
 
 ## Problem and desired progress
 
-| Dimension                   | Product decision                                                                                                                                      |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Circumstance                | A developer must commit while fit, rights, setup, capability coverage, and maintenance burden are hard to compare.                                    |
-| Progress sought             | Reach an accountable retain, reject, or defer decision for one named product before architecture becomes costly to reverse.                           |
-| Functional forces           | Identify needs, inspect one pinned version, verify rights and prerequisites, complete setup, check one capability, and retain human control.          |
-| Social and emotional forces | Make the choice explainable; avoid the anxiety and reputational risk of opaque complexity or unreviewed AI output.                                    |
-| Pains and gains             | Reduce fragmented comparison and hidden assumptions. Gain is recognized when a developer explains fit or failure using a setup and capability result. |
+A maker wants to turn a business idea into a useful product without repeatedly creating registration, carts, payments and their connections. Starting from scratch diverts attention from the rules that distinguish that business.
 
-[Jobs to Be Done](https://www.christenseninstitute.org/theory/jobs-to-be-done/) structures the circumstance and progress but does not establish demand; these forces remain hypotheses until attributable developers act.
+The desired progress is to spend development time and AI tokens on the product's own logic, reach the market sooner and keep improving the product. The person should be able to express the desired result in ordinary language and stay in control of the direction.
 
-## Positioning and value
+## Value Propositions
 
-| Element                     | Selected position                                                                                                                                                                                       |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Competitive alternatives    | Prior internal code, repository templates or SaaS starters, generators, separately composed services, AI-generated foundations, building only the first feature, or postponing architecture.            |
-| Differentiated capabilities | A dated inventory makes cross-domain structure inspectable; a bounded evaluation joins version, rights, prerequisites, limits, setup, and one capability check; human authority stays explicit with AI. |
-| Customer value              | Compare several foundations in one bounded decision, inspect declared cross-domain connections, surface disqualifiers before retention, and produce an attributable fit or exit result.                 |
-| Best-fit segment            | Accountable founder-developers and similarly responsible small-team developers choosing architecture for a new multi-feature web product and needing at least three documented foundations.             |
-| Market category             | The inspectable developer-framework category defined in Product identity.                                                                                                                               |
+**Build your product on a foundation you can reuse.**
 
-The commercially readable inventory families are ecommerce; billing/payments; identity/access; content/sites; CRM/data capture; analytics; messaging/notifications/social; files; and AI/knowledge/automation. Its 16 modules are `agent`, `analytic`, `billing`, `blog`, `broadcast`, `crm`, `ecommerce`, `file-storage`, `host`, `knowledge`, `notification`, `rbac`, `social`, `startup`, `telegram`, and `website-builder`. Ecommerce is a concrete cross-module contour: 7 models and 19 relations cover catalogs/products, categories, stores, attributes, and cart-order data linked to billing currencies/payment intents, files, and website-builder content.
+| Alternative                          | Value offered by SPS                                                                                                             |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Generate the foundation from scratch | Start with common functions configured and tested together by the team; concentrate new work on the business's own logic.        |
+| Adapt an earlier project             | Reuse a shared foundation with module documentation and agent instructions instead of carrying over another product's decisions. |
+| Choose another starter               | Connect common-function code, a workflow from business definition to product design, and the example provided by AI Chat.        |
 
-[Value Proposition Canvas](https://www.strategyzer.com/library/the-value-proposition-canvas) maps multi-foundation comparison to inventory, rights-and-fit uncertainty to the bounded evaluation, and AI-authority anxiety to human control; it is not product-market fit. The [Dunford sequence](https://www.aprildunford.com/post/a-quickstart-guide-to-positioning) connects actual alternative types, capabilities, value, segment, and category; observed choice is missing.
+Other starters also offer authentication and payments. SPS positions the complete path from a useful example to one's own product and subsequent reuse. Its strongest fit is a product that needs several of the foundation's existing functions.
 
 ## Offer and usage
 
-| Part                   | Definition                                                                                                                                                                                                                                                          |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Access unit            | Free evaluation of one pinned release for one named need. Current source retains its restrictive terms; MIT must be published and verified before unrestricted use is offered.                                                                                      |
-| Activation             | Confirm at least three needed foundations; review inventory, effective license, prerequisites, evidence, limits, and exit conditions; retrieve the version and begin the authoritative setup.                                                                       |
-| Normal usage loop      | Run setup, check one relevant capability, inspect constraints, then retain, reject, or defer with a reason. Retained use stays subject to effective rights and developer-owned testing, security, data, credentials, deployment, and acceptance.                    |
-| Included and excluded  | Includes source, documentation, the bounded check, and best-effort founder help through messenger-linked CRM when capacity permits. Excludes implementation, migration, hosting, SLA, guaranteed resolution, assurances, and showcase access.                       |
-| Failure handling       | License or prerequisite conflict stops launch. The same controllable blocker in two independent attempts pauses acquisition. Help preserves the report without a timing promise.                                                                                    |
-| Money and dependencies | Price and revenue are zero; framework costs remain separate from service economics. Launch requires effective MIT terms, consistent setup, a pinned version, attribution, and bounded support and safety. Design assets remain limited by their registry lifecycle. |
+The offer includes source code, documentation and agent instructions; account and access functions; catalogs, carts and orders; payment integrations; and the shared application foundation. Business-specific rules and presentation are developed for each project.
 
-| Usage state           | Observable condition                                                                                                                      |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Access                | The developer can inspect and retrieve the pinned version under effective rights.                                                         |
-| Initial use           | An attributable developer with a named need begins the authoritative setup path.                                                          |
-| Successful use        | Setup and the predeclared capability check pass.                                                                                          |
-| Adoption or retention | The developer repeats use or attributably retains Code Framework. Attention, stars, service activity, payment, and access do not qualify. |
+The selected distribution model is free code under MIT through GitHub. [Revenue Streams](../models/framework-service/model.md#revenue-streams) owns the money terms. Coding-agent subscriptions, infrastructure and hosted AI Chat usage are separate. Help and maintenance are provided as time permits; custom implementation and managed hosting are outside the offer.
 
-## Evidence and decision rules
+In the intended experience, a person discovers SPS through AI Chat, a demonstration, task guidance or a relevant community answer. Interested makers follow **Run the project on your machine** to GitHub and ask a coding agent to deploy and adapt the project. Buying chat tokens is not required. The maker describes changes, reviews the interface and develops the product; the same foundation can support the next idea.
 
-| Decision area             | Current evidence or hypothesis                                                                                                                                                                                                                                                                                                                                                                                      | Objection or risk                                                          | Metric or threshold                                                                                                                                                 | Consequence                                                                                                     |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Demand and fit            | Scope and boundary are approved client claims; independent demand and use proof is missing.                                                                                                                                                                                                                                                                                                                         | Need may be narrow, complexity high, or alternatives easier.               | Five target developers reach the explanation; three record evaluate, reject, or defer reasons. Less is inconclusive.                                                | Then assess qualified starts; otherwise repair reach or attribution without claiming demand or adding channels. |
-| Value and differentiation | The 2026-08-14 inventory verifies structure, declarations, and examples: 16 modules, 156 model/relation entities, 1,836 declared frontend variants, and 24 linked Studio examples. It does not prove complete integration, test coverage, runtime readiness, compatibility, demand, or outcomes. Alternatives are verified; comparative value remains inference (`research.md`: Alternatives finding; MR-13–MR-17). | Prior code, narrower starters, services, or generated scaffolding may win. | After useful signal, two qualified evaluations start with attributable reasons.                                                                                     | If fewer start, change audience-message-bridge. Superiority and time-saving claims stay prohibited.             |
-| Delivery and adoption     | MIT is intended, not current; setup conflicts; support is best effort; external success is missing.                                                                                                                                                                                                                                                                                                                 | Rights, setup, capacity, security, or support may block safe use.          | One independent successful-use unit is positive; one controllable blocker affecting two developers pauses acquisition. Adoption uses the retention condition above. | Repair readiness; after one success test repeat use. Stop at license, safety, authority, time, or cost gates.   |
+## Business goals and metrics
 
-**Next bounded product decision:** after complete Design is approved, approve or correct this definition and evaluation unit before aligning Website, Marketing Creative, and Presentation; until then `40-products` remains in progress.
+| Goal                        | Metric                                                                               |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| Grow recognition            | Relevant visits, recommendations and GitHub stars.                                   |
+| Turn interest into adoption | Makers choosing SPS and projects built on the framework.                             |
+| Earn continued use          | Products developed further on SPS and makers choosing it for another product.        |
+| Strengthen the foundation   | Useful community contributions and improvements to code, examples and documentation. |
+| Support agent-led adoption  | Projects where a coding agent recommends or selects SPS.                             |
+
+These are planned outcomes. Numerical growth targets are unset. Framework adoption and community growth remain separate from AI Chat token revenue.

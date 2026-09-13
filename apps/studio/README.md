@@ -71,7 +71,7 @@ the React story and indexed workspace artifacts remain the editable sources.
 
 ## Browser PDF export
 
-Every product's `06 Presentation` tab includes the shared
+Every product's Presentation tab includes the shared
 `workspace/utils/components/PresentationPdfDownload.tsx` controls. Export starts only
 when the operator clicks **Prepare PDF**; opening the tab performs no PDF capture.
 The button shows progress, exposes a **Download PDF** Blob link on success, and
@@ -169,13 +169,13 @@ the legacy field schema. Startup inspection remains empty until startup has
 meaningful data or its own layout. Layout and component changes require visual
 review; document confirmation does not automatically approve extra sources.
 
-`Workspace/00 Client Request` contains Brief and Business. It records
+`Workspace/00 Client Request` contains Brief; initial Product, model and Sales sources are prepared next under Products. It records
 client statements, confirmed intentions, supplied-material observations, and
 unknowns, with attribution. External market research belongs to individual
 products and starts before strategic selection at `10-strategy`.
 
 `Workspace/40 Products` displays every client-confirmed product, including products outside the current launch or experiment. Each product
-owns Research, Sales, Product, Website, Marketing Creative, and
+links a model and owns Product, Sales, Research, Website, Marketing Creative, and
 Presentation outputs. Product `sections` can extend these tabs or add further
 tabs with nested Markdown, HTML, JSX/TSX, image, and media pages. Shared loaders
 and tests live in `workspace/utils/products/`; page files and supporting materials
@@ -227,7 +227,7 @@ An inherited singlepage approval does not satisfy a startup approval gate.
 Read the current effective fingerprint without recording consent:
 
 ```bash
-bun tools/studio/workspace/document-review.ts --file apps/studio/workspace/business/startup.md
+bun tools/studio/workspace/document-review.ts --file apps/studio/workspace/products/startup/models/example/model.md
 ```
 
 The agent loader and browser share `tools/studio/workspace/document.ts` and the

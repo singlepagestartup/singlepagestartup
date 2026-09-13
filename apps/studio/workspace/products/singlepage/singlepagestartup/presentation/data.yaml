@@ -1,205 +1,180 @@
 schema: singlepagestartup.product-presentation.v1
 product_id: singlepagestartup
-content:
-  acquisition: After readiness, publish one founder-led YouTube walkthrough of
-    evidenced demonstration-service behavior. The service visibly identifies
-    SinglePageStartup and provides one tracked bridge to the pinned GitHub
-    evaluation path. The two relevant personal contacts test comprehension
-    before launch; GitHub is the destination, while other video platforms,
-    Instagram, and a possible Telegram channel are deferred.
-  audience: Founder-developers and similarly accountable developers using AI
-    assistance while choosing the architecture for a new multi-feature web
-    product. The human developer owns product decisions, credentials, data,
-    testing, deployment, and AI authorization. Established-product migration is
-    deferred.
-  brand:
-    character: []
-    doDont:
-      - do: “Evaluate the foundations for one named product.”
-        dont: “Everything your startup needs.”
-      - do: “Current proof is limited to the repository and declared checks.”
-        dont: “Production-ready and proven.”
-      - do: “The developer owns permissions, review, tests, and acceptance.”
-        dont: “Let AI launch the product autonomously.”
-      - do: “Founder help is best effort when capacity permits.”
-        dont: “Dedicated support whenever you need it.”
-    idea: SinglePageStartup should be understood as a project that creates
-      inspectable, deliberate tools for accountable developers building
-      multi-feature web products. Its current primary product is Code Framework,
-      a reusable code foundation. The name SinglePageStartup belongs to the
-      overall project and brand rather than to that product alone.
-    primaryLogoUrl: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg
-  experiment:
-    assumption: The selected showcase-led route will move some target developers
-      from credible service proof to intentional framework evaluation and
-      successful use. Service engagement without that transition does not test
-      the assumption.
-    budget: Begin only after service, measurement, support-route, framework-bridge,
-      MIT-publication, and clean-setup readiness. Measure for three calendar
-      weeks, at no more than six founder hours per week and 18 total, with USD 0
-      paid media. Subsidized provider cost is capped at USD 1 per promotional
-      user per day and USD 200 aggregate, with no preset recipient-count or
-      per-recipient-day limit. Unspent subsidy may continue until exhaustion,
-      but measurement, founder work, marketing, availability, and support do not
-      extend.
-    facts:
-      - 3 weeks
-      - 6 h / week
-      - 18 h total
-      - $0 paid media
-      - $200 token subsidy
-      - $1 / promo user / day
-    minimumSignal: Five target developers reach the Code Framework explanation from
-      the showcase, and at least three record an evaluation-start, reject, or
-      defer decision with a reason.
-    negativeDecision: If the minimum signal is reached but fewer than two
-      evaluations start, change the audience-message-bridge combination. If two
-      setup attempts fail on the same controllable readiness blocker, repair the
-      product path before further acquisition.
-    positiveDecision: Continue this direction if the minimum signal is reached, at
-      least two qualified evaluations start, and at least one independent
-      developer passes setup and the declared capability check. The next test
-      should examine repeat use; this result alone is not general adoption.
-    stopRule: Stop at any approved time or cost cap; an unpassed readiness gate;
-      conflicting license or prerequisite information; an unenforceable
-      provider-cost control; a rights, privacy, security, secret, or
-      AI-authority issue; mixed service and framework measurement; support
-      becoming product implementation; or the same controllable blocker
-      affecting two independent participants.
-  modules:
-    - agent
-    - analytic
-    - billing
-    - blog
-    - broadcast
-    - crm
-    - ecommerce
-    - file-storage
-    - host
-    - knowledge
-    - notification
-    - rbac
-    - social
-    - startup
-    - telegram
-    - website-builder
-  name: Code Framework
-  nonGoals: ""
-  offer: "A free evaluation of one pinned Code Framework release for one named
-    product: compare required foundations with the documented inventory, verify
-    rights and prerequisites, run the setup check, and exercise one predeclared
-    capability. Founder help is best effort through the demonstration service's
-    messenger-linked CRM case within available capacity, without a response-time
-    or implementation commitment."
-  positioning: Code Framework by SinglePageStartup is an inspectable, reusable
-    foundation to evaluate when several recurring web-product capabilities
-    should begin in one consistent codebase. It competes with prior codebases,
-    starters, generators, composed services, and AI-generated scaffolding on
-    coherent fit, not on unproven speed or superiority.
-  productLogic: Code Framework stays free, founder-funded, and without framework
-    revenue. The MIT License is selected but not yet published. Adoption and
-    successful use are primary; stars and awareness are secondary.
-    Demonstration-service payments remain separate service economics. A future
-    subscriber may incur provider cost up to USD 3 per day, but that path is
-    outside the first experiment and proves neither price nor demand.
-  projection: singlepage
-  proof: Current proof is limited to a dated public GitHub repository and release
-    snapshot, repository guidance for developers and AI assistance, and a
-    generated inventory reporting 16 modules and 156 model/relation
-    entities.  Ecommerce contributes 7 models and 19 relations connecting
-    catalog, store, cart-order, currency, payment-intent, file, and
-    website-content data.  Inventory and code presence do not prove complete
-    integration, runtime readiness, or outcomes.
-  promise: Evaluate one pinned Code Framework release for one named product need
-    through explicit inventory, rights, prerequisites, setup, and one capability
-    check
-  risks:
-    - boundary: The selected service lacks assembled, packaged, externally usable,
-        instrumented behavior and verified attribution.
-      consequence: Delay the experiment; if readiness cannot be achieved within a
-        separately approved engineering scope, replace the showcase route with a
-        direct GitHub evaluation test.
-      title: Showcase readiness
-    - boundary: MIT publication, notice retention, dependency compatibility,
-        effective-version evidence, and one authoritative prerequisite contract
-        remain incomplete; README and package metadata conflict.
-      consequence: Withhold the walkthrough-to-evaluation launch and all current-MIT
-        or easy-setup language until both gates pass.
-      title: License and setup readiness
-    - boundary: No external demand, YouTube reach, content baseline, or channel
-        conversion is evidenced.
-      consequence: Treat positioning and channel as testable choices; insufficient
-        qualified exposure is inconclusive rather than evidence against the
-        product.
-      title: Audience and channel fit
-    - boundary: The tracked service-to-framework bridge and event instruments do not
-        yet exist.
-      consequence: Do not interpret the experiment unless service usage, attention,
-        evaluation, successful use, and adoption remain attributable and
-        distinct.
-      title: Measurement integrity
-    - boundary: Provider-day rules, eligibility, concurrency, privacy, AI permissions,
-        incident ownership, and ongoing support capacity are unresolved.
-      consequence: Pause affected access or promotion whenever cost, authority, data
-        protection, recovery, or founder capacity cannot be bounded.
-      title: Operating safety and capacity
-  showcase:
-    description: The intended AI-agent demonstration service is a
-      showcase/acquisition bridge. Possible service payments belong to that
-      service and are not framework revenue
-    outcome: The approved experiment defines successful use as setup plus one
-      relevant capability check; adoption requires repeat use or a retain
-      decision. This is a measurement definition, not an observed outcome
-    status: No independent external setup, capability-use, adoption, time-saving,
-      reliability, or value result has been supplied; no channel-conversion
-      baseline is available.
-    steps:
-      - Discover the service
-      - Evaluate an agent and its knowledge boundary
-      - Register a profile
-      - Use a promotional grant or paid access
-      - Ask one question in chat
-      - Receive one agent answer
-      - Repeat, seek support, or leave
-  signals:
-    - detail: tracked service activity; not framework adoption
-      title: demonstration-service usage
-    - detail: views or stars
-      title: repository attention
-    - detail: license or documentation review plus retrieval or setup attempt
-      title: evaluation intent
-    - detail: passing setup and one capability check
-      title: successful use
-    - detail: repeat use or an attributable decision to retain Code Framework as the
-        product foundation.
-      title: adoption
-  trigger: "An imminent architecture decision exposes the cost and risk of
-    assembling several recurring capability families before product-specific
-    work can progress: ecommerce (product catalogs, stores, carts, and orders);
-    billing and payments; identity and access; content and sites; CRM and data
-    capture; analytics; messaging, notifications, and social; files; and AI,
-    knowledge, and automation. The first case should need at least three
-    documented families."
-  visual:
-    palette:
-      accent: "#BFEF61"
-      background: "#F7F6F2"
-      foreground: "#111111"
-      line: "#CBC9C3"
-      muted: "#565656"
-      primary: "#111111"
-      surface: "#FFFFFF"
-    displayType: '"Cormorant Garamond", serif'
-    bodyType: '"JetBrains Mono", monospace'
-    displayTypeLabel: Cormorant Garamond
-    bodyTypeLabel: JetBrains Mono
 confirmation:
   confirmed: false
 review:
   dependencies:
-    brand: d5832fea9d6f4995d90b780efb5a8889ead9fe63e13d26620fb8a6c4538a3d78
-    design: 1c79d3a18cbee1ce687a7d583e70018acf5d4930604d9e4decc55fcc0a320f08
-    product.singlepagestartup.presentation-renderer: fe0d94a0c84bb6ff402e6df0287fa5362564367a13ee91a5f29e4728d3614e7d
-    product.singlepagestartup.product: dfdeb35a0cac6981f105a69b34a0765a1f4ae5e7498d189c24c9bd8d158ac26e
-    product.singlepagestartup.research: ea5c88d23c21b82ce7d8a5d8a916557e59f9cc04344c4f17755f802c8c38a289
-    product.singlepagestartup.sales: 55772cf4836b99bff5a50065b7b71f4f394d125c80f88675a754ed074dd8c446
+    brand: 691ec9f7a801d77e97daa4266fbd617c95568804eefb1ed07c3848dfd8add19d
+    design: 99ab863f73ba4c069a79fceb3cedfc3fb0b0c91c51d50185f15779c1a8aec0b7
+    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
+    product.singlepagestartup.presentation-renderer: 04a9988dfb9f9a8494ffac394b251bb07ec9ca5b6f8ad9b44c131eb896fb4565
+    product.singlepagestartup.product: 08586629928e54c1700f059e4b5c8304b78451448389b8603bc8a8665499bcf2
+    product.singlepagestartup.research: c521ccc9da692d81be9ab15bb1122131cbc56b8ceb696a32463f44221f0eb670
+    product.singlepagestartup.sales: c3d212dfccf53eccf801206264e79db78e90237b4ec1c7a0ea71e01118ab50ba
+  stale:
+    reason: Review customer, adoption and growth slides against the separate maker and delegated-agent
+      journeys in Sales.
+    sources:
+      - product.singlepagestartup.sales
+content:
+  name: Code Framework
+  projection: singlepage
+  logo: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg
+  visual:
+    palette:
+      background: "#F7F6F2"
+      surface: "#FFFFFF"
+      foreground: "#111111"
+      accent: "#BFEF61"
+      line: "#CBC9C3"
+    displayType: '"Cormorant Garamond", serif'
+    bodyType: '"JetBrains Mono", monospace'
+  slides:
+    - id: cover
+      eyebrow: Code Framework by SinglePageStartup
+      title: Build your product on a foundation you can reuse.
+      summary: Describe your business idea to a coding agent. Use a common foundation for registration,
+        carts and payments, then add the rules that make the product yours.
+      points:
+        - title: Your business logic comes next.
+          detail: Registration, carts and payments provide a starting point for your own product.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-business-conversation.png
+        alt: Illustrative photograph of people discussing work; not a customer case study.
+    - id: audience
+      eyebrow: Who builds with it
+      title: You describe the change. Your agent works on the code.
+      summary: For novice makers who want a product of their own and work through Claude Code or Codex
+        Desktop.
+      points:
+        - title: You set the goal.
+          detail: Explain the business behavior and decide whether the result does what you need.
+        - title: The agent handles implementation.
+          detail: It follows the project instructions and turns the agreed business requirements into the
+            product.
+        - title: You inspect the result.
+          detail: Review whether the product serves your customer and expresses the business behavior you
+            want.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-moment-of-focus.png
+        alt: Illustrative photograph of a person focused on their work.
+    - id: product
+      eyebrow: Reusable foundations
+      title: Keep the basics. Add what makes your product yours.
+      summary: A shared frontend and backend, source code, module documentation and instructions for
+        coding agents.
+      points:
+        - title: Accounts and access
+          detail: Reuse the existing registration and access functions.
+        - title: Commerce and payments
+          detail: Start with catalogs, carts, orders and payment integrations, then configure your providers
+            and rules.
+        - title: Project guidance
+          detail: Give the agent structured context from business definition through product work.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-module-hierarchy-v2.png
+        alt: Conceptual isometric drawing of connected modules; not a runtime architecture screenshot.
+    - id: workflow
+      eyebrow: From request to result
+      title: Define the business. Create the product. Keep building.
+      summary: The business model comes first. The framework and coding agent turn it into a product
+        people can use.
+      points:
+        - title: 01 · Describe the business
+          detail: Name your customer, their need, the offer and the way the business earns money.
+        - title: 02 · Choose the foundation
+          detail: Start with Code Framework when its common functions fit your product.
+        - title: 03 · Make it your product
+          detail: Direct the agent through conversation and add your own business rules.
+        - title: 04 · Grow and reuse
+          detail: Develop the product with customer needs and use the foundation again for your next idea.
+    - id: adaptation
+      eyebrow: An example request
+      title: “Use the existing cart. Add my order rule.”
+      summary: A store maker can focus the agent on what their business needs instead of starting the cart
+        and payment flow again.
+      points:
+        - title: Start with a customer need.
+          detail: A store maker wants ordering rules that fit the way their business sells.
+        - title: Describe the desired behavior.
+          detail: “My store has a minimum order of six units. Add that rule to the existing cart.”
+        - title: Keep the shared foundation.
+          detail: The maker focuses on the business rule while the agent adapts the product.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-coordinated-agents-v2.png
+        alt: Conceptual illustration of coordinated work accompanying an example business requirement.
+    - id: chat-bridge
+      eyebrow: Two connected products
+      title: Use the chat. Build your own version when you want to.
+      summary: AI Chat is the planned hosted service for answers grounded in supplied business facts. It
+        also introduces the foundation to people who want their own product.
+      points:
+        - title: Stay with the hosted service.
+          detail: Supply business knowledge, ask questions and buy tokens for continued use.
+        - title: Take the local-project route.
+          detail: “Run the project on your machine” opens GitHub and introduces the framework for your own
+            product.
+        - title: Choose freely.
+          detail: A chat-token purchase is not required to obtain the framework. Direct GitHub discovery also
+            works.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-framework-inheritance-v2.png
+        alt: Conceptual illustration of a shared foundation and a derived project.
+    - id: economics
+      eyebrow: Price and support
+      title: Free framework code. Your project has its own running costs.
+      summary: Code Framework distributes source and instructions for 0. Hosted AI Chat is a separate
+        service with token revenue.
+      points:
+        - title: Included
+          detail: The reusable codebase, common functions, documentation and agent instructions.
+        - title: Your project expenses
+          detail: Coding-agent services, hosting and chosen provider accounts are separate from the free code.
+        - title: Funding
+          detail: The project owner's time and money maintain the common foundation.
+        - title: Help as time permits
+          detail: Questions and contributions can use GitHub. No response or resolution schedule is
+            guaranteed.
+    - id: growth
+      eyebrow: Discovery and reuse
+      title: Useful results create the next starting point.
+      summary: Demonstrations, short extracts, searchable guides and relevant community answers connect
+        people to the matching chat or maker journey.
+      points:
+        - title: Explain the business outcome.
+          detail: Connect a customer need to the offer and a clear next action.
+        - title: Help people begin.
+          detail: Give interested makers understandable guidance from their idea to a product of their own.
+        - title: Make reuse easier.
+          detail: Turn recurring questions and accepted contributions into better foundations and guidance.
+        - title: Measure what changed.
+          detail: Separate stars and visits from local activation, useful adaptation and next-product reuse.
+    - id: goals
+      eyebrow: Business goals
+      title: Turn recognition into useful products and repeat use.
+      summary: The framework grows when more people choose it as a foundation and use it again. Its
+        free-code model supports broad distribution.
+      points:
+        - title: Recognition
+          detail: More relevant attention, recommendations and GitHub stars.
+        - title: Adoption
+          detail: More makers building their own products on SPS.
+        - title: Repeat use and community
+          detail: Further projects, shared examples and useful improvements.
+        - title: Agent adoption
+          detail: Develop SPS into a foundation coding agents can select and use in their work.
+    - id: start
+      eyebrow: Start your product
+      title: Tell your agent what you want to build.
+      summary: Describe the customer, offer and business rules. Build on Code Framework with your coding
+        agent once that direction is clear.
+      points:
+        - title: Keep developing your business.
+          detail: Let the product evolve with your customers while reusing the common foundation.
+      action:
+        label: Start with Code Framework
+        href: https://github.com/singlepagestartup/singlepagestartup
+        detail: Opens GitHub. Local setup follows with your coding agent.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-work-in-motion.png
+        alt: Illustrative photograph of a person moving through their working day.

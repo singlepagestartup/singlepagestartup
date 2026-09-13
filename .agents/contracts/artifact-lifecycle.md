@@ -50,10 +50,12 @@
   of turns, execution time, or token use. Never skip a material question,
   research step, specialist review, or correction to make the workflow shorter.
 - Primary review documents are written for an operator, not for the workflow.
-  `brief`, `business`, `strategy`, `brand`, `design`, each product Research, and every
+  `brief`, model sources, `strategy`, `brand`, `design`, each product Research, and every
   product-local `product`, `website`, and `marketing-creative` document must
-  each remain readable in five to seven minutes: at most 1,400
-  words including tables. This is a usability boundary, not a token budget.
+  strongly target a five-to-seven-minute review per page (about 1,400 words).
+  This is a preference, never a completeness gate or aggregate source limit.
+  Follow `.agents/contracts/document-readability.md`; preserve material evidence
+  and decisions even when longer pages are necessary.
   The asset index is a reference register rather than linear reading;
   it keeps only current material rows and concise limitations.
 - Edit the earliest artifact that owns a changed fact or decision, then compute

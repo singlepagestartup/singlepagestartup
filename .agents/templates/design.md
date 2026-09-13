@@ -1,6 +1,7 @@
 ---
 confirmation:
   confirmed: false
+proposal_id: ""
 ---
 
 # Design
@@ -9,20 +10,20 @@ confirmation:
 in-scope visual families from the brief. Configure visible blocks, additional
 Markdown/React/HTML/media sections, or a full TSX/JSX template in
 design/<layer>/layout.yaml; see workspace/README.md. Files are layer-owned.
+The shared renderer keeps a neutral Design header above the visual canvas in
+all non-empty projections, including startup. Project templates start at H2,
+keep their styles inside the canvas, and never repeat the document title,
+confirmation badge, or process metadata in the mockup.
 Changing the layout does not approve content or resolve omitted requirements. -->
 
-<!-- Reusable visual translation of approved Brand. Maximum 1,400 words. Keep
+<!-- Reusable visual translation of approved Brand. Prefer about 1,400 words per page; preserve material information if longer. Keep
 pages and forms in product-local website.md; keep channel formats in
 product-local marketing-creative.md. Photography and Illustration use the same
 five-part schema because Studio renders both through one media template. -->
 
-## Decision status
-
-| Field                 | Current value                   |
-| --------------------- | ------------------------------- |
-| Brand prerequisite    | Approved status and evidence ID |
-| Client style analysis | `proposed` or `confirmed`       |
-| Visual proposal ID    | One kebab-case ID               |
+<!-- Keep whole-document confirmation, attributable scoped approvals,
+and the current proposal_id in frontmatter. Studio renders confirmation;
+the review body contains current visual decisions without a status table. -->
 
 ## Design intent
 
@@ -34,9 +35,14 @@ five-part schema because Studio renders both through one media template. -->
 | Density, whitespace, grid, and rhythm    | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
 | Surface, shape, and motion               | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
 | Typography character and reading use     | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
-| Photography and illustration             | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
+| Photography                              | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
+| Illustration and infographics            | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
 | Marketing composition and text hierarchy | Observable description                         | Asset IDs or operator statement | Explicit, inferred, or unknown    |
 
+- First preserve one plain-language description for each of the five input
+  categories. Show recurring traits across inspected examples and the asset
+  IDs supporting them, then explain coherence across categories. Reuse reviewed
+  Brief descriptions; the client is not required to formulate design criteria.
 - Return this coherent style description in the operator's language and obtain
   confirmation or correction before selecting the visual territory
 - Do not select final tokens, font assets, master prompts, or registered media
@@ -100,17 +106,19 @@ prove.
 
 ### Style master prompt
 
-> One reusable prompt containing observable output, palette, lighting, material,
-> density, negative-space, crop, and exclusion constraints. Do not include the
-> subject of one example or subjective shorthand without measurable values.
+> A compact description of the recurring photographic light, color, texture
+> and movement in the references. Keep optional effects optional and allow
+> varied framing. Put individual subjects, devices and technical requirements
+> in their owning briefs, not in the reusable style prompt.
 
 ### Production specification
 
 <!-- Studio exposes this guidance from the information icon beside Style master prompt; do not create a separate visible card. -->
 
-- Variables every semantic content brief must add
-- `1:1` raster master, centered `55% × 55%` crop-safe area, formats,
-  accessibility, derivative crops, and output checks
+- Plain-language usage: copy this style prompt, add the people/action or
+  relationship to show, and attach relevant source references
+- Format follows the specific deliverable; quality checks stay in the internal
+  review block and actual dimensions in Assets
 
 ### Generation examples
 
@@ -125,6 +133,9 @@ prove.
   source size, intended size, small preview, and declared crops
 - Named real-world objects retain category-defining structure, count, scale,
   and proportions; merely similar or implausible substitutes are rejected
+- After a master changes, displayed examples must be generated with that exact
+  master and the documented reference inputs; compare style and regenerate on
+  material drift before presenting the prompt as tested
 - Cross-example style consistency, accessibility, evidence-risk, rights,
   lifecycle, and exact-prompt provenance checks
 
@@ -137,18 +148,18 @@ what they cannot prove.
 
 ### Style master prompt
 
-> One reusable prompt containing observable output, palette, contrast, stroke,
-> form/detail count, negative-space, legibility, and exclusion constraints.
-> Recognizable minimal objects are allowed when the content brief requires them;
-> do not prescribe paths, primitive coordinates, or one finished composition.
+> A compact description of recurring line, shape, space and color qualities
+> in the references. Allow compositions to follow the relationship being shown.
+> Do not invent fixed object counts, accent percentages or crop coordinates.
 
 ### Production specification
 
 <!-- Studio exposes this guidance from the information icon beside Style master prompt; do not create a separate visible card. -->
 
-- Variables every semantic content brief must add
-- `1:1` raster master, centered `55% × 55%` crop-safe area, formats,
-  accessibility, derivative crops, and output checks
+- Plain-language usage: copy this style prompt, add the people/action or
+  relationship to show, and attach relevant source references
+- Choose the background and format for the project and intended use; transparency
+  is optional. Preserve the original master; record actual dimensions in Assets.
 
 ### Generation examples
 
@@ -163,6 +174,11 @@ what they cannot prove.
   source size, intended size, small preview, and declared crops
 - Named real-world objects retain category-defining structure, count, scale,
   and proportions unless abstraction or simplification is explicitly required
+- After a master changes, displayed examples must be generated with that exact
+  master and the documented reference inputs; compare style and regenerate on
+  material drift before presenting the prompt as tested
+- Compare derivatives with the original for thin lines, secondary detail, color
+  and contrast at source and display size; reject processing that degrades them.
 - Cross-example style consistency, accessibility, evidence-risk, rights,
   lifecycle, and exact-prompt provenance checks
 

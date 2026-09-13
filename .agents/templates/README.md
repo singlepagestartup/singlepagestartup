@@ -14,19 +14,19 @@ files stay empty until they intentionally override content or confirmation.
 
 ## Sequence
 
-| Stage             | Owner                                       | Template output                                                                   | Depends on                                                         |
-| ----------------- | ------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| 00 Client Request | Account Manager and coordinator             | `brief.md`, source notes in the owning document                                   | founder request and existing materials                             |
-| 00 Client Request | Business Analyst                            | `business.md`, one `sales.yaml` per active product                                | scope-confirmed brief, attributed facts                            |
-| 10 Strategy       | Market Researcher                           | product-local `research.md`                                                       | completed fact intake, product-specific decision questions         |
-| 10 Strategy       | Strategist                                  | proposed, then approved `strategy.md` with separate audience and sales priorities | brief, business, product research, and sales                       |
-| 20 Brand          | Communication Strategist and Brand Designer | proposed, then approved `brand.md`                                                | approved strategy and product research                             |
-| 30 Design         | Brand Designer                              | `design.md`, `asset-index.yaml`                                                   | approved brand, confirmed existing assets and preferred references |
-| 40 Products       | Strategist                                  | one `product.md` per active product                                               | approved shared decisions and client-confirmed product inventory   |
-| 40 Products       | Web Designer                                | product-local `website.md`                                                        | product, shared decisions, research, assets                        |
-| 40 Products       | Brand Designer                              | product-local `marketing-creative.md`                                             | product, shared decisions, research, assets, selected channels     |
-| 40 Products       | Communication Strategist and Brand Designer | product-local React/HTML presentation                                             | product and its approved review documents                          |
-| 40 Products       | Product owner for the applicable material   | optional nested product sections/pages (legacy `Content` supported)               | product-owned sources in any appropriate format                    |
+| Stage             | Owner                                       | Template output                                                                        | Depends on                                                         |
+| ----------------- | ------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 00 Client Request | Account Manager and coordinator             | `brief.md`, source notes in the owning document                                        | founder request and existing materials                             |
+| 00 Client Request | Business Analyst                            | `products.yaml`, initial `product.md`, `product-model.md`, `sales.yaml`                | scope-confirmed brief, attributed facts                            |
+| 10 Strategy       | Market Researcher                           | product-local `research.md`                                                            | completed fact intake, product-specific decision questions         |
+| 10 Strategy       | Strategist                                  | proposed, then approved `strategy.md` with separate audience and sales priorities      | brief, product models, product research, and sales                 |
+| 20 Brand          | Communication Strategist and Brand Designer | proposed, then approved `brand.md`                                                     | approved strategy and product research                             |
+| 30 Design         | Brand Designer                              | `design.md`, `asset-index.yaml`                                                        | approved brand, confirmed existing assets and preferred references |
+| 40 Products       | Strategist                                  | one `product.md` per active product                                                    | approved shared decisions and client-confirmed product inventory   |
+| 40 Products       | Web Designer                                | product-local `website.md`                                                             | product, shared decisions, research, assets                        |
+| 40 Products       | Brand Designer                              | product-local `marketing-creative.md`                                                  | product, shared decisions, research, assets, selected channels     |
+| 40 Products       | Communication Strategist and Brand Designer | product-local React/HTML presentation                                                  | product and its approved review documents                          |
+| 40 Products       | Product owner for the applicable material   | optional nested product sections/pages (`Product Content`, legacy `content` supported) | product-owned sources in any appropriate format                    |
 
 The complete operating order, review rules, and invalidation behavior remain in
 `.agents/workflows/pre-development.md`. Templates describe shape only;
@@ -41,10 +41,11 @@ unrelated business.
 Professional artifacts are decision projections rather than cumulative working
 notes. Studio names the resolved singlepage-plus-startup view `default`. A full
 generation or rerun starts from the owning template and replaces
-the previous body from stable upstream dependencies; Git retains prior versions.
-Every primary review document is limited to 1,400 words so the operator can read
-and edit it in five to seven minutes. This is a usability rule rather than a
-token budget.
+the previous body from stable upstream dependencies; Product/model migrations
+first inspect and preserve unique client facts, sources and extensions. Git retains prior versions.
+Strongly prefer a five-to-seven-minute review (about 1,400 words) per primary
+page. This is not a word, line, source, segment or aggregate YAML/corpus cap.
+Follow `.agents/contracts/document-readability.md`; completeness takes precedence.
 In particular, `strategy.md` uses exactly its four second-level sections and
 does not contain interview chronology, invalidation logs,
 or coordinator handoff prose.
@@ -90,3 +91,8 @@ Use ordered built-in/custom sections or a full TSX/JSX template; see the workspa
 README for the exact schema. Empty startup inherits; a populated startup layout
 replaces the base, using its own files. Keep the applicable visual decisions in
 the Design document and Assets; do not force every project into starter blocks.
+
+Research uses `product-research.md` as its primary summary, with adaptable
+`product-research-segment.md` and `product-research-competitors.md` detail starters.
+Register detail under the shared Research tree; apply
+`.agents/contracts/research-sales-audit.md` to validate the preceding Sales proposal.

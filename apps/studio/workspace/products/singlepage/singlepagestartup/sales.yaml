@@ -1,88 +1,429 @@
-schema: singlepagestartup.sales-process.v1
+schema: singlepagestartup.sales-process.v2
 product_id: singlepagestartup
-readiness: blocked
-owner: Founder
-seller: No seller; the framework is free and founder-funded
-pricing: Free evaluation and use; no framework payment
-capacity: First experiment is limited to six founder hours per week and eighteen total
-blockers:
-  - Publish the selected license and one authoritative setup contract before
-    acquisition starts.
-  - Verify the showcase bridge, attribution, support boundary, and one
-    capability check.
-stages:
-  - id: reached-explanation
-    name: Reached framework explanation
-    owner: Founder
-    entry_conditions:
-      - Target developer encounters the selected acquisition route
-    required_fields:
-      - source
-      - anonymous-or-attributable-visitor-id
-    action: Present the audience, scope, evidence, limits, and evaluation path.
-    exit_condition: Developer opens the pinned evaluation destination.
-    failure: Record no transition; do not count a view or service use as product
-      interest.
-    metric: Target developers reaching the framework explanation
-  - id: recorded-decision
-    name: Recorded evaluation decision
-    owner: Founder
-    entry_conditions:
-      - Developer has a named or confidentiality-safe product need
-    required_fields:
-      - product-need
-      - decision
-      - reason
-    action: Record whether the developer starts, rejects, or defers evaluation and why.
-    exit_condition: One attributable decision and reason are stored.
-    failure: Missing need or reason remains unqualified and receives no success label.
-    metric: Qualified start, reject, or defer decisions
-  - id: evaluation-started
-    name: Evaluation started
-    owner: Developer
-    entry_conditions:
-      - License
-      - prerequisites
-      - evidence
-      - and limits reviewed
-    required_fields:
-      - pinned-version
-      - setup-started-at
-    action: Retrieve the pinned version and begin the documented setup.
-    exit_condition: Setup begins for the named product need.
-    failure: Record the blocking prerequisite or rejection reason; founder help is
-      best effort.
-    metric: Qualified evaluation starts
-  - id: capability-checked
-    name: Declared capability checked
-    owner: Developer
-    entry_conditions:
-      - Setup completed
-    required_fields:
-      - setup-result
-      - capability
-      - check-result
-    action: Exercise one capability declared before the evaluation.
-    exit_condition: Setup and capability results are attributable and recorded.
-    failure: Two independent failures on one controllable blocker pause acquisition
-      for repair.
-    metric: Independent successful-use checks
-  - id: adoption-decided
-    name: Adoption decision recorded
-    owner: Developer
-    entry_conditions:
-      - Successful use completed
-    required_fields:
-      - retain-or-reject
-      - reason
-      - follow-up-date
-    action: Record repeat use or an attributable decision to retain or reject the
-      framework.
-    exit_condition: The developer records a decision with a reason.
-    failure: No follow-up is reported as missing evidence, never inferred adoption.
-    metric: Repeat use or attributable retain decisions
+readiness: ready
+owner: Project owner
+seller: No framework seller or checkout; code and documentation are free.
+pricing: See [Revenue Streams](../models/framework-service/model.md#revenue-streams), row singlepagestartup.
+capacity: Help and community review fit the owner's available time; no guaranteed support schedule.
+sources:
+  intake: Brief audience_value_and_flow and current_business, operator inputs reviewed 2026-09-13;
+    novice makers, useful AI Chat experience, free framework, agent-led building, reuse and
+    best-effort help.
+  direction: Approved Strategy Growth system and Customer journey, and Brand Meaning and message
+    hierarchy; selected organic channels and optional hosted-chat-to-framework journey.
+  planning-scope: Operator correction, 2026-09-13; this is the intended business process before
+    implementation. Ready means its business steps are defined, not that a service is implemented or
+    that the operator has confirmed this document.
+  proposals: Segment needs, motivations, objections, decision criteria and journeys are professional
+    proposals derived from Product, Brief and approved Strategy/Brand, refined against the research
+    pages below. Customer questions are illustrative, not interview quotations. Experience describes
+    intended experience and potential concerns, not observed emotions. Objection evidence fields
+    describe proposed supporting material, not completed SPS studies. Agent motivations are
+    delegated human objectives; its experience means decision context and human oversight, not
+    feelings. Metrics have no supplied numerical targets.
+  segment_scope: Product Customer Segments owns makers and developer-agents. Makers are the primary
+    audience; agent-led selection for a human or team is a longer-term direction. The human remains
+    the beneficiary and authority; neither segment buys framework code.
+  existing_research: "apps/studio/workspace/products/singlepage/singlepagestartup/research.md,
+    reviewed 2026-09-13: CF-SPS-01 and CF-SPS-03 retain the client-selected audience and free-code
+    terms; CF-SPS-02 and CF-SPS-11 support conversational work and guidance; CF-SPS-04, CF-SPS-08,
+    CF-SPS-09 and CF-SPS-10 document channel mechanics; CF-SPS-05 informs business-result
+    explanations. CF-SPS-07 and CF-SPS-12 keep adoption, comparative savings, chat-to-framework
+    movement and reuse unmeasured."
+  journey_method: "NN/G, Journey Mapping 101, https://www.nngroup.com/articles/journey-mapping-101/,
+    accessed 2026-09-13. Fit: one actor and scenario per customer-perspective map, connecting phases
+    with actions, questions and experience. Limitation: these are proposed future journeys, not
+    measured interviews. The agent map adapts the method to delegated work for a human and describes
+    decision context rather than emotions."
+  maker_research: "apps/studio/workspace/products/singlepage/singlepagestartup/research/makers.md,
+    accessed and reviewed 2026-09-13: CF-SPS-15 informs task-specific needs; CF-SPS-16 informs
+    autonomy, accessible progress and optional learning; CF-SPS-17 makes the current idea/task the
+    adoption trigger; CF-SPS-18 and CF-SPS-19 inform continuing guidance, expense and hosted
+    convenience versus control; CF-SPS-20 informs optional acquisition routes; CF-SPS-21 informs
+    business-outcome review and help throughout the journey. General needs have partial support in
+    adjacent populations; SPS preferences, route frequencies and complete journeys remain
+    unobserved."
+  agent_research: "apps/studio/workspace/products/singlepage/singlepagestartup/research/developer-age\
+    nts.md, accessed and reviewed 2026-09-13: CF-SPS-22, CF-SPS-23 and CF-SPS-24 support framing
+    assigned needs, delegated human objectives and human-initiated selection; CF-SPS-25 and
+    CF-SPS-26 inform unfamiliar-foundation effort, maintainability, the existing project and human
+    authority; CF-SPS-27 and CF-SPS-28 inform referral, reuse and human-judged business outcomes.
+    Practitioner analogues do not establish autonomous SPS discovery, preference or repeat
+    selection."
+  competitive_research: "apps/studio/workspace/products/singlepage/singlepagestartup/research/competi\
+    tors.md, accessed and reviewed 2026-09-13: CF-SPS-29, CF-SPS-30, CF-SPS-31 and CF-SPS-32
+    establish free/paid starters, including competing agent guidance; CF-SPS-33, CF-SPS-34 and
+    CF-SPS-35 establish managed alternatives and separate usage/operating terms; CF-SPS-36 and
+    CF-SPS-37 support comparing tailored generation and existing work. Documented offers inform fit
+    criteria, not SPS superiority or customer preference; Sales does not repeat changeable
+    competitor prices."
+blockers: []
 confirmation:
   confirmed: false
 review:
   dependencies:
-    business: a91d74583bcc0dd5699980a5d03d063a72c463cc6c0b9d7b7896f67c62d8a5e0
+    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
+    product.singlepagestartup.product: 08586629928e54c1700f059e4b5c8304b78451448389b8603bc8a8665499bcf2
+segments:
+  - id: makers
+    name: Makers building with a coding agent
+    audience: Novice creators and vibe coders with a business idea who mainly describe changes to Claude
+      Code or Codex Desktop and judge the resulting product through its interface and business
+      usefulness.
+    roles: The maker or team is the user, beneficiary and decision-maker. There is no framework buyer;
+      the human pays separately for chosen agents and infrastructure.
+    needs:
+      - Turn the current idea into a useful product by reusing functions relevant to its task;
+        registration, carts and payments matter where that business needs them.
+      - Understand what the foundation provides, what is unnecessary for this idea and what their
+        own product still needs.
+      - Direct work in ordinary language and judge the customer or business outcome alongside the
+        visible interface.
+      - Continue after the first result with understandable explanations, reusable guidance and
+        clear expectations about help.
+    motivations:
+      - Concentrate effort and AI tokens on the business rules that make the product useful.
+      - Move from a current idea or an understandable example to a personal product with a clear
+        next action.
+      - Keep control of product decisions and understand progress well enough to direct the work;
+        deeper technical learning is optional.
+      - Keep a reusable foundation for suitable future ideas without a code purchase.
+    decision_criteria:
+      - The required business functions and expected customer outcome fit the foundation;
+        unnecessary scope and remaining work are understandable.
+      - Guidance supports the first result and continued changes; the maker understands their
+        responsibilities and the limits of available help.
+      - Free-code terms, coding-agent use, operation, external services and optional chat purchases
+        are separate; the effects of usage and service choices on continuing costs are clear.
+      - The value of customization and reuse justifies taking on a personal project rather than
+        retaining the convenience of a managed builder or existing service.
+    purchase_trigger: A current product idea or business task triggers consideration of a foundation. A
+      useful AI Chat experience or relevant demonstration can introduce SPS. Framework code costs 0;
+      chat token purchase is optional.
+    value_proposition: "Build your product on a foundation you can reuse: direct the agent toward your
+      business logic while starting with common functions already developed together."
+    objections:
+      - concern: I do not know enough code to build this or judge the next change.
+        response: Show a business scenario, its expected result and a plain-language explanation of the
+          change. Provide guidance for continuing and explain that personal help is available as
+          time permits.
+        evidence: An order-rule walkthrough connecting the maker’s request, the resulting customer journey
+          and its business outcome, followed by guidance for the next change.
+      - concern: Free code may still mean unexpected expenses.
+        response: Separate the zero code price from coding-agent use, operation, external services and
+          optional chat purchases. Explain how usage and service choices change continuing expenses.
+        evidence: A cost explanation distinguishing one-time choices, recurring or usage-based expenses and
+          optional AI Chat purchases, without promising a fixed all-inclusive total.
+      - concern: My agent or another starter could do the same thing.
+        response: Choose SPS when the relevant existing functions and continuing guidance suit this idea.
+          Compare what is reusable, unnecessary and still to be made; another starter, tailored
+          generation or an existing project may fit better.
+        evidence: A task-specific comparison of SPS, another foundation and the maker’s existing approach,
+          including remaining work and expected guidance.
+      - concern: Why leave a hosted builder that already works for me?
+        response: Compare the benefit of the reusable foundation and customization with the convenience and
+          support the maker would give up. A hosted service can remain the better choice; code
+          export alone does not make SPS necessary.
+        evidence: A comparison for the maker’s own task covering the desired result, continuing
+          responsibilities, expense, available help and control.
+    acquisition:
+      - id: hosted-chat
+        channel: AI Chat
+        context: A person with an idea for their own product may become interested in the foundation after a
+          useful chat experience.
+        message: Build your product on the foundation behind this chat.
+        cta: Run the project on your machine
+        destination: GitHub and the maker’s coding-agent conversation when a personal project fits;
+          continuing to use hosted chat remains an option.
+      - id: video
+        channel: YouTube demonstrations and related Shorts
+        context: A recognizable business task and its adaptation make the value concrete for viewers with
+          their own idea.
+        message: See the business result, then explore how this foundation could serve your idea.
+        cta: Explore the framework
+        destination: Short → relevant full demonstration. A maker tutorial can lead directly to GitHub and
+          guidance; AI Chat is an optional destination for viewers interested in the hosted service.
+      - id: search-community
+        channel: Searchable task guidance and relevant community answers
+        context: The maker is looking for a way to build a particular business function.
+        message: Reuse the common functions and add the rules your business needs.
+        cta: Explore the example
+        destination: Matching use-case explanation, then repository guidance; community links fit the
+          question and local rules.
+    journey:
+      - id: reached-explanation
+        name: See a result worth pursuing
+        customer_goal: Find a practical way to make progress with the business idea.
+        customer_action: Bring a current task to a demonstration or relevant answer, or explore the
+          foundation after using chat.
+        customer_question: Could I use this for my own idea?
+        experience: "Desired: curiosity grounded in a recognizable result, without needing to understand the
+          code."
+        touchpoint: AI Chat, demonstration, use-case page or community answer.
+        owner: Project owner presents the example; visitor chooses the next step.
+        entry_conditions:
+          - A relevant question or idea brings the visitor to an example.
+        required_fields:
+          - No personal data is needed for discovery.
+        action: Connect the business result to the reusable foundation and offer a clear route to learn
+          more.
+        exit_condition: The visitor explores a fit for their own product, continues as a hosted consumer or leaves.
+        failure: No current fit or interest; leave or return to another example later.
+        metric: Relevant visits and framework interest by discovery route; chat use is counted separately.
+      - id: recorded-decision
+        name: Choose a foundation for the idea
+        customer_goal: Understand whether adopting SPS is worthwhile for this particular product.
+        customer_action: Compare required functions, remaining work, continuing expenses, guidance and the
+          convenience of the current approach.
+        customer_question: What does this help my business do, and is the added responsibility worthwhile?
+        experience: "Desired: an informed fit decision with realistic expectations about ongoing work,
+          expense and help."
+        touchpoint: Product explanation, repository overview and agent conversation.
+        owner: Maker or team decides; project owner provides the explanation.
+        entry_conditions:
+          - The visitor has a product idea and wants to assess fit.
+        required_fields:
+          - Desired product, customer outcome and important business functions.
+          - Current approach, preferred control, acceptable continuing expense and help expectations.
+        action: Explain relevant functions, separate costs, continued guidance and the maker’s
+          responsibilities; compare a personal project with managed and existing alternatives.
+        exit_condition: The maker chooses SPS, seeks guidance or keeps a better-fitting alternative.
+        failure: The benefit does not justify the work or responsibility; stay hosted, use an existing
+          solution or defer.
+        metric: Adoption decisions and voluntarily shared reasons for choosing or declining.
+      - id: evaluation-started
+        name: Begin a personal project
+        customer_goal: Move from the example to something the maker can shape.
+        customer_action: Open GitHub and ask the chosen coding agent to prepare the project.
+        customer_question: What is my next step, and how will I continue shaping the product after that?
+        experience: "Desired: a manageable next action and continued control over the project’s direction."
+        touchpoint: Repository guidance and Claude Code or Codex Desktop.
+        owner: Maker directs the agent; project owner supplies code and guidance.
+        entry_conditions:
+          - The maker chooses SPS for the product.
+        required_fields:
+          - Project idea and chosen coding agent.
+        action: Provide the foundation and a plain-language handoff to a personal project, with guidance for
+          continued changes and clear best-effort help expectations.
+        exit_condition: The maker starts a product based on SPS.
+        failure: The maker needs more guidance or prefers less responsibility; consult the guide, seek
+          optional help, stay hosted or postpone.
+        metric: Projects started from chat, demonstrations and direct repository discovery.
+      - id: capability-checked
+        name: Shape the product around the business
+        customer_goal: Get a result that serves the business’s own task.
+        customer_action: Describe business rules to the agent, explore the interface and judge whether the
+          customer’s task produces the intended business result.
+        customer_question: Does this do what my customer or business needs?
+        experience: "Desired: understandable progress toward a useful business result, with freedom to
+          refine the idea."
+        touchpoint: Agent conversation, product interface and the customer’s intended task.
+        owner: Maker defines value; the coding agent helps create the product.
+        entry_conditions:
+          - The maker is developing a product on the foundation.
+        required_fields:
+          - Desired business behavior and useful outcome.
+        action: Connect common-function reuse and product-specific rules to the intended customer outcome;
+          explain choices and how to continue.
+        exit_condition: The maker can explain how the adaptation serves the task or specifies a clearer direction.
+        failure: The idea needs refinement; change the brief, seek guidance or choose another approach.
+        metric: Maker-reported useful task outcomes, adaptations and common functions used in products.
+      - id: adoption-decided
+        name: Continue and reuse
+        customer_goal: Build on the positive experience instead of starting every idea from zero.
+        customer_action: Develop the product further, choose SPS again or recommend an example.
+        customer_question: Would this foundation suit my next product too?
+        experience: "Desired: familiarity and continued value, with the option to choose differently when
+          needs change."
+        touchpoint: Existing project, reusable guidance and a new product brief.
+        owner: Maker or adopting team.
+        entry_conditions:
+          - A useful experience creates a continuing or new need.
+        required_fields:
+          - Continuing product need or next idea.
+        action: Keep guidance reusable across projects and share relevant examples and improvements.
+        exit_condition: Continued use, another project, a recommendation or departure.
+        failure: The need ends or another approach fits better; leaving remains a valid choice.
+        metric: Continued use, next-product reuse and recommendations.
+      - id: support-and-community
+        name: Seek help or share an improvement
+        customer_goal: Get direction or help others benefit from the same experience.
+        customer_action: Ask a question, share an example or offer a contribution when useful.
+        customer_question: Where can I ask or share, and what response can I expect?
+        experience: "Desired: an understandable route with realistic expectations about available help."
+        touchpoint: Guidance available before adoption and during use, repository issues and voluntary
+          contributions.
+        owner: Maker contributes context; owner reviews as time permits.
+        entry_conditions:
+          - Optional continuation from any stage when help or sharing is useful.
+        required_fields:
+          - Question or proposed improvement and its value.
+        action: Make the help route and its availability clear from the choice stage onward; consider useful
+          questions and contributions as time permits.
+        exit_condition: A direction or contribution is accepted, refined, declined or left open.
+        failure: Help is unavailable or priorities differ; seek another source or keep the change in the
+          personal project.
+        metric: Useful answers, accepted improvements and recurring needs.
+  - id: developer-agents
+    name: Coding agents selecting for a person or team
+    audience: "A longer-term adoption path: a coding agent considers SPS while carrying out a
+      human-assigned product task."
+    roles: The agent is a delegated selector and user of the foundation. The human or team owns the
+      project, benefits from it and sets decision authority. No agent buys framework code.
+    needs:
+      - Map the assigned business outcome to relevant reusable functions; a broader foundation is
+        useful only where its scope fits.
+      - Find clear instructions and distinguish shared conventions from the human’s product choices.
+      - Explain fit, remaining work, unfamiliar-foundation effort and alternatives to the
+        responsible person.
+    motivations:
+      - Serve the human’s assigned goal by concentrating work on the product-specific result.
+      - Carry relevant functions and understandable guidance into suitable tasks when this benefits
+        the human or team.
+      - Explain a foundation choice the human can understand and continue maintaining within their
+        constraints.
+    decision_criteria:
+      - Relevant reusable functions justify adopting SPS when compared with minimal generation or
+        extending the current project.
+      - Documentation and examples make the foundation understandable; learning unfamiliar
+        conventions or switching away from existing work is justified by useful reuse.
+      - Continued maintenance, product-specific changes and help expectations fit the human’s needs
+        and available resources.
+      - The choice respects human authority, selected MIT/free-code terms and separately funded
+        tools or services.
+    purchase_trigger: A human assigns a new product or asks for a suitable foundation. This triggers a
+      recommendation or selection within delegated authority, not a purchase by the agent.
+    value_proposition: Use a documented, reusable foundation to serve the human’s business brief,
+      carrying common functions forward while adapting the product’s own rules.
+    objections:
+      - concern: Another starter or the existing project already supplies enough for this task.
+        response: Compare relevant reuse with the effort of learning or switching foundations and
+          maintaining the result. Keep the current project, generate only what is needed or choose
+          another starter when that better serves the brief.
+        evidence: A concise fit comparison of SPS, alternatives and existing work, covering remaining
+          business-specific work, unfamiliar conventions, continued maintenance and help.
+      - concern: The assignment does not authorize changing the foundation or external spending.
+        response: Explain the choice to the responsible person and operate within the authority already
+          given. Keep service and tool expenses separate from free code.
+        evidence: A sample recommendation separating the proposed foundation, its rationale, the human’s
+          constraints and any optional external spending.
+      - concern: Agent instructions alone do not establish that SPS is the best choice.
+        response: Connect documented functions and guidance to this brief. Present savings as intended
+          value, not a quantified result.
+        evidence: A worked example linking a business brief to module documentation, project instructions
+          and the product result shown to the human.
+    acquisition:
+      - id: human-referral
+        channel: Human-provided project reference
+        context: The person asks the agent to use or consider SPS after a demonstration or prior experience.
+        message: Use this foundation where it supports the assigned business result.
+        cta: Read the project guidance
+        destination: Repository overview, agent instructions and the human’s product brief.
+      - id: task-discovery
+        channel: Searchable task documentation and repository discovery
+        context: The assignment includes comparing foundations for common business functions.
+        message: Match the documented reusable functions to the product’s needs.
+        cta: Assess fit for the assignment
+        destination: Relevant function documentation and the repository overview; discovery and ranking are
+          not assumed.
+      - id: project-reuse
+        channel: Existing SPS project and its guidance
+        context: A human starts another product after using the foundation.
+        message: Carry forward the reusable foundation and derive fresh decisions for the new product.
+        cta: Consider SPS for the new brief
+        destination: New product brief and shared framework guidance, without inheriting another project’s
+          business decisions.
+    journey:
+      - id: assigned-need
+        name: Identify a candidate for the assignment
+        customer_goal: Find a suitable foundation for the human’s desired product.
+        customer_action: Read the assignment and inspect a supplied or discovered SPS reference.
+        customer_question: Which needs in this brief match the foundation?
+        experience: "Desired working context: a clear assignment and relevant source descriptions, without
+          assumed permission to change direction."
+        touchpoint: Human brief, repository overview and task documentation.
+        owner: Human sets the task; the coding agent considers candidates.
+        entry_conditions:
+          - A new product task or explicit foundation comparison is assigned.
+        required_fields:
+          - Business goal, important functions and delegated authority.
+        action: Describe the foundation’s scope and route the agent to guidance relevant to the task.
+        exit_condition: SPS enters the relevant shortlist or is ruled out.
+        failure: Little matches the brief; consider a different starting point.
+        metric: Assignments where SPS is considered, when voluntarily reported.
+      - id: fit-recommended
+        name: Explain the choice to the human
+        customer_goal: Choose a foundation for reasons that serve the business brief.
+        customer_action: Compare relevant reuse, remaining work, unfamiliar conventions, switching effort
+          and continued maintenance with the existing project or a smaller alternative; explain the
+          recommendation.
+        customer_question: Why is this a suitable starting point for this person’s product?
+        experience: "Desired working context: an intelligible recommendation, clear limits and preserved
+          human authority."
+        touchpoint: Agent conversation, product description and relevant documentation.
+        owner: Agent recommends; human or team owns the decision.
+        entry_conditions:
+          - The foundation appears relevant to the assignment.
+        required_fields:
+          - Fit with the brief, remaining work, adoption effort, continuing responsibilities and
+            human constraints.
+        action: Provide scope, examples, continuing guidance, support limits and separate cost terms for a
+          task-specific comparison.
+        exit_condition: The human chooses an option, or the agent selects within existing delegation.
+        failure: The recommendation is declined or scope changes; consider alternatives or revise the brief.
+        metric: Recommendations accepted, declined or deferred and stated reasons.
+      - id: foundation-adopted
+        name: Use the foundation for the assigned product
+        customer_goal: Begin product work with reusable common functions.
+        customer_action: Use the GitHub foundation and its guidance for the human’s project.
+        customer_question: What is shared, and which decisions belong to this new product?
+        experience: "Desired working context: clear continuity between reusable functions and
+          project-specific instructions."
+        touchpoint: Repository, agent guidance and the project brief.
+        owner: Agent works within the human’s chosen scope.
+        entry_conditions:
+          - SPS is selected within the assignment’s authority.
+        required_fields:
+          - Current product brief and relevant project instructions.
+        action: Supply the code, documentation and business-to-product workflow as the starting point.
+        exit_condition: The assigned product is being developed on SPS.
+        failure: The human postpones or changes direction; pause or use the selected alternative.
+        metric: Human-owned projects adopting SPS through agent recommendation or selection.
+      - id: business-value-developed
+        name: Adapt the foundation to the human’s business
+        customer_goal: Deliver a useful product shaped by the assigned business rules.
+        customer_action: Reuse applicable functions, add the assigned rules and explain the resulting
+          customer task and business outcome to the human.
+        customer_question: Does the result answer the business need the person assigned?
+        experience: "Desired working context: visible product progress and specific human feedback, rather
+          than an unexplained code change."
+        touchpoint: Agent conversation, product interface and the customer’s intended task.
+        owner: Agent develops the proposal; the human judges business usefulness.
+        entry_conditions:
+          - The human’s product is being developed on the foundation.
+        required_fields:
+          - Desired behavior and the human’s account of a useful result.
+        action: Support product-specific work through documented reusable functions and examples.
+        exit_condition: The human has a useful result or specifies a new direction.
+        failure: The result misses the need; clarify the brief or propose another approach.
+        metric: Human-reported useful task outcomes, adaptations and common functions reused.
+      - id: reuse-recommended
+        name: Support continued use and later selection
+        customer_goal: Carry useful experience into future work for the human or team.
+        customer_action: Continue the product and consider SPS for another suitable brief; surface questions
+          or improvements to the human.
+        customer_question: What should we reuse, and what should we choose afresh?
+        experience: "Desired working context: reusable guidance with new business decisions kept distinct
+          and voluntary community involvement."
+        touchpoint: Current project guidance, next brief and human-directed help or contributions.
+        owner: Human sets the next task and any sharing; agent supports it.
+        entry_conditions:
+          - Continuing work or a new task benefits from the prior experience.
+        required_fields:
+          - New or continuing business goal and the human’s sharing decisions.
+        action: Keep guidance useful across projects; consider questions and contributions through the same
+          best-effort community routes.
+        exit_condition: Continued use, another selection, an optional contribution or another foundation choice.
+        failure: Needs diverge or help is unavailable; use another approach without implying an ongoing
+          support commitment.
+        metric: Repeat selection, further human-owned projects and voluntary improvements.

@@ -1,6 +1,6 @@
 import type { IDesignLayoutView, IDesignTemplateProps } from "../design/layout";
 import ProjectDesign, { ProjectDesignSection } from "./ProjectDesign";
-import { ConfirmationBadge, documentPurpose } from "./DocumentStatus";
+import { DocumentHeader, documentPurpose } from "./DocumentStatus";
 import { WorkspacePage } from "./WorkspacePage";
 
 /** Presentation structure belongs to the selected layout; document data resolves separately. */
@@ -14,16 +14,12 @@ export function DesignRenderer({
   )
     throw new Error("Built-in Design blocks need parsed Design data.");
   const Template = layout.Template;
-  const builtinStatus =
-    !layout.Template &&
-    layout.sections.some((section) => section.builtin === "overview");
   const sections = layout.sections.map((section) =>
     section.builtin ? (
       <ProjectDesignSection
         key={section.id}
         {...props}
         data={props.data!}
-        confirmation={builtinStatus ? props.confirmation : undefined}
         section={section.builtin}
       />
     ) : (
@@ -38,18 +34,19 @@ export function DesignRenderer({
     ),
   );
   return (
-    <>
-      {!builtinStatus && props.confirmation ? (
-        <header className="space-y-3 bg-slate-950 px-6 py-6 text-slate-100">
-          <ConfirmationBadge confirmation={props.confirmation} />
-          <p className="text-sm">{documentPurpose("design").purpose}</p>
-        </header>
-      ) : null}
-      {Template ? (
-        <Template {...props}>{sections}</Template>
-      ) : (
-        <ProjectDesign data={props.data!}>{sections}</ProjectDesign>
-      )}
-    </>
+    <div className="min-h-screen bg-slate-100 p-5 text-slate-950 md:p-10">
+      <DocumentHeader
+        confirmation={props.confirmation}
+        title="Design"
+        {...documentPurpose("design")}
+      />
+      <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-sm">
+        {Template ? (
+          <Template {...props}>{sections}</Template>
+        ) : (
+          <ProjectDesign data={props.data!}>{sections}</ProjectDesign>
+        )}
+      </div>
+    </div>
   );
 }

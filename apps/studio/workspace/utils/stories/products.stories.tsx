@@ -4,10 +4,23 @@ import { ProductCatalog } from "../components/ProductCatalog";
 import { productCatalogViews } from "../products/source";
 
 const meta = {
-  title: "Workspace/40 Products",
+  id: "workspace-40-products",
+  title: "Workspace/40 Products/Legacy catalog",
+  tags: ["!dev", "!test"],
   component: ProductCatalog,
   parameters: { controls: { disable: true }, layout: "fullscreen" },
   args: { view: productCatalogViews.default },
+  render: (args) => (
+    <ProductCatalog
+      {...args}
+      productId={
+        typeof window === "undefined"
+          ? undefined
+          : (new URLSearchParams(window.location.search).get("product") ??
+            undefined)
+      }
+    />
+  ),
 } satisfies Meta<typeof ProductCatalog>;
 
 export default meta;

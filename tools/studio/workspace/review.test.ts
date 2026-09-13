@@ -378,18 +378,19 @@ describe("product and layer review graph", () => {
    * BDD Scenario: One product's delivery changes
    * Given two products share Strategy but own separate Product and Website sources
    * When Product A changes
-   * Then its website becomes stale and Product B stays unaffected
+   * Then its website and shared Strategy consumers need review while Product B itself stays unchanged
    */
-  test("isolates product-local dependencies", () => {
+  test("keeps product decisions local while reviewing shared strategy consumers", () => {
     const documents = workspaceReviewDocuments(catalogFixture());
     for (const document of documents) inspect(documents, document.id);
     documents.find(({ id }) => id === "product.a.product")!.source +=
       "\nDelivery changed.";
     const reviews = resolveDocumentReviews(documents);
     expect(reviews.get("product.a.website")!.confirmation.state).toBe("stale");
-    expect(reviews.get("product.b.website")!.confirmation.state).toBe(
+    expect(reviews.get("product.b.product")!.confirmation.state).toBe(
       "unconfirmed",
     );
+    expect(reviews.get("product.b.website")!.confirmation.state).toBe("stale");
   });
 
   /**
@@ -453,4 +454,75 @@ describe("product and layer review graph", () => {
       documents.find(({ id }) => id === "product.local.product")!.layer,
     ).toBe("startup");
   });
+});
+
+/** BDD Scenario: Research audits its own downstream proposal. Given: Research observes Sales while Sales uses Product and Product uses Research. When: the Sales body changes. Then: the audit becomes stale without a recursive approval cycle or false approval. */
+test("observes Sales hypotheses without inheriting their review state", () => {
+  const research = { ...doc("research"), observes: ["sales"] };
+  const documents = [
+    research,
+    doc("product", ["research"]),
+    doc("sales", ["product"]),
+  ];
+  documents.forEach((document) => inspect(documents, document.id));
+  update(documents[2], {
+    review: {
+      dependencies:
+        resolveDocumentReviews(documents).get("sales")!.dependencies,
+      stale: { reason: "Commercial refinement", sources: ["product"] },
+    },
+  });
+  expect(
+    resolveDocumentReviews(documents).get("research")!.confirmation.state,
+  ).toBe("unconfirmed");
+  documents[2].source += "\nA different customer need.\n";
+  const result = resolveDocumentReviews(documents);
+  expect(result.get("research")!.confirmation.sources).toContain("sales");
+  expect(result.get("product")!.confirmation.state).toBe("stale");
+  expect(result.get("research")!.confirmation.confirmed).toBe(false);
+});
+
+/** BDD Scenario: Research detail carries evidence. Given: a declared segment page and a Research summary inspecting Sales. When: detailed evidence changes. Then: the summary and Product require review, while ordinary Website page dependencies retain their direction. */
+test("includes Research detail as an input to the summary and its consumers", () => {
+  const fixture = catalogFixture();
+  const catalog = parse(fixture.sources["products/singlepage/catalog.yaml"]);
+  catalog.products[0].sections = [
+    {
+      id: "research",
+      pages: [
+        {
+          id: "segments",
+          children: [{ id: "maker", source: "a/research/maker.md" }],
+        },
+      ],
+    },
+    { id: "website", pages: [{ id: "landing", source: "a/landing.md" }] },
+  ];
+  fixture.sources["products/singlepage/catalog.yaml"] = stringify(catalog);
+  fixture.sources["products/singlepage/a/research.md"] =
+    "---\nsales_audit: true\n---\nSummary.";
+  fixture.sources["products/singlepage/a/research/maker.md"] =
+    "---\nsales_segment: maker\n---\nEvidence.";
+  fixture.sources["products/singlepage/a/landing.md"] = "Landing.";
+  const documents = workspaceReviewDocuments(fixture);
+  documents.forEach((document) => inspect(documents, document.id));
+  const research = documents.find(
+    (document) => document.id === "product.a.research",
+  )!;
+  expect(research.observes).toEqual(["product.a.sales"]);
+  expect(research.uses).toContain("product.a.page.research.maker");
+  expect(
+    documents.find(
+      (document) => document.id === "product.a.page.website.landing",
+    )!.uses,
+  ).toContain("product.a.website");
+  documents.find(
+    (document) => document.id === "product.a.page.research.maker",
+  )!.source += "\nContrary evidence.";
+  const reviews = resolveDocumentReviews(documents);
+  expect(reviews.get("product.a.research")!.confirmation.state).toBe("stale");
+  expect(reviews.get("product.a.product")!.confirmation.state).toBe("stale");
+  expect(reviews.get("product.b.product")!.confirmation.state).toBe(
+    "unconfirmed",
+  );
 });

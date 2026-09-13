@@ -11,6 +11,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { parseProductCatalog, resolveProductCatalog } from "./catalog";
 import { resolveProductSections, type IProductPageSources } from "./pages";
 import { ProductPages } from "../components/ProductPages";
+import { WorkspacePage } from "../components/WorkspacePage";
+import { productReviewPages } from "../../../../../tools/studio/workspace/review";
+import { parseCodeFrameworkWebsite } from "../../products/singlepage/singlepagestartup/website/content";
+import { ProductCatalog } from "../components/ProductCatalog";
+import type { IProductCatalogView } from "./source";
 import { extensionProduct } from "../../../../../tools/studio/products/fixtures/catalog";
 import { validateProductSectionFiles } from "../../../../../tools/studio/products/validate";
 
@@ -53,6 +58,237 @@ function sources(layer: "startup" | "singlepage"): IProductPageSources {
 }
 
 describe("product pages", () => {
+  /** BDD Scenario: Editing page headings preserves the layout's content bindings
+   * Given the authored landing page has stable section identifiers
+   * When an operator revises its headline, feature and question copy
+   * Then the layout parser exposes those changes in their original sections
+   */
+  test("keeps the actual landing bindings stable through copy revisions", () => {
+    const markdown = readFileSync(
+      new URL(
+        "../../products/singlepage/singlepagestartup/website/page.md",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    const revised = markdown
+      .replace(
+        "Build your product on a foundation you can reuse.",
+        "Your next business starts here.",
+      )
+      .replace("Accounts and access", "Your customer accounts")
+      .replace(
+        "Do I need to write the code myself?",
+        "How do I direct my agent?",
+      );
+    const content = parseCodeFrameworkWebsite(revised);
+    expect(content.hero.title).toBe("Your next business starts here.");
+    expect(content.foundation.items[0].title).toBe("Your customer accounts");
+    expect(content.questions.items[0].title).toBe("How do I direct my agent?");
+    expect(content.journey.items).toHaveLength(3);
+    expect(content.footer.links).toHaveLength(3);
+    expect(content.labels["copy-success"]).toContain("Request copied");
+    expect(content.hero.paragraphs.join(" ")).not.toContain("confirmed:");
+  });
+  const pairedProduct = (
+    representations: unknown = {
+      text: "example/lessons/introduction.md",
+      preview: "example/website/pages/Checkout.jsx",
+    },
+  ) => ({
+    ...extensionProduct,
+    sections: [
+      {
+        id: "website",
+        title: "Website",
+        pages: [
+          {
+            id: "site",
+            title: "Site pages",
+            children: [
+              {
+                id: "landing",
+                title: "Landing",
+                route: "/",
+                representations,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  /** BDD Scenario: One page copy drives both review representations
+   * Given a nested site page pairs Markdown with a React layout
+   * When its copy is revised
+   * Then text and layout receive the revision and its text remains reviewable
+   */
+  test("keeps a page's text and layout synchronized through one source", () => {
+    const product = pairedProduct();
+    const parsed = catalog("startup", product);
+    for (const title of ["Original offer", "Revised offer"]) {
+      const fixture = sources("startup");
+      const text = `# ${title}\n\nOne customer offer.`;
+      fixture.markdown["startup/example/lessons/introduction.md"] = text;
+      fixture.components["startup/example/website/pages/Checkout.jsx"] = {
+        default: ({ text }) => <div data-layout="true">{text}</div>,
+      };
+      const sections = resolveProductSections(
+        parsed.products[0].sections,
+        "startup",
+        fixture,
+      );
+      const page = sections[0].pages[0].children[0];
+      expect(page.route).toBe("/");
+      const html = renderToStaticMarkup(
+        <ProductPages pages={sections[0].pages}>{null}</ProductPages>,
+      );
+      expect(html).toContain(title);
+      expect(html).toContain('role="tree"');
+      expect(html).toContain('aria-level="2"');
+      expect(html).toContain('aria-pressed="true"');
+      expect(html).toContain(">Layout<");
+      expect(html).not.toContain('data-layout="true"');
+      expect(html.match(/Not confirmed by user/g)).toHaveLength(1);
+      expect(html.split("<article")[1]).not.toContain("Not confirmed by user");
+      expect(html).toContain('aria-label="Download Markdown"');
+      expect(html).toContain("<span>.md</span>");
+      const preview = page.representations!.preview!;
+      expect(preview.text).toBe(text);
+      expect(renderToStaticMarkup(<WorkspacePage page={preview} />)).toContain(
+        title,
+      );
+    }
+    expect(productReviewPages(product)).toEqual([
+      {
+        id: "product.example.page.website.landing",
+        source: "example/lessons/introduction.md",
+        owner: "website",
+      },
+    ]);
+  });
+
+  /** BDD Scenario: Copy may be prepared before a layout exists
+   * Given only a page's text is declared
+   * When it is opened or paired files are validated
+   * Then text remains usable and undeclared or missing layouts never fall back
+   */
+  test("supports text-first work and validates both owned files", async () => {
+    const parsed = catalog(
+      "startup",
+      pairedProduct({ text: "example/lessons/introduction.md" }),
+    );
+    const sections = resolveProductSections(
+      parsed.products[0].sections,
+      "startup",
+      sources("startup"),
+    );
+    const html = renderToStaticMarkup(
+      <ProductPages pages={sections[0].pages}>{null}</ProductPages>,
+    );
+    expect(html).toContain("Lesson introduction");
+    expect(html).toMatch(/disabled=""[^>]*>Layout</);
+    const root = new URL(
+      "../../../../../tools/studio/products/fixtures/startup/",
+      import.meta.url,
+    ).pathname;
+    await validateProductSectionFiles(
+      catalog("startup", pairedProduct()),
+      root,
+    );
+    const missing = catalog(
+      "startup",
+      pairedProduct({
+        text: "example/lessons/introduction.md",
+        preview: "example/missing.tsx",
+      }),
+    );
+    await expect(validateProductSectionFiles(missing, root)).rejects.toThrow(
+      "example/missing.tsx",
+    );
+  });
+
+  /** BDD Scenario: Representation ownership applies independently
+   * Given missing text, an unsupported format or a cross-product path
+   * When the catalog is parsed
+   * Then the invalid page is rejected before rendering
+   */
+  test("rejects invalid paired page declarations", () => {
+    for (const representations of [
+      { preview: "example/page.tsx" },
+      { text: "other/page.md" },
+      { text: "example/page.md", preview: "other/page.tsx" },
+      { text: "example/page.html" },
+      { text: "example/page.md", preview: "example/image.png" },
+      { text: "example/../page.md" },
+    ])
+      expect(() =>
+        catalog("startup", pairedProduct(representations)),
+      ).toThrow();
+    const mixed = pairedProduct();
+    Object.assign(mixed.sections[0].pages[0].children[0], {
+      source: "example/website/index.html",
+    });
+    expect(() => catalog("startup", mixed)).toThrow("cannot mix");
+  });
+  /**
+   * BDD Scenario: Show an extension before its core material is prepared.
+   * Given: an initial product has a Website extension but no Website document.
+   * When: the reader opens the Website section.
+   * Then: its real page opens immediately without an empty Overview or deck tab.
+   */
+  test("opens declared material pages without requiring empty core documents", () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, "window");
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: {
+        location: {
+          search: "?section=website",
+          href: "http://localhost/iframe.html?section=website",
+        },
+      },
+    });
+    try {
+      const view: IProductCatalogView = {
+        id: "startup",
+        label: "startup",
+        inherited: false,
+        sourcePaths: [],
+        products: [
+          {
+            id: "early",
+            name: "Early product",
+            summary: "Client intake",
+            documents: [],
+            sections: [
+              {
+                id: "website",
+                title: "Website",
+                pages: [
+                  {
+                    id: "landing",
+                    title: "Landing",
+                    kind: "markdown",
+                    layer: "startup",
+                    children: [],
+                    markdown: "# Landing\n\nActual visitor page.",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      const html = renderToStaticMarkup(<ProductCatalog view={view} />);
+      expect(html).toContain("Actual visitor page.");
+      expect(html).not.toContain(">Overview<");
+      expect(html).not.toContain(">Presentation<");
+    } finally {
+      if (descriptor) Object.defineProperty(globalThis, "window", descriptor);
+      else Reflect.deleteProperty(globalThis, "window");
+    }
+  });
   /** BDD Scenario: Agent validation uses the catalog's own directory
    * Given a complete nested source tree
    * When the filesystem validator checks it and then a missing layer root

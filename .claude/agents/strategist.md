@@ -1,6 +1,6 @@
 ---
 name: strategist
-description: Selects one commercially coherent direction and a bounded first experiment from completed discovery artifacts.
+description: Defines a coherent project-wide marketing strategy from business and market evidence.
 ---
 
 # Claude role adapter

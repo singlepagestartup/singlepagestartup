@@ -7,17 +7,17 @@ const purposes: Record<string, { purpose: string; usage: string }> = {
     usage:
       "Use it to agree on the project scope and identify the client answers needed before making decisions.",
   },
-  business: {
+  model: {
     purpose:
-      "Records how the business operates: its products, funding, responsibilities, resources, and constraints, as supplied by the client.",
+      "Explains the linked model's revenue, funding, resources, activities, partnerships and costs.",
     usage:
-      "Use it to check whether proposed product and strategy decisions fit the client's actual capabilities and confirmed intentions.",
+      "Edit common facts here once. Per-product terms retain their product IDs; Sales owns the complete customer process.",
   },
   strategy: {
     purpose:
-      "Selects the product priorities, audience, positioning, and first experiment using the client facts and product research.",
+      "Defines the project's marketing goals, audiences, positioning, channels, and growth using the Brief and external research.",
     usage:
-      "Use it to agree on what to pursue, what to defer, and which results will determine the next decision.",
+      "Use it to align product roles, acquisition, conversion, continued use, and measurable outcomes.",
   },
   brand: {
     purpose:
@@ -33,15 +33,15 @@ const purposes: Record<string, { purpose: string; usage: string }> = {
   },
   research: {
     purpose:
-      "Examines this product's buyers, alternatives, prices, channels, and unresolved hypotheses.",
+      "Checks each customer segment's needs, motives, acquisition and journey against evidence, and compares competing offers.",
     usage:
-      "Use the dated sources and their limitations to choose the product strategy. Confirmation records review, not proof of demand.",
+      "Use the findings, sources and limitations to refine Sales, positioning, website copy and marketing messages.",
   },
   sales: {
     purpose:
-      "Records this product's sales and delivery process, owners, conditions, and unresolved operational details.",
+      "Connects customer needs and buying motives with acquisition, decisions, and continued use.",
     usage:
-      "Use it to check that the offer, payment, delivery, and support promises have a workable process behind them.",
+      "Use the segment profiles and Customer Journey Maps (CJM) to shape relevant website copy, marketing messages, and customer relationships.",
   },
   product: {
     purpose:
@@ -76,6 +76,37 @@ export function documentPurpose(kind: string, fallback = "") {
       usage:
         "Use this document as the current reference for its decisions and constraints.",
     }
+  );
+}
+
+export interface IDocumentHeaderProps {
+  confirmation?: IDocumentConfirmation;
+  title: string;
+  purpose: string;
+  usage: string;
+}
+
+export function DocumentHeader({
+  confirmation,
+  title,
+  purpose,
+  usage,
+}: IDocumentHeaderProps) {
+  return (
+    <header className="mb-8 w-full rounded-3xl bg-slate-950 p-7 text-white shadow-xl md:p-10">
+      {confirmation ? (
+        <div className="mb-5 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em]">
+          <ConfirmationBadge confirmation={confirmation} />
+        </div>
+      ) : null}
+      <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
+        {title}
+      </h1>
+      <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
+        {purpose}
+      </p>
+      <p className="mt-6 text-xs leading-5 text-slate-400">{usage}</p>
+    </header>
   );
 }
 

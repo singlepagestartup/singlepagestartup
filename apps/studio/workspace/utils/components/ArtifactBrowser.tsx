@@ -3,7 +3,7 @@ import {
   documentConfirmation,
   documentReviewBody,
 } from "../../../../../tools/studio/workspace/document";
-import { ConfirmationBadge, documentPurpose } from "./DocumentStatus";
+import { DocumentHeader, documentPurpose } from "./DocumentStatus";
 
 import type { IStudioArtifact, IStudioWorkspace } from "../types";
 
@@ -51,10 +51,12 @@ export function MarkdownDocument({
   children,
   hideTitle = false,
   baseUrl,
+  resolveLink,
 }: {
   children: string;
   hideTitle?: boolean;
   baseUrl?: string;
+  resolveLink?: (url: string) => string | { href: string; target: "_top" };
 }) {
   const assetUrl = (value: string = "") => {
     if (!baseUrl || /^(?:[a-z][a-z0-9+.-]*:|\/|#)/i.test(value)) return value;
@@ -81,9 +83,18 @@ export function MarkdownDocument({
                     component: ({
                       href,
                       ...props
-                    }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-                      <a {...props} href={assetUrl(href)} />
-                    ),
+                    }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+                      const resolved =
+                        resolveLink?.(assetUrl(href)) ?? assetUrl(href);
+                      return (
+                        <a
+                          {...props}
+                          {...(typeof resolved === "string"
+                            ? { href: resolved }
+                            : resolved)}
+                        />
+                      );
+                    },
                   },
                 },
               }
@@ -153,20 +164,11 @@ export function ArtifactDocument({
     );
   return (
     <main className="min-h-screen bg-slate-100 p-5 text-slate-950 md:p-10">
-      <header className="mb-8 w-full rounded-3xl bg-slate-950 p-7 text-white shadow-xl md:p-10">
-        <div className="mb-5 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em]">
-          <ConfirmationBadge confirmation={confirmation} />
-        </div>
-        <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
-          {artifactTitle(artifact.kind)}
-        </h1>
-        <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
-          {guidance.purpose}
-        </p>
-        <p className="mt-6 text-xs leading-5 text-slate-400">
-          {guidance.usage}
-        </p>
-      </header>
+      <DocumentHeader
+        confirmation={confirmation}
+        title={artifactTitle(artifact.kind)}
+        {...guidance}
+      />
 
       <section className="w-full rounded-3xl border border-slate-200 bg-white px-5 py-7 shadow-sm md:px-10 md:py-10">
         <ArtifactContent artifact={artifact} />

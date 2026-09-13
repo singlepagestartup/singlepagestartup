@@ -106,8 +106,16 @@ shared-pipeline change therefore routes missing files, sections, schema keys, or
 decisions to the earliest affected stage in both framework and downstream
 repositories without a separate command or stored pipeline version.
 AI methods, question-routing rules, and stage completion criteria live in
-`.agents/`. During `00-business`, Brief and Business describe the potentially
-compound business model from client inputs. Material questions, metrics, risks,
+`.agents/`. During `00-business`, confirmed Brief is followed by initial Product, shared
+Operations & Economics model sources, and whole Sales intake from client inputs.
+There is no standalone Business document. Models have stable catalog IDs and
+may serve several products; sources live in `products/<layer>/models/<id>/`.
+Product owns Customer Segments and Value Propositions; Sales owns the complete
+customer process through an overview and per-segment decision profiles and Customer
+Journey Maps (CJM). Product declares stable customer_segments IDs; shared Studio
+utilities render the segment sidebar and maps from Sales v2. Model sources own
+resources, activities, partnerships, revenue, costs and financing. Follow
+`.agents/contracts/product-models.md`. Material questions, metrics, risks,
 constraints, and sources stay in the documents that own those decisions;
 confirmation stays in source metadata. Do not maintain a separate workspace
 decision checklist or approval summary. Template headings or generic prose
@@ -124,9 +132,28 @@ product owns Research and a machine-readable Sales process in its product
 folder. Product Research starts at `10-strategy` before strategic selection;
 cross-product conclusions belong to Strategy and cite the relevant products.
 There is no business-wide Research document. Product Sales intake records
-supplied current or confirmed intended processes. Strategy names separate audience-growth and sales-product priorities,
-one experiment track, and an exact experiment product set;
-`40-products` retains every client-confirmed Brief product, including products outside the current experiment. Strategy never removes catalog entries. Unknowns are routed as operator facts,
+supplied current or confirmed intended processes. Strategy defines project-wide marketing goals, audiences, positioning,
+product roles, coordinated channels, customer journeys and measurable growth,
+with separate audience-growth and sales-product priorities. Product work owns
+campaign execution and business learning; engineering tests remain in engineering.
+Strategy is not a first-experiment plan.
+The same five-section Strategy template and quality criteria apply to framework
+and downstream projects. Each startup derives its strategy from its own Brief
+and research; inherited framework choices and approval remain reference context.
+After shared workflow updates, pipeline reconciliation reviews existing startup
+strategies even when their cursor has advanced to a later stage.
+The `40-products` set is a prospective business plan and requirements for later
+engineering in both framework and downstream projects. Product ends with
+`Business goals and metrics`; Sales readiness means the intended business process
+is complete. Research concerns market and business choices; Presentation addresses
+clients, partners or investors. Installation checks, runtime tests, bug repair and
+release/license-source audits are not business-stage completion gates. Keep planned
+behavior and forecasts distinct from observed results and never invent operator
+budgets or figures. Reconcile old implementation-audit product documents at
+`40-products`, preserving valid approvals of unchanged upstream decisions. See
+`.agents/contracts/product-models.md` and
+`.agents/contracts/pipeline-reconciliation.md`.
+`40-products` retains every client-confirmed Brief product regardless of marketing priority. Strategy never removes catalog entries. Unknowns are routed as operator facts,
 research questions, professional choices, or evidence gaps. An assumption never
 answers an operator-controlled fact such as budget, capacity, rights, support,
 or decision authority. Strategy and brand remain proposals until confirmed in
@@ -147,8 +174,10 @@ the input snapshot; material impact keeps `review.stale` until corrected and,
 where required, confirmed. Never renew approval by copying a hash. The canonical
 confirmation contract defines the shared resolver and transitions.
 Every primary review document appears in the resolved `default` projection and
-contains at most 1,400 words so
-the operator can read and edit it in five to seven minutes; Git retains history; material sources stay with their owning statements. Brand owns the meaning that
+strongly targets a five-to-seven-minute review (about 1,400 words per page),
+without a hard word, line, source or segment cap. Preserve material information;
+split long topics into navigable pages under `.agents/contracts/document-readability.md`.
+Git retains history; material sources stay with their owning statements. Brand owns the meaning that
 should form in the audience's mind. During `30-design`, a separate layered
 `design.md` translates approved Brand into visual identity, photography, and
 illustration decisions. Photography and illustration use the same objective
@@ -161,12 +190,12 @@ and layered CSS stay separate. Shared support stays in `utils/design/` and
 `utils/components/`; project templates and section data stay in `design/<layer>/`. During `40-products`, each active product
 adds a self-contained Product, Website, Marketing Creative, and Presentation set
 to its existing Research and Sales tabs, plus an optional product-defined
-Content surface when needed. Products may extend any core tab or add sections with nested Markdown, HTML,
+Product Content surface when needed. Products may extend any core tab or add sections with nested Markdown, HTML,
 JSX/TSX, image, and media pages through the catalog. Product-specific files stay
 in their layer folder; shared loaders and tests live in `utils/products/`.
 React presentations compose TSX pages and retain PDF export. No mandatory
 Markdown schema applies to additional pages. A non-empty startup Product catalog replaces the entire
-singlepage catalog so unrelated products never mix.
+singlepage catalog including models so unrelated products and models never mix.
 None may redefine an upstream decision.
 The framework repository writes the `singlepage` sources; downstream
 repositories write the `startup` sources. Workspace keeps `assets/`, `products/`,

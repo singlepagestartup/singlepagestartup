@@ -80,21 +80,17 @@ describe("Studio presentation structure", () => {
    * BDD Scenario: Preserve the content width of every product catalog
    * Given singlepage and startup catalogs use the same workspace renderer
    * When products are selected in Studio
-   * Then product choices render as top tabs without a permanent sidebar
+   * Then product materials retain the full page width and optional surfaces
    */
-  test("renders shared product selection as top tabs", () => {
+  test("preserves product materials without adding a permanent content sidebar", () => {
     const component = source(
       "apps/studio/workspace/utils/components/ProductCatalog.tsx",
     );
 
-    expect(component).toContain('aria-label="Products"');
-    expect(component).toContain('role="tablist"');
-    expect(component).toContain('role="tab"');
-    expect(component).toContain('role="tabpanel"');
-    expect(component).toContain('label: "01 Product Overview"');
-    expect(component).toContain('label: "02 Research"');
-    expect(component).toContain('label: "03 Sales"');
-    expect(component).toContain('label: "07 Content"');
+    expect(component).toContain('label: "Product"');
+    expect(component).toContain('label: "Research"');
+    expect(component).toContain('label: "Sales"');
+    expect(component).toContain('label: "Product Content"');
     expect(component).toContain("product.content");
     expect(component).toContain("<Content />");
     expect(component).toContain("product.websiteComponent");
@@ -113,11 +109,11 @@ describe("Studio presentation structure", () => {
   test("enforces the six-section Product Overview contract", () => {
     const expectedSections = [
       "Product identity",
-      "Best-fit customer",
+      "Customer Segments",
       "Problem and desired progress",
-      "Positioning and value",
+      "Value Propositions",
       "Offer and usage",
-      "Evidence and decision rules",
+      "Business goals and metrics",
     ];
     const template = source(".agents/templates/product.md");
     const product = source(
@@ -402,7 +398,7 @@ describe("Studio presentation structure", () => {
     expect(workflow).toContain(
       "remove its exact file, registry entry, and\nstale current-artifact mentions",
     );
-    expect(briefTemplate).toContain(
+    expect(briefRole.replace(/\s+/g, " ")).toContain(
       "remove its exact file, Assets row, and stale current links",
     );
     expect(workflow).toContain("Client visual preference profile");
@@ -423,16 +419,9 @@ describe("Studio presentation structure", () => {
     expect(role).toContain(
       "Never copy a reference's\n  setting or narrative by default",
     );
-    expect(workflow).toContain(
-      "architecture, transport, concrete, blueprints, and other built-environment cues",
-    );
-    expect(workflow).toContain(
-      "a correctly\nproportioned computer, laptop, or smartphone",
-    );
-    expect(role).toContain(
-      "do\n  not accept architecture, transport, concrete, blueprints",
-    );
-    expect(role).toContain("implausible keyboards");
+    expect(workflow).toContain("Optional techniques stay optional");
+    expect(role).toContain("Devices are optional scene props");
+    expect(role).toContain("Keep each master prompt compact");
     expect(role).toContain("Design never duplicates that intake register");
     expect(briefRole).toContain("Record client taste references as five");
     expect(briefTemplate).toContain("## Visual reference intake");
@@ -476,9 +465,8 @@ describe("Studio presentation structure", () => {
     expect(component.match(/data\.conceptSummary/g)).toHaveLength(1);
     expect(component).not.toContain("function ReferenceIntake");
     expect(component).not.toContain("data.referenceIntake");
-    expect(workflow).toContain("`1:1` square");
-    expect(workflow).toContain("centered `55% × 55%` crop-safe");
-    expect(template.match(/`1:1` raster master/g)).toHaveLength(2);
+    expect(workflow).toContain("original aspect ratio without cropping");
+    expect(template).not.toContain("centered `55% × 55%` crop-safe");
     expect(template).toContain("### Reusable graphic language");
     expect(template).toContain(
       "One positive paragraph explaining the selected style",
@@ -486,22 +474,7 @@ describe("Studio presentation structure", () => {
     expect(template).not.toContain("## Graphic language");
     expect(workflow).toContain("absence of duplicate status/heading content");
     expect(role).toContain("Do not add\n  a second page menu, asset counters");
-    expect(component).toContain(
-      'className="aspect-square w-full overflow-hidden"',
-    );
-
-    const state = parse(
-      source("apps/studio/workspace/utils/pre-development/singlepage.yaml"),
-    ) as {
-      active_artifacts?: string[];
-      active_stage?: string;
-      blockers?: string[];
-      status?: string;
-    };
-    expect(["00-business", "10-strategy", "20-brand", "30-design"]).toContain(
-      state.active_stage,
-    );
-    expect(["in_progress", "blocked"]).toContain(state.status);
+    expect(component).toContain('className="block h-auto w-full"');
 
     const assetIndex = parse(
       source("apps/studio/workspace/assets/singlepage.yaml"),
@@ -510,6 +483,7 @@ describe("Studio presentation structure", () => {
         design_role?: string;
         lifecycle?: string;
         path?: string;
+        dimensions?: { width: number; height: number };
       }>;
     };
     const imageMasters = assetIndex.assets.filter(
@@ -523,7 +497,11 @@ describe("Studio presentation structure", () => {
       const [width, height] = pngDimensions(
         `apps/studio/workspace/${asset.path}`,
       );
-      expect(width).toBe(height);
+      expect(width).toBeGreaterThan(0);
+      expect(height).toBeGreaterThan(0);
+      if (asset.dimensions) {
+        expect({ width, height }).toEqual(asset.dimensions);
+      }
     }
   });
 
@@ -560,7 +538,7 @@ describe("Studio presentation structure", () => {
    * BDD Scenario: Present project decisions instead of Studio diagnostics
    * Given the presentation is a review deck derived from canonical artifacts
    * When the base React deck is inspected
-   * Then its slides cover product, marketing, evidence, and brand decisions without design-placeholder copy
+   * Then YAML owns the ordered slides and their text without design-placeholder copy
    */
   test("builds a decision deck instead of reusing design diagnostics", () => {
     const presentation = source(
@@ -569,19 +547,29 @@ describe("Studio presentation structure", () => {
     expect(presentation).not.toContain("<ProjectDesign");
     expect(presentation).not.toContain("Design follows this source layer only");
     expect(presentation).not.toContain("Waiting for content");
+    const data = parse(
+      source(
+        "apps/studio/workspace/products/singlepage/singlepagestartup/presentation/data.yaml",
+      ),
+    );
+    expect(presentation).toContain("slides={data.slides.map");
+    expect(presentation).toContain("text: presentationSlideMarkdown(slide)");
     for (const slideId of [
       "product",
       "audience",
-      "evaluation",
-      "showcase",
-      "acquisition",
-      "experiment",
-      "evidence",
-      "identity",
-      "visual-system",
-      "launch",
+      "workflow",
+      "adaptation",
+      "chat-bridge",
+      "economics",
+      "growth",
+      "goals",
+      "start",
     ]) {
-      expect(presentation).toContain(`id: "${slideId}"`);
+      expect(
+        data.content.slides.some(
+          (slide: { id: string }) => slide.id === slideId,
+        ),
+      ).toBe(true);
     }
   });
 

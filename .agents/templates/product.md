@@ -1,25 +1,32 @@
 ---
 confirmation:
   confirmed: false
+customer_segments: [] # Stable IDs described in Customer Segments and referenced by Sales v2.
 ---
 
-# Product Overview
+# Product
 
-<!-- One product or service offered by the business. Maximum 1,400 words. -->
+<!-- One product or service in a prospective business plan. Prefer about 1,400 words per page; preserve material information if longer.
+Describe the intended offer and experience before engineering. Keep client facts,
+market evidence and proposed outcomes distinct; do not invent operator numbers.
+Runtime checks, bug repair and release/license-source audits are not completion
+criteria. Follow .agents/contracts/product-models.md. -->
 
 ## Product identity
 
-| Decision          | Required answer                                                           |
-| ----------------- | ------------------------------------------------------------------------- |
-| Brand and product | Brand, distinct product name, and one-sentence category description       |
-| Category          | The market context that makes the product's value understandable          |
-| Lifecycle         | Current state, approval state, owner, and next product decision           |
-| Boundary          | What belongs to this product and which related offers or showcases do not |
+| Decision          | Required answer                                                                          |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| Brand and product | Brand, distinct product name, and one-sentence category description                      |
+| Category          | The market context that makes the product's value understandable                         |
+| Lifecycle         | Current foundation, owner and intended development direction; approval lives in metadata |
+| Boundary          | What belongs to this product and which related offers or showcases do not                |
 
-## Best-fit customer
+## Customer Segments
 
 - Distinguish user, buyer, payer, beneficiary, and decision-maker; combine
-  roles only when they are genuinely the same person.
+  roles only when they are genuinely the same person. Give distinct segments
+  stable names/IDs, declare the IDs in customer_segments frontmatter, and connect
+  each to its value proposition below. Sales uses these IDs for its segment pages.
 - State the qualifying situation and trigger, the status quo or alternatives,
   the characteristics that make this customer care more than adjacent
   segments, and explicit exclusions.
@@ -34,34 +41,39 @@ confirmation:
 | Social and emotional forces | Confidence, accountability, reputation, anxiety, or control when material            |
 | Pains and gains             | What must become easier, safer, faster, or more valuable, and how that is recognized |
 
-## Positioning and value
+## Value Propositions
 
-| Element                     | Required answer                                                                                          |
-| --------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Competitive alternatives    | What the customer would do if this product did not exist, including the status quo                       |
-| Differentiated capabilities | Capabilities the relevant alternatives do not provide in the same way                                    |
-| Customer value              | The practical consequence enabled by each differentiated capability                                      |
-| Best-fit segment            | The customer characteristics that make the differentiated value important                                |
-| Market category             | The context in which that value is easiest to understand without inventing unsupported leadership claims |
+| Element                     | Required answer                                                                    |
+| --------------------------- | ---------------------------------------------------------------------------------- |
+| Competitive alternatives    | What the customer would do if this product did not exist, including the status quo |
+| Differentiated capabilities | Capabilities the relevant alternatives do not provide in the same way              |
+| Customer value              | The practical consequence enabled by each differentiated capability                |
 
 Map jobs, pains, and gains to the offer, but do not call the mapping product-market
 fit without customer evidence.
 
 ## Offer and usage
 
-- Define the access or deliverable unit, activation path, normal usage loop,
-  included and excluded scope, qualification, support and failure handling,
-  rights or license, price and money flow when applicable, and dependencies.
-- Define one observable success unit and the acceptance condition that separates
-  access, initial use, successful use, and adoption or retention.
+- Define the intended access or deliverable unit, included and excluded scope,
+  usage experience, support, rights and dependencies. Link the model Revenue
+  Streams for money terms; Sales owns the complete customer process.
+- Describe how the customer obtains value, continues using the offer and, when
+  relevant, adopts it again. These are product requirements, not installation
+  instructions, runtime acceptance checks or a debugging plan.
 
-## Evidence and decision rules
+## Business goals and metrics
 
-| Decision area             | Current evidence or hypothesis          | Objection or risk                                | Metric or threshold              | Consequence                |
-| ------------------------- | --------------------------------------- | ------------------------------------------------ | -------------------------------- | -------------------------- |
-| Demand and fit            | Owning source or explicit missing proof | Why the customer may not act                     | Useful signal                    | Continue, revise, or stop  |
-| Value and differentiation | Owning source or explicit inference     | Why alternatives may remain preferable           | Validation condition             | Keep or change positioning |
-| Delivery and adoption     | Owning source or explicit missing proof | Capacity, support, rights, safety, or usage risk | Success and repeat-use condition | Scale, constrain, or stop  |
+| Goal                       | Intended business outcome                             | Metric and management use                                             |
+| -------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------- |
+| Acquisition or recognition | Who should discover and consider the offer            | A relevant measure of interest and its use in business decisions      |
+| Value and adoption         | Why people should choose and use it                   | Customer value, adoption or revenue measures appropriate to the model |
+| Retention and growth       | Why use, purchases or recommendations should continue | Continued use, repeat business or other project-fit growth measures   |
 
-End with the next bounded product decision. Apply approved Strategy, Brand,
-Design, and Assets without redefining them.
+Choose only goals that fit the product. Distinguish planned outcomes from measured
+results. Numerical targets and forecasts need a stated basis; leave unsupplied
+operator budgets and figures unknown. Business learning can inform these choices,
+but this section does not prescribe engineering tests or release gates.
+
+Initial client-factual Product is created after confirmed Brief, before Strategy.
+Later apply approved Strategy, Brand, Design and Assets as a coherent business
+proposal without redefining them. Confirmation belongs to metadata.

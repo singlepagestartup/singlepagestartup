@@ -81,7 +81,6 @@ export interface ILoadWorkspaceOptions {
 
 const LAYERED_ENTRY_KINDS = [
   "brief",
-  "business",
   "strategy",
   "asset-index",
   "brand",
@@ -107,7 +106,6 @@ const EXPECTED_LAYERED_STRATEGIES: Record<string, WorkspaceMergeStrategy> = {
   brand: "sections",
   design: "sections",
   brief: "sections",
-  business: "sections",
   communication: "replace",
   discovery: "replace",
   products: "product-catalog",

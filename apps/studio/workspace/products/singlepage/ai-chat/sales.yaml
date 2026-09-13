@@ -1,74 +1,136 @@
 schema: singlepagestartup.sales-process.v1
 product_id: ai-chat
 readiness: blocked
-owner: Founder; detailed operational responsibilities remain unconfirmed.
-seller: AI Chat service operator; legal seller and commercial terms remain unconfirmed.
-pricing: Token or paid-chat access was discussed as a possibility; no customer
-  price is selected. Prior promotional provider-cost limits are USD 1 per
-  user/day and USD 200 aggregate, not a price list.
-capacity: Prior experiment allows six founder hours/week, 18 hours total over
-  three weeks. Continuing support capacity is unknown; no response-time promise.
-stages:
-  - id: access
-    name: Registration and access
-    owner: Founder; operational delegate unconfirmed
-    entry_conditions:
-      - Identity and eligibility can be checked
-      - Provider-cost and authority controls are defined
-    required_fields:
-      - User identity
-      - Eligibility
-      - Access basis
-      - Applicable cost limit
-    action: Register the user and grant only eligible promotional access. A purchase
-      route requires separately approved terms.
-    exit_condition: Access basis and applicable limits are recorded.
-    failure: Pause or deny access if eligibility, cost, capacity or authority is
-      unclear.
-    metric: Eligible access grants and refused grants with a reason; no target
-      selected.
-  - id: interaction
-    name: Agent interaction
-    owner: Service operator; incident ownership unconfirmed
-    entry_conditions:
-      - Valid access
-      - Agent and knowledge boundary are visible
-    required_fields:
-      - Agent choice
-      - Question
-      - Access balance or allowance
-      - Interaction outcome
-    action: Accept a question within the defined boundary and return an answer,
-      bounded refusal or recorded failure.
-    exit_condition: The outcome and affected usage units are recorded.
-    failure: Preserve unaffected balances and reconcile affected units; pause
-      repeated or unbounded failures.
-    metric: Completed answers, refusals, failures and actual provider cost; value is
-      assessed separately.
-  - id: follow-up
-    name: Repeat use and support
-    owner: Founder, subject to available capacity
-    entry_conditions:
-      - Recorded interaction outcome
-    required_fields:
-      - Repeat-use or exit decision
-      - Support case when requested
-    action: Allow eligible repeat use or route a support request through
-      messenger-linked CRM visibility.
-    exit_condition: The next interaction, support case or exit is attributable.
-    failure: Explain unavailable support without promising a response time;
-      escalation rules remain to be confirmed.
-    metric: Repeat use and unresolved support cases, separate from framework
-      evaluation.
+owner: Project owner; operational delegates are unspecified.
+seller: AI Chat service operator; legal selling entity remains to be chosen.
+pricing: See [Revenue Streams](../models/framework-service/model.md#revenue-streams), row ai-chat.
+  Token purchases are the selected revenue model; exact terms remain open.
+capacity: Best-effort help within available resources. Shared resources are counted once across
+  products; no recurring subsidy or support schedule is committed.
+sources:
+  intake: Brief audience_value_and_flow, operator correction 2026-09-13; business-data chat, useful
+    answers, token purchases, repeat use and an optional route to the free framework.
+  scope: Registration, agent interaction and best-effort help are supplied intentions. A public
+    support contact and service policy remain unselected.
+  direction: Approved Strategy selects demonstrations, short videos, searchable explanations and
+    contextual community participation leading to useful hosted chat use.
+  planning-scope: Operator correction, 2026-09-13; readiness means completeness of the intended
+    business process before implementation. The remaining blockers are commercial and service-policy
+    decisions, not technical availability or runtime checks.
+  proposals: Stages describe the intended customer relationship. Inputs are relevant context, not
+    mandatory collection forms; metrics are business signals without numerical targets.
 blockers:
-  - Exact customer problem, user segment and offer remain unselected.
-  - Eligibility, payment, privacy/retention, AI authority, day reset and
-    reconciliation require confirmation.
-  - Continuing support, incident/security and refund/reversal owners remain
-    unconfirmed.
-  - The intended service flow has no supplied independent external verification.
+  - Define the token offer, unit, price, currency, packages, payment timing, expiry and refund
+    conditions, selling entity, and responsibility for purchases and purchase questions.
+  - Define initial access and eligibility, rights to supplied business materials, knowledge access
+    expectations, retention and deletion policy.
+  - Define the public help route and support policy, including purchase questions, within
+    best-effort capacity.
+stages:
+  - id: reached-explanation
+    name: Discover a useful business answer
+    owner: Project owner presents examples; the visitor chooses whether to continue.
+    entry_conditions:
+      - A person encounters a demonstration, search result, short video or community answer.
+    required_fields:
+      - No personal information is required for discovery.
+    action: Show a business question, relevant supplied facts and an answer through the selected organic
+      channels. Lead interested people to AI Chat and explain the value of using their own business
+      context.
+    exit_condition: The visitor chooses chat use, seeks more information, defers or leaves.
+    failure: The example is not relevant to a current need; the person can return to another use case later.
+    metric: Interested visits and people choosing to try the chat.
+  - id: access
+    name: Obtain access to AI Chat
+    owner: User chooses access; service operator defines the offer.
+    entry_conditions:
+      - The person wants to use the hosted chat.
+    required_fields:
+      - Identity and access basis under the eventual service conditions.
+    action: Explain the access conditions, register or enter the service and introduce the business
+      chat. Initial access allowances and eligibility remain offer decisions.
+    exit_condition: The person accepts access conditions and enters the chat, or declines them.
+    failure: The offer is unavailable or unsuitable; request clarification, defer or choose another service.
+    metric: People obtaining access and voluntarily reported reasons for declining.
+  - id: knowledge-prepared
+    name: Bring business context into the chat
+    owner: User chooses materials; the service provides a place to use them.
+    entry_conditions:
+      - The user has access and wants answers informed by their business.
+    required_fields:
+      - Selected chat, relevant business facts or documents, and intended purpose.
+    action: Supply permitted materials and configure the chat's business knowledge. Keep each chat's
+      knowledge scope understandable so the user can choose what context informs the conversation.
+    exit_condition: The user has supplied relevant context for the intended business questions.
+    failure: Suitable materials are unavailable or cannot be shared; use permitted information, seek
+      clarification about the policy or defer the task.
+    metric: People supplying useful business context and common information needs.
+  - id: interaction
+    name: Get a useful answer for the business
+    owner: User asks and judges usefulness; the service supplies contextual answers.
+    entry_conditions:
+      - The user has a business question and relevant context for the chat.
+    required_fields:
+      - The question and relevant facts or documents.
+    action: Answer using relevant material from that chat's knowledge. Help the user understand how the
+      answer applies to the business and where more information is needed.
+    exit_condition: The user finds a useful answer or understands what further information would help.
+    failure: The answer does not meet the need; clarify the question, add relevant context, seek another
+      source of advice or stop.
+    metric: User-rated useful answers, recurring questions and reasons to return.
+  - id: token-purchase
+    name: Buy tokens for continued use
+    owner: User decides; the selected service seller handles the purchase relationship.
+    entry_conditions:
+      - The user finds the service useful and wants to continue under the defined token offer.
+    required_fields:
+      - Chosen offer, payer and information required by its purchase conditions.
+    action: Explain the token quantity, price, permitted use and purchase conditions. Let the customer
+      choose a purchase for continued access under those terms.
+    exit_condition: The customer purchases tokens, requests clarification or declines the offer.
+    failure: Price or conditions do not fit; retain the choice to pause or leave. Purchase and refund
+      questions follow the support policy that remains to be defined.
+    metric: Token purchases, revenue and reasons for declining the offer.
+  - id: follow-up
+    name: Return with further business questions
+    owner: User chooses continued use; service operator maintains the customer relationship.
+    entry_conditions:
+      - The user has tried the chat and has a continuing business need.
+    required_fields:
+      - Further question, relevant updated context and applicable access terms.
+    action: Continue conversations, update business materials and buy more tokens when the value
+      justifies it. Automatic recharge and subscriptions are not selected.
+    exit_condition: Repeat use, another purchase, a pause or an explicit decision to leave.
+    failure: The need ends or continued use is not worthwhile; the user can pause, leave or return later.
+    metric: Return use, repeat purchases and reasons for continuing or stopping.
+  - id: framework-handoff
+    name: Choose to build with the foundation
+    owner: Interested maker chooses the branch; Code Framework owns the next journey.
+    entry_conditions:
+      - A positive chat experience prompts interest in building a personal product.
+    required_fields:
+      - The maker's interest in a local project.
+    action: Offer “Развернуть проект на своей машине” leading to GitHub and the [Code Framework
+      journey](../singlepagestartup/sales.yaml). This optional branch does not require buying chat
+      tokens.
+    exit_condition: The maker explores the framework or remains a hosted-chat consumer.
+    failure: Building is not relevant; continue using AI Chat independently.
+    metric: Framework interest and subsequent adoption, separate from chat purchases.
+  - id: support-requested
+    name: Seek help with the service or offer
+    owner: User describes the need; project owner helps as time permits.
+    entry_conditions:
+      - Access, business materials, answers or purchase conditions need clarification.
+    required_fields:
+      - The question, desired outcome and relevant context.
+    action: Ask through the service's chosen help route. Provide guidance within available capacity;
+      purchase questions follow the agreed policy and accountable seller.
+    exit_condition: The user gains direction, accepts a proposed outcome or leaves the question open.
+    failure: Help is unavailable or insufficient; seek another source of guidance, pause or leave.
+    metric: Common requests, useful answers and unmet service expectations.
 confirmation:
   confirmed: false
 review:
   dependencies:
-    business: a91d74583bcc0dd5699980a5d03d063a72c463cc6c0b9d7b7896f67c62d8a5e0
+    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
+    product.ai-chat.product: 7dae35359455fa0a26a356b6282707efd96f38f5ae58fcdde83d54299a0486bb

@@ -53,7 +53,7 @@ describe("product catalog", () => {
     ]);
     expect(
       base.products.every((product) =>
-        product.presentation_data.endsWith("/presentation/data.yaml"),
+        product.presentation_data?.endsWith("/presentation/data.yaml"),
       ),
     ).toBe(true);
   });

@@ -5,50 +5,54 @@ confirmation:
 
 # Strategy
 
-<!-- Populate only material 10-strategy requirements. Maximum 1,400 words. State
-each decision once and keep at most five material risk rows. -->
+<!-- A compact, project-wide marketing strategy built from Brief and external
+research, preferably about 1,400 words per page, without a hard cap. Explain goals, audience choices, positioning,
+product roles, coordinated acquisition, conversion, retention and growth.
+Keep current facts and decisions in the body; claim-keyed sources and review
+state in metadata. Detailed offers, campaign plans and tests belong to products.
+Use this same structure and quality standard in framework and downstream
+projects. Populate it from the active project's Brief and relevant research;
+example audiences, products, channels, revenue models and metrics are not defaults.
+Use only applicable journeys/outcomes; do not invent another product, recurring
+purchase or human/agent workflow to fill the template. -->
 
-## Decision status
+## Strategic direction
 
-| Field                   | Current value                                    |
-| ----------------------- | ------------------------------------------------ |
-| Blocking operator facts | Only facts that prevent review; otherwise `None` |
+State the business and audience-growth goals, the selected positioning, the
+reason this direction fits the project, and the main strategic trade-off.
 
-## Commercial choice
+## Audiences and product roles
 
-| Decision                 | Selected direction                                                                                          |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| Audience-growth priority | The first audience-growth activity and measurable result, or an explicit reason none is active              |
-| Sales-product priority   | One confirmed product whose sales process receives the first commercial improvement                         |
-| Experiment product set   | Exact confirmed Brief product IDs in the current experiment; other confirmed products remain in the catalog |
-| Audience and situation   |                                                                                                             |
-| Problem and trigger      |                                                                                                             |
-| Positioning              |                                                                                                             |
-| Offer                    |                                                                                                             |
-| Proof available now      |                                                                                                             |
-| Acquisition focus        |                                                                                                             |
-| Commercial logic         |                                                                                                             |
-| Non-goals and exclusions | Future/deferred directions and active directions excluded from the first experiment, with reasons           |
+| Audience and situation | Value and promise | Product role and desired behavior |
+| ---------------------- | ----------------- | --------------------------------- |
+|                        |                   |                                   |
 
-## First experiment
+Use the confirmed Brief product IDs. Explain complementary roles and separate
+revenue and adoption outcomes without removing any confirmed catalog product.
 
-| Field                  | Decision                                                      |
-| ---------------------- | ------------------------------------------------------------- |
-| Track                  | `audience-growth` or `sales`                                  |
-| Critical assumption    |                                                               |
-| Direction and audience | One selected product or acquisition activity and its audience |
-| Traffic source         |                                                               |
-| Expected behavior      |                                                               |
-| Primary conversion     |                                                               |
-| Minimum useful signal  |                                                               |
-| Budget and time limit  |                                                               |
-| Positive decision      |                                                               |
-| Negative decision      |                                                               |
-| Inconclusive result    |                                                               |
-| Stop rule              |                                                               |
+## Growth system
 
-## Risks and missing evidence
+| Channel or mechanism | Role and audience | Content or value | Destination and contribution to growth |
+| -------------------- | ----------------- | ---------------- | -------------------------------------- |
+|                      |                   |                  |                                        |
 
-| Risk or missing evidence | Current boundary | Decision consequence |
-| ------------------------ | ---------------- | -------------------- |
-|                          |                  |                      |
+Choose a coherent, prioritized channel system. Explain how channels reinforce
+the product experience, repeat use, recommendations and discoverability.
+Do not substitute an unprioritized platform list or content calendar.
+
+## Customer journey
+
+Describe discovery, first useful result, each conversion, continued use,
+recommendation and cross-product adoption. Match the user's skills and the
+intended human/agent division of work. Keep product implementation detail out.
+
+## Measurement and priorities
+
+| Strategic outcome | Observable signals | Management consequence |
+| ----------------- | ------------------ | ---------------------- |
+|                   |                    |                        |
+
+State sequencing and resource principles, plus only the material risks that
+can change the direction. Do not invent numerical targets, ongoing budgets or
+capacity. Product-level tests may be one concise line: no mandatory first
+experiment, test track, sample size, trial calendar or stop-rule table here.

@@ -1,52 +1,23 @@
-export type ProjectPresentationProjection = "singlepage" | "startup";
-
-export interface IProjectPresentationRisk {
-  boundary: string;
-  consequence: string;
+export interface IProjectPresentationPoint {
   title: string;
+  detail: string;
 }
 
-export interface IProjectPresentationSignal {
-  detail: string;
+export interface IProjectPresentationSlide {
+  id: string;
+  eyebrow: string;
   title: string;
+  summary: string;
+  points: IProjectPresentationPoint[];
+  image?: { src: string; alt: string };
+  action?: { label: string; href: string; detail: string };
 }
 
 export interface IProjectPresentationData {
-  acquisition: string;
-  audience: string;
-  brand: {
-    character: string[];
-    doDont: Array<{ do: string; dont: string }>;
-    idea: string;
-    primaryLogoUrl?: string;
-  };
-  experiment: {
-    assumption: string;
-    budget: string;
-    facts: string[];
-    minimumSignal: string;
-    negativeDecision: string;
-    positiveDecision: string;
-    stopRule: string;
-  };
-  modules: string[];
   name: string;
-  nonGoals: string;
-  offer: string;
-  positioning: string;
-  productLogic: string;
-  projection: ProjectPresentationProjection;
-  proof: string;
-  promise: string;
-  risks: IProjectPresentationRisk[];
-  showcase: {
-    description: string;
-    outcome: string;
-    status: string;
-    steps: string[];
-  };
-  signals: IProjectPresentationSignal[];
-  trigger: string;
+  projection: "singlepage" | "startup";
+  logo: string;
+  slides: IProjectPresentationSlide[];
   visual: {
     palette: {
       background: string;
@@ -57,7 +28,5 @@ export interface IProjectPresentationData {
     };
     displayType: string;
     bodyType: string;
-    displayTypeLabel: string;
-    bodyTypeLabel: string;
   };
 }

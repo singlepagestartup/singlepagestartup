@@ -59,12 +59,13 @@ question, source check, professional review, or artifact correction to make the
 workflow shorter.
 
 The operator must be able to review and edit every primary document without
-reconstructing the agent session. `brief`, `business`, each product
+reconstructing the agent session. `brief`, each model, each product
 `research`, `strategy`, `brand`, `design`, and each product-local `product`,
 `website`, and `creative`
-document contain at most 1,400 words,
-including tables, so a normal review takes about five to seven minutes. This is
-a human-usability rule, not a token-saving rule. Assets is a reference index,
+documents strongly target about 1,400 words per reviewable page, so a normal
+review takes about five to seven minutes. This is a preference, never a hard
+word, line, source or segment cap. Follow `.agents/contracts/document-readability.md`: preserve material information and use
+navigable detail pages when needed. Assets is a reference index,
 loaded only when relevant. State each decision once; retain material attribution
 with that statement and historical versions in Git. No standalone Evidence
 register or mandatory global source ledger is created.
@@ -192,15 +193,15 @@ At every launch, reconcile the cursor before doing work:
    contains both professional responsibility and method; load only the resolved
    project dependencies and capability bindings required for this decision.
 5. Update the earliest canonical artifact directly. During initial interview,
-   do not repeatedly regenerate Business, product Research, Strategy, Brand, Website, or
+   do not repeatedly regenerate product models, product Research, Strategy, Brand, Website, or
    marketing creative
    from each partial answer. Propagate a batch only after the decision subject
    and affected upstream section are stable or when a confirmed correction
    invalidates an existing downstream decision.
-   When a professional artifact is generated or fully rerun, replace its body
-   from the template and stable upstream dependencies. The previous body is not
-   an input and must not be summarized, compressed, or incrementally amended.
-   Git retains its history.
+   On a full professional rerun use the canonical template and stable upstream
+   dependencies. For Product/model migration, first inspect existing unique facts,
+   whole topics, source attribution and extensions; preserve them at their owners.
+   Never discard a client fact merely because a template changed. Git retains history.
    Before saving, search the document for every earlier statement about the
    changed fact and replace or remove all stale occurrences in the same edit.
    Never append a corrected answer below an obsolete answer.
@@ -249,7 +250,7 @@ or approval register in workspace, and do not copy project business content into
 Before completing a stage, its owner applies these checks to the actual content:
 
 1. Describe the current or intended business model from client inputs in
-   Brief/Business. Identify distinct users, buyers, payers, beneficiaries,
+   Brief and the owning Product/model. Identify distinct users, buyers, payers, beneficiaries,
    transaction/value units, money flow, capacity, geography, and material limits
    only where they change a decision. Allow compound models; unknown facts stay
    unknown instead of being forced into a familiar category.
@@ -288,7 +289,7 @@ constraints remain reviewable in the operator's ordinary documents.
 ## 00 — Client Request
 
 **State**: `active_stage: 00-business`. Begin with
-`active_artifacts: [brief]`, then `[business]`.
+`active_artifacts: [brief]`, then `[product-models]`. Resolve model/product files through the catalog; `product-models` is a cursor task, not a global document.
 
 **Owners**: Account Manager, then Business Analyst.
 
@@ -299,8 +300,12 @@ and assets, existing project records, and the active index.
 browser interaction to read a client-provided source. No external market search
 or Market Researcher work belongs to this stage.
 
-Capture `brief` first. Before Business Analyst starts, the brief
-must separate and name:
+Capture `brief` first using its six-section template. It is a self-contained
+current business intake, with known meaningful numbers and source attribution
+in metadata. Keep quotations, scope-status prose, review chronology, downstream
+document links and a generic unknowns checklist out of the body. Discuss
+contradictions in chat; retain a material unresolved discrepancy in source
+metadata. Before Business Analyst starts, the brief must separate and name:
 
 - the primary decision subject and current business/project goal;
 - current or intended products, their stable IDs, client-stated buyer/user,
@@ -310,24 +315,47 @@ must separate and name:
 - current reality, client intentions, and unknowns.
 
 Obtain a compact natural-language scope confirmation including the products in
-scope. Existing attributable confirmation remains valid until scope changes.
+scope. Record its attribution under Brief's `intake.scope`, separately from
+whole-document confirmation. Existing attributable confirmation remains valid
+until scope changes.
 Do not merge a framework, reference implementation, customer project, and
 historical service model because they share people or technology.
 
 Brief also records five separate visual-reference sets: interface/website,
 typography, photography, illustration, and marketing creative. Record asset IDs,
-client likes/dislikes, and category status; Assets owns files and rights. This
-intake may remain incomplete during Business, Strategy, and Brand, but all five
-categories must be ready before Design generation.
+client likes/dislikes, and category status; exact IDs and status may be in
+Brief frontmatter under `visual_references`. In the visible table, put each
+category description and its exact uploaded filenames/working links in the
+same row. Include explicit rows for project name, logo, slogan and any supplied
+color or other identity elements before the five reference categories. Record
+confirmed absence or missing intake explicitly, without inventing an element.
+Do not create a separate uploaded-files section. Folder paths alone are
+insufficient. Assets owns files and
+rights. On additions, verify the files, register their IDs/category and review
+the affected description before it is used as a design input; untouched
+categories retain their confirmed preferences. Agents inspect the actual source
+images and supply them as model reference inputs where supported, rather than
+relying only on their textual summaries. This
+intake may remain incomplete during product models, Strategy, and Brand, but all five
+categories must be ready before Design generation. The client can communicate
+preferences through examples without professional design vocabulary. During
+Brief intake, the Account Manager delegates bounded reference analysis to the
+Brand Designer as each category arrives. The agent inspects the actual files,
+compares common traits and returns a short description per category in the
+operator's language. Record confirmed descriptions in Brief; inferred traits
+remain proposed until reviewed. Final Design decisions still belong to 30-design.
+For a new photography direction collect more than three photographs: minimum
+four, usually five distinct examples. Preserve already confirmed descriptions
+when their references and preference are unchanged.
 
 After scope confirmation, describe the business model from client inputs in
-Business and place material questions in the documents that need their answers. `00-business` owns only
+Product, Operations & Economics and Sales; place material questions in the documents that need their answers. `00-business` owns only
 operator facts and observations of supplied materials. External research
 questions belong to a named product at `10-strategy` or a later consuming stage;
 professional proposals belong to their owning later stage. Do not block factual
 intake on market research and do not use research to answer an operator fact.
 
-Business consolidates client-supplied shared mechanics, ownership, resources,
+Operations & Economics consolidates client-supplied shared mechanics, ownership, resources,
 and constraints. Record each material assertion's source and state: client
 statement, supplied-material observation, confirmed intention, explicit
 calculation from supplied inputs, or unknown. A client's belief about demand
@@ -343,7 +371,7 @@ an operator fact; otherwise retain their exact later-stage or launch gate.
 Improvements to the process are later product/strategy proposals.
 
 Claim sources follow `.agents/contracts/evidence.md`. Current client facts stay
-in Brief/Business, external findings and sources in product Research, and asset
+in Brief and the owning Product/model, external findings and sources in product Research, and asset
 rights in Assets. Approvals and current dependency review are source metadata
 under `.agents/contracts/document-confirmation.md`; Git owns prior versions.
 Do not create Evidence, a transcript register, or a substitute fact/change log.
@@ -353,7 +381,17 @@ facts require client confirmation of applicability in the owning startup source.
 Completion requires confirmed scope and products, attributable current facts
 and intentions, explicit unknowns, and answers to the operator facts needed for
 the next strategic decision. Scope confirmation belongs in Brief. Outputs are
-Brief, Business, and product Sales intake. There is no business-wide Research artifact.
+Brief, v2 catalog with all confirmed products and model IDs, initial Product,
+Operations & Economics, and product Sales intake. Practical materials need not
+exist before their stage. Research intake may record questions without findings. There is no business-wide Research artifact.
+
+Before Strategy, Business Analyst creates or reconciles the v2 catalog and initial
+Product/model sources. Apply `.agents/contracts/product-models.md` for source
+ownership, model boundaries, funding and cost allocation. No business model is
+inferred solely from the catalog's product count. The existing `00-business`
+stage ID remains compatible but it has no Business output. A cursor naming
+`business` resumes as `product-models` after content-aware migration; never mark
+intake complete because the old document was deleted.
 
 When complete, persist `10-strategy`, `in_progress`, and `[product-research]`.
 
@@ -385,62 +423,77 @@ Work one product at a time. Scope sources, observations, inferences, and unknown
 to that product. Cross-product comparison belongs to Strategy and cites the
 relevant product findings; there is no shared market-research summary. A source
 may inform multiple products only when its applicability is stated separately.
-Do not copy product market findings into Business or a shared register. A contradiction with a client statement becomes a question linked
+Do not copy product market findings into product models or a shared register. A contradiction with a client statement becomes a question linked
 from product Research; only attributable client clarification or corrected
 supplied material updates the factual intake.
 
-Use Brief, Business, the relevant product Research and Sales, and approved
-constraints to update Strategy. Name the audience-growth priority (or why none
-is active) and sales-product priority. Select the exact experiment product set from
-confirmed Brief products, choose `audience-growth` or `sales` as the first
-experiment track, and define one bounded experiment. Supporting activities
-remain strategic context unless explicitly defined as separate offers.
+Build Strategy from current operator-confirmed Brief facts and external
+research. Existing model/Product/Sales intake cross-checks client facts and
+resources; unfinished product decisions do not become strategic premises.
+Keep evidence provenance in Strategy metadata, without visible citations to
+downstream product documents. Name the audience-growth priority (or why none
+is active) and sales-product priority. Define the marketing role of each relevant
+confirmed Brief product and connect goals, positioning, coordinated channels,
+activation, conversion, continued use, recommendations and cross-product adoption.
+Supporting activities remain strategic context unless explicitly defined as
+separate offers. Detailed offers, campaign calendars, budgets and tests belong
+to product work; a first experiment is not the organizing principle of Strategy.
+
+The shared Strategy template and quality criteria apply equally to new framework
+and downstream work. Select the active source with the repository-layer resolver;
+downstream projects author `strategy/startup.md` from their own Brief and research.
+The inherited framework document is a reference, not a ready-made strategy or
+approval for that project. Reconcile existing strategies under the cross-project
+rules in `.agents/contracts/pipeline-reconciliation.md` before advancing stages.
 
 `strategy.md` is a replacement projection, not an interview log. During fact
-collection, update the owning Brief, Business, product Research, or Sales; do not invoke the Strategist after each answer. Invoke it once
-the input batch is stable. On first generation or any full strategy rerun:
+collection, update the owning Brief, product models, product Research, or Sales; do not invoke the Strategist after each answer. Invoke it once
+the input batch is stable. Explicit operator corrections confirm the stated
+input facts for the requested draft revision; apply them without asking the
+same factual questions again. Keep changed whole-document confirmations
+unrenewed and present the affected input changes with the revised proposal
+for one review batch. This does not approve the new Strategy or advance to Brand.
+On first generation or any full strategy rerun:
 
 1. Treat the previous strategy body as invalid and do not load it as an input.
 2. Start from `.agents/templates/strategy.md` and replace the complete active
    strategy source from the approved upstream dependency closure.
-3. Use exactly the four template sections. Each decision has one canonical
-   home: approval state in confirmation metadata and remaining blockers in
-   Decision status; the audience-growth priority,
-   sales-product priority, exact experiment product set, and trade-offs in Commercial choice;
-   execution and thresholds in First experiment, and only
-   unresolved material boundaries in Risks and missing evidence.
-   Experiment rows may refer to the selected audience, offer, and route by a
-   short label; they must not restate the Commercial choice rationale. Risks
-   must not repeat a decided limit merely to explain it again and are capped at
-   the five gaps most likely to change the decision.
+3. Use exactly the five template sections: Strategic direction; Audiences and
+   product roles; Growth system; Customer journey; Measurement and priorities.
+   Explain why the selected channels and product experience reinforce each
+   other. Approval and review state stay in metadata and the Studio badge; no
+   Decision status section or empty blocker table is needed. Keep material
+   uncertainty beside the affected decision. Do not repeat the same audience,
+   value, route or measurement rationale across sections.
 4. Do not add interview chronology, repeated operator-fact lists, superseded or
    invalidated wording, downstream instructions, or handoff prose to the
    artifact. Use Git for history, document metadata for review state, and the
    response for coordination.
-5. Keep the source within 180 lines and 1,400 words, keep Decision status within
-   12 non-empty lines and 120 words, and do not add third-level headings.
+5. Prefer a source of about 1,400 words, without a hard line or word cap and do not add third-level
+   headings. Keep product-level business learning to a concise line; do not require
+   an experiment track, sample quota, trial calendar or stop-rule table here.
 6. Read the complete current strategy as the operator will see it. A
    structurally complete but repetitive strategy fails the stage.
 
 The Strategist owns professional choices, but may not invent operator facts.
-If the experiment depends on available hours, cash budget, reachable contacts,
+If the strategic direction depends on available hours, cash budget, reachable contacts,
 channel access, license intent, support capacity, response commitments, or
 decision authority that the operator has not supplied, keep the stage blocked
-and ask for the highest-impact fact.
+and ask for the highest-impact fact. A proposed public channel alone does not
+require proof of an existing account or audience. Do not substitute an easier
+channel or different customer journey for the operator-selected direction.
 
-Completion requires an exact experiment product set traceable to the confirmed
-Brief, an audience-growth priority or justified absence, one sales-product priority, one selected
-experiment track and direction, explicit future/deferred directions and
-first-experiment exclusions, rejected options, operational and economic fit, a budget/time limit,
-useful signal, positive, negative, and stop rules. Facts needed to select the
-experiment must be answered or explicitly inapplicable; unresolved evidence
-must have a bounded decision rule. Strategy requires valid user confirmation
-before the stage completes. The completed strategy is
-first a `proposed` professional direction. The strategy source itself must pass
-the operator-readable compactness and ownership review. Return a compact summary of the audience,
-both priorities, experiment product set, positioning, acquisition focus, experiment, material assumptions, and
-rejected options in the operator's language. Keep `10-strategy` blocked on the
-strategy approval section until the operator confirms or corrects it. On
+Completion requires coherent project goals, audience-growth and sales-product
+priorities, positioning, product roles traceable to confirmed Brief IDs,
+a coordinated channel system, activation/conversion/retention/adoption paths,
+observable outcomes and resource priorities. Choices must fit the available
+facts and explain material trade-offs. Do not invent ongoing commitments from
+scoped trial limits or require product-level campaign design to approve Strategy.
+Unresolved evidence must have a clear implication for the decision. Strategy
+requires valid user confirmation before the stage completes. Return the compact
+marketing direction in the operator's language and keep `10-strategy` blocked on
+Strategy's strategic-direction section until the operator confirms or corrects
+it. On
 confirmation, record approval in the Strategy source metadata and only then
 persist `20-brand`, `in_progress`, and `[brand]`. Do not duplicate the document
 approval in body prose.
@@ -470,8 +523,12 @@ generated files, or channel formats into Brand; those belong to Design.
 
 On a full Brand run, replace the complete active brand source from
 `.agents/templates/brand.md` and stable upstream dependencies. Do not load the
-old body as generation input. Keep the result within 1,400 words and state every
-meaning or communication decision once.
+old body as generation input. Use the five current template sections: Brand
+identity; Intended perception; Meaning and message hierarchy; Voice and language;
+Consistency rules. Prefer a result of about 1,400 words without omitting material decisions and state every meaning
+or communication decision once. Record sources in claim-keyed metadata;
+confirmation stays in metadata and the Studio badge, without Decision status,
+visible downstream citations, intake history or a second approval summary.
 
 Completion requires a reviewable intended perception, message hierarchy, proof
 limits, objections, voice, naming, governance, resolved material claim and
@@ -481,7 +538,7 @@ The Communication Strategist and Brand Designer make the professional
 communication and visual choices; do not ask the operator to design the answer
 for them. Return the resulting direction for confirmation, however, because
 website work must not silently freeze an unreviewed brand. Until confirmation,
-keep `20-brand` blocked on the brand approval section and treat the brand and
+keep `20-brand` blocked on `brand/<layer>.md#intended-perception` and treat the brand and
 its meaning as proposed. On confirmation, record it in the brand artifact's
 metadata under `.agents/contracts/document-confirmation.md`, then persist
 `30-design`, `in_progress`, and `[design, assets]`. Do not duplicate its status
@@ -494,7 +551,7 @@ in the body.
 
 **Owner**: Brand Designer.
 
-**Required inputs**: business, approved strategy, approved brand,
+**Required inputs**: product models, approved strategy, approved brand,
 a complete categorized visual-reference intake in
 the resolved Brief, matching registered Assets, and every upstream correction
 triggered during design.
@@ -507,7 +564,9 @@ Brief's `Visual reference intake` and the matching registered Assets. Brief
 must contain five separately labeled reference sets: interface and website
 appearance, typography, photography, illustration, and marketing creative.
 For every family it records the required reference set, reference asset IDs,
-liked and disliked qualities, and category status. Existing project materials
+liked and disliked qualities, and category status. Read the visible preferences
+together with any exact IDs/status stored in Brief's `visual_references`
+frontmatter; do not reinsert workflow instructions into the client document. Existing project materials
 stay canonical in Assets rather than being duplicated in each intake row.
 Every category needs supplied references or an explicit out-of-scope decision;
 silence is not an answer. A reference expresses preference, not copying
@@ -517,9 +576,12 @@ If this prerequisite is incomplete, keep `active_stage: 30-design`, set
 `active_artifacts: [brief, assets]`, and block on
 `brief/<layer>.md#visual-reference-intake`. Route operator facts to the Account
 Manager-owned Brief and files to Assets. The Brand Designer may validate
-category fit, but must not copy this intake table into `design.md`, create a
-visual preference profile, select tokens, write media prompts, or generate
-Design assets before the Brief gate passes.
+category fit and describe shared traits in any supplied category, returning
+that proposed description to the Account Manager for client review. This
+preliminary analysis may continue while other categories are missing. Do not
+copy the intake table into `design.md`, select final tokens or project visual
+territories, write production media prompts, or generate Design assets before
+the Brief gate passes.
 
 The operator supplies each set separately, for example from Pinterest, and
 labels its category at upload. Interface references must show interface
@@ -527,7 +589,11 @@ details; typography references must make type character and hierarchy
 observable; photography references must be actual photographs; illustration
 references must be illustrations; marketing-creative references must be
 banners, covers, advertisements, or social posts with visible text and
-composition. Copy accepted files into
+composition. Screenshots are valid for typography and UI fragments; illustration
+includes infographics and explanatory graphics, while marketing creative also
+includes printed and handout materials. The operator need only indicate that
+an example appeals to them. The agent identifies the relevant visual qualities.
+Copy accepted files into
 `assets/<layer>/intake/<category>/`, where `<category>` is `interface`,
 `typography`, `photography`, `illustration`, or `marketing-creative`; record the
 same category in Assets. Never place a singlepage input in startup or a startup
@@ -564,8 +630,15 @@ intake is complete.
 
 After all five categorized sets pass the Brief intake and before proposing the
 visual system, the Brand Designer writes
-a `Client visual preference profile` in `design.md`. It translates every used
-reference and operator statement into a single coherent description across
+a `Client visual preference profile` in `design.md`. Start with a separate
+short description for photography, typography, interface appearance,
+illustration/infographics, and marketing/handout materials. For each, explain
+what recurs across its examples, using specific asset IDs for support. Inspect
+actual images, not only filenames, registry descriptions or one selected image.
+Keep a lone trait or disagreement separate instead of treating it as shared.
+Use already confirmed intake descriptions without asking for the same approval
+again. This synthesis translates every used reference and operator statement
+into a coherent description across
 contrast, palette, density, whitespace, grid and rhythm, surface treatment,
 shape language, type character, image realism, illustration grammar, motion,
 and cross-channel composition. The profile cites its source assets or operator
@@ -590,21 +663,20 @@ requires it. Before generation, review every content brief against both inputs;
 when reference atmosphere conflicts with project meaning, preserve the visual
 technique and replace the scene semantics.
 
-When Photography must communicate a software or digital-technology context,
-architecture, transport, concrete, blueprints, and other built-environment cues
-alone do not satisfy the content brief. Name and visibly verify the relevant
-computing artifacts or active digital interaction—such as a correctly
-proportioned computer, laptop, or smartphone—while treating architecture only
-as setting. If the operator names specific device categories, the example set
-must include them and quality review must reject invented controls, implausible
-keyboards, unreadable category silhouettes, or construction-led substitutes.
+Connect photographic subjects to people, activities and decisions in the
+project context. A software business does not imply a computer or phone in
+every photograph. Put subjects, props and scenes in each content brief; make
+them mandatory only when the current operator direction requires them.
+Reassess superseded preferences instead of repeating restrictions created to
+repair an earlier unsuccessful image.
 
 `design.md` translates the approved Brand into reusable visual decisions:
 identity application, colors, typography, spacing, grid, shapes, photography,
 illustration, iconography, diagrams, motion, accessibility, and do/don't rules.
 It may contain concise reusable prompts and example purposes, but not pages,
-forms, success states, campaign formats, or advertisements. Keep it within
-1,400 words. The asset registry owns file provenance and lifecycle; Design
+forms, success states, campaign formats, or advertisements. Prefer about 1,400
+words per page; preserve material decisions if longer. The asset registry owns
+file provenance and lifecycle; Design
 references asset IDs without duplicating their full records.
 
 Typography is a professional proposal derived from the confirmed preference
@@ -630,20 +702,41 @@ contract under their respective second-level section:
 
 1. `Purpose and evidence boundary` states the communication job and what the
    imagery cannot prove.
-2. `Style master prompt` contains one reusable blockquote made from observable,
-   testable constraints. Specify output, palette, contrast, lighting or stroke,
-   material or shape treatment, density, negative space, crop behavior, and
-   excluded categories. Subjective shorthand such as "premium", "clean", or
-   "on-brand" never substitutes for those values.
-3. `Production specification` states the variables a content brief must add and
-   the technical output requirements without prescribing a finished
-   composition.
+2. `Style master prompt` is a compact reusable blockquote describing recurring
+   visual qualities from the references: photographic light, color, texture and
+   movement, or illustration line, shape, space and color. Keep it readable to
+   a person and reusable across scenes. Optional techniques stay optional; do
+   not stack every reference effect into every image. Do not prescribe devices,
+   output dimensions, a fixed composition, object counts, accent percentages or
+   quality-check lists unless the operator explicitly requires them as style.
+3. `Production specification` supplies the plain-language usage tooltip: copy
+   the style prompt, add the subject/action or relationship to communicate, and
+   attach relevant source references. Output format and crop requirements belong
+   to the specific deliverable; internal quality checks belong to the review
+   block and file dimensions to Assets.
 4. `Generation examples` is a table with example, use, content brief, avoid,
    and exact asset ID. The content brief states what the image communicates;
    it does not encode SVG paths, exact primitive placement, or a copied
    reference composition.
 5. `Review and quality gate` defines visual comparison, crop, legibility,
    accessibility, evidence-risk, and registry checks.
+
+Choose illustration backgrounds for the project's visual direction and intended
+placement; transparency is not a universal requirement. Preserve the original
+generated master. Compare any processed or exported derivative with it at source
+and display size, checking thin lines, secondary detail, color and contrast.
+Reject processing that loses detail or changes the visual treatment. When
+restoring a previously tested master prompt, reuse its exact original outputs
+and provenance if they still satisfy the current brief.
+
+When a reusable master prompt changes, generate at least three different
+content briefs with that exact current master and the reference-input procedure
+described in its tooltip. Compare the outputs with the selected reference style
+and existing examples. Correct material style drift and regenerate the affected
+set before calling the new prompt tested. Old images generated from another
+prompt are comparison material, not evidence that the current prompt works.
+Record the exact master, content brief and input asset IDs in generation
+provenance; replace displayed examples with the verified current outputs.
 
 Each active media family needs at least three materially different generated or
 accepted examples before Design review so consistency is tested across content,
@@ -660,12 +753,11 @@ category-defining structure, count, scale, and proportions rather than accepting
 a merely similar silhouette. Reject invented, truncated, or implausible
 substitutes unless the brief explicitly requests abstraction or simplification.
 
-Every reusable generated photography or illustration master is a `1:1` square
-raster. Keep every important subject inside the centered `55% × 55%` crop-safe
-area so Website, Marketing Creative, and Presentation can derive landscape or
-portrait crops without regenerating the visual language. Design renders the
-uncropped square master. The asset registry records the square source
-dimensions, and review checks the square plus each intended derivative crop.
+Choose each image's format and composition for its subject and intended use;
+there is no universal square or centered safe-area requirement. Design renders
+the original aspect ratio without cropping. Assets records actual dimensions;
+review any requested derivative crop separately. Consistency comes from shared
+visual treatment across varied subjects and compositions, not identical framing.
 
 Spacing, container, column, breakpoint, and radius decisions use named Tailwind
 utilities from the repository configuration and record their resolved values;
@@ -700,10 +792,21 @@ or omit built-in overview, logos, colors, typography, photography, and illustrat
 blocks, and add sections with an `id`, `title`, and layer-relative `source`.
 Markdown, TSX/JSX, HTML, images, and media are supported. Additional Markdown
 headings alone do not create visible sections. A default-exported TSX/JSX
-`template` may replace the whole page and receive the resolved Design document,
+`template` may replace the visual canvas below the shared review header and
+receive the resolved Design document,
 asset registry, confirmation, and declared section children. With `sections: []`,
 it can use its own structure without the legacy field schema. Use Tailwind and
 layered styles; do not edit the shared template for one project's requirements.
+
+Keep one neutral Workspace document header above the visual canvas in every
+non-empty `default`, `singlepage`, and `startup` Design view: confirmation badge,
+Design H1, purpose, and usage. The shared renderer owns this header even when
+overview is omitted or a project supplies its own template. Project colors,
+fonts, layout, and visual examples belong inside the canvas; scope project
+styles so they do not restyle the review header. Start template content at H2.
+Do not duplicate the title, badge, or process metadata inside the mockup.
+Downstream projects inherit this presentation contract while owning their
+visual choices; a new startup design must not redesign the Workspace shell.
 
 Empty startup layout inherits the complete singlepage layout. A non-empty
 startup layout replaces it completely; all declared files must exist in its
@@ -752,25 +855,42 @@ handoff.
 
 **State**: `active_stage: 40-products`, `active_artifacts: [products]`.
 
-**Owners**: Strategist for each `product.md`; Web Designer for each
+**Owners**: Business Analyst for model coherence and process; Strategist refines each `product.md`; Web Designer for each
 `website.md`; Brand Designer for each `marketing-creative.md`; Communication
 Strategist and Brand Designer for each presentation.
 
 **Required inputs**: the operator-confirmed Brief products, each active product's
-Research and Sales process, completed Business, approved Strategy containing the
-exact experiment product set and separate priorities, approved Brand, approved
+Research and Sales process, initial product models, approved Strategy containing the
+product roles, marketing direction and separate priorities, approved Brand, approved
 Design, the product Research, and the resolved asset registry.
 
 **Capabilities**: artifact read/write, image inspection/generation and Figma
 when available, plus static Studio composition; no production data capability.
 
-Products are a catalog, not four global documents. Its layer index lives at
+The output is a prospective, integrated business plan and product requirements
+for later engineering: audience, problem, offer, intended experience, economics,
+market context, promotion and business outcomes. Describe how the product should
+work without presenting planned capabilities, adoption or revenue as observed.
+Technical correctness is an implementation requirement. Installation checks,
+runtime tests, bug repair and release/license-source audits are not completion
+gates for this stage. Do not turn product documents into an implementation audit.
+Static artifact, visual, link and accessibility review still verify the materials
+being delivered here; they do not certify the future product's runtime behavior.
+
+Apply this method in both source layers. Each downstream project supplies its own
+business facts and intentions; it does not inherit the framework's offer, numbers
+or approvals. Current market evidence informs the plan. Commercial assumptions
+and forecasts retain their basis and classification; never invent operator
+budgets, capacity, customers, revenue or targets. Follow
+`.agents/contracts/product-models.md` for ownership and the business boundary.
+
+Products are a catalog, not four global documents. Its catalog and models are created during `00-business`; its layer index lives at
 `products/<layer>/catalog.yaml`. Keep both `singlepage` and `startup` folders
 with their own catalog from the outset, matching the explicit extension boundary
 in `libs/modules`. An empty startup catalog inherits the base; its first product
 replaces the complete base catalog. Do not create duplicate framework products
 under startup. Each product owns these data sources:
-the Research prepared before strategic selection and Sales intake recorded during Business:
+the Research prepared before strategic selection and Sales intake recorded during product models:
 
 ```text
 products/<layer>/<product-id>/
@@ -783,22 +903,50 @@ products/<layer>/<product-id>/
   content/ # optional product-owned supporting data
 ```
 
-Create catalog entries for every operator-confirmed Brief product, regardless of launch or experiment priority. Every
+Retain the catalog entries created during `00-business` for every operator-confirmed Brief product, regardless of launch or marketing priority. Every
 entry must trace to a confirmed Brief product and own Research and Sales,
-plus its normalized Business mechanics. Do not infer a product from a showcase, reference project,
+plus its normalized product models mechanics. Do not infer a product from a showcase, reference project,
 web page, repository folder, possible future monetization, or an agent's idea.
 If product identity is absent or ambiguous, return to Brief before creating product files. Missing commercial decisions remain explicit in the owned documents and do not hide a confirmed product. If product work
 uncovers a genuinely new offer, add and confirm it upstream first; never append
 it directly to the catalog.
 
-`product.md` is a decision-ready product definition with exactly six
-second-level sections: Product identity; Best-fit customer; Problem and desired
-progress; Positioning and value; Offer and usage; and Evidence and decision
-rules. It distinguishes brand from product, user from buyer and payer, access
-from successful use and adoption, current evidence from hypothesis, and the
-product from related showcases or supporting offers. It applies the shared
-Strategy and may narrow it; it never silently changes the shared business,
-strategy, brand, or design decisions.
+`product.md` defines the intended product through six canonical second-level
+sections: Product identity; Customer Segments; Problem and desired progress;
+Value Propositions; Offer and usage; and Business goals and metrics. It
+separates brand from product, user from buyer and payer, intended value from
+measured results, and the product from related offers. It applies the approved
+Strategy without silently changing shared business, brand or design decisions.
+
+Translate the marketing direction into offers, intended customer flows, business
+outcomes and promotion. Product owns goals and metrics; Marketing Creative owns
+channel formats, content and campaign tracking; models own money and resources.
+Any product-level learning concerns demand, preference, value or commercial
+assumptions. It is not an installation trial, technical test plan or release gate.
+Add campaign schedules or business experiments only when needed for a selected
+commercial decision, never as a mandatory first-experiment section.
+
+Sales describes the complete intended customer/business process through the
+segmented Sales workspace in `.agents/contracts/product-models.md`. Its internal
+sidebar has Overview and customer segment pages. Each segment connects its pains,
+needs, motives, objections and acquisition to a Customer Journey Map (CJM).
+Product owns the segment IDs; Website and Creative use the matching segment and
+journey moment when authoring materials. Sales v2 pages are generated from the
+same layer-owned YAML, including Markdown export; shared Studio utilities own the
+navigation and map rendering. Existing v1 intake stays readable until revised.
+`readiness: ready` means its material business decisions are complete, even before
+the product is implemented. Its `failure` field describes declined or unavailable
+offers, abandonment, alternatives and help or continuation paths. Do not put
+software errors, debugging or runtime acceptance tests in the customer process.
+Keep blockers limited to missing business decisions that actually prevent its
+formation; proposed professional choices never substitute for operator facts.
+
+At 40-products, apply `.agents/contracts/research-sales-audit.md`: inspect every
+Sales segment and route, record evidence verdicts, and retain competitor detail
+in the shared Research tree before using conclusions in Website or Creative.
+Research supplies customer, competitor, substitute, price, channel and business
+model evidence. Preserve factual technical observations as source metadata when
+material, or leave them in Git history; they do not block this business stage.
 
 Use Jobs to Be Done only to expose the circumstances, functional, social, and
 emotional forces, and progress behind a decision; it does not prove demand.
@@ -811,16 +959,26 @@ choices. Record the authoritative sources, project fit, limitations, and effect
 on a material decision beside that decision in the consuming document. General
 method instructions remain in the canonical role.
 
-On first generation or any full `product.md` rerun, do not load the previous
-product body. Start from `.agents/templates/product.md` and replace the complete
-file from the approved upstream dependency closure. Keep it within 1,400 words,
-state each decision once, and leave unknown proof explicitly missing rather
-than filling a section with generic product language.
+On generation or rerun, inspect the existing Product, unique extensions and
+source attribution before editing. Use `.agents/templates/product.md` for the
+canonical sections; preserve every material fact and whole topic. Reconcile
+changes with the approved dependency closure; never discard old content blindly. Prefer about 1,400 words per page without discarding material information,
+state each decision once, and distinguish facts, proposed behavior and commercial
+uncertainty without filling a section with generic product language.
 
 `website.md` applies the shared decisions to that product's visitor journey:
 information architecture, page structure, final copy, responsive hierarchy,
 navigation, actions, forms, validation, error/empty/pending/success states,
 post-conversion behavior, metadata, and static Studio compositions.
+
+The Website overview owns the visitor journey and site tree. Each route has one
+catalog page with `route`, `representations.text` and optional
+`representations.preview`, nested with `children` as needed. Develop page copy in
+its own Markdown before its layout; Studio provides Text/Layout views of that
+same page. React layouts consume the optional `text` prop so copy changes feed
+both views. Wording changes made during layout work update the owning text in the
+same change; separately authored HTML must also be synchronized explicitly.
+Follow `.agents/templates/website.md` and the workspace README.
 
 `marketing-creative.md` contains only the formats selected for that product by
 the current strategy: objective, audience situation, channel and format, exact
@@ -828,12 +986,18 @@ message, proof/disclosure, composition, dimensions, crop or timing behavior,
 variants, prompts, indexed assets, rights, accessibility, destination, tracking
 event, owner, and review state.
 
-React Presentation, Website, and optional Content entry points live beside
+React Presentation, Website, and optional Product Content entry points live beside
 their product documents under `products/<layer>/<product-id>/`. Every catalog
 path resolves below `products/<layer>/`; Sales and Presentation data YAML
 remain with the product documents.
 
-Every document owns its complete content. Presentation has its own `presentation/data.yaml` and a React entry point; Studio must never extract its text from Strategy, Product, Business, Brand, or another document. Shared rendering components and style tokens remain reusable. PDF and PNG exports are derivatives only. Agents may consult relevant documents during authoring, but update the owned source explicitly after semantic review.
+Presentation addresses an intended client, partner, investor or other business
+audience. Explain the opportunity, customer value, offer, model, growth and the
+relevant next business action. Separate current traction from forecasts and plans.
+Do not make the deck an internal QA checklist, technical evaluation protocol or
+source-release audit. A prospective presentation does not require a live product.
+
+Every document owns its complete content. Presentation has its own `presentation/data.yaml` and a React entry point; Studio must never extract its text from Strategy, Product, product models, Brand, or another document. Shared rendering components and style tokens remain reusable. PDF and PNG exports are derivatives only. Agents may consult relevant documents during authoring, but update the owned source explicitly after semantic review.
 
 Products can extend any core tab or add arbitrary sections using the optional
 catalog `sections` tree (`id`, `title`, `pages`; page `source` and/or nested
@@ -856,7 +1020,9 @@ types, or show an empty tab when the product has no Content surface. When it is
 declared, agents updating Product, Website, Marketing Creative, or Presentation
 inspect the relevant product-owned Content sources because those sources may
 provide more precise language and proof boundaries; Content never silently
-overrides an approved upstream decision.
+overrides an approved upstream decision. Customer guides are optional Product
+Content; debugging instructions, installation checklists and technical test plans
+are not required deliverables or business-stage gates.
 
 Product-catalog inheritance is atomic. If `products/startup/catalog.yaml` has no
 products, `default` is the complete singlepage catalog. As soon as startup
@@ -865,9 +1031,15 @@ merge product entries across layers: products from different businesses must
 not leak into one catalog. Each startup product owns every referenced document, presentation data and React entry point;
 there is no partial per-product fallback to a singlepage folder.
 
-Work through one selected product at a time. Studio opens Product Overview first,
-then shows Research, Sales, Website, Marketing Creative, and Presentation as core
-tabs, followed by explicitly declared additional sections (or legacy Content).
+Work through one selected product at a time. Studio groups sources under the
+`40 Products` sidebar folder: singlepage and startup are siblings, each listing
+only its own products. Empty sources remain visible with a No products state.
+Default resolution remains available to loaders without a third sidebar branch.
+Groups are derived from catalogs; never maintain a second product inventory in stories.
+The selected product opens Product first,
+then shows Operations & Economics, Sales, Research, Website, Marketing Creative,
+and Presentation when their sources exist, followed by optional Product Content
+and explicitly declared additional sections. Shared models have one source.
 Supporting pages may have arbitrary nesting and do not need Markdown wrappers.
 Outputs may be reviewed separately, but the product is not complete until all
 applicable files are coherent with one another. Record an
@@ -879,8 +1051,17 @@ Completion requires the catalog to match the client-confirmed Brief product inve
 have a bounded and reviewable
 `product.md`, concrete website design when in scope, complete selected-channel
 creative when in scope, a reviewable presentation when in scope, accessibility
-and evidence boundaries, with material offer, delivery, and communication
-questions resolved or explicitly inapplicable in their owning documents.
+and evidence boundaries, with material offer, intended customer-process,
+economics and communication decisions resolved or explicitly inapplicable in
+their owning documents. Engineering implementation, runtime verification and
+release/license-source alignment are outside this completion decision. Review
+business coherence and distinguish planned outcomes from observed results.
+
+Apply the material-workspace contract in `.agents/contracts/product-models.md`:
+selected creative deliverables are real editable materials with Text/Layout;
+presentations have slide navigation and shared PNG/PDF export; optional motion
+uses shared Remotion/browser MP4 utilities. Content stays free-form. Confirmation
+badges belong beside material titles, outside exported layouts.
 
 Studio remains a read-only review surface over the same sources. Shared
 artifacts keep empty `startup` as pass-through and resolve

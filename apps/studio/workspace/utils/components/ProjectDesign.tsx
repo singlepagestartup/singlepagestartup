@@ -3,7 +3,6 @@ import {
   type DesignBuiltinSection,
 } from "../design/layout";
 import type { IDocumentConfirmation } from "../../../../../tools/studio/workspace/document";
-import { ConfirmationBadge, documentPurpose } from "./DocumentStatus";
 import { Info } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 
@@ -170,25 +169,21 @@ function PageTitle({
   copy,
   data,
   eyebrow,
-  primary = false,
 }: {
   children: ReactNode;
   copy: string;
   data: IProjectDesignData;
   eyebrow: string;
-  primary?: boolean;
 }) {
-  const Heading = primary ? "h1" : "h2";
-
   return (
     <header className="max-w-5xl">
       <Eyebrow data={data}>{eyebrow}</Eyebrow>
-      <Heading
+      <h2
         className="mt-4 text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl"
         style={displayStyle(data)}
       >
         {children}
-      </Heading>
+      </h2>
       <p
         className="mt-6 max-w-4xl text-sm leading-7 md:text-base"
         style={{ color: paletteValue(data, "muted") }}
@@ -211,30 +206,16 @@ function RuleList({ items }: { items: string[] }) {
   );
 }
 
-function Overview({ data, confirmation }: IProjectDesignProps) {
+function Overview({ data }: IProjectDesignProps) {
   return (
     <section
       className="mx-auto max-w-7xl scroll-mt-6 px-5 py-12 md:px-10 md:py-20"
       id="overview"
     >
-      {confirmation ? (
-        <div className="mb-8">
-          <div className="mb-4 flex flex-wrap gap-2">
-            <ConfirmationBadge confirmation={confirmation} />
-          </div>
-          <p className="max-w-4xl text-sm leading-6">
-            {documentPurpose("design").purpose}
-          </p>
-          <p className="mt-2 max-w-4xl text-sm leading-6 opacity-70">
-            {documentPurpose("design").usage}
-          </p>
-        </div>
-      ) : null}
       <PageTitle
         copy={data.conceptSummary}
         data={data}
         eyebrow="Identity direction"
-        primary
       >
         {data.conceptName}
       </PageTitle>
@@ -574,7 +555,7 @@ function PromptCard({
 }) {
   return (
     <article
-      className="flex h-full flex-col overflow-hidden rounded-3xl border"
+      className="flex flex-col overflow-hidden rounded-3xl border"
       style={{
         backgroundColor: paletteValue(data, "surface"),
         borderColor: paletteValue(data, "line"),
@@ -582,12 +563,12 @@ function PromptCard({
     >
       {asset?.previewUrl ? (
         <figure
-          className="aspect-square w-full overflow-hidden"
+          className="w-full overflow-hidden"
           style={{ backgroundColor: paletteValue(data, "background") }}
         >
           <img
             alt={asset.purpose}
-            className="block h-full w-full object-cover"
+            className="block h-auto w-full"
             loading="lazy"
             src={asset.previewUrl}
           />
@@ -651,7 +632,7 @@ function MediaSection({
         id={`${id}-prompt-usage`}
         prompt={media.masterPrompt}
       />
-      <div className="mt-10 grid auto-rows-fr gap-4 lg:grid-cols-2">
+      <div className="mt-10 grid items-start gap-4 lg:grid-cols-2">
         {media.examples.map((item) => (
           <PromptCard
             asset={assetFor(data, assetRole, item)}

@@ -40,9 +40,13 @@ files are layer-local and are not inherited. The latter stores
 only the durable pre-development cursor defined by
 `.agents/workflows/pre-development.md`.
 
-The indexes are registries, not content stores.
+The indexes are registries, not content stores. Brief is the root client input
+and has no semantic `uses` dependencies on later decisions, including Assets.
+Its raw client attachments and exact reference asset IDs are provenance, not
+approval edges. Inspect them when the intake requires it; do not reconstruct
+Brief facts from Product, model, Research, Strategy, Brand or Design decisions.
 
-The workspace root contains document folders (`brief`, `business`, `strategy`,
+The workspace root contains document folders (`brief`, `strategy`,
 `brand`, `design`), `assets`, `products`, `styles`, its README, and `utils`.
 Assets and font licenses remain directly accessible. Products keep their catalog,
 Markdown, YAML data, and product-specific React entry points together. Layered
@@ -56,6 +60,7 @@ apps/studio/workspace/
   assets/<layer>/{fonts,intake,generated}/
   styles/{singlepage,startup,default}.css
   products/{singlepage,startup}/catalog.yaml
+  products/<layer>/models/<model-id>/model.md
   products/<layer>/<product-id>/
     product.md
     research.md
@@ -82,11 +87,11 @@ decisions at render time. A startup catalog still replaces the complete base
 catalog, including component selection. No compatibility copy is kept at old
 paths.
 
-Business records product Sales intake from client inputs; Market Researcher
+product models records product Sales intake from client inputs; Market Researcher
 creates product Research at the start of Strategy, before strategic selection.
 Resolve paths from confirmed Brief IDs or an existing catalog, without loading
 later delivery files. There is no shared Research file. Load only the relevant
-product findings; Business never loads them as client facts. Supporting
+product findings; product models never loads them as client facts. Supporting
 activities are concise Brief/Strategy context without a separate inventory.
 
 Only layer folders live directly in `products/`; shared loading/validation code
@@ -104,7 +109,7 @@ schema examples and preview/export contracts live in the workspace README.
 Markdown pages use their own confirmation; changes to supporting React/HTML/media
 require semantic review of their owning document, not automatic approval.
 
-The legacy optional Content directory is a product-local context source rather than a
+The optional Product Content directory is a product-local context source rather than a
 fixed document contract. When a catalog entry declares `content`, load the
 entry component and only the supporting files relevant to the current product
 decision. Do not assume Markdown, a video schema, or a universal set of content
@@ -118,7 +123,7 @@ second repository-root `workspace/` namespace.
 
 ## Project artifact resolution
 
-The `singlepage` brief, business, strategy, asset
+The `singlepage` brief, models, strategy, asset
 index, brand, design, and product catalog describe SinglePageStartup itself: its real
 business, direction, communication, design, and offers. They are not templates.
 Brand owns intended meaning and communication; Design is its medium-independent
@@ -127,7 +132,7 @@ apply those shared decisions and never serve as Brand or Design inputs.
 
 AI methods, question-routing rules, and stage completion criteria live in
 `.agents/`. Project facts, decisions, open questions, and constraints live in
-Brief, Business, Strategy, Brand, Design, or the selected product's documents.
+Brief, product models, Strategy, Brand, Design, or the selected product's documents.
 Do not maintain a separate decision checklist or approval register in workspace,
 and do not move project content into the reusable agent definitions.
 
@@ -250,3 +255,5 @@ load every custom file into context or rebuild an old fixed template merely to
 match historical headings. After changes, inspect the rendered result and review
 semantic impact; confirmation of the primary document does not approve every
 additional source. Record unresolved impact as stale in affected documents.
+
+Model sources, source ownership and acyclic review edges follow `product-models.md`. Load a linked shared model once for all its consumers; never merge model collections across replaced catalogs.
