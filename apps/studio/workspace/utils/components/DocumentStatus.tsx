@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import type { IDocumentConfirmation } from "../../../../../tools/studio/workspace/document";
 
 const purposes: Record<string, { purpose: string; usage: string }> = {
@@ -80,6 +82,7 @@ export function documentPurpose(kind: string, fallback = "") {
 }
 
 export interface IDocumentHeaderProps {
+  actions?: ReactNode;
   confirmation?: IDocumentConfirmation;
   title: string;
   purpose: string;
@@ -87,6 +90,7 @@ export interface IDocumentHeaderProps {
 }
 
 export function DocumentHeader({
+  actions,
   confirmation,
   title,
   purpose,
@@ -94,17 +98,22 @@ export function DocumentHeader({
 }: IDocumentHeaderProps) {
   return (
     <header className="mb-8 w-full rounded-3xl bg-slate-950 p-7 text-white shadow-xl md:p-10">
-      {confirmation ? (
-        <div className="mb-5 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em]">
-          <ConfirmationBadge confirmation={confirmation} />
+      <div className="flex flex-wrap items-start justify-between gap-6">
+        <div className="min-w-0 flex-1">
+          {confirmation ? (
+            <div className="mb-5 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em]">
+              <ConfirmationBadge confirmation={confirmation} />
+            </div>
+          ) : null}
+          <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
+            {title}
+          </h1>
+          <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
+            {purpose}
+          </p>
         </div>
-      ) : null}
-      <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
-        {title}
-      </h1>
-      <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
-        {purpose}
-      </p>
+        {actions}
+      </div>
       <p className="mt-6 text-xs leading-5 text-slate-400">{usage}</p>
     </header>
   );

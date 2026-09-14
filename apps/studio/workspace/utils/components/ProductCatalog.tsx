@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { productStoryId } from "../products/catalog";
 
 import type { IProductCatalogView, IProductView } from "../products/source";
@@ -6,6 +6,7 @@ import { MarkdownDocument } from "./ArtifactBrowser";
 import { ConfirmationBadge, documentPurpose } from "./DocumentStatus";
 import { PresentationWorkspace } from "./PresentationWorkspace";
 import { ProductPages } from "./ProductPages";
+import { DocumentDownloads } from "./DocumentDownloads";
 
 type ProductSection = string;
 
@@ -101,6 +102,7 @@ export function ProductCatalog({
   const [selectedSection, setSelectedSection] = useState<ProductSection>(
     requestedSelection(view).section,
   );
+  const documentExportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setSelectedProductId(requestedSelection(view).product);
@@ -330,6 +332,7 @@ export function ProductCatalog({
 
           <ProductPages
             key={`${product.id}.${selectedSection}`}
+            downloadContext={product.name}
             resolveLink={resolveDocumentLink}
             pages={
               product.sections.find(({ id }) => id === selectedSection)
@@ -343,10 +346,18 @@ export function ProductCatalog({
             }
           >
             {selectedSection === "website" && Website ? (
-              <div>
+              <div ref={documentExportRef}>
                 {document ? (
                   <header className="space-y-3 px-5 py-7 md:px-10">
-                    <ConfirmationBadge confirmation={document.confirmation} />
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <ConfirmationBadge confirmation={document.confirmation} />
+                      <DocumentDownloads
+                        fileName={`${product.name}-website`}
+                        htmlTargetRef={documentExportRef}
+                        markdown={document.content}
+                        title={`${product.name} — Website`}
+                      />
+                    </div>
                     <h2 className="text-2xl font-semibold tracking-tight">
                       Website
                     </h2>
@@ -380,46 +391,54 @@ export function ProductCatalog({
                 <Content />
               </div>
             ) : document ? (
-              <article className="px-5 py-7 md:px-10 md:py-10">
-                <header className="mb-6">
-                  <div className="mb-4 flex flex-wrap items-center gap-2">
-                    <ConfirmationBadge confirmation={document.confirmation} />
-                  </div>
-                  <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-                    {document.label.replace(/^\d+ /, "")}
-                  </h2>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">
-                    {documentPurpose(document.kind).purpose}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-slate-500">
-                    {documentPurpose(document.kind).usage}
-                  </p>
-                  {document.kind === "model" && product.model && (
-                    <p className="mt-3 text-sm text-slate-600">
-                      {product.model.name} · Shared by:{" "}
-                      {product.model.products.join(", ")}
+              <div ref={documentExportRef}>
+                <article className="px-5 py-7 md:px-10 md:py-10">
+                  <header className="mb-6">
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                      <ConfirmationBadge confirmation={document.confirmation} />
+                      <DocumentDownloads
+                        fileName={`${product.name}-${document.label.replace(/^\d+ /, "")}`}
+                        htmlTargetRef={documentExportRef}
+                        markdown={document.content}
+                        title={`${product.name} — ${document.label.replace(/^\d+ /, "")}`}
+                      />
+                    </div>
+                    <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
+                      {document.label.replace(/^\d+ /, "")}
+                    </h2>
+                    <p className="mt-3 text-sm leading-6 text-slate-600">
+                      {documentPurpose(document.kind).purpose}
                     </p>
-                  )}
-                </header>
-                <MarkdownDocument
-                  hideTitle
-                  baseUrl={
-                    "/workspace-products/" +
-                    document.sourcePath.split("/products/")[1]
-                  }
-                  resolveLink={resolveDocumentLink}
-                >
-                  {document.content}
-                </MarkdownDocument>
-                <div className="mt-8 border-t border-slate-200 pt-4 text-xs text-slate-500">
-                  <span className="block font-semibold uppercase tracking-wide text-slate-900">
-                    Source
-                  </span>
-                  <code className="mt-1 block break-all">
-                    {document.sourcePath}
-                  </code>
-                </div>
-              </article>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      {documentPurpose(document.kind).usage}
+                    </p>
+                    {document.kind === "model" && product.model && (
+                      <p className="mt-3 text-sm text-slate-600">
+                        {product.model.name} · Shared by:{" "}
+                        {product.model.products.join(", ")}
+                      </p>
+                    )}
+                  </header>
+                  <MarkdownDocument
+                    hideTitle
+                    baseUrl={
+                      "/workspace-products/" +
+                      document.sourcePath.split("/products/")[1]
+                    }
+                    resolveLink={resolveDocumentLink}
+                  >
+                    {document.content}
+                  </MarkdownDocument>
+                  <div className="mt-8 border-t border-slate-200 pt-4 text-xs text-slate-500">
+                    <span className="block font-semibold uppercase tracking-wide text-slate-900">
+                      Source
+                    </span>
+                    <code className="mt-1 block break-all">
+                      {document.sourcePath}
+                    </code>
+                  </div>
+                </article>
+              </div>
             ) : null}
           </ProductPages>
         </section>

@@ -5,13 +5,14 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { Download } from "lucide-react";
 import type { IProductPageView } from "../products/pages";
 import { WorkspacePage } from "./WorkspacePage";
-import { parseDocument } from "../../../../../tools/studio/workspace/document";
-import { documentConfirmation } from "../../../../../tools/studio/workspace/document";
+import {
+  documentConfirmation,
+  parseDocument,
+} from "../../../../../tools/studio/workspace/document";
 import { ConfirmationBadge } from "./DocumentStatus";
-import { downloadMedia } from "../media/png";
+import { DocumentDownloads } from "./DocumentDownloads";
 
 function flatten(pages: IProductPageView[]): IProductPageView[] {
   return pages.flatMap((page) => [page, ...flatten(page.children)]);
@@ -21,6 +22,7 @@ interface IProductPagesProps {
   pages: IProductPageView[];
   overview?: boolean;
   children: ReactNode;
+  downloadContext?: string;
   resolveLink?: (url: string) => string | { href: string; target: "_top" };
 }
 
@@ -31,6 +33,7 @@ export function ProductPages({
   pages,
   overview = false,
   children,
+  downloadContext,
   resolveLink,
 }: IProductPagesProps) {
   const all = flatten(pages);
@@ -46,6 +49,7 @@ export function ProductPages({
   const [focused, setFocused] = useState(all[0]?.id);
   const pendingAnchor = useRef<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (pendingAnchor.current === null) return;
     const target = pendingAnchor.current;
@@ -73,21 +77,6 @@ export function ProductPages({
     (textPage?.kind === "markdown"
       ? documentConfirmation(textPage.markdown ?? "", textPage.layer)
       : undefined);
-  const downloadText = () => {
-    if (!textPage?.markdown) return;
-    const url = URL.createObjectURL(
-      new Blob([parseDocument(textPage.markdown).body], {
-        type: "text/markdown;charset=utf-8",
-      }),
-    );
-    downloadMedia(
-      url,
-      textPage.downloadName ??
-        textPage.sourcePath?.split("/").at(-1) ??
-        `${textPage.id}.md`,
-    );
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
   const toggle = (id: string) => {
     if (expanded.has(id)) {
       const node = all.find((item) => item.id === id);
@@ -290,18 +279,24 @@ export function ProductPages({
                 ) : null}
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                {textPage?.markdown && (
-                  <button
-                    type="button"
-                    onClick={downloadText}
-                    aria-label="Download Markdown"
-                    title="Download Markdown"
-                    className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 focus-visible:outline-2 focus-visible:outline-teal-600"
-                  >
-                    <Download aria-hidden="true" size={16} />
-                    <span>.md</span>
-                  </button>
-                )}
+                <DocumentDownloads
+                  fileName={[
+                    downloadContext,
+                    textPage?.downloadName ?? page.title,
+                  ]
+                    .filter(Boolean)
+                    .join("-")}
+                  htmlTargetRef={
+                    displayed.kind === "html" ? undefined : exportRef
+                  }
+                  htmlUrl={
+                    displayed.kind === "html" ? displayed.url : undefined
+                  }
+                  markdown={textPage?.markdown}
+                  title={[downloadContext, page.title]
+                    .filter(Boolean)
+                    .join(" — ")}
+                />
                 {page.representations ? (
                   <div
                     role="group"
@@ -331,20 +326,22 @@ export function ProductPages({
                 The page text is ready to work on. Its layout can be added next.
               </p>
             ) : null}
-            <WorkspacePage
-              page={displayed}
-              resolveLink={resolveLink}
-              hideConfirmation
-              hideTitle={
-                displayed.kind === "markdown" &&
-                parseDocument(displayed.markdown ?? "").body.match(
-                  /^# (.+)$/m,
-                )?.[1] === page.title
-              }
-            />
-            <p className="break-all border-t border-slate-200 px-6 py-4 text-xs text-slate-500">
-              Source: {displayed.sourcePath}
-            </p>
+            <div ref={exportRef}>
+              <WorkspacePage
+                page={displayed}
+                resolveLink={resolveLink}
+                hideConfirmation
+                hideTitle={
+                  displayed.kind === "markdown" &&
+                  parseDocument(displayed.markdown ?? "").body.match(
+                    /^# (.+)$/m,
+                  )?.[1] === page.title
+                }
+              />
+              <p className="break-all border-t border-slate-200 px-6 py-4 text-xs text-slate-500">
+                Source: {displayed.sourcePath}
+              </p>
+            </div>
           </div>
         ) : (
           children

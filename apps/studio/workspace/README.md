@@ -22,6 +22,13 @@ Product materials change more often and affect only their own offer.
 Review `default` first. Open `singlepage` or `startup` only when you need to see
 where a value came from.
 
+Every review document can be downloaded without its confirmation frontmatter.
+Use Markdown when another chat or project needs the complete semantic source;
+headings and tables stay authored Markdown. Use HTML when the rendered Brand,
+Design, product page, or other visual composition is also relevant. The HTML
+snapshot contains the current layout, active styles, and local images, while
+the Markdown remains the authoritative portable text.
+
 ## Document review status
 
 The header has one confirmation badge above the document title. Its source layer

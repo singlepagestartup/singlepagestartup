@@ -1,5 +1,8 @@
+import { useRef } from "react";
+
 import type { IDesignLayoutView, IDesignTemplateProps } from "../design/layout";
 import ProjectDesign, { ProjectDesignSection } from "./ProjectDesign";
+import { DocumentDownloads } from "./DocumentDownloads";
 import { DocumentHeader, documentPurpose } from "./DocumentStatus";
 import { WorkspacePage } from "./WorkspacePage";
 
@@ -8,6 +11,7 @@ export function DesignRenderer({
   layout,
   ...props
 }: IDesignTemplateProps & { layout: IDesignLayoutView }) {
+  const exportRef = useRef<HTMLDivElement>(null);
   if (
     (!layout.Template || layout.sections.some((section) => section.builtin)) &&
     !props.data
@@ -34,8 +38,20 @@ export function DesignRenderer({
     ),
   );
   return (
-    <div className="min-h-screen bg-slate-100 p-5 text-slate-950 md:p-10">
+    <div
+      ref={exportRef}
+      className="min-h-screen bg-slate-100 p-5 text-slate-950 md:p-10"
+    >
       <DocumentHeader
+        actions={
+          <DocumentDownloads
+            fileName="Design"
+            htmlTargetRef={exportRef}
+            markdown={props.document}
+            theme="dark"
+            title="Design"
+          />
+        }
         confirmation={props.confirmation}
         title="Design"
         {...documentPurpose("design")}

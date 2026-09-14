@@ -142,7 +142,12 @@ describe("product pages", () => {
       const page = sections[0].pages[0].children[0];
       expect(page.route).toBe("/");
       const html = renderToStaticMarkup(
-        <ProductPages pages={sections[0].pages}>{null}</ProductPages>,
+        <ProductPages
+          downloadContext="Code Framework"
+          pages={sections[0].pages}
+        >
+          {null}
+        </ProductPages>,
       );
       expect(html).toContain(title);
       expect(html).toContain('role="tree"');
@@ -153,6 +158,9 @@ describe("product pages", () => {
       expect(html.match(/Not confirmed by user/g)).toHaveLength(1);
       expect(html.split("<article")[1]).not.toContain("Not confirmed by user");
       expect(html).toContain('aria-label="Download Markdown"');
+      expect(html).toContain(
+        'data-download-base-name="code-framework-landing"',
+      );
       expect(html).toContain("<span>.md</span>");
       const preview = page.representations!.preview!;
       expect(preview.text).toBe(text);

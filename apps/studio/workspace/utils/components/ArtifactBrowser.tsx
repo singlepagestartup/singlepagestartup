@@ -1,9 +1,11 @@
 import Markdown from "markdown-to-jsx";
+import { useRef } from "react";
 import {
   documentConfirmation,
   documentReviewBody,
 } from "../../../../../tools/studio/workspace/document";
 import { DocumentHeader, documentPurpose } from "./DocumentStatus";
+import { DocumentDownloads } from "./DocumentDownloads";
 
 import type { IStudioArtifact, IStudioWorkspace } from "../types";
 
@@ -125,6 +127,7 @@ export function ArtifactDocument({
   workspace: IStudioWorkspace;
   kind: IStudioArtifact["kind"];
 }) {
+  const exportRef = useRef<HTMLElement>(null);
   const artifact = workspace.artifacts.find(
     (candidate) => candidate.kind === kind,
   );
@@ -163,8 +166,22 @@ export function ArtifactDocument({
       artifact.sourcePath.endsWith(".yaml") ? "yaml" : "markdown",
     );
   return (
-    <main className="min-h-screen bg-slate-100 p-5 text-slate-950 md:p-10">
+    <main
+      ref={exportRef}
+      className="min-h-screen bg-slate-100 p-5 text-slate-950 md:p-10"
+    >
       <DocumentHeader
+        actions={
+          artifact.sourcePath.endsWith(".md") ? (
+            <DocumentDownloads
+              fileName={artifactTitle(artifact.kind)}
+              htmlTargetRef={exportRef}
+              markdown={artifact.content}
+              theme="dark"
+              title={artifactTitle(artifact.kind)}
+            />
+          ) : undefined
+        }
         confirmation={confirmation}
         title={artifactTitle(artifact.kind)}
         {...guidance}
