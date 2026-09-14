@@ -91,6 +91,21 @@ The direct `?document=presentation` route remains a plain deck for the existing
 CLI HTML/PDF/PNG exporter. Product data, layer resolution and slide content use
 the same components for both export paths.
 
+## Portable document export
+
+Brief, Strategy, Brand, Design, and every product-owned document or nested page
+offer downloads in the same review surface. Markdown downloads remove review
+frontmatter but retain the complete authored heading, list, link, and table
+structure. Product file names include the product and page or customer-segment
+name, so independently uploaded files remain identifiable.
+
+HTML downloads capture the currently rendered page without Storybook chrome or
+the download controls. They inline the active styles and same-origin images so
+Brand, Design, product layouts, and Markdown renderings remain useful as a
+portable visual reference. Text-first paired pages always keep their canonical
+Markdown download; switching to Layout changes the HTML snapshot, not its source
+text. Existing raw HTML pages download their owned source file directly.
+
 ## Layout
 
 ```text

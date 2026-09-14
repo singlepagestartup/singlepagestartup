@@ -286,7 +286,7 @@ test("generates independent segment views and Markdown for a startup", () => {
   expect(pages[0].children).toHaveLength(2);
   const page = pages[0].children[0];
   expect(page.confirmation).toBe(status);
-  expect(page.downloadName).toBe("framework-product-individuals-sales.md");
+  expect(page.downloadName).toBe("individuals-sales.md");
   expect(page.markdown).toContain("Resolve individuals task");
   expect(page.markdown).not.toContain("Resolve teams task");
   expect(page.markdown).not.toContain("confirmed:");

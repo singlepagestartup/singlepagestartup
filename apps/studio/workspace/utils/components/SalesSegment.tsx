@@ -7,6 +7,7 @@ import {
   type ISalesProcess,
   type ISalesSegment,
 } from "../products/sales";
+import { downloadSlug } from "../downloads";
 import { MarkdownDocument } from "./ArtifactBrowser";
 
 export interface ISalesSegmentProps {
@@ -156,7 +157,7 @@ export function salesSegmentPages(
         sourcePath,
         url: baseUrl,
         confirmation,
-        downloadName: `${process.product_id}-${segment.id}-sales.md`,
+        downloadName: `${downloadSlug(segment.name, "sales")}.md`,
         markdown: `${salesSegmentProfileMarkdown(segment)}\n${salesJourneyMarkdown(segment)}`,
         Component: () => <SalesSegment segment={segment} baseUrl={baseUrl} />,
         children: [],
