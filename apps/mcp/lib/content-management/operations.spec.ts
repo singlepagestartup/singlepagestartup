@@ -6,6 +6,7 @@
  */
 
 import { z } from "zod";
+import { API_SERVICE_URL } from "@sps/shared-utils";
 import {
   applyDeleteContentModelRecord,
   createContentModelRecord,
@@ -457,7 +458,7 @@ describe("MCP content-management generic operations", () => {
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:4000/api/file-storage/files",
+      `${API_SERVICE_URL}/api/file-storage/files`,
       expect.objectContaining({
         method: "POST",
         headers: authHeaders,
