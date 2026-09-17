@@ -1,5 +1,10 @@
 import { parse } from "yaml";
 
+import {
+  hasMarkdownContent,
+  parseDocument,
+} from "../../../../../tools/studio/workspace/document";
+
 import type {
   IProjectDesignAsset,
   IProjectDesignData,
@@ -25,14 +30,9 @@ function artifact(workspace: IStudioWorkspace, kind: string): string {
   );
 }
 
+/** A source with only frontmatter, headings and comments is not a decision. */
 function meaningfulMarkdown(value: string): boolean {
-  return Boolean(
-    value
-      .replace(/^---[\s\S]*?^---\s*/m, "")
-      .replace(/^#{1,6}\s+.*$/gm, "")
-      .replace(/<!--([\s\S]*?)-->/g, "")
-      .trim(),
-  );
+  return hasMarkdownContent(parseDocument(value).body);
 }
 
 function clean(value: string): string {

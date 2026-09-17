@@ -1,5 +1,10 @@
 import { parse, stringify } from "yaml";
-import { parseDocument, renderDocument, type DocumentLayer } from "./document";
+import {
+  hasMarkdownContent,
+  parseDocument,
+  renderDocument,
+  type DocumentLayer,
+} from "./document";
 
 export interface IMergedWorkspaceContent {
   content: string;
@@ -13,14 +18,13 @@ export type WorkspaceMergeStrategy =
   | "replace"
   | "sections";
 
+/**
+ * Every caller passes a parsed body, so only headings, comments and whitespace
+ * have to be skipped. The shared scanner is a presence check, never rewritten
+ * text.
+ */
 function hasMeaningfulMarkdown(value: string): boolean {
-  return Boolean(
-    value
-      .replace(/^---[\s\S]*?^---\s*/m, "")
-      .replace(/^#{1,6}\s+.*$/gm, "")
-      .replace(/<!--([\s\S]*?)-->/g, "")
-      .trim(),
-  );
+  return hasMarkdownContent(value);
 }
 
 interface IMarkdownSection {
