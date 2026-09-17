@@ -4,6 +4,8 @@ import { parse } from "yaml";
 
 import {
   documentConfirmation,
+  hasMarkdownContent,
+  parseDocument,
   type DocumentLayer,
 } from "../workspace/document";
 
@@ -28,15 +30,13 @@ async function read(file: string): Promise<string> {
   });
 }
 
-/** Headings and frontmatter alone never make a document its own decision. */
+/**
+ * Headings and frontmatter alone never make a document its own decision. The
+ * shared scanner is a content-presence check, not sanitization, and never
+ * returns rewritten text.
+ */
 function meaningfulMarkdown(value: string): boolean {
-  return Boolean(
-    value
-      .replace(/^---[\s\S]*?^---\s*/m, "")
-      .replace(/^#{1,6}\s+.*$/gm, "")
-      .replace(/<!--[\s\S]*?-->/g, "")
-      .trim(),
-  );
+  return hasMarkdownContent(parseDocument(value).body);
 }
 
 function reachedDesign(cursor: string): boolean {

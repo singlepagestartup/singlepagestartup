@@ -125,7 +125,7 @@ function documentLineEnd(body: string, offset: number): number {
 }
 
 /** A content-presence check, not HTML sanitization; never returns rewritten text. */
-function hasMarkdownContent(body: string): boolean {
+export function hasMarkdownContent(body: string): boolean {
   let offset = 0;
   while (offset < body.length) {
     offset = skipDocumentTrivia(body, offset);
