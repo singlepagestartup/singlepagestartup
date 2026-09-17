@@ -681,7 +681,10 @@ describe("Studio presentation structure", () => {
     expect(exporter).toContain("document=presentation&product=");
     expect(exporter).toContain("resolvePresentationOutputTarget");
     expect(exporter).toContain("127\\.0\\.0\\.1|localhost");
-    expect(exporter).toContain("rel=[\"']modulepreload[\"']");
+    expect(exporter).toContain(
+      "querySelectorAll('script, link[rel=\"modulepreload\"]')",
+    );
+    expect(exporter).not.toContain("<script\\b");
   });
 
   /**
