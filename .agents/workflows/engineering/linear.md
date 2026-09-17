@@ -419,3 +419,10 @@ Remember: The goal is to help a future reader (including yourself) quickly under
 - flakecode: b157f9e4-8faf-4e7e-a598-dae6dec8a584
 - dex: 16765c85-2286-4c0f-ab49-0d4d79222ef5
 - sundeep: 0062104d-9351-44f5-b64c-d0b59acb516b
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

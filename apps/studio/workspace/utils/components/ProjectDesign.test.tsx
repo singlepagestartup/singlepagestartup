@@ -40,6 +40,19 @@ const data: IProjectDesignData = {
     masterPrompt: "Illustration prompt.",
     productionRules: [],
   },
+  interface: {
+    intro: "A reference proves a liked appearance, never a shipped screen.",
+    patterns: [
+      {
+        avoid: "colour as the only selection signal",
+        decision: "One inset surface holds grouped options.",
+        references: ["interface-reference-license-card"],
+        title: "Choice group",
+      },
+    ],
+    shapeRules: ["Build every surface from the Canvas field."],
+    stateRules: ["Allow one dominant action per view."],
+  },
   logoRules: ["Keep source artwork unchanged."],
   palette: {
     accent: "#3275E7",
@@ -89,5 +102,24 @@ describe("ProjectDesign", () => {
     expect(html).toContain(
       "background-color:var(--workspace-brand-primary, #0C2234)",
     );
+  });
+
+  /**
+   * BDD Scenario: Cite interface references without reproducing them
+   * Given operator-supplied interface references prohibit reproducing their layout
+   * When Studio renders the interface block
+   * Then it presents the project's own rules and patterns and cites each asset ID as text only
+   */
+  test("cites interface references as provenance text rather than artwork", () => {
+    const html = renderToStaticMarkup(<ProjectDesign data={data} />);
+
+    const start = html.indexOf('id="interface"');
+    const block = html.slice(start, html.indexOf("<section", start + 1));
+
+    expect(start).toBeGreaterThan(-1);
+    expect(block).toContain("Surface, density, and shape");
+    expect(block).toContain("Allow one dominant action per view.");
+    expect(block).toContain("interface-reference-license-card");
+    expect(block).not.toContain("<img");
   });
 });

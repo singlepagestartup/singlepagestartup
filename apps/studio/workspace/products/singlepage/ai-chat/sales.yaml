@@ -1,136 +1,523 @@
-schema: singlepagestartup.sales-process.v1
+schema: singlepagestartup.sales-process.v2
 product_id: ai-chat
 readiness: blocked
-owner: Project owner; operational delegates are unspecified.
-seller: AI Chat service operator; legal selling entity remains to be chosen.
-pricing: See [Revenue Streams](../models/framework-service/model.md#revenue-streams), row ai-chat.
-  Token purchases are the selected revenue model; exact terms remain open.
-capacity: Best-effort help within available resources. Shared resources are counted once across
-  products; no recurring subsidy or support schedule is committed.
-sources:
-  intake: Brief audience_value_and_flow, operator correction 2026-09-13; business-data chat, useful
-    answers, token purchases, repeat use and an optional route to the free framework.
-  scope: Registration, agent interaction and best-effort help are supplied intentions. A public
-    support contact and service policy remain unselected.
-  direction: Approved Strategy selects demonstrations, short videos, searchable explanations and
-    contextual community participation leading to useful hosted chat use.
-  planning-scope: Operator correction, 2026-09-13; readiness means completeness of the intended
-    business process before implementation. The remaining blockers are commercial and service-policy
-    decisions, not technical availability or runtime checks.
-  proposals: Stages describe the intended customer relationship. Inputs are relevant context, not
-    mandatory collection forms; metrics are business signals without numerical targets.
+owner: The SinglePageStartup project creator currently owns every sales and
+  service stage.
+seller: The SinglePageStartup project creator operates AI Chat. Payments will be
+  accepted in Russia through an online cash register. The seller's legal name
+  and payment details have not been recorded yet.
+pricing: The framework-service model records token purchases as the revenue
+  model for AI Chat. The token unit, price, currency, packages, payment timing,
+  expiry and refund terms have not been defined yet.
+capacity: One project owner runs the service and processes support requests
+  within 24 hours. Continuous live support and higher service levels have not
+  been defined.
 blockers:
-  - Define the token offer, unit, price, currency, packages, payment timing, expiry and refund
-    conditions, selling entity, and responsibility for purchases and purchase questions.
-  - Define initial access and eligibility, rights to supplied business materials, knowledge access
-    expectations, retention and deletion policy.
-  - Define the public help route and support policy, including purchase questions, within
-    best-effort capacity.
-stages:
-  - id: reached-explanation
-    name: Discover a useful business answer
-    owner: Project owner presents examples; the visitor chooses whether to continue.
-    entry_conditions:
-      - A person encounters a demonstration, search result, short video or community answer.
-    required_fields:
-      - No personal information is required for discovery.
-    action: Show a business question, relevant supplied facts and an answer through the selected organic
-      channels. Lead interested people to AI Chat and explain the value of using their own business
-      context.
-    exit_condition: The visitor chooses chat use, seeks more information, defers or leaves.
-    failure: The example is not relevant to a current need; the person can return to another use case later.
-    metric: Interested visits and people choosing to try the chat.
-  - id: access
-    name: Obtain access to AI Chat
-    owner: User chooses access; service operator defines the offer.
-    entry_conditions:
-      - The person wants to use the hosted chat.
-    required_fields:
-      - Identity and access basis under the eventual service conditions.
-    action: Explain the access conditions, register or enter the service and introduce the business
-      chat. Initial access allowances and eligibility remain offer decisions.
-    exit_condition: The person accepts access conditions and enters the chat, or declines them.
-    failure: The offer is unavailable or unsuitable; request clarification, defer or choose another service.
-    metric: People obtaining access and voluntarily reported reasons for declining.
-  - id: knowledge-prepared
-    name: Bring business context into the chat
-    owner: User chooses materials; the service provides a place to use them.
-    entry_conditions:
-      - The user has access and wants answers informed by their business.
-    required_fields:
-      - Selected chat, relevant business facts or documents, and intended purpose.
-    action: Supply permitted materials and configure the chat's business knowledge. Keep each chat's
-      knowledge scope understandable so the user can choose what context informs the conversation.
-    exit_condition: The user has supplied relevant context for the intended business questions.
-    failure: Suitable materials are unavailable or cannot be shared; use permitted information, seek
-      clarification about the policy or defer the task.
-    metric: People supplying useful business context and common information needs.
-  - id: interaction
-    name: Get a useful answer for the business
-    owner: User asks and judges usefulness; the service supplies contextual answers.
-    entry_conditions:
-      - The user has a business question and relevant context for the chat.
-    required_fields:
-      - The question and relevant facts or documents.
-    action: Answer using relevant material from that chat's knowledge. Help the user understand how the
-      answer applies to the business and where more information is needed.
-    exit_condition: The user finds a useful answer or understands what further information would help.
-    failure: The answer does not meet the need; clarify the question, add relevant context, seek another
-      source of advice or stop.
-    metric: User-rated useful answers, recurring questions and reasons to return.
-  - id: token-purchase
-    name: Buy tokens for continued use
-    owner: User decides; the selected service seller handles the purchase relationship.
-    entry_conditions:
-      - The user finds the service useful and wants to continue under the defined token offer.
-    required_fields:
-      - Chosen offer, payer and information required by its purchase conditions.
-    action: Explain the token quantity, price, permitted use and purchase conditions. Let the customer
-      choose a purchase for continued access under those terms.
-    exit_condition: The customer purchases tokens, requests clarification or declines the offer.
-    failure: Price or conditions do not fit; retain the choice to pause or leave. Purchase and refund
-      questions follow the support policy that remains to be defined.
-    metric: Token purchases, revenue and reasons for declining the offer.
-  - id: follow-up
-    name: Return with further business questions
-    owner: User chooses continued use; service operator maintains the customer relationship.
-    entry_conditions:
-      - The user has tried the chat and has a continuing business need.
-    required_fields:
-      - Further question, relevant updated context and applicable access terms.
-    action: Continue conversations, update business materials and buy more tokens when the value
-      justifies it. Automatic recharge and subscriptions are not selected.
-    exit_condition: Repeat use, another purchase, a pause or an explicit decision to leave.
-    failure: The need ends or continued use is not worthwhile; the user can pause, leave or return later.
-    metric: Return use, repeat purchases and reasons for continuing or stopping.
-  - id: framework-handoff
-    name: Choose to build with the foundation
-    owner: Interested maker chooses the branch; Code Framework owns the next journey.
-    entry_conditions:
-      - A positive chat experience prompts interest in building a personal product.
-    required_fields:
-      - The maker's interest in a local project.
-    action: Offer “Развернуть проект на своей машине” leading to GitHub and the [Code Framework
-      journey](../singlepagestartup/sales.yaml). This optional branch does not require buying chat
-      tokens.
-    exit_condition: The maker explores the framework or remains a hosted-chat consumer.
-    failure: Building is not relevant; continue using AI Chat independently.
-    metric: Framework interest and subsequent adoption, separate from chat purchases.
-  - id: support-requested
-    name: Seek help with the service or offer
-    owner: User describes the need; project owner helps as time permits.
-    entry_conditions:
-      - Access, business materials, answers or purchase conditions need clarification.
-    required_fields:
-      - The question, desired outcome and relevant context.
-    action: Ask through the service's chosen help route. Provide guidance within available capacity;
-      purchase questions follow the agreed policy and accountable seller.
-    exit_condition: The user gains direction, accepts a proposed outcome or leaves the question open.
-    failure: Help is unavailable or insufficient; seek another source of guidance, pause or leave.
-    metric: Common requests, useful answers and unmet service expectations.
+  - Define the token unit, price, currency, packages, payment timing, expiry and
+    refund terms.
+  - Record the payment-accepting party's exact legal and payment details and
+    configure the required Russian online receipt flow.
+  - Name the selected AI, storage and infrastructure providers and publish the
+    applicable processing and backup terms.
+  - Define the GitHub authorization scope, supported server providers,
+    deployment-credential handling, domain connection and recovery for failed
+    deployments.
+segments:
+  - id: business-users
+    name: Early-stage project owners
+    audience:
+      People with a business idea or an early-stage project who have notes,
+      documents, images, decisions or partial answers. They need to organize
+      this material into one business model, continue working with it and
+      prepare a landing-page preview before publishing it through their
+      repository and server.
+    roles:
+      The same person is normally the user, beneficiary and decision-maker, and
+      may also buy and pay for tokens. For organizational customers, the buyer,
+      payer and person authorized to commission or manage a public site are
+      still unknown.
+    needs:
+      - Upload existing notes, documents, images and decisions without first
+        deciding where every item belongs.
+      - Review compact Request, Strategy, Brand, Design and Products stages
+        during the first session.
+      - See what is missing, proposed or contradictory and correct it through
+        ordinary conversation.
+      - Develop and question later ideas without explaining the business again.
+      - Assemble and review a first landing page in the SinglePageStartup
+        sandbox.
+      - Authenticate with GitHub, create the project repository and connect a
+        server when the page needs to become public.
+      - Export the resulting structure for use outside the service.
+      - Add detail without creating copies that must be updated by hand.
+    motivations:
+      - Turn scattered project material into a usable model.
+      - Spend less time sorting information and repeating context.
+      - Have a continuing counterpart that helps develop ideas and points out
+        weaknesses.
+      - Keep control over corrections, repository authorization, server
+        connection and the decision to publish.
+      - Pay for continued use only when the product has proved useful.
+    purchase_trigger: The token balance is too low for the next request, and the
+      person chooses a clearly priced package to continue the saved setup,
+      document work, discussion or material creation.
+    decision_criteria:
+      - Existing materials and guided answers become a coherent project model
+        written in ordinary language.
+      - About one focused hour is enough to prepare useful context without
+        forcing completion or inventing missing answers.
+      - The user can see where information was placed, correct it and approve
+        the result.
+      - Accepted information is reused without another explanation from the user.
+      - Later discussions test ideas and point out weaknesses instead of
+        automatically agreeing with them.
+      - Unknowns block only the decisions that require them.
+      - Landing-page edits are saved with the project and shown immediately in a
+        private preview.
+      - Publication creates a repository in the user's GitHub account and
+        deploys it to a server the user controls.
+      - Later approved changes can update the same repository and deployment.
+      - The terms for continued use, data processing and support are clear.
+    value_proposition:
+      Upload the project files, images and notes already available,
+      then review compact Request, Strategy, Brand, Design and Products stages.
+      AI Chat assembles them into an editable project model, shows what is
+      missing, uses the accepted context in later discussions and helps prepare
+      a landing-page sandbox that can be published through a GitHub repository
+      and the user's server.
+    objections:
+      - concern:
+          I have notes and documents, but I do not know which project section
+          each item belongs in.
+        response:
+          Supply the material as it exists or answer guided questions; AI Chat
+          proposes the structure and returns it for correction and approval.
+        evidence:
+          Show material from different sources placed in project sections, with
+          missing information marked for review.
+      - concern: I will have to repeat the same background in every request.
+        response:
+          AI Chat keeps accepted project decisions and asks only for information
+          missing from the current task.
+        evidence:
+          Demonstrate a later request that uses the accepted project page and
+          shows the source behind the answer.
+      - concern:
+          Will the landing-page preview appear publicly or overwrite an accepted
+          project decision?
+        response:
+          The preview remains private until the user starts publication. Project
+          decisions change only after review. Publication uses an authorized
+          project repository and a server connection controlled by the user.
+        evidence:
+          Show the sandbox state, saved data, GitHub authorization, repository
+          creation, server connection and deployment status as separate steps.
+      - concern: The chat may simply agree with every idea.
+        response:
+          AI Chat can examine assumptions, expose contradictions, compare
+          alternatives and explain its criticism using the accepted project
+          context.
+        evidence:
+          Demonstrate one idea discussion where the result identifies a weak
+          assumption and offers an attributable alternative.
+      - concern: A general assistant or separate documents may already be enough.
+        response:
+          Compare AI Chat with those alternatives using the same request and
+          intended result.
+        evidence: Use the documented competitor comparison and a like-for-like
+          demonstration. Do not claim superiority without results.
+    acquisition:
+      - id: demonstration
+        channel: Full demonstration and short vertical extracts
+        context:
+          The person has an idea, notes or partial decisions that have not yet
+          become a coherent project.
+        message:
+          Bring what you already have, review the proposed structure and keep
+          developing the project from the accepted result.
+        cta: See how AI Chat works
+        destination: AI Chat landing page or matching full explanation
+      - id: search
+        channel: Search-oriented explanations
+        context: The person is searching for help with a business brief, project
+          strategy, positioning or landing page.
+        message: Resolve the current decision and save the result in the project model.
+        cta: Start with this task
+        destination: An explanation of the task with a link to New project
+      - id: community
+        channel: Contextual community answers
+        context:
+          A founder or maker asks a concrete business or product question in a
+          relevant community.
+        message:
+          Give a useful answer first, then link a matching example when the
+          community permits it.
+        cta: Explore the example
+        destination: Matching explanation or AI Chat page
+    journey:
+      - id: discover
+        name: See an idea become structured
+        customer_goal:
+          Find a practical way to turn available project material into
+          something useful for further work.
+        customer_action:
+          Watch, read or encounter an example and decide whether it fits
+          the current situation.
+        customer_question:
+          Can this help me organize my project without another long
+          planning exercise?
+        experience:
+          A concrete before-and-after example that makes the product's scope
+          clear.
+        touchpoint: Demonstration, search result, short extract or community answer
+        owner:
+          The project owner prepares and presents every example; the visitor
+          chooses whether to continue.
+        entry_conditions:
+          - The person has a current project, business idea or decision that
+            feels scattered.
+        required_fields:
+          - No personal information is required for discovery.
+        action:
+          Show how mixed notes or guided answers become a project model for
+          review, then use it to discuss an idea or prepare a landing-page
+          sandbox.
+        exit_condition:
+          The visitor chooses to start a project, seeks more information,
+          defers or leaves.
+        failure:
+          The example does not fit; the person can use another approach or return
+          for a later project.
+        metric: Relevant visits and people choosing to begin a project.
+      - id: access
+        name: Enter the workspace
+        customer_goal: Understand the access conditions and begin safely.
+        customer_action: Review the offer, register with email and password, and log in.
+        customer_question: What can I do here, and what happens to the information I provide?
+        experience:
+          A direct email-and-password registration or sign-in path followed by
+          material upload. Social login is not offered.
+        touchpoint: Registration and sign-in pages
+        owner:
+          The user registers and logs in; the project owner operates access and the
+          offer.
+        entry_conditions:
+          - The person wants to use the hosted workspace.
+        required_fields:
+          - Email address and password.
+        action:
+          Register or authenticate the account, show the available token balance
+          and continue to the material-upload step.
+        exit_condition: The person accepts the conditions and enters, requests
+          clarification or declines.
+        failure:
+          If access fails or the terms are unsuitable, the person can request
+          support, return later or choose another service. Support requests are
+          processed within 24 hours.
+        metric:
+          Registrations, successful logins, access failures and voluntarily
+          reported reasons for declining.
+      - id: describe
+        name: Build the first project model
+        customer_goal:
+          Turn available files, images and partial knowledge into one
+          business and marketing model.
+        customer_action:
+          Upload existing material, add explanatory text, then review
+          compact Request, Strategy, Brand, Design and Products stages.
+        customer_question: What do I need to decide now, and what can remain unknown?
+        experience:
+          The user can submit existing files and images without learning the
+          document structure first. Each screen shows extracted statements, one
+          question that affects the model and the current project page. The
+          token balance remains visible.
+        touchpoint: Material upload and guided intake page
+        owner:
+          The user supplies and approves project facts; the project owner operates
+          the guided intake.
+        entry_conditions:
+          - The user has access and a project or business idea to develop.
+        required_fields:
+          - Available files, images or facts for the current task and an
+            explicit unknown where the user cannot answer.
+        action:
+          Place supplied information in Request, Strategy, Brand, Design and
+          Products, ask one question at a time and link every statement to its
+          source. Inside Products, group customer and value, access and
+          relationship, money and delivery, and sales and learning instead of
+          showing nine separate forms.
+        exit_condition:
+          The five-stage draft supports a useful, reviewable project model
+          or the user saves incomplete work.
+        failure:
+          If the token balance runs out, save the work and open token purchase
+          without losing the current task. If information is missing, record the
+          unknown with the affected decision and continue with the rest or
+          return later.
+        metric:
+          Projects started, stages reviewed, corrections, unknowns, time to a
+          reviewed model and abandonment points.
+      - id: purchase
+        name: Top up tokens and return to work
+        customer_goal:
+          Continue the current task without losing uploaded material or
+          completed work.
+        customer_action:
+          Open the token page, compare the available packages, choose
+          one, pay and return to the interrupted task.
+        customer_question:
+          What am I buying, what will it cost and where will I return
+          after payment?
+        experience:
+          The current balance, package contents, full price and purchase terms
+          are visible before payment. After a successful payment, the person
+          returns to the saved task.
+        touchpoint: Token balance and purchase page
+        owner:
+          The user chooses and pays for a package; the project owner operates
+          payment acceptance and the Russian online receipt flow.
+        entry_conditions:
+          - The available token balance is insufficient for requested intake,
+            chat, document or material work.
+        required_fields:
+          - Selected token package and payment details required by the
+            configured payment flow.
+        action:
+          Preserve the current work, show the configured packages and terms,
+          accept payment, credit tokens and return to the interrupted task.
+        exit_condition:
+          Tokens are credited and the user resumes work, chooses another
+          package, defers purchase or leaves.
+        failure:
+          Keep the work and balance unchanged, explain the payment result and
+          offer another attempt, support or a return without purchase.
+        metric: Purchase-page entries, successful purchases, failures, package
+          selection, return to task and repeat purchases.
+      - id: review
+        name: Review the structured project
+        customer_goal:
+          Check that the business and marketing model describes the project
+          accurately and makes missing decisions clear.
+        customer_action:
+          Read the project model, correct a decision, export the current
+          document or continue through chat.
+        customer_question:
+          Does this explain how my business should work, what is
+          missing and what I should do next?
+        experience:
+          A readable project page that can be corrected through chat without
+          entering the same information again.
+        touchpoint: Project model
+        owner:
+          The user accepts or corrects the project; the project owner maintains the
+          project page.
+        entry_conditions:
+          - The compact Request, Strategy, Brand, Design and Products stages
+            contain enough reviewed information for a coherent project page.
+        required_fields:
+          - Connected business and marketing model, visible assumptions,
+            unknowns and user corrections.
+        action:
+          Present the complete model, show where supplied information was placed,
+          save corrections in their main sections and offer the relevant next
+          action.
+        exit_condition:
+          The user continues through chat, edits a section, exports the
+          document or prepares the landing page.
+        failure:
+          Preserve accepted parts, expose the contradiction and request only the
+          necessary clarification.
+        metric:
+          Pages accepted, correction cycles, contradictions and repeated-input
+          problems.
+      - id: landing-preview
+        name: Prepare the landing-page sandbox
+        customer_goal:
+          See how the offer could work as a landing page without rebuilding
+          the project context or publishing a site.
+        customer_action:
+          Review the generated Text and Layout, revise the page, save the
+          sandbox or start publication.
+        customer_question:
+          Does this page express the approved audience, value and
+          action accurately?
+        experience:
+          SinglePageStartup blocks assemble the page; edits are saved in the
+          service database and appear immediately in the frontend preview.
+        touchpoint: Landing-page sandbox
+        owner:
+          The user reviews and edits the sandbox; the project owner operates AI
+          Chat storage and preview.
+        entry_conditions:
+          - The project page is accepted and the user wants to inspect a
+            possible landing page.
+        required_fields:
+          - Reviewed audience, offer, action and page content.
+        action:
+          Assemble the page from available SinglePageStartup blocks, save edits
+          with the project and render the current private preview. Offer
+          publication when the page is ready.
+        exit_condition:
+          The sandbox is saved, returned for changes, moved to publication
+          or cancelled.
+        failure:
+          Preserve saved data and identify the exact content, block or rendering
+          problem. Do not imply that the preview is public.
+        metric:
+          Sandboxes created, reviewed, revised, saved, cancelled and moved into
+          publication.
+      - id: continue
+        name: Develop and challenge ideas
+        customer_goal:
+          Think through another idea or complete a project task without
+          explaining the project again.
+        customer_action:
+          Discuss an idea, request criticism, compare alternatives,
+          request a material, add a product or update an accepted decision.
+        customer_question:
+          Can I use what we already agreed, test this idea and change
+          only what matters now?
+        experience:
+          AI Chat already has the relevant context, explains whether it
+          supports or questions the idea and asks only for information missing
+          from the current task.
+        touchpoint: Project page and product materials
+        owner:
+          The user directs continued work; the project owner maintains access and
+          the saved project context.
+        entry_conditions:
+          - The user has an accepted project page and another decision or
+            material to work on.
+        required_fields:
+          - The next request, relevant change and applicable access terms.
+        action:
+          Use accepted project decisions, save reviewed changes in the affected
+          sections, deduct tokens for completed operations and open token
+          purchase when the balance is too low for the next request.
+        exit_condition:
+          The requested task is completed, the user buys more tokens,
+          pauses or chooses to leave.
+        failure:
+          If the need ends or the product does not fit, the person can pause,
+          leave, return later or use another approach.
+        metric:
+          Useful later results, idea discussions rated useful, criticism acted on,
+          return use, repeat purchases, repeated-input problems and reasons for
+          stopping.
+      - id: framework
+        name: Publish and maintain the site
+        customer_goal:
+          Turn the approved landing-page sandbox into a public site on
+          infrastructure the person controls.
+        customer_action:
+          Sign in with GitHub, authorize project-repository access,
+          create the repository, connect a server or hosting provider and start
+          deployment.
+        customer_question:
+          What will be created in my accounts, which access is required
+          and how will later changes reach the site?
+        experience: A guided publication flow shows repository creation, server
+          connection, deployment configuration, the first deployment and its
+          public address. Publishing the landing page does not require a token
+          purchase.
+        touchpoint:
+          Landing-page publication page, GitHub authorization and server
+          connection
+        owner:
+          The user controls the GitHub repository and server account; the project
+          owner operates the authorized integration and deployment flow.
+        entry_conditions:
+          - The landing page is approved for publication, or another site,
+            chatbot or digital-product need appears during project work.
+        required_fields:
+          - GitHub authorization for the project repository.
+          - Repository name and confirmed creation destination.
+          - Existing server or hosting-provider destination and the required
+            deployment key.
+        action: Create the repository from the approved page and Code Framework
+          foundation, connect the server, configure automatic deployment, run
+          the first deployment and show the public address. Use the same
+          authorized repository for later approved updates.
+        exit_condition:
+          The site is deployed, the user returns to correct the page,
+          pauses at a saved connection step or cancels before publication.
+        failure:
+          Preserve the repository and last working deployment, identify the
+          failed connection or deployment step and allow a retry without
+          rebuilding the sandbox.
+        metric:
+          GitHub connections, repositories created, servers connected, deployment
+          starts, successful deployments, failed steps, public addresses and
+          later updates.
+      - id: manage
+        name: Manage the account and project
+        customer_goal:
+          Change account or project settings and understand the current
+          service state.
+        customer_action:
+          Open settings, update account or project details, view purchase
+          history, manage saved landing-page data or request account deletion.
+        customer_question:
+          Where can I change my account, project, payments or saved
+          landing-page sandbox?
+        experience:
+          One settings area contains account, project, billing and data
+          actions, separate from the project documents.
+        touchpoint: Settings page
+        owner: The user chooses each change; the project owner operates the
+          corresponding service action.
+        entry_conditions:
+          - The user is authenticated.
+        required_fields:
+          - Only the information required by the selected settings action.
+        action:
+          Show account, project, billing and sandbox-data settings and apply only
+          the action the user explicitly selects.
+        exit_condition: The selected setting is saved, the user returns to work,
+          requests help or leaves the account.
+        failure:
+          Preserve the previous setting and show the available retry or support
+          path.
+        metric:
+          Settings actions, incomplete changes, deletion requests and support
+          transitions.
+      - id: support
+        name: Seek help
+        customer_goal:
+          Resolve a question about the product or its terms and decide how
+          to continue.
+        customer_action: Describe the question, desired result and relevant project context.
+        customer_question: Where can I get help, and what response can I expect?
+        experience: A clear support route with requests processed within 24 hours.
+        touchpoint: Selected help route
+        owner: The user describes the need; the project owner is the sole person
+          responsible for processing it.
+        entry_conditions:
+          - Access, cards, project decisions, the landing-page sandbox, GitHub
+            connection, server deployment or purchasing needs clarification.
+        required_fields:
+          - The question, desired outcome and relevant context.
+        action:
+          Process the request within 24 hours and answer within the limits of the
+          current service.
+        exit_condition:
+          The user gains direction, accepts an outcome, receives a next
+          step or leaves the question open.
+        failure:
+          If the current service cannot resolve the issue, explain the limit and
+          offer a next step, another source, a pause or account exit.
+        metric:
+          Common requests, time to first response, useful answers, unresolved
+          requests and unmet expectations.
 confirmation:
-  confirmed: false
+  confirmed: true
+  by: operator
+  at: 2026-09-17
+  source:
+    "Operator confirmed the revised AI Chat Sales in chat: «Здесь всё, можно
+    подтвердить»."
+  content_sha256: cb285ae361c61f4d20b6a41fa61044e19ff930962e4bc1c93f627df1898d9635
 review:
   dependencies:
-    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
-    product.ai-chat.product: 7dae35359455fa0a26a356b6282707efd96f38f5ae58fcdde83d54299a0486bb
+    model.framework-service: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
+    product.ai-chat.product: 91f9368e4f450d3a1b82a775df616972fe8aab756c6890331292f5327fdc4d84

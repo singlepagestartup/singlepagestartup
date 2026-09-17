@@ -62,8 +62,8 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
-    product.singlepagestartup.product: 08586629928e54c1700f059e4b5c8304b78451448389b8603bc8a8665499bcf2
+    model.framework-service: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
+    product.singlepagestartup.product: eabe8a34aeef98d000baac2751e9aabc599044693bf93606a94075bd239f5a55
 segments:
   - id: makers
     name: Makers building with a coding agent

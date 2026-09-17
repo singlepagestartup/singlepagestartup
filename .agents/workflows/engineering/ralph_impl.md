@@ -30,3 +30,10 @@ If no suitable issue exists, exit and report that no `size:xs`/`size:small` issu
 - Single source of truth for quality gates: `core/30-implement.md`.
 - Utility command paths are resolved from `core/30-implement.md` (`.agents/workflows/engineering/utilities/*`).
 - This wrapper exists only to preserve old command entry points.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

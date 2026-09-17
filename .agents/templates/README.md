@@ -14,19 +14,20 @@ files stay empty until they intentionally override content or confirmation.
 
 ## Sequence
 
-| Stage             | Owner                                       | Template output                                                                        | Depends on                                                         |
-| ----------------- | ------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| 00 Client Request | Account Manager and coordinator             | `brief.md`, source notes in the owning document                                        | founder request and existing materials                             |
-| 00 Client Request | Business Analyst                            | `products.yaml`, initial `product.md`, `product-model.md`, `sales.yaml`                | scope-confirmed brief, attributed facts                            |
-| 10 Strategy       | Market Researcher                           | product-local `research.md`                                                            | completed fact intake, product-specific decision questions         |
-| 10 Strategy       | Strategist                                  | proposed, then approved `strategy.md` with separate audience and sales priorities      | brief, product models, product research, and sales                 |
-| 20 Brand          | Communication Strategist and Brand Designer | proposed, then approved `brand.md`                                                     | approved strategy and product research                             |
-| 30 Design         | Brand Designer                              | `design.md`, `asset-index.yaml`                                                        | approved brand, confirmed existing assets and preferred references |
-| 40 Products       | Strategist                                  | one `product.md` per active product                                                    | approved shared decisions and client-confirmed product inventory   |
-| 40 Products       | Web Designer                                | product-local `website.md`                                                             | product, shared decisions, research, assets                        |
-| 40 Products       | Brand Designer                              | product-local `marketing-creative.md`                                                  | product, shared decisions, research, assets, selected channels     |
-| 40 Products       | Communication Strategist and Brand Designer | product-local React/HTML presentation                                                  | product and its approved review documents                          |
-| 40 Products       | Product owner for the applicable material   | optional nested product sections/pages (`Product Content`, legacy `content` supported) | product-owned sources in any appropriate format                    |
+| Stage                            | Owner                                       | Template output                                                                                | Depends on                                                         |
+| -------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 00 Client Request                | Account Manager and coordinator             | `brief.md`, source notes in the owning document                                                | founder request and existing materials                             |
+| 00 Client Request                | Business Analyst                            | `products.yaml`, initial `product.md`, `product-model.md`, `sales.yaml`                        | scope-confirmed brief, attributed facts                            |
+| 10 Strategy                      | Market Researcher                           | product-local `research.md`                                                                    | completed fact intake, product-specific decision questions         |
+| 10 Strategy                      | Strategist                                  | proposed, then approved target-state `strategy.md` with separate audience and sales priorities | brief, product models, product research, and sales                 |
+| 20 Brand                         | Communication Strategist and Brand Designer | proposed, then approved `brand.md`                                                             | approved strategy and product research                             |
+| 30 Design                        | Brand Designer                              | `design.md`, `asset-index.yaml`                                                                | approved brand, confirmed existing assets and preferred references |
+| 40 Products                      | Strategist                                  | one `product.md` per active product                                                            | approved shared decisions and client-confirmed product inventory   |
+| 40 Products                      | Web Designer                                | product-local `website.md`                                                                     | product, shared decisions, research, assets                        |
+| 40 Products                      | Brand Designer                              | product-local `marketing-creative.md`                                                          | product, shared decisions, research, assets, selected channels     |
+| 40 Products                      | Communication Strategist and Brand Designer | product-local React/HTML presentation                                                          | product and its approved review documents                          |
+| 40 Products and ongoing learning | Product owner and Market Researcher         | `product-analytics.md`, then updated product Research                                          | Product, Sales, model, and inspected measurement sources           |
+| 40 Products                      | Product owner for the applicable material   | optional nested product sections/pages (`Product Content`, legacy `content` supported)         | product-owned sources in any appropriate format                    |
 
 The complete operating order, review rules, and invalidation behavior remain in
 `.agents/workflows/pre-development.md`. Templates describe shape only;

@@ -143,3 +143,10 @@ Goal: verify implementation matches approved plan and success criteria.
 - Do not mark assumptions as facts without proof.
 - Prefer explicit blockers over optimistic guesses.
 - Keep findings evidence-based (`file:line`, command source, config path).
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

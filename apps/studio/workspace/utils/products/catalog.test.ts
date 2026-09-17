@@ -56,6 +56,75 @@ describe("product catalog", () => {
         product.presentation_data?.endsWith("/presentation/data.yaml"),
       ),
     ).toBe(true);
+    expect(
+      base.products.every((product) =>
+        product.analytics?.endsWith("/analytics.md"),
+      ),
+    ).toBe(true);
+  });
+
+  /**
+   * BDD Scenario: Give AI Chat the complete Studio product workspace
+   * Given AI Chat uses the same extensible product contract as Code Framework
+   * When its authored catalog structure is read
+   * Then Website exposes routed Pages with Text and Layout and Product Content remains available
+   */
+  test("keeps AI Chat website pages and product content explicit", () => {
+    const parsed = parseProductCatalog(
+      readFileSync(
+        new URL("../../products/singlepage/catalog.yaml", import.meta.url),
+        "utf8",
+      ),
+      "singlepage",
+    );
+    const product = parsed.products.find(({ id }) => id === "ai-chat");
+    const website = product?.sections.find(({ id }) => id === "website");
+    const pages = website?.pages.find(({ id }) => id === "pages");
+    const content = product?.sections.find(({ id }) => id === "content");
+
+    expect(product?.sections.map(({ id }) => id)).toEqual([
+      "research",
+      "website",
+      "creative",
+      "content",
+    ]);
+    expect(pages?.title).toBe("Pages");
+    expect(pages?.children.map(({ route }) => route)).toEqual([
+      "/",
+      "/register",
+      "/login",
+      "/projects/new",
+      "/projects/[project-id]",
+      "/projects/[project-id]/landing-page",
+      "/projects/[project-id]/landing-page/publish",
+      "/tokens",
+      "/settings",
+      "/help",
+    ]);
+    expect(
+      pages?.children.find(({ id }) => id === "new-project")?.uses,
+    ).toEqual(["product.ai-chat.page.content.one-hour-setup"]);
+    expect(
+      pages?.children.find(({ id }) => id === "project-workspace")?.uses,
+    ).toEqual(["product.ai-chat.page.content.project-model"]);
+    expect(
+      pages?.children.find(({ id }) => id === "landing-page-workspace")?.uses,
+    ).toEqual(["product.ai-chat.page.content.project-model"]);
+    expect(
+      pages?.children.every(
+        ({ representations }) =>
+          representations?.text.endsWith(".md") &&
+          representations.preview?.endsWith(".tsx"),
+      ),
+    ).toBe(true);
+    expect(content?.title).toBe("Product Content");
+    expect(
+      content?.pages.every(
+        ({ representations }) =>
+          representations?.text.endsWith(".md") &&
+          representations.preview?.endsWith(".tsx"),
+      ),
+    ).toBe(true);
   });
 
   /**

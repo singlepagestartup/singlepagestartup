@@ -17,9 +17,9 @@ const purposes: Record<string, { purpose: string; usage: string }> = {
   },
   strategy: {
     purpose:
-      "Defines the project's marketing goals, audiences, positioning, channels, and growth using the Brief and external research.",
+      "Defines the project's intended final marketing system using the Brief and external research.",
     usage:
-      "Use it to align product roles, acquisition, conversion, continued use, and measurable outcomes.",
+      "Use it to review how audiences, product roles, channels, customer journeys, and measurable outcomes work together in the target state.",
   },
   brand: {
     purpose:
@@ -29,9 +29,15 @@ const purposes: Record<string, { purpose: string; usage: string }> = {
   },
   design: {
     purpose:
-      "Translates the brand and client references into reusable identity, typography, color, photography, and illustration rules.",
+      "Translates the brand and client references into reusable identity, typography, color, interface, photography, and illustration rules.",
     usage:
       "Use it to review the visual direction before applying it to product pages, campaigns, and presentations.",
+  },
+  analytics: {
+    purpose:
+      "Collects current funnel, usage, revenue, and cost observations with their periods and sources.",
+    usage:
+      "Use it to see what is actually happening before Research interprets the evidence and Product decisions change.",
   },
   research: {
     purpose:
@@ -49,7 +55,7 @@ const purposes: Record<string, { purpose: string; usage: string }> = {
     purpose:
       "Defines this product's customer, problem, value, offer, and evidence boundaries.",
     usage:
-      "Use it as the common brief for this product's website, marketing creative, and presentation.",
+      "Use it as the common brief for Sales, promotional materials, measurement, and Research decisions.",
   },
   website: {
     purpose:
@@ -126,12 +132,10 @@ export function ConfirmationBadge({
 }) {
   const label =
     confirmation.state === "stale"
-      ? "Stale · review upstream changes"
+      ? "Needs review"
       : confirmation.state === "confirmed"
-        ? "Confirmed by user"
-        : confirmation.state === "changed"
-          ? "Needs confirmation again"
-          : "Not confirmed by user";
+        ? "Confirmed"
+        : "Needs confirmation";
   return (
     <span
       className={`rounded-full border px-3 py-1 text-xs font-semibold ${
@@ -149,7 +153,38 @@ export function ConfirmationBadge({
               : "No confirmation of this document has been recorded."
       }
     >
-      {label} · {confirmation.layer}
+      {label}
     </span>
+  );
+}
+
+export function DocumentReviewToolbar({
+  actions,
+  confirmation,
+  note,
+}: {
+  actions?: ReactNode;
+  confirmation?: IDocumentConfirmation;
+  note?: ReactNode;
+}) {
+  return (
+    <>
+      <div className="bg-slate-50 px-5 py-4 md:px-10" data-document-toolbar>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            {confirmation ? (
+              <ConfirmationBadge confirmation={confirmation} />
+            ) : null}
+          </div>
+          {actions ? (
+            <div className="flex flex-wrap items-center gap-3">{actions}</div>
+          ) : null}
+        </div>
+        {note ? (
+          <div className="mt-3 text-sm text-slate-500">{note}</div>
+        ) : null}
+      </div>
+      <hr className="border-0 border-t border-slate-200" />
+    </>
   );
 }

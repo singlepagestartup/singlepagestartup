@@ -117,3 +117,44 @@ reconciliations:
       checked-out living artifacts and adds no unreconciled claim beyond their
       recorded decisions and limitations.
     affected_artifacts: []
+  - commit: e98f76e674686e890f0abda1d57929dfa080aafe
+    outcome: material
+    summary: The published product-model migration retires standalone Business,
+      assigns its facts to Brief, Product, Sales, Research and a shared model,
+      and changes the dependency graph. The current Workspace contains that
+      transfer; the operator has now confirmed the resulting Brief, current
+      product/model inputs were reviewed, and Strategy remains a changed proposal
+      for separate review.
+    affected_artifacts:
+      - singlepage.strategy
+      - singlepage.brand
+      - singlepage.products
+  - commit: 434791de3426aba7dae76d5ee72602119134e904
+    outcome: material
+    summary: The reusable business and material workspace revision substantially
+      rewrites the current Brief, product Research, Sales, Strategy and downstream
+      materials around the prospective business plan. The operator confirmed the
+      complete revised Brief on 2026-09-16; its current inputs were reconciled and
+      the cursor returned to Strategy while later artifacts remain subject to
+      downstream review.
+    affected_artifacts:
+      - singlepage.strategy
+      - singlepage.brand
+      - singlepage.products
+  - commit: 41816be77dc8f9b8806892ad41ab35d45c296d1b
+    outcome: no-material-effect
+    summary: The merge publishes the already reconciled reusable business and
+      material workspace revision without an additional business decision,
+      claim or dependency impact beyond commit 434791de3426aba7dae76d5ee72602119134e904.
+    affected_artifacts: []
+  - commit: 999e8bbdb0139c355e650e62b6c49dc5666902d6
+    outcome: no-material-effect
+    summary: Portable Markdown and HTML downloads add export controls and shared
+      rendering support. They do not change the current offer, audiences,
+      positioning, channel system, confirmation meaning or business evidence.
+    affected_artifacts: []
+  - commit: 29370bcbf85b195fbd1c2422707141135184d6e0
+    outcome: no-material-effect
+    summary: The merge publishes the already inspected portable document-export
+      change without an additional business decision, claim or dependency impact.
+    affected_artifacts: []

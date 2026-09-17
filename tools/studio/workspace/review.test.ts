@@ -354,6 +354,7 @@ function catalogFixture() {
   for (const entry of indexes.startup.entries) sources[entry.path] = "";
   const product = (id: string, layer: string) => {
     for (const field of [
+      "analytics",
       "research",
       "sales",
       "product",
@@ -366,7 +367,7 @@ function catalogFixture() {
         field === "sales"
           ? "schema: sales.v1\ncapacity: 6\n"
           : `# ${field}\n\n${id} decision.`;
-    return `  - { id: ${id}, research: ${id}/research.md, sales: ${id}/sales.yaml, product: ${id}/product.md, website: ${id}/website.md, marketing_creative: ${id}/marketing_creative.md }\n`;
+    return `  - { id: ${id}, analytics: ${id}/analytics.md, research: ${id}/research.md, sales: ${id}/sales.yaml, product: ${id}/product.md, website: ${id}/website.md, marketing_creative: ${id}/marketing_creative.md }\n`;
   };
   sources["products/singlepage/catalog.yaml"] =
     `products:\n${product("a", "singlepage")}${product("b", "singlepage")}`;
@@ -445,7 +446,7 @@ describe("product and layer review graph", () => {
       documents
         .filter(({ id }) => id.startsWith("product."))
         .map(({ id }) => id),
-    ).toHaveLength(5);
+    ).toHaveLength(6);
     expect(documents.find(({ id }) => id === "strategy")!.uses).toEqual([
       "product.local.research",
       "product.local.sales",
@@ -509,7 +510,10 @@ test("includes Research detail as an input to the summary and its consumers", ()
   const research = documents.find(
     (document) => document.id === "product.a.research",
   )!;
-  expect(research.observes).toEqual(["product.a.sales"]);
+  expect(research.observes).toEqual(["product.a.sales", "product.a.analytics"]);
+  expect(
+    documents.find(({ id }) => id === "product.a.analytics")!.uses,
+  ).toEqual(["product.a.product", "product.a.sales"]);
   expect(research.uses).toContain("product.a.page.research.maker");
   expect(
     documents.find(

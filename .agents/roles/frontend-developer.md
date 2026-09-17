@@ -89,3 +89,10 @@ When reporting work, use:
 - Do not use widget IDs or seed snapshot IDs as runtime logic keys.
 - Do not make broad visual redesigns when the user asked for a targeted fix.
 - Do not revert user changes or unrelated dirty files.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

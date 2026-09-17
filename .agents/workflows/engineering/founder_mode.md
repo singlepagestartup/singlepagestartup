@@ -16,3 +16,10 @@ assuming you just made a commit, here are the next steps:
 7. git push -u origin 'BRANCHNAME'
 8. gh pr create --fill
 9. read '.agents/workflows/engineering/utilities/describe_pr.md' and follow the instructions
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

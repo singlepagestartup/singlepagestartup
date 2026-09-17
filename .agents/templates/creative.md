@@ -30,12 +30,11 @@ confirmation:
 - Do not redefine the brand system and do not include website navigation,
   forms, validation, page sections, or post-conversion UI
 
-## Production and review
+## Production specification
 
 - Exact asset IDs, copy, prompts, variants, source and rights status, output
   dimensions, export target, naming, and owner
-- Claim/evidence review, accessibility review, channel QA, tracking event, and
-  approval state before publication
+- Tracking event and the material customer action after the click or view
 - Address material Marketing Creative constraints and unresolved questions;
   unselected formats remain absent rather than filled with placeholders
 
@@ -43,4 +42,6 @@ confirmation:
 motion as product-owned catalog pages with Text/Layout. Compose editable HTML
 text over registered images. Use shared utils/media artboards, PNG, and optional
 Remotion/MP4 instead of project-specific export engines. This overview owns the
-campaign direction; canonical material copy lives once in each material source. -->
+campaign direction; canonical material copy lives once in each material source.
+Review state, approval mechanics, framework behavior and generic production QA
+stay in metadata, roles and tools rather than visible material copy. -->

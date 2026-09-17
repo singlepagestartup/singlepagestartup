@@ -44,7 +44,7 @@ describe("product presentation sources", () => {
     expect(code.slides).toHaveLength(10);
     expect(code.slides[0].title).toContain("foundation you can reuse");
     expect(ai.name).toBe("AI Chat");
-    expect(ai.slides).toHaveLength(6);
+    expect(ai.slides).toHaveLength(9);
   });
   /**
    * BDD Scenario: Reject a presentation belonging to a different product

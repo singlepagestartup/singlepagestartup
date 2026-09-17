@@ -7,53 +7,60 @@ confirmation:
 
 <!-- A prospective website specification within the product's business plan.
 Prefer about 1,400 words per page; preserve material information if longer. Describe the visitor experience engineering should build;
-production implementation and runtime tests do not gate this document. -->
+production implementation and runtime tests do not gate this document.
 
-## Objective and visitor paths
+The rendered body contains only project-specific visitor experience, routes,
+copy and material interaction behavior. Keep Text/Layout synchronization,
+approved-design application, responsiveness/accessibility checks, confirmation,
+dependencies, implementation, backend and security instructions in this comment,
+the Web Designer role, metadata or engineering work. Do not render them as
+generic guidance or an “awaiting review” conclusion. -->
 
-- Audience, visitor situations, information needs, value and intended conversion
-- Site tree with page names, routes, purpose and next customer action
+## Objective and customer result
 
-## Final page specification
+- The recognizable customer problem, supplied material, concrete product output
+  and business result the site helps the person pursue
+- Target Product segment plus the Sales acquisition and CJM IDs this site serves
+- Customer language; avoid brand-first headings, vague “start” CTAs and internal
+  terms that a first-time visitor would not understand
 
-- Author each site's page text in its own product-owned Markdown file: headings,
-  offer, inclusions, price principle, process, FAQ, CTA and relevant form/state copy
-- Register one page-tree node per route with `representations.text` and an optional
-  `representations.preview` (React or HTML). Do not create separate sibling entries
-  for the same page's text and layout. Groups use `children`; routes use `route`.
-- Work on text first. Studio opens Text and provides Layout for the same page;
-  text-only nodes remain usable before a layout exists.
-- Keep a page's copy in one source. React previews receive its Markdown through
-  the optional `text` prop and derive visible copy from it. Changes to copy then
-  appear in both representations. A layout edit that changes wording must edit
-  that same Markdown in the same change. A separately authored HTML preview must
-  be updated together with its text; there is no automatic HTML rewrite.
-- Keep this overview about the journey and page responsibilities; final page copy
-  belongs to the page text, not a second duplicated block in the overview.
+## Customer journey and site structure
 
-## Design constraints
+- Complete site tree derived from the whole applicable CJM, including discovery,
+  access, intake, workspace, purchase, settings, delivery/publication,
+  continuation, support and cross-product handoff where applicable
+- For every route: visitor situation, page purpose, required information,
+  primary action, next route and recovery or alternative path
+- Cross-route continuity: saved work, return destination after sign-in or
+  purchase, and which screen owns each customer decision
 
-- Apply approved Design, assets, typography and visual language
-- Specify responsive hierarchy, navigation, interactions, accessible labels and
-  the intended post-conversion experience, including relevant empty/pending/
-  success/unavailable states. These describe product behavior, not a QA plan.
-- Keep the document header and Text/Layout controls in Studio's review shell;
-  the layout itself contains only the customer-facing page.
-- Campaign formats belong to Marketing Creative; do not create another identity.
+## Key product interactions
 
-## Metadata and review
+- Project-specific uploads, forms, choices, editable outputs, purchase moments,
+  publishing, support and handoffs that make the customer journey work
+- Only states that materially change what the person understands, can do next or
+  must recover from; generic UI-state and quality checklists stay outside the body
+- Exact commercial behavior comes from Product, model and Sales rather than a
+  second price, support or scope description
 
-- Title, description, Open Graph copy, material sources and Studio destinations
-- Review text/layout consistency, links, responsive and accessible presentation
-  as properties of these materials; do not require a deployed product.
-- Markdown pages own confirmation metadata. Rendering a layout never approves
-  its wording or an upstream document. Preserve project ownership and the atomic
-  startup catalog; no implicit copy, source or approval fallback from the framework.
+## Page copy and metadata
+
+- Final customer-facing title, description and route-specific messages
+- Author each route's complete headings, offer, process, CTA, form labels,
+  consequential states and metadata in its product-owned Markdown page
+- Keep overview and page copy complementary rather than duplicated
+
+<!-- Framework contract: register one catalog node per route with
+representations.text and optional representations.preview. Work on Markdown
+Text first; React receives that text and Layout uses the same wording. Keep the
+shared review shell outside exported customer layouts. Apply approved Design and
+verify responsive/accessibility behavior without restating those defaults in the
+artifact. -->
 
 See `apps/studio/workspace/README.md` for the catalog and component contracts.
 
 <!-- For multilingual projects, specify the source language and supported
-locales inside Metadata and review. Use the existing internationalization
+locales inside Page copy and metadata. Use the existing internationalization
 configuration and localized vocabulary fields. Translate all page copy,
 actions, navigation, status messages, accessibility labels and metadata as one
 version. Text/Layout/export must use the same locale and canonical wording. -->

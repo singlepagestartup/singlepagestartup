@@ -24,6 +24,8 @@ export interface IWorkspacePageView {
   children: IWorkspacePageView[];
   Component?: ComponentType<IWorkspacePageProps>;
   markdown?: string;
+  /** Raw HTML, supplied only where the surface renders a fragment inline. */
+  html?: string;
   downloadName?: string;
   sourcePath?: string;
   url?: string;
@@ -35,6 +37,12 @@ export interface IWorkspacePageSources {
   components: Record<string, { default?: ComponentType<IWorkspacePageProps> }>;
   markdown: Record<string, string>;
   files: ReadonlySet<string>;
+  /**
+   * Raw HTML fragments. A surface supplies these only when it renders HTML
+   * inline so the fragment inherits the project's brand tokens and Tailwind
+   * build; surfaces that leave it out keep the isolated iframe.
+   */
+  html?: Record<string, string>;
 }
 
 export interface IWorkspacePage {
@@ -102,6 +110,11 @@ export function resolveWorkspacePage(
       throw new Error(
         `Missing ${root === "products" ? "product" : "design"} page: ${key}`,
       );
+    if (
+      /^(html|htm)$/.test(extension ?? "") &&
+      sources.html?.[key] !== undefined
+    )
+      result.html = sources.html[key];
     result.kind = /^(html|htm)$/.test(extension ?? "")
       ? "html"
       : /^(png|jpe?g|svg|webp|gif|avif)$/.test(extension ?? "")

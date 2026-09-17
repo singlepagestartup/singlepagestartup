@@ -28,6 +28,13 @@ export const modelHeadings = [
   "Cost Structure",
   "Assumptions and decision rules",
 ];
+export const analyticsHeadings = [
+  "Measurement scope",
+  "Funnel observations",
+  "Product usage and retention",
+  "Revenue and cost observations",
+  "Sources and limitations",
+];
 
 /** Validate declared page files relative to the selected catalog, without fallback. */
 export async function validateProductCatalogFiles(
@@ -58,6 +65,7 @@ export async function validateProductCatalogFiles(
   const researchDocuments: IResearchFindingDocument[] = [];
   for (const product of catalog.products) {
     for (const field of [
+      "analytics",
       "research",
       "sales",
       "product",
@@ -79,6 +87,7 @@ export async function validateProductCatalogFiles(
     }
     if (catalog.schema.endsWith(".v2"))
       await primary(product.product, productHeadings);
+    if (product.analytics) await primary(product.analytics, analyticsHeadings);
     const productResearch: IResearchFindingDocument[] = [
       {
         layer: catalog.layer,

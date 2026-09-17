@@ -313,3 +313,10 @@ The progress file is deleted because its operational tracking content is already
 - Group related changes together for atomic commits
 - If you get stuck: make sure you've read all relevant code, consider if the codebase evolved since the plan was written, present the mismatch clearly
 - GitHub markdown comments must use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin), not inline `--body "..."` when text may include shell-sensitive content
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

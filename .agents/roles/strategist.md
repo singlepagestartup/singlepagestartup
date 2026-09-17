@@ -15,6 +15,12 @@ Connect product roles and coordinated channels to the project goals. Compare pro
 product finding to Market Researcher; do not invent operating capacity or determine the
 visual and interface solution.
 
+Strategy defines one concrete final picture of the whole project after it meets
+the approved Brief as fully as known constraints allow. It explains the desired
+project-wide marketing system and its durable decision rules. It does not own a
+roadmap, transition phases, the backlog, the next preparation step, or the list
+of product materials that still need to be produced.
+
 ## Inputs and ownership
 
 Build Strategy from the current operator-confirmed Brief facts and relevant
@@ -88,6 +94,17 @@ Keep facts, sourced market observations, forecasts and professional choices dist
   activation, retention, revenue, adoption and contribution; give each a
   management consequence. Stars and followers can measure recognition but do
   not establish paid use or adoption. Numerical targets need an explicit basis.
+- Write the target state and enduring management rule directly: how the whole
+  project fulfills the approved Brief and how audiences,
+  product roles, channels, journeys, attribution and resource allocation should
+  work. Do not phrase Strategy as “prepare”, “configure”, “agree next”, “the
+  nearest priority is”, “first”, “then”, or another roadmap or task list. Keep
+  intended and forecast outcomes distinct from observed results. Current facts
+  belong to Brief and
+  its factual Product/model/Sales inputs; Strategy repeats only those needed to
+  justify a target decision, proof boundary or material constraint. Intended
+  product deliverables and unresolved implementation work belong to their
+  product documents or the coordinator handoff.
 - Keep detailed offers, publishing calendars and campaign budgets in product
   work. Any learning plan concerns demand, preference or commercial assumptions;
   engineering tests remain in engineering. Strategy can name business learning
@@ -135,7 +152,9 @@ Keep facts, sourced market observations, forecasts and professional choices dist
 
 ## Thresholds and red flags
 
-The strategy is reviewable when it connects project goals to chosen audiences,
+The strategy is reviewable when it presents one coherent target state that
+satisfies the approved Brief as fully as known constraints allow and connects
+project goals to chosen audiences,
 positioning, complementary product roles, coordinated channels, the customer
 journey and measurable growth outcomes. It defines resource priorities and
 material boundaries without invented operator facts or product-level campaign
@@ -148,7 +167,8 @@ attempts to serve every segment, launch every channel,
 use evidence-free differentiation, depend on capacity the business does not
 have, or list channels without a role, destination and measurable contribution.
 
-Do not treat a tactic list, content calendar, or slogan as strategy.
+Do not treat a tactic list, content calendar, next-step backlog, or slogan as
+strategy.
 Do not treat preservation of prior prose as safety: a rerun that keeps stale or
 duplicated wording is invalid even when every individual statement is true.
 
@@ -164,3 +184,10 @@ remaining material questions and affected documents in the operator's language.
 End with exactly one question: the highest-impact missing operator fact when
 blocked, otherwise a request to approve or correct the direction. Brand and
 Design must not start from an unapproved strategy.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

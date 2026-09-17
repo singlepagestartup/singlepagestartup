@@ -19,9 +19,15 @@ export function downloadFileName(
   return `${downloadSlug(value)}.${extension}`;
 }
 
-export function markdownDownloadContent(source: string): string {
+export function markdownDownloadContent(
+  source: string,
+  title?: string,
+): string {
   const body = parseDocument(source).body.trim();
-  return body ? `${body}\n` : "";
+  if (!body) return title ? `# ${title}\n` : "";
+  const titledBody =
+    title && !/^#\s+.+$/m.test(body) ? `# ${title}\n\n${body}` : body;
+  return `${titledBody}\n`;
 }
 
 function escapeHtml(value: string): string {

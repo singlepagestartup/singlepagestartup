@@ -18,6 +18,9 @@ discovery metadata and adapters to these files.
   their agreed pre-development sequence in `templates/README.md`. Questions and
   constraints belong in their owning document, not a separate checklist.
 - `contracts/` contains rules that apply across roles and workflows.
+- `contracts/editorial-pass.md` defines the final pass for prose written for
+  people. Every role and workflow invokes it after content and evidence are
+  correct; provider adapters inherit the rule from their canonical source.
 - `tools/` defines provider-neutral capabilities and provider bindings.
 
 Executable GitHub helpers remain under `.claude/helpers/` for path compatibility;
@@ -85,11 +88,13 @@ replacement rule defined in `workflows/pre-development.md`.
 
 Brief records the products in scope and the limited role of supporting
 activities. product models records only client facts, supplied materials, and confirmed
-intentions. Each product owns Research and Sales in its product folder; external
+intentions. Each product owns Research, Sales and Analytics in its product folder; external
 research starts before strategic selection at `10-strategy`, not during intake.
-Strategy connects marketing goals, audiences, positioning, product roles,
-coordinated channels, customer journeys and measurable growth. Detailed
-campaigns and tests belong to product work. Products retains every
+Strategy describes one concrete final picture of the whole project after it
+satisfies the approved Brief as fully as known constraints allow. It connects
+marketing goals, audiences, positioning, product roles, coordinated channels,
+customer journeys and measurable growth in the intended operating state rather
+than as a roadmap. Detailed campaigns and tests belong to product work. Products retains every
 client-confirmed product regardless of marketing priority. A showcase,
 reference project, possible future payment, repository folder, or agent idea
 never creates a catalog entry by inference.

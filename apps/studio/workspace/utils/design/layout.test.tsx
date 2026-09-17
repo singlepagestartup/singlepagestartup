@@ -84,6 +84,9 @@ describe("Design layout", () => {
       "logos",
       "colors",
       "typography",
+      "interface",
+      "interface-kit",
+      "content-blocks",
       "photography",
       "illustration",
     ]);
@@ -115,10 +118,62 @@ describe("Design layout", () => {
       html.indexOf('id="typography"'),
     );
     expect(html).toContain("Project icon examples");
-    expect(html).toContain("Not confirmed by user");
+    expect(html).toContain("Needs confirmation");
     expect(html).not.toContain('id="photography"');
     expect(html).not.toContain('id="illustration"');
     expect(html).not.toContain('id="logos"');
+  });
+
+  /** BDD Scenario: Render an HTML specimen inside the project's own visual system
+   * Given a Design section declares a plain HTML fragment and the surface supplies its source
+   * When the section renders
+   * Then the markup is inlined so it inherits the brand tokens instead of being isolated in an iframe
+   */
+  test("inlines a Design HTML fragment so it inherits the brand tokens", () => {
+    const layout = resolveDesignLayoutView(
+      local([{ id: "kit", title: "Interface kit", source: "kit.html" }]),
+      {
+        ...sources,
+        files: new Set([...sources.files, "startup/kit.html"]),
+        html: {
+          "startup/kit.html":
+            '<button class="bg-[var(--workspace-brand-primary)]">Publish</button>',
+        },
+      },
+    );
+    const html = renderToStaticMarkup(
+      <DesignRenderer
+        data={data}
+        layout={layout}
+        confirmation={documentConfirmation("# Design", "startup")}
+      />,
+    );
+
+    expect(html).toContain('data-workspace-html="kit"');
+    expect(html).toContain("bg-[var(--workspace-brand-primary)]");
+    expect(html).not.toContain("<iframe");
+  });
+
+  /** BDD Scenario: Keep a standalone HTML page isolated
+   * Given a surface that does not supply raw HTML for its declared page
+   * When that section renders
+   * Then the page stays in its own document instead of inheriting the surrounding styles
+   */
+  test("keeps an HTML page in its own document when no source is supplied", () => {
+    const layout = resolveDesignLayoutView(
+      local([{ id: "kit", title: "Interface kit", source: "kit.html" }]),
+      { ...sources, files: new Set([...sources.files, "startup/kit.html"]) },
+    );
+    const html = renderToStaticMarkup(
+      <DesignRenderer
+        data={data}
+        layout={layout}
+        confirmation={documentConfirmation("# Design", "startup")}
+      />,
+    );
+
+    expect(html).toContain("<iframe");
+    expect(html).not.toContain("data-workspace-html");
   });
 
   /** BDD Scenario: Own the entire page
@@ -137,7 +192,7 @@ describe("Design layout", () => {
     );
     expect(html).toContain('data-custom-design="true"');
     expect(html).toContain("Own design structure");
-    expect(html).toContain("Not confirmed by user");
+    expect(html).toContain("Needs confirmation");
     expect(html).not.toContain('id="overview"');
   });
 

@@ -44,7 +44,7 @@ to the workflow coordinator rather than editing shared files concurrently.
 - `00-business` records client statements and supplied-material observations.
   Do not add external market findings or treat a client belief as verified demand.
   Product Research starts at `10-strategy`; Sales intake records supplied facts.
-- Product Research and Sales live with that product under
+- Product Research, Sales and Analytics live with that product under
   `products/<layer>/<product-id>/`; the coordinator registers the selected
   product set during Products.
 - Treat a bare workflow invocation as permission to inspect and resume, not as
@@ -180,3 +180,10 @@ categories are ready for Design. Report the resulting word count and any stale
 statement replaced. If input is required, end with exactly one plain-language
 question in the operator's language. Do not return an interview transcript or
 sales narrative.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

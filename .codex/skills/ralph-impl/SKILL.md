@@ -19,3 +19,10 @@ Canonical source: `.agents/workflows/engineering/ralph_impl.md`.
 
 - `.agents/workflows/engineering/ralph_impl.md`
 - `.agents/workflows/engineering/core/30-implement.md`
+
+## Final editorial pass
+
+When this skill writes or returns prose intended for a person, load the project
+`unslop` skill and apply `.agents/contracts/editorial-pass.md` after the
+canonical workflow is complete. Preserve exact facts, evidence, identifiers,
+paths, commands, required structure, and approval state.
