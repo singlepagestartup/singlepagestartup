@@ -11,6 +11,8 @@ AI Chat now has the same complete product set as Code Framework, every product o
 - Shared documents: Strategy rewritten as a target state, Brand and Brief aligned, operator confirmations and GitHub reconciliation rows recorded.
 - Agent system: `editorial-pass` contract, Codex `unslop` skill, closing editorial section in every workflow, role and skill enforced by `agents:editorial:test`; target-state Strategy rule and Promotion/Analytics contract in workflow, roles, templates, `CLAUDE.md` and `AGENTS.md`; restructured website template.
 - Validation: `brandbook` check (downstream at `30-design` must own `design/startup.md` and at least one `assets/startup.yaml` row) and `specimens` check (`data-specimen="<id>"` for each required specimen or an attributed `interface_review.omitted_specimens` reason) wired into `studio:validate`; structure test updated for the nested Content badge; second Storybook launch port.
+- CodeQL: the brandbook check now uses the exported `hasMarkdownContent` scanner from the workspace document module instead of a regex replace chain, which resolved the new `js/incomplete-multi-character-sanitization` alert on this PR.
+- Tooling hygiene: `.nxignore` and `.gitignore` exclude `.claude/worktrees`, because a Claude Code worktree inside the checkout made Nx refuse every target with duplicate project names.
 
 ## Verification
 
@@ -22,6 +24,7 @@ AI Chat now has the same complete product set as Code Framework, every product o
 
 - This snapshot commits the working tree of an in-progress Codex session on this branch as of 2026-09-18 02:04 local time; the one test that had drifted from the rewritten `ProductCatalog` was updated to the new nested labels.
 - No database schema or runtime code changes; everything is under `apps/studio`, `.agents`, `.codex`, `.claude`, `tools` and the two entry files.
+- Three older alerts for the same CodeQL rule remain open on `main` in `tools/studio/workspace/merge.ts`, `apps/studio/workspace/utils/design/data.ts` and `tools/studio/presentation/export.ts`; they predate this PR and can be replaced with the same scanner in a follow-up.
 
 ## Downstream migration
 
