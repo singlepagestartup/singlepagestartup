@@ -89,3 +89,10 @@ Return the message hierarchy, evidence gaps, remaining material questions,
 prohibited claims, voice rules, and the sections Brand Designer may now finalize.
 
 For product materials, use the linked Product, model and whole Sales as the owners of customer/value, economics and process decisions. Advertising/deck copy may apply approved facts but never establishes a second price, scope or support commitment; inspect stale dependencies before reusing claims.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

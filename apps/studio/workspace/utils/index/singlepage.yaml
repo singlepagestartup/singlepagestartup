@@ -34,8 +34,8 @@ entries:
   - id: singlepage.products
     kind: products
     path: products/singlepage/catalog.yaml
-    description: Atomic catalog of products and their Research, Sales, Product,
-      Website, Marketing Creative, and Presentation sources.
+    description: Atomic catalog of products and their Product, model, Sales,
+      Promotion, Product Content, Analytics, and Research sources.
     uses:
       - singlepage.brief
       - singlepage.strategy
@@ -56,6 +56,11 @@ entries:
     kind: template
     path: .agents/templates/product-research.md
     description: Research structure for one product.
+    uses: []
+  - id: template.product-analytics
+    kind: template
+    path: .agents/templates/product-analytics.md
+    description: Current product observations, reporting periods, sources, and limits.
     uses: []
   - id: template.sales-process
     kind: template
@@ -106,6 +111,7 @@ exports:
   - template.brief
   - template.product-model
   - template.product-research
+  - template.product-analytics
   - template.sales-process
   - template.strategy
   - template.asset-index

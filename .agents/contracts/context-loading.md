@@ -98,14 +98,17 @@ Only layer folders live directly in `products/`; shared loading/validation code
 and tests live in `utils/products/`. Product-local JSX/TSX, HTML, images, data,
 and nested folders stay inside `products/<layer>/<product-id>/`.
 
-Optional catalog `sections` extend core tabs or create additional tabs. Each has
-`id`, `title`, and `pages`; page nodes have `id`, `title`, optional `source`, and
-recursive `children`. Read only the declared page and supporting files needed
-for the current decision. Core IDs are `product`, `research`, `sales`, `website`,
-`creative`, and `presentation`. Custom section IDs add tabs; files do not become
-navigation automatically. Every page source stays within its product and selected
-layer. Missing startup sources fail rather than inheriting a base page. Full
-schema examples and preview/export contracts live in the workspace README.
+Optional catalog `sections` extend core surfaces or create additional tabs. Each
+has `id`, `title`, and `pages`; page nodes have `id`, `title`, optional `source`,
+and recursive `children`. Read only the declared page and supporting files needed
+for the current decision. The top-level sequence is `product`, `model`, `sales`,
+`promotion`, and `analytics`. `content` is nested inside Product;
+`website`, `creative`, and `presentation` are nested inside Promotion; `research`
+is nested inside Analytics. These groups are shared navigation, not new editable
+sources. Other section IDs add tabs; files do not become navigation automatically.
+Every page source stays within its product and selected layer. Missing startup
+sources fail rather than inheriting a base page. Full schema examples and
+preview/export contracts live in the workspace README.
 Markdown pages use their own confirmation; changes to supporting React/HTML/media
 require semantic review of their owning document, not automatic approval.
 
@@ -128,7 +131,9 @@ index, brand, design, and product catalog describe SinglePageStartup itself: its
 business, direction, communication, design, and offers. They are not templates.
 Brand owns intended meaning and communication; Design is its medium-independent
 visual translation. Product-local Website, Marketing Creative, and Presentation
-apply those shared decisions and never serve as Brand or Design inputs.
+apply those shared decisions and never serve as Brand or Design inputs. Analytics
+records observations; Research interprets evidence. Their shared navigation does
+not change source ownership or dependency direction.
 
 AI methods, question-routing rules, and stage completion criteria live in
 `.agents/`. Project facts, decisions, open questions, and constraints live in

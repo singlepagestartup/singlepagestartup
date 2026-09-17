@@ -27,12 +27,20 @@ export function DesignRenderer({
         section={section.builtin}
       />
     ) : (
+      // A project section keeps the same rhythm and display face as a built-in
+      // block, so its own content reads as part of one visual system.
       <section
         key={section.id}
         id={section.id}
-        className="mx-auto max-w-7xl px-5 py-12 md:px-10"
+        className="mx-auto max-w-7xl scroll-mt-6 border-t px-5 py-12 md:px-10 md:py-16"
+        style={{ borderColor: "var(--workspace-brand-line)" }}
       >
-        <h2 className="mb-6 text-3xl font-semibold">{section.title}</h2>
+        <h2
+          className="mb-8 text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl"
+          style={{ fontFamily: "var(--workspace-brand-font-display)" }}
+        >
+          {section.title}
+        </h2>
         {section.page ? <WorkspacePage page={section.page} hideTitle /> : null}
       </section>
     ),

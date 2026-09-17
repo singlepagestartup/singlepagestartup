@@ -90,3 +90,10 @@ actual resources, costs, ownership and evidence before accepting a model.
 Return owning files/model IDs, changed facts and sources, preserved processes,
 unknowns with affected decisions, dependent documents needing impact review, and
 word counts. Never refresh approval fingerprints during structural migration.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

@@ -32,6 +32,21 @@ export interface IProjectDesignMedia {
   productionRules: string[];
 }
 
+export interface IProjectDesignSurfacePattern {
+  avoid: string;
+  decision: string;
+  /** Provenance only. Reference screenshots are never rendered or reproduced. */
+  references: string[];
+  title: string;
+}
+
+export interface IProjectDesignInterface {
+  intro: string;
+  patterns: IProjectDesignSurfacePattern[];
+  shapeRules: string[];
+  stateRules: string[];
+}
+
 export interface IProjectDesignColorRole {
   dark: string;
   light: string;
@@ -60,6 +75,7 @@ export interface IProjectDesignData {
   doDont: Array<{ do: string; dont: string }>;
   graphicRules: string[];
   illustration: IProjectDesignMedia;
+  interface: IProjectDesignInterface;
   logoRules: string[];
   palette: {
     accent: string;
@@ -602,6 +618,97 @@ function PromptCard({
   );
 }
 
+/**
+ * Reference screenshots stay provenance-only: their registry entries prohibit
+ * reproducing a layout, so this block cites asset IDs instead of showing them.
+ */
+function SurfacePatternCard({
+  data,
+  pattern,
+}: {
+  data: IProjectDesignData;
+  pattern: IProjectDesignSurfacePattern;
+}) {
+  return (
+    <article
+      className="flex flex-col rounded-3xl border p-6 md:p-8"
+      style={{
+        backgroundColor: paletteValue(data, "surface"),
+        borderColor: paletteValue(data, "line"),
+      }}
+    >
+      <h3
+        className="text-xl font-semibold leading-tight [overflow-wrap:anywhere]"
+        style={displayStyle(data)}
+      >
+        {pattern.title}
+      </h3>
+      <p className="mt-5 flex-1 text-sm leading-7">{pattern.decision}</p>
+      <p
+        className="mt-6 border-t pt-5 text-xs leading-6"
+        style={{
+          borderColor: paletteValue(data, "line"),
+          color: paletteValue(data, "muted"),
+        }}
+      >
+        {pattern.avoid}
+      </p>
+      {pattern.references.length ? (
+        <p
+          className="mt-4 text-[11px] leading-5 [overflow-wrap:anywhere]"
+          style={{ color: paletteValue(data, "muted") }}
+        >
+          <span className="font-semibold uppercase tracking-[0.12em]">
+            Observed in
+          </span>{" "}
+          {pattern.references.join(", ")}
+        </p>
+      ) : null}
+    </article>
+  );
+}
+
+function InterfaceSurfaces({ data }: { data: IProjectDesignData }) {
+  const { intro, patterns, shapeRules, stateRules } = data.interface;
+
+  return (
+    <section
+      className="mx-auto max-w-7xl scroll-mt-6 border-t px-5 py-12 md:px-10 md:py-16"
+      id="interface"
+      style={{ borderColor: paletteValue(data, "line") }}
+    >
+      <PageTitle copy={intro} data={data} eyebrow="Product surfaces">
+        Interface
+      </PageTitle>
+      <div className="mt-10 grid items-start gap-4 lg:grid-cols-2">
+        {shapeRules.length ? (
+          <RulePanel
+            data={data}
+            items={shapeRules}
+            title="Surface, density, and shape"
+          />
+        ) : null}
+        {stateRules.length ? (
+          <RulePanel
+            data={data}
+            items={stateRules}
+            title="Controls, states, and actions"
+          />
+        ) : null}
+      </div>
+      <div className="mt-4 grid items-start gap-4 lg:grid-cols-2">
+        {patterns.map((pattern) => (
+          <SurfacePatternCard
+            data={data}
+            key={pattern.title}
+            pattern={pattern}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function MediaSection({
   assetRole,
   data,
@@ -661,6 +768,8 @@ export function ProjectDesignSection({
       return <Colors data={data} />;
     case "typography":
       return <Typography data={data} />;
+    case "interface":
+      return <InterfaceSurfaces data={data} />;
     case "photography":
       return (
         <MediaSection

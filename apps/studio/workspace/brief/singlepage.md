@@ -2,9 +2,9 @@
 confirmation:
   confirmed: true
   by: operator
-  at: 2026-09-13
-  source: "Operator approved the reviewed Brief, Strategy and Brand in chat: «Всё подтверди и бриф в том числе. ... уже подтверждал. Всё подтверди бриф и давай двигаться дальше»."
-  content_sha256: 851cf5801e98b1b2b7fa072cd73fcef30bc1ff168c27b2703ff2df7dcffca4cb
+  at: "2026-09-16"
+  source: "Operator confirmed the complete current Brief in chat: «С брифом всё нормально, давай ставим его на подтверждение, переходим к стратегии»."
+  content_sha256: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
 intake:
   scope:
     confirmed: true

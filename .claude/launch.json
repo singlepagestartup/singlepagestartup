@@ -9,6 +9,13 @@
       "port": 4320
     },
     {
+      "name": "storybook-4321",
+      "autoPort": false,
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "studio:storybook", "--", "--port", "4321"],
+      "port": 4321
+    },
+    {
       "name": "runnable",
       "autoPort": false,
       "runtimeExecutable": "npm",

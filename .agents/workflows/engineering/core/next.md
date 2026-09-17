@@ -143,3 +143,10 @@ Post-merge cleanup (if not done yet):
 
 - Correct phase command invoked based on current status
 - If human action required: clear instruction printed, no command run
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

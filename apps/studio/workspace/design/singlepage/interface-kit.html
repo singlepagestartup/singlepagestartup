@@ -1,0 +1,511 @@
+<!--
+  Rendered specimens of the confirmed interface language. Plain HTML and
+  Tailwind only: no build step, no framework, and no JavaScript. Interaction
+  states use CSS (hover, focus-visible, has-[:checked]) so every state below is
+  real rather than illustrated.
+
+  Colors come from the resolved --workspace-brand-* tokens, so this kit follows
+  the active layer instead of restating hex values. The dark panel overrides
+  those same tokens locally with the Dark column of the Semantic color system.
+
+  Each specimen prints the exact class recipe it uses. Copy that string; do not
+  retype an approximation.
+-->
+
+<div class="grid gap-4">
+  <!-- Actions -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="actions"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Actions</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      One dominant action per view. Everything else is outlined or plain, and a
+      destructive action is separated from the row.
+    </p>
+
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--workspace-brand-primary)] px-6 text-sm font-semibold text-[var(--workspace-brand-surface)] transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-primary)]"
+      >
+        Publish page
+      </button>
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--workspace-brand-line)] px-6 text-sm font-semibold transition hover:border-[var(--workspace-brand-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-primary)]"
+      >
+        Preview
+      </button>
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold underline underline-offset-4 transition hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-primary)]"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        disabled
+        class="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-full border border-[var(--workspace-brand-line)] px-6 text-sm font-semibold text-[var(--workspace-brand-muted)] opacity-60"
+      >
+        Publish page
+      </button>
+    </div>
+
+    <div
+      class="mt-6 border-t border-[var(--workspace-brand-line)] pt-6 text-sm text-[var(--workspace-brand-muted)]"
+    >
+      <p class="mb-3">
+        A destructive action sits apart from the action row and never takes the
+        dominant fill.
+      </p>
+      <button
+        type="button"
+        class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-300 bg-red-50 px-6 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:w-auto"
+      >
+        Delete project
+      </button>
+    </div>
+
+    <dl
+      class="mt-6 grid gap-3 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">Dominant</dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          inline-flex min-h-11 items-center justify-center rounded-full
+          bg-[var(--workspace-brand-primary)] px-6 text-sm font-semibold
+          text-[var(--workspace-brand-surface)]
+        </dd>
+      </div>
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">Secondary</dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          inline-flex min-h-11 items-center justify-center rounded-full border
+          border-[var(--workspace-brand-line)] px-6 text-sm font-semibold
+        </dd>
+      </div>
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">Destructive</dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          inline-flex min-h-11 items-center justify-center gap-2 rounded-xl
+          border border-red-300 bg-red-50 px-6 text-sm font-semibold
+          text-red-700
+        </dd>
+      </div>
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">Focus</dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          focus-visible:outline focus-visible:outline-2
+          focus-visible:outline-offset-2
+          focus-visible:outline-[var(--workspace-brand-primary)]
+        </dd>
+      </div>
+    </dl>
+  </article>
+
+  <!-- Selection -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="selection"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Selection</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      Selection is explicit and redundant: a filled surface together with a
+      check or a filled radio. Colour alone never carries the state. Click a
+      chip or a row below.
+    </p>
+
+    <p class="mt-6 text-xs font-semibold uppercase tracking-[0.12em]">Chips</p>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <label
+        class="group inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] px-4 text-sm transition has-[:checked]:border-[var(--workspace-brand-accent)] has-[:checked]:bg-[var(--workspace-brand-accent)] has-[:checked]:font-semibold has-[:checked]:text-[#111111] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2"
+      >
+        <input type="radio" name="kit-scope" class="sr-only" checked />
+        <span class="hidden group-has-[:checked]:inline" aria-hidden="true"
+          >✓</span
+        >
+        One page
+      </label>
+      <label
+        class="group inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] px-4 text-sm transition has-[:checked]:border-[var(--workspace-brand-accent)] has-[:checked]:bg-[var(--workspace-brand-accent)] has-[:checked]:font-semibold has-[:checked]:text-[#111111] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2"
+      >
+        <input type="radio" name="kit-scope" class="sr-only" />
+        <span class="hidden group-has-[:checked]:inline" aria-hidden="true"
+          >✓</span
+        >
+        Landing page
+      </label>
+      <label
+        class="group inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] px-4 text-sm transition has-[:checked]:border-[var(--workspace-brand-accent)] has-[:checked]:bg-[var(--workspace-brand-accent)] has-[:checked]:font-semibold has-[:checked]:text-[#111111] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2"
+      >
+        <input type="radio" name="kit-scope" class="sr-only" />
+        <span class="hidden group-has-[:checked]:inline" aria-hidden="true"
+          >✓</span
+        >
+        Full site
+      </label>
+    </div>
+
+    <p class="mt-8 text-xs font-semibold uppercase tracking-[0.12em]">
+      Grouped choices
+    </p>
+    <div
+      class="mt-3 overflow-hidden rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)]"
+    >
+      <label
+        class="group flex cursor-pointer items-center justify-between gap-4 px-4 py-3 text-sm text-[var(--workspace-brand-muted)] has-[:checked]:font-semibold has-[:checked]:text-[var(--workspace-brand-foreground)]"
+      >
+        <input type="radio" name="kit-plan" class="sr-only" checked />
+        <span>Commercial</span>
+        <span class="flex items-center gap-3"
+          ><span>$38</span
+          ><span
+            class="invisible group-has-[:checked]:visible"
+            aria-hidden="true"
+            >✓</span
+          ></span
+        >
+      </label>
+      <label
+        class="group flex cursor-pointer items-center justify-between gap-4 px-4 py-3 text-sm text-[var(--workspace-brand-muted)] has-[:checked]:font-semibold has-[:checked]:text-[var(--workspace-brand-foreground)] border-t border-[var(--workspace-brand-line)]"
+      >
+        <input type="radio" name="kit-plan" class="sr-only" />
+        <span>Extended</span>
+        <span class="flex items-center gap-3"
+          ><span>$58</span
+          ><span
+            class="invisible group-has-[:checked]:visible"
+            aria-hidden="true"
+            >✓</span
+          ></span
+        >
+      </label>
+    </div>
+
+    <dl
+      class="mt-6 grid gap-3 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">Selected chip</dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          group … has-[:checked]:border-[var(--workspace-brand-accent)]
+          has-[:checked]:bg-[var(--workspace-brand-accent)]
+          has-[:checked]:font-semibold has-[:checked]:text-[#111111] — with the
+          check glyph as hidden group-has-[:checked]:inline
+        </dd>
+      </div>
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">Inset group</dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          overflow-hidden rounded-xl border border-[var(--workspace-brand-line)]
+          bg-[var(--workspace-brand-background)]
+        </dd>
+      </div>
+    </dl>
+  </article>
+
+  <!-- Status and progress -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="status"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Status and progress</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      Status uses an outlined pill that names the state in words. Progress uses
+      Accent on a neutral track.
+    </p>
+
+    <div class="mt-6 flex flex-wrap items-center gap-2">
+      <span
+        class="inline-flex min-h-7 items-center rounded-full border border-[var(--workspace-brand-line)] px-3 text-xs font-semibold text-[var(--workspace-brand-muted)]"
+        >Draft</span
+      >
+      <span
+        class="inline-flex min-h-7 items-center rounded-full border border-amber-400 px-3 text-xs font-semibold text-amber-700"
+        >Unpaid</span
+      >
+      <span
+        class="inline-flex min-h-7 items-center gap-2 rounded-full border border-[var(--workspace-brand-foreground)] px-3 text-xs font-semibold"
+        ><span
+          class="inline-block h-2 w-2 rounded-full bg-[var(--workspace-brand-accent)]"
+          aria-hidden="true"
+        ></span
+        >Published</span
+      >
+    </div>
+
+    <div class="mt-8">
+      <p
+        class="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--workspace-brand-muted)]"
+      >
+        Step 2/4
+      </p>
+      <div
+        class="h-1.5 w-full overflow-hidden rounded-full bg-[var(--workspace-brand-line)]"
+      >
+        <div
+          class="h-full w-1/2 rounded-full bg-[var(--workspace-brand-accent)]"
+        ></div>
+      </div>
+    </div>
+
+    <dl
+      class="mt-6 grid gap-3 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">Status pill</dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          inline-flex min-h-7 items-center rounded-full border
+          border-[var(--workspace-brand-line)] px-3 text-xs font-semibold
+        </dd>
+      </div>
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">Progress</dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          h-1.5 w-full overflow-hidden rounded-full
+          bg-[var(--workspace-brand-line)] → inner h-full rounded-full
+          bg-[var(--workspace-brand-accent)]
+        </dd>
+      </div>
+    </dl>
+  </article>
+
+  <!-- Fields and data rows -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="fields"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Fields and data rows</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      Large fields for free text, and hairline separators dividing data rows
+      inside one card.
+    </p>
+
+    <div class="mt-6 grid gap-4">
+      <label class="grid gap-2 text-sm">
+        <span class="font-semibold">Project name</span>
+        <input
+          type="text"
+          placeholder="e.g. Coffee roastery"
+          class="min-h-12 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-4 text-sm outline-none transition placeholder:text-[var(--workspace-brand-muted)] focus-visible:border-[var(--workspace-brand-foreground)]"
+        />
+      </label>
+      <label class="grid gap-2 text-sm">
+        <span class="font-semibold">Visibility</span>
+        <select
+          class="min-h-12 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-4 text-sm outline-none transition focus-visible:border-[var(--workspace-brand-foreground)]"
+        >
+          <option>Private preview</option>
+          <option>Public site</option>
+        </select>
+      </label>
+    </div>
+
+    <dl class="mt-8 text-sm">
+      <div
+        class="flex items-center justify-between gap-4 border-t border-[var(--workspace-brand-line)] py-3"
+      >
+        <dt class="text-[var(--workspace-brand-muted)]">Created</dt>
+        <dd>07/10/24</dd>
+      </div>
+      <div
+        class="flex items-center justify-between gap-4 border-t border-[var(--workspace-brand-line)] py-3"
+      >
+        <dt class="text-[var(--workspace-brand-muted)]">Published</dt>
+        <dd>21/10/24</dd>
+      </div>
+    </dl>
+
+    <dl
+      class="mt-6 grid gap-3 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">Field</dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          min-h-12 rounded-xl border border-[var(--workspace-brand-line)]
+          bg-[var(--workspace-brand-background)] px-4 text-sm
+        </dd>
+      </div>
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">Data row</dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          flex items-center justify-between gap-4 border-t
+          border-[var(--workspace-brand-line)] py-3
+        </dd>
+      </div>
+    </dl>
+  </article>
+
+  <!-- Navigation -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="navigation"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Navigation</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      A floating bar on public pages; an icon rail beside one labelled sidebar
+      on work screens, with utilities at the bottom.
+    </p>
+
+    <div
+      class="mt-6 rounded-xl bg-[var(--workspace-brand-background)] p-5 md:p-8"
+    >
+      <nav
+        class="mx-auto flex w-fit items-center gap-1 rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-1.5 text-sm"
+      >
+        <a class="rounded-full px-4 py-2" href="#interface">Product</a>
+        <a class="rounded-full px-4 py-2" href="#interface">Pricing</a>
+        <a
+          class="rounded-full bg-[var(--workspace-brand-primary)] px-4 py-2 font-semibold text-[var(--workspace-brand-surface)]"
+          href="#interface"
+          >Start</a
+        >
+      </nav>
+    </div>
+
+    <div
+      class="mt-4 flex overflow-hidden rounded-xl border border-[var(--workspace-brand-line)]"
+    >
+      <div
+        class="flex w-14 shrink-0 flex-col items-center gap-3 border-r border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] py-4 text-xs"
+      >
+        <span
+          class="grid h-8 w-8 place-items-center rounded-lg bg-[var(--workspace-brand-primary)] text-[var(--workspace-brand-surface)]"
+          aria-hidden="true"
+          >S</span
+        >
+        <span
+          class="grid h-8 w-8 place-items-center rounded-lg border border-[var(--workspace-brand-line)]"
+          aria-hidden="true"
+          >▤</span
+        >
+      </div>
+      <div class="min-w-0 flex-1 p-4 text-sm">
+        <p
+          class="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--workspace-brand-muted)]"
+        >
+          Workspace
+        </p>
+        <ul class="mt-3 grid gap-1">
+          <li
+            class="rounded-lg bg-[var(--workspace-brand-background)] px-3 py-2 font-semibold"
+          >
+            Projects
+          </li>
+          <li class="rounded-lg px-3 py-2">Products</li>
+          <li class="rounded-lg px-3 py-2">Documents</li>
+        </ul>
+        <p
+          class="mt-6 border-t border-[var(--workspace-brand-line)] px-3 pt-3 text-xs text-[var(--workspace-brand-muted)]"
+        >
+          Settings · Help
+        </p>
+      </div>
+    </div>
+
+    <dl
+      class="mt-6 grid gap-3 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">Floating bar</dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          flex w-fit items-center gap-1 rounded-full border
+          border-[var(--workspace-brand-line)]
+          bg-[var(--workspace-brand-surface)] p-1.5
+        </dd>
+      </div>
+      <div>
+        <dt class="font-semibold uppercase tracking-[0.12em]">
+          Sidebar item, selected
+        </dt>
+        <dd
+          class="mt-1 break-all font-mono text-[var(--workspace-brand-muted)]"
+        >
+          rounded-lg bg-[var(--workspace-brand-background)] px-3 py-2
+          font-semibold
+        </dd>
+      </div>
+    </dl>
+  </article>
+
+  <!-- Dark pair -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-6 text-[var(--workspace-brand-foreground)] md:p-8"
+    style="
+      --workspace-brand-background: #111111;
+      --workspace-brand-surface: #1b1b1b;
+      --workspace-brand-foreground: #ffffff;
+      --workspace-brand-muted: #c9c7c1;
+      --workspace-brand-primary: #ffffff;
+      --workspace-brand-line: #3a3a3a;
+    "
+    data-specimen="dark-pair"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Dark pair</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      The same recipes with the Dark column of the Semantic color system. Action
+      inverts to white on ink; Accent keeps #BFEF61 with Ink text.
+    </p>
+
+    <div
+      class="mt-6 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5"
+    >
+      <div class="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          class="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--workspace-brand-primary)] px-6 text-sm font-semibold text-[#111111] transition hover:opacity-90"
+        >
+          Publish page
+        </button>
+        <button
+          type="button"
+          class="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--workspace-brand-line)] px-6 text-sm font-semibold transition hover:border-[var(--workspace-brand-foreground)]"
+        >
+          Preview
+        </button>
+        <span
+          class="inline-flex min-h-7 items-center rounded-full bg-[var(--workspace-brand-accent)] px-3 text-xs font-semibold text-[#111111]"
+          >Selected</span
+        >
+      </div>
+      <div
+        class="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--workspace-brand-line)]"
+      >
+        <div
+          class="h-full w-1/2 rounded-full bg-[var(--workspace-brand-accent)]"
+        ></div>
+      </div>
+    </div>
+
+    <p
+      class="mt-6 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4 text-[var(--workspace-brand-muted)]"
+    >
+      The dominant action swaps its text colour to Ink here, because Action
+      becomes white. Accent never changes value between modes and always carries
+      Ink text.
+    </p>
+  </article>
+</div>

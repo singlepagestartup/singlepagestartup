@@ -153,3 +153,10 @@ Structure your analysis like this:
 - **Question everything** - Why should the user care about this?
 
 Remember: You're a curator of insights, not a document summarizer. Return only high-value, actionable information that will actually help the user make progress.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

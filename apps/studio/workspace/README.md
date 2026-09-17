@@ -11,13 +11,13 @@ Product materials change more often and affect only their own offer.
 
 ## Review order
 
-| Stage               | Review these documents                                                                                                    | Typical change rate | If it is wrong                                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
-| `00 Client Request` | Brief, then initial Product/models and Sales intake                                                                       | Rare after approval | Every later decision may be based on the wrong direction, sales process, audience, facts, or constraints |
-| `10 Strategy`       | Product Research, then Strategy                                                                                           | Occasional          | Brand, design, and product priorities may target the wrong opportunity                                   |
-| `20 Brand`          | Brand                                                                                                                     | Rare                | Every product may communicate the wrong meaning, promise, voice, or proof boundary                       |
-| `30 Design`         | Design, Assets                                                                                                            | Occasional          | Every product may use an inconsistent or unsuitable visual system                                        |
-| `40 Products`       | Product, Operations & Economics, Sales, Research, Website, Marketing Creative, Presentation, and optional Product Content | Frequent            | Only that product's outputs need correction unless they expose an upstream contradiction                 |
+| Stage               | Review these documents                                                                              | Typical change rate | If it is wrong                                                                                           |
+| ------------------- | --------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
+| `00 Client Request` | Brief, then initial Product/models and Sales intake                                                 | Rare after approval | Every later decision may be based on the wrong direction, sales process, audience, facts, or constraints |
+| `10 Strategy`       | Product Research, then Strategy                                                                     | Occasional          | Brand, design, and product priorities may target the wrong opportunity                                   |
+| `20 Brand`          | Brand                                                                                               | Rare                | Every product may communicate the wrong meaning, promise, voice, or proof boundary                       |
+| `30 Design`         | Design, Assets                                                                                      | Occasional          | Every product may use an inconsistent or unsuitable visual system                                        |
+| `40 Products`       | Product, Operations & Economics, Sales, Promotion, optional Product Content, Analytics and Research | Frequent            | Only that product's outputs need correction unless they expose an upstream contradiction                 |
 
 Review `default` first. Open `singlepage` or `startup` only when you need to see
 where a value came from.
@@ -31,15 +31,16 @@ the Markdown remains the authoritative portable text.
 
 ## Document review status
 
-The header has one confirmation badge above the document title. Its source layer
-belongs to that confirmation. The badge shows one of four states:
+The header has one concise confirmation badge above the document title. Source
+layer provenance remains in the selected projection and document metadata. The
+badge presents the four resolver states with three short labels:
 
-| State                                | Meaning                                                   |
-| ------------------------------------ | --------------------------------------------------------- |
-| `unconfirmed` — Not confirmed        | The current document has no user confirmation             |
-| `confirmed` — User confirmed         | Its body is confirmed and its reviewed inputs are current |
-| `changed` — Needs confirmation again | The document changed since confirmation                   |
-| `stale` — Review upstream changes    | An input changed or has an unresolved material effect     |
+| State         | Badge              | Meaning                                                   |
+| ------------- | ------------------ | --------------------------------------------------------- |
+| `unconfirmed` | Needs confirmation | The current document has no user confirmation             |
+| `confirmed`   | Confirmed          | Its body is confirmed and its reviewed inputs are current |
+| `changed`     | Needs confirmation | The document changed since confirmation                   |
+| `stale`       | Needs review       | An input changed or has an unresolved material effect     |
 
 Design uses the same neutral document header as Brief, Strategy and Brand:
 status, the title `Design`, purpose and usage. The selected visual layout starts
@@ -175,9 +176,11 @@ maps, the product catalog is replaced as a whole under the rules below.
   singlepage catalog.
 - If startup defines at least one product, `default` shows only startup
   products. The complete singlepage catalog is replaced.
-- Products start with Product, Operations & Economics, Sales and Research. The
-  shared model is read from its single source; Website, Marketing Creative and
-  Presentation appear when their files are prepared. All declared files must exist.
+- Products run from Product through Operations & Economics and Sales to Promotion
+  and Analytics. Badge tabs place Overview/Product Content inside Product,
+  Website/Marketing Creative/Presentation inside Promotion, and current
+  observations/Research inside Analytics. The sources and review states remain
+  separate. All declared files must exist.
 - `40 Products` is a sidebar folder. It contains sibling `singlepage` and `startup`
   groups, each listing only products from its own catalog. An empty source has a
   `No products` state. There is no visible default branch and no per-product layer list.
@@ -211,6 +214,7 @@ products:
     research: commercial-property-reletting/research.md
     sales: commercial-property-reletting/sales.yaml
     product: commercial-property-reletting/product.md
+    analytics: commercial-property-reletting/analytics.md
     website: commercial-property-reletting/website.md
     marketing_creative: commercial-property-reletting/marketing-creative.md
     presentation: commercial-property-reletting/presentation/ProjectPresentation.tsx
@@ -423,15 +427,24 @@ sections:
 ```
 
 Sources are relative to `design/<layer>/`. Built-in IDs are `overview`, `logos`,
-`colors`, `typography`, `photography`, and `illustration`; each uses the same
-value for `id` and `builtin`. A custom section needs a unique kebab-case `id`,
+`colors`, `typography`, `interface`, `photography`, and `illustration`; each uses
+the same value for `id` and `builtin`. A custom section needs a unique kebab-case `id`,
 a `title`, and a `source`. It may replace a built-in ID with its own source.
 Files may be nested freely. TSX/JSX files export a default component with no
 required props; they may import other local components/data and render any
 structure. Markdown, HTML, SVG/raster images, video, audio, and file downloads
-use the shared page renderer. HTML runs in an isolated iframe under
-`/workspace-design/<layer>/` with its relative links/assets intact. Markdown
-resolves relative links/images from its own directory. Adding an unconfigured
+use the shared page renderer. A Design HTML file is inlined into the page, so
+plain HTML and Tailwind classes resolve against the project's own
+`--workspace-brand-*` tokens and the compiled Tailwind build. Write it as a
+fragment without `<html>`, `<head>`, or `<body>`, and express interaction with
+CSS (`hover`, `focus-visible`, `has-[:checked]`): injected `<script>` tags do not
+run. A variant that reaches a descendant needs `group` plus `group-has-[...]`,
+because `peer-*` only matches siblings and fails silently otherwise. Tailwind
+compiles these classes from the `@source` glob in `runtime/styles.css`, and a
+newly created file is not fully rescanned by the running dev server: restart
+Storybook after adding one, or utilities that appear nowhere else stay missing. Product HTML pages still run in an isolated iframe under
+`/workspace-products/<layer>/` with their relative links and assets intact.
+Markdown resolves relative links/images from its own directory. Adding an unconfigured
 Markdown heading or a file alone does not add a visible section.
 
 To replace the entire visual template:
@@ -496,13 +509,16 @@ For each client-confirmed product:
    costs and funding in the owning shared model.
 3. Sales defines the complete intended customer process. Readiness means its
    business decisions are complete, even before implementation.
-4. Research supplies audience, competitor, price, channel and business evidence.
+4. Promotion groups Website, Marketing Creative and Presentation in one navigation
+   surface while each material retains its own source and export.
 5. Website defines visitor journeys and a site tree. Each page has its own Text
    and Layout representations with consistent copy.
 6. Marketing Creative provides messages and compositions for selected channels.
 7. Presentation explains the business to clients, partners or investors. It owns
    `presentation/data.yaml` and its React entry; PDF/PNG are replaceable exports.
 8. Optional Product Content contains materials customers receive or use.
+9. Analytics records observed values, periods and sources. Research remains beside
+   it to interpret evidence and route changes back to Product, the model or Sales.
 
 Review business coherence and the actual static materials. Engineering tests and
 runtime verification remain in the engineering workflow. Unchanged approved
@@ -552,7 +568,8 @@ engineering workflow under `thoughts/shared/**`.
 
 Product owns customer/value/offer decisions; Operations & Economics owns model
 resources, per-product prices, costs and funding; Sales owns the whole customer
-process. Website, Marketing Creative and Presentation apply these facts in their
+process. Analytics owns observed values and their source windows; Research owns
+interpretation and decision implications. Website, Marketing Creative and Presentation apply these facts in their
 own authored materials. They never establish a competing source for price or
 scope. A changed source makes dependent materials stale for semantic review;
 Studio does not automatically replace their copy or renew confirmation.

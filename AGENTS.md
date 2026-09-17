@@ -36,6 +36,13 @@ Each module contains:
 
 If anything is unclear, read the relevant README files instead of guessing.
 
+Before storing, publishing, or returning prose intended for a person, make the
+final editorial pass defined in `.agents/contracts/editorial-pass.md`. Codex
+loads `.codex/skills/unslop/SKILL.md`; other providers apply the same canonical
+contract directly. Run it after facts, evidence, links, identifiers, required
+structure, and approval state are correct. It applies in the requested language
+and must preserve meaning, uncertainty, terminology, formatting, and voice.
+
 ## Environment & Requirements
 
 - Node.js 24+, npm 11+ (as per package engines).
@@ -113,11 +120,15 @@ product owns Research and a machine-readable Sales process in its product
 folder. Product Research starts at `10-strategy` before strategic selection;
 cross-product conclusions belong to Strategy and cite the relevant products.
 There is no business-wide Research document. Product Sales intake records
-supplied current or confirmed intended processes. Strategy defines project-wide marketing goals, audiences, positioning,
-product roles, coordinated channels, customer journeys and measurable growth,
-with separate audience-growth and sales-product priorities. Product work owns
-campaign execution and business learning; engineering tests remain in engineering.
-Strategy is not a first-experiment plan.
+supplied current or confirmed intended processes. Strategy defines one concrete
+final picture of the whole project after it satisfies the approved Brief as
+fully as known constraints allow. It connects project-wide marketing goals,
+audiences, positioning, product roles, coordinated channels, customer journeys
+and measurable growth, with separate audience-growth and sales-product
+priorities. It describes the intended operating state and durable management
+rules, not the roadmap or transition path. Product work owns campaign execution
+and business learning; engineering tests remain in engineering. Strategy is not
+a first-experiment plan.
 The same five-section Strategy template and quality criteria apply to framework
 and downstream projects. Each startup derives its strategy from its own Brief
 and research; inherited framework choices and approval remain reference context.
@@ -142,8 +153,9 @@ plain language; no separate stage command is required. Quality and completeness
 take precedence over response length, number of turns, execution time, or token
 use.
 Primary review documents own `confirmation` metadata under
-`.agents/contracts/document-confirmation.md`. Studio shows user confirmation and
-its source layer in the header. Empty startup inherits the base status; changed
+`.agents/contracts/document-confirmation.md`. Studio shows a concise confirmation
+state in the header; the projection and metadata retain source-layer provenance.
+Empty startup inherits the base status; changed
 startup content requires its own confirmation. A confirmation fingerprint covers
 the complete resolved body and becomes invalid when that body changes. Inherited
 singlepage confirmation never approves a downstream project's stage.
@@ -160,7 +172,7 @@ without a hard word, line, source or segment cap. Preserve material information;
 split long topics into navigable pages under `.agents/contracts/document-readability.md`.
 Git retains history; material sources stay with their owning statements. Brand owns the meaning that
 should form in the audience's mind. During `30-design`, a separate layered
-`design.md` translates approved Brand into visual identity, photography, and
+`design.md` translates approved Brand into visual identity, interface, photography, and
 illustration decisions. Photography and illustration use the same objective
 prompt, production, example, and visual-review contract. Design structure is
 project-configurable through `design/<layer>/layout.yaml`: ordered built-in or
@@ -169,9 +181,12 @@ startup inherits the base layout; a populated startup layout replaces it with
 layer-owned files and no implicit base-file fallback. Document section inheritance
 and layered CSS stay separate. Shared support stays in `utils/design/` and
 `utils/components/`; project templates and section data stay in `design/<layer>/`. During `40-products`, each active product
-adds a self-contained Product, Website, Marketing Creative, and Presentation set
-to its existing Research and Sales tabs, plus an optional product-defined
-Product Content surface when needed. Products may extend any core tab or add sections with nested Markdown, HTML,
+adds a self-contained Product, Sales, Promotion, and Analytics set around its
+model and Research. Product groups Overview with optional product-defined Product
+Content; Promotion groups Website, Marketing Creative, and Presentation without
+merging their sources; Analytics groups current observations and Research. Every
+active product owns Analytics by `40-products`; missing measurements stay
+explicitly `not measured`. Products may extend any core tab or add sections with nested Markdown, HTML,
 JSX/TSX, image, and media pages through the catalog. Product-specific files stay
 in their layer folder; shared loaders and tests live in `utils/products/`.
 React presentations compose TSX pages and retain PDF export. No mandatory

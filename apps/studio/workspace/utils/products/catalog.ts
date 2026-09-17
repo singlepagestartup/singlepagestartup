@@ -11,6 +11,7 @@ export interface IProductPage {
   title: string;
   source?: string;
   route?: string;
+  uses?: string[];
   representations?: { text: string; preview?: string };
   export?: "pdf";
   children: IProductPage[];
@@ -23,6 +24,7 @@ export interface IProductSection {
 }
 
 export interface IProductCatalogEntry {
+  analytics?: string;
   model?: string;
   sections: IProductSection[];
   content?: string;
@@ -146,6 +148,16 @@ function pages(
         /[\s?#]/.test(route))
     )
       throw new Error(`${productId}.${id} route must be a site path`);
+    const uses = node.uses ?? [];
+    if (
+      !Array.isArray(uses) ||
+      uses.some(
+        (dependency) =>
+          typeof dependency !== "string" ||
+          !/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/.test(dependency),
+      )
+    )
+      throw new Error(`${productId}.${id}.uses must contain document IDs`);
     const children =
       node.children === undefined ? [] : pages(node.children, productId, ids);
     if (!source && !representations && !children.length)
@@ -160,6 +172,7 @@ function pages(
       title,
       source,
       route: route as string | undefined,
+      uses: [...new Set(uses as string[])],
       representations,
       children,
       export: node.export as "pdf" | undefined,
@@ -278,6 +291,10 @@ export function parseProductCatalog(
         `${layer}.${id} cannot define both content and sections.content`,
       );
     return {
+      analytics: optionalSafeRelativePath(
+        product.analytics,
+        `${layer}.${id}.analytics`,
+      ),
       model,
       sections: productSections,
       content: optionalSafeRelativePath(
@@ -311,6 +328,7 @@ export function parseProductCatalog(
   });
   for (const product of products) {
     for (const field of [
+      "analytics",
       "product",
       "research",
       "sales",

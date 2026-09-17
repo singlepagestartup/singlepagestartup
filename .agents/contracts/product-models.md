@@ -19,14 +19,15 @@ not permission to infer one model per product.
 
 ## Whole-page ownership
 
-| Page                                        | Owns                                                                                                                                                                                                                                   | Business Model Canvas coverage                                                   |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Product                                     | Identity/owner/state/boundary; five customer roles; circumstances, jobs, pains/gains, desired result; alternatives and value; included/excluded scope, intended access and use, support promise and rights; business goals and metrics | Customer Segments; Value Propositions                                            |
-| Operations & Economics                      | Model scope; per-product money terms; shared resources, activities, partners, costs/allocation; funding and material unknowns                                                                                                          | Revenue Streams; Key Resources; Key Activities; Key Partnerships; Cost Structure |
-| Sales                                       | Intended customer process from discovery and consideration through acquisition, use, support and retention; owners, inputs, handoffs, commercial alternatives and metrics                                                              | Channels; Customer Relationships; operational Key Activities                     |
-| Research                                    | Market and business questions linked to model assumptions; customer, competitor, price and channel evidence, limits and implications                                                                                                   | Whichever model decisions need evidence                                          |
-| Website / Marketing Creative / Presentation | Proposed customer-facing materials and business-facing presentation; each owns its copy, static views and permitted exports                                                                                                            | Derived applications, never independent sources of price or scope                |
-| Product Content (optional)                  | Materials delivered to/used by the consumer, with product-defined nesting/formats                                                                                                                                                      | Product delivery, separate from marketing                                        |
+| Page                       | Owns                                                                                                                                                                                                                                                                                                                                | Business Model Canvas coverage                                                   |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Product                    | Overview: identity/owner/state/boundary; five customer roles; circumstances, jobs, pains/gains, desired result; alternatives and value; included/excluded scope, intended access and use, support promise and rights; business goals and metrics. Optional Product Content is nested beside Overview without merging their sources. | Customer Segments; Value Propositions                                            |
+| Operations & Economics     | Model scope; per-product money terms; shared resources, activities, partners, costs/allocation; funding and material unknowns                                                                                                                                                                                                       | Revenue Streams; Key Resources; Key Activities; Key Partnerships; Cost Structure |
+| Sales                      | Intended customer process from discovery and consideration through acquisition, use, support and retention; owners, inputs, handoffs, commercial alternatives and metrics                                                                                                                                                           | Channels; Customer Relationships; operational Key Activities                     |
+| Promotion                  | One navigation surface for Website, Marketing Creative and Presentation; each material retains its own copy, layouts and permitted exports                                                                                                                                                                                          | Derived applications, never independent sources of price or scope                |
+| Product Content (optional) | Materials delivered to/used by the consumer, with product-defined nesting/formats                                                                                                                                                                                                                                                   | Product delivery, separate from marketing                                        |
+| Analytics                  | Current funnel, usage, retention, revenue and attributable-cost observations with periods, sources and limitations                                                                                                                                                                                                                  | Observed feedback about whichever model decisions are being tested               |
+| Research                   | Market and business questions linked to model assumptions; customer, competitor, price and channel evidence, limits and implications                                                                                                                                                                                                | Whichever model decisions need evidence                                          |
 
 Use exactly the canonical H2s in each primary template in both source layers;
 project extensions belong in catalog sections/pages (no prescribed Markdown
@@ -52,8 +53,11 @@ lives in Git and review state in metadata, not in the Brief body.
 After scope confirmation at `00-business`, Business Analyst records initial
 Product/model and supplied Sales intake. Intake may contain explicit unknowns;
 unknown prices, budgets, capacity or owners are never invented. Practical
-Website/Creative/Presentation fields may be absent until prepared. All declared
-files must exist. The initial stage persists; it no longer has a Business output.
+Website/Creative/Presentation fields may be absent until prepared. Analytics may
+begin with an explicit unmeasured state and gains observations only from inspected
+sources. Every active product owns an Analytics source by `40-products`; Product
+Content remains optional. All declared files must exist. The initial stage
+persists; it no longer has a Business output.
 
 At `10-strategy`, product Research tests named model/product assumptions before
 selection. Market observations never override client facts; agreement with a
@@ -127,6 +131,16 @@ or acquisition ID in a material's metadata when authoring or revising it; write
 copy to that situation rather than a generic average audience. Review Sales input
 changes before reusing materials. Research remains a separate evidence owner.
 
+Website must cover the complete applicable customer journey rather than only the
+landing page and primary workspace. Turn Sales access, registration, purchase,
+settings, fulfillment or publication, continuation, support and contextual
+product handoffs into explicit routes or deliberate in-page transitions. Keep
+the rendered Website and Creative bodies focused on project-specific customer
+experience and final copy. Framework mechanics, approved-design reminders,
+generic responsive/accessibility checklists, dependency or approval prose,
+backend/security architecture and “awaiting review” conclusions belong to roles,
+metadata and engineering work, not these business-facing documents.
+
 V1 Sales remain readable during migration, without pretending a flat operational
 sequence contains customer profiles. At the next owned Sales revision, transfer
 unique intake and source attribution to v2, preserve product boundaries, and
@@ -139,7 +153,9 @@ Shared model review IDs are `model.<id>`; each is registered once. Models use
 Brief and explicitly referenced resource-owning models. Research uses Brief and its model; its assumption links identify the question
 being tested. Model citations of Research findings are reviewed by the agent,
 not reciprocal approval edges. Product uses Brief, Research and its model. Sales uses Product and model.
-Strategy uses models and product Research/Sales. Website uses Product, Sales,
+Strategy uses models and product Research/Sales. Analytics uses Product, Sales and
+the model without copying their definitions. Research observes Analytics as evidence
+without making it a reciprocal approval dependency. Website uses Product, Sales,
 model, Strategy, Brand and Design; Creative and Presentation retain their relevant
 product/design dependencies. A local Product change can require review of shared
 Strategy through Sales, so shared material review is intentional when that happens.
@@ -159,9 +175,14 @@ from approved Product/model/Sales facts and reviewed when those inputs change.
 
 ## Material workspaces
 
-Website, Marketing Creative, Presentation and optional Product Content provide
-selectable materials with Text/Layout views. Agents edit product-owned source
-files in the same conversation; Studio previews those files and exports results.
+Product is the first top-level Studio surface. Its badge tabs place Overview and
+optional Product Content together while preserving separate sources, page trees
+and confirmation. Promotion is the single top-level surface for Website,
+Marketing Creative and Presentation; badge tabs preserve each material's source,
+nested pages, Text/Layout views and exports. Analytics is the final top-level
+surface; its badge tabs keep current observations and connected Research in one
+evidence context. Agents edit product-owned source files in the same conversation;
+Studio previews those files and exports results.
 No external chat or manual copying pipeline is required.
 
 Marketing Creative groups actual selected deliverables, such as covers, articles,

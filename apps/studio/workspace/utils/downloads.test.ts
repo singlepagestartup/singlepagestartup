@@ -31,6 +31,24 @@ describe("Studio document downloads", () => {
   });
 
   /**
+   * BDD Scenario: Page downloads retain their visible title
+   * Given a product page body has no authored level-one heading
+   * When its Markdown download is prepared with the catalog title
+   * Then the downloaded page starts with that title without changing titled sources
+   */
+  test("adds the visible page title when Markdown has none", () => {
+    expect(markdownDownloadContent("Page body.", "Workspace map")).toBe(
+      "# Workspace map\n\nPage body.\n",
+    );
+    expect(
+      markdownDownloadContent(
+        "# Authored title\n\nPage body.",
+        "Catalog title",
+      ),
+    ).toBe("# Authored title\n\nPage body.\n");
+  });
+
+  /**
    * BDD Scenario: Segment context is retained in the file name
    * Given two Sales pages belong to different named customer segments
    * When their download names are generated

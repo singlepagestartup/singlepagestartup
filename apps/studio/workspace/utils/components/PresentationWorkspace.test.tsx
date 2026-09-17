@@ -211,14 +211,12 @@ describe("shared presentation workspace", () => {
           }),
         ),
       );
-      expect(host.textContent!.match(/Not confirmed by user/g)).toHaveLength(1);
+      expect(host.textContent!.match(/Needs confirmation/g)).toHaveLength(1);
       const title = [...host.querySelectorAll("h2")].find(
         (heading) => heading.textContent === "Presentation",
       )!;
       expect(title.parentElement?.classList.contains("flex")).toBe(true);
-      expect(title.parentElement?.textContent).toContain(
-        "Not confirmed by user",
-      );
+      expect(title.parentElement?.textContent).toContain("Needs confirmation");
       expect(title.parentElement?.querySelectorAll("span")).toHaveLength(1);
       expect(host.querySelector("article")?.textContent).toContain(
         "Original offer copy",

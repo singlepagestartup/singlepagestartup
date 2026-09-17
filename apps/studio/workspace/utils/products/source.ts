@@ -77,7 +77,14 @@ const pageSources = {
 export interface IProductDocument {
   confirmation: IDocumentConfirmation;
   content: string;
-  kind: "creative" | "product" | "research" | "sales" | "website" | "model";
+  kind:
+    | "analytics"
+    | "creative"
+    | "product"
+    | "research"
+    | "sales"
+    | "website"
+    | "model";
   label: string;
   sourcePath: string;
 }
@@ -280,6 +287,17 @@ function view(
           label: "03 Sales" as const,
           sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.sales}`,
         },
+        ...(entry.analytics
+          ? [
+              {
+                content: documentSource(catalog.layer, entry.analytics),
+                kind: "analytics" as const,
+                confirmation: confirmation("analytics", entry.analytics),
+                label: "06 Analytics" as const,
+                sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.analytics}`,
+              },
+            ]
+          : []),
         ...(entry.website
           ? [
               {

@@ -167,3 +167,10 @@ If no issue number is given, infer one only when there is a clear local artifact
 ## Important
 
 This command is meant to improve execution speed and reliability across different agent runtimes. Favor solutions that are portable between Claude-style commands and Codex-style skills whenever possible.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

@@ -92,6 +92,11 @@ Replace an experiment-centric legacy strategy instead of just renaming its
 headings. Preserve current facts and strategic choices. Keep still-applicable
 operator-supplied trial limits in their owning product/model sources; do not
 promote them to ongoing budgets. Retire unapproved proposed test mechanics.
+Replace roadmap, phased transition, backlog-style “next step”, preparation and
+configuration prose with one concrete final picture of the whole project that
+satisfies the approved Brief as fully as known constraints allow, plus durable
+management rules. Keep the actual unfinished deliverables in their product
+documents or coordinator handoff.
 Detailed campaign and business-learning plans belong to product work; engineering
 tests and runtime verification remain in the engineering workflow.
 
@@ -129,8 +134,11 @@ There is no reduced downstream version of the marketing strategy.
   document-confirmation contract; synchronization does not renew approval.
 - Section presence is necessary but insufficient. Review whether the goals,
   audiences, positioning, product roles, channels, journey, continued use and
-  measures form a coherent project-specific direction. Do not claim that a
-  structural validator alone certifies strategic quality.
+  measures form a coherent project-specific target state that fulfills the
+  approved Brief as fully as known constraints allow. A body organized around
+  the path from the current state, transition phases, what to prepare, configure
+  or do next is a Strategy compatibility gap even when all five headings exist.
+  Do not claim that a structural validator alone certifies strategic quality.
 
 These rules take effect in a checkout when it receives the shared workflow,
 role and template changes. They do not update unsynchronized repositories or
@@ -144,7 +152,7 @@ whose previous headings already passed validation. Product defines the intended
 offer and experience; its sixth H2 is `Business goals and metrics`. The complete
 set forms a prospective business plan for later engineering.
 
-- Inspect Product, model, Sales, Research, Website, Creative, Presentation and
+- Inspect Product, model, Sales, Analytics, Research, Website, Creative, Presentation and
   optional customer content for implementation-audit framing. Installation
   checks, runtime acceptance matrices, bug repair, release/license-source audits
   and next-verification tasks cannot substitute for business decisions or gate
@@ -225,7 +233,13 @@ its content and approval metadata, and update the index and source imports.
 Keep the empty startup catalog as an explicit extension point; do not populate
 it with framework product copies. Resolve every document and component field under
 `products/<layer>/`, then require the atomic catalog shape and every referenced
-`research.md`, `sales.yaml`, `product.md`, and every declared model source.
+`research.md`, `analytics.md`, `sales.yaml`, `product.md`, and every declared
+model source. Every current product must declare its own `analytics` source.
+An older product without it is valid migration input, not a compatible final
+catalog: create the source in the repository-owned layer from the current
+template, preserve any attributable observations found in existing materials,
+and record unavailable measurements explicitly as `not measured`. Never copy
+framework observations, infer zero values, or renew confirmation.
 Website, Creative and Presentation are required at their delivery stage, not
 at initial intake; if declared, their files must exist, including both
 Presentation React entry and `presentation_data`. When a catalog entry declares optional
@@ -233,7 +247,11 @@ Presentation React entry and `presentation_data`. When a catalog entry declares 
 particular supporting file extension or content schema. For optional `sections`,
 recursively validate unique navigation IDs, page sources inside their selected
 product folder, and file existence. A section using a core ID augments that tab;
-other IDs add tabs. Do not recreate removed pages from the base catalog in startup.
+other IDs add tabs. Require Analytics canonical headings and preserve current
+values, periods, sources and explicit measurement gaps.
+Promotion and Analytics are navigation groups rather than replacement documents;
+retain the underlying Website, Creative, Presentation, Research and Analytics
+sources. Do not recreate removed pages from the base catalog in startup.
 React PDF pages must keep the shared mounted-slide contract. No extra section
 is required merely because the template demonstrates one. Also compare the artifact's decisions
 with the current stage completion rules and the material questions and

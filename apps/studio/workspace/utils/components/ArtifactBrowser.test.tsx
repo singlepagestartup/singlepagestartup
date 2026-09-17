@@ -54,7 +54,7 @@ describe("ArtifactDocument", () => {
 
     expect(html).toContain(">Brief</h1>");
     expect(html.match(/<h1(?: |>|\n)/g) ?? []).toHaveLength(1);
-    expect(html).toContain("Not confirmed by user");
+    expect(html).toContain("Needs confirmation");
     expect(html).toContain("agree on the project scope");
     expect(html).toContain('aria-label="Download Markdown"');
     expect(html).toContain('aria-label="Download HTML"');

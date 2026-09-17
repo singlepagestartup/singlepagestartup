@@ -10,8 +10,8 @@ description: Converts approved business, strategy, communication, and identity d
 
 Own each active product's `website.md` and its static Studio compositions during
 `40-products`. Define the visitor journey,
-information architecture, final page copy, responsive hierarchy, form and
-success states, and post-conversion action. Stop before production components,
+information architecture, final page copy, material interaction states, and
+post-conversion action. Stop before production components,
 SDK/API integration, analytics implementation, QA, and deployment. Apply the
 approved brand system; do not redefine logos, palette, typography, photography,
 illustration, or campaign creative.
@@ -38,7 +38,9 @@ Website copy and its layout follow `.agents/templates/website.md`: one site-tree
 node per route, Markdown Text first, then an optional Layout. Keep wording in the
 page's source, make React consume that text, and update separately authored HTML
 in the same change. The overview specifies the journey without duplicating all
-page copy. Review both representations together.
+page copy. Review both representations together. These source and rendering rules
+belong to the framework and agent method; never repeat them in the visible
+Website overview or customer-facing page copy.
 
 ## Required method
 
@@ -46,6 +48,16 @@ page copy. Review both representations together.
   information, proof, objection, action, form data, success feedback, business
   receiver, response expectation, and next operational step. Sequence the page
   from this map rather than a generic landing-page pattern.
+- Derive the complete route inventory from the selected segment's acquisition
+  paths and CJM. Cover every applicable transition, including discovery,
+  registration and sign-in, intake, the main workspace, purchase, settings,
+  fulfillment or publication, continued use, contextual cross-product handoff,
+  and support. Do not stop after designing a landing page and one success screen.
+- Lead customer-facing copy with the person's recognizable problem and the
+  concrete result. Do not open with the project or product name, vague commands
+  such as “start a project,” or unexplained abstractions such as “context” or
+  “structure.” Name what the person can bring, what the product produces and
+  what useful action becomes possible next.
 - Write actual headline, supporting copy, offer contents, price or calculation
   principle, proof, process, FAQ, CTA, form labels, consent copy, success message,
   metadata, and Open Graph copy.
@@ -55,9 +67,10 @@ page copy. Review both representations together.
   qualification data, domain proof, required disclosures, consent/data limits,
   and the operational action after conversion.
 - Specify desktop and mobile hierarchy, interaction states, and accessibility
-  constraints. Include focus, error, empty, pending, and success states where
-  relevant; review narrow widths, keyboard/focus behavior, contrast, text
-  alternatives, labels, consent, and whether color or motion carries meaning.
+  constraints in the layouts and internal quality review. Put a state in the
+  visible Website document only when it changes a customer decision, promise,
+  handoff or recovery path; never fill the final document with a generic UI,
+  responsive, keyboard, loading, security or backend checklist.
 - Link consequential claims to evidence or an explicit non-evidence class.
 - Build presentation views as semantic HTML in Studio from static,
   artifact-derived props through presentation-only React components. Expose
@@ -70,6 +83,11 @@ page copy. Review both representations together.
   responsive layouts, buttons, forms, validation, and success states. Do not
   place these in Design and do not put social, video, advertising, or campaign
   variants in `website.md`.
+- Keep approval mechanics, dependency status, Text/Layout synchronization,
+  framework defaults, implementation reminders, backend/security architecture
+  and statements such as “this is a proposal awaiting review” out of the
+  Website body and customer pages. Metadata and the Studio shell already expose
+  review state. The visible document contains the intended experience itself.
 
 ## Thresholds and red flags
 
@@ -94,3 +112,10 @@ whole page, but the Markdown remains a concise editable specification.
 Return changed visitor and conversion decisions, Studio composition references,
 remaining material questions, evidence gaps, responsive/accessibility
 constraints, and explicit engineering inputs still outside this workflow.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

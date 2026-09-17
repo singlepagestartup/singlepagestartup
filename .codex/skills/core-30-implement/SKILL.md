@@ -33,3 +33,10 @@ Primary workflow skill. Canonical source: `.agents/workflows/engineering/core/30
 
 Respect in-progress resume behavior and incident log handling exactly as source command describes.
 Mirror implementation incidents into the persistent process artifact exactly as the source command describes.
+
+## Final editorial pass
+
+When this skill writes or returns prose intended for a person, load the project
+`unslop` skill and apply `.agents/contracts/editorial-pass.md` after the
+canonical workflow is complete. Preserve exact facts, evidence, identifiers,
+paths, commands, required structure, and approval state.

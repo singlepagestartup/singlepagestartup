@@ -13,6 +13,7 @@ export const defaultDesignSections = [
   "logos",
   "colors",
   "typography",
+  "interface",
   "photography",
   "illustration",
 ] as const;

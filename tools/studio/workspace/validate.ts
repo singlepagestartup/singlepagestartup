@@ -6,7 +6,9 @@ import {
   validateProductCatalogFiles,
   validateProductSectionFiles,
 } from "../products/validate";
+import { validateOwnedBrandbook } from "../design/brandbook";
 import { validateDesignLayouts } from "../design/validate";
+import { validateRequiredSpecimens } from "../design/specimens";
 
 import {
   loadWorkspace,
@@ -383,6 +385,8 @@ async function main() {
     workspaceRoot: options.workspaceRoot,
   });
   await validateDesignLayouts(graph.workspaceRoot);
+  await validateOwnedBrandbook(graph.workspaceRoot, graph.activeLayer);
+  await validateRequiredSpecimens(graph.workspaceRoot);
   for (const entry of graph.loadedEntries.filter(
     (entry) => entry.kind === "products",
   )) {

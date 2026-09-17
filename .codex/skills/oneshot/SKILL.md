@@ -13,3 +13,10 @@ Legacy orchestration alias. Canonical source: `.agents/workflows/engineering/one
 2. Keep both phases in one Codex context (no detached slash-context spawning).
 3. Preserve each phase gate, artifact contract, and issue comment exactly as the canonical files describe.
 4. Stop after planning — the plan still requires human review (`Plan in Review`).
+
+## Final editorial pass
+
+When this skill writes or returns prose intended for a person, load the project
+`unslop` skill and apply `.agents/contracts/editorial-pass.md` after the
+canonical workflow is complete. Preserve exact facts, evidence, identifiers,
+paths, commands, required structure, and approval state.

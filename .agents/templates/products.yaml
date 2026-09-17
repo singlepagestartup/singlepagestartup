@@ -4,7 +4,7 @@ schema: singlepagestartup.product-catalog.v2
 models: []
 products: []
 # Keep every client-confirmed product, including drafts and products outside the current experiment. Every product belongs to exactly one layer and
-# keeps Research, Sales, Product, Website, Marketing Creative, and Presentation together.
+# keeps Research, Sales, Product, Analytics, and its promotional materials together.
 # Optional sections augment core tabs or add tabs; nested pages may use any
 # supported working format. Shared utilities live in utils/products/, while
 # product pages, components, and supporting files stay in their layer folder.
@@ -26,6 +26,7 @@ products: []
 #     research: replace-with-id/research.md
 #     sales: replace-with-id/sales.yaml
 #     product: replace-with-id/product.md
+#     analytics: replace-with-id/analytics.md
 #     # Materials below are optional until their stage; declared files must exist.
 #     website: replace-with-id/website.md
 #     marketing_creative: replace-with-id/marketing-creative.md

@@ -23,3 +23,10 @@ Combined shortcut: runs the research phase and then the planning phase for the s
 - All status gates, artifacts, and issue comments of both phases apply unchanged.
 - Stop after planning: the plan still requires human review (`Plan in Review`) before implementation.
 - If the research phase exits early (for example, clarification requested), stop — do not proceed to planning.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

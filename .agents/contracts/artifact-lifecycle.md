@@ -136,8 +136,10 @@
   sources.
 - Product catalogs resolve atomically. Empty startup inherits the entire
   singlepage catalog; a startup catalog with one or more products replaces it
-  completely. Every active product owns its Research, Sales, Product, Website,
-  Marketing Creative, and Presentation files in one layer. Never mix product folders or
+  completely. Every active product owns its Research, Sales, Product, Analytics,
+  Website, Marketing Creative, and Presentation files in one layer. Studio groups
+  the three promotional materials and the two evidence views without merging their
+  canonical sources. Never mix product folders or
   partially inherit a singlepage product into a startup catalog.
 - Presentation export resolves the repository layer through the same canonical
   repository map as the workspace loader. It writes derivatives only below

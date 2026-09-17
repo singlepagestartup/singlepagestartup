@@ -42,6 +42,11 @@ const markdown = import.meta.glob<string>(
   "../../design/{singlepage,startup}/**/*.md",
   { eager: true, query: "?raw", import: "default" },
 );
+// Design HTML renders inline, so the fragment uses the resolved brand tokens.
+const html = import.meta.glob<string>(
+  "../../design/{singlepage,startup}/**/*.html",
+  { eager: true, query: "?raw", import: "default" },
+);
 const files = import.meta.glob("../../design/{singlepage,startup}/**/*", {
   query: "?url",
   import: "default",
@@ -60,6 +65,7 @@ const sources = {
     { default?: ComponentType<IDesignTemplateProps> }
   >,
   markdown: keys(markdown),
+  html: keys(html),
   files: new Set(Object.keys(keys(files))),
 };
 const singlepageLayout = parseDesignLayout(
