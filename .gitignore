@@ -127,3 +127,6 @@ apps/studio/.storybook/.generated/
 /output/
 
 **/*.tsbuildinfo
+
+# Claude Code worktrees
+.claude/worktrees/
