@@ -4,41 +4,32 @@
 
 Before every `singlepagestartup` invocation, inspect the configured GitHub
 repository for relevant commits published after the first approved strategy
-commit. Chat is not the change detector. Local, uncommitted, and unpushed files
+commit. Chat is not the change detector. Local, uncommitted and unpushed files
 are outside this preflight and remain protected as user work.
 
-Run this before reading or reconciling the normal stage cursor:
+Run this before reading or reconciling the stage cursor:
 
 ```bash
 npm run singlepagestartup:github:check
 ```
 
-The command resolves the repository identity and active layer through the same
-workspace resolver used to load artifacts, then fetches that layer's configured
-GitHub remote, resolves its canonical branch, and returns structured JSON. The
-caller does not select a layer. `--layer` may be supplied only as a diagnostic
-assertion and fails when it disagrees with automatic resolution. A GitHub or
-fetch failure is fail-closed: stop
-before professional work and report the unavailable preflight. Never claim that
-no changes exist from a stale local remote-tracking ref.
+The command resolves the repository identity and the active layer through the
+shared resolver described in `.agents/contracts/inheritance.md`, fetches that
+layer's configured GitHub remote, resolves its canonical branch and returns
+structured JSON. The caller does not select a layer; `--layer` is a diagnostic
+assertion that fails when it disagrees with automatic resolution. A GitHub or
+fetch failure is fail-closed: stop before professional work and report the
+unavailable preflight. Never claim that no changes exist from a stale local
+remote-tracking ref.
 
-Repository routing is strict:
-
-- `singlepagestartup/singlepagestartup` resolves to `singlepage` and may update
-  only `singlepage` state, ledger, and living sources;
-- an unlisted downstream repository resolves to `startup` and may update only
-  `startup` state, ledger, and living sources;
-- a conflicting gitignored `active_layer` is a hard failure and cannot override
-  a detected repository identity;
-- every strategy path and affected artifact ID in a reconciliation config must
-  belong to its filename's layer, or the preflight fails before fetching or
-  writing anything.
-
-A downstream checkout never writes the inherited `singlepage` sources. When a
-framework change is synchronized into a downstream repository, inspect its
+Every strategy path and affected artifact ID in a reconciliation config must
+belong to its filename's layer, or the preflight fails before fetching or
+writing anything. The framework repository updates only `singlepage` state,
+ledger and living sources; a downstream repository updates only `startup`. When
+a framework change is synchronized into a downstream repository, inspect its
 effect on that project's resolved behavior and record only project-specific
-adoption, contradiction, or evidence in `startup` sources. Framework-owned
-truth is reconciled in the canonical framework repository.
+adoption, contradiction or evidence in `startup` sources; framework-owned truth
+is reconciled in the canonical framework repository.
 
 ## Baseline and ledger
 
@@ -52,10 +43,12 @@ apps/studio/workspace/utils/pre-development/github/<layer>.yaml
 The baseline is discovered on every invocation as the earliest commit on the
 configured GitHub branch whose layer Strategy has valid user-confirmation
 metadata. Historical sources without metadata retain their legacy approved
-Decision status support. Present but false/stale metadata is authoritative;
-see `.agents/contracts/document-confirmation.md`. Do not guess or store a chat-derived baseline. Before that commit is
-published, `waiting-for-baseline` is expected and the normal workflow may
-continue; report that GitHub monitoring is not active yet.
+Decision status support; once metadata is present it is authoritative, and a
+false or mismatched fingerprint cannot be rescued by an old approved sentence
+in the body. A published startup confirmation is checked against the singlepage
+base at the same commit. Do not guess or store a chat-derived baseline. Before
+that commit is published, `waiting-for-baseline` is expected and the normal
+workflow may continue; report that GitHub monitoring is not active yet.
 
 The scan covers every later commit. A commit is pending only when one of its
 changed or renamed paths matches a configured relevance rule and its full SHA
