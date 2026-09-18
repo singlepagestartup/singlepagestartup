@@ -123,7 +123,10 @@ def sentences_with_lines(rel: str, path: pathlib.Path):
                 section = heading.group(2).strip()
             continue
         stripped = re.sub(r"^(\s*[-*]\s+|\s*\d+\.\s+)", "", stripped)
-        stripped = re.sub(r"<!--|-->", "", stripped)
+        # Comment markers only delimit template guidance here; tokenizing on
+        # them keeps the guidance text without filtering HTML.
+        for marker in ("<!--", "-->"):
+            stripped = " ".join(stripped.split(marker))
         if not current:
             start_line = i
         current.append(stripped)
