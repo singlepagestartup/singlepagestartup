@@ -1,5 +1,13 @@
 # SinglePageStartup (SPS)
 
+## Start here
+
+New to this repository? [GETTING_STARTED.md](./GETTING_STARTED.md) walks the
+whole path in order: what the three parts of the repository are, how to install
+and run them, how `/singlepagestartup` turns a business idea into approved
+documents through five stages, and how `/core/next` turns those documents into
+working code. The rest of this README is the architecture reference.
+
 ## AI Entry Point
 
 Start with `AGENTS.md`, the universal provider-neutral entry point.
@@ -464,7 +472,7 @@ If no specific pattern is matched, the error will be classified as a generic Int
 
 ### Prerequisites
 
-- Node.js ^20.x
+- Node.js ^24.x
 - Bun ^1.2.3
 - Docker and Docker Compose
 
