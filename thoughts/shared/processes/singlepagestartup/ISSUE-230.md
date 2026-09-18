@@ -3,9 +3,9 @@ issue_number: 230
 issue_title: "Validate PayKeeper webhook identifiers before relation lookup"
 repository: singlepagestartup
 created_at: 2026-09-17T23:13:12Z
-last_updated: 2026-09-17T23:13:12Z
+last_updated: 2026-09-18T23:29:49Z
 status: active
-current_phase: research
+current_phase: implement
 ---
 
 # Process Log: ISSUE-230 - Validate PayKeeper webhook identifiers before relation lookup
@@ -18,10 +18,10 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Create: completed
 - Research: completed
-- Plan: not_started
-- Implement: not_started
-- Current phase: research
-- Next step: human review, then core/20-plan
+- Plan: completed
+- Implement: completed
+- Current phase: implement
+- Next step: lead review of the branch, then PR and code review
 
 ## Phase Notes
 
@@ -39,21 +39,21 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Plan
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Planned one guard function in the payment-intent service layer called once at the top of the PayKeeper webhook branch, plus a BDD spec. Plan approval was delegated to the lead, so planning and implementation ran in one session without a review pause.
+- Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-230.md`
+- Notes: Signature verification was left out with a recorded reason: PayKeeper's secret-seed scheme and its `OK <md5>` answer exist nowhere in the repository, so implementing either would have been a guess. The plan also records the other provider branches, webhook log hygiene, and the still-unexplained `undefined` diagnosis as follow-ups.
 
 ### Implement
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Added `validateWebhookIdentifiers` in `service/singlepage/webhook-identifiers.ts`, called it first in the PayKeeper webhook branch for `orderid` (canonical uuid) and `id`, `sum`, `clientid` (strings when sent), and used the validated `orderid` for the relation filter and the not-found message. Added `paykeeper.spec.ts` with four scenarios.
+- Outputs: `libs/modules/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage/webhook-identifiers.ts`, `.../singlepage/paykeeper.ts`, `.../singlepage/paykeeper.spec.ts`, `thoughts/shared/handoffs/singlepagestartup/ISSUE-230-progress.md`
+- Notes: `npx nx run @sps/billing:jest:test` (16 tests, 5 suites), `npx nx run @sps/billing:eslint:lint`, and `npx nx run @sps/billing:tsc:build` all passed. No PR was created in this session; the lead publishes.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 3 -->
+<!-- incident-count: 4 -->
 
 ### Incident 1 — Issue mechanism contradicted by shared query builder
 
@@ -85,8 +85,21 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: In worktree sessions, keep each `git` invocation in its own plain command and write artifacts with the Write tool.
 - **References**: This session's Bash refusals
 
+### Incident 4 — PayKeeper signature scheme absent, so scope narrowed
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The task direction made signature verification conditional on the secret-seed scheme already existing in the code and pointed at the answer hash `OK <md5(id + secret_seed)>`.
+- **Root Cause**: No such scheme exists. A repository-wide search for `md5`, `createHash`, and `secret_seed` finds only the 0xprocessing check (`service/singlepage/index.ts:667`); `PAYKEEPER_WEBHOOK_SECRET` is read nowhere, the `key` payload field is never used, and the webhook controller answers `c.json({ data: result }, 200)` for every provider.
+- **Fix**: Implemented identifier validation only and recorded the signature and answer-format gap as follow-up 1 in the plan.
+- **Preventive Action**: Before implementing a provider signature check, confirm both halves of the scheme exist (the incoming digest and the answer the provider expects); guessing either silently rejects genuine callbacks.
+- **References**: `thoughts/shared/plans/singlepagestartup/ISSUE-230.md` (Follow-up 1), `libs/modules/billing/models/payment-intent/backend/app/api/src/lib/controller/singlepage/provider-webhook/index.ts:152-182`
+
 ## Reusable Learnings
 
 - The shared query builder guards UUID `eq` filters with `isUuid` and falls back to text `LIKE`; a non-UUID value therefore returns an empty array or substring matches rather than a database error.
 - Nested server SDK calls do not forward `x-request-id`; each nested API request receives a new id, and `getHttpErrorType` drops the nested `requestId` captured by `response-pipe`.
 - Provider webhook secret verification is per provider: CloudPayments, TipTopPay, and Telegram Star check a secret before acting; PayKeeper requires `PAYKEEPER_WEBHOOK_SECRET` to exist but never reads it.
+- A guard that protects a uuid filter must use the same predicate as `libs/shared/backend/api/src/lib/query-builder/filters.ts` (`validate` from `uuid`), otherwise a value the two judge differently still reaches the `LIKE` branch.
+- Service errors reach the right HTTP status through their message category alone: a `Validation error.` prefix maps to 400 and `Not Found error.` to 404 in `getHttpErrorType`, so a controller needs no change to report a new failure mode.
+- Prettier reflows Markdown, so a long inline code span inside a bullet can come back unreadable; keep inline code short in plans and re-read the file after formatting.
