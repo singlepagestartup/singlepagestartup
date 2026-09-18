@@ -90,9 +90,5 @@ Use:
 - Do not declare a UI fixed from static inspection alone when browser verification was requested.
 - Do not make broad design recommendations when the request is a focused regression test.
 
-## Final editorial pass
-
-When the work contains prose intended for a person, apply
-`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
-identifiers, required structure, and approval state are correct. This is the
-last content-editing step before returning or storing the text.
+Apply `.agents/contracts/editorial-pass.md` before returning or storing prose
+intended for a person.

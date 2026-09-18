@@ -864,3 +864,18 @@ The report prints the document's own state beneath `stale`. The review resolver 
 The refresh is a splice, not a re-render. Setting the value through the YAML document API and re-emitting the file rewrapped long scalars and expanded flow sequences elsewhere in it; on the m2commerce catalog that produced dozens of unrelated changed lines. The writer now replaces the exact source range of the existing `dependencies` node, keeps whatever trailing whitespace the range covered, and handles the inline `dependencies: {}` form separately. Across the six shared documents of the m2commerce copy every changed line is a fingerprint, and a refresh that computes the same values writes nothing.
 
 A document that records no `dependencies` block is refused with what to do instead, because guessing where the block belongs is the part a reviewer must decide. `confirmation` and `review.stale` are never touched: approval follows from the user and an unresolved material impact follows from the correction, not from a refreshed hash. `document-confirmation.md` now names the command in the no-material-effect step, where the old text said only "update the snapshot".
+
+### Tests and the duplicate lint
+
+`structure.test.ts` lost 26 assertions that quoted sentences of the brand-designer and account-manager roles. A test that pins prose fails on every rewrite and proves nothing about behaviour, which is why phase 3 could only retarget the strings. What replaces them is the contract between files: both media families carry the review rule exactly twice in the Design template, Brief owns the intake table and Design does not repeat it, and each of the five reference families is named in both roles. The component, heading and asset assertions were already structural and stay.
+
+One assertion became executable. `keeps the Brief intake vocabulary identical in template, role and check` reads `VISUAL_CATEGORIES` and `ACCEPTED_INTAKE_STATUSES` out of `checks.ts` and requires the template to name every category and all four statuses, the role to name all four, and the check to accept exactly `ready` and `out-of-scope`. Removing `out-of-scope` from the template fails it, which is what the phase-4 template group changed.
+
+`editorial-pass.test.mjs` no longer requires a `## Final editorial pass` section in a role; it requires the contract path and forbids the heading. A workflow is an entry point and keeps its own section, a role is loaded beside one and keeps a pointer. The 15 roles lost the section and the 26 engineering workflows lost the sentence that restated the contract.
+
+`tools/agents/duplicate-sentences.ts` fails when one instruction sentence has two homes across `.agents/**`, `CLAUDE.md`, `AGENTS.md`, `.claude/commands/**` and `.codex/skills/**`, and runs inside `studio:validate` with its own test. A home is not a file: `CLAUDE.md` and `AGENTS.md` are one entry point written twice for two providers, and the Claude commands and Codex skills are one adapter layer over the canonical workflows. Without that grouping the check reported 69 sentences, almost all of them the mirroring those two layers require. Ten duplicates remain, all in the engineering workflows and their adapters, which no phase of this work rewrote; they are listed in `KNOWN` so anything new fails while the debt stays countable, and the check reports a baseline entry that has stopped being duplicated so the list can shrink.
+
+### Goldens after the test group
+
+- `npm run studio:validate` passes: 173 + 3 + 5 + 5 + 15 tests plus the duplicate check, and the framework report is unchanged at 20 passed, 4 gaps.
+- The snapshot is unchanged: roles and workflows are not indexed workspace entries.

@@ -71,7 +71,5 @@ Return the message hierarchy, evidence gaps, remaining material questions,
 prohibited claims, voice rules, and the sections Brand Designer may now
 finalize.
 
-## Final editorial pass
-
 Apply `.agents/contracts/editorial-pass.md` before returning or storing prose
 intended for a person.

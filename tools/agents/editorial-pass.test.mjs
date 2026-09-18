@@ -34,7 +34,7 @@ function source(path) {
  * BDD Scenario: Canonical work requires the editorial pass
  * Given every canonical role and workflow
  * When its completion instructions are inspected
- * Then it names the shared editorial contract as the final content-editing step
+ * Then each one routes its prose through the shared editorial contract
  */
 test("canonical roles and workflows require the final editorial pass", () => {
   const roles = filesUnder(".agents/roles", ".md").filter(
@@ -42,10 +42,17 @@ test("canonical roles and workflows require the final editorial pass", () => {
   );
   const workflows = filesUnder(".agents/workflows", ".md");
 
-  for (const path of [...roles, ...workflows]) {
+  // A workflow is an entry point and keeps the step as its own section; a role
+  // is loaded beside one and needs the pointer, not a repeated section.
+  for (const path of workflows) {
     const content = source(path);
     assert.match(content, /## Final editorial pass/, path);
     assert.ok(content.includes(contractPath), path);
+  }
+  for (const path of roles) {
+    const content = source(path);
+    assert.ok(content.includes(contractPath), path);
+    assert.doesNotMatch(content, /## Final editorial pass/, path);
   }
 });
 

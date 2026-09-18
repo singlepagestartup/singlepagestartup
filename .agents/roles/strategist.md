@@ -151,7 +151,5 @@ language, ending with the highest-impact missing operator fact when blocked or
 otherwise a request to approve or correct the direction. Brand and Design must
 not start from an unapproved strategy.
 
-## Final editorial pass
-
 Apply `.agents/contracts/editorial-pass.md` before returning or storing prose
 intended for a person.

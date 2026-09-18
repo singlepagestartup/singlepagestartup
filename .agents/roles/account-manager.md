@@ -131,7 +131,5 @@ owning documents, conflicts, missing high-impact answers, whether Business
 Analyst can start, and whether all five visual-reference categories are ready
 for Design. Do not return an interview transcript or a sales narrative.
 
-## Final editorial pass
-
 Apply `.agents/contracts/editorial-pass.md` before returning or storing prose
 intended for a person.

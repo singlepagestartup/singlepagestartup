@@ -248,7 +248,5 @@ creative plus intentionally omitted formats. Website and Marketing Creative
 must not start from an unapproved brand or an unresolved visual Design decision
 they need.
 
-## Final editorial pass
-
 Apply `.agents/contracts/editorial-pass.md` before returning or storing prose
 intended for a person.
