@@ -13,7 +13,7 @@ Inventory of every normative sentence in the pre-development instruction corpus,
 - A script splits each corpus file into sentences after removing frontmatter, tables and code blocks, keeps sentences that contain a normative marker, and attributes each one to its nearest heading. YAML templates contribute their comment lines. `CLAUDE.md` and `AGENTS.md` contribute only their pre-development section.
 - Exact duplicates are detected on normalized text; near duplicates by word-shingle overlap.
 - Dispositions are assigned per section, then overridden per sentence for exact duplicates, the readability restatements, the repeated editorial-pass boilerplate and the migration procedures.
-- The extractor and the ledger generator are stored beside this file under `2026-09-18-pre-development-rule-ledger-tools/`; the tab-separated `2026-09-18-pre-development-rule-ledger.tsv` beside this file is the machine-readable ledger with one row per sentence. Rerunning both against a checkout reproduces the tables.
+- The tables were produced once by a throwaway extractor and generator that are not kept in the repository; the section map below is the complete record of the decisions they encoded, and the tab-separated `2026-09-18-pre-development-rule-ledger.tsv` beside this file is the machine-readable ledger with one row per sentence.
 
 ## Corpus and counts
 
