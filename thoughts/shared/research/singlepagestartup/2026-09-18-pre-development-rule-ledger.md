@@ -879,3 +879,32 @@ One assertion became executable. `keeps the Brief intake vocabulary identical in
 
 - `npm run studio:validate` passes: 173 + 3 + 5 + 5 + 15 tests plus the duplicate check, and the framework report is unchanged at 20 passed, 4 gaps.
 - The snapshot is unchanged: roles and workflows are not indexed workspace entries.
+
+## Phase 6 outcome
+
+Recorded on branch `claude/agents-pipeline-close`, cut from `main` after PR #252 merged as `a2644214ba`. This phase closes the audit point and stops; what it uncovered in the framework workspace is ordinary pre-development work, not instruction compaction.
+
+### The last migration procedure
+
+`tools/studio/products/MIGRATION.md` is deleted. It was the ninth one-time procedure and the only one still in the tree; its page map and catalog example repeated the workspace README and the templates, and its transfer table belonged with the eight retired into Git history on 2026-09-18. The `standalone-business` and `catalog-v1` detectors stay executable, and `.agents/migrations/README.md` carries the command that reads the maps from `818f097d22`. `tools/studio/products/migrate.ts`, the executable half of the same migration, has no caller and no test; it was left in place because retiring it was not part of the decision.
+
+### The framework stamps
+
+The four documents the dry run named were not missing an approval. In `818f097d22` each stamp was updated with a real operator quote dated 2026-09-17; the recorded `content_sha256` simply matches no version of the file in Git history, for any of them. Comparing each recorded hash with the fingerprint of every revision of its file shows no match anywhere, while the same commit's dependency snapshots are correct. The likely mechanism is that the hash was computed and the body then edited again before the commit, and the commit hooks reformat staged Markdown. Confirming the Brief in this phase therefore verified the stamp again after the hooks ran, not only before.
+
+The Brief and the other documents described different products. The Brief recorded a chat answering from the user's business data, reached through a local-deployment button; Strategy, Brand and the AI Chat Product described a service that organizes supplied material into a reviewable project model, assembles a landing-page sandbox and publishes through GitHub, a user repository and a connected server. The owner resolved this in favour of the latter on 2026-09-18, so the Brief now states it, `intake.product_direction` records the decision and what it supersedes, and the obsolete wording was replaced rather than annotated.
+
+Seven service terms lived in Brand, Product and Sales with no Brief source: 24-hour support, payments in Russia through an online cash register, a free token allowance at registration, an hour-long first session, email-and-password authentication only, Beget or Timeweb as example hosting providers, and six-month provider backups. The owner confirmed each as a real decision; `sources.service_terms` records them. The Brief is confirmed against the body in its commit.
+
+### What the `underlying` state exposed
+
+With `stale` no longer hiding a document's own state, the framework workspace resolves as 53 review documents: 9 whose stamp does not cover their body, 3 carrying an explicit unresolved material impact in `review.stale`, 36 never confirmed, and 5 confirmed. The dry run had named four of the nine, because before this work the report could not tell `stale over changed` from `stale over confirmed`. The other five are `product.ai-chat.website` and four of its page documents.
+
+Clearing that chain is pre-development work on the framework's own project, in the order the confirmation contract sets: the Brief first, then the models, Research and Sales each product depends on, then Strategy, Brand, Design and the product pages. It is the first real use of the machine these six phases built, and it is not part of the audit point.
+
+### Goldens after phase 6
+
+- `npm run studio:validate` passes: 173 + 3 + 5 + 5 + 15 tests and the duplicate check.
+- The framework report reads 19 passed, 5 gaps before the Brief confirmation and moves to `00-business complete` after it, with the computed cursor at `10-strategy`. The gap counts follow the workspace, not the instructions.
+- The phase-4 goldens are not updated. They record that compacting the instructions left workspace content untouched; this phase changes workspace content on the owner's decision, which is a different kind of change and is recorded here instead.
+- The repository test that pinned `00-business` as clean now compares the stamp gate with the Brief's own state, because the pinned form failed on an ordinary workspace edit.
