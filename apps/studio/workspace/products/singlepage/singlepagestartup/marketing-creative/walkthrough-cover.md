@@ -3,8 +3,8 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
-    product.singlepagestartup.creative: 4f21621c7a03b9da7dca998c99e2d8e24dd4d201fd79f67eacfe7495daba4506
+    model.framework-service: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
+    product.singlepagestartup.creative: 487a52b6d1feb831b6fa08eb35ac85e4ff6995bc605e8e24c954c676590d61bd
 ---
 
 # Your idea. A working product.

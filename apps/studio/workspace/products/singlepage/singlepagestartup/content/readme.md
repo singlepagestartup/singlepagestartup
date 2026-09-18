@@ -3,8 +3,8 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
-    product.singlepagestartup.product: 08586629928e54c1700f059e4b5c8304b78451448389b8603bc8a8665499bcf2
+    model.framework-service: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
+    product.singlepagestartup.product: 1bd3022ba57bd99882728e561cec47013e32d16dc2a138e8598efd17184e70e6
 ---
 
 # SinglePageStartup Code Framework
