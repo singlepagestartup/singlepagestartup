@@ -19,7 +19,7 @@ import {
 } from "./document";
 import { mergeMarkdown, mergeWorkspaceContent, mergeYaml } from "./merge";
 import { loadWorkspace } from "./loader";
-import { reviewDocument } from "./document-review";
+import { refreshDocumentDependencies, reviewDocument } from "./document-review";
 
 const body =
   "# Brief\n\n## Offer\n\nFree framework.\n\n## Capacity\n\nSix hours.\n";
@@ -190,6 +190,71 @@ describe("document confirmation", () => {
       path: "strategy/startup.md",
       state: "stale",
     });
+
+    const file = path.join(fixture.workspaceRoot, "strategy/startup.md");
+    const before = await readFile(file, "utf8");
+    const refreshed = await refreshDocumentDependencies(
+      "apps/studio/workspace/strategy/startup.md",
+      fixture.repositoryRoot,
+    );
+    const after = await readFile(file, "utf8");
+    expect(refreshed.changed).toBe(true);
+    expect(refreshed.dependencies).toEqual({
+      brief: documentFingerprint(
+        mergeMarkdown(body, "# Brief\n\n## Offer\n\nChanged service.").content,
+      ),
+    });
+    expect(parseDocument(after).body).toBe(parseDocument(before).body);
+    expect(parseDocument(after).metadata.confirmation).toEqual(
+      parseDocument(before).metadata.confirmation,
+    );
+    expect(
+      (await loadWorkspace(fixture)).loadedEntries.find(
+        ({ kind }) => kind === "strategy",
+      )!.confirmation.state,
+    ).toBe("confirmed");
+    expect(
+      await refreshDocumentDependencies(
+        "apps/studio/workspace/strategy/startup.md",
+        fixture.repositoryRoot,
+      ),
+    ).toMatchObject({ changed: false });
+  });
+
+  /**
+   * BDD Scenario: Refreshing a snapshot never resolves an unresolved impact
+   * Given a document whose owner recorded an explicit material impact
+   * When its input snapshot is refreshed
+   * Then review.stale survives and the document stays stale
+   */
+  test("keeps a recorded material impact through a snapshot refresh", async () => {
+    const fixture = await workspaceFixture(
+      "# Brief\n\n## Offer\n\nPaid service.",
+    );
+    const file = path.join(fixture.workspaceRoot, "brief/startup.md");
+    const document = parseDocument(await readFile(file, "utf8"));
+    document.metadata.review = {
+      dependencies: {},
+      stale: {
+        reason: "The operator withdrew the delivery boundary.",
+        sources: ["brief"],
+      },
+    };
+    await writeFile(file, renderDocument(document));
+    await refreshDocumentDependencies(
+      "apps/studio/workspace/brief/startup.md",
+      fixture.repositoryRoot,
+    );
+    const after = parseDocument(await readFile(file, "utf8"));
+    expect(after.metadata.review).toMatchObject({
+      stale: {
+        reason: "The operator withdrew the delivery boundary.",
+        sources: ["brief"],
+      },
+    });
+    expect(
+      documentConfirmation(await readFile(file, "utf8"), "startup").state,
+    ).toBe("stale");
   });
 
   /**

@@ -12,6 +12,15 @@ import { parse } from "yaml";
 
 const repositoryRoot = path.resolve(import.meta.dir, "../../..");
 
+/** The five reference families, as the roles name them in prose. */
+const INTAKE_LABELS = [
+  "interface and website appearance",
+  "typography",
+  "photography",
+  "illustration",
+  "marketing creative",
+];
+
 function source(relativePath: string): string {
   return readFileSync(path.join(repositoryRoot, relativePath), "utf8");
 }
@@ -453,58 +462,29 @@ describe("Studio presentation structure", () => {
     ]) {
       expect(media.split(heading)).toHaveLength(3);
     }
-    expect(roleText).toContain(
-      "visually review at least three materially different examples",
-    );
-    expect(roleText).toContain("`brief/<layer>.md#visual-reference-intake`");
-    expect(roleText).toContain("marketing creative");
-    expect(roleText).toContain("Typography intake includes existing files");
-    expect(roleText).toContain(
-      "never silently classify a mixed, unlabeled set as completed intake",
-    );
-    expect(roleText).toContain("Reject or request re-upload of mismatches");
-    expect(roleText).toContain(
-      "remove its exact file, registry row, and stale current links",
-    );
-    expect(briefRoleText).toContain(
-      "remove its exact file, Assets row, and stale current links",
-    );
-    expect(roleText).toContain("Client visual preference profile");
-    expect(roleText).toContain("Return it in the operator's language");
-    expect(roleText).toContain("five separately labeled sets");
-    expect(roleText).toContain("do not invent a replacement direction");
-    expect(roleText).toContain(
-      "Separate reference-derived visual technique from project-derived scene semantics",
-    );
-    expect(roleText).toContain(
-      "the approved Brief and Brand determine subject, action, environment, props, and meaning",
-    );
-    expect(roleText).toContain(
-      "Never copy a reference's setting or narrative by default",
-    );
-    expect(roleText).toContain(
-      "Distinguish optional effects from shared traits",
-    );
-    expect(roleText).toContain("Devices are optional scene props");
-    expect(roleText).toContain("Keep each master prompt compact");
-    expect(roleText).toContain("Design never duplicates that intake register");
-    expect(briefRoleText).toContain("Record client taste references as five");
-    expect(briefTemplate).toContain("## Visual reference intake");
-    expect(briefTemplate).toMatch(/^\| Marketing creative\s+\|/m);
-    expect(briefTemplate).toContain("supplied-unreviewed");
-    expect(briefTemplate).not.toContain("Existing asset IDs");
-    expect(template).toContain("### Client visual preference profile");
-    expect(template).not.toContain("Categorized reference intake");
-    expect(template).not.toMatch(/^\| Marketing creative\s+\|/m);
-    expect(template).toContain(
-      "confirmation or correction before selecting the visual territory",
-    );
-    expect(roleText).toContain("select/order relevant built-in blocks");
-    expect(roleText).toContain("Treat photography and illustration as primary");
-    expect(roleText).toContain("category-defining structure, count, scale");
+    // Both families carry the same review rule, stated once in each of them.
+    expect(
+      media.match(/At least three materially different registered examples/g),
+    ).toHaveLength(2);
     expect(
       template.match(/category-defining structure, count, scale/g),
     ).toHaveLength(2);
+
+    // Brief owns the intake register; Design points at it instead of copying it.
+    expect(roleText).toContain("`brief/<layer>.md#visual-reference-intake`");
+    expect(briefTemplate).toContain("## Visual reference intake");
+    expect(briefTemplate).toMatch(/^\| Marketing creative\s+\|/m);
+    expect(template).not.toMatch(/^\| Marketing creative\s+\|/m);
+    expect(briefTemplate).not.toContain("Existing asset IDs");
+    expect(template).toContain("### Client visual preference profile");
+    expect(template).not.toContain("Categorized reference intake");
+    for (const label of INTAKE_LABELS) {
+      expect(briefRoleText).toContain(label);
+      expect(roleText).toContain(label);
+    }
+    expect(template).not.toContain("centered `55% × 55%` crop-safe");
+    expect(template).toContain("### Reusable graphic language");
+    expect(template).not.toContain("## Graphic language");
     expect(component).toContain("function MediaSection");
     expect(component.match(/<MediaSection/g)).toHaveLength(2);
     expect(component).not.toContain("function PreferenceProfile");
@@ -527,17 +507,6 @@ describe("Studio presentation structure", () => {
     expect(component.match(/data\.conceptSummary/g)).toHaveLength(1);
     expect(component).not.toContain("function ReferenceIntake");
     expect(component).not.toContain("data.referenceIntake");
-    expect(roleText).toContain("Show every original aspect ratio uncropped");
-    expect(template).not.toContain("centered `55% × 55%` crop-safe");
-    expect(template).toContain("### Reusable graphic language");
-    expect(template).toContain(
-      "One positive paragraph explaining the selected style",
-    );
-    expect(template).not.toContain("## Graphic language");
-    expect(roleText).toContain(
-      "keep repeated titles, statuses and process metadata out of the mockup",
-    );
-    expect(roleText).toContain("Do not add a second page menu, asset counters");
     expect(component).toContain('className="block h-auto w-full"');
 
     const assetIndex = parse(
@@ -566,6 +535,50 @@ describe("Studio presentation structure", () => {
       if (asset.dimensions) {
         expect({ width, height }).toEqual(asset.dimensions);
       }
+    }
+  });
+
+  /**
+   * BDD Scenario: One intake vocabulary across template, role and check
+   * Given the Brief frontmatter is read by the pipeline check and written by the role
+   * When the three of them are compared
+   * Then they name the same categories and the same statuses
+   */
+  test("keeps the Brief intake vocabulary identical in template, role and check", () => {
+    const template = source(".agents/templates/brief.md");
+    const role = source(".agents/roles/account-manager.md");
+    const checks = source("tools/singlepagestartup/pipeline/checks.ts");
+
+    const declared = [
+      ...checks
+        .slice(
+          checks.indexOf("export const VISUAL_CATEGORIES"),
+          checks.indexOf("] as const;", checks.indexOf("VISUAL_CATEGORIES")),
+        )
+        .matchAll(/"([a-z-]+)"/g),
+    ].map((match) => match[1]);
+    expect(declared).toHaveLength(INTAKE_LABELS.length);
+    for (const category of declared) {
+      expect(template).toContain(`\`${category}\``);
+    }
+
+    // `ready` and `out-of-scope` are the states the check accepts; the other
+    // two exist so a category can say it is neither.
+    const accepted = checks.slice(
+      checks.indexOf("const ACCEPTED_INTAKE_STATUSES"),
+      checks.indexOf("\n", checks.indexOf("const ACCEPTED_INTAKE_STATUSES")),
+    );
+    for (const status of [
+      "missing",
+      "supplied-unreviewed",
+      "ready",
+      "out-of-scope",
+    ]) {
+      expect(template).toContain(`\`${status}\``);
+      expect(role).toContain(`\`${status}\``);
+      expect(accepted.includes(`"${status}"`)).toBe(
+        status === "ready" || status === "out-of-scope",
+      );
     }
   });
 

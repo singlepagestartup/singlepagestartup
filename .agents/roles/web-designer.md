@@ -94,7 +94,5 @@ references, remaining material questions, evidence gaps, responsive and
 accessibility constraints, and the explicit engineering inputs still outside
 this workflow.
 
-## Final editorial pass
-
 Apply `.agents/contracts/editorial-pass.md` before returning or storing prose
 intended for a person.

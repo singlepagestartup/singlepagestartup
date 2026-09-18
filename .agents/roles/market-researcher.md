@@ -115,7 +115,5 @@ Return the findings that change a decision, source and provenance additions,
 resolved and unanswered questions, confidence and limitations, rejected
 assumptions, and the questions Strategy must keep open.
 
-## Final editorial pass
-
 Apply `.agents/contracts/editorial-pass.md` before returning or storing prose
 intended for a person.

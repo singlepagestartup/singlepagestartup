@@ -47,8 +47,7 @@ segments: [] # Valid unknown intake. Never invent client facts to fill the templ
 #       exit_condition: Intended transition.
 #       failure: Commercial alternative, abandonment, help or optional continuation.
 #       metric: Relevant business measure without invented targets.
-# At 40-products, develop each segment from approved direction. Keep each rendered
-# segment preferably around 1,400 words, with no aggregate YAML or segment cap.
+# At 40-products, develop each segment from approved direction.
 # Preserve all material context, and support/retention without forcing everyone
 # through optional actions. No software bugs, tests or installation gates belong here.
 # Sources classify facts, proposals and unknowns; confirmation stays in metadata.

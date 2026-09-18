@@ -35,6 +35,12 @@ export interface IDownstreamFixtureOptions {
   missingGeneratedFile?: boolean;
   /** Add a retired evidence-register code to a document. */
   evidenceCode?: boolean;
+  /** Edit these documents after stamping them, so the stamp covers a body that no longer exists. */
+  editedAfterConfirmation?: SharedDocument[];
+  /** Record an input snapshot these documents can no longer match, which makes them stale. */
+  staleInputs?: SharedDocument[];
+  /** Register one generated directory instead of its files. */
+  generatedDirectory?: boolean;
 }
 
 export const VISUAL_CATEGORIES = [
@@ -255,13 +261,20 @@ export async function createDownstreamFixture(
           ),
         }
       : { confirmed: false };
+    // The stamp is computed over the approved body; the edit lands after it.
+    const body = options.editedAfterConfirmation?.includes(kind)
+      ? `${overlay[kind]}\nA decision recorded after the operator approved this document.\n`
+      : overlay[kind];
+    const snapshot = options.staleInputs?.includes(kind)
+      ? { ...dependencies, brief: "0".repeat(64) }
+      : dependencies;
     write(
       root,
       `${WORKSPACE}/${kind}/startup.md`,
-      withMetadata(overlay[kind], {
+      withMetadata(body, {
         ...metadata[kind],
         confirmation,
-        ...(dependencies ? { review: { dependencies } } : {}),
+        ...(snapshot ? { review: { dependencies: snapshot } } : {}),
       }),
     );
   };
@@ -285,6 +298,14 @@ export async function createDownstreamFixture(
     prompt: "Fixture prompt.",
     source_or_tool: "fixture",
   }));
+  const directory = `assets/startup/generated/${PROPOSAL_ID}/review-set`;
+  if (options.generatedDirectory)
+    assets.push({
+      ...assets[0],
+      id: "startup-generated-review-set",
+      path: directory,
+      purpose: "Fixture review set registered as one directory.",
+    });
   write(
     root,
     `${WORKSPACE}/assets/startup.yaml`,
@@ -292,8 +313,12 @@ export async function createDownstreamFixture(
   );
   for (const [index, asset] of assets.entries()) {
     if (options.missingGeneratedFile && index === 0) continue;
+    if (asset.path === directory) continue;
     write(root, `${WORKSPACE}/${asset.path}`, "");
   }
+  if (options.generatedDirectory)
+    for (const name of ["one.png", "nested/two.png"])
+      write(root, `${WORKSPACE}/${directory}/${name}`, "");
 
   const productRoot = `${WORKSPACE}/products/startup`;
   write(

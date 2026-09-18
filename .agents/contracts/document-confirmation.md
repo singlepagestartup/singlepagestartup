@@ -35,7 +35,8 @@ bun tools/studio/workspace/document-review.ts --file apps/studio/workspace/<arti
 
 The helper accepts product-local Markdown and Sales YAML and returns the
 `content_sha256`, the current `review.dependencies` and the transitive
-dependents with their states. It is read-only. Copy its hash only after
+dependents with their states. `--repository-root <path>` inspects another
+checkout instead of the working directory. It is read-only. Copy its hash only after
 reviewing the exact current body and receiving approval. On rejection set
 `confirmed: false`; on a substantive correction leave the old fingerprint
 invalid until review or set false; never regenerate a valid stamp silently.
@@ -59,6 +60,13 @@ Use exactly four resolved states:
 permission to consume a stale result. Missing dependency snapshots never make a
 confirmed document green; a new draft without a snapshot stays unconfirmed
 until its snapshot is initialized after checking the current inputs.
+
+Precedence hides the document's own state, so the resolver keeps it as
+`underlying` and readers name both. A document reported as `stale` over
+`changed` needs its own body confirmed as well as its inputs reconciled;
+reconciling the inputs alone leaves the approval covering a body that no longer
+exists. The pipeline check prints this pair and fails `00-business` on a Brief
+whose stamp no longer covers its body.
 
 Each document records its last reviewed direct inputs in its own metadata:
 
@@ -105,7 +113,18 @@ loader or the helper. After editing an owning upstream document:
 2. Review the actual effect in dependency order. If a change has no material
    effect, update only that document's dependency snapshot, preserve its valid
    confirmation and explain a consequential no-effect judgment in the task
-   response or the change text, not in a project log.
+   response or the change text, not in a project log. Write the snapshot with
+   the helper rather than by hand:
+
+   ```bash
+   bun tools/studio/workspace/document-review.ts --file <document> --refresh
+   ```
+
+   It replaces the recorded fingerprints of that one document, leaves every
+   other byte of the file alone, and touches neither `confirmation` nor
+   `review.stale`. Run it only after the review, because a refreshed snapshot
+   is a statement that the inputs were examined.
+
 3. For a material effect, set `review.stale` with the source IDs and a concise
    reason, correct the earliest owning document, then reconcile the affected
    owners. Do not rewrite a dependent's body automatically or update its stamp

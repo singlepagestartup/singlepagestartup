@@ -14,7 +14,10 @@ import {
   validateProductCatalogFiles,
   validateProductSectionFiles,
 } from "../../studio/products/validate";
-import { parseDocument } from "../../studio/workspace/document";
+import {
+  parseDocument,
+  type IDocumentConfirmation,
+} from "../../studio/workspace/document";
 import {
   loadWorkspace,
   type ILoadedWorkspaceEntry,
@@ -40,7 +43,8 @@ export type GapClassification =
 export interface ICheckResult {
   id: string;
   check: string;
-  artifact: PipelineArtifact;
+  /** `workspace` marks a result that belongs to no single artifact. */
+  artifact: PipelineArtifact | "workspace";
   status: CheckStatus;
   classification?: GapClassification;
   detail: string;
@@ -50,6 +54,7 @@ export interface ICheckResult {
 export interface ILegacyShapeResult {
   id: string;
   procedure: string;
+  owning_stage: string;
   detail: string;
   items: string[];
 }
@@ -347,17 +352,64 @@ function confirmedInLayer(
   const review = document.review;
   if (!review)
     return result(check, "gap", "no review record exists for this document");
-  const { state, layer, reason, sources } = review.confirmation;
+  const { state, layer, reason, sources, underlying } = review.confirmation;
   if (state === "confirmed" && layer === context.layer)
     return result(check, "pass", `confirmed in the ${layer} layer`);
   const detail =
     state === "confirmed"
       ? `confirmed only in the ${layer} layer; the ${context.layer} project needs its own confirmation`
-      : `state is ${state}${reason ? `: ${reason}` : ""}`;
+      : `state is ${describeState(state, underlying)}${reason ? `: ${reason}` : ""}`;
   return result(check, "gap", detail, {
     classification: "approval-gap",
     items: sources ?? [],
   });
+}
+
+/**
+ * Stale hides the document's own state, so a body that left its stamp behind
+ * reads as an input problem. Name both.
+ */
+function describeState(
+  state: IDocumentConfirmation["state"],
+  underlying: IDocumentConfirmation["underlying"],
+): string {
+  return underlying && underlying !== "unconfirmed"
+    ? `${state} over ${underlying}`
+    : state;
+}
+
+/**
+ * A confirmation stamp covers the body it was recorded against. Once that body
+ * changes the stamp stops meaning anything, whether or not upstream inputs
+ * also moved; a document that carries no stamp has nothing to invalidate.
+ */
+function stampCurrent(
+  context: IPipelineContext,
+  check: IPipelineCheck,
+): ICheckResult {
+  const review = context.documents[check.artifact].review;
+  if (!review)
+    return result(
+      check,
+      "skipped",
+      "no review record exists for this document",
+    );
+  const { state, underlying } = review.confirmation;
+  const own = state === "stale" ? underlying : state;
+  if (own !== "changed")
+    return result(
+      check,
+      "pass",
+      own === "unconfirmed" || own === undefined
+        ? "no confirmation stamp to invalidate"
+        : "the recorded confirmation covers the current body",
+    );
+  return result(
+    check,
+    "gap",
+    "the recorded confirmation no longer covers the current body; confirm the body as it stands or restore what was approved",
+    { classification: "approval-gap" },
+  );
 }
 
 function scopeProducts(context: IPipelineContext): string[] | undefined {
@@ -381,6 +433,8 @@ async function generatedAssetsRegistered(
   const proposalId = context.documents.design.own.proposal_id;
   const items: string[] = [];
   const registeredPaths = new Set<string>();
+  // A set produced in one pass covers the files below it in the next.
+  const registeredDirectories: string[] = [];
   for (const entry of entries) {
     if (entry.source_type !== "generated") continue;
     const id = typeof entry.id === "string" ? entry.id : "<no id>";
@@ -392,12 +446,21 @@ async function generatedAssetsRegistered(
       items.push(
         `${id}: proposal_id ${String(entry.proposal_id)} is not the current ${proposalId}`,
       );
-    if (!file.startsWith(`assets/${context.layer}/generated/`))
+    if (!file.startsWith(`assets/${context.layer}/generated/`)) {
       items.push(
         `${id}: path must be below assets/${context.layer}/generated/`,
       );
-    else if (!existsSync(path.join(context.workspaceRoot, file)))
+      continue;
+    }
+    const absolute = path.join(context.workspaceRoot, file);
+    if (!existsSync(absolute)) {
       items.push(`${id}: file ${file} does not exist`);
+      continue;
+    }
+    if (!(await stat(absolute)).isDirectory()) continue;
+    registeredDirectories.push(`${file.replace(/\/+$/, "")}/`);
+    if (!(await readdir(absolute)).length)
+      items.push(`${id}: directory ${file} registers no files`);
   }
   const generatedRoot = path.join(
     context.workspaceRoot,
@@ -416,7 +479,11 @@ async function generatedAssetsRegistered(
           .relative(context.workspaceRoot, file)
           .split(path.sep)
           .join("/");
-        if (!registeredPaths.has(relative)) orphans.push(relative);
+        if (
+          !registeredPaths.has(relative) &&
+          !registeredDirectories.some((prefix) => relative.startsWith(prefix))
+        )
+          orphans.push(relative);
       }
     }
   }
@@ -567,6 +634,8 @@ async function runCheck(
     }
     case "confirmed":
       return confirmedInLayer(context, check);
+    case "stamp-current":
+      return stampCurrent(context, check);
     case "catalog-matches-brief": {
       const products = scopeProducts(context);
       if (!products)
@@ -1016,6 +1085,7 @@ export async function detectLegacyShapes(
       found.push({
         id: shape.id,
         procedure: shape.procedure,
+        owning_stage: shape.owning_stage,
         detail: `legacy shape detected; follow ${shape.procedure}`,
         items,
       });

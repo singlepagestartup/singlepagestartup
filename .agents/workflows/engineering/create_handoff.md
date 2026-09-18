@@ -114,6 +114,4 @@ Handoff created and synced! You can resume from this handoff in a new session wi
 ## Final editorial pass
 
 When the work contains prose intended for a person, apply
-`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
-identifiers, required structure, and approval state are correct. This is the
-last content-editing step before returning or storing the text.
+`.agents/contracts/editorial-pass.md` as the last content-editing step.

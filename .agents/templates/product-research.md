@@ -6,9 +6,9 @@ confirmation:
 
 # Product research
 
-<!-- One named product, preferably about 1,400 words per page, without a hard cap. Prepared before its strategic
-selection and maintained with the product. No business-wide Research document.
-Sources and findings remain here; they do not become client facts in Product or a model. -->
+<!-- One named product, prepared before its strategic selection and maintained
+with the product. No business-wide Research document. Sources and findings
+remain here; they do not become client facts in Product or a model. -->
 
 ## Decision and scope
 

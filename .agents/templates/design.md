@@ -16,10 +16,10 @@ keep their styles inside the canvas, and never repeat the document title,
 confirmation badge, or process metadata in the mockup.
 Changing the layout does not approve content or resolve omitted requirements. -->
 
-<!-- Reusable visual translation of approved Brand. Prefer about 1,400 words per page; preserve material information if longer. Keep
-pages and forms in product-local website.md; keep channel formats in
-product-local marketing-creative.md. Photography and Illustration use the same
-five-part schema because Studio renders both through one media template. -->
+<!-- Reusable visual translation of approved Brand. Keep pages and forms in
+product-local website.md; keep channel formats in product-local
+marketing-creative.md. Photography and Illustration use the same five-part
+schema because Studio renders both through one media template. -->
 
 <!-- Keep whole-document confirmation, attributable scoped approvals,
 and the current proposal_id in frontmatter. Studio renders confirmation;
@@ -104,14 +104,6 @@ shape rules above behave on a product surface. Specific pages, routes, and
 forms stay in product-local website.md. Omit this section when the brief
 supplies no interface references and the project ships no product surface.
 
-Render these rules as working specimens: declare layer-local HTML sections in
-design/<layer>/layout.yaml. Keep each file a fragment of plain HTML and Tailwind
-over the --workspace-brand-* tokens, express state with CSS (hover,
-focus-visible, has-[:checked]) because injected scripts do not run, and print
-each class recipe beside its specimen so a product surface is built from the
-exact string. Point at them from the boundary below, and change a rule and its
-specimen in the same revision.
-
 Required minimum whenever the project ships a product surface —
 controls: dominant action with its secondary, plain, disabled and separated
 destructive variants; selection as a chip and as a grouped choice, each with a
@@ -121,16 +113,11 @@ Compositions: editorial entry; a content card carrying the project's own
 confirmed imagery at its original aspect ratio; an icon card on the declared
 icon grid; a repeated item grid. Conditional: offer comparison when the project
 sells, contextual sheet for a mobile or overlay surface, media-and-text row when
-illustration is active. Omit one only by recording interface_review.omitted_specimens.<id> with the
-reason. Every specimen carries data-specimen="<id>" on its container, and
-studio:validate fails a documented interface language that does not render
-them: actions, selection, status, fields, navigation, editorial-entry,
+illustration is active. Point at the rendered specimens from the boundary
+below. studio:validate fails a documented interface language that does not
+render them: actions, selection, status, fields, navigation, editorial-entry,
 content-card, icon-card, item-grid, plus dark-pair when a Dark column exists.
-
-Every specimen uses the confirmed semantic roles and type steps. A missing step
-is added to the scale above as a proposal and confirmed, never improvised in the
-markup. Never frame supplied artwork with a second background: a registered
-master keeps its own off-white and no container colour matches all of them. -->
+The Brand Designer role owns how a specimen is written, declared and omitted. -->
 
 ### Purpose and evidence boundary
 

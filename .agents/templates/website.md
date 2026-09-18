@@ -6,8 +6,8 @@ confirmation:
 # Website
 
 <!-- A prospective website specification within the product's business plan.
-Prefer about 1,400 words per page; preserve material information if longer. Describe the visitor experience engineering should build;
-production implementation and runtime tests do not gate this document.
+Describe the visitor experience engineering should build; production
+implementation and runtime tests do not gate this document.
 
 The rendered body contains only project-specific visitor experience, routes,
 copy and material interaction behavior. Keep Text/Layout synchronization,

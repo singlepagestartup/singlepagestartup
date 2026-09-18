@@ -137,6 +137,7 @@ export function resolveDocumentReviews(
         ...confirmation,
         confirmed: false,
         state: "stale",
+        underlying: confirmation.state,
         reason:
           "Upstream inputs changed or have not been reviewed. Check their impact before using this document.",
         sources: [...affected].sort(),

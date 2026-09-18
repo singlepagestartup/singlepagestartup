@@ -6,8 +6,8 @@ confirmation:
 # Strategy
 
 <!-- A compact, project-wide marketing strategy built from Brief and external
-research, preferably about 1,400 words per page, without a hard cap. Explain goals, audience choices, positioning,
-product roles, coordinated acquisition, conversion, retention and growth.
+research. Explain goals, audience choices, positioning, product roles,
+coordinated acquisition, conversion, retention and growth.
 Describe one concrete final picture of the whole project after it satisfies the
 approved Brief as fully as known constraints allow. Explain how the resulting
 marketing system and its durable decision rules work. Keep intended outcomes

@@ -111,7 +111,5 @@ processes, unknowns with the decisions they affect, and dependent documents
 that need impact review. Never refresh approval fingerprints during a
 structural migration.
 
-## Final editorial pass
-
 Apply `.agents/contracts/editorial-pass.md` before returning or storing prose
 intended for a person.

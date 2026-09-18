@@ -816,4 +816,66 @@ Words loaded by a typical invocation (workflow, six contracts, one entry file, t
 - The pipeline check on the framework layer prints the same report as phase 2: 19 passed, 4 gaps (3 approval, 1 decision), no structural gaps, no legacy shapes, computed cursor `10-strategy`.
 - The resolved workspace snapshot differs from `2026-09-18-pre-development-goldens.txt` in exactly 8 of 182 lines: the hashes of `template.product` and `template.product-research` in both layers and both projections, caused by the reference fixes. Every document state, dependency count and business hash is unchanged. The post-phase-3 snapshot is `2026-09-18-pre-development-goldens-phase3.txt` and is the baseline for phases 4 and 5.
 - The check against a read-only copy of the m2commerce workspace reports 15 passed, 8 gaps and no legacy shapes, unchanged by the rewrite.
-- Reproducing a snapshot line: load the workspace with `loadWorkspace` for each layer and projection and `loadDocumentReviews` for each layer; the hash is the first 16 hexadecimal characters of SHA-256 over the raw resolved content (`loadedEntries[].content`, or the review document's `source`), not over the parsed body, which is why an empty startup file hashes to `e3b0c44298fc1c14`; `deps` is the number of entries in the review's `dependencies`. The generator itself is not kept in the repository.
+- Reproducing a snapshot line: load the workspace with `loadWorkspace` for each layer and projection and `loadDocumentReviews` for each layer; the hash is the first 16 hexadecimal characters of SHA-256 over the raw resolved content (`loadedEntries[].content`, or the review document's `source`), not over the parsed body, which is why an empty startup file hashes to `e3b0c44298fc1c14`; `deps` is the number of entries in the review's `dependencies`. The generator itself is not kept in the repository. Sort the whole file as text: the layer/projection prefix orders the groups.
+
+## Phase 4 outcome
+
+Recorded on branch `claude/agents-pipeline-tests`, cut from `main` after PR #250 merged as `a6bdcaade3`.
+
+### Templates
+
+The nine readability restatements are gone: `brand.md`, `creative.md`, `design.md`, `product.md`, `product-model.md`, `product-research.md`, `sales-process.yaml`, `strategy.md` and `website.md` no longer repeat the workflow's per-page target, and `brief.md` keeps its own 500-800 word figure without the second sentence. The workflow's `Primary review documents` bullet is the only home left.
+
+Two template comments that restated a role were cut to what the template alone owns. `brief.md` `Visual reference intake` keeps the one-table rule, the "links, not folder paths" nuance and the machine contract, and now names the five frontmatter keys (`interface-and-website-appearance`, `typography`, `photography`, `illustration`, `marketing-creative`) that until now existed only in `checks.ts`. Everything about inspecting, describing and confirming a category moved out; the Account Manager role already owned it. `design.md` `Interface and product surfaces` keeps the required specimen minimum and the IDs `studio:validate` enforces; how a specimen is written, declared and omitted is the Brand Designer role's, which gained the two facts the template held alone (state must be CSS because injected scripts do not run, and a rule and its specimen change in the same revision).
+
+The intake status vocabulary is aligned on four values. `visual-intake-ready` keeps accepting `ready` and `out-of-scope` as the ready states; the template and the Account Manager role, which named only `missing`, `supplied-unreviewed` and `ready`, now also name `out-of-scope` and say what earns it: an operator statement that the project ships nothing in that category. Absent intake stays `missing`.
+
+`github-reconciliation.yaml` gained a commented example entry whose `summary` is a block scalar, with the reason: a plain scalar stops the preflight parsing the ledger as soon as the summary contains a colon followed by a space.
+
+The TSV keeps its phase-3 disposition and gains no `phase4` column. Its 222 template rows are marked `template:unchanged-until-phase-4`, but a row's recorded sentence is often assembled from several comment lines or table cells, so no substring test tells a rewritten comment block from an untouched one; a mechanical column would have relabelled 80 sentences that this group never touched. The section above is the per-file record instead.
+
+### Goldens after the template group
+
+- `npm run studio:validate` passes: 171 + 3 + 5 + 10 tests, and the pipeline report is unchanged at 19 passed, 4 gaps (0 structural, 3 approval, 1 decision), 0 legacy shapes.
+- The snapshot differs from `2026-09-18-pre-development-goldens-phase3.txt` in exactly 44 of 182 lines: the hashes of the eleven edited templates in both layers and both projections. No document state, resolution or dependency count changed, and `template.github-reconciliation` is not an indexed entry, so its edit does not appear. The new baseline is `2026-09-18-pre-development-goldens-phase4.txt`.
+
+### Checks
+
+Four gaps the dry run found in the executable machine are closed.
+
+A detected legacy shape now becomes a structural gap of the stage that owns the affected documents, named per shape as `owning_stage` in `.agents/pipeline/pre-development.yaml`. Until then the computed stage ignored `legacy_shapes` entirely, so a workspace with a v1 catalog or retired evidence codes could report every stage complete while the documents each stage reads were the wrong shape. The synthetic result carries `check: legacy-shape` and `artifact: workspace`, the one result that belongs to no single artifact; the `Legacy shapes` section still prints the migration procedure.
+
+A Brief whose confirmation stamp no longer covers its body is an approval gap at `00-business`, through the new `stamp-current` check. `00-business` only verified that confirmation metadata existed and that the intake scope was confirmed, so an edit after approval passed silently. A document that carries no stamp has nothing to invalidate and passes.
+
+`generated-assets-registered` accepts a registry entry whose `path` is a directory as covering the files below it, which is the owner's decision of 2026-09-18. The check requires the directory to exist and to be non-empty; `asset-index.yaml` records when one entry may cover a set and where per-file provenance goes. On the m2commerce workspace this removes 105 false orphans and leaves 10 real ones, all files under `static-covers/`, `website/` and `media/` that no entry covers.
+
+The report prints the document's own state beneath `stale`. The review resolver replaced the whole confirmation when upstream inputs moved, so a body that had left its approval behind read as an input problem; it now keeps that state as `underlying` and the check detail reads `state is stale over changed`. On the framework workspace this separates Strategy and Brand, whose own stamps never matched their bodies, from Design, whose stamp is valid and whose input merely moved.
+
+### Goldens after the check group
+
+- `npm run studio:validate` passes: 171 + 3 + 5 + 15 tests. The framework report reads 20 passed, 4 gaps (0 structural, 3 approval, 1 decision), 0 legacy shapes: one check more than phase 3 because `brief.stamp-current` passes there, and the same four gaps.
+- The snapshot is unchanged by this group: `underlying` is a resolved field, not document content.
+- The m2commerce copy moves from 15 passed, 8 gaps to 15 passed, 9 gaps (3 structural, 4 approval, 2 decision). The new gap is `brief.stamp-current`: that Brief was edited after it was confirmed, which is exactly what the dry run predicted would pass silently.
+
+### Tools
+
+`document-review.ts` gained `--repository-root <path>`, so an impact review can read a downstream checkout instead of silently reading the working directory, and `--refresh`, which writes the inspected fingerprints into one document's `review.dependencies`.
+
+The refresh is a splice, not a re-render. Setting the value through the YAML document API and re-emitting the file rewrapped long scalars and expanded flow sequences elsewhere in it; on the m2commerce catalog that produced dozens of unrelated changed lines. The writer now replaces the exact source range of the existing `dependencies` node, keeps whatever trailing whitespace the range covered, and handles the inline `dependencies: {}` form separately. Across the six shared documents of the m2commerce copy every changed line is a fingerprint, and a refresh that computes the same values writes nothing.
+
+A document that records no `dependencies` block is refused with what to do instead, because guessing where the block belongs is the part a reviewer must decide. `confirmation` and `review.stale` are never touched: approval follows from the user and an unresolved material impact follows from the correction, not from a refreshed hash. `document-confirmation.md` now names the command in the no-material-effect step, where the old text said only "update the snapshot".
+
+### Tests and the duplicate lint
+
+`structure.test.ts` lost 26 assertions that quoted sentences of the brand-designer and account-manager roles. A test that pins prose fails on every rewrite and proves nothing about behaviour, which is why phase 3 could only retarget the strings. What replaces them is the contract between files: both media families carry the review rule exactly twice in the Design template, Brief owns the intake table and Design does not repeat it, and each of the five reference families is named in both roles. The component, heading and asset assertions were already structural and stay.
+
+One assertion became executable. `keeps the Brief intake vocabulary identical in template, role and check` reads `VISUAL_CATEGORIES` and `ACCEPTED_INTAKE_STATUSES` out of `checks.ts` and requires the template to name every category and all four statuses, the role to name all four, and the check to accept exactly `ready` and `out-of-scope`. Removing `out-of-scope` from the template fails it, which is what the phase-4 template group changed.
+
+`editorial-pass.test.mjs` no longer requires a `## Final editorial pass` section in a role; it requires the contract path and forbids the heading. A workflow is an entry point and keeps its own section, a role is loaded beside one and keeps a pointer. The 15 roles lost the section and the 26 engineering workflows lost the sentence that restated the contract.
+
+`tools/agents/duplicate-sentences.ts` fails when one instruction sentence has two homes across `.agents/**`, `CLAUDE.md`, `AGENTS.md`, `.claude/commands/**` and `.codex/skills/**`, and runs inside `studio:validate` with its own test. A home is not a file: `CLAUDE.md` and `AGENTS.md` are one entry point written twice for two providers, and the Claude commands and Codex skills are one adapter layer over the canonical workflows. Without that grouping the check reported 69 sentences, almost all of them the mirroring those two layers require. Ten duplicates remain, all in the engineering workflows and their adapters, which no phase of this work rewrote; they are listed in `KNOWN` so anything new fails while the debt stays countable, and the check reports a baseline entry that has stopped being duplicated so the list can shrink.
+
+### Goldens after the test group
+
+- `npm run studio:validate` passes: 173 + 3 + 5 + 5 + 15 tests plus the duplicate check, and the framework report is unchanged at 20 passed, 4 gaps.
+- The snapshot is unchanged: roles and workflows are not indexed workspace entries.

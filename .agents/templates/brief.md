@@ -5,8 +5,8 @@ confirmation:
 
 # Brief
 
-<!-- Self-contained current client intake. Target 500-800 body words when sufficient; about
-1,400 is a preferred review size, never a hard cap. Preserve material context. This is a house format informed by concise briefing and lean planning,
+<!-- Self-contained current client intake, 500-800 body words when that is
+enough. This is a house format informed by concise briefing and lean planning,
 not a prescribed external standard. Use plain statements, useful numbers and
 specific requirements. Sources, partial scope confirmation and intake status
 belong in frontmatter; previous answers belong in Git. Do not render these
@@ -47,29 +47,19 @@ operator's goals or substitute an agent-designed experiment for the purpose. -->
 
 ## Visual reference intake
 
-<!-- Existing identity and mandatory/adaptable elements; concise descriptions
-of the client's visual preferences for each category below. The client supplies
-examples; the agent inspects them, compares recurring traits, writes plain-language
-descriptions and gets confirmation or correction. Do not require professional
-design vocabulary. New photography input: more than three distinct photographs,
-minimum four and usually five. Keep the five category descriptions separate.
-Screenshots, UI fragments, illustrations/infographics and handout layouts count
-within their respective categories. Preserve existing confirmed descriptions.
-Use one table containing the description and exact uploaded file links in the
-same row. Start with explicit project name, logo, slogan and any supplied color
-or other identity elements, followed by the five reference categories. Do not
-create a separate uploaded-files section. Record each identity element's current
-value or absence: use None when absence is client-confirmed, and Not supplied
-when it is missing from intake; never invent a slogan. A folder path, prose
-summary or metadata-only ID list does not replace links to the exact files.
-Use the Studio asset route where applicable and retain stable asset IDs,
-source directories and category status (missing, supplied-unreviewed, ready)
-under visual_references in frontmatter. The workflow retains the Design gate; do not explain it here.
-Retain source files/rights in Assets, without making its downstream decisions
-an input to Brief. Apply supplied project assets, selected colors and permitted
-fonts according to their recorded use. Keep any specific third-party asset
-restriction with that asset; do not append a blanket prohibition on copying
-colors, fonts or reference elements to the Brief. -->
+<!-- One table only: each row pairs the identity element or reference category
+with its description and the exact uploaded file links. Screenshots, UI
+fragments, illustrations, infographics and handout layouts belong to the
+category they illustrate. A folder path, prose summary or metadata-only ID list
+does not replace links to the exact files; use the Studio asset route where it
+applies. Do not add a separate uploaded-files section.
+
+Mirror the five reference categories in frontmatter under `visual_references`,
+keyed `interface-and-website-appearance`, `typography`, `photography`,
+`illustration` and `marketing-creative`. Each key carries its stable asset IDs,
+source directories and a `status` of `missing`, `supplied-unreviewed`, `ready`
+or `out-of-scope`. The Account Manager role decides when a category reaches one
+of those states; do not restate the Design gate here. -->
 
 | Element                          | Description and references |
 | -------------------------------- | -------------------------- |

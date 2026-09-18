@@ -41,6 +41,9 @@ stages:
       - id: brief.scope-confirmed
         check: brief-scope
         artifact: brief
+      - id: brief.stamp-current
+        check: stamp-current
+        artifact: brief
       - id: catalog.matches-brief
         check: catalog-matches-brief
         artifact: products
@@ -154,22 +157,32 @@ stages:
       - Every catalog entry traces to a confirmed Brief product; no product was inferred from a showcase, a repository folder or an idea.
       - Website, Marketing Creative and Presentation exist for every product where they are in scope, and an explicit not-applicable decision replaces any placeholder.
       - Product documents describe the intended business plan and requirements; installation checks, runtime tests and release audits are not completion gates.
+# A detected shape is a structural gap of the stage named in owning_stage, so
+# an unmigrated workspace cannot report that stage complete. The stage is the
+# one that owns the documents the shape affects, which is the earliest stage
+# reading them, not the stage where the shape was first written.
 legacy_shapes:
   - id: decision-profile
     detect: decision-profile
     procedure: migrations/README.md#retired-procedures
+    owning_stage: 40-products
   - id: standalone-business
     detect: standalone-business
     procedure: migrations/README.md#retired-procedures
+    owning_stage: 00-business
   - id: catalog-v1
     detect: catalog-v1
     procedure: migrations/README.md#retired-procedures
+    owning_stage: 00-business
   - id: sales-v1
     detect: sales-v1
     procedure: migrations/README.md#retired-procedures
+    owning_stage: 00-business
   - id: evidence-register-codes
     detect: evidence-register-codes
     procedure: migrations/README.md#retired-procedures
+    owning_stage: 00-business
   - id: legacy-cursor-anchors
     detect: legacy-cursor-anchors
     procedure: migrations/README.md#retired-procedures
+    owning_stage: 00-business
