@@ -7,6 +7,7 @@ import {
   KV_HOST,
   KV_COMMAND_TIMEOUT_MS,
   KV_CONNECT_TIMEOUT_MS,
+  KV_ENABLE_OFFLINE_QUEUE,
   KV_MAX_RETRIES_PER_REQUEST,
   hash,
 } from "@sps/shared-utils";
@@ -24,8 +25,11 @@ import { logger } from "@sps/backend-utils";
  * - `connectTimeout` / `commandTimeout` — hard deadlines, from the env.
  * - `maxRetriesPerRequest` — small, so a command is not resent across many
  *   reconnect cycles before it is failed.
- * - `enableOfflineQueue: false` — a command issued while the connection is
- *   down rejects immediately instead of being queued for an unknown time.
+ * - `enableOfflineQueue` — off by default, so a command issued while the
+ *   connection is down rejects at once instead of waiting for the reconnect.
+ *   This also covers the window between `new Redis()` and `ready`. A project
+ *   that prefers absorbing short reconnects sets `KV_ENABLE_OFFLINE_QUEUE`;
+ *   `commandTimeout` bounds a queued command too, so the wait stays bounded.
  * - `reconnectOnError` — still always reconnects, but no longer logs per
  *   error; connection-state logging is attached once per client below.
  */
@@ -38,7 +42,7 @@ export function buildRedisOptions(): RedisOptions {
     connectTimeout: KV_CONNECT_TIMEOUT_MS,
     commandTimeout: KV_COMMAND_TIMEOUT_MS,
     maxRetriesPerRequest: KV_MAX_RETRIES_PER_REQUEST,
-    enableOfflineQueue: false,
+    enableOfflineQueue: KV_ENABLE_OFFLINE_QUEUE,
     retryStrategy: (times) => Math.min(times * 50, 2000),
     reconnectOnError: () => true,
   };

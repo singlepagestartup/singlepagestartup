@@ -55,6 +55,7 @@ jest.mock("@sps/backend-utils", () => {
 import {
   KV_COMMAND_TIMEOUT_MS,
   KV_CONNECT_TIMEOUT_MS,
+  KV_ENABLE_OFFLINE_QUEUE,
   KV_MAX_RETRIES_PER_REQUEST,
 } from "@sps/shared-utils";
 import { logger } from "@sps/backend-utils";
@@ -108,7 +109,8 @@ describe("buildRedisOptions", () => {
   it("disables the offline queue while still reconnecting", () => {
     const options = buildRedisOptions();
 
-    expect(options.enableOfflineQueue).toBe(false);
+    expect(options.enableOfflineQueue).toBe(KV_ENABLE_OFFLINE_QUEUE);
+    expect(KV_ENABLE_OFFLINE_QUEUE).toBe(false);
     expect(
       (options.reconnectOnError as (error: Error) => boolean)(
         new Error("READONLY"),

@@ -25,9 +25,9 @@ No push and no PR: the lead reviews the branch locally.
 - [x] Completed: 2026-09-18T23:33:00Z
 - [x] Automated verification: `npx nx run @sps/middlewares:jest:test` (9 suites, 51 tests) and `npx nx run @sps/providers-kv:jest:test` (1 suite, 6 tests) PASSED
 
-**Notes**: Added `KV_COMMAND_TIMEOUT_MS`, `KV_CONNECT_TIMEOUT_MS` and
-`KV_MAX_RETRIES_PER_REQUEST`; moved the ioredis options into
-`buildRedisOptions()` with `enableOfflineQueue: false`; replaced the
+**Notes**: Added `KV_COMMAND_TIMEOUT_MS`, `KV_CONNECT_TIMEOUT_MS`,
+`KV_MAX_RETRIES_PER_REQUEST` and `KV_ENABLE_OFFLINE_QUEUE` (default `false`);
+moved the ioredis options into `buildRedisOptions()`; replaced the
 per-error log inside `reconnectOnError` with
 `attachConnectionStateLogging`. `createCacheGuard` in
 `libs/middlewares/src/lib/http-cache/guard.ts` wraps every KV call on the
@@ -81,8 +81,8 @@ policy and its trade-off are documented in the middleware README instead.
 
 ### Changes Made
 
-- `libs/shared/utils/src/lib/envs/host.ts` — added `KV_COMMAND_TIMEOUT_MS` (250), `KV_CONNECT_TIMEOUT_MS` (2000), `KV_MAX_RETRIES_PER_REQUEST` (1), `HTTP_CACHE_MAX_ENTRY_BYTES` (1048576).
-- `libs/providers/kv/src/lib/redis/index.ts` — `buildRedisOptions()` with connect/command deadlines, a small retry budget and `enableOfflineQueue: false`; `attachConnectionStateLogging()`; `incr` refreshes a supplied TTL on every increment.
+- `libs/shared/utils/src/lib/envs/host.ts` — added `KV_COMMAND_TIMEOUT_MS` (250), `KV_CONNECT_TIMEOUT_MS` (2000), `KV_MAX_RETRIES_PER_REQUEST` (1), `KV_ENABLE_OFFLINE_QUEUE` (false), `HTTP_CACHE_MAX_ENTRY_BYTES` (1048576).
+- `libs/providers/kv/src/lib/redis/index.ts` — `buildRedisOptions()` with connect/command deadlines, a small retry budget and the offline queue off; `attachConnectionStateLogging()`; `incr` refreshes a supplied TTL on every increment.
 - `libs/providers/kv/src/lib/vercel-kv/index.ts` — same TTL refresh.
 - `libs/providers/kv/project.json` — added the standard `jest:test` target.
 - `libs/middlewares/src/lib/http-cache/guard.ts` — new fail-open guard with a deadline and backoff logging.
@@ -90,6 +90,26 @@ policy and its trade-off are documented in the middleware README instead.
 - `libs/middlewares/src/lib/http-cache/README.md` — new contract document.
 - `libs/middlewares/src/lib/http-cache/guard.spec.ts`, `libs/middlewares/src/lib/http-cache/index.spec.ts`, `libs/providers/kv/src/lib/redis/index.spec.ts` — BDD specs for the new behaviour.
 - `apps/redis/docker-compose.redis.yaml`, `apps/redis/.env.example`, `apps/redis/create_env.sh`, `tools/deployer/redis/docker-compose.redis.yaml.j2`, `tools/deployer/.env.example` — Redis memory budget and eviction policy.
+
+### Commits
+
+- `919623b47f` — the change and the artifacts.
+- second commit — `KV_ENABLE_OFFLINE_QUEUE` seam and the README note about the
+  connection window, found while probing the live local Redis.
+
+### Evidence from the local Redis (read-only, no reconfiguration)
+
+- `docker exec sps-lite-redis-1 redis-cli --scan` reports 91
+  `http-cache:version:*` keys and no data keys: the version counters written
+  before this change have no TTL and outlive every body they address. This is
+  the growth mechanism the issue describes, visible on a development machine.
+- `CONFIG GET maxmemory maxmemory-policy` on that container returns `0` and
+  `noeviction`, the incident configuration. The running container predates the
+  compose change, so it keeps those values until it is recreated.
+- A probe built from `libs/providers/kv/src/lib/redis/index.ts` against that
+  instance returned `INCR` 1 with TTL 30, TTL 29 after 1.2 s, then `INCR` 2
+  with TTL back to 30, and a `set`/`get` round trip. The probe keys were
+  deleted afterwards.
 
 ### Pull Request
 

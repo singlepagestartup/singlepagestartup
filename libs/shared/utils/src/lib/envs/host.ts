@@ -79,6 +79,15 @@ export const KV_CONNECT_TIMEOUT_MS =
 export const KV_MAX_RETRIES_PER_REQUEST =
   Number(process.env["KV_MAX_RETRIES_PER_REQUEST"]) || 1;
 /**
+ * Whether a command issued while the connection is down waits for the
+ * reconnect (issue #233). The default is off: the command fails at once and
+ * the caller falls back. Set it to `true` to absorb short reconnects instead;
+ * `KV_COMMAND_TIMEOUT_MS` still applies to a queued command, so the wait
+ * stays bounded either way.
+ */
+export const KV_ENABLE_OFFLINE_QUEUE =
+  process.env["KV_ENABLE_OFFLINE_QUEUE"] === "true";
+/**
  * Admission cap for the HTTP response cache (issue #233). Responses larger
  * than this are served but never stored, so one unbounded collection read
  * cannot be multiplied across cache generations and query variants.

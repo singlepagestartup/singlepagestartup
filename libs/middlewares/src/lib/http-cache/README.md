@@ -73,21 +73,29 @@ success after a failure reports recovery, so an outage is two lines rather than
 one per request.
 
 Below the guard, the shared ioredis client carries `connectTimeout`,
-`commandTimeout`, a small `maxRetriesPerRequest` and `enableOfflineQueue: false`
+`commandTimeout`, a small `maxRetriesPerRequest` and no offline queue
 (`libs/providers/kv/src/lib/redis/index.ts`). Without them a command issued
 while Redis was down was queued for an unbounded time, which is how a Redis
 restart left a surviving API process hanging on every cacheable GET.
 
+With the offline queue off, commands issued before the client reaches `ready`
+— the first moments after boot and each reconnect — reject at once. On the
+cache path that is a miss; other `@sps/providers-kv` callers see the error.
+A project that prefers to absorb short reconnects sets
+`KV_ENABLE_OFFLINE_QUEUE=true`; `commandTimeout` applies to a queued command
+as well, so the wait stays bounded.
+
 ## Environment
 
-| Variable                     | Default | Meaning                                                 |
-| ---------------------------- | ------- | ------------------------------------------------------- |
-| `MIDDLEWARE_HTTP_CACHE`      | unset   | The middleware is registered only when this is `true`   |
-| `KV_TTL`                     | 30      | Seconds a cached body and its version counters live     |
-| `HTTP_CACHE_MAX_ENTRY_BYTES` | 1048576 | Largest serialized response that may be stored          |
-| `KV_COMMAND_TIMEOUT_MS`      | 250     | Per-command deadline, also the guard's default deadline |
-| `KV_CONNECT_TIMEOUT_MS`      | 2000    | Connection deadline                                     |
-| `KV_MAX_RETRIES_PER_REQUEST` | 1       | How often a command is resent across reconnects         |
+| Variable                     | Default | Meaning                                                                     |
+| ---------------------------- | ------- | --------------------------------------------------------------------------- |
+| `MIDDLEWARE_HTTP_CACHE`      | unset   | The middleware is registered only when this is `true`                       |
+| `KV_TTL`                     | 30      | Seconds a cached body and its version counters live                         |
+| `HTTP_CACHE_MAX_ENTRY_BYTES` | 1048576 | Largest serialized response that may be stored                              |
+| `KV_COMMAND_TIMEOUT_MS`      | 250     | Per-command deadline, also the guard's default deadline                     |
+| `KV_CONNECT_TIMEOUT_MS`      | 2000    | Connection deadline                                                         |
+| `KV_MAX_RETRIES_PER_REQUEST` | 1       | How often a command is resent across reconnects                             |
+| `KV_ENABLE_OFFLINE_QUEUE`    | `false` | `true` lets a command wait for a reconnect, bounded by the command deadline |
 
 ## Redis memory policy
 
