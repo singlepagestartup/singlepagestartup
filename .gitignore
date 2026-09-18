@@ -110,6 +110,7 @@ blob-report/
 
 # Claude local project config
 .claude/.env
+.agents/.env
 
 # Checkout-owned SinglePageStartup workspace selection
 apps/studio/workspace/utils/config.local.yaml

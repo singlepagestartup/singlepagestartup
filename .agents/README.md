@@ -37,6 +37,13 @@ discovery metadata and adapters to these files.
 - `tools/` defines provider-neutral capabilities, their allowed roles and
   provider bindings.
 
+`.env` holds the per-checkout project configuration — the GitHub Project number,
+its owner and the target repository — with `.env.example` as its template. It
+lives here and not in a provider directory because the values are the same
+whichever agent reads them, and because the user creates this file by hand or
+through `./ai.sh`. A checkout made before the move keeps working from
+`.claude/.env`, which the loader reports as deprecated.
+
 Executable GitHub helpers remain under `.claude/helpers/` for path compatibility;
 they are shared runtime utilities, not Claude-owned process definitions.
 

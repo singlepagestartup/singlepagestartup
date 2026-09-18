@@ -12,7 +12,7 @@ description: Manage GitHub Project issues - create, update, comment, and follow 
 - `PROJECT_NODE_ID` = global project ID (e.g., `PVTI_lADO...`) — resolved from GraphQL
 - When using `gh project item-edit`, always pass `--project-id "$PROJECT_NODE_ID"`, NOT the numeric number
 
-**Only `GITHUB_PROJECT_NUMBER` is required in `.claude/.env`.** All other IDs are resolved dynamically by name.
+**Only `GITHUB_PROJECT_NUMBER` is required in `.agents/.env`.** All other IDs are resolved dynamically by name.
 
 At the start of every session, load config and fetch the project structure. Run this inside `bash` when the active shell might be `zsh`, because the helper is sourced and later commands rely on the exported variables remaining in the same shell:
 
@@ -91,7 +91,7 @@ READY_FOR_DEV_ID=$(get_status_id "Ready for Dev")
 
 If `gh` reports `error connecting to api.github.com` in a sandboxed agent, rerun the same `bash -lc` block with network escalation. Do not replace the helper flow with ad hoc commands.
 
-If `GITHUB_PROJECT_NUMBER` is empty, ask the user to fill in `.claude/.env`:
+If `GITHUB_PROJECT_NUMBER` is empty, ask the user to fill in `.agents/.env`:
 
 - Personal project: run `gh project list --me`
 - Org project: run `gh project list --owner ORG_NAME`
@@ -159,7 +159,7 @@ Use these scripts instead of GraphQL queries for simpler operations:
 - `.claude/helpers/get_issue_status.sh ISSUE_NUMBER` — Get issue status
 - `.claude/helpers/get_project_item_id.sh ISSUE_NUMBER` — Get project item ID for status updates
 - `.claude/helpers/update_issue_status.sh ISSUE_NUMBER "NEW_STATUS"` — Update issue status
-- `.claude/helpers/add_issue_to_project.sh ISSUE_NUMBER [ISSUE_URL]` — Add issue to project using `.claude/.env` owner/type, with GraphQL fallback
+- `.claude/helpers/add_issue_to_project.sh ISSUE_NUMBER [ISSUE_URL]` — Add issue to project using `.agents/.env` owner/type, with GraphQL fallback
 - `.claude/helpers/create_issue_with_project.sh TITLE BODY_FILE SIZE_LABEL [INITIAL_STATUS] [FINAL_STATUS]` — Create an issue, validate the returned URL/number, add it to the project, and apply status transitions as one fail-fast step
 - `.claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file PATH` — Safely create/edit issue comments from markdown body files (prevents shell interpolation issues)
 

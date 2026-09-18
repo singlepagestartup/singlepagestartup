@@ -69,7 +69,7 @@ This repository uses one provider-agnostic, status-gated development workflow. C
 | Pre-development process                | `.agents/workflows/pre-development.md`                                     |
 | Roles, templates, contracts, and tools | `.agents/roles`, `.agents/templates`, `.agents/contracts`, `.agents/tools` |
 | GitHub Project / issue automation      | `.claude/helpers/*.sh` (plain bash, provider-independent)                  |
-| Per-checkout engineering configuration | `.claude/.env` (gitignored; created by `./ai.sh`)                          |
+| Per-checkout engineering configuration | `.agents/.env` (gitignored; created by `./ai.sh`)                          |
 | Provider adapters                      | Claude Code: `.claude/**`; Codex: `.codex/**`                              |
 
 `.agents/` is the only canonical source of shared workflow and role semantics.

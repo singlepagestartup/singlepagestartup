@@ -19,7 +19,7 @@ PROJECT_OWNER_TYPE="$GITHUB_PROJECT_OWNER_TYPE"
 
 ### Step 2 — Create or use existing project
 
-If `GITHUB_PROJECT_NUMBER` is already set in `.claude/.env`, skip to Step 3.
+If `GITHUB_PROJECT_NUMBER` is already set in `.agents/.env`, skip to Step 3.
 
 Otherwise, create a new project:
 
@@ -29,10 +29,10 @@ GITHUB_PROJECT_NUMBER=$(echo "$PROJECT_URL" | grep -o '[0-9]*$')
 echo "Created project #$GITHUB_PROJECT_NUMBER: $PROJECT_URL"
 ```
 
-Save the number to `.claude/.env`:
+Save the number to `.agents/.env`:
 
 ```bash
-sed -i '' "s/GITHUB_PROJECT_NUMBER=/GITHUB_PROJECT_NUMBER=$GITHUB_PROJECT_NUMBER/" .claude/.env
+sed -i '' "s/GITHUB_PROJECT_NUMBER=/GITHUB_PROJECT_NUMBER=$GITHUB_PROJECT_NUMBER/" .agents/.env
 ```
 
 ### Step 3 — Fetch the project node ID and Status field ID
@@ -245,7 +245,7 @@ Project #GITHUB_PROJECT_NUMBER created and configured with:
 - 4 size labels (size:xs, size:small, size:medium, size:large)
 - area labels for each app in apps/ (area:api, area:host, area:db, ...)
 
-Next: set GITHUB_PROJECT_NUMBER=N in .claude/.env (if not already done)
+Next: set GITHUB_PROJECT_NUMBER=N in .agents/.env (if not already done)
 
 View project: https://github.com/orgs/GITHUB_PROJECT_OWNER/projects/GITHUB_PROJECT_NUMBER
 ```

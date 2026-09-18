@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Load Claude Code project configuration
-# Source: .claude/.env
+# Load the provider-neutral project configuration
+# Source: .agents/.env, with .claude/.env as a pre-move fallback
 # Returns: GITHUB_LOGIN, GITHUB_OWNER, GITHUB_PROJECT_NUMBER, GITHUB_PROJECT_OWNER_TYPE,
 #          TARGET_REPO_FULL_NAME, TARGET_REPO_OWNER, TARGET_REPO_NAME, TARGET_REPO_URL, GH_REPO
 
@@ -22,12 +22,25 @@ if [ -z "${LOAD_CONFIG_SOURCE_PATH:-}" ] || [ "$LOAD_CONFIG_SOURCE_PATH" = "bash
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$LOAD_CONFIG_SOURCE_PATH")" && pwd)"
-ENV_FILE="$SCRIPT_DIR/../.env"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# The project configuration is provider-neutral, so it lives beside the shared
+# agent definitions. A checkout created before the move keeps working from the
+# Claude directory.
+if [ -f "$REPO_ROOT/.agents/.env" ]; then
+  ENV_FILE="$REPO_ROOT/.agents/.env"
+elif [ -f "$SCRIPT_DIR/../.env" ]; then
+  ENV_FILE="$SCRIPT_DIR/../.env"
+  echo "Note: reading configuration from .claude/.env. Move it to .agents/.env; the fallback is kept only for checkouts made before the move." >&2
+else
+  ENV_FILE="$REPO_ROOT/.agents/.env"
+fi
+export SPS_AGENT_ENV_FILE="$ENV_FILE"
 GH_RETRY_FILE="$SCRIPT_DIR/gh_retry.sh"
 REPO_CONTEXT_FILE="$SCRIPT_DIR/repo_context.sh"
 
 if [ ! -f "$ENV_FILE" ]; then
-  echo "Error: Missing GitHub project config at $ENV_FILE" >&2
+  echo "Error: Missing GitHub project config at $ENV_FILE. Copy .agents/.env.example to .agents/.env, or run ./ai.sh." >&2
   return 1 2>/dev/null || exit 1
 fi
 

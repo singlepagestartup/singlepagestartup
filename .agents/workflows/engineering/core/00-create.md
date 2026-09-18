@@ -120,7 +120,7 @@ Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh iss
        exit 1
      fi
      ```
-   - Add to GitHub Project via helper (uses `.claude/.env` owner and GraphQL fallback):
+   - Add to GitHub Project via helper (uses `.agents/.env` owner and GraphQL fallback):
      ```bash
      .claude/helpers/add_issue_to_project.sh ISSUE_NUMBER ISSUE_URL
      ```

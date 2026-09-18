@@ -21,7 +21,7 @@ REPO_FULL_NAME=$(.claude/helpers/get_repo_full_name.sh)
 
 The helper resolves repository context in this order:
 
-1. `TARGET_REPO` from `.claude/.env` if intentionally provided.
+1. `TARGET_REPO` from `.agents/.env` if intentionally provided.
 2. `GITHUB_REPOSITORY` in CI-style environments.
 3. `remote.origin.url` from the current git checkout.
 4. Ambient `GH_REPO`.
@@ -63,4 +63,4 @@ Project helpers must select Project items by both:
 - issue number; and
 - target repository URL.
 
-If a local ticket or process artifact for the issue records a GitHub Project owner/type/number that differs from `.claude/.env`, helpers must fail before reading or updating status. Update `.claude/.env` or the artifact metadata instead of continuing with the mismatched Project.
+If a local ticket or process artifact for the issue records a GitHub Project owner/type/number that differs from `.agents/.env`, helpers must fail before reading or updating status. Update `.agents/.env` or the artifact metadata instead of continuing with the mismatched Project.

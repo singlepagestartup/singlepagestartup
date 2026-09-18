@@ -52,7 +52,7 @@ and local configuration for this project.
 
 ## Setup
 
-Run the setup script from the project root — it installs required tools, authenticates `gh`, creates `.claude/.env`, and validates project access:
+Run the setup script from the project root — it installs required tools, authenticates `gh`, creates `.agents/.env`, and validates project access:
 
 ```bash
 ./ai.sh
@@ -67,7 +67,7 @@ If you prefer to configure manually:
 ### Step 1 — Create the file
 
 ```bash
-cp .claude/.env.example .claude/.env
+cp .agents/.env.example .agents/.env
 ```
 
 ### Step 2 — Fill in the project number
@@ -79,7 +79,7 @@ NUMBER  TITLE             OWNER     URL
 3       My Startup Board  flakecode   github.com/users/flakecode/projects/3
 ```
 
-Then set it in `.claude/.env`:
+Then set it in `.agents/.env`:
 
 ```env
 GITHUB_PROJECT_NUMBER=3
@@ -162,7 +162,7 @@ The command will:
 2. Replace the Status field options with the full 12-step workflow above
 3. Create all `size:*` and `area:*` labels in the repo
 
-After it runs, set the project number in `.claude/.env` if it wasn't already saved.
+After it runs, set the project number in `.agents/.env` if it wasn't already saved.
 
 ---
 
@@ -268,7 +268,7 @@ This script:
 
 - Installs `gh` CLI and `jq` if missing
 - Authenticates your GitHub account with the required scopes (`repo`, `read:project`, `project`)
-- Creates `.claude/.env` from the example and prompts you to fill in the project number
+- Creates `.agents/.env` from the example and prompts you to fill in the project number
 - Validates that you can access the GitHub Project
 
 When it prints ✅, everything is ready.
@@ -638,7 +638,7 @@ Utility files used internally by implementation flow:
 
 ## Notes
 
-- `.claude/.env` is gitignored — every developer needs their own copy (run `./ai.sh`)
+- `.agents/.env` is gitignored — every developer needs their own copy (run `./ai.sh`)
 - Plans and research in `thoughts/` should be committed to git — they are the reasoning history for your codebase
 - If `gh` CLI is not installed: `brew install gh && gh auth login`
 - Status names in the GitHub Project must match exactly (case-sensitive) — if a status update silently fails, check the name spelling

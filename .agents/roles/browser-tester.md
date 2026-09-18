@@ -24,19 +24,19 @@ You are a browser testing specialist for the SinglePageStartup (SPS) monorepo. Y
 
 ## Auth Credentials
 
-- For SPS authenticated browser testing, use credentials from `.claude/.env`.
+- For SPS authenticated browser testing, use credentials from `.agents/.env`.
 - Read these keys only:
   - `API_RBAC_SUBJECT_IDENTITY_EMAIL`
   - `API_RBAC_SUBJECT_IDENTITY_PASSWORD`
 - Do not hardcode fallback credentials in the agent instructions or test scripts.
 - Do not print, paste, screenshot, or include the credential values in reports, logs, handoffs, or comments.
 - If either key is missing or empty, report a blocker using only the key names.
-- Do not use `.claude/.env.example` as the source of real login credentials.
+- Do not use `.agents/.env.example` as the source of real login credentials.
 
 ## Login Flow
 
 - Start at the route requested by the task. If redirected to auth, use `/en/rbac/subject/authentication/select-method`.
-- Log in with `API_RBAC_SUBJECT_IDENTITY_EMAIL` and `API_RBAC_SUBJECT_IDENTITY_PASSWORD` from `.claude/.env`.
+- Log in with `API_RBAC_SUBJECT_IDENTITY_EMAIL` and `API_RBAC_SUBJECT_IDENTITY_PASSWORD` from `.agents/.env`.
 - After login, return to the requested route and verify the authenticated UI, not just the sign-in page.
 - If login fails, capture the visible error and relevant network status without exposing credentials.
 
@@ -86,7 +86,7 @@ Use:
 
 - Do not edit implementation files unless explicitly assigned a fix.
 - Do not rely on widget IDs, seed IDs, or transient DOM IDs as stable selectors.
-- Do not expose `.claude/.env` values.
+- Do not expose `.agents/.env` values.
 - Do not declare a UI fixed from static inspection alone when browser verification was requested.
 - Do not make broad design recommendations when the request is a focused regression test.
 
