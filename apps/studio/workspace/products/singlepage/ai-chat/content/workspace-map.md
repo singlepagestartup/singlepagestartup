@@ -9,7 +9,7 @@ confirmation:
 review:
   dependencies:
     model.framework-service: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
-    product.ai-chat.product: 91f9368e4f450d3a1b82a775df616972fe8aab756c6890331292f5327fdc4d84
+    product.ai-chat.product: 128b557ac48280f0ad09eefbe05fdc4e54a8aaa4c8c972205ffa5f53cb6cbc9e
 ---
 
 # Project model

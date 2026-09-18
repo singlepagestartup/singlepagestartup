@@ -19,7 +19,7 @@ intake:
     by: operator
     at: 2026-09-13
     source: Operator explicit correction in chat, 2026-09-13, describing business-data AI Chat, token purchases, novice makers working through Claude Code or Codex Desktop, and the button «Развернуть проект на своей машине» leading to GitHub.
-    scope: Confirms the intended audiences and the token-purchase monetization direction. The chat value, the per-chat retrieval scope and the path from the hosted service to the framework were superseded on 2026-09-18; product_direction owns them. It does not confirm the whole Brief wording, measured answer superiority or public service readiness.
+    scope: Confirms the intended audiences, the token-purchase monetization direction and that answers are grounded in the material the person supplies. The framing of the chat's value and the path from the hosted service to the framework were superseded on 2026-09-18; product_direction owns them. The retrieval capability was not superseded; see sources.retrieval. It does not confirm the whole Brief wording, measured answer superiority or public service readiness.
   product_direction:
     confirmed: true
     by: operator
@@ -44,7 +44,7 @@ sources:
   audience_value_and_flow:
     type: client-claim
     source: Operator audience, value and acquisition-flow correction in chat, 2026-09-13.
-    scope: Primary hosted AI Chat for people supplying their own project material. Users may buy tokens and continue as consumers. Novice makers work through coding agents and review the resulting UI. The chat's value, its retrieval scope and the route to the framework were superseded on 2026-09-18 by product_direction. These are intended product behaviors, not verified implementation or adoption.
+    scope: Primary hosted AI Chat for people supplying their own project material. Users may buy tokens and continue as consumers. Novice makers work through coding agents and review the resulting UI. The framing of the chat's value and the route to the framework were superseded on 2026-09-18 by product_direction; the retrieval capability was not. These are intended product behaviors, not verified implementation or adoption.
   answer_quality:
     type: client-claim
     source: Operator desired AI Chat outcome in the audience and value correction, 2026-09-13.
@@ -54,6 +54,19 @@ sources:
     resolution: operator-fact
     source: Operator selected token-purchase monetization in chat, 2026-09-13, without specifying transaction details.
     scope: Exact token price, currency, token unit and billing terms remain unselected; this does not leave the product's audience, intended paid value or monetization direction unselected.
+  retrieval:
+    type: client-claim
+    resolution: operator-fact
+    source: Operator statement in chat, 2026-09-18, after the coordinator reported that the
+      Brief rewrite had dropped the per-chat knowledge base.
+    scope: |
+      Documents the person uploads are split into chunks, vectorized and stored so the
+      service retrieves the relevant parts as context, a retrieval-augmented generation
+      design. The operator counts this grounding among the product's selling points. Two
+      things are not settled and are not asserted here: how the capability is described to a
+      customer, since Brand keeps the mechanism out of the ordinary product flow, and whether
+      the grounding differentiates the product, since product Research records that ChatGPT
+      Projects and Chatbase already offer document-grounded context.
   service_terms:
     type: client-claim
     resolution: operator-fact
@@ -195,7 +208,7 @@ The project owner makes product decisions. Selling custom websites is outside th
 
 ## Customers and value
 
-AI Chat is intended for people with a business idea or early-stage project whose material is scattered across notes, documents, screenshots and partial decisions. They supply what they already have or answer guided questions; the service organizes it into a reviewable project model, shows what is missing or contradictory, and keeps the accepted result available for later questions, criticism and materials. The first setup session is intended to take about one focused hour, with unresolved questions left open. The same decisions assemble a landing page from SinglePageStartup blocks, edited in a private sandbox with an immediate preview and no public address. The desired value is a usable project model and a first page that can reach real customers; better answer quality than a general chat without that context is a goal to test.
+AI Chat is intended for people with a business idea or early-stage project whose material is scattered across notes, documents, screenshots and partial decisions. They supply what they already have or answer guided questions; the service organizes it into a reviewable project model, shows what is missing or contradictory, and keeps the accepted result available for later questions, criticism and materials. The first setup session is intended to take about one focused hour, with unresolved questions left open. The same decisions assemble a landing page from SinglePageStartup blocks, edited in a private sandbox with an immediate preview and no public address. Uploaded notes and documents are split into chunks, vectorized and stored, so the service retrieves the relevant parts as context for its answers. The operator counts this grounding among the product's selling points. How it is described to a customer is not selected: Brand keeps vectors, retrieval and storage out of the ordinary product flow, so the benefit has to be expressed without naming the mechanism. The desired value is a usable project model, answers grounded in the person's own material and a first page that can reach real customers; better answer quality than a general chat without that context is a goal to test.
 
 The second audience is novice AI-assisted makers, or vibe coders. They mainly converse with a coding agent in Claude Code or Codex Desktop. The agent changes the code; the person reviews the result and interface, for example in VS Code.
 

@@ -13,7 +13,7 @@ sales_dimensions:
   - journey
 review:
   dependencies:
-    brief: 6b2c413d4d8f686e53dc2886c93c5ad79c8e04b93d75158f0a1fb15051b3fe2f
+    brief: a395763652f2102e1373bb6e0e3ad6fa33267aeeb7326e25b518f13465dff69d
     model.framework-service: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
     product.singlepagestartup.sales: 5f4d91f14898077c62d3576a0dd298c4393d3aa788e05df4d42bf6d85b0cbf13
 ---

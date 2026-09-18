@@ -11,7 +11,7 @@ review:
   dependencies:
     asset-index: 3959f399ca7ce73eb67531f94dc5349d1cfd3a03e7fb9921627e4c09252b1f41
     brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
-    brief: 6b2c413d4d8f686e53dc2886c93c5ad79c8e04b93d75158f0a1fb15051b3fe2f
+    brief: a395763652f2102e1373bb6e0e3ad6fa33267aeeb7326e25b518f13465dff69d
 scoped_confirmations:
   preference_profile:
     confirmed: true

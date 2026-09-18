@@ -31,7 +31,7 @@ scoped_trial_inputs:
     applicability: Not confirmed by the current Brief and not a purchased-token operating term.
 review:
   dependencies:
-    brief: 6b2c413d4d8f686e53dc2886c93c5ad79c8e04b93d75158f0a1fb15051b3fe2f
+    brief: a395763652f2102e1373bb6e0e3ad6fa33267aeeb7326e25b518f13465dff69d
 ---
 
 # Operations & Economics

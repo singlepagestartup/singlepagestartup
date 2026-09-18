@@ -61,11 +61,32 @@ After:
 > customers; better answer quality than a general chat without that context is
 > a goal to test.
 
-**What to check:** the per-chat vector knowledge base is gone from the value
-statement. The AI Chat Product still says the implementation indexes the
-project page for retrieval, and Brand still tells the interface not to explain
-retrieval to customers. If the separately scoped knowledge base per chat is
-still a real product decision, this paragraph dropped it.
+**Corrected after the operator read this.** The rewrite had dropped the
+retrieval capability; it is real and stays. The paragraph now continues:
+
+> Uploaded notes and documents are split into chunks, vectorized and stored, so
+> the service retrieves the relevant parts as context for its answers. The
+> operator counts this grounding among the product's selling points. How it is
+> described to a customer is not selected: Brand keeps vectors, retrieval and
+> storage out of the ordinary product flow, so the benefit has to be expressed
+> without naming the mechanism. The desired value is a usable project model,
+> answers grounded in the person's own material and a first page that can reach
+> real customers; better answer quality than a general chat without that
+> context is a goal to test.
+
+`sources.retrieval` records the mechanism, the operator's selling-point claim
+and the two things that are not settled. The AI Chat Product's implementation
+sentence follows: it now says the project page, uploaded documents and
+permitted extensions are chunked, vectorized and retrieved, where it previously
+said only that the project page is indexed.
+
+**Two open points, recorded and not decided here.** How the capability is
+described to a customer is undecided; Brand's rules keep the mechanism out of
+the ordinary flow but do not say how the benefit is expressed instead. And
+whether the grounding differentiates the product is unresolved in the
+product's own Research: `AC-SPS-02` records that ChatGPT Projects and Chatbase
+already offer document-grounded context, so the selling point is more likely
+the combination with the project model than the retrieval alone.
 
 ### Business and resources, Path to building
 
@@ -180,6 +201,7 @@ These keep an invalid stamp on purpose. Their bodies are unchanged and carry no
 superseded statement; they were never put in front of you, so they are not
 marked confirmed.
 
+- `brief` and `product.ai-chat.product`, changed by the retrieval restore above
 - `product.ai-chat.website`
 - `product.ai-chat.page.website.landing`
 - `product.ai-chat.page.website.project-workspace`
@@ -190,7 +212,9 @@ marked confirmed.
 
 - No document resolves as `stale`. Every recorded input snapshot was refreshed
   after its impact review.
-- 9 confirmed, 5 with an invalid stamp awaiting reading, 39 never confirmed
-  (ordinary drafts).
-- The pipeline reports 23 passed and 1 gap: Client Request, Strategy, Brand and
-  Design are complete, and the remaining gap is the four business decisions.
+- 7 confirmed, 7 with an invalid stamp awaiting reading, 39 never confirmed
+  (ordinary drafts). The Brief and the AI Chat Product joined the waiting list
+  when the retrieval capability was restored into them.
+- The pipeline reports 22 passed and 2 gaps: one approval gap, the Brief
+  awaiting your reading, and the decision gap of the four business decisions.
+  Strategy, Brand and Design pass their own checks and wait only on the Brief.
