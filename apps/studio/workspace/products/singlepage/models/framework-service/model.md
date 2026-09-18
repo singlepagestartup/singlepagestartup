@@ -3,12 +3,12 @@ confirmation:
   confirmed: true
   by: operator
   at: "2026-09-18"
-  source: "Operator confirmed the model after reviewing the four corrections the confirmed Brief required: the service description in Model scope, the route to the foundation, the payment and hosting terms in Key Partnerships, and the support level in the capacity rule: «Да, подтверждаю»."
-  content_sha256: 9a4d1171e72e880a2320c64e9501aedb2af195dfee090e339068130784521f4d
+  source: "Operator confirmed the model after reviewing the four corrections the confirmed Brief required: the service description in Model scope, the route to the foundation, the payment and hosting terms in Key Partnerships, and the support level in the capacity rule, which the operator then scoped to the hosted service: «Да, оба»."
+  content_sha256: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
 sources:
   current-business: Brief sources.current_business and funding; client-reported tested foundations, worldwide GitHub distribution, free code, owner funding and best-effort support, 2026-08-14 and 2026-09-12.
   scope-and-flow: Brief intake.product_direction; operator decision, 2026-09-18, selects the hosted project-model service, the landing-page sandbox and publication to the customer's own server, superseding the demonstration-to-local-framework route while retaining both product IDs and token purchases.
-  service-terms: Brief sources.service_terms; operator decision, 2026-09-18, fixes 24-hour initial support, payments in Russia through an online cash register and the customer-connected server with Beget or Timeweb as examples.
+  service-terms: Brief sources.service_terms; operator decision, 2026-09-18, fixes 24-hour initial AI Chat support, best-effort framework help, payments in Russia through an online cash register and the customer-connected server with Beget or Timeweb as examples.
   separation: Operator distinction between service activity and framework adoption, 2026-08-09.
   materials: Brief repository observation, 2026-09-12; supplied identity rights, 2026-08-11.
   marketing-direction: Approved Strategy Growth system and Measurement and priorities, reviewed 2026-09-13; coordinated organic demonstrations, short videos, searchable explanations and contextual community participation.
@@ -31,7 +31,7 @@ scoped_trial_inputs:
     applicability: Not confirmed by the current Brief and not a purchased-token operating term.
 review:
   dependencies:
-    brief: fd8d054d3225ed6bde973d5dddcb5141a26b26f13ec6a59a2309f13f8e248663
+    brief: e870095275fc788c14ff0ebfafb9d38fad32f060379418b62c97db2ff9f697fd
 ---
 
 # Operations & Economics
@@ -94,6 +94,6 @@ The owner's time and money fund framework development. No external financing is 
 - `bridge`: useful chat experience encourages interested makers to adopt the foundation.
 - `framework-growth`: distinguish attention and stars from product use, repeat use and contributions.
 - `service-viability`: useful answers and repeat token purchases must support the service's costs.
-- `capacity`: scale promotion and help to available time and money; support requests are processed within 24 hours as the initial service level, without continuous live coverage or a resolution deadline.
+- `capacity`: scale promotion and help to available time and money; hosted AI Chat support requests are processed within 24 hours as the initial service level, without continuous live coverage or a resolution deadline, while help with the free framework code stays best-effort.
 - `channel-access`: use the selected organic channels and prioritize topics that attract relevant users.
 - `proof`: [framework Research](../../singlepagestartup/research.md) and [AI Chat Research](../../ai-chat/research.md) examine these business assumptions. No numerical growth or savings claim is established.

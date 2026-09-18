@@ -4,8 +4,8 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    brief: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
-    model.framework-service: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
+    brief: e870095275fc788c14ff0ebfafb9d38fad32f060379418b62c97db2ff9f697fd
+    model.framework-service: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
 ---
 
 # Alternatives to Code Framework
