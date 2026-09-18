@@ -4,7 +4,7 @@ confirmation:
   by: operator
   at: "2026-09-18"
   source: "Operator confirmed the Brief as rewritten to the chosen product direction, then scoped the support level to AI Chat so help with the free framework code stays best-effort: «Да, оба»."
-  content_sha256: e870095275fc788c14ff0ebfafb9d38fad32f060379418b62c97db2ff9f697fd
+  content_sha256: 6b2c413d4d8f686e53dc2886c93c5ad79c8e04b93d75158f0a1fb15051b3fe2f
 intake:
   scope:
     confirmed: true
