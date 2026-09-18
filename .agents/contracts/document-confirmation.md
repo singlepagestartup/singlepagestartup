@@ -83,12 +83,15 @@ Analytics uses Product, Sales and the model; Website uses Product, Sales, the
 model, Strategy, Brand and Design; Creative and Presentation keep their product
 and design inputs; a Research summary uses its registered detail pages.
 Research remains the upstream evidence owner: model or Product citations of
-findings are reviewed by the agent, never reciprocal edges, and a segmented
-Sales audit observes the Sales body as the hypothesis under test, storing its
-fingerprint in `review.dependencies` without inheriting Sales approval or
-staleness. Only `uses` edges propagate upstream stale states; both edge kinds
-detect changed or missing inspected content. Added or removed inputs require
-review.
+findings are reviewed by the agent, never reciprocal edges. Two edges are
+`observes` rather than `uses`: every product Research observes its product's
+Analytics as evidence, and a segmented Sales audit observes the Sales body as
+the hypothesis under test. An observed input's fingerprint is stored in
+`review.dependencies` without inheriting its approval or staleness, which is
+what keeps `research → analytics → product → research` from being a cycle.
+Only `uses` edges propagate upstream stale states; both edge kinds detect
+changed or missing inspected content. Added or removed inputs require review.
+The implementation of these edges is `tools/studio/workspace/review.ts`.
 
 ## Impact review
 
@@ -107,13 +110,24 @@ loader or the helper. After editing an owning upstream document:
    reason, correct the earliest owning document, then reconcile the affected
    owners. Do not rewrite a dependent's body automatically or update its stamp
    from another document; compare its claims with the changed source and edit
-   its derived wording where needed. The marker stays until the correction and
-   any required confirmation are complete; copying current hashes never clears
-   a known problem.
-4. Once the owner's decision is current, refresh its snapshot and remove
-   `review.stale`. Renew confirmation only after the user confirms the revised
-   body; a stage that permits an unconfirmed draft leaves it false. Move the
-   cursor to the earliest remaining incomplete stage.
+   its derived wording where needed, even when that dependent's own stage gate
+   is closed (a full rerun of the dependent is not allowed then). The marker
+   stays until the owner's correction is complete; copying current hashes never
+   clears a known problem.
+4. Once the owner's correction is complete, refresh the snapshot and remove
+   `review.stale` even if the revised body still awaits confirmation: the
+   document then resolves as `changed` until the user confirms it, and a stage
+   that permits an unconfirmed draft leaves it false. Inspection, not
+   confirmation, is the precondition for a snapshot. Move the cursor to the
+   earliest remaining incomplete stage.
+
+Because `stale` takes precedence, clear inherited staleness first, starting from
+the root input whose snapshot no longer matches, and only then read a document's
+own approval state. A stamp whose fingerprint never matched the body it was
+committed with surfaces as `changed` once the chain is clear; it is treated like
+any other mismatch and needs a fresh confirmation, never a copied hash. A
+snapshot is not refreshed against a body that an open operator question is
+about to change.
 
 Keep proposed, approved and stale meaning explicit. A professional proposal is
 not an approved upstream dependency, and a confirmed correction that changes a

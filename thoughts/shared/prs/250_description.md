@@ -31,6 +31,10 @@ Phase 3 of compacting the pre-development instruction corpus: the prose is rewri
 - `tools/studio/products/MIGRATION.md` still documents the Business-to-model transfer in Russian; it was outside the ledger and is referenced from the migrations README and the workspace README. Translating or retiring it is a separate decision.
 - Phases 4 (tests and lint), 5 (dry runs on singlepage and the m2commerce copy) and 6 (ship) follow.
 
+## Phase 5 dry run
+
+Twelve Opus runs of the workflow (six tasks, each with the pre-phase-3 and the rewritten instruction set, in isolated worktrees and read-only copies, nothing committed) produced the same decisions, the same stopping points and documents of the same essence; instruction context read per run fell by about 55 percent while end-to-end run cost stayed equal, because reconciliation work dominates. The report with the cost table, the parity review, the gaps the agents found and the phase-4 backlog is `thoughts/shared/research/singlepagestartup/2026-09-18-pre-development-dry-run.md`. The prose gaps the runs exposed are closed in the last commit of this branch.
+
 ## Downstream migration
 
 - Impact: required. Children that inherited `.agents`, `.claude`, `.codex`, `CLAUDE.md` or `AGENTS.md` lose six contract files and the migration procedures; any child-owned override or document that cites them now points at a missing path.

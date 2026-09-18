@@ -29,14 +29,24 @@ or document editing. Layers, projections and write ownership follow
    ```
 
    It is mandatory, it resolves the layer itself, and a GitHub failure is
-   blocking; `waiting-for-baseline` is not.
+   blocking; `waiting-for-baseline` is not. The command only reads and reports:
+   the agent performs the side effects of a material commit (earliest owning
+   artifact, impact review, cursor) and writes the ledger rows itself, before
+   step 3.
 
 2. Read the durable cursor
    `apps/studio/workspace/utils/pre-development/<layer>.yaml`. It holds only
-   `active_stage`, `status`, `active_artifacts` and artifact-section anchors
-   in `blockers`; business truth stays in the living artifacts and history in
-   Git. Stage IDs, statuses and artifact names are declared once in
-   `.agents/pipeline/pre-development.yaml`.
+   `active_stage`, `status`, `active_artifacts` and anchors in `blockers`;
+   business truth stays in the living artifacts and history in Git. Stage IDs,
+   statuses and artifact names are declared once in
+   `.agents/pipeline/pre-development.yaml`. A blocker is a workspace-relative
+   anchor, `<path>#<heading-or-key>`, such as
+   `strategy/singlepage.md#strategic-direction` or
+   `products/singlepage/ai-chat/sales.yaml#blockers`; list the anchor of the
+   earliest blocked stage first and add a later-stage anchor only when it
+   blocks the same decision. When a stage is blocked on a fact owned by an
+   earlier document, keep the computed stage and add that document to
+   `active_artifacts`.
 
 3. Run the stage machine:
 
@@ -71,11 +81,16 @@ or document editing. Layers, projections and write ownership follow
    nothing; move the cursor to the earliest incomplete stage, `in_progress`
    when an owner can repair it now or `blocked` with exact anchors when
    operator input or evidence is missing; persist the artifact and the cursor,
-   then rerun the check. A detected legacy shape is migrated once in the
-   owning layer by its named procedure before the stage resumes. If a shared
-   role, template, contract or pipeline file is missing from the checkout,
-   stop with a structural blocker rather than recreating it inside the
-   workspace.
+   then rerun the check. A detected legacy shape in the active layer is
+   migrated once by its named procedure before the stage resumes, and until
+   then the stage that owns the affected documents counts as incomplete even
+   when the check computes it complete; a legacy shape reported in the
+   inherited singlepage base of a downstream checkout is framework-owned:
+   report it and continue. Refreshing dependency snapshots after a
+   no-material-effect review is reconciliation, not stage work, and may be done
+   for any stage in the same invocation. If a shared role, template, contract
+   or pipeline file is missing from the checkout, stop with a structural
+   blocker rather than recreating it inside the workspace.
 
 5. Load only what the decision needs: the effective active artifact, its
    transitive `uses` closure, the owning role, the stage entry in the pipeline
@@ -131,9 +146,13 @@ answered the manual-review criteria.
   and block on `brief/<layer>.md#visual-reference-intake`: operator facts route
   to the Brief, files to Assets, and the Brand Designer may describe supplied
   categories meanwhile without selecting tokens or generating outputs.
-- `40-products` works through one product at a time. Every catalog entry
-  traces to a confirmed Brief product; a new offer discovered during product
-  work is added and confirmed upstream first. Website, Marketing Creative and
+- `40-products` works through one product at a time. Business Analyst
+  maintains the models and Sales, Strategist owns each `product.md`, Web
+  Designer each `website.md`, Brand Designer each `marketing-creative.md`, and
+  Communication Strategist with Brand Designer each presentation. Every
+  catalog entry traces to a confirmed Brief product; a new offer discovered
+  during product work is added and confirmed upstream first. Website,
+  Marketing Creative and
   Presentation apply the approved Product, model and Sales facts and never
   establish a second price, scope or support commitment; inspect stale
   dependencies before reusing a claim. Record an explicit not-applicable
@@ -172,12 +191,14 @@ answered the manual-review criteria.
   keeps review state, and the handoff carries coordination. A completed
   heading or fluent generic prose is not a completed artifact.
 - A full professional rerun is a replacement projection: start from the
-  template and the stable upstream dependency closure, do not read the previous
-  body as input, and preserve a prior decision only when its upstream owner
-  still states it and the new review selects it again. Before any rerun or
-  migration, inspect existing unique client facts, whole topics, source
-  attribution and extensions and preserve them at their owners; never discard a
-  client fact because a template changed.
+  template and the stable upstream dependency closure, do not use the previous
+  body as generation input, and preserve a prior decision only when its
+  upstream owner still states it and the new review selects it again. Before
+  any rerun or migration, read the previous document's metadata and body once
+  to inventory the unique client facts, whole topics, source attribution and
+  extensions that must survive, and preserve them at their owners; never
+  discard a client fact because a template changed. The readability target
+  counts prose; mandatory template tables are not trimmed to meet it.
 - During intake, keep partial facts in Brief and do not regenerate downstream
   artifacts after every answer; propagate a batch once the decision subject and
   affected upstream section are stable, or when a confirmed correction
@@ -197,7 +218,10 @@ answered the manual-review criteria.
 2. Update the earliest canonical artifact that owns the changed fact or
    decision, then run the impact review of the confirmation contract over its
    reverse dependencies, including product-local files. A narrowly scoped
-   request may explicitly freeze unaffected upstream decisions.
+   request may explicitly freeze unaffected upstream decisions; an explicit
+   operator request for a later-stage document while an earlier stage is
+   blocked is such a request: perform it, keep the cursor at the earliest
+   incomplete stage and name the frozen upstream gates in the handoff.
 3. Rerun only owners whose artifacts are contradicted or stale; a full rerun
    replaces the owned artifact from its template and current upstream closure.
 4. When invalidation retires assets, follow the cleanup rules of the evidence
@@ -244,7 +268,9 @@ Do not list routine heading-by-heading checks when no gap exists, and do not
 return role-play dialogue, a biography or a narrative of routine work. A
 handoff may be as detailed as confident review needs; never omit material
 reasoning to reduce length. When input is required, end with exactly one
-plain-language question in the operator's language.
+plain-language question in the operator's language: when several gates are
+open, ask about the earliest blocked stage and list the other open decisions
+as statements.
 
 ## Final editorial pass
 
