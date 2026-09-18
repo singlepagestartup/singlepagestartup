@@ -3,7 +3,7 @@ issue_number: 213
 issue_title: "Make cross-module operations concurrency-safe and idempotent"
 repository: singlepagestartup
 created_at: 2026-07-20T23:32:10Z
-last_updated: 2026-07-21T19:08:53Z
+last_updated: 2026-09-17T23:18:32Z
 status: active
 current_phase: research
 ---
@@ -17,11 +17,11 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ## Phase Status
 
 - Create: completed
-- Research: in_progress
+- Research: completed
 - Plan: not_started
 - Implement: not_started
 - Current phase: research
-- Next step: obtain explicit approval to send the corrected research summary to GitHub, then post it and move to Research in Review
+- Next step: human review of the research document, then `core/20-plan`
 
 ## Phase Notes
 
@@ -35,7 +35,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Summary: Reused and live-verified the issue #211 follow-up audit, separating the delivered RBAC/Telegram concurrency boundary from the remaining cross-module transaction, state, and external-side-effect behavior.
 - Outputs: `thoughts/shared/research/singlepagestartup/ISSUE-213.md`.
-- Notes: Current durable primitives are scoped to RBAC natural keys/repair, Telegram bootstrap/free-subscription advisory locks, and selected upsert/hash identities. Remaining balance mutations are application-level read/modify/write, OAuth consumption is read/check/update rather than a conditional claim, and no operation-attempt, inbox, outbox, lease model, or `Idempotency-Key` use was found in the inspected paths. The authoritative artifact is locally complete; its corrected GitHub checkpoint is awaiting explicit user approval for the external data transfer.
+- Notes: Current durable primitives are scoped to RBAC natural keys/repair, Telegram bootstrap/free-subscription advisory locks, and selected upsert/hash identities. Remaining balance mutations are application-level read/modify/write, OAuth consumption is read/check/update rather than a conditional claim, and no operation-attempt, inbox, outbox, lease model, or `Idempotency-Key` use was found in the inspected paths. The authoritative artifact is complete and committed on `main`. On 2026-09-18 the corrected research summary was posted to the issue and the Project status was moved to Research in Review.
 
 ### Plan
 
@@ -51,7 +51,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ## Incident Log
 
-<!-- incident-count: 3 -->
+<!-- incident-count: 4 -->
 
 ### Incident 1 — GitHub API unavailable in the restricted sandbox
 
@@ -79,9 +79,19 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Occurrences**: 1
 - **Symptom**: The attempt to post the fully synthesized correction to issue #213 was denied because the comment would transfer repository research details to GitHub.
 - **Root Cause**: External-data policy requires explicit user approval after disclosure of this risk; invoking the workflow skill did not satisfy the approval reviewer for this specific transfer.
-- **Fix**: Kept the Project status at `Research in Progress`, preserved the completed local artifact, and requested explicit approval before retrying the documented issue-comment helper.
+- **Fix**: Kept the Project status at `Research in Progress`, preserved the completed local artifact, and requested explicit approval before retrying the documented issue-comment helper. Resolved on 2026-09-18: the corrected summary was posted through `gh_issue_comment.sh` and the status advanced to Research in Review.
 - **Preventive Action**: When a research checkpoint contains workspace-derived details, surface the transfer destination and obtain explicit approval if the policy reviewer requires it before closing the phase.
 - **References**: `.claude/helpers/gh_issue_comment.sh`, `.claude/commands/core/10-research.md`, `thoughts/shared/research/singlepagestartup/ISSUE-213.md`
+
+### Incident 4 — Research summary reused a claim that later code removed
+
+- **Phase**: Research
+- **Occurrences**: 1
+- **Symptom**: The corrected research checkpoint posted on 2026-09-18 repeated that #211 delivered advisory locks; issue #223 research verified the same day that `advisory-lock.ts` was deleted by `e0273194c8` on 2026-07-22.
+- **Root Cause**: The research document was written on 2026-07-21 and not re-verified against `main` before its summary was reposted.
+- **Fix**: Posted a correction comment on the issue and added a verification note to the top of the research Summary pointing at the constraint-only baseline (`libs/modules/rbac/README.md:107-113`).
+- **Preventive Action**: Before reposting or reusing a research summary older than the latest merge touching its subject, spot-check its load-bearing files with the file history per the knowledge-first contract.
+- **References**: `thoughts/shared/research/singlepagestartup/ISSUE-213.md`, `thoughts/shared/research/singlepagestartup/ISSUE-223.md`, commit `e0273194c8`.
 
 ## Reusable Learnings
 

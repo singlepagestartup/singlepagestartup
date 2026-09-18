@@ -7,7 +7,7 @@ repository: singlepagestartup
 topic: "Make cross-module operations concurrency-safe and idempotent"
 tags: [research, concurrency, idempotency, ecommerce, billing, agent, notification, knowledge, social, oauth, file-storage, crm]
 status: complete
-last_updated: 2026-07-21
+last_updated: 2026-09-18
 last_updated_by: flakecode
 ---
 
@@ -24,6 +24,8 @@ last_updated_by: flakecode
 Document the current transaction, identity, state-transition, and external-side-effect boundaries for issue #213 across ecommerce cart/checkout, Billing providers and balances, Agent/OpenRouter/Telegram work, notifications, cron, audio transcription, Knowledge indexing, Social ingestion/thread/avatar lifecycle, OAuth, File Storage, and CRM. Distinguish the concurrency work already delivered by issue #211 from the broader behavior that still exists today, and preserve the repository's current dependency direction.
 
 ## Summary
+
+> **Verification note (2026-09-18, `main` at `29370bcbf8`).** The advisory-lock primitives described below were removed on 2026-07-22 by `e0273194c8` ("fix(data): enforce natural keys without runtime locks"), one day after this document was written. `libs/shared/backend/database/config/src/lib/advisory-lock.ts` no longer exists, Telegram bootstrap and free-subscription provisioning run without application or advisory locks, and `libs/modules/rbac/README.md:107-113` documents constraint-only enforcement through permanent unique indexes. The natural-key constraints and the transactional duplicate repair from #211 remain (removal tracked by #216). Read every mention of advisory locks in this document as historical context; the planning phase starts from the constraint-only baseline.
 
 Issue #211 already established three durable concurrency mechanisms in the live repository: PostgreSQL natural-key constraints for RBAC grants, transactionally checked duplicate repair, and namespaced PostgreSQL advisory locks for Telegram bootstrap and free-subscription provisioning. The Telegram adapter now respects `shouldCheckoutFreeSubscription`, and real PostgreSQL tests cover equal-key lock serialization and concurrent Knowledge-grant convergence (`libs/shared/backend/database/config/src/lib/advisory-lock.ts:30-54`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.ts:1726-1734`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/checkout-free-subscription.ts:131-145`).
 

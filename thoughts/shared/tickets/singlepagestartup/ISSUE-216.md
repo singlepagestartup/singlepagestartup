@@ -44,3 +44,51 @@ The repair belongs to migration compatibility rather than the steady-state reque
 ## Implementation Notes
 
 Treat the compatibility release version as the removal gate. Record the version and complete the downstream rollout inventory before deleting code. The absence of reported errors alone is not enough: every maintained database must have explicit successful repair/check evidence. The cleanup must not weaken the permanent provider-specific identity constraints, the unique identity ownership relation, or the Telegram chat/thread/profile natural keys introduced by the preceding change.
+
+## References
+
+- Follow-up to #213 and the Telegram/RBAC natural-key constraint simplification (#211).
+- Research: `thoughts/shared/research/singlepagestartup/ISSUE-216.md`
+
+## Comments
+
+### flakecode, 2026-07-21T20:59:45Z
+
+Implementation scope clarified during the compatibility change:
+
+- Remove `identity-natural-key-repair.ts`, `telegram-natural-key-repair.ts`, the earlier grant `natural-key-repair.ts`, `repair-natural-keys.ts`, and the repair-only integration tests after every downstream database has migrated.
+- Remove `repository-natural-key-repair-check` / `repository-natural-key-repair-apply`, including the pre-Social invocation in `apps/api/project.json` and the repair call nested in the aggregate RBAC migration.
+- Remove the temporary rollout instructions and the identity/link/subject diagnostics.
+- Retain all generated migrations, provider-specific identity constraints, identity ownership uniqueness, Telegram chat/default-thread constraints, relation-pair constraints, and ordinary runtime bootstrap behavior.
+
+Removal remains gated on recording the compatibility release version and verifying rollout/migration completion for every maintained downstream project.
+
+### flakecode, 2026-07-21T21:09:57Z (original in Russian; English summary)
+
+Defines the mandatory contract of the temporary repair and the criteria for removing it.
+
+**How the repair must reach every project**
+
+- While this issue is open, every API deployment/restart must run `start.sh api` -> foreground `migrate.sh seed` -> `@sps/rbac:repository-natural-key-repair-apply`.
+- Apply runs before the Social and RBAC natural-key migrations. `RBAC_NATURAL_KEY_REPAIR_FAILED`, any migration failure, or a seed failure must fail the new API task; a new API version must not start on top of a partially upgraded database.
+- The call stays in the production `migrate.sh`, in `apps/api/project.json` for `api:db:migrate`, and in the aggregate `@sps/rbac:repository-migrate` until every maintained SPS project has completed the rollout. Repeated apply is idempotent.
+
+**Where to record rollout completion**
+
+Before removal, add a table to this issue with one row per project and environment: SPS compatibility version, deployment time, migration result, repair log link or fragment, and post-deployment check result. Absence of complaints without such a record does not count as confirmation.
+
+**How to verify each database**
+
+1. Find a successful `RBAC_NATURAL_KEY_REPAIR` entry with `mode=apply` in the deployment log; confirm there is no `RBAC_NATURAL_KEY_REPAIR_FAILED` and no migration/seed failure after it.
+2. Run `npx nx run @sps/rbac:repository-natural-key-repair-check` with the environment of the API under review. Require exit code `0`, `skipped=false` for an existing installation, and zero duplicate/conflict counts in every `identity`, `telegram`, and `grants` section of the `after` result.
+3. Confirm through PostgreSQL `pg_indexes` that the generated provider-specific identity, identity-owner, Telegram chat/default-thread, and relation-pair unique indexes exist.
+4. Review API/Telegram logs after deployment: no unique-constraint error loops, no `telegram/bootstrap: telegram-bot system social.profile was not found`, no ownership/authorization errors (`Requested social-module chat does not belong to profile`), and no migration failures.
+5. Send two `/start` messages in quick succession from one Telegram account. Both updates are processed independently; the database keeps one provider identity with one subject owner, one Telegram chat/profile, one default thread, and one topic thread per Telegram topic natural key.
+
+**What to delete only after confirmed rollout**
+
+- `identity-natural-key-repair.ts`, `telegram-natural-key-repair.ts`, `natural-key-repair.ts`, `repair-natural-keys.ts`, and the repair-only integration tests.
+- `repository-natural-key-repair-check` / `repository-natural-key-repair-apply` and their calls from `migrate.sh`, `apps/api/project.json`, and the aggregate RBAC migrate.
+- The temporary rollout documentation and diagnostic types.
+
+Generated migrations and permanent constraints remain. After removal, separately verify migration of a fresh database and of an already upgraded database, then repeat the `/start` smoke test and the log review.
