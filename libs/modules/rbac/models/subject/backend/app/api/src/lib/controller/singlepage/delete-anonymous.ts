@@ -1,9 +1,8 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../../service";
-import { getHttpErrorType, logger } from "@sps/backend-utils";
-import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { Service } from "../../service";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -18,23 +17,13 @@ export class Handler {
         throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
-      logger.info("Rbac module subject delete anonymous started");
+      const result = await this.service.deleteAnonymousSubjects({});
 
-      const result = await rbacModuleSubjectApi.deleteAnonymous({
-        data: {},
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
+      return c.json({
+        data: result,
       });
-
-      logger.info("Rbac module subject delete anonymous finished", result);
-
-      return c.json({ data: { ok: true, result } });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
-
       throw new HTTPException(status, { message, cause: details });
     }
   }

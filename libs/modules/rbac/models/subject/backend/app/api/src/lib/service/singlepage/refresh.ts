@@ -7,16 +7,24 @@ import {
 } from "@sps/shared-utils";
 import * as jwt from "hono/jwt";
 import { api } from "@sps/rbac/models/subject/sdk/server";
+import { IExecuteProps as IRecordActivityExecuteProps } from "./record-activity";
 
 export type IExecuteProps = {
   refresh: string;
 };
 
+export interface IConstructorProps {
+  repository: IRepository;
+  recordActivity: (props: IRecordActivityExecuteProps) => Promise<boolean>;
+}
+
 export class Service {
   repository: IRepository;
+  recordActivity: IConstructorProps["recordActivity"];
 
-  constructor(repository: IRepository) {
-    this.repository = repository;
+  constructor(props: IConstructorProps) {
+    this.repository = props.repository;
+    this.recordActivity = props.recordActivity;
   }
 
   async execute(
@@ -53,6 +61,8 @@ export class Service {
     if (!subject) {
       throw new Error("Not Found error. No subject found");
     }
+
+    await this.recordActivity({ subject });
 
     const jwtToken = await jwt.sign(
       {

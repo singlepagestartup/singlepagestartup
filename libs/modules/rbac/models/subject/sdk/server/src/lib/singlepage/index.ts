@@ -18,6 +18,11 @@ import {
   type IResult as ICheckResult,
 } from "./check";
 import {
+  action as deleteAnonymous,
+  type IProps as IDeleteAnonymousProps,
+  type IResult as IDeleteAnonymousResult,
+} from "./delete-anonymous";
+import {
   action as telegramBootstrap,
   type IProps as ITelegramBootstrapProps,
   type IResult as ITelegramBootstrapResult,
@@ -409,6 +414,7 @@ import {
 export type IProps = {
   INotifyProps: INotifyProps;
   ICheckProps: ICheckProps;
+  IDeleteAnonymousProps: IDeleteAnonymousProps;
   ITelegramBootstrapProps: ITelegramBootstrapProps;
   ITelegramSyncMembershipProps: ITelegramSyncMembershipProps;
   ITelegramCheckoutFreeSubscriptionProps: ITelegramCheckoutFreeSubscriptionProps;
@@ -496,6 +502,7 @@ export type IProps = {
 export type IResult = {
   INotifyResult: INotifyResult;
   ICheckResult: ICheckResult;
+  IDeleteAnonymousResult: IDeleteAnonymousResult;
   ITelegramBootstrapResult: ITelegramBootstrapResult;
   ITelegramSyncMembershipResult: ITelegramSyncMembershipResult;
   ITelegramCheckoutFreeSubscriptionResult: ITelegramCheckoutFreeSubscriptionResult;
@@ -590,6 +597,7 @@ export const api = {
 
   notify,
   check,
+  deleteAnonymous,
   telegramBootstrap,
   telegramSyncMembership,
   telegramCheckoutFreeSubscription,
