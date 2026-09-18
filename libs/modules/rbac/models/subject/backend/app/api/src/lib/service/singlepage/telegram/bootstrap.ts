@@ -23,6 +23,12 @@ import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/rela
 import { type ISocialModule } from "../../../di";
 import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
 import { OpenRouter } from "@sps/shared-third-parties";
+import { isUniqueConstraintError } from "@sps/backend-utils";
+
+// A lost race against a natural-key unique index is resolved by replaying
+// bootstrap: every step is find-or-create, so the retry observes the row the
+// winning request just inserted instead of trying to insert it again.
+const TELEGRAM_BOOTSTRAP_CONFLICT_RETRY_DELAYS_MS = [25, 75, 200];
 
 export interface IExecuteProps {
   fromId: string;
@@ -788,7 +794,87 @@ export class Service {
     }
   }
 
+  /**
+   * Creates the rbac.subject that owns a telegram identity.
+   *
+   * The identity link carries a unique index on the identity, so a request that
+   * loses the race must not leave the subject it just created behind: the
+   * subject is dropped before the conflict propagates to the bootstrap replay,
+   * which then resolves the winning subject through the existing link.
+   */
+  protected async createSubjectForIdentity(props: {
+    identityId: string;
+    headers: Record<string, string>;
+  }): Promise<IRbacSubject> {
+    const subject = await api.create({
+      data: {},
+      options: { headers: props.headers },
+    });
+
+    try {
+      await subjectsToIdentitiesApi.create({
+        data: {
+          subjectId: subject.id,
+          identityId: props.identityId,
+        },
+        options: { headers: props.headers },
+      });
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        await api
+          .delete({ id: subject.id, options: { headers: props.headers } })
+          .catch((deleteError) => {
+            console.warn(
+              "telegram/bootstrap: could not drop the subject that lost the identity link",
+              {
+                subjectId: subject.id,
+                identityId: props.identityId,
+                error: deleteError,
+              },
+            );
+          });
+      }
+
+      throw error;
+    }
+
+    return subject;
+  }
+
   async execute(props: IExecuteProps): Promise<IResult> {
+    const retryDelays = this.getConflictRetryDelays();
+
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        return await this.executeOnce(props);
+      } catch (error) {
+        const retryDelayMs = retryDelays[attempt];
+
+        if (retryDelayMs === undefined || !isUniqueConstraintError(error)) {
+          throw error;
+        }
+
+        console.warn(
+          "telegram/bootstrap: lost a concurrent natural key insert; replaying",
+          {
+            attempt: attempt + 1,
+            retryDelayMs,
+            fromId: props.fromId,
+            chatId: props.chatId,
+            messageThreadId: props.messageThreadId,
+          },
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+      }
+    }
+  }
+
+  protected getConflictRetryDelays() {
+    return TELEGRAM_BOOTSTRAP_CONFLICT_RETRY_DELAYS_MS;
+  }
+
+  protected async executeOnce(props: IExecuteProps): Promise<IResult> {
     if (!props.fromId) {
       throw new Error("Validation error. 'fromId' is required");
     }
@@ -861,17 +947,9 @@ export class Service {
           );
         }
       } else {
-        subject = await api.create({
-          data: {},
-          options: { headers },
-        });
-
-        await subjectsToIdentitiesApi.create({
-          data: {
-            subjectId: subject.id,
-            identityId: identity.id,
-          },
-          options: { headers },
+        subject = await this.createSubjectForIdentity({
+          identityId: identity.id,
+          headers,
         });
       }
     } else {
@@ -883,17 +961,9 @@ export class Service {
         options: { headers },
       });
 
-      subject = await api.create({
-        data: {},
-        options: { headers },
-      });
-
-      await subjectsToIdentitiesApi.create({
-        data: {
-          subjectId: subject.id,
-          identityId: identity.id,
-        },
-        options: { headers },
+      subject = await this.createSubjectForIdentity({
+        identityId: identity.id,
+        headers,
       });
 
       registration = true;
