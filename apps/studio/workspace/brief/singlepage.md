@@ -2,9 +2,9 @@
 confirmation:
   confirmed: true
   by: operator
-  at: "2026-09-16"
-  source: "Operator confirmed the complete current Brief in chat: «С брифом всё нормально, давай ставим его на подтверждение, переходим к стратегии»."
-  content_sha256: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
+  at: "2026-09-18"
+  source: "Operator confirmed the Brief as rewritten to the chosen product direction, after reviewing the changed Customers and value paragraph, the Path to building row, the new AI Chat access, Payments and Data retention rows, and the Support change: «Да, подтверждаю»."
+  content_sha256: fd8d054d3225ed6bde973d5dddcb5141a26b26f13ec6a59a2309f13f8e248663
 intake:
   scope:
     confirmed: true
