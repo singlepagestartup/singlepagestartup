@@ -465,8 +465,8 @@ Presentation keeps its own data and React entry point, with the same preview and
 PDF export. Additional pages keep the existing format/nesting support. Use
 **Product Content** for delivered lessons, episodes, templates or files, separately
 from marketing. Its structure remains product-defined and optional. The
-historical Business-to-model transfer maps are in
-[product-model migration](../../../tools/studio/products/MIGRATION.md).
+historical Business-to-model transfer maps are retired; `.agents/migrations/README.md`
+says how to read them when a detector reports the shape they migrate.
 
 ### Producing and exporting product materials
 
