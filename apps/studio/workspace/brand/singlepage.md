@@ -2,10 +2,9 @@
 confirmation:
   confirmed: true
   by: operator
-  at: 2026-09-17
-  source: "Operator confirmed the complete current Brand in chat: «Всё остальное,
-    что ты мне прислал, подтверди, это бренд стратегии, бриф — это всё окей»."
-  content_sha256: 57be6eeb0e197321e9b98dfe185c94c24163c2c920bec19932262ff7b3d981a6
+  at: "2026-09-18"
+  source: "Operator re-confirmed the current Brand on 2026-09-18 after the coordinator checked it against the confirmed Brief and found no correction needed: «Да, оба». The 2026-09-17 approval it replaces was stamped against a body the commit hooks then reformatted."
+  content_sha256: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
 review:
   dependencies:
     strategy: d68e88a81632b3ddf4f57431d6963c9d74c28bf2ba0a3d9578fb2d925fe3bf82
