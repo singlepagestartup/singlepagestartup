@@ -5,11 +5,11 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    brief: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
-    model.framework-service: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
+    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
     product.ai-chat.analytics: 2c7ded58308d628b9d7cd6ad99155b0d77f81bc152a2d6b136c9326c67d26716
     product.ai-chat.page.research.business-users: b0850082b935aeb58b98ce777a8cb42644e8c8ebd475b69d753b23e6335d43e3
-    product.ai-chat.page.research.competitors: 7ee0d41e789c5dcb07f5df6dd893f9ba0b5844f7496157dd85acfce48b55cfe9
+    product.ai-chat.page.research.competitors: 393f675f629960a6eb4d281c16b2213444c882a4ac0af3aff3eed0f20407538d
     product.ai-chat.sales: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400
 ---
 
@@ -29,9 +29,9 @@ The current qualifying trigger is a project or business idea whose notes, docume
 
 ## Alternatives and competition
 
-**AC-SPS-02 — verified capability comparison.** ChatGPT Projects keeps files and instructions available across project chats. Chatbase accepts documents, text and websites as knowledge for an agent. General assistants, document tools, website builders, consultants, informal notes and doing nothing also compete for parts of the proposed workflow. These alternatives confirm that shared context and generated pages are available categories; they do not confirm preference for SinglePageStartup's connected decision structure. [S1, S2]
+**AC-SPS-02 — verified capability comparison.** ChatGPT Projects keeps files and instructions available across project chats. Chatbase accepts documents, text and websites as knowledge for an agent. General assistants, document tools, website builders, consultants, informal notes and doing nothing also compete for parts of the proposed workflow. These alternatives confirm that shared context and generated pages are available categories; they do not confirm preference for SinglePageStartup's connected decision structure. They differ in how much material they hold: ChatGPT Projects caps files per project in the low tens, so its context is a working set rather than a document corpus. [S1, S2, AC-SPS-25]
 
-**AC-SPS-03 — differentiation hypothesis.** The proposed distinction is the progression from mixed project input to an attributable, approved structure and then to project-aware discussion, criticism, product work and a landing-page sandbox in the same reviewable Studio. Whether this creates enough benefit to change behavior or pay remains unresolved. The product should be compared through the same source material, idea question and deliverables, not by feature lists alone. [AC-SPS-02, AC-SPS-20]
+**AC-SPS-03 — differentiation hypothesis.** The proposed distinction has two parts. The first is the progression from mixed project input to an attributable, approved structure and then to project-aware discussion, criticism, product work and a landing-page sandbox in the same reviewable Studio. The second is the size of the corpus the service answers from: the operator's selected design vectorizes every document a person uploads, without a file ceiling, and retrieves the most relevant parts for each answer, where ChatGPT Projects bounds a project to a few tens of files. That bound is documented; whether a larger corpus produces better answers for this customer is not. Whether this creates enough benefit to change behavior or pay remains unresolved. The product should be compared through the same source material, idea question and deliverables, not by feature lists alone. [AC-SPS-02, AC-SPS-20]
 
 ## Price, channels, and evidence
 

@@ -3,8 +3,8 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
-    product.singlepagestartup.website: 50f5e45e7c5a9ea720638596fb96b3f7c09876e8e51b85c3ba90c1559b9d5303
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
+    product.singlepagestartup.website: c3e6a545233fa3bd336a39bc28e599e7a7051e8c068e54a478ca587cd234c762
 ---
 
 <!-- section: hero -->

@@ -3,7 +3,7 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    model.framework-service: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
     product.ai-chat.creative: 45271defa23617549a5078f8ce9c47e530b694ff9ac50d63196adc094b20f1d1
 ---
 

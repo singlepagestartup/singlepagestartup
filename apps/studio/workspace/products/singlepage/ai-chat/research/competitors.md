@@ -4,8 +4,8 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    brief: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
-    model.framework-service: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
+    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
 ---
 
 # Competitors and alternatives
@@ -20,7 +20,9 @@ This page compares documented offers and workflows. It does not report tested an
 
 **AC-SPS-20 — documented alternative, high confidence in capability.** ChatGPT Projects keeps chats, files and instructions together and can use connected sources. A project owner can upload material, provide project instructions and continue across chats. This overlaps with AI Chat's persistent project context. The current comparison does not establish whether the SinglePageStartup decision structure produces better results or less work. [S1]
 
-Appeal: familiar general-purpose assistance, broad tasks and an existing ecosystem. Limitation for this decision: project organization and progression to business-model, Sales and material pages depend on the user's instructions and chosen workflow.
+**AC-SPS-25 — documented capacity limit, medium confidence in the exact figure.** ChatGPT Projects caps the files a project may hold, per plan and in the low tens: the figures OpenAI publishes are 5 for Free, 25 for Go and Plus and 40 for Pro, Business, Education and Enterprise, and its own pages disagree, with the File Uploads FAQ giving 20 where the Projects article gives 25. A corpus of hundreds of documents is therefore outside the product's design, whatever the exact number. The coordinator could not open the official pages directly, which is why the figure is recorded as approximate and the order of magnitude as the reliable part. [S3]
+
+Appeal: familiar general-purpose assistance, broad tasks and an existing ecosystem. Limitation for this decision: project organization and progression to business-model, Sales and material pages depend on the user's instructions and chosen workflow, and the amount of material a project can hold is bounded.
 
 ## Business-knowledge agents
 
@@ -60,8 +62,9 @@ Appeal: immediate, flexible and familiar. Limitation: important decisions may re
 
 ## Sources
 
-| ID  | Source and date                                                                                              | Use and limitation                                                                                                       |
-| --- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| S1  | OpenAI, [Projects and chats](https://learn.chatgpt.com/docs/projects), accessed 2026-09-13                   | AC-SPS-20; official product documentation, no independent outcome comparison.                                            |
-| S2  | Chatbase, [Data sources](https://www.chatbase.co/docs/user-guides/chatbot/data-sources), accessed 2026-09-13 | AC-SPS-21; official vendor documentation, no customer-preference evidence.                                               |
-| C1  | Operator clarifications, 2026-09-13, 2026-09-16 and 2026-09-17                                               | AI Chat intended structuring, continued-thinking flow and product relationship; client intention, not external evidence. |
+| ID  | Source and date                                                                                                          | Use and limitation                                                                                                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| S1  | OpenAI, [Projects and chats](https://learn.chatgpt.com/docs/projects), accessed 2026-09-13                               | AC-SPS-20; official product documentation, no independent outcome comparison.                                                                                                              |
+| S2  | Chatbase, [Data sources](https://www.chatbase.co/docs/user-guides/chatbot/data-sources), accessed 2026-09-13             | AC-SPS-21; official vendor documentation, no customer-preference evidence.                                                                                                                 |
+| S3  | OpenAI file-limit figures for Projects, as reported by secondary summaries of the OpenAI Help Center, checked 2026-09-18 | AC-SPS-22; the official pages returned HTTP 403 to the coordinator, so the per-plan numbers are second-hand and OpenAI's own pages disagree; the order of magnitude is the supported part. |
+| C1  | Operator clarifications, 2026-09-13, 2026-09-16 and 2026-09-17                                                           | AI Chat intended structuring, continued-thinking flow and product relationship; client intention, not external evidence.                                                                   |

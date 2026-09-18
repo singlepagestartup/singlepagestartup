@@ -10,9 +10,9 @@ confirmation:
 review:
   dependencies:
     brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
-    design: f57dd47f9b398831ef332ab56613a48858c455a4c143ba9a74377389e51c5629
-    model.framework-service: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
-    product.ai-chat.product: 91f9368e4f450d3a1b82a775df616972fe8aab756c6890331292f5327fdc4d84
+    design: 6f29bf4c2ea795a190382e7091a7085ee9270f892486aeccd6c2aca62f1179c8
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
+    product.ai-chat.product: 128b557ac48280f0ad09eefbe05fdc4e54a8aaa4c8c972205ffa5f53cb6cbc9e
     product.ai-chat.sales: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400
     strategy: d68e88a81632b3ddf4f57431d6963c9d74c28bf2ba0a3d9578fb2d925fe3bf82
 ---

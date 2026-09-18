@@ -2,9 +2,9 @@
 confirmation:
   confirmed: true
   by: operator
-  at: "2026-09-16"
-  source: "Operator confirmed the complete current Brief in chat: «С брифом всё нормально, давай ставим его на подтверждение, переходим к стратегии»."
-  content_sha256: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
+  at: "2026-09-18"
+  source: "Operator confirmed the Brief as rewritten to the chosen product direction, then scoped the support level to AI Chat so help with the free framework code stays best-effort: «Да, оба»."
+  content_sha256: 6b2c413d4d8f686e53dc2886c93c5ad79c8e04b93d75158f0a1fb15051b3fe2f
 intake:
   scope:
     confirmed: true
@@ -19,7 +19,13 @@ intake:
     by: operator
     at: 2026-09-13
     source: Operator explicit correction in chat, 2026-09-13, describing business-data AI Chat, token purchases, novice makers working through Claude Code or Codex Desktop, and the button «Развернуть проект на своей машине» leading to GitHub.
-    scope: Confirms the intended audiences, business-specific chat value, separately scoped vector knowledge per chat, token-purchase monetization direction, and hosted-chat-to-local-framework path. It does not confirm the revised whole Brief wording, measured answer superiority, public service readiness, physical database isolation, or implemented automatic deployment.
+    scope: Confirms the intended audiences, the token-purchase monetization direction and that answers are grounded in the material the person supplies. The framing of the chat's value and the path from the hosted service to the framework were superseded on 2026-09-18; product_direction owns them. The retrieval capability was not superseded; see sources.retrieval. It does not confirm the whole Brief wording, measured answer superiority or public service readiness.
+  product_direction:
+    confirmed: true
+    by: operator
+    at: 2026-09-18
+    source: Operator resolved the contradiction between this Brief and the current Strategy, Brand and Product in chat, 2026-09-18, selecting the Strategy/Brand/Product mechanics.
+    scope: Confirms that AI Chat organizes supplied material into a reviewable project model, keeps it as context for later questions and materials, assembles a landing-page sandbox, and publishes through GitHub authorization, a repository in the user's account, a connected server and configured automatic deployment. Supersedes the 2026-09-13 local-deployment path. It does not confirm the whole Brief wording, implementation status or any measured outcome.
   visual_direction:
     confirmed: true
     by: operator
@@ -38,7 +44,7 @@ sources:
   audience_value_and_flow:
     type: client-claim
     source: Operator audience, value and acquisition-flow correction in chat, 2026-09-13.
-    scope: Primary hosted AI Chat for people supplying their business facts and documents; each chat has separately scoped vector knowledge and retrieves relevant context for answers. Users may buy tokens and continue as consumers. Novice makers work through coding agents, review the resulting UI, and may follow the visible local-deployment button to GitHub, deploy with an agent and reuse the framework for their next products. These are intended product behaviors, not verified implementation or adoption.
+    scope: Primary hosted AI Chat for people supplying their own project material. Users may buy tokens and continue as consumers. Novice makers work through coding agents and review the resulting UI. The framing of the chat's value and the route to the framework were superseded on 2026-09-18 by product_direction; the retrieval capability was not. These are intended product behaviors, not verified implementation or adoption.
   answer_quality:
     type: client-claim
     source: Operator desired AI Chat outcome in the audience and value correction, 2026-09-13.
@@ -48,6 +54,31 @@ sources:
     resolution: operator-fact
     source: Operator selected token-purchase monetization in chat, 2026-09-13, without specifying transaction details.
     scope: Exact token price, currency, token unit and billing terms remain unselected; this does not leave the product's audience, intended paid value or monetization direction unselected.
+  retrieval:
+    type: client-claim
+    resolution: operator-fact
+    source: Operator statement in chat, 2026-09-18, after the coordinator reported that the
+      Brief rewrite had dropped the per-chat knowledge base.
+    scope: |
+      Documents the person uploads are split into chunks, vectorized and stored so the
+      service retrieves the relevant parts as context, a retrieval-augmented generation
+      design. There is no ceiling on the number of files: every uploaded document is
+      vectorized and can take part in answering, and the service selects the most relevant
+      parts for each question. The operator decided on 2026-09-18 that there is no file
+      limit at all, and counts that capacity among the product's selling points, against
+      general assistants that hold a project's files in the low tens; product Research
+      records the documented limit and the confidence in it. Storage and vectorization for an
+      unbounded corpus are a variable service cost against token terms that are not yet
+      defined; the shared model carries that consequence. Two things are not
+      settled and are not asserted here. How the capability is described to a customer is
+      undecided, since Brand keeps the mechanism out of the ordinary product flow. Whether a
+      larger corpus produces better answers for this customer is unresolved; the capacity
+      difference is documented, the benefit is not.
+  service_terms:
+    type: client-claim
+    resolution: operator-fact
+    source: Operator confirmed each term in chat, 2026-09-18, after the coordinator listed the terms that Brand, Product and Sales stated without a Brief source.
+    scope: AI Chat support requests processed within 24 hours as the initial service level, with help on the free framework code unchanged and best-effort; payments accepted in Russia through an online cash register; a free token allowance granted at registration; a first setup session of about one focused hour; email-and-password authentication with no social sign-in; Beget or Timeweb as example hosting providers for the deployment key; provider backups retained up to six months. These are operator decisions, not verified implementation or measured service levels.
   funding:
     type: client-claim
     source: Operator business intake, 2026-08-14.
@@ -184,7 +215,7 @@ The project owner makes product decisions. Selling custom websites is outside th
 
 ## Customers and value
 
-AI Chat is intended for people who bring their own business facts and documents, configure knowledge for their business and ask questions. Each chat is intended to have a separately scoped vector knowledge base; retrieval supplies relevant context for its answers. The desired value is useful answers and advice grounded in that person's business data. Better answer quality than ordinary ChatGPT without that context is a goal to test.
+AI Chat is intended for people with a business idea or early-stage project whose material is scattered across notes, documents, screenshots and partial decisions. They supply what they already have or answer guided questions; the service organizes it into a reviewable project model, shows what is missing or contradictory, and keeps the accepted result available for later questions, criticism and materials. The first setup session is intended to take about one focused hour, with unresolved questions left open. The same decisions assemble a landing page from SinglePageStartup blocks, edited in a private sandbox with an immediate preview and no public address. Uploaded notes and documents are split into chunks, vectorized and stored, so the service retrieves the relevant parts as context for its answers. There is no ceiling on how many files a person adds: every document is vectorized and can take part in answering, and the service selects the most relevant parts each time. The operator counts that capacity among the product's selling points, because a general assistant holds a project's files in the low tens. How it is described to a customer is not selected: Brand keeps vectors, retrieval and storage out of the ordinary product flow, so the benefit has to be expressed without naming the mechanism. The desired value is a usable project model, answers grounded in the person's own material and a first page that can reach real customers; better answer quality than a general chat without that context is a goal to test.
 
 The second audience is novice AI-assisted makers, or vibe coders. They mainly converse with a coding agent in Claude Code or Codex Desktop. The agent changes the code; the person reviews the result and interface, for example in VS Code.
 
@@ -196,16 +227,19 @@ The codebase has been developed over several years by a team. Installation and m
 
 ## Business and resources
 
-| Item                 | Current model                                                                                                                                                                                                                                                        |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AI Chat revenue      | The intended offer lets users continue as hosted-service consumers and buy tokens. Token purchases are the selected monetization direction; exact price, currency, token unit and billing terms are unselected.                                                      |
-| Path to building     | After a positive AI Chat experience, the intended visible button **Развернуть проект на своей машине** leads to GitHub. Interested users deploy the project locally with a coding agent, explore and adapt it, then reuse SinglePageStartup for their next products. |
-| Framework price      | Free: the customer pays 0 for the code. There is no framework checkout or license fee.                                                                                                                                                                               |
-| Distribution         | Worldwide through GitHub. Operator-selected license: MIT; users can modify the code for their own projects.                                                                                                                                                          |
-| Funding              | The project owner's time and money fund framework development.                                                                                                                                                                                                       |
-| Support              | Help and maintenance as time permits, without a guaranteed support schedule.                                                                                                                                                                                         |
-| Core work            | Develop and maintain the shared foundation and its documentation, and make it easier for makers and agents to use.                                                                                                                                                   |
-| Continuing resources | Allocated as the project develops. No ongoing budget or staffing figure is set.                                                                                                                                                                                      |
+| Item                 | Current model                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI Chat revenue      | The intended offer lets users continue as hosted-service consumers and buy tokens. Token purchases are the selected monetization direction; exact price, currency, token unit and billing terms are unselected.                                                                                                                                                                                                                     |
+| AI Chat access       | Email-and-password registration and login; Google and other social sign-in are not planned. Registration grants the currently available free token allowance.                                                                                                                                                                                                                                                                       |
+| Payments             | Accepted in Russia through an online cash register. The payment-accepting party's legal name and payment details are not recorded yet.                                                                                                                                                                                                                                                                                              |
+| Path to building     | When the landing page is ready, the intended action **Publish on my server** authenticates the user with GitHub, creates the project repository in their account, accepts a deployment key for a hosting provider such as Beget or Timeweb, and configures automatic deployment from that repository. This path needs no token purchase. A maker with another concrete software need reuses the same framework with a coding agent. |
+| Framework price      | Free: the customer pays 0 for the code. There is no framework checkout or license fee.                                                                                                                                                                                                                                                                                                                                              |
+| Distribution         | Worldwide through GitHub. Operator-selected license: MIT; users can modify the code for their own projects.                                                                                                                                                                                                                                                                                                                         |
+| Funding              | The project owner's time and money fund framework development.                                                                                                                                                                                                                                                                                                                                                                      |
+| Support              | AI Chat support requests are processed within 24 hours as the initial service level, without continuous live coverage or a resolution deadline. Help with the free framework code stays best-effort, as time permits.                                                                                                                                                                                                               |
+| Data retention       | Account deletion removes the active account and the project data the service controls. Infrastructure-provider backups may retain copies for up to six months under the provider's own process.                                                                                                                                                                                                                                     |
+| Core work            | Develop and maintain the shared foundation and its documentation, and make it easier for makers and agents to use.                                                                                                                                                                                                                                                                                                                  |
+| Continuing resources | Allocated as the project develops. No ongoing budget or staffing figure is set.                                                                                                                                                                                                                                                                                                                                                     |
 
 ## Goals and success
 

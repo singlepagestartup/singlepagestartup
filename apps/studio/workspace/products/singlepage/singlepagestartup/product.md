@@ -22,7 +22,7 @@ sources:
       - intake.audience_value_and_flow
       - sources.audience_value_and_flow
     date: 2026-09-13
-    supports: Novice makers direct Claude Code or Codex Desktop and inspect the UI; useful AI Chat can lead through GitHub to local deployment, adaptation and next-product reuse without a token purchase.
+    supports: Novice makers direct Claude Code or Codex Desktop and inspect the UI; publishing an AI Chat page creates the customer's own repository on this foundation, and a maker with another concrete software need reaches it through GitHub for adaptation and next-product reuse, in both cases without a token purchase.
     limitation: Selected product journey; public chat readiness, automatic setup and measured conversion are not established.
   approved_direction:
     classification: constraint
@@ -99,8 +99,8 @@ sources:
     limitation: Earlier supplied 1836 frontend variants and 24 Studio examples are not used as current product counts; Research owns revalidation.
 review:
   dependencies:
-    brief: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
-    model.framework-service: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
+    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
     product.singlepagestartup.research: 629f3131efae5b5778d2bf8cb4a6bf7b98b5d223f4174d6583c93ad3a1bcf01e
 ---
 
@@ -147,7 +147,7 @@ The offer includes source code, documentation and agent instructions; account an
 
 The selected distribution model is free code under MIT through GitHub. [Revenue Streams](../models/framework-service/model.md#revenue-streams) owns the money terms. Coding-agent subscriptions, infrastructure and hosted AI Chat usage are separate. Help and maintenance are provided as time permits; custom implementation and managed hosting are outside the offer.
 
-In the intended experience, a person discovers SPS through AI Chat, a demonstration, task guidance or a relevant community answer. Interested makers follow **Run the project on your machine** to GitHub and ask a coding agent to deploy and adapt the project. Buying chat tokens is not required. The maker describes changes, reviews the interface and develops the product; the same foundation can support the next idea.
+In the intended experience, a person discovers SPS through AI Chat, a demonstration, task guidance or a relevant community answer. Publishing a page from AI Chat creates the customer's repository on this foundation; a maker with another concrete software need instead follows **Run the project on your machine** to GitHub and asks a coding agent to deploy and adapt the project. Buying chat tokens is not required. The maker describes changes, reviews the interface and develops the product; the same foundation can support the next idea.
 
 ## Business goals and metrics
 

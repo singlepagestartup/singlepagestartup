@@ -430,10 +430,16 @@ describe("pipeline check on this repository", () => {
       }
     }
     expect(report.cursor.recorded.active_stage).toBeDefined();
-    expect(
-      report.stages
-        .find((stage) => stage.id === "00-business")!
-        .checks.every((check) => check.status !== "gap"),
-    ).toBe(true);
+
+    // The Brief's own state decides the stamp gate, whichever state it is in;
+    // pinning "Client Request is clean" would make an ordinary workspace edit
+    // fail the suite.
+    const brief = reviews.get("brief")!.confirmation;
+    const stamp = report.stages
+      .find((stage) => stage.id === "00-business")!
+      .checks.find((check) => check.id === "brief.stamp-current")!;
+    expect(stamp.status === "gap").toBe(
+      (brief.state === "stale" ? brief.underlying : brief.state) === "changed",
+    );
   });
 });

@@ -31,23 +31,21 @@ sources:
     supports: Current Measured Space imagery and typography with unchanged original image masters.
 review:
   dependencies:
-    brand: 691ec9f7a801d77e97daa4266fbd617c95568804eefb1ed07c3848dfd8add19d
-    design: 99ab863f73ba4c069a79fceb3cedfc3fb0b0c91c51d50185f15779c1a8aec0b7
-    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
-    product.singlepagestartup.product: 08586629928e54c1700f059e4b5c8304b78451448389b8603bc8a8665499bcf2
-    product.singlepagestartup.sales: c3d212dfccf53eccf801206264e79db78e90237b4ec1c7a0ea71e01118ab50ba
-    strategy: 2622dc1d9ee86e33532abfba58728e3b1999c2ac9759162cd5d9f3ec07887cc0
-  stale:
-    reason: Review page targeting and copy against the segment needs, objections, acquisition messages and CJMs in Sales.
-    sources:
-      - product.singlepagestartup.sales
+    brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
+    design: 6f29bf4c2ea795a190382e7091a7085ee9270f892486aeccd6c2aca62f1179c8
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
+    product.singlepagestartup.product: 1bd3022ba57bd99882728e561cec47013e32d16dc2a138e8598efd17184e70e6
+    product.singlepagestartup.sales: 5f4d91f14898077c62d3576a0dd298c4393d3aa788e05df4d42bf6d85b0cbf13
+    strategy: d68e88a81632b3ddf4f57431d6963c9d74c28bf2ba0a3d9578fb2d925fe3bf82
 ---
 
 # Website
 
 ## Objective and visitor paths
 
-The Code Framework website helps people turn a business idea into their own product with a coding agent. It addresses novice makers who want ready common functions and room for their own business logic.
+The Code Framework website helps people turn a business idea into their own product with a coding agent. It addresses the `makers` Sales segment: novice creators with a business idea who want ready common functions and room for their own business logic.
+
+The `developer-agents` segment, a coding agent selecting the foundation for a person it works for, has no path on this page. Its needs are clear instructions, a visible separation of shared conventions from the human's product choices, and enough material to explain fit and remaining work to the responsible person. Whether the website serves that segment or the repository documentation does is an open decision for the project owner.
 
 Visitors arrive through AI Chat, a demonstration, a tutorial, search or a shared link. The page explains the value, introduces the local workflow and leads to the GitHub project. Someone who only wants hosted answers can choose AI Chat instead.
 

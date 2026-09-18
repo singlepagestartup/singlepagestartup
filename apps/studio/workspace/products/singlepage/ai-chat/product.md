@@ -4,10 +4,11 @@ customer_segments:
 sources:
   scope: Client inventory confirmation, 2026-09-11; retained by Brief
     intake.scope, 2026-09-13.
-  audience-value-and-flow: Brief intake.audience_value_and_flow and
-    sources.answer_quality; operator correction, 2026-09-13, defines
-    business-data chat, separately scoped vector knowledge, useful business
-    answers, token buying and a local-framework branch.
+  audience-value-and-flow: Brief intake.product_direction and
+    sources.service_terms; operator decision, 2026-09-18, defines the
+    project-model workspace, the landing-page sandbox, publication to the
+    customer's own server and token buying, superseding the business-data chat
+    and local-framework branch recorded on 2026-09-13.
   one-page-workspace: Operator clarification, 2026-09-16; guided cards form one
     concise project page covering the request, intended result, strategy and
     brand; the service reuses that page for ordinary-language work and a
@@ -61,15 +62,18 @@ sources:
 confirmation:
   confirmed: true
   by: operator
-  at: 2026-09-17
-  source: "Operator confirmed the current AI Chat Product in chat: «Так, ну в
-    целом это всё верно, оно так и работает»."
-  content_sha256: 6289cf5c869f8c430256eecf74f2440076ba079ada7b0ecdf9e6ba24b5cf75e3
+  at: "2026-09-18"
+  source: "Operator re-confirmed the current AI Chat Product on 2026-09-18 after
+    the coordinator checked its body against the confirmed Brief and corrected
+    the superseded audience-value-and-flow source record: «Да, оба». The
+    2026-09-17 approval it replaces was stamped against a body the commit hooks
+    then reformatted."
+  content_sha256: 91f9368e4f450d3a1b82a775df616972fe8aab756c6890331292f5327fdc4d84
 review:
   dependencies:
-    brief: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
-    model.framework-service: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
-    product.ai-chat.research: 28aa90e90dfe6cdc80b4dade029f6447cb7c861f2f9657156e36ce4a9cee64bc
+    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
+    product.ai-chat.research: 6b9b404ced17a62287e65b1e631e3244c3258a5f4515483d60303bd4a9786a1b
 ---
 
 # Product
@@ -134,7 +138,7 @@ Access provides the hosted workspace and this intended sequence:
 7. Buy tokens whenever the available balance is insufficient for the next operation; return to the exact saved task after payment.
 8. When the page is ready, authenticate with GitHub, create the project repository, connect a server and publish through the configured deployment pipeline. Use the same Code Framework route for another concrete software need.
 
-Access uses email-and-password registration and login. The free portion becomes available after authentication; Google and other social sign-in are not planned. The intended implementation indexes the project page and permitted extensions for relevant retrieval. This technical mechanism stays out of the normal customer explanation.
+Access uses email-and-password registration and login. The free portion becomes available after authentication; Google and other social sign-in are not planned. The intended implementation splits the project page, uploaded documents and permitted extensions into chunks, vectorizes them and retrieves the relevant parts as context for an answer. This technical mechanism stays out of the normal customer explanation.
 
 The service sends the data needed for a request to selected AI model providers under their applicable terms. Account deletion removes the active account and project data controlled by SinglePageStartup. Infrastructure-provider backups may retain copies for up to six months under the provider's system process; the project cannot shorten that backup period. Generated project materials are produced within the service for the user's project. The current offer does not rely on third-party creative materials, while provider terms still govern model processing.
 
