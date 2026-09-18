@@ -227,7 +227,7 @@ describe("pipeline check on a downstream project", () => {
     expect(ids).toContain("evidence-register-codes");
     expect(
       report.legacy_shapes.every((shape) =>
-        shape.procedure.startsWith("contracts/"),
+        shape.procedure.startsWith("migrations/"),
       ),
     ).toBe(true);
     expect(report.status).toBe("gaps");

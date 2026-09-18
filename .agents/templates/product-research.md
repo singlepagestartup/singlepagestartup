@@ -57,5 +57,6 @@ products need an explicit applicability statement in each consuming product.
 Source IDs may be local to this document; cross-document source references must
 include its Research path. Include repository identity when combining repositories.
 
-Apply `.agents/contracts/research-sales-audit.md` for segment-by-segment Sales
-validation, competitor detail, evidence verdicts and the reusable Research tree.
+Segment-by-segment Sales validation, competitor detail, evidence verdicts and
+the reusable Research tree follow the Market Researcher method; register the
+detail pages under catalog section `research`.

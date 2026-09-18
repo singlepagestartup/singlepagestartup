@@ -7,7 +7,7 @@ confirmation:
 # Competitors and alternatives
 
 <!-- Suggested detail structure, adaptable to the project. Register in catalog
-section research. Follow research-sales-audit.md and document-readability.md. -->
+section research. The Market Researcher role defines the audit method. -->
 
 ## Comparison scope
 
