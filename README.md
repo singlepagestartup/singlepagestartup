@@ -635,6 +635,6 @@ Detailed documentation for each module can be found in their respective director
 
 ## License
 
-This software is proprietary and confidential. You may use this code as a foundation for your own projects, but selling, sublicensing, distributing, or providing it as a paid product, subscription, or any commercial offering to third parties is strictly prohibited without explicit written permission from the copyright holder.
+SinglePageStartup is released under the MIT License. You may use, copy, modify, merge, publish, distribute, sublicense and sell copies of the code, including in commercial products, provided the copyright notice and the permission notice travel with it. The software comes with no warranty.
 
 See full license terms in the [LICENSE](./LICENSE) file.

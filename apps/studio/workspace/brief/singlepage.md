@@ -94,8 +94,8 @@ sources:
   license:
     type: client-claim
     source: Operator Brief review, 2026-09-12.
-    scope: MIT is the selected distribution license; the operator reports publishing the change.
-    publication_verification: Pending exact branch or commit. Coordinator inspected local HEAD and fetched origin/main LICENSE and found proprietary terms; the draft does not claim that inspected source already contains MIT.
+    scope: MIT is the selected distribution license.
+    publication_verification: Confirmed on 2026-09-18. The operator directed the change and the repository LICENSE now carries the MIT text; the README states the same terms. Before that date both files carried proprietary terms while this record already said MIT.
   identity:
     type: client-claim
     source: Operator identity intake, 2026-08-11; registered source SVG inspection.
