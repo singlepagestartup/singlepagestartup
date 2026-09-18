@@ -335,73 +335,22 @@ trees inside the chosen catalog: startup replaces them with the product set.
 
 ## What each stage owns
 
-### 00 Client Request
+The owners, active artifacts and completion checks of every stage are declared
+in `.agents/pipeline/pre-development.yaml` and coordinated by
+`.agents/workflows/pre-development.md`; the Review order table above lists what
+to read at each stage, and
+`npm run singlepagestartup:pipeline:check -- --format text` prints the current
+gaps. Assets is a machine-readable YAML registry and is intentionally absent
+from the human-review Storybook sidebar: accepted source files live in
+`assets/<layer>/intake/`, generated outputs in
+`assets/<layer>/generated/<proposal-id>/`, and local fonts with their licenses
+in `assets/<layer>/fonts/`.
 
-Client Request contains the client's request and supplied business facts.
-The internal workflow stage ID remains `00-business`.
+### Project-specific Design structure
 
-- Brief records the confirmed subject, current situation, desired outcome,
-  scope, constraints, owner-controlled facts, and products in scope. Supporting
-  acquisition activities and internal work remain brief context in Brief and
-  Strategy.
-- Business Analyst records initial Product and Operations & Economics model
-  sources, with client-supplied value, money, responsibility, capacity and routing. Distinguish reported reality, confirmed intention, inspected
-  supplied materials, calculations, and unknowns, with sources. Each product's
-  Sales intake records its supplied process and missing details.
-- Keep material source attribution with each owning statement. Product Research
-  owns external sources; Assets owns files and rights. User confirmation and
-  current dependency review are document metadata. Git keeps previous versions.
-  There is no separate Evidence document or replacement fact/change log.
-- No market, audience, competitor, or demand research is performed in this stage.
-  External contradictions become client-clarification questions, not silent edits.
-
-An error here has the largest propagation cost. Do not continue from an
-unconfirmed scope or an invented operator fact.
-
-### 10 Strategy
-
-Before selecting the strategy, research each relevant product separately: its
-buyer, purchase situation, alternatives, prices, channels, findings, and sources.
-The files live under Products from the start; the stage number describes the
-work order, not the ownership of Research. Cross-product comparisons belong to
-Strategy and cite those product files. No shared Research document is created.
-
-Strategy names one audience-growth priority, one sales-product priority, the
-exact product set participating in the current experiment, and one experiment track.
-Priorities do not disable other active directions. Positioning, commercial
-logic, acquisition focus, rejected
-alternatives, and the bounded experiment stay proposed until the operator
-approves or corrects them.
-
-### 20 Brand
-
-Brand defines the meaning that should form in the customer's mind: intended
-perception, promise, proof boundary, objections, voice, naming, CTA, and
-governance. It does not contain colors, typography, photographs, illustrations,
-or page layouts.
-
-### 30 Design
-
-Design translates approved Brand into a reusable visual system: identity,
-colors, typography, grid, shapes, photography, illustration, iconography,
-motion, accessibility, and usage rules. Assets records file provenance and
-rights. Accepted source files live in `assets/<layer>/intake/`; generated
-outputs live in `assets/<layer>/generated/<proposal-id>/`. Local font files and
-their licenses live in `assets/<layer>/fonts/`; an empty startup Assets layer
-inherits the singlepage font declarations without copying their files. Assets
-is a machine-readable YAML registry and is intentionally absent from the
-human-review Storybook sidebar.
-
-Photography and Illustration use the same five blocks in `design.md`: purpose
-and evidence boundary, one objective style master prompt, production
-specification, a generation-example table linked to exact asset IDs, and a
-review/quality gate. Each active media family needs at least three materially
-different real examples reviewed together. The default Design blocks render
-those Markdown tables and blockquotes; a project may select the blocks it needs
+The default Design blocks render the photography and illustration sections of
+`design.md` as tables and blockquotes; a project may select the blocks it needs
 or supply a different structure through its own layout.
-
-#### Project-specific Design structure
-
 `design/<layer>/layout.yaml` owns the order and selection of visible sections.
 An empty startup file (`{}`, comments only, or blank) inherits the complete
 singlepage layout. A populated startup layout **replaces the complete layout**;
@@ -471,92 +420,28 @@ section changes; record unresolved impact with `review.stale` in the affected
 document. Hiding a section does not resolve an outstanding design requirement;
 select the required visual families from the client brief and record scope there.
 
-Typography roles are table rows with an exact CSS family, weights, usage, and
-registered font asset ID. Review must load the real file and confirm the
-computed family; labels never stand in for font verification. Photography and
-illustration masters retain their original aspect ratio and appear uncropped
-in Design. Choose composition and format per image; derivative crops follow
-the actual product output. Keep style prompts compact and reference-derived;
-the tooltip explains how to add a scene or relationship and source references.
-After a master prompt changes, regenerate at least three different content
-briefs with its exact current wording and documented reference inputs. Compare
-their style and correct material drift before marking the prompt tested. Show
-those actual outputs in Design; old images cannot verify a new prompt.
-Choose illustration backgrounds for the project's visual direction and intended
-placement; transparency is optional. Preserve original generated masters and
-compare derivatives with them for thin lines, secondary detail, color and
-contrast. Reject processing that degrades the image. Restoring a previously
-tested prompt can reuse its unchanged original outputs and provenance when they
-still fit the brief.
-Device requirements, fixed margins and numerical limits are not universal style
-rules. Grid, spacing,
-breakpoint, container, and radius rules use named Tailwind utilities rather
-than a separate arbitrary-pixel system.
-
 ### 40 Products
 
-The product set is a prospective business plan and requirements for later
-engineering. Describe the intended offer and experience, distinguish plans from
-observed results, and use supplied figures or clearly based forecasts. Installation
-checks, software bugs and release audits do not gate these business documents.
-The same method applies to framework and downstream projects.
-
-For each client-confirmed product:
-
-1. Product defines identity, customers, their problem, value, offer and usage,
-   ending with Business goals and metrics.
-2. Operations & Economics defines revenue, resources, activities, partners,
-   costs and funding in the owning shared model.
-3. Sales defines the complete intended customer process. Readiness means its
-   business decisions are complete, even before implementation.
-4. Promotion groups Website, Marketing Creative and Presentation in one navigation
-   surface while each material retains its own source and export.
-5. Website defines visitor journeys and a site tree. Each page has its own Text
-   and Layout representations with consistent copy.
-6. Marketing Creative provides messages and compositions for selected channels.
-7. Presentation explains the business to clients, partners or investors. It owns
-   `presentation/data.yaml` and its React entry; PDF/PNG are replaceable exports.
-8. Optional Product Content contains materials customers receive or use.
-9. Analytics records observed values, periods and sources. Research remains beside
-   it to interpret evidence and route changes back to Product, the model or Sales.
-
-Review business coherence and the actual static materials. Engineering tests and
-runtime verification remain in the engineering workflow. Unchanged approved
-Brief, Strategy, Brand and Design decisions retain their approval.
-
-The catalog retains every client-confirmed product, including products outside the current experiment. Strategy never filters or deletes products. Every entry traces to
-an operator-confirmed Brief product; a showcase, reference project, possible
-future payment, repository folder, or agent idea never becomes a product by
-inference.
+Each client-confirmed product owns Product, Operations & Economics in its
+shared model, Sales, Promotion (Website, Marketing Creative and Presentation,
+each with its own source and export), optional Product Content, and Analytics
+with Research beside it. The catalog retains every confirmed product regardless
+of marketing priority; the page ownership table in
+`.agents/templates/README.md` lists what each document holds.
 
 ## Working with agents
 
 Invoke `singlepagestartup` or ask in plain language to start, continue, inspect,
 or change the active project. You do not run a separate command for every
-stage. The workflow reads `utils/pre-development/<layer>.yaml`, checks the earliest
-incomplete prerequisite, reconciles existing documents with the current shared
-pipeline and templates, loads only affected dependencies, and asks for the
-highest-impact missing operator fact.
-
-After shared `.agents/**` changes are synchronized into this repository, the
-next ordinary invocation checks completed, active, and later non-empty artifacts
-for missing files, sections, schema keys, and newly required decisions. It moves
-the cursor to the earliest affected stage automatically. There is no pipeline
-version file, migration journal, or separate validation command.
+stage: the workflow reads `utils/pre-development/<layer>.yaml`, runs the
+pipeline check, repairs the earliest gap and asks for the highest-impact
+missing operator fact.
 
 When correcting an existing decision, state the correction in ordinary
 language. The agent updates the earliest document that owns it and revisits only
 the downstream documents contradicted by the change. Git retains prior history;
 the living documents contain only the current decision, not an appended session
 log.
-
-Strongly prefer a five-to-seven-minute review per page (about 1,400 words),
-without a hard word, line, source or segment cap. Preserve material information,
-using navigable detail pages where useful. Aggregate Sales YAML and Research
-corpora are not single review pages. Repeated
-decisions, interview history, stale alternatives, and workflow handoffs do not
-belong in them. Keep material attribution with the owning decision and historical
-versions in Git; do not repeat the same explanation in several files.
 
 ## Boundaries
 
@@ -566,23 +451,22 @@ engineering workflow under `thoughts/shared/**`.
 
 ### Source ownership and semantic review
 
-Product owns customer/value/offer decisions; Operations & Economics owns model
-resources, per-product prices, costs and funding; Sales owns the whole customer
-process. Analytics owns observed values and their source windows; Research owns
-interpretation and decision implications. Website, Marketing Creative and Presentation apply these facts in their
-own authored materials. They never establish a competing source for price or
-scope. A changed source makes dependent materials stale for semantic review;
-Studio does not automatically replace their copy or renew confirmation.
+Product owns customer, value and offer decisions; Operations & Economics owns
+model resources, per-product prices, costs and funding; Sales owns the whole
+customer process; Analytics owns observed values and their source windows;
+Research owns interpretation. Website, Marketing Creative and Presentation apply
+these facts in their own materials and never become a competing source for
+price or scope. A changed source makes dependent materials stale for semantic
+review under
+[the shared status contract](../../../.agents/contracts/document-confirmation.md);
+Studio never replaces their copy or renews confirmation.
 
 Presentation keeps its own data and React entry point, with the same preview and
 PDF export. Additional pages keep the existing format/nesting support. Use
 **Product Content** for delivered lessons, episodes, templates or files, separately
-from marketing. Its structure remains product-defined and optional.
-
-See [product-model migration](../../../tools/studio/products/MIGRATION.md) for the
-page/transfer maps, old bookmarks, automatic structural steps, semantic decisions
-and verification. Business is retired after content attribution, not copied into
-Brief. The `00-business` stage ID remains compatible for initial Brief/model work.
+from marketing. Its structure remains product-defined and optional. The
+historical Business-to-model transfer maps are in
+[product-model migration](../../../tools/studio/products/MIGRATION.md).
 
 ### Producing and exporting product materials
 
@@ -623,59 +507,38 @@ labels and metadata. Preserve product names and stable content keys. Short
 vocabulary fields use the existing `{ en: string, ru: string }` shape; longer
 copy may use separate Markdown sources per locale. Text, Layout and exports
 must select the same locale. A translation sent for operator review does not
-add a runtime language switch or confer approval. Follow the Language and
-vocabulary rules in `.agents/contracts/product-models.md` for new projects.
+add a runtime language switch or confer approval. The website and creative
+templates carry the authoring rules for multilingual materials.
 
 ## Sales customer segments and CJM
 
 Sales v2 uses the same internal page tree as Website and Marketing Creative:
-Overview → Customer segments → one page per Product segment. Each page contains
-the customer/situation, needs and pains, motives, decision trigger and criteria,
-value proposition, objections and sales arguments, acquisition/message matrix,
-and Customer Journey Map (CJM). The map shows customer goals, actions, questions,
-desired experience, touchpoints, business responses, transitions, relationships
-and metrics across the journey. Operational responsibility and handoffs remain
-available in a collapsible section. These are intended business experiences;
-proposed motives are not reported as observed customer psychology.
+Overview → Customer segments → one page per Product segment. Each page shows
+the customer and situation, needs and pains, motives, decision trigger and
+criteria, value proposition, objections and sales arguments, the
+acquisition/message matrix, and the Customer Journey Map (CJM) with customer
+goals, actions, questions, desired experience, touchpoints, business responses,
+transitions, relationships and metrics; operational responsibility and handoffs
+stay in a collapsible section. These are intended business experiences, not
+observed customer psychology. The source is the product's `sales.yaml` in the
+`singlepagestartup.sales-process.v2` schema documented in
+`.agents/templates/sales-process.yaml`; every ready Product segment needs a
+profile, and unknown or duplicate IDs fail validation.
 
-Use `singlepagestartup.sales-process.v2` in the product's `sales.yaml`. Keep shared
-owner, seller, pricing, capacity, blockers and confirmation once. Put profiles in
-`segments`, each with an `id` matching Product frontmatter `customer_segments`.
-Every ready Product segment needs a Sales profile; unknown/duplicate IDs fail
-validation. Each profile has `name`, `audience`, `roles`, `needs`, `motivations`,
-`decision_criteria`, `purchase_trigger`, `value_proposition`, `objections`,
-`acquisition` and `journey`. The exact fields and attribution guidance are in
-`.agents/templates/sales-process.yaml`. Ready means business completeness.
-Empty intake is blocked with `segments: []` and explicit business unknowns.
-
-Shared `utils/products/sales.ts` parses both legacy v1 and current v2. V1 remains
-readable; migrate it when revising its owned Sales rather than inventing profiles
-on load. `utils/components/SalesSegment.tsx` builds the segment pages and map;
-`ProductPages` owns navigation, header confirmation and the compact `.md` export.
-The selected segment export contains only its profile and CJM, with no review
-metadata. All segment pages display whole-Sales confirmation; selecting a page
-never approves it. Additional catalog Sales pages remain supported. Generated IDs
-`sales-customer-segments` and `sales-segment-<id>` are reserved for this navigation.
-The source stays in the atomically selected product layer. An empty startup
-inherits base examples; a populated startup uses only its own products/profiles.
-
-Website and Creative authors use the relevant segment's needs, decision motives,
-objections and CJM moment, recording target segment and journey/acquisition IDs
-in the material's metadata. Sales is a direct review input of Website, Creative
-and Presentation. Changes prompt impact review; they do not silently replace
-material copy or renew approved Strategy/Brand/Design.
+Shared `utils/products/sales.ts` parses both legacy v1 and current v2;
+`utils/components/SalesSegment.tsx` builds the segment pages and map, and
+`ProductPages` owns navigation, header confirmation and the compact `.md` export
+of one profile and CJM without review metadata. All segment pages display the
+whole-Sales confirmation; selecting a page never approves it. Additional catalog
+Sales pages remain supported, and the generated IDs `sales-customer-segments`
+and `sales-segment-<id>` are reserved for this navigation.
 
 ### Research audits of Sales segments
 
-Use the shared Research tab with Overview, Customer segments and Competitors and
-alternatives. Register Markdown detail pages in catalog section `research`.
-Each completed segment audit identifies `sales_segment` and all seven
-`sales_dimensions`; the main `research.md` opts in with `sales_audit: true`.
-See `.agents/contracts/research-sales-audit.md` for evidence, verdict, competitor
-and traceability requirements. Finding prefixes and unique IDs cover all declared
-Research pages. Every Sales segment is checked, without an arbitrary count cap.
-
-Research detail feeds its summary and downstream decisions. Research observes
-the Sales body as a hypothesis, storing its fingerprint without recursively
-inheriting Sales approval; this avoids the Research → Product → Sales review
-cycle. Changes still request a new audit. No snapshot update grants user approval.
+The Research tab has Overview, Customer segments and Competitors and
+alternatives; Markdown detail pages are registered in catalog section
+`research`. A completed segment audit declares `sales_segment` and the seven
+`sales_dimensions`, and the main `research.md` opts in with `sales_audit: true`.
+Research observes the Sales body as a hypothesis, storing its fingerprint
+without inheriting Sales approval, so a changed Sales requests a new audit
+without a Research → Product → Sales review cycle.
