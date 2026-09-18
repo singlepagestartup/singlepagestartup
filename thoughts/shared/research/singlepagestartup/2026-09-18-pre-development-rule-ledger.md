@@ -837,4 +837,22 @@ The TSV keeps its phase-3 disposition and gains no `phase4` column. Its 222 temp
 ### Goldens after the template group
 
 - `npm run studio:validate` passes: 171 + 3 + 5 + 10 tests, and the pipeline report is unchanged at 19 passed, 4 gaps (0 structural, 3 approval, 1 decision), 0 legacy shapes.
-- The snapshot differs from `2026-09-18-pre-development-goldens-phase3.txt` in exactly 40 of 182 lines: the hashes of the ten edited templates in both layers and both projections. No document state, resolution or dependency count changed, and `template.github-reconciliation` is not an indexed entry, so its edit does not appear. The new baseline is `2026-09-18-pre-development-goldens-phase4.txt`.
+- The snapshot differs from `2026-09-18-pre-development-goldens-phase3.txt` in exactly 44 of 182 lines: the hashes of the eleven edited templates in both layers and both projections. No document state, resolution or dependency count changed, and `template.github-reconciliation` is not an indexed entry, so its edit does not appear. The new baseline is `2026-09-18-pre-development-goldens-phase4.txt`.
+
+### Checks
+
+Four gaps the dry run found in the executable machine are closed.
+
+A detected legacy shape now becomes a structural gap of the stage that owns the affected documents, named per shape as `owning_stage` in `.agents/pipeline/pre-development.yaml`. Until then the computed stage ignored `legacy_shapes` entirely, so a workspace with a v1 catalog or retired evidence codes could report every stage complete while the documents each stage reads were the wrong shape. The synthetic result carries `check: legacy-shape` and `artifact: workspace`, the one result that belongs to no single artifact; the `Legacy shapes` section still prints the migration procedure.
+
+A Brief whose confirmation stamp no longer covers its body is an approval gap at `00-business`, through the new `stamp-current` check. `00-business` only verified that confirmation metadata existed and that the intake scope was confirmed, so an edit after approval passed silently. A document that carries no stamp has nothing to invalidate and passes.
+
+`generated-assets-registered` accepts a registry entry whose `path` is a directory as covering the files below it, which is the owner's decision of 2026-09-18. The check requires the directory to exist and to be non-empty; `asset-index.yaml` records when one entry may cover a set and where per-file provenance goes. On the m2commerce workspace this removes 105 false orphans and leaves 10 real ones, all files under `static-covers/`, `website/` and `media/` that no entry covers.
+
+The report prints the document's own state beneath `stale`. The review resolver replaced the whole confirmation when upstream inputs moved, so a body that had left its approval behind read as an input problem; it now keeps that state as `underlying` and the check detail reads `state is stale over changed`. On the framework workspace this separates Strategy and Brand, whose own stamps never matched their bodies, from Design, whose stamp is valid and whose input merely moved.
+
+### Goldens after the check group
+
+- `npm run studio:validate` passes: 171 + 3 + 5 + 15 tests. The framework report reads 20 passed, 4 gaps (0 structural, 3 approval, 1 decision), 0 legacy shapes: one check more than phase 3 because `brief.stamp-current` passes there, and the same four gaps.
+- The snapshot is unchanged by this group: `underlying` is a resolved field, not document content.
+- The m2commerce copy moves from 15 passed, 8 gaps to 15 passed, 9 gaps (3 structural, 4 approval, 2 decision). The new gap is `brief.stamp-current`: that Brief was edited after it was confirmed, which is exactly what the dry run predicted would pass silently.

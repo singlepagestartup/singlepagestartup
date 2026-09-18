@@ -11,6 +11,12 @@ export interface IDocumentConfirmation {
   at?: string;
   reason?: string;
   sources?: string[];
+  /**
+   * The document's own state before stale upstream inputs overrode it. A
+   * `changed` stamp survives here so a reader is not told to review inputs
+   * when the body itself left its approval behind.
+   */
+  underlying?: "confirmed" | "unconfirmed" | "changed";
 }
 
 export interface IDocumentSource {

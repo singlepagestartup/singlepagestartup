@@ -60,6 +60,13 @@ permission to consume a stale result. Missing dependency snapshots never make a
 confirmed document green; a new draft without a snapshot stays unconfirmed
 until its snapshot is initialized after checking the current inputs.
 
+Precedence hides the document's own state, so the resolver keeps it as
+`underlying` and readers name both. A document reported as `stale` over
+`changed` needs its own body confirmed as well as its inputs reconciled;
+reconciling the inputs alone leaves the approval covering a body that no longer
+exists. The pipeline check prints this pair and fails `00-business` on a Brief
+whose stamp no longer covers its body.
+
 Each document records its last reviewed direct inputs in its own metadata:
 
 ```yaml

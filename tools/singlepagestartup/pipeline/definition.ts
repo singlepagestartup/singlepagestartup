@@ -10,6 +10,7 @@ export const CHECK_KINDS = [
   "frontmatter",
   "brief-scope",
   "confirmed",
+  "stamp-current",
   "catalog-matches-brief",
   "model-sections",
   "product-sections",
@@ -69,6 +70,8 @@ export interface IPipelineLegacyShape {
   id: string;
   detect: PipelineLegacyDetector;
   procedure: string;
+  /** Stage that owns the documents the shape affects; it carries the gap. */
+  owning_stage: string;
 }
 
 export interface IPipelineDefinition {
@@ -247,10 +250,17 @@ export function parsePipelineDefinition(
       if (!procedure) failures.push(`${prefix}.procedure must name a file`);
       else if (!existsSync(path.join(agentsRoot, procedure.split("#")[0])))
         failures.push(`${prefix}.procedure ${procedure} does not exist`);
+      const owningStage =
+        typeof shape.owning_stage === "string" ? shape.owning_stage : "";
+      if (!cursor.stages.includes(owningStage))
+        failures.push(
+          `${prefix}.owning_stage ${String(shape.owning_stage)} is not a declared stage`,
+        );
       return {
         id,
         detect: shape.detect as PipelineLegacyDetector,
         procedure,
+        owning_stage: owningStage,
       };
     },
   );

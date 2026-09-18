@@ -35,7 +35,10 @@ assets:
 # file alone never authorizes an agent-inferred preference.
 # For source_type: generated, lifecycle is required and must be proposed or
 # approved. proposal_id must equal the design artifact's current Visual proposal
-# ID, and the path must be below assets/<layer>/generated/<proposal_id>/.
+# ID, and the path must be below assets/<layer>/generated/<proposal_id>/. A path
+# may name a non-empty directory when one decision, rights statement and
+# lifecycle cover a whole produced set; that entry registers every file below it,
+# and per-file provenance belongs in a colocated generation-manifest.yaml.
 # Rejected, withdrawn, superseded, stale, or obsolete generated outputs are
 # deleted with their registry entries; the active registry never archives them.
 # Reconcile brand references, registry rows, and the complete generated tree.

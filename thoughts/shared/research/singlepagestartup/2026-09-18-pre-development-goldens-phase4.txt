@@ -4,7 +4,7 @@ singlepage/resolved singlepage.brief local confirmed 804372bf03999dcc
 singlepage/resolved singlepage.design local stale 28cd0d8bc4781c3e
 singlepage/resolved singlepage.products local stale 516faa3fa13339d1
 singlepage/resolved singlepage.strategy local stale 1690587d22ce1d16
-singlepage/resolved template.asset-index local unconfirmed 899d2730031c01b6
+singlepage/resolved template.asset-index local unconfirmed c946a4e5a80bad95
 singlepage/resolved template.brand local unconfirmed c641d4901d365d71
 singlepage/resolved template.brief local unconfirmed b295c9ced56656d4
 singlepage/resolved template.creative local unconfirmed df0cb782de19f62a
@@ -76,7 +76,7 @@ singlepage/source singlepage.brief local confirmed 804372bf03999dcc
 singlepage/source singlepage.design local stale 28cd0d8bc4781c3e
 singlepage/source singlepage.products local stale 516faa3fa13339d1
 singlepage/source singlepage.strategy local stale 1690587d22ce1d16
-singlepage/source template.asset-index local unconfirmed 899d2730031c01b6
+singlepage/source template.asset-index local unconfirmed c946a4e5a80bad95
 singlepage/source template.brand local unconfirmed c641d4901d365d71
 singlepage/source template.brief local unconfirmed b295c9ced56656d4
 singlepage/source template.creative local unconfirmed df0cb782de19f62a
@@ -95,7 +95,7 @@ startup/resolved startup.brief inherited confirmed 214213c03a0294bc
 startup/resolved startup.design inherited stale 37d8ebcb4456ae4a
 startup/resolved startup.products inherited stale 516faa3fa13339d1
 startup/resolved startup.strategy inherited stale 1690587d22ce1d16
-startup/resolved template.asset-index inherited unconfirmed 899d2730031c01b6
+startup/resolved template.asset-index inherited unconfirmed c946a4e5a80bad95
 startup/resolved template.brand inherited unconfirmed c641d4901d365d71
 startup/resolved template.brief inherited unconfirmed b295c9ced56656d4
 startup/resolved template.creative inherited unconfirmed df0cb782de19f62a
@@ -167,7 +167,7 @@ startup/source startup.brief local unconfirmed e3b0c44298fc1c14
 startup/source startup.design local unconfirmed e3b0c44298fc1c14
 startup/source startup.products local stale fb8facad9c4d9822
 startup/source startup.strategy local unconfirmed e3b0c44298fc1c14
-startup/source template.asset-index inherited unconfirmed 899d2730031c01b6
+startup/source template.asset-index inherited unconfirmed c946a4e5a80bad95
 startup/source template.brand inherited unconfirmed c641d4901d365d71
 startup/source template.brief inherited unconfirmed b295c9ced56656d4
 startup/source template.creative inherited unconfirmed df0cb782de19f62a

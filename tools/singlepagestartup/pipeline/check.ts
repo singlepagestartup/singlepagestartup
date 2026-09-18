@@ -62,6 +62,27 @@ export interface IPipelineReport {
   };
 }
 
+/**
+ * An unmigrated shape is not a footnote: until it is migrated the documents
+ * the stage reads are the wrong shape, so the stage cannot be complete.
+ */
+function legacyGaps(
+  shapes: ILegacyShapeResult[],
+  stageId: string,
+): ICheckResult[] {
+  return shapes
+    .filter((shape) => shape.owning_stage === stageId)
+    .map((shape) => ({
+      id: `legacy.${shape.id}`,
+      check: "legacy-shape",
+      artifact: "workspace" as const,
+      status: "gap" as const,
+      classification: "structural-gap" as const,
+      detail: shape.detail,
+      items: shape.items,
+    }));
+}
+
 export interface IRunPipelineCheckOptions {
   repositoryRoot?: string;
   expectedLayer?: WorkspaceLayer;
@@ -92,10 +113,18 @@ export async function runPipelineCheck(
     repositoryIdentity: options.repositoryIdentity,
   });
 
+  const legacyShapes = await detectLegacyShapes(
+    context,
+    definition.legacy_shapes,
+  );
+
   const stages: IPipelineStageReport[] = [];
   let firstIncompleteId: string | undefined;
   for (const stage of definition.stages) {
-    const checks = await runStageChecks(context, stage.checks);
+    const checks = [
+      ...(await runStageChecks(context, stage.checks)),
+      ...legacyGaps(legacyShapes, stage.id),
+    ];
     const ownChecksPass = checks.every((check) => check.status !== "gap");
     const complete = ownChecksPass && !firstIncompleteId;
     if (!complete && !firstIncompleteId) firstIncompleteId = stage.id;
@@ -110,11 +139,6 @@ export async function runPipelineCheck(
       manual_review: stage.manual_review,
     });
   }
-  const legacyShapes = await detectLegacyShapes(
-    context,
-    definition.legacy_shapes,
-  );
-
   const firstIncomplete = stages.find((stage) => !stage.complete);
   const computed: IPipelineComputedCursor = firstIncomplete
     ? {

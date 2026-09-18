@@ -234,6 +234,133 @@ describe("pipeline check on a downstream project", () => {
   });
 
   /**
+   * BDD Scenario: An unmigrated shape blocks the stage that reads those documents
+   * Given a v1 catalog and a retired evidence-register code in a document
+   * When the pipeline is checked
+   * Then Client Request carries a structural gap per shape and no stage reports complete
+   */
+  test("turns a legacy shape into a structural gap of its owning stage", async () => {
+    const { root } = await fixture(repositoryRoot, {
+      baseCatalogSchema: "v1",
+      evidenceCode: true,
+    });
+    const report = await runPipelineCheck({
+      repositoryRoot: root,
+      repositoryIdentity: "example/downstream",
+    });
+    const business = report.stages.find((stage) => stage.id === "00-business")!;
+    const gaps = business.checks.filter(
+      (check) => check.check === "legacy-shape",
+    );
+    expect(gaps.map((check) => check.id).sort()).toEqual([
+      "legacy.catalog-v1",
+      "legacy.evidence-register-codes",
+    ]);
+    expect(
+      gaps.every(
+        (check) =>
+          check.status === "gap" &&
+          check.classification === "structural-gap" &&
+          check.artifact === "workspace",
+      ),
+    ).toBe(true);
+    expect(business.complete).toBe(false);
+    expect(report.cursor.computed.active_stage).toBe("00-business");
+    expect(report.summary.structural).toBeGreaterThanOrEqual(2);
+    expect(
+      report.legacy_shapes.every(
+        (shape) => shape.owning_stage === "00-business",
+      ),
+    ).toBe(true);
+  });
+
+  /**
+   * BDD Scenario: A stamp stops meaning anything once its body changes
+   * Given a Brief edited after the operator confirmed it
+   * When the pipeline is checked
+   * Then Client Request reports an approval gap that names the body, not the inputs
+   */
+  test("fails Client Request when the Brief stamp no longer covers its body", async () => {
+    const { root } = await fixture(repositoryRoot, {
+      editedAfterConfirmation: ["brief"],
+    });
+    const report = await runPipelineCheck({
+      repositoryRoot: root,
+      repositoryIdentity: "example/downstream",
+    });
+    const stamp = report.stages
+      .find((stage) => stage.id === "00-business")!
+      .checks.find((check) => check.id === "brief.stamp-current")!;
+    expect(stamp.status).toBe("gap");
+    expect(stamp.classification).toBe("approval-gap");
+    expect(stamp.detail).toContain("no longer covers the current body");
+  });
+
+  /**
+   * BDD Scenario: An unstamped document has no stamp to invalidate
+   * Given a Brief that was never confirmed
+   * When the pipeline is checked
+   * Then the stamp check passes and only the scope gate reports the missing approval
+   */
+  test("passes the stamp check when the Brief carries no confirmation", async () => {
+    const { root } = await fixture(repositoryRoot, {
+      confirm: { brief: false },
+    });
+    const report = await runPipelineCheck({
+      repositoryRoot: root,
+      repositoryIdentity: "example/downstream",
+    });
+    const stamp = report.stages
+      .find((stage) => stage.id === "00-business")!
+      .checks.find((check) => check.id === "brief.stamp-current")!;
+    expect(stamp.status).toBe("pass");
+    expect(stamp.detail).toContain("no confirmation stamp to invalidate");
+  });
+
+  /**
+   * BDD Scenario: Stale never hides the document's own state
+   * Given a Strategy edited after confirmation whose inputs also moved
+   * When the report explains the approval gap
+   * Then it names the changed body beneath the stale inputs
+   */
+  test("names the underlying state beneath stale", async () => {
+    const { root } = await fixture(repositoryRoot, {
+      editedAfterConfirmation: ["strategy"],
+      staleInputs: ["strategy"],
+    });
+    const report = await runPipelineCheck({
+      repositoryRoot: root,
+      repositoryIdentity: "example/downstream",
+    });
+    const strategy = report.stages
+      .find((stage) => stage.id === "10-strategy")!
+      .checks.find((check) => check.id === "strategy.confirmed")!;
+    expect(strategy.status).toBe("gap");
+    expect(strategy.detail).toContain("stale over changed");
+  });
+
+  /**
+   * BDD Scenario: A registered directory covers the files below it
+   * Given a registry entry whose path is a directory of generated files
+   * When the generated assets are checked
+   * Then those files are registered and no orphan is reported
+   */
+  test("accepts a generated directory as covering its files", async () => {
+    const { root } = await fixture(repositoryRoot, {
+      generatedDirectory: true,
+    });
+    const report = await runPipelineCheck({
+      repositoryRoot: root,
+      repositoryIdentity: "example/downstream",
+    });
+    const assets = report.stages
+      .find((stage) => stage.id === "30-design")!
+      .checks.find((check) => check.id === "assets.generated-registered")!;
+    expect(assets.items ?? []).toEqual([]);
+    expect(assets.status).toBe("pass");
+  });
+
+  /**
    * BDD Scenario: An inherited base section is named, not silently accepted
    * Given the framework Design keeps an interface section that the downstream Brief marks out of scope
    * When the pipeline is checked as a downstream repository
