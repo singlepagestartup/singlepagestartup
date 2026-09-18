@@ -18,6 +18,9 @@ discovery metadata and adapters to these files.
   their agreed pre-development sequence in `templates/README.md`. Questions and
   constraints belong in their owning document, not a separate checklist.
 - `contracts/` contains rules that apply across roles and workflows.
+- `pipeline/pre-development.yaml` declares the stage machine: owners, active
+  artifacts, executable checks and manual-review criteria per stage, plus
+  legacy-shape detectors. `npm run singlepagestartup:pipeline:check` executes it.
 - `contracts/editorial-pass.md` defines the final pass for prose written for
   people. Every role and workflow invokes it after content and evidence are
   correct; provider adapters inherit the rule from their canonical source.

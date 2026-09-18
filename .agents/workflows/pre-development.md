@@ -132,8 +132,20 @@ The state is layer-local and never inherited: the framework reads
 
 ## Pipeline compatibility reconciliation
 
-After reading the layer cursor and before accepting its stage, follow
-`.agents/contracts/pipeline-reconciliation.md`. Compare the existing Workspace
+After reading the layer cursor and before accepting its stage, run the
+executable stage machine declared in `.agents/pipeline/pre-development.yaml`:
+
+```bash
+npm run singlepagestartup:pipeline:check -- --format text
+```
+
+The command evaluates every structural gate of every stage against the
+resolved workspace and the active layer's own sources, compares the recorded
+cursor with the earliest incomplete stage, names detected legacy shapes with
+their migration procedure, and prints the manual-review criteria of the active
+stage. It writes nothing and does not fail on gaps; its report is the
+structural part of the reconciliation below. Judgment gaps still require the
+owning role. Then follow `.agents/contracts/pipeline-reconciliation.md`. Compare the existing Workspace
 with the current checked-out workflow, roles, templates, contracts, active
 index, and stage completion rules on every invocation. This makes a synchronized
 pipeline change discover missing artifact sections in both the framework and a

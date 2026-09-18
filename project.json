@@ -34,7 +34,9 @@
           "bun tools/studio/workspace/validate.ts --active-layer startup",
           "npm run agents:editorial:test",
           "npm run studio:presentation:test",
-          "npm run singlepagestartup:github:test"
+          "npm run singlepagestartup:github:test",
+          "npm run singlepagestartup:pipeline:test",
+          "bun tools/singlepagestartup/pipeline/check.ts --format text"
         ],
         "parallel": false
       }
