@@ -6,7 +6,7 @@ review:
   dependencies:
     brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
     design: 6f29bf4c2ea795a190382e7091a7085ee9270f892486aeccd6c2aca62f1179c8
-    model.framework-service: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
     product.singlepagestartup.presentation-renderer: 04a9988dfb9f9a8494ffac394b251bb07ec9ca5b6f8ad9b44c131eb896fb4565
     product.singlepagestartup.product: 1bd3022ba57bd99882728e561cec47013e32d16dc2a138e8598efd17184e70e6
     product.singlepagestartup.research: 629f3131efae5b5778d2bf8cb4a6bf7b98b5d223f4174d6583c93ad3a1bcf01e

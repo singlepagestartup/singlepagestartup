@@ -3,7 +3,7 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    model.framework-service: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
     product.singlepagestartup.product: 1bd3022ba57bd99882728e561cec47013e32d16dc2a138e8598efd17184e70e6
     product.singlepagestartup.sales: 5f4d91f14898077c62d3576a0dd298c4393d3aa788e05df4d42bf6d85b0cbf13
 ---

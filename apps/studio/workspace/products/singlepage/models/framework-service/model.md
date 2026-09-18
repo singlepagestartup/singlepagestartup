@@ -76,12 +76,12 @@ GitHub is the distribution platform and holds the repository each published cust
 
 ## Cost Structure
 
-| Expense                        | Scope and basis                                                                   |
-| ------------------------------ | --------------------------------------------------------------------------------- |
-| Development, guidance and help | Shared owner time; separate time contribution from cash expense.                  |
-| Promotion                      | Demonstrations and reusable content; funded from available shared time and money. |
-| Hosted chat                    | AI usage, knowledge storage, hosting and payment costs; attributable to AI Chat.  |
-| Maker's product                | Agent and infrastructure expenses paid by the maker.                              |
+| Expense                        | Scope and basis                                                                                                                                                                    |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Development, guidance and help | Shared owner time; separate time contribution from cash expense.                                                                                                                   |
+| Promotion                      | Demonstrations and reusable content; funded from available shared time and money.                                                                                                  |
+| Hosted chat                    | AI usage, knowledge storage, hosting and payment costs; attributable to AI Chat. Storage and vectorization scale with what customers upload, because the offer sets no file limit. |
+| Maker's product                | Agent and infrastructure expenses paid by the maker.                                                                                                                               |
 
 Recurring totals are unset. Record shared costs once; allocate them between products only with an explicit basis. Assess AI Chat's token revenue against its attributable service costs.
 
@@ -93,7 +93,7 @@ The owner's time and money fund framework development. No external financing is 
 
 - `bridge`: useful chat experience encourages interested makers to adopt the foundation.
 - `framework-growth`: distinguish attention and stars from product use, repeat use and contributions.
-- `service-viability`: useful answers and repeat token purchases must support the service's costs.
+- `service-viability`: useful answers and repeat token purchases must support the service's costs. The unlimited corpus makes part of those costs grow with each customer's uploads rather than with their paid use, so the token terms have to price ingestion and storage, not only answers. Neither the terms nor a cost per document is defined yet.
 - `capacity`: scale promotion and help to available time and money; hosted AI Chat support requests are processed within 24 hours as the initial service level, without continuous live coverage or a resolution deadline, while help with the free framework code stays best-effort.
 - `channel-access`: use the selected organic channels and prioritize topics that attract relevant users.
 - `proof`: [framework Research](../../singlepagestartup/research.md) and [AI Chat Research](../../ai-chat/research.md) examine these business assumptions. No numerical growth or savings claim is established.

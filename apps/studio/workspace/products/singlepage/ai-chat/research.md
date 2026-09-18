@@ -6,7 +6,7 @@ confirmation:
 review:
   dependencies:
     brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
-    model.framework-service: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
     product.ai-chat.analytics: 2c7ded58308d628b9d7cd6ad99155b0d77f81bc152a2d6b136c9326c67d26716
     product.ai-chat.page.research.business-users: b0850082b935aeb58b98ce777a8cb42644e8c8ebd475b69d753b23e6335d43e3
     product.ai-chat.page.research.competitors: 393f675f629960a6eb4d281c16b2213444c882a4ac0af3aff3eed0f20407538d

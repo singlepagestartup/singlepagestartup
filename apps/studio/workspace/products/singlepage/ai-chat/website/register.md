@@ -8,7 +8,7 @@ confirmation:
   content_sha256: 2d4d3b02e0de5e83136a44c967c0d4f15871ce7dfd662324a971ce98acd429cf
 review:
   dependencies:
-    model.framework-service: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
+    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
     product.ai-chat.website: e1989d4215fe29be295c762314b12748a711d7b459df3bed937424ae84b2fa6f
 ---
 

@@ -64,9 +64,12 @@ sources:
       service retrieves the relevant parts as context, a retrieval-augmented generation
       design. There is no ceiling on the number of files: every uploaded document is
       vectorized and can take part in answering, and the service selects the most relevant
-      parts for each question. The operator counts that capacity among the product's selling
-      points, against general assistants that hold a project's files in the low tens; product
-      Research records the documented limit and the confidence in it. Two things are not
+      parts for each question. The operator decided on 2026-09-18 that there is no file
+      limit at all, and counts that capacity among the product's selling points, against
+      general assistants that hold a project's files in the low tens; product Research
+      records the documented limit and the confidence in it. Storage and vectorization for an
+      unbounded corpus are a variable service cost against token terms that are not yet
+      defined; the shared model carries that consequence. Two things are not
       settled and are not asserted here. How the capability is described to a customer is
       undecided, since Brand keeps the mechanism out of the ordinary product flow. Whether a
       larger corpus produces better answers for this customer is unresolved; the capacity
