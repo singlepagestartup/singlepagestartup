@@ -272,6 +272,13 @@ plain-language question in the operator's language: when several gates are
 open, ask about the earliest blocked stage and list the other open decisions
 as statements.
 
+## Handing work to engineering
+
+This workflow ends when the product materials it names are approved. What
+happens to an approved page next is not this workflow's to decide, and it
+is not implemented in `libs/modules` directly:
+`.agents/workflows/design-to-implementation.md` owns that order.
+
 ## Final editorial pass
 
 Apply `.agents/contracts/editorial-pass.md` to prose intended for a person

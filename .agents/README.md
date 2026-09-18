@@ -12,6 +12,10 @@ discovery metadata and adapters to these files.
 - `workflows/pre-development.md` coordinates the local process before
   engineering: the preflight, the cursor, the pipeline check, decision-scoped
   loading, the stage sequence and the handoff.
+- `workflows/design-to-implementation.md` owns the build order after
+  pre-development: draft the page in `apps/studio/workspace`, project its
+  parts into `apps/studio/modules` and judge them in Storybook without data,
+  then implement in `libs/modules` against `apps/api`.
 - `pipeline/pre-development.yaml` declares the stage machine: stage order and
   cursor vocabulary, owners, active artifacts, executable checks,
   manual-review criteria and legacy-shape detectors.

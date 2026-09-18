@@ -314,6 +314,14 @@ The progress file is deleted because its operational tracking content is already
 - If you get stuck: make sure you've read all relevant code, consider if the codebase evolved since the plan was written, present the mismatch clearly
 - GitHub markdown comments must use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin), not inline `--body "..."` when text may include shell-sensitive content
 
+## Studio before libs
+
+Implement in `libs/modules` only what has already been judged in
+Storybook. A block that has no Studio projection gets one first, because
+separating a design mistake from a data mistake in the running stack is
+what this order exists to avoid:
+`.agents/workflows/design-to-implementation.md`.
+
 ## Final editorial pass
 
 When the work contains prose intended for a person, apply

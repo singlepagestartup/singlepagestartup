@@ -378,6 +378,13 @@ Implementation phases:
 View the issue: [ISSUE_URL]
 ```
 
+## Studio before libs
+
+A plan that touches a product surface routes the work through Studio
+before `libs/modules`, and says which blocks the change needs in
+`apps/studio/modules`. Sequence and reasoning:
+`.agents/workflows/design-to-implementation.md`.
+
 ## Final editorial pass
 
 When the work contains prose intended for a person, apply
