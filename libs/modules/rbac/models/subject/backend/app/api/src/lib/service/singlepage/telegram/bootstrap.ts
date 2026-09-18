@@ -28,7 +28,16 @@ import { isUniqueConstraintError } from "@sps/backend-utils";
 // A lost race against a natural-key unique index is resolved by replaying
 // bootstrap: every step is find-or-create, so the retry observes the row the
 // winning request just inserted instead of trying to insert it again.
-const TELEGRAM_BOOTSTRAP_CONFLICT_RETRY_DELAYS_MS = [25, 75, 200];
+//
+// One request can lose several natural keys in a row, because a replay restarts
+// from the first find-or-create and meets the next contended insert. A live
+// concurrent forum_topic_created and /start pair lost four in sequence -
+// identity, subject-identity link, profile, profile-to-chat - so the budget
+// carries headroom over that, and the delays grow to pull a lock-stepped pair
+// apart instead of retrying into the same collision.
+const TELEGRAM_BOOTSTRAP_CONFLICT_RETRY_DELAYS_MS = [
+  25, 50, 100, 200, 400, 800,
+];
 
 export interface IExecuteProps {
   fromId: string;

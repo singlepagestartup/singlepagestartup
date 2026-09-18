@@ -752,6 +752,30 @@ describe("Given: two Telegram updates race to bootstrap the same account", () =>
     expect(executeOnce).toHaveBeenCalledTimes(1);
   });
 
+  /**
+   * BDD Scenario: the default replay budget covers a live race.
+   *
+   * Given: one request lost identity, subject-identity link, profile and
+   *        profile-to-chat in sequence during a live concurrent
+   *        forum_topic_created and /start pair.
+   * When: the default conflict retry budget is read.
+   * Then: it leaves headroom over those four consecutive conflicts.
+   */
+  it("keeps more default replays than the consecutive conflicts a live race produced", () => {
+    const service = buildService();
+
+    expect((service as any).getConflictRetryDelays().length).toBeGreaterThan(4);
+  });
+
+  it("backs off further on every replay so a lock-stepped pair is pulled apart", () => {
+    const service = buildService();
+    const delays: number[] = (service as any).getConflictRetryDelays();
+
+    expect(delays).toEqual([...delays].sort((left, right) => left - right));
+    expect(new Set(delays).size).toBe(delays.length);
+    expect(Math.min(...delays)).toBeGreaterThan(0);
+  });
+
   it("stops replaying once the configured conflict retries are exhausted", async () => {
     const service = buildService();
     const failure = buildConflictError(
