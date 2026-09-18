@@ -3,9 +3,10 @@ import { httpErrorPatterns } from "./paterns";
 import { ErrorPatternEntry, UtilsProp } from "./type";
 import { parseCategoryFromMessage } from "./parser";
 import { extractMessage, extractOriginalError } from "./extract";
+import { util as sanitizeMessage } from "./sanitize";
 
 export function util(error: any): UtilsProp {
-  const message = extractMessage(error) || "Unknown error";
+  const message = sanitizeMessage(extractMessage(error) || "Unknown error");
   const details = extractOriginalError(error);
 
   try {

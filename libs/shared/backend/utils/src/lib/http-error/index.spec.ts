@@ -117,6 +117,78 @@ describe("util — HTTP error classification", () => {
     });
   });
 
+  // ------------------- CREDENTIAL SAFETY -------------------
+  describe("401 - JWT failures carry no token", () => {
+    const token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJqZWN0Ijp7ImlkIjoiMSJ9fQ.s1gn4tur3";
+
+    /**
+     * BDD Scenario
+     * Given: a Hono JWT failure message that embeds the token.
+     * When: the error is classified.
+     * Then: the result is 401 and the returned message repeats no part of the token.
+     */
+    test.each([
+      `token (${token}) expired`,
+      `invalid JWT token: ${token}`,
+      `token(${token}) signature mismatched`,
+      `token (${token}) is being used before it's valid`,
+    ])("maps '%s' → 401 without the token", (msg) => {
+      const result = util(new Error(msg));
+      expect(result.status).toBe(401);
+      expect(result.category).toBe("Authentication error");
+      expect(result.message).not.toContain(token);
+      expect(result.message).toContain("<redacted>");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: the fixed messages the shared verification helper throws.
+     * When: they are classified.
+     * Then: they reach 401 rather than the 403 pattern for "authentication".
+     */
+    test.each([
+      "Authentication error. Token expired",
+      "Authentication error. Invalid token",
+    ])("maps '%s' → 401 Authentication error", (msg) => {
+      const result = util(new Error(msg));
+      expect(result.status).toBe(401);
+      expect(result.category).toBe("Authentication error");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a downstream error body that a server SDK hop re-encoded as JSON.
+     * When: the error is classified.
+     * Then: the downstream status survives and the token does not.
+     */
+    test("keeps a serialized downstream payload parseable while removing the token", () => {
+      const result = util(
+        new Error(
+          JSON.stringify({
+            message: `token (${token}) expired`,
+            status: 401,
+            requestId: "request-1",
+          }),
+        ),
+      );
+      expect(result.status).toBe(401);
+      expect(result.category).toBe("Authentication error");
+      expect(result.message).not.toContain(token);
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a message with no credential in it.
+     * When: the error is classified.
+     * Then: the text is returned unchanged.
+     */
+    test("leaves an ordinary message untouched", () => {
+      const result = util(new Error("Entity with param abc-123 not found"));
+      expect(result.message).toBe("Entity with param abc-123 not found");
+    });
+  });
+
   // ------------------- 500 INTERNAL ERROR -------------------
   describe("500 - Internal error", () => {
     test.each([

@@ -277,13 +277,13 @@ logged, reported and returned.
 
 #### Automated Verification
 
-- [ ] `npx nx run @sps/backend-utils:jest:test` passes, including a new spec for
+- [x] `npx nx run @sps/backend-utils:jest:test` passes, including a new spec for
       the verification helper and new mapper scenarios asserting 401 and the
       absence of token text.
-- [ ] `npx nx run @sps/rbac:jest:test` passes, including a scenario that makes
+- [x] `npx nx run @sps/rbac:jest:test` passes, including a scenario that makes
       `hono/jwt` throw the real `JwtTokenExpired` class and asserts the
       `is-authorized` service surfaces a token-free authentication error.
-- [ ] `npx nx run @sps/shared-backend-api:jest:test` passes.
+- [x] `npx nx run @sps/shared-backend-api:jest:test` passes.
 
 #### Manual Verification
 

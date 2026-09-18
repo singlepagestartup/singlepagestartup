@@ -37,11 +37,19 @@ is stated under the table.
 
 ### Phase 2: Safe JWT verification and message sanitization (#229)
 
-- [ ] Started: —
-- [ ] Completed: —
-- [ ] Automated verification: —
+- [x] Started: 2026-09-18T23:50:00Z
+- [x] Completed: 2026-09-19T00:25:00Z
+- [x] Automated verification: `npx nx run-many --target=jest:test --projects=@sps/backend-utils,@sps/shared-backend-api,@sps/rbac`
+      91, 12 (1 skipped) and 305 passed; `npx tsc --noEmit -p libs/shared/backend/utils/tsconfig.json`
+      clean; `npx nx run-many --target=eslint:lint` over the same three projects clean.
 
-**Notes**: —
+**Notes**: The verification helper identifies a credential failure by
+`error.name` rather than by message text, and only `JwtToken*`, `JwtHeader*` and
+`JwtPayload*` are treated as credential failures; `JwtAlgorithmNotImplemented`
+and any runtime failure (an empty secret raises `DataError`, an undefined one a
+`TypeError`) are rethrown unchanged and keep mapping to 500. The helper's spec
+uses the real Hono implementation rather than a mock, so it also documents what
+Hono actually throws.
 
 ### Phase 3: Conflict category for unique violations (#232)
 
