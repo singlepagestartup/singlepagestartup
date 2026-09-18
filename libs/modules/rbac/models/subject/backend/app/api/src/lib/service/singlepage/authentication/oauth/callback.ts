@@ -1,4 +1,5 @@
 import { IRepository } from "@sps/shared-backend-api";
+import { isUniqueConstraintError as isSharedUniqueConstraintError } from "@sps/backend-utils";
 import {
   API_SERVICE_URL,
   NEXT_PUBLIC_HOST_SERVICE_URL,
@@ -599,13 +600,7 @@ export class Service {
   }
 
   protected isUniqueConstraintError(error: unknown) {
-    if (!(error instanceof Error)) {
-      return false;
-    }
-
-    return /duplicate key value violates unique constraint/i.test(
-      error.message,
-    );
+    return isSharedUniqueConstraintError(error);
   }
 
   protected async assignRegistrationRolesIfMissing(props: {

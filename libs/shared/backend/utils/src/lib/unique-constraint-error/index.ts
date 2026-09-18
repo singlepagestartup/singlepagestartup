@@ -1,15 +1,29 @@
 const UNIQUE_VIOLATION_CODE = "23505";
+const CONFLICT_STATUS = "409";
 const uniqueViolationMessagePattern =
   /duplicate key value violates unique constraint/i;
+const conflictMessagePattern = /conflict error[.,]? entity already exists/i;
 const maxErrorChainDepth = 5;
 
 type IErrorRecord = {
   code?: unknown;
+  status?: unknown;
   message?: unknown;
   cause?: unknown;
   causes?: unknown;
   payload?: unknown;
 };
+
+function carriesConflict(text: unknown): boolean {
+  if (typeof text !== "string") {
+    return false;
+  }
+
+  return (
+    uniqueViolationMessagePattern.test(text) ||
+    conflictMessagePattern.test(text)
+  );
+}
 
 function asErrorRecord(value: unknown): IErrorRecord | undefined {
   if (typeof value === "object" && value !== null) {
@@ -34,7 +48,9 @@ function asErrorRecord(value: unknown): IErrorRecord | undefined {
 /**
  * Reports whether an error is a PostgreSQL unique-constraint violation,
  * including one wrapped by the API response pipe into an HTTPException whose
- * message carries the serialized error payload.
+ * message carries the serialized error payload. A hop that has already been
+ * through the shared HTTP error mapper carries no driver text, so the sanitized
+ * conflict message and the 409 status count as the same violation.
  */
 export function util(error: unknown, depth = 0): boolean {
   if (depth > maxErrorChainDepth || error === undefined || error === null) {
@@ -48,7 +64,7 @@ export function util(error: unknown, depth = 0): boolean {
         ? error
         : "";
 
-  if (uniqueViolationMessagePattern.test(message)) {
+  if (carriesConflict(message)) {
     return true;
   }
 
@@ -62,10 +78,11 @@ export function util(error: unknown, depth = 0): boolean {
     return true;
   }
 
-  if (
-    typeof record.message === "string" &&
-    uniqueViolationMessagePattern.test(record.message)
-  ) {
+  if (String(record.status) === CONFLICT_STATUS) {
+    return true;
+  }
+
+  if (carriesConflict(record.message)) {
     return true;
   }
 

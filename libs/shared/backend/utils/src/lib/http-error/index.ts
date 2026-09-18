@@ -4,10 +4,23 @@ import { ErrorPatternEntry, UtilsProp } from "./type";
 import { parseCategoryFromMessage } from "./parser";
 import { extractMessage, extractOriginalError } from "./extract";
 import { util as sanitizeMessage } from "./sanitize";
+import { util as isUniqueConstraintError } from "../unique-constraint-error";
 
 export function util(error: any): UtilsProp {
   const message = sanitizeMessage(extractMessage(error) || "Unknown error");
   const details = extractOriginalError(error);
+
+  // A unique violation is recognized by the driver code rather than by its
+  // text, and answered with a fixed message: the driver's own message names the
+  // constraint, and the details it carries stay server-side.
+  if (isUniqueConstraintError(error)) {
+    return {
+      status: 409,
+      message: "Conflict error. Entity already exists",
+      category: "Conflict error",
+      details,
+    };
+  }
 
   try {
     const parsed = JSON.parse(message);

@@ -53,18 +53,34 @@ Hono actually throws.
 
 ### Phase 3: Conflict category for unique violations (#232)
 
-- [ ] Started: —
-- [ ] Completed: —
-- [ ] Automated verification: —
+- [x] Started: 2026-09-19T00:30:00Z
+- [x] Completed: 2026-09-19T01:10:00Z
+- [x] Automated verification: `npx nx run-many --target=jest:test --projects=@sps/backend-utils,@sps/shared-backend-api,@sps/rbac`
+      97, 12 (1 skipped) and 305 passed; `npx nx run-many --target=eslint:lint`
+      over the same three projects clean; `npx tsc --noEmit` clean for
+      `libs/shared/backend/utils`, `libs/shared/backend/api` and
+      `libs/modules/rbac`.
 
-**Notes**: —
+**Notes**: The plan assumed the module-level duplicate recovery paths catch the
+driver error before any mapper call. They do not: all three reach the database
+through a server SDK over HTTP, so they receive whatever the remote app's
+exception filter returned. See Incident 1.
 
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 0 -->
+<!-- incident-count: 1 -->
+
+### Incident 1 — The sanitized 409 would have broken every cross-hop conflict recovery
+
+- **Occurrences**: 1
+- **Stage**: Phase 3 - Conflict category for unique violations
+- **Symptom**: Replacing the driver message with `Conflict error. Entity already exists` removes the text that three module-level recovery paths match on: the Telegram bootstrap replay (`telegram/bootstrap.ts:832`, `:862`), the OAuth identity link (`authentication/oauth/callback.ts:557`, `:595`) and, indirectly, anything else that inspects a server-SDK failure. Nothing failed in the suite, because their fixtures still carried the old raw payload.
+- **Root Cause**: The plan recorded, from the research, that these paths receive the driver error before the mapper. They do not. Each one calls a server SDK over HTTP, so the error they catch is the `HTTPException` that `responsePipe` builds from the remote app's JSON body, which the remote exception filter produced after its own handler had already called the mapper.
+- **Fix**: The shared `isUniqueConstraintError` now recognises the sanitized signature as well: the fixed conflict message and a `409` status, anywhere in the message, the record or a nested cause. The OAuth callback's private duplicate of the check delegates to the shared helper instead of matching the driver text itself. The Telegram bootstrap fixtures were rebuilt around the payload the API now returns.
+- **Reusable Pattern**: Before changing a message that the framework produces, grep for code that matches on that text, and check whether the matcher sits in the same process or one HTTP hop away. In this repository, cross-model calls always go through a server SDK, so a message is a contract between hops.
 
 ## Summary
 
@@ -83,4 +99,4 @@ Hono actually throws.
 
 ---
 
-**Last updated**: 2026-09-18T23:26:21Z
+**Last updated**: 2026-09-19T01:10:00Z

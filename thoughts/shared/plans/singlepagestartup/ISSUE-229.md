@@ -340,13 +340,16 @@ the raw duplicate-key text, placed before the 400 entry.
 
 #### Automated Verification
 
-- [ ] `npx nx run @sps/backend-utils:jest:test` passes, including scenarios for a
+- [x] `npx nx run @sps/backend-utils:jest:test` passes, including scenarios for a
       driver-shaped `code: "23505"` error, a wrapped one, and an assertion that
       the returned message carries no constraint name.
-- [ ] `npx nx run @sps/rbac:jest:test` passes; the module-level recovery paths
-      that test the raw driver message are unaffected because they catch before
-      the mapper.
-- [ ] A non-`23505` database error still maps to 500.
+- [x] `npx nx run @sps/rbac:jest:test` passes. The module-level recovery paths
+      do **not** catch before the mapper: they call server SDKs over HTTP, so
+      they receive what the remote app's filter returned. The shared
+      `isUniqueConstraintError` therefore also recognises the sanitized 409
+      signature, and the OAuth callback's private copy of the check now
+      delegates to it.
+- [x] A non-`23505` database error still maps to 500.
 
 #### Manual Verification
 

@@ -117,6 +117,102 @@ describe("util — HTTP error classification", () => {
     });
   });
 
+  // ------------------- 409 CONFLICT ERROR -------------------
+  describe("409 - Conflict error", () => {
+    const constraint = "sps_blog_article_slug_unique";
+    const driverMessage = `duplicate key value violates unique constraint "${constraint}"`;
+
+    function driverError() {
+      return Object.assign(new Error(driverMessage), {
+        name: "PostgresError",
+        code: "23505",
+        constraint_name: constraint,
+        table_name: "sps_blog_article",
+        column_name: "slug",
+        detail: "Key (slug)=(already-taken) already exists.",
+      });
+    }
+
+    /**
+     * BDD Scenario
+     * Given: a PostgreSQL unique violation as the driver raises it.
+     * When: the error is classified.
+     * Then: the result is a 409 whose message names no database object.
+     */
+    test("maps a driver unique violation → 409 with a generic message", () => {
+      const result = util(driverError());
+      expect(result.status).toBe(409);
+      expect(result.category).toBe("Conflict error");
+      expect(result.message).toBe("Conflict error. Entity already exists");
+      expect(result.message).not.toContain(constraint);
+      expect(result.message).not.toContain("sps_blog_article");
+      expect(result.message).not.toContain("already-taken");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: the same violation wrapped as a cause by a calling layer.
+     * When: the error is classified.
+     * Then: it is still a 409, and the driver error stays available as details.
+     */
+    test("recognizes a wrapped unique violation and keeps the driver error in details", () => {
+      const cause = driverError();
+      const result = util(new Error("Request not created", { cause }));
+      expect(result.status).toBe(409);
+      expect(result.message).toBe("Conflict error. Entity already exists");
+      expect(result.details).toBe(cause);
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a downstream error body that a server SDK hop re-encoded as JSON.
+     * When: the error is classified on the calling hop.
+     * Then: the conflict is recognized instead of being repeated as a 500.
+     */
+    test("recognizes a unique violation carried by a serialized payload", () => {
+      const result = util(
+        new Error(
+          JSON.stringify({
+            message: `Internal server error: ${driverMessage}`,
+            status: 500,
+            requestId: "request-1",
+          }),
+        ),
+      );
+      expect(result.status).toBe(409);
+      expect(result.message).toBe("Conflict error. Entity already exists");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: an already sanitized conflict message from an inner hop.
+     * When: the error is classified.
+     * Then: the category survives the hop.
+     */
+    test("keeps the category for an already sanitized conflict message", () => {
+      const result = util(new Error("Conflict error. Entity already exists"));
+      expect(result.status).toBe(409);
+      expect(result.category).toBe("Conflict error");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a database failure that is not a unique violation.
+     * When: the error is classified.
+     * Then: it keeps mapping to 500.
+     */
+    test("leaves a non-unique database failure at 500", () => {
+      const result = util(
+        Object.assign(new Error('relation "sps_blog_article" does not exist'), {
+          name: "PostgresError",
+          code: "42P01",
+        }),
+      );
+      expect(result.status).toBe(500);
+      expect(result.category).toBe("Internal error");
+    });
+  });
+
   // ------------------- CREDENTIAL SAFETY -------------------
   describe("401 - JWT failures carry no token", () => {
     const token =

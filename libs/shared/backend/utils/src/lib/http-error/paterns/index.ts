@@ -65,6 +65,14 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
     ],
   },
   {
+    status: 409,
+    category: "Conflict error",
+    patterns: [
+      /conflict error/i,
+      /duplicate key value violates unique constraint/i,
+    ],
+  },
+  {
     // A message that declares its own category keeps that category, even when
     // its details also match an unprocessable-entity shape below.
     status: 400,
