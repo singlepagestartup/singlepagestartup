@@ -2,12 +2,13 @@
 confirmation:
   confirmed: true
   by: operator
-  at: "2026-09-17"
-  source: "Operator approved the complete current Operations & Economics model in chat: «Все отлично, так можно подтвердить ее и переходим дальше к продажам»."
-  content_sha256: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
+  at: "2026-09-18"
+  source: "Operator confirmed the model after reviewing the four corrections the confirmed Brief required: the service description in Model scope, the route to the foundation, the payment and hosting terms in Key Partnerships, and the support level in the capacity rule: «Да, подтверждаю»."
+  content_sha256: 9a4d1171e72e880a2320c64e9501aedb2af195dfee090e339068130784521f4d
 sources:
   current-business: Brief sources.current_business and funding; client-reported tested foundations, worldwide GitHub distribution, free code, owner funding and best-effort support, 2026-08-14 and 2026-09-12.
-  scope-and-flow: Brief intake.audience_value_and_flow; operator correction, 2026-09-13, selects hosted business-data AI Chat, token purchases and a demonstration-to-local-framework route while retaining both product IDs.
+  scope-and-flow: Brief intake.product_direction; operator decision, 2026-09-18, selects the hosted project-model service, the landing-page sandbox and publication to the customer's own server, superseding the demonstration-to-local-framework route while retaining both product IDs and token purchases.
+  service-terms: Brief sources.service_terms; operator decision, 2026-09-18, fixes 24-hour initial support, payments in Russia through an online cash register and the customer-connected server with Beget or Timeweb as examples.
   separation: Operator distinction between service activity and framework adoption, 2026-08-09.
   materials: Brief repository observation, 2026-09-12; supplied identity rights, 2026-08-11.
   marketing-direction: Approved Strategy Growth system and Measurement and priorities, reviewed 2026-09-13; coordinated organic demonstrations, short videos, searchable explanations and contextual community participation.
@@ -30,16 +31,16 @@ scoped_trial_inputs:
     applicability: Not confirmed by the current Brief and not a purchased-token operating term.
 review:
   dependencies:
-    brief: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
+    brief: fd8d054d3225ed6bde973d5dddcb5141a26b26f13ec6a59a2309f13f8e248663
 ---
 
 # Operations & Economics
 
 ## Model scope
 
-`framework-service` combines **[Code Framework](../../singlepagestartup/product.md)** (`singlepagestartup`) and **[AI Chat](../../ai-chat/product.md)** (`ai-chat`) around a shared software foundation. Code Framework gives makers free reusable functions for their products. AI Chat will provide business-specific answers as a hosted service, with token purchases funding continued use.
+`framework-service` combines **[Code Framework](../../singlepagestartup/product.md)** (`singlepagestartup`) and **[AI Chat](../../ai-chat/product.md)** (`ai-chat`) around a shared software foundation. Code Framework gives makers free reusable functions for their products. AI Chat will organize a customer's supplied material into a reviewable project model, keep it as the context for later work and carry an assembled landing page to the customer's own server, with token purchases funding continued use.
 
-A useful chat experience introduces interested makers to the foundation. They can obtain it through GitHub and build with a coding agent. Token purchase is optional for this path; chat consumers can remain consumers.
+A useful chat experience introduces interested makers to the foundation: publishing a page creates the customer's own repository, and a maker with another concrete software need obtains the framework through GitHub and builds with a coding agent. Token purchase is optional for both paths; chat consumers can remain consumers.
 
 The project owner decides and funds development. The shared model counts common resources once while keeping the products' revenue and expenses distinct.
 
@@ -71,7 +72,7 @@ The complete intended journeys belong to [Code Framework Sales](../../singlepage
 
 ### Key Partnerships
 
-GitHub is the distribution platform. AI Chat will use AI providers, hosting and knowledge-storage services. No partnership agreement or dedicated supplier terms are specified. Makers choose the agents and external services for their own projects.
+GitHub is the distribution platform and holds the repository each published customer page is created in. AI Chat will use AI providers, hosting and knowledge-storage services, and accepts payments in Russia through an online cash register. Customers connect their own server, with Beget and Timeweb named as example hosting providers. The selected AI, storage and infrastructure providers are not named yet, and no partnership agreement or dedicated supplier terms are specified. Makers choose the agents and external services for their own projects.
 
 ## Cost Structure
 
@@ -93,6 +94,6 @@ The owner's time and money fund framework development. No external financing is 
 - `bridge`: useful chat experience encourages interested makers to adopt the foundation.
 - `framework-growth`: distinguish attention and stars from product use, repeat use and contributions.
 - `service-viability`: useful answers and repeat token purchases must support the service's costs.
-- `capacity`: scale promotion and help to available time and money; support has no guaranteed schedule.
+- `capacity`: scale promotion and help to available time and money; support requests are processed within 24 hours as the initial service level, without continuous live coverage or a resolution deadline.
 - `channel-access`: use the selected organic channels and prioritize topics that attract relevant users.
 - `proof`: [framework Research](../../singlepagestartup/research.md) and [AI Chat Research](../../ai-chat/research.md) examine these business assumptions. No numerical growth or savings claim is established.
