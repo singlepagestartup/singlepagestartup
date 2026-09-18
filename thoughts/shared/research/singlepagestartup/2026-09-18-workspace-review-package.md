@@ -22,13 +22,17 @@ asks for a decision inside this file; read, then say what is wrong.
 1. **Brief**, `apps/studio/workspace/brief/singlepage.md` — the root. Every
    other change follows from it.
 2. **Operations & Economics**, `products/singlepage/models/framework-service/model.md`.
-3. **Code Framework Product**, `products/singlepage/singlepagestartup/product.md`.
-4. The three Code Framework promotional materials, if the open decision in
+3. **AI Chat Product**, `products/singlepage/ai-chat/product.md` — one
+   sentence, the implementation of retrieval.
+4. **Code Framework Product**, `products/singlepage/singlepagestartup/product.md`.
+5. The AI Chat research summary and its competitors page, for the competitor
+   figure the selling point rests on.
+6. The three Code Framework promotional materials, if the open decision in
    section 5 matters to you now.
 
-Strategy, Brand, AI Chat Product, AI Chat Sales and Design have unchanged
-bodies. They carry new stamps only because the old fingerprints were wrong.
-Reading them is optional; reading the Brief is not.
+Strategy, Brand, AI Chat Sales and Design have unchanged bodies. They carry new
+stamps only because the old fingerprints were wrong. Reading them is optional;
+reading the Brief is not.
 
 In Storybook: `Workspace / 00 Client Request / 01 Brief`, then
 `Workspace / 40 Products / singlepage`.
@@ -46,7 +50,7 @@ Before:
 > answers and advice grounded in that person's business data. Better answer
 > quality than ordinary ChatGPT without that context is a goal to test.
 
-After:
+After, as the paragraph now stands:
 
 > AI Chat is intended for people with a business idea or early-stage project
 > whose material is scattered across notes, documents, screenshots and partial
@@ -56,37 +60,42 @@ After:
 > questions, criticism and materials. The first setup session is intended to
 > take about one focused hour, with unresolved questions left open. The same
 > decisions assemble a landing page from SinglePageStartup blocks, edited in a
-> private sandbox with an immediate preview and no public address. The desired
-> value is a usable project model and a first page that can reach real
-> customers; better answer quality than a general chat without that context is
-> a goal to test.
+> private sandbox with an immediate preview and no public address. **Uploaded
+> notes and documents are split into chunks, vectorized and stored, so the
+> service retrieves the relevant parts as context for its answers. There is no
+> ceiling on how many files a person adds: every document is vectorized and can
+> take part in answering, and the service selects the most relevant parts each
+> time. The operator counts that capacity among the product's selling points,
+> because a general assistant holds a project's files in the low tens. How it
+> is described to a customer is not selected: Brand keeps vectors, retrieval
+> and storage out of the ordinary product flow, so the benefit has to be
+> expressed without naming the mechanism.** The desired value is a usable
+> project model, answers grounded in the person's own material and a first page
+> that can reach real customers; better answer quality than a general chat
+> without that context is a goal to test.
 
-**Corrected after the operator read this.** The rewrite had dropped the
-retrieval capability; it is real and stays. The paragraph now continues:
+The bold text arrived in two corrections after the first draft of this package.
+The rewrite had dropped the retrieval capability entirely; the operator
+restored it, then sharpened what the selling point actually is.
 
-> Uploaded notes and documents are split into chunks, vectorized and stored, so
-> the service retrieves the relevant parts as context for its answers. The
-> operator counts this grounding among the product's selling points. How it is
-> described to a customer is not selected: Brand keeps vectors, retrieval and
-> storage out of the ordinary product flow, so the benefit has to be expressed
-> without naming the mechanism. The desired value is a usable project model,
-> answers grounded in the person's own material and a first page that can reach
-> real customers; better answer quality than a general chat without that
-> context is a goal to test.
+**What to read carefully.** The paragraph now carries four separate claims, and
+they have different standing:
 
-`sources.retrieval` records the mechanism, the operator's selling-point claim
-and the two things that are not settled. The AI Chat Product's implementation
-sentence follows: it now says the project page, uploaded documents and
-permitted extensions are chunked, vectorized and retrieved, where it previously
-said only that the project page is indexed.
+| Claim                                                      | Standing                                                                  |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Documents are chunked, vectorized and retrieved as context | Operator statement of the intended design, 2026-09-18                     |
+| There is no file ceiling                                   | Operator decision, 2026-09-18, asked about explicitly and confirmed       |
+| That capacity is a selling point                           | Operator claim; the capacity difference is documented, the benefit is not |
+| A general assistant holds files in the low tens            | Research finding `AC-SPS-25`, second-hand figures, see section 5          |
 
-**Two open points, recorded and not decided here.** How the capability is
-described to a customer is undecided; Brand's rules keep the mechanism out of
-the ordinary flow but do not say how the benefit is expressed instead. And
-whether the grounding differentiates the product is unresolved in the
-product's own Research: `AC-SPS-02` records that ChatGPT Projects and Chatbase
-already offer document-grounded context, so the selling point is more likely
-the combination with the project model than the retrieval alone.
+`sources.retrieval` in the Brief metadata records all four with the same
+separation, and names what is not settled: how the capability is described to a
+customer, and whether a larger corpus produces better answers for this
+customer.
+
+The AI Chat Product's implementation sentence follows the same correction: it
+covered the project page alone and now covers uploaded documents and permitted
+extensions, chunked, vectorized and retrieved.
 
 ### Business and resources, Path to building
 
@@ -147,7 +156,22 @@ left beside it.
 | Key Partnerships | "No partnership agreement or dedicated supplier terms are specified"                       | adds payments in Russia through an online cash register and the customer-connected server with Beget or Timeweb as examples; AI, storage and infrastructure providers still unnamed |
 | `capacity` rule  | "support has no guaranteed schedule"                                                       | 24 hours for hosted AI Chat, best-effort for the free framework code                                                                                                                |
 
-Revenue Streams, Key Resources, Cost Structure and Funding are unchanged.
+Revenue Streams, Key Resources and Funding are unchanged.
+
+**Cost Structure and the viability rule changed later**, as the consequence of
+the no-file-limit decision. Hosted chat now reads that storage and
+vectorization scale with what customers upload, because the offer sets no file
+limit, and `service-viability` says:
+
+> The unlimited corpus makes part of those costs grow with each customer's
+> uploads rather than with their paid use, so the token terms have to price
+> ingestion and storage, not only answers. Neither the terms nor a cost per
+> document is defined yet.
+
+This is worth reading against the first Sales blocker, "Define the token unit,
+price, currency, packages, payment timing, expiry and refund terms." That
+blocker now has a constraint attached: a price per answer alone does not cover
+a corpus the customer can grow without limit.
 
 ## 3. Code Framework Product: one paragraph
 
@@ -173,6 +197,11 @@ They rest on a quick yes rather than a close reading. That is the honest
 record, and it is why this package exists. If the reading changes anything, the
 stamp moves with it; nothing downstream depends on these approvals being final.
 
+Three of the six have already lost that stamp: the Brief, the shared model and
+the AI Chat Product, because the retrieval and corpus corrections changed their
+bodies. Only AI Chat Sales, Strategy and Brand still carry a 2026-09-18
+approval, and each of those bodies is unchanged since 2026-09-17.
+
 ## 5. What is not decided
 
 **No material addresses the `developer-agents` segment.** Code Framework Sales
@@ -189,19 +218,31 @@ each of the three documents as an open decision. Whether that segment is served
 by the website, by repository documentation, or not yet at all, is yours to
 decide.
 
+**The competitor figure behind the selling point is second-hand.** Research
+finding `AC-SPS-25` records that ChatGPT Projects caps files per project in the
+low tens: 5 for Free, 25 for Go and Plus, 40 for Pro, Business, Education and
+Enterprise, with OpenAI's own pages disagreeing, the File Uploads FAQ giving 20
+where the Projects article gives 25. The official pages returned HTTP 403 to
+the coordinator, so the per-plan numbers come from secondary summaries and only
+the order of magnitude is treated as supported. If you can open those pages
+under your own account, the finding should be re-sourced to them.
+
 **Four business decisions remain open** in AI Chat Sales, unchanged and
 correctly recorded as blockers: token unit and price terms, the
 payment-accepting party's legal details and the Russian receipt flow, the
 selected AI/storage/infrastructure providers, and the GitHub authorization
-scope with deployment-credential handling.
+scope with deployment-credential handling. The first of them now has the
+ingestion-cost constraint attached, as section 2 describes.
 
-## 6. Five documents still awaiting your reading
+## 6. Eight documents still awaiting your reading
 
 These keep an invalid stamp on purpose. Their bodies are unchanged and carry no
 superseded statement; they were never put in front of you, so they are not
 marked confirmed.
 
-- `brief` and `product.ai-chat.product`, changed by the retrieval restore above
+- `brief` — the retrieval restore, the corpus capacity and the no-limit decision
+- `model.framework-service` — the cost consequence in section 2
+- `product.ai-chat.product` — the implementation sentence
 - `product.ai-chat.website`
 - `product.ai-chat.page.website.landing`
 - `product.ai-chat.page.website.project-workspace`
@@ -212,9 +253,13 @@ marked confirmed.
 
 - No document resolves as `stale`. Every recorded input snapshot was refreshed
   after its impact review.
-- 7 confirmed, 7 with an invalid stamp awaiting reading, 39 never confirmed
-  (ordinary drafts). The Brief and the AI Chat Product joined the waiting list
-  when the retrieval capability was restored into them.
+- 6 confirmed, 8 with an invalid stamp awaiting reading, 39 never confirmed
+  (ordinary drafts). The Brief, the shared model and the AI Chat Product joined
+  the waiting list as the retrieval and corpus corrections went into them; a
+  body that changes loses its stamp, which is the machine working, not a fault.
 - The pipeline reports 22 passed and 2 gaps: one approval gap, the Brief
   awaiting your reading, and the decision gap of the four business decisions.
   Strategy, Brand and Design pass their own checks and wait only on the Brief.
+- Two research documents changed with no stamp to lose: the AI Chat research
+  summary and its competitors page, which carry `AC-SPS-25` and the sharpened
+  differentiation hypothesis.
