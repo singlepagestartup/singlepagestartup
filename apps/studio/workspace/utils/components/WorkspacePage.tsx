@@ -50,6 +50,16 @@ export function WorkspacePage({
         </MarkdownDocument>
       </article>
     );
+  // An inline fragment inherits the project's brand tokens and Tailwind build;
+  // a standalone page stays isolated in its own document.
+  if (page.kind === "html" && page.html !== undefined)
+    return (
+      <div
+        className="w-full"
+        dangerouslySetInnerHTML={{ __html: page.html }}
+        data-workspace-html={page.id}
+      />
+    );
   if (page.kind === "html")
     return (
       <iframe

@@ -160,14 +160,14 @@ What currently exists in the shared REST controller, handler, service, repositor
 
 ## Historical Context (from thoughts/)
 
-- `thoughts/shared/research/singlepagestartup/2026-03-01-testing-framework-variant2-scoped.md` documents the same shared backend REST pipeline (`controllers/rest`, `service/crud`, `repository/database`, `middleware/parse-query`) as the common infrastructure under scenario work.
+- The former `2026-03-01-testing-framework-variant2-scoped.md` research documented the same shared backend REST pipeline (`controllers/rest`, `service/crud`, `repository/database`, `middleware/parse-query`) as the common infrastructure under scenario work; it was superseded by #147 and deleted under #148 (recoverable from Git history).
 - `thoughts/shared/research/singlepagestartup/ISSUE-142.md` records that the admin-v2 table currently calls `api.find()` twice and derives totals from array length, which is the closest current consumer of a generic count-like need.
 - `thoughts/shared/research/singlepagestartup/ISSUE-145.md` and `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md` describe the shared SDK provider conventions and the standard use of `apiProps.params.filters.and` for relation filtering.
 - `thoughts/shared/research/singlepagestartup/ISSUE-152.md` documents the model-specific `/quantity` endpoint as an existing numeric read pattern and also records cache considerations for exact-path aggregate routes.
 
 ## Related Research
 
-- `thoughts/shared/research/singlepagestartup/2026-03-01-testing-framework-variant2-scoped.md`
+- Testing-framework Variant 2 research (deleted under #148; superseded by #147)
 - `thoughts/shared/research/singlepagestartup/ISSUE-142.md`
 - `thoughts/shared/research/singlepagestartup/ISSUE-145.md`
 - `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md`

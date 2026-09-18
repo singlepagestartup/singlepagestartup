@@ -18,3 +18,10 @@ launching an owner. It uses the shared repository-layer resolver;
 treat its reported layer as authoritative and never bypass it with a stale
 local comparison. Natural-language requests to start, continue, inspect, or
 change the active project before engineering route to this skill.
+
+## Final editorial pass
+
+When this skill writes or returns prose intended for a person, load the project
+`unslop` skill and apply `.agents/contracts/editorial-pass.md` after the
+canonical workflow is complete. Preserve exact facts, evidence, identifiers,
+paths, commands, required structure, and approval state.

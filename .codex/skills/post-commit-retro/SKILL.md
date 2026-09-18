@@ -25,3 +25,10 @@ Canonical source: `.agents/workflows/engineering/utilities/post_commit_retro.md`
 
 - Accept the same inputs as `.agents/workflows/engineering/utilities/post_commit_retro.md`.
 - If issue number or commit SHA is missing, infer it only when the local context makes the inference high confidence.
+
+## Final editorial pass
+
+When this skill writes or returns prose intended for a person, load the project
+`unslop` skill and apply `.agents/contracts/editorial-pass.md` after the
+canonical workflow is complete. Preserve exact facts, evidence, identifiers,
+paths, commands, required structure, and approval state.

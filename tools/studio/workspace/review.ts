@@ -37,14 +37,20 @@ export interface IDocumentReview {
 /** Registered extension documents keep the same nested IDs and layer as their product. */
 export function productReviewPages(
   product: Record<string, unknown>,
-): Array<{ id: string; source: string; owner: string }> {
-  const result: Array<{ id: string; source: string; owner: string }> = [];
+): Array<{ id: string; source: string; owner: string; uses?: string[] }> {
+  const result: Array<{
+    id: string;
+    source: string;
+    owner: string;
+    uses?: string[];
+  }> = [];
   for (const section of (product.sections ?? []) as Array<{
     id: string;
     pages: Array<{
       id: string;
       source?: string;
       representations?: { text: string; preview?: string };
+      uses?: string[];
       children?: unknown[];
     }>;
   }>) {
@@ -56,6 +62,7 @@ export function productReviewPages(
             id: `product.${product.id}.page.${section.id}.${page.id}`,
             source,
             owner: section.id,
+            ...(page.uses?.length ? { uses: page.uses } : {}),
           });
         if (page.children) visit(page.children as typeof section.pages);
       }
@@ -263,6 +270,7 @@ export function workspaceReviewDocuments({
       ?.uses.push(`model.${model.id}`);
   }
   const productFields = {
+    analytics: "analytics",
     research: "research",
     sales: "sales",
     product: "product",
@@ -272,6 +280,7 @@ export function workspaceReviewDocuments({
     "presentation-renderer": "presentation",
   } as const;
   const inputRules = {
+    analytics: ["$product", "$sales"],
     research: ["brief"],
     sales: ["$product"],
     product: ["brief", "$research"],
@@ -300,9 +309,18 @@ export function workspaceReviewDocuments({
         source: sources[sourcePath],
         layer: catalogLayer,
         format: sourcePath.endsWith(".yaml") ? "yaml" : "markdown",
-        ...(kind === "research" &&
-        parseDocument(sources[sourcePath]).metadata.sales_audit === true
-          ? { observes: [`product.${product.id}.sales`] }
+        ...(kind === "research"
+          ? {
+              observes: [
+                ...(parseDocument(sources[sourcePath]).metadata.sales_audit ===
+                true
+                  ? [`product.${product.id}.sales`]
+                  : []),
+                ...(product.analytics
+                  ? [`product.${product.id}.analytics`]
+                  : []),
+              ],
+            }
           : {}),
         uses: [
           ...inputRules[kind as keyof typeof inputRules],
@@ -348,6 +366,7 @@ export function workspaceReviewDocuments({
             ? ["brief"].filter((id) => documents.some((doc) => doc.id === id))
             : [`product.${product.id}.${owner}`]),
           ...(product.model ? [`model.${product.model}`] : []),
+          ...(page.uses ?? []),
         ],
         ...(isResearch &&
         parseDocument(sources[sourcePath]).metadata.sales_segment

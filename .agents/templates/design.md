@@ -97,6 +97,77 @@ the review body contains current visual decisions without a status table. -->
 - Browser QA: `document.fonts.check(...)` and computed `font-family` match the
   selected family; silent fallback is not accepted
 
+## Interface and product surfaces
+
+<!-- The reusable interface language only: how the semantic colors, type, and
+shape rules above behave on a product surface. Specific pages, routes, and
+forms stay in product-local website.md. Omit this section when the brief
+supplies no interface references and the project ships no product surface.
+
+Render these rules as working specimens: declare layer-local HTML sections in
+design/<layer>/layout.yaml. Keep each file a fragment of plain HTML and Tailwind
+over the --workspace-brand-* tokens, express state with CSS (hover,
+focus-visible, has-[:checked]) because injected scripts do not run, and print
+each class recipe beside its specimen so a product surface is built from the
+exact string. Point at them from the boundary below, and change a rule and its
+specimen in the same revision.
+
+Required minimum whenever the project ships a product surface —
+controls: dominant action with its secondary, plain, disabled and separated
+destructive variants; selection as a chip and as a grouped choice, each with a
+non-colour signal; status and progress; fields and data rows; navigation for a
+public page and for a work screen; the dark pair when a dark column exists.
+Compositions: editorial entry; a content card carrying the project's own
+confirmed imagery at its original aspect ratio; an icon card on the declared
+icon grid; a repeated item grid. Conditional: offer comparison when the project
+sells, contextual sheet for a mobile or overlay surface, media-and-text row when
+illustration is active. Omit one only by recording interface_review.omitted_specimens.<id> with the
+reason. Every specimen carries data-specimen="<id>" on its container, and
+studio:validate fails a documented interface language that does not render
+them: actions, selection, status, fields, navigation, editorial-entry,
+content-card, icon-card, item-grid, plus dark-pair when a Dark column exists.
+
+Every specimen uses the confirmed semantic roles and type steps. A missing step
+is added to the scale above as a proposal and confirmed, never improvised in the
+markup. Never frame supplied artwork with a second background: a registered
+master keeps its own off-white and no container colour matches all of them. -->
+
+### Purpose and evidence boundary
+
+What the interface language carries across every product surface, and what a
+reference screenshot cannot establish.
+
+### Surface, density, and shape
+
+- Three to six portable rules for field and card surfaces, spacing rhythm,
+  corner radius, border and shadow restraint, and navigation density
+
+### Controls, states, and actions
+
+- Three to six portable rules for action hierarchy, selected, disabled,
+  progress and status treatment, destructive separation, and focus visibility
+- Name which semantic role fills the one dominant action; record an unresolved
+  conflict here rather than silently changing a confirmed color role
+
+### Confirmed reference patterns
+
+<!-- Provenance only. Studio cites these asset IDs as text and never renders,
+traces, or reproduces a reference layout; keep every registry prohibited_use
+intact. -->
+
+| Pattern | Decision | Avoid | Reference asset IDs |
+| ------- | -------- | ----- | ------------------- |
+
+### Review and quality gate
+
+<!-- This is an internal agent quality contract. Studio does not render it as a human-review card. -->
+
+- Every cited asset ID resolves in Assets and its `allowed_use` covers
+  abstraction; no entry is rendered, traced, or presented as owned work
+- Each pattern states an own decision rather than describing the reference
+- Contrast, focus visibility, and reduced-motion behavior verified for the
+  named states against the confirmed semantic color system
+
 ## Photography
 
 ### Purpose and evidence boundary

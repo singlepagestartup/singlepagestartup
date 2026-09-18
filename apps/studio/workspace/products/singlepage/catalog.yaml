@@ -8,9 +8,11 @@ products:
     model: framework-service
     name: Code Framework
     summary:
-      A reusable foundation for makers and coding agents to deploy locally, adapt through
-      conversation and build their own products with tested common functions.
+      A reusable foundation for makers and coding agents to deploy to their
+      server, adapt through conversation and build their own products with
+      tested common functions.
     research: singlepagestartup/research.md
+    analytics: singlepagestartup/analytics.md
     sales: singlepagestartup/sales.yaml
     product: singlepagestartup/product.md
     website: singlepagestartup/website.md
@@ -36,8 +38,8 @@ products:
       - id: website
         title: Website
         pages:
-          - id: site-pages
-            title: Site pages
+          - id: pages
+            title: Pages
             children:
               - id: landing
                 title: Landing page
@@ -102,21 +104,145 @@ products:
   - id: ai-chat
     model: framework-service
     name: AI Chat
-    summary:
-      An intended business-knowledge chat with document upload, contextual answers and token
-      purchases, also demonstrating the framework and offering a path to local deployment with a
-      coding agent.
+    summary: Upload notes, documents, screenshots and images, review a compact
+      five-stage project model in about one focused session, then keep working
+      with a chat that uses the same project. Build and preview a landing page
+      in the sandbox, publish it through a GitHub repository and the user's
+      server, buy tokens for more hosted work or use Code Framework for another
+      digital product.
     research: ai-chat/research.md
+    analytics: ai-chat/analytics.md
     sales: ai-chat/sales.yaml
     product: ai-chat/product.md
     website: ai-chat/website.md
     marketing_creative: ai-chat/marketing-creative.md
     presentation: ai-chat/presentation/ProjectPresentation.tsx
     presentation_data: ai-chat/presentation/data.yaml
+    sections:
+      - id: research
+        title: Research
+        pages:
+          - id: customer-segments
+            title: Customer segments
+            children:
+              - id: business-users
+                title: Early-stage project owners
+                source: ai-chat/research/business-users.md
+          - id: competitors
+            title: Competitors and alternatives
+            source: ai-chat/research/competitors.md
+      - id: website
+        title: Website
+        pages:
+          - id: pages
+            title: Pages
+            children:
+              - id: landing
+                title: Landing page
+                route: /
+                representations:
+                  text: ai-chat/website/page.md
+                  preview: ai-chat/website/Landing.tsx
+              - id: register
+                title: Create account
+                route: /register
+                representations:
+                  text: ai-chat/website/register.md
+                  preview: ai-chat/website/Register.tsx
+              - id: login
+                title: Sign in
+                route: /login
+                representations:
+                  text: ai-chat/website/login.md
+                  preview: ai-chat/website/Login.tsx
+              - id: new-project
+                title: Add materials
+                route: /projects/new
+                uses:
+                  - product.ai-chat.page.content.one-hour-setup
+                representations:
+                  text: ai-chat/website/new-project.md
+                  preview: ai-chat/website/NewProject.tsx
+              - id: project-workspace
+                title: Business workspace
+                route: /projects/[project-id]
+                uses:
+                  - product.ai-chat.page.content.project-model
+                representations:
+                  text: ai-chat/website/project-workspace.md
+                  preview: ai-chat/website/ProjectWorkspace.tsx
+              - id: landing-page-workspace
+                title: Landing-page sandbox
+                route: /projects/[project-id]/landing-page
+                uses:
+                  - product.ai-chat.page.content.project-model
+                representations:
+                  text: ai-chat/website/landing-page.md
+                  preview: ai-chat/website/LandingPageWorkspace.tsx
+              - id: publish-site
+                title: Publish site
+                route: /projects/[project-id]/landing-page/publish
+                uses:
+                  - product.ai-chat.page.website.landing-page-workspace
+                representations:
+                  text: ai-chat/website/publish.md
+                  preview: ai-chat/website/PublishSite.tsx
+              - id: tokens
+                title: Buy tokens
+                route: /tokens
+                representations:
+                  text: ai-chat/website/tokens.md
+                  preview: ai-chat/website/Tokens.tsx
+              - id: settings
+                title: Settings
+                route: /settings
+                representations:
+                  text: ai-chat/website/settings.md
+                  preview: ai-chat/website/Settings.tsx
+              - id: help
+                title: Help
+                route: /help
+                representations:
+                  text: ai-chat/website/help.md
+                  preview: ai-chat/website/Help.tsx
+      - id: creative
+        title: Marketing Creative
+        pages:
+          - id: covers
+            title: Covers
+            children:
+              - id: one-page-cover
+                title: Structured-project cover
+                representations:
+                  text: ai-chat/marketing-creative/one-page-cover.md
+                  preview: ai-chat/marketing-creative/OnePageCover.tsx
+          - id: article
+            title: Article
+            representations:
+              text: ai-chat/marketing-creative/article.md
+              preview: ai-chat/marketing-creative/Article.tsx
+          - id: social-post
+            title: Social post
+            representations:
+              text: ai-chat/marketing-creative/social-post.md
+              preview: ai-chat/marketing-creative/SocialPost.tsx
+      - id: content
+        title: Product Content
+        pages:
+          - id: one-hour-setup
+            title: One-hour setup
+            representations:
+              text: ai-chat/content/guided-cards.md
+              preview: ai-chat/content/GuidedCards.tsx
+          - id: project-model
+            title: Project model
+            representations:
+              text: ai-chat/content/workspace-map.md
+              preview: ai-chat/content/WorkspaceMap.tsx
 review:
   dependencies:
     asset-index: 3959f399ca7ce73eb67531f94dc5349d1cfd3a03e7fb9921627e4c09252b1f41
-    brand: 691ec9f7a801d77e97daa4266fbd617c95568804eefb1ed07c3848dfd8add19d
-    brief: bf0f72b61cb12fc4a6fea78bd136dddb34e57921a7d8dbb528c25f85f30e68e1
-    design: 99ab863f73ba4c069a79fceb3cedfc3fb0b0c91c51d50185f15779c1a8aec0b7
-    strategy: 2622dc1d9ee86e33532abfba58728e3b1999c2ac9759162cd5d9f3ec07887cc0
+    brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
+    brief: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
+    design: f57dd47f9b398831ef332ab56613a48858c455a4c143ba9a74377389e51c5629
+    strategy: d68e88a81632b3ddf4f57431d6963c9d74c28bf2ba0a3d9578fb2d925fe3bf82

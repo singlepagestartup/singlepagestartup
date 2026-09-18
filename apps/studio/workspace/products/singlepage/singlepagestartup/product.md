@@ -99,9 +99,9 @@ sources:
     limitation: Earlier supplied 1836 frontend variants and 24 Studio examples are not used as current product counts; Research owns revalidation.
 review:
   dependencies:
-    brief: bf0f72b61cb12fc4a6fea78bd136dddb34e57921a7d8dbb528c25f85f30e68e1
-    model.framework-service: 504fbbc151ee8cff9d740e06b44a6264c07206b1f9a8631f42702f5ab08d1f32
-    product.singlepagestartup.research: 8445093c77d7cc877f76752e5ee3d0f616facdc6fa81e6bb1844d2d42ef3644f
+    brief: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
+    model.framework-service: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
+    product.singlepagestartup.research: 629f3131efae5b5778d2bf8cb4a6bf7b98b5d223f4174d6583c93ad3a1bcf01e
 ---
 
 # Product

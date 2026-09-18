@@ -122,8 +122,10 @@ async function launchChrome(repositoryRoot: string) {
     { cwd: repositoryRoot, stderr: "ignore", stdout: "ignore" },
   );
 
+  // A cold headless start on a loaded machine can exceed five seconds, so
+  // allow thirty before treating the missing port file as a failure.
   const portFile = path.join(profileRoot, "DevToolsActivePort");
-  for (let attempt = 0; attempt < 100 && !existsSync(portFile); attempt += 1) {
+  for (let attempt = 0; attempt < 600 && !existsSync(portFile); attempt += 1) {
     await Bun.sleep(50);
   }
   if (!existsSync(portFile)) {
@@ -219,10 +221,9 @@ async function assertPresentationLayout(client: CdpClient) {
   }
 }
 
+/** Rewrites only URLs and the title; scripts and preloads are already gone. */
 function staticHtml(dom: string): string {
   return dom
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/<link\b(?=[^>]*\brel=["']modulepreload["'])[^>]*>/gi, "")
     .replace(
       /\b(href|src)="https?:\/\/(?:127\.0\.0\.1|localhost):\d+\//g,
       '$1="/',
@@ -308,7 +309,9 @@ async function main() {
   const server = startStaticServer(buildRoot);
   const chrome = await launchChrome(repositoryRoot);
   try {
-    const baseUrl = `http://127.0.0.1:${server.port}/iframe.html?id=${STORY_ID}&viewMode=story&document=presentation&product=${encodeURIComponent(target.presentationId)}`;
+    // The output stem is not a catalog ID: without --id the story renders the
+    // catalog's default product, so only an explicit ID is passed through.
+    const baseUrl = `http://127.0.0.1:${server.port}/iframe.html?id=${STORY_ID}&viewMode=story&document=presentation&product=${encodeURIComponent(option("--id") ?? "")}`;
     await chrome.client.send("Page.enable");
     await chrome.client.send("Runtime.enable");
     await chrome.client.send("Emulation.setDeviceMetricsOverride", {
@@ -342,7 +345,15 @@ async function main() {
     const evaluated = await chrome.client.send<{
       result: { value: string };
     }>("Runtime.evaluate", {
-      expression: "document.documentElement.outerHTML",
+      // Remove executable and preload nodes from a clone so the snapshot is
+      // static markup without rewriting serialized HTML as text.
+      expression: `(() => {
+        const root = document.documentElement.cloneNode(true);
+        root
+          .querySelectorAll('script, link[rel="modulepreload"]')
+          .forEach((element) => element.remove());
+        return root.outerHTML;
+      })()`,
       returnByValue: true,
     });
     writeFileSync(target.htmlPath, staticHtml(evaluated.result.value));

@@ -371,6 +371,130 @@ Review thumbnail legibility.
   });
 
   /**
+   * BDD Scenario: Keep a type scale out of the typeface roles
+   * Given the Typography section documents its size steps in a second table
+   * When Studio derives Design data
+   * Then only the first table supplies typeface roles and the scale rows are not rendered as fonts
+   */
+  test("reads typeface roles from the first Typography table only", () => {
+    const data = projectDesignData(
+      workspace(`
+# Design
+
+### Typography
+
+| Role    | CSS family                    | Weights | Usage and language coverage | Font asset ID |
+| ------- | ----------------------------- | ------- | --------------------------- | ------------- |
+| Default | \`"JetBrains Mono", monospace\` | 400–600 | Body, UI, labels            |               |
+| Primary | \`"Cormorant Garamond", serif\` | 500–600 | Headings and titles         |               |
+
+| Step           | Size / line | Face    | Use                    |
+| -------------- | ----------- | ------- | ---------------------- |
+| Card title     | \`24/28\`     | Primary | Card and panel title   |
+| Interface body | \`14/22\`     | Default | Text inside cards      |
+| Label          | \`12/16\`     | Default | Eyebrow and metadata   |
+`),
+      "singlepage",
+    );
+
+    expect(data.typographyRoles.map(({ role }) => role)).toEqual([
+      "Default",
+      "Primary",
+    ]);
+    expect(data.bodyTypeLabel).toBe("JetBrains Mono");
+    expect(data.displayTypeLabel).toBe("Cormorant Garamond");
+  });
+
+  /**
+   * BDD Scenario: Carry confirmed interface preference into reusable decisions
+   * Given the Design source abstracts operator-supplied interface references
+   * When Studio derives Design data
+   * Then surface and control rules resolve and each pattern keeps its reference asset IDs as provenance
+   */
+  test("reads interface rules and their reference provenance", () => {
+    const data = projectDesignData(
+      workspace(`
+# Design
+
+## Interface and product surfaces
+
+### Purpose and evidence boundary
+
+A reference establishes a liked appearance, never a shipped screen.
+
+### Surface, density, and shape
+
+- Build every surface from the Canvas field and Surface cards.
+- Use rounded-3xl for panels and rounded-xl for grouped rows.
+
+### Controls, states, and actions
+
+- Allow one dominant action per view.
+- Colour alone never carries the selected state.
+
+### Confirmed reference patterns
+
+| Pattern | Decision | Avoid | Reference asset IDs |
+| --- | --- | --- | --- |
+| Choice group | One inset surface holds grouped options with the selected row marked by a check. | colour as the only selection signal | interface-reference-license-card, interface-reference-selection-card |
+| Step form | One question per step with visible progress above it. | hidden progress | interface-reference-onboarding-form |
+
+### Review and quality gate
+
+Verify contrast and focus visibility.
+`),
+      "singlepage",
+    );
+
+    expect(data.interface.intro).toBe(
+      "A reference establishes a liked appearance, never a shipped screen.",
+    );
+    expect(data.interface.shapeRules).toEqual([
+      "Build every surface from the Canvas field and Surface cards.",
+      "Use rounded-3xl for panels and rounded-xl for grouped rows.",
+    ]);
+    expect(data.interface.stateRules).toEqual([
+      "Allow one dominant action per view.",
+      "Colour alone never carries the selected state.",
+    ]);
+    expect(data.interface.patterns).toEqual([
+      {
+        avoid: "colour as the only selection signal",
+        decision:
+          "One inset surface holds grouped options with the selected row marked by a check.",
+        references: [
+          "interface-reference-license-card",
+          "interface-reference-selection-card",
+        ],
+        title: "Choice group",
+      },
+      {
+        avoid: "hidden progress",
+        decision: "One question per step with visible progress above it.",
+        references: ["interface-reference-onboarding-form"],
+        title: "Step form",
+      },
+    ]);
+  });
+
+  /**
+   * BDD Scenario: Tolerate a project that ships no interface surface
+   * Given a Design source without an interface section
+   * When Studio derives Design data
+   * Then the interface projection resolves empty instead of failing
+   */
+  test("resolves an empty interface projection without an interface section", () => {
+    const data = projectDesignData(workspace("# Design\n"), "singlepage");
+
+    expect(data.interface).toEqual({
+      intro: "",
+      patterns: [],
+      shapeRules: [],
+      stateRules: [],
+    });
+  });
+
+  /**
    * BDD Scenario: Preview only current generated identity outputs
    * Given generated, client-intake, and public-reference assets are indexed
    * When Studio derives Design data

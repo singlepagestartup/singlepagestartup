@@ -268,3 +268,10 @@ View the issue: [ISSUE_URL]
 - **Path quoting**: In zsh, always wrap paths containing glob characters (`[`, `]`, `*`, `?`) in single quotes (for example `'apps/host/app/[[...url]]/page.tsx'`) to avoid shell expansion errors
 - **GitHub Comment Body Safety**: never use markdown comment text with backticks directly in `--body "..."`; use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin)
 - Be unbiased — document all related files and how systems work today, don't jump to implementation ideas
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

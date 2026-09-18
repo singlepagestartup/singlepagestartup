@@ -1,8 +1,14 @@
 import { parse } from "yaml";
 
+import {
+  hasMarkdownContent,
+  parseDocument,
+} from "../../../../../tools/studio/workspace/document";
+
 import type {
   IProjectDesignAsset,
   IProjectDesignData,
+  IProjectDesignInterface,
   IProjectDesignMedia,
   IProjectDesignPrompt,
   IProjectDesignTypographyRole,
@@ -24,14 +30,9 @@ function artifact(workspace: IStudioWorkspace, kind: string): string {
   );
 }
 
+/** A source with only frontmatter, headings and comments is not a decision. */
 function meaningfulMarkdown(value: string): boolean {
-  return Boolean(
-    value
-      .replace(/^---[\s\S]*?^---\s*/m, "")
-      .replace(/^#{1,6}\s+.*$/gm, "")
-      .replace(/<!--([\s\S]*?)-->/g, "")
-      .trim(),
-  );
+  return hasMarkdownContent(parseDocument(value).body);
 }
 
 function clean(value: string): string {
@@ -116,10 +117,20 @@ function tableRows(source: string, heading?: string): string[][] {
       (cells) =>
         cells.length > 1 &&
         !cells.every((cell) => /^:?-{3,}:?$/.test(cell)) &&
-        !["role", "field", "example", "do", "family"].includes(
+        !["role", "field", "example", "do", "family", "pattern"].includes(
           cells[0].toLocaleLowerCase(),
         ),
     );
+}
+
+/** A section may hold several tables; the role table is its first one. */
+function firstTable(source: string): string {
+  const lines = source.split("\n");
+  const start = lines.findIndex((line) => line.trim().startsWith("|"));
+  if (start < 0) return "";
+  let end = start;
+  while (end < lines.length && lines[end].trim().startsWith("|")) end += 1;
+  return lines.slice(start, end).join("\n");
 }
 
 function valueFor(source: string, labels: string[], fallback: string): string {
@@ -205,6 +216,36 @@ function mediaFor(source: string, heading: string): IProjectDesignMedia {
   };
 }
 
+function interfaceFor(source: string): IProjectDesignInterface {
+  const interfaceSource = section(source, "Interface and product surfaces");
+  return {
+    intro:
+      sectionParagraphs(interfaceSource, "Purpose and evidence boundary")[0] ??
+      "",
+    patterns: tableRows(
+      interfaceSource,
+      "Confirmed reference patterns",
+    ).flatMap((cells) => {
+      const [title, decision, avoid, references] = cells;
+      return title && decision && avoid
+        ? [
+            {
+              avoid,
+              decision,
+              references: (references ?? "")
+                .split(/[,\s]+/)
+                .map((reference) => reference.trim())
+                .filter(Boolean),
+              title,
+            },
+          ]
+        : [];
+    }),
+    shapeRules: sectionRules(interfaceSource, "Surface, density, and shape"),
+    stateRules: sectionRules(interfaceSource, "Controls, states, and actions"),
+  };
+}
+
 interface IAssetIndexSource {
   assets?: Array<Record<string, unknown>>;
 }
@@ -286,42 +327,44 @@ function typographyFor(
   source: string,
   assets: IProjectDesignAsset[],
 ): IProjectDesignTypographyRole[] {
-  const rows = tableRows(source, "Typography").flatMap((cells) => {
-    const [role, family, weights, usage, assetId] = cells;
-    if (!role || !family || !weights || !usage) return [];
-    const normalizedRole = role.toLocaleLowerCase();
-    const primaryRole = isPrimaryTypographyRole(normalizedRole);
-    const fallback = primaryRole ? displayFallback : bodyFallback;
-    const parsedFamily = fontStack(family, fallback);
+  const rows = tableRows(firstTable(section(source, "Typography"))).flatMap(
+    (cells) => {
+      const [role, family, weights, usage, assetId] = cells;
+      if (!role || !family || !weights || !usage) return [];
+      const normalizedRole = role.toLocaleLowerCase();
+      const primaryRole = isPrimaryTypographyRole(normalizedRole);
+      const fallback = primaryRole ? displayFallback : bodyFallback;
+      const parsedFamily = fontStack(family, fallback);
 
-    if (assetId) {
-      const asset = assets.find((candidate) => candidate.id === assetId);
-      if (!asset || asset.designRole !== "font") {
-        throw new Error(
-          `Typography role "${role}" references missing font asset "${assetId}".`,
-        );
+      if (assetId) {
+        const asset = assets.find((candidate) => candidate.id === assetId);
+        if (!asset || asset.designRole !== "font") {
+          throw new Error(
+            `Typography role "${role}" references missing font asset "${assetId}".`,
+          );
+        }
+        const compatibleKeys = primaryRole
+          ? ["primary", "display"]
+          : ["default", "base"];
+        if (asset.designKey && !compatibleKeys.includes(asset.designKey)) {
+          throw new Error(
+            `Typography role "${role}" expects font design_key "${compatibleKeys[0]}" (legacy alias "${compatibleKeys[1]}"), received "${asset.designKey}".`,
+          );
+        }
       }
-      const compatibleKeys = primaryRole
-        ? ["primary", "display"]
-        : ["default", "base"];
-      if (asset.designKey && !compatibleKeys.includes(asset.designKey)) {
-        throw new Error(
-          `Typography role "${role}" expects font design_key "${compatibleKeys[0]}" (legacy alias "${compatibleKeys[1]}"), received "${asset.designKey}".`,
-        );
-      }
-    }
 
-    return [
-      {
-        assetId: assetId || undefined,
-        family: parsedFamily.family,
-        fontStack: parsedFamily.stack,
-        role,
-        usage,
-        weights,
-      },
-    ];
-  });
+      return [
+        {
+          assetId: assetId || undefined,
+          family: parsedFamily.family,
+          fontStack: parsedFamily.stack,
+          role,
+          usage,
+          weights,
+        },
+      ];
+    },
+  );
 
   if (rows.length) return rows;
 
@@ -436,6 +479,7 @@ export function projectDesignData(
       ...sectionBullets(design, "Motion and accessibility"),
     ],
     illustration: mediaFor(design, "Illustration and diagrams"),
+    interface: interfaceFor(design),
     logoRules: sectionBullets(design, "Naming and lockups"),
     palette: {
       accent: colorFor(

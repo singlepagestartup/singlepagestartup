@@ -36,12 +36,21 @@ stable catalog ID, not a third product or a running service. The product directo
 - `sales.yaml`: segment profiles, acquisition and Customer Journey Maps. The
   shared renderer creates segment pages and Markdown exports from this source.
 - `research.md` + `research/`: summary, segment evidence and competitor details.
+- `analytics.md`: observed funnel, usage, retention and economic values with
+  reporting periods, sources and limitations.
 - `website.md` + `website/`: visitor journey, individual page text and layouts.
 - `marketing-creative.md` + `marketing-creative/`: plan and editable covers,
   articles, storyboards, posts and selected motion compositions.
 - `presentation/data.yaml` + `presentation/*.tsx`: independent presentation copy
   and its slide compositions. Product-specific types may live beside those slides.
 - `content/`: optional delivered material such as guides or a proposed README.
+
+Studio keeps the working sequence compact: Product → Operations & Economics →
+Sales → Promotion → Analytics. Compact badge tabs expose Product Overview and
+optional Product Content inside Product, Website/Marketing Creative/Presentation
+inside Promotion, and current observations/Research inside Analytics. These are
+navigation groups; their underlying sources, confirmation, nested pages and
+exports remain distinct.
 
 Keep overview documents beside their detail folders. Names and nested page IDs
 come from the product catalog; extra pages and formats remain project-defined.

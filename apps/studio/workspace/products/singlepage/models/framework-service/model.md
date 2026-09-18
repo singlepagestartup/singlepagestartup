@@ -1,6 +1,10 @@
 ---
 confirmation:
-  confirmed: false
+  confirmed: true
+  by: operator
+  at: "2026-09-17"
+  source: "Operator approved the complete current Operations & Economics model in chat: «Все отлично, так можно подтвердить ее и переходим дальше к продажам»."
+  content_sha256: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
 sources:
   current-business: Brief sources.current_business and funding; client-reported tested foundations, worldwide GitHub distribution, free code, owner funding and best-effort support, 2026-08-14 and 2026-09-12.
   scope-and-flow: Brief intake.audience_value_and_flow; operator correction, 2026-09-13, selects hosted business-data AI Chat, token purchases and a demonstration-to-local-framework route while retaining both product IDs.
@@ -26,7 +30,7 @@ scoped_trial_inputs:
     applicability: Not confirmed by the current Brief and not a purchased-token operating term.
 review:
   dependencies:
-    brief: bf0f72b61cb12fc4a6fea78bd136dddb34e57921a7d8dbb528c25f85f30e68e1
+    brief: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
 ---
 
 # Operations & Economics

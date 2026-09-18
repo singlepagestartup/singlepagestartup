@@ -18,12 +18,15 @@ website claims.
 
 ## Inputs and ownership
 
-Read `brief.md`, the linked model and Product sources when available, attributed source material, and
+Read `brief.md`, the linked model, Product and Analytics sources when available, attributed source material, and
 questions in the selected product's documents that can change the decision.
 Edit one product Research at a time. Keep external observations, source IDs, and
 inferences in that file. Send client-clarification questions and proposed
 corrections to the coordinator; never rewrite client facts in product models from
 external findings.
+Analytics owns the current observed values, reporting periods and collection
+limitations. Cite those observations when they affect a finding; do not copy the
+measurement table into Research or treat missing instrumentation as a zero result.
 Refuse broad research until the brief contains operator-confirmed decision scope
 and the product Research scope names the decision the research can change.
 
@@ -111,3 +114,10 @@ word count and any prior finding replaced by fresher evidence.
 
 Apply `.agents/contracts/research-sales-audit.md` for segment-by-segment Sales
 validation, competitor detail, evidence verdicts and the reusable Research tree.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

@@ -32,6 +32,7 @@
           "bun tools/studio/design-system/validate.ts",
           "bun tools/studio/workspace/validate.ts --active-layer singlepage --self-check",
           "bun tools/studio/workspace/validate.ts --active-layer startup",
+          "npm run agents:editorial:test",
           "npm run studio:presentation:test",
           "npm run singlepagestartup:github:test"
         ],

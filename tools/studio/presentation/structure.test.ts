@@ -90,7 +90,9 @@ describe("Studio presentation structure", () => {
     expect(component).toContain('label: "Product"');
     expect(component).toContain('label: "Research"');
     expect(component).toContain('label: "Sales"');
-    expect(component).toContain('label: "Product Content"');
+    expect(component).toContain('label: "Promotion"');
+    expect(component).toContain('label: "Analytics"');
+    expect(component).toContain('label: "Content"');
     expect(component).toContain("product.content");
     expect(component).toContain("<Content />");
     expect(component).toContain("product.websiteComponent");
@@ -101,10 +103,36 @@ describe("Studio presentation structure", () => {
   });
 
   /**
+   * BDD Scenario: Keep the AI Chat development loop editable and visible
+   * Given Project model guides work from the Brief through validation
+   * When its text source and React layout are reviewed
+   * Then both preserve the same decision loop before materials and implementation
+   */
+  test("keeps the Project model validation loop aligned across text and layout", () => {
+    const document = source(
+      "apps/studio/workspace/products/singlepage/ai-chat/content/workspace-map.md",
+    );
+    const layout = source(
+      "apps/studio/workspace/products/singlepage/ai-chat/content/WorkspaceMap.tsx",
+    );
+
+    expect(document).toContain("```mermaid\nflowchart LR");
+    expect(document).toContain("D --> E[Critical assumptions]");
+    expect(document).toContain(
+      "G -->|Disproves| I[Change Product, model or Sales]",
+    );
+    expect(document).toContain("I --> E");
+    expect(document).toContain("H --> J[Materials and implementation]");
+    expect(layout).toContain('title: "Critical assumptions"');
+    expect(layout).toContain('title: "Research & experiments"');
+    expect(layout).toContain("What did the evidence show?");
+  });
+
+  /**
    * BDD Scenario: Keep every product definition decision-ready
    * Given the framework owns one canonical Product Overview contract
-   * When the template and current Code Framework product are validated
-   * Then both use the same six sections and the superseded shallow structure is absent
+   * When the template and both current framework products are validated
+   * Then all use the same six sections and the superseded shallow structure is absent
    */
   test("enforces the six-section Product Overview contract", () => {
     const expectedSections = [
@@ -116,23 +144,56 @@ describe("Studio presentation structure", () => {
       "Business goals and metrics",
     ];
     const template = source(".agents/templates/product.md");
-    const product = source(
-      "apps/studio/workspace/products/singlepage/singlepagestartup/product.md",
-    );
+    const products = [
+      source(
+        "apps/studio/workspace/products/singlepage/singlepagestartup/product.md",
+      ),
+      source("apps/studio/workspace/products/singlepage/ai-chat/product.md"),
+    ];
     const sections = (document: string): string[] =>
       [...document.matchAll(/^## (.+)$/gm)].map((match) => match[1]);
 
     expect(sections(template)).toEqual(expectedSections);
-    expect(sections(product)).toEqual(expectedSections);
-    for (const supersededHeading of [
-      "Decision status",
-      "Buyer and buying situation",
-      "Offer and outcome",
-      "Adoption ladder",
-      "Proof and claim boundaries",
-    ]) {
-      expect(product).not.toContain(`## ${supersededHeading}`);
+    for (const product of products) {
+      expect(sections(product)).toEqual(expectedSections);
+      for (const supersededHeading of [
+        "Decision status",
+        "Buyer and buying situation",
+        "Offer and outcome",
+        "Adoption ladder",
+        "Proof and claim boundaries",
+      ]) {
+        expect(product).not.toContain(`## ${supersededHeading}`);
+      }
     }
+  });
+
+  /**
+   * BDD Scenario: Review AI Chat presentation slides as Text and Layout
+   * Given AI Chat has a product-owned React presentation
+   * When Studio loads its slide data and renderer
+   * Then each slide supplies reviewable Markdown text and the shared PDF-ready layout
+   */
+  test("keeps AI Chat presentation text paired with its layout", () => {
+    const renderer = source(
+      "apps/studio/workspace/products/singlepage/ai-chat/presentation/ProjectPresentation.tsx",
+    );
+    const data = parse(
+      source(
+        "apps/studio/workspace/products/singlepage/ai-chat/presentation/data.yaml",
+      ),
+    ) as {
+      content: { slides: Array<{ id: string; title: string }> };
+    };
+
+    expect(data.content.slides.length).toBeGreaterThanOrEqual(6);
+    expect(
+      data.content.slides.every(({ id, title }) => Boolean(id && title)),
+    ).toBe(true);
+    expect(renderer).toContain("presentationSlideMarkdown(slide)");
+    expect(renderer).toContain("<ProjectPresentation");
+    expect(renderer).toContain("data-slide-content");
+    expect(renderer).toContain("data-slide-footer");
   });
 
   /**
@@ -375,6 +436,13 @@ describe("Studio presentation structure", () => {
       "apps/studio/workspace/utils/components/ProjectDesign.tsx",
     );
 
+    // Symmetry is a contract between the two media families, so it is measured
+    // across their own span; other sections may reuse a shared heading name.
+    const media = template.slice(
+      template.indexOf("## Photography"),
+      template.indexOf("## Outputs and provenance"),
+    );
+    expect(media).toContain("## Illustration and diagrams");
     for (const heading of [
       "### Purpose and evidence boundary",
       "### Style master prompt",
@@ -382,7 +450,7 @@ describe("Studio presentation structure", () => {
       "### Generation examples",
       "### Review and quality gate",
     ]) {
-      expect(template.split(heading)).toHaveLength(3);
+      expect(media.split(heading)).toHaveLength(3);
     }
     expect(workflow).toContain(
       "Each active media family needs at least three materially different",
@@ -613,7 +681,10 @@ describe("Studio presentation structure", () => {
     expect(exporter).toContain("document=presentation&product=");
     expect(exporter).toContain("resolvePresentationOutputTarget");
     expect(exporter).toContain("127\\.0\\.0\\.1|localhost");
-    expect(exporter).toContain("rel=[\"']modulepreload[\"']");
+    expect(exporter).toContain(
+      "querySelectorAll('script, link[rel=\"modulepreload\"]')",
+    );
+    expect(exporter).not.toContain("<script\\b");
   });
 
   /**

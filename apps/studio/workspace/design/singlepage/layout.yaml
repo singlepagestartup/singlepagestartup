@@ -4,5 +4,12 @@ sections:
   - { id: logos, builtin: logos }
   - { id: colors, builtin: colors }
   - { id: typography, builtin: typography }
+  - { id: interface, builtin: interface }
+  - id: interface-kit
+    title: Interface kit
+    source: interface-kit.html
+  - id: content-blocks
+    title: Content blocks
+    source: content-blocks.html
   - { id: photography, builtin: photography }
   - { id: illustration, builtin: illustration }

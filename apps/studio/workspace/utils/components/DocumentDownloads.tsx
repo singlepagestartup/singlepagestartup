@@ -14,6 +14,7 @@ export interface IDocumentDownloadsProps {
   htmlTargetRef?: RefObject<HTMLElement | null>;
   htmlUrl?: string;
   markdown?: string;
+  markdownTitle?: string;
   theme?: "dark" | "light";
   title: string;
 }
@@ -30,14 +31,15 @@ export function DocumentDownloads({
   htmlTargetRef,
   htmlUrl,
   markdown,
+  markdownTitle,
   theme = "light",
   title,
 }: IDocumentDownloadsProps) {
   const [preparingHtml, setPreparingHtml] = useState(false);
   const buttonClass =
     theme === "dark"
-      ? "border-slate-600 text-white hover:bg-slate-800"
-      : "border-slate-200 text-slate-700 hover:bg-slate-50";
+      ? "border-slate-600 bg-slate-900 text-white shadow-sm hover:border-slate-400 hover:bg-slate-800"
+      : "border-slate-200 bg-white text-slate-700 shadow-sm hover:-translate-y-px hover:border-teal-400 hover:bg-teal-50 hover:text-teal-950 active:translate-y-0";
   const baseName = downloadSlug(fileName);
   const htmlName = downloadFileName(baseName, "html");
   const hasHtml = Boolean(htmlUrl || htmlTargetRef);
@@ -53,14 +55,14 @@ export function DocumentDownloads({
           type="button"
           onClick={() =>
             downloadText(
-              markdownDownloadContent(markdown),
+              markdownDownloadContent(markdown, markdownTitle),
               "text/markdown;charset=utf-8",
               downloadFileName(baseName, "md"),
             )
           }
           aria-label="Download Markdown"
           title="Download Markdown"
-          className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-teal-600 ${buttonClass}`}
+          className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-teal-600 ${buttonClass}`}
         >
           <Download aria-hidden="true" size={16} />
           <span>.md</span>
@@ -72,7 +74,7 @@ export function DocumentDownloads({
           download={htmlName}
           aria-label="Download HTML"
           title="Download HTML"
-          className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-teal-600 ${buttonClass}`}
+          className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-teal-600 ${buttonClass}`}
         >
           <Download aria-hidden="true" size={16} />
           <span>.html</span>
@@ -96,7 +98,7 @@ export function DocumentDownloads({
           aria-label={preparingHtml ? "Preparing HTML" : "Download HTML"}
           title="Download HTML"
           disabled={preparingHtml}
-          className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-teal-600 ${buttonClass}`}
+          className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-teal-600 disabled:cursor-wait disabled:opacity-60 ${buttonClass}`}
         >
           <Download aria-hidden="true" size={16} />
           <span>{preparingHtml ? "Preparing HTML…" : ".html"}</span>

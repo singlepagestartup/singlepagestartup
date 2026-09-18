@@ -127,8 +127,9 @@ snapshot, or an inherited approval into new user consent.
 
 ## Layer resolution
 
-- Empty startup inherits the whole singlepage body and its confirmation. The UI
-  names singlepage; this is not confirmation by the startup project's user.
+- Empty startup inherits the whole singlepage body and its confirmation. The
+  projection/navigation names singlepage while the status badge stays concise;
+  this is not confirmation by the startup project's user.
 - New or changed startup content without its own confirmation is unconfirmed,
   even when its singlepage base is approved.
 - An explicit startup false overrides base true, including a metadata-only file.

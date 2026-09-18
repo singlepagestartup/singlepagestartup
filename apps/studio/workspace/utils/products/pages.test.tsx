@@ -14,6 +14,7 @@ import { ProductPages } from "../components/ProductPages";
 import { WorkspacePage } from "../components/WorkspacePage";
 import { productReviewPages } from "../../../../../tools/studio/workspace/review";
 import { parseCodeFrameworkWebsite } from "../../products/singlepage/singlepagestartup/website/content";
+import { parseAIChatWebsite } from "../../products/singlepage/ai-chat/website/content";
 import { ProductCatalog } from "../components/ProductCatalog";
 import type { IProductCatalogView } from "./source";
 import { extensionProduct } from "../../../../../tools/studio/products/fixtures/catalog";
@@ -58,6 +59,40 @@ function sources(layer: "startup" | "singlepage"): IProductPageSources {
 }
 
 describe("product pages", () => {
+  /** BDD Scenario: AI Chat website wording has one canonical source
+   * Given the AI Chat landing page supplies both review text and its React layout
+   * When its project promise and workspace steps are revised in Markdown
+   * Then the layout parser receives those revisions in their original sections
+   */
+  test("keeps AI Chat landing copy bound to its Markdown source", () => {
+    const markdown = readFileSync(
+      new URL(
+        "../../products/singlepage/ai-chat/website/page.md",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    const revised = markdown
+      .replace(
+        "Turn your notes and drafts into a business model and prepare your first landing page.",
+        "Turn project files into a working business model.",
+      )
+      .replace("Upload the material", "Bring existing material")
+      .replace(
+        "Preview the landing page, then publish it on your server.",
+        "Inspect one landing-page sandbox.",
+      );
+    const content = parseAIChatWebsite(revised);
+
+    expect(content.hero.title).toBe(
+      "Turn project files into a working business model.",
+    );
+    expect(content.workflow.items[0].title).toBe("Bring existing material");
+    expect(content.publish.title).toBe("Inspect one landing-page sandbox.");
+    expect(content.foundation.items).toHaveLength(4);
+    expect(content.labels["navigation-foundation"]).toBeTruthy();
+  });
+
   /** BDD Scenario: Editing page headings preserves the layout's content bindings
    * Given the authored landing page has stable section identifiers
    * When an operator revises its headline, feature and question copy
@@ -155,8 +190,16 @@ describe("product pages", () => {
       expect(html).toContain('aria-pressed="true"');
       expect(html).toContain(">Layout<");
       expect(html).not.toContain('data-layout="true"');
-      expect(html.match(/Not confirmed by user/g)).toHaveLength(1);
-      expect(html.split("<article")[1]).not.toContain("Not confirmed by user");
+      expect(html.match(/Needs confirmation/g)).toHaveLength(1);
+      expect(html.split("<article")[1]).not.toContain("Needs confirmation");
+      expect(html).toContain("bg-slate-50");
+      expect(html).toContain("<hr");
+      expect(html.indexOf("data-document-toolbar")).toBeLessThan(
+        html.indexOf("data-export-document"),
+      );
+      expect(html.slice(html.indexOf("data-export-document"))).toContain(
+        `>${title}</h2>`,
+      );
       expect(html).toContain('aria-label="Download Markdown"');
       expect(html).toContain(
         'data-download-base-name="code-framework-landing"',
@@ -290,8 +333,152 @@ describe("product pages", () => {
       };
       const html = renderToStaticMarkup(<ProductCatalog view={view} />);
       expect(html).toContain("Actual visitor page.");
+      expect(html).toContain("01 Promotion");
+      expect(html).toContain('aria-label="Promotion materials"');
+      expect(html).toContain('role="tablist"');
+      expect(html).toContain(">Website</button>");
+      expect(html).not.toContain(">01 Website<");
       expect(html).not.toContain(">Overview<");
       expect(html).not.toContain(">Presentation<");
+    } finally {
+      if (descriptor) Object.defineProperty(globalThis, "window", descriptor);
+      else Reflect.deleteProperty(globalThis, "window");
+    }
+  });
+  /**
+   * BDD Scenario: Keep measurements and interpretation in one evidence surface.
+   * Given: a product owns both Analytics and Research documents.
+   * When: a legacy Research address is opened.
+   * Then: Analytics is the top-level tab and its badge tabs select Research without duplicating either source.
+   */
+  test("groups analytics and research while preserving legacy addresses", () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, "window");
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: {
+        location: {
+          search: "?section=research",
+          href: "http://localhost/iframe.html?section=research",
+        },
+      },
+    });
+    try {
+      const confirmation = {
+        confirmed: false,
+        state: "unconfirmed" as const,
+        layer: "startup" as const,
+      };
+      const view: IProductCatalogView = {
+        id: "startup",
+        label: "startup",
+        inherited: false,
+        sourcePaths: [],
+        products: [
+          {
+            id: "evidence",
+            name: "Evidence product",
+            summary: "Measurement loop",
+            sections: [],
+            documents: [
+              {
+                kind: "analytics",
+                label: "05 Analytics",
+                sourcePath: "evidence/analytics.md",
+                content: "# Analytics\n\nObserved values.",
+                confirmation,
+              },
+              {
+                kind: "research",
+                label: "02 Research",
+                sourcePath: "evidence/research.md",
+                content: "# Research\n\nInterpreted finding.",
+                confirmation,
+              },
+            ],
+          },
+        ],
+      };
+      const html = renderToStaticMarkup(<ProductCatalog view={view} />);
+      expect(html).toContain("Interpreted finding.");
+      expect(html).toContain("01 Analytics");
+      expect(html).toContain('aria-label="Analytics views"');
+      expect(html).toContain('aria-selected="true"');
+      expect(html).toContain(">Analytics</button>");
+      expect(html).toContain(">Research</button>");
+    } finally {
+      if (descriptor) Object.defineProperty(globalThis, "window", descriptor);
+      else Reflect.deleteProperty(globalThis, "window");
+    }
+  });
+  /**
+   * BDD Scenario: Keep delivered product material beside the product definition.
+   * Given: a product has its overview and optional Product Content.
+   * When: the legacy Product Content address is opened.
+   * Then: Product remains the top-level tab and its badge tabs expose both sources.
+   */
+  test("nests product content under the product tab", () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, "window");
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: {
+        location: {
+          search: "?section=content",
+          href: "http://localhost/iframe.html?section=content",
+        },
+      },
+    });
+    try {
+      const view: IProductCatalogView = {
+        id: "startup",
+        label: "startup",
+        inherited: false,
+        sourcePaths: [],
+        products: [
+          {
+            id: "learning",
+            name: "Learning product",
+            summary: "A product with delivered material",
+            documents: [
+              {
+                kind: "product",
+                label: "01 Product",
+                sourcePath: "learning/product.md",
+                content: "# Product\n\nProduct definition.",
+                confirmation: {
+                  confirmed: false,
+                  state: "unconfirmed",
+                  layer: "startup",
+                },
+              },
+            ],
+            sections: [
+              {
+                id: "content",
+                title: "Product Content",
+                pages: [
+                  {
+                    id: "lesson",
+                    title: "Lesson",
+                    kind: "markdown",
+                    layer: "startup",
+                    children: [],
+                    markdown: "# Lesson\n\nDelivered material.",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      const html = renderToStaticMarkup(<ProductCatalog view={view} />);
+      expect(html).toContain("Delivered material.");
+      expect(html).toContain("01 Product");
+      expect(html).not.toContain("02 Product Content");
+      expect(html).toContain('aria-label="Product views"');
+      expect(html).toContain(">Overview</button>");
+      expect(html).toContain(">Content</button>");
+      expect(html).not.toContain("Defines this product&#x27;s customer");
+      expect(html).toContain("bg-slate-50");
     } finally {
       if (descriptor) Object.defineProperty(globalThis, "window", descriptor);
       else Reflect.deleteProperty(globalThis, "window");
@@ -335,7 +522,7 @@ describe("product pages", () => {
     expect(html).toContain(
       "/workspace-products/startup/example/website/campaign.svg",
     );
-    expect(html).toContain("Not confirmed by user");
+    expect(html).toContain("Needs confirmation");
   });
 
   /** BDD Scenario: Atomic section inheritance

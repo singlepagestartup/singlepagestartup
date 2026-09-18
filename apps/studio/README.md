@@ -57,7 +57,13 @@ npm run studio:presentation:export
 
 `studio:validate` type-checks Workspace stories and checks runnable manifests,
 module/page/Figma metadata, both canonical workspace layers, inheritance rules,
-dependency cycles, and isolated validator fixtures.
+dependency cycles, and isolated validator fixtures. Once a downstream project's
+own cursor reaches `30-design`, it also requires that project to own its
+brandbook: a written and separately confirmed `design/startup.md` plus at least
+one registered asset in `assets/startup.yaml`. Independently, any layer that
+documents an `Interface and product surfaces` section must render the required
+specimens; each declares `data-specimen="<id>"` and an omission needs an
+attributed reason in `interface_review.omitted_specimens`.
 
 `studio:inventory` regenerates `inventory/modules.generated.json` from
 production module variant contracts and Studio manifests. Workspace documents
@@ -170,7 +176,8 @@ Engineering research, plans, and implementation notes stay exclusively in
 
 `Workspace/30 Design/default` renders the effective Design document and assets
 through the selected `workspace/design/<layer>/layout.yaml`. The base lists
-reusable overview, logo, color, typography, photography, and illustration blocks.
+reusable overview, logo, color, typography, interface, photography, and
+illustration blocks.
 Projects may reorder or omit these blocks, add Markdown/React/HTML/media sections,
 or provide a complete TSX/JSX template. Layout files resolve atomically: empty
 startup inherits the base; a populated startup layout replaces it, and every

@@ -23,3 +23,10 @@ Combined shortcut: runs the planning phase and then the implementation phase for
 - All status gates, artifacts, and issue comments of both phases apply unchanged.
 - **Use with care**: this flow skips the human plan-review gate. It is only appropriate for `size:xs` / `size:small` issues where the operator accepts that trade-off; for anything larger, run `/core/20-plan`, review, then `/core/30-implement`.
 - Do not advance to implementation if the plan phase stopped on an intent-clarification checkpoint or left `Open Questions (Blocking)` unresolved.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

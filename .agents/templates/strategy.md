@@ -8,8 +8,15 @@ confirmation:
 <!-- A compact, project-wide marketing strategy built from Brief and external
 research, preferably about 1,400 words per page, without a hard cap. Explain goals, audience choices, positioning,
 product roles, coordinated acquisition, conversion, retention and growth.
-Keep current facts and decisions in the body; claim-keyed sources and review
-state in metadata. Detailed offers, campaign plans and tests belong to products.
+Describe one concrete final picture of the whole project after it satisfies the
+approved Brief as fully as known constraints allow. Explain how the resulting
+marketing system and its durable decision rules work. Keep intended outcomes
+distinct from observed results, but do not narrate a roadmap, transition phases,
+next tasks, preparation work or missing product deliverables.
+Keep only the current facts needed to justify a target decision, proof boundary
+or material constraint; the current business intake belongs to Brief.
+Claim-keyed sources and review state stay in metadata. Detailed offers, campaign
+plans and tests belong to products.
 Use this same structure and quality standard in framework and downstream
 projects. Populate it from the active project's Brief and relevant research;
 example audiences, products, channels, revenue models and metrics are not defaults.
@@ -18,8 +25,10 @@ purchase or human/agent workflow to fill the template. -->
 
 ## Strategic direction
 
-State the business and audience-growth goals, the selected positioning, the
-reason this direction fits the project, and the main strategic trade-off.
+Describe the coherent target state for the project: the business and
+audience-growth outcomes, selected positioning, product relationship and the
+main strategic trade-off. Explain how this final picture fulfills the approved
+Brief. Do not describe the sequence for reaching it.
 
 ## Audiences and product roles
 
@@ -36,15 +45,18 @@ revenue and adoption outcomes without removing any confirmed catalog product.
 | -------------------- | ----------------- | ---------------- | -------------------------------------- |
 |                      |                   |                  |                                        |
 
-Choose a coherent, prioritized channel system. Explain how channels reinforce
-the product experience, repeat use, recommendations and discoverability.
+Describe the coherent, prioritized channel system in its intended operating
+state. Explain how channels reinforce the product experience, repeat use,
+recommendations and discoverability.
 Do not substitute an unprioritized platform list or content calendar.
 
 ## Customer journey
 
-Describe discovery, first useful result, each conversion, continued use,
-recommendation and cross-product adoption. Match the user's skills and the
-intended human/agent division of work. Keep product implementation detail out.
+Describe the customer's intended journey through discovery, first useful
+result, each conversion, continued use, recommendation and cross-product
+adoption. This is a customer experience inside the final system, not a project
+implementation sequence. Match the user's skills and the intended human/agent
+division of work. Keep product implementation detail out.
 
 ## Measurement and priorities
 
@@ -52,7 +64,9 @@ intended human/agent division of work. Keep product implementation detail out.
 | ----------------- | ------------------ | ---------------------- |
 |                   |                    |                        |
 
-State sequencing and resource principles, plus only the material risks that
-can change the direction. Do not invent numerical targets, ongoing budgets or
-capacity. Product-level tests may be one concise line: no mandatory first
-experiment, test track, sample size, trial calendar or stop-rule table here.
+State the durable priority order, resource-allocation principles and management
+rules, plus only the material risks that can change the direction. Describe how
+the system should operate; do not list what must be prepared, configured or done
+next. Do not invent numerical targets, ongoing budgets or capacity. Product-level
+tests may be one concise line: no mandatory first experiment, test track, sample
+size, trial calendar or stop-rule table here.

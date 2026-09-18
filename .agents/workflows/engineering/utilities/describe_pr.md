@@ -97,3 +97,10 @@ You are tasked with generating a comprehensive pull request description followin
 - If the PR touches multiple components, organize the description accordingly
 - Always attempt to run verification commands when possible
 - Clearly communicate which verification steps need manual testing
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

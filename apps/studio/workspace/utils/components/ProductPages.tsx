@@ -11,7 +11,7 @@ import {
   documentConfirmation,
   parseDocument,
 } from "../../../../../tools/studio/workspace/document";
-import { ConfirmationBadge } from "./DocumentStatus";
+import { DocumentReviewToolbar } from "./DocumentStatus";
 import { DocumentDownloads } from "./DocumentDownloads";
 
 function flatten(pages: IProductPageView[]): IProductPageView[] {
@@ -71,6 +71,12 @@ export function ProductPages({
       : "text";
   const displayed = page?.representations ? page.representations[mode]! : page;
   const textPage = page?.representations?.text ?? page;
+  const pageTitle =
+    textPage?.kind === "markdown"
+      ? (parseDocument(textPage.markdown ?? "").body.match(/^# (.+)$/m)?.[1] ??
+        page?.title ??
+        "")
+      : (page?.title ?? "");
   const confirmation =
     page?.confirmation ??
     textPage?.confirmation ??
@@ -269,74 +275,69 @@ export function ProductPages({
       <div className="min-w-0" ref={contentRef}>
         {page && displayed ? (
           <div key={page.id}>
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-6 py-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-lg font-semibold text-slate-950">
-                  {page.title}
-                </h2>
-                {confirmation ? (
-                  <ConfirmationBadge confirmation={confirmation} />
-                ) : null}
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <DocumentDownloads
-                  fileName={[
-                    downloadContext,
-                    textPage?.downloadName ?? page.title,
-                  ]
-                    .filter(Boolean)
-                    .join("-")}
-                  htmlTargetRef={
-                    displayed.kind === "html" ? undefined : exportRef
-                  }
-                  htmlUrl={
-                    displayed.kind === "html" ? displayed.url : undefined
-                  }
-                  markdown={textPage?.markdown}
-                  title={[downloadContext, page.title]
-                    .filter(Boolean)
-                    .join(" — ")}
-                />
-                {page.representations ? (
-                  <div
-                    role="group"
-                    aria-label="Page representation"
-                    className="inline-flex rounded-lg bg-slate-100 p-1"
-                  >
-                    {(["text", "preview"] as const).map((value) => (
-                      <button
-                        type="button"
-                        key={value}
-                        aria-pressed={mode === value}
-                        disabled={
-                          value === "preview" && !page.representations?.preview
-                        }
-                        onClick={() => setRepresentation(value)}
-                        className={`rounded-md px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-teal-600 disabled:cursor-not-allowed disabled:text-slate-400 ${mode === value ? "bg-white font-semibold text-slate-900 shadow-sm" : "text-slate-600"}`}
-                      >
-                        {value === "text" ? "Text" : "Layout"}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-            {page.representations && !page.representations.preview ? (
-              <p className="px-6 pt-4 text-sm text-slate-500">
-                The page text is ready to work on. Its layout can be added next.
-              </p>
-            ) : null}
-            <div ref={exportRef}>
+            <DocumentReviewToolbar
+              confirmation={confirmation}
+              note={
+                page.representations && !page.representations.preview
+                  ? "The page text is ready to work on. Its layout can be added next."
+                  : undefined
+              }
+              actions={
+                <>
+                  <DocumentDownloads
+                    fileName={[
+                      downloadContext,
+                      textPage?.downloadName ?? page.title,
+                    ]
+                      .filter(Boolean)
+                      .join("-")}
+                    htmlTargetRef={
+                      displayed.kind === "html" ? undefined : exportRef
+                    }
+                    htmlUrl={
+                      displayed.kind === "html" ? displayed.url : undefined
+                    }
+                    markdown={textPage?.markdown}
+                    markdownTitle={pageTitle}
+                    title={[downloadContext, pageTitle]
+                      .filter(Boolean)
+                      .join(" — ")}
+                  />
+                  {page.representations ? (
+                    <div
+                      role="group"
+                      aria-label="Page representation"
+                      className="inline-flex rounded-lg bg-slate-100 p-1"
+                    >
+                      {(["text", "preview"] as const).map((value) => (
+                        <button
+                          type="button"
+                          key={value}
+                          aria-pressed={mode === value}
+                          disabled={
+                            value === "preview" &&
+                            !page.representations?.preview
+                          }
+                          onClick={() => setRepresentation(value)}
+                          className={`rounded-md px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-teal-600 disabled:cursor-not-allowed disabled:text-slate-400 ${mode === value ? "bg-white font-semibold text-slate-900 shadow-sm" : "text-slate-600"}`}
+                        >
+                          {value === "text" ? "Text" : "Layout"}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </>
+              }
+            />
+            <div ref={exportRef} data-export-document>
+              <h2 className="px-6 pt-7 text-2xl font-semibold tracking-tight text-slate-950 md:px-10 md:pt-10">
+                {pageTitle}
+              </h2>
               <WorkspacePage
                 page={displayed}
                 resolveLink={resolveLink}
                 hideConfirmation
-                hideTitle={
-                  displayed.kind === "markdown" &&
-                  parseDocument(displayed.markdown ?? "").body.match(
-                    /^# (.+)$/m,
-                  )?.[1] === page.title
-                }
+                hideTitle={displayed.kind === "markdown"}
               />
               <p className="break-all border-t border-slate-200 px-6 py-4 text-xs text-slate-500">
                 Source: {displayed.sourcePath}

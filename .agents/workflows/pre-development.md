@@ -439,6 +439,23 @@ Supporting activities remain strategic context unless explicitly defined as
 separate offers. Detailed offers, campaign calendars, budgets and tests belong
 to product work; a first experiment is not the organizing principle of Strategy.
 
+Strategy is the concrete target-state description of the whole project after it
+meets the approved Brief as fully as the known constraints allow. Describe how
+the resulting marketing system works, how its products, audiences, channels and
+customer journeys fit together, and which durable rules govern allocation and
+change. Make trade-offs explicit when Brief goals compete. Keep intended and
+forecast outcomes distinct from observed results, but present the selected end
+state itself rather than narrating the route from today's situation to it. Do
+not turn Strategy into a roadmap, backlog, phased transition, a list of what to
+prepare or configure next, or a summary of missing product deliverables.
+Brief owns the attributable current state and confirmed intentions. Strategy
+references only the current facts needed to justify its target state, proof
+boundary or material constraint. Product, Sales, Website and Marketing Creative
+own the intended offer, process and deliverables; task coordination belongs in
+the handoff or later engineering workflow. When a current evidence gap
+materially constrains the direction, express the resulting boundary or
+management rule in Strategy instead of a next-step instruction.
+
 The shared Strategy template and quality criteria apply equally to new framework
 and downstream work. Select the active source with the repository-layer resolver;
 downstream projects author `strategy/startup.md` from their own Brief and research.
@@ -463,8 +480,11 @@ On first generation or any full strategy rerun:
    Explain why the selected channels and product experience reinforce each
    other. Approval and review state stay in metadata and the Studio badge; no
    Decision status section or empty blocker table is needed. Keep material
-   uncertainty beside the affected decision. Do not repeat the same audience,
-   value, route or measurement rationale across sections.
+   uncertainty beside the affected decision. Write one coherent final picture
+   of the project that fulfills the approved Brief, plus its durable management
+   rules, not preparation tasks, transition phases or the next work stage.
+   Do not repeat the same audience, value, route or measurement rationale across
+   sections.
 4. Do not add interview chronology, repeated operator-fact lists, superseded or
    invalidated wording, downstream instructions, or handoff prose to the
    artifact. Use Git for history, document metadata for review state, and the
@@ -486,9 +506,13 @@ channel or different customer journey for the operator-selected direction.
 Completion requires coherent project goals, audience-growth and sales-product
 priorities, positioning, product roles traceable to confirmed Brief IDs,
 a coordinated channel system, activation/conversion/retention/adoption paths,
-observable outcomes and resource priorities. Choices must fit the available
-facts and explain material trade-offs. Do not invent ongoing commitments from
-scoped trial limits or require product-level campaign design to approve Strategy.
+observable outcomes, durable resource-allocation principles and one clear,
+concrete target state for the whole project. That state must satisfy the
+approved Brief as fully as known constraints allow. Choices must fit the
+available facts and explain material trade-offs.
+Do not substitute a next-step list for the strategic direction or invent
+ongoing commitments from scoped trial limits or require product-level campaign
+design to approve Strategy.
 Unresolved evidence must have a clear implication for the decision. Strategy
 requires valid user confirmation before the stage completes. Return the compact
 marketing direction in the operator's language and keep `10-strategy` blocked on
@@ -788,8 +812,8 @@ part of this workflow.
 Studio exposes Design through `default`, `singlepage`, and `startup` projections.
 Choose the visible structure to fit the project's stylistic requirements using
 `design/<layer>/layout.yaml`. The ordered `sections` array may select, reorder,
-or omit built-in overview, logos, colors, typography, photography, and illustration
-blocks, and add sections with an `id`, `title`, and layer-relative `source`.
+or omit built-in overview, logos, colors, typography, interface, photography, and
+illustration blocks, and add sections with an `id`, `title`, and layer-relative `source`.
 Markdown, TSX/JSX, HTML, images, and media are supported. Additional Markdown
 headings alone do not create visible sections. A default-exported TSX/JSX
 `template` may replace the visual canvas below the shared review header and
@@ -807,6 +831,15 @@ styles so they do not restyle the review header. Start template content at H2.
 Do not duplicate the title, badge, or process metadata inside the mockup.
 Downstream projects inherit this presentation contract while owning their
 visual choices; a new startup design must not redesign the Workspace shell.
+
+A downstream project must own its brandbook rather than shipping the
+framework's. Inheritance is the explicit starting state, so `studio:validate`
+stays silent until that project's own cursor reaches `30-design`; from then on
+it requires `design/startup.md` to hold decisions of its own, to carry its own
+operator confirmation, and `assets/startup.yaml` to register at least one owned
+asset. An inherited singlepage approval never satisfies this gate. Either write
+the startup layer or move the cursor back to the stage that is actually current;
+do not silence the check by copying framework prose into the startup file.
 
 Empty startup layout inherits the complete singlepage layout. A non-empty
 startup layout replaces it completely; all declared files must exist in its
@@ -835,13 +868,52 @@ quality gate remains in canonical Markdown for agent validation but is not
 rendered as a human-review card. Paragraph or bullet guidance must work in the
 tooltip, while empty decorative panels are prohibited.
 
+Design ships rendered specimens, not only rules. Declare them as layer-owned
+HTML sections in `design/<layer>/layout.yaml`; Studio inlines a Design HTML file
+so plain Tailwind resolves against the project's own `--workspace-brand-*`
+tokens. Keep them framework-free, express state with CSS because injected
+scripts do not run, and print each specimen's exact class recipe beside it so a
+product surface is built from the string rather than from an approximation.
+
+Generate this minimum whenever the project ships any product surface. Controls:
+one dominant action with its secondary, plain, disabled, and separated
+destructive variants; selection as a chip and as a grouped choice, each carrying
+a non-colour signal as well; status and progress; fields and data rows;
+navigation for a public page and for a work screen with a selected item; and the
+dark pair whenever the colour system declares a dark column. Compositions: an
+editorial entry, a content card carrying the project's own confirmed imagery at
+its original aspect ratio, an icon card on the declared icon grid, and a
+repeated item grid. Add an offer comparison when the project sells, a contextual
+sheet when it has a mobile or overlay surface, and a media-and-text row when
+illustration is an active family. Omit a specimen only with an explicit
+out-of-scope decision; an absent block is not a silent answer.
+
+Every specimen declares itself with `data-specimen="<id>"` on its container, so
+completeness is checked rather than assumed. `studio:validate` requires
+`actions`, `selection`, `status`, `fields`, `navigation`, `editorial-entry`,
+`content-card`, `icon-card` and `item-grid` as soon as a layer documents an
+`Interface and product surfaces` section, and adds `dark-pair` once the
+Semantic color system declares a Dark column. It reads the layout that actually
+renders, so a replacement startup layout owes its own specimens. To drop one,
+record `interface_review.omitted_specimens.<id>` with the reason it is out of
+scope; an empty reason does not satisfy the gate.
+
+Every specimen uses the confirmed semantic roles and type steps. Do not invent a
+size, a radius, or a colour that the Design document does not define: if a
+needed step is missing, add it to the document as a proposal and obtain
+confirmation instead of improvising in the markup. Never frame supplied artwork
+with a second background, because a registered master keeps its own
+off-white and no container colour can match every one of them. Review the
+specimens in a browser and verify computed styles, not appearance alone.
+
 Completion requires the resolved Brief to contain five separately labeled and
 validated reference sets for interface and website appearance, typography,
 photography, illustration, and marketing creative, or an explicit out-of-scope
 decision for a genuinely unused family; an operator-confirmed Client visual preference profile; a
 reusable visual system; the symmetric photography and illustration contract
 above; at least three visually reviewed examples for each active media family;
-a reconciled asset registry; accessibility and evidence boundaries; resolved
+a reconciled asset registry; the required rendered specimens above with their
+class recipes; accessibility and evidence boundaries; resolved
 material design constraints; and valid confirmation of the complete Design. Design must stay
 reusable across products: marketing references inform its cross-channel visual
 language, but it does not contain a product page, campaign, sales deck, or other
@@ -895,6 +967,7 @@ the Research prepared before strategic selection and Sales intake recorded durin
 ```text
 products/<layer>/<product-id>/
   research.md
+  analytics.md
   sales.yaml
   product.md
   website.md
@@ -919,8 +992,10 @@ measured results, and the product from related offers. It applies the approved
 Strategy without silently changing shared business, brand or design decisions.
 
 Translate the marketing direction into offers, intended customer flows, business
-outcomes and promotion. Product owns goals and metrics; Marketing Creative owns
-channel formats, content and campaign tracking; models own money and resources.
+outcomes and promotion. Product owns goals and metric definitions; Marketing
+Creative owns channel formats, content and campaign tracking; models own money
+and resources. Analytics records current observed values, periods and sources;
+Research interprets them for decisions without copying the observations.
 Any product-level learning concerns demand, preference, value or commercial
 assumptions. It is not an installation trial, technical test plan or release gate.
 Add campaign schedules or business experiments only when needed for a selected
@@ -971,6 +1046,16 @@ information architecture, page structure, final copy, responsive hierarchy,
 navigation, actions, forms, validation, error/empty/pending/success states,
 post-conversion behavior, metadata, and static Studio compositions.
 
+Derive the route inventory from the complete applicable Sales CJM. Include
+discovery, registration/sign-in, intake, workspace, purchase, settings,
+fulfillment/publication, continuation, support and contextual cross-product
+handoffs when they exist. Do not reduce a whole customer journey to a landing
+page, intake form and success page. In the rendered Website body, retain only
+states that materially change the customer's decision, promise, next action or
+recovery. Keep framework source mechanics, approved-design reminders, generic
+responsive/accessibility rules, confirmation prose, implementation notes and
+backend/security architecture in roles, templates, metadata and engineering.
+
 The Website overview owns the visitor journey and site tree. Each route has one
 catalog page with `route`, `representations.text` and optional
 `representations.preview`, nested with `children` as needed. Develop page copy in
@@ -986,7 +1071,7 @@ message, proof/disclosure, composition, dimensions, crop or timing behavior,
 variants, prompts, indexed assets, rights, accessibility, destination, tracking
 event, owner, and review state.
 
-React Presentation, Website, and optional Product Content entry points live beside
+React Presentation, Website, Analytics, and optional Product Content entry points live beside
 their product documents under `products/<layer>/<product-id>/`. Every catalog
 path resolves below `products/<layer>/`; Sales and Presentation data YAML
 remain with the product documents.
@@ -1036,20 +1121,24 @@ Work through one selected product at a time. Studio groups sources under the
 only its own products. Empty sources remain visible with a No products state.
 Default resolution remains available to loaders without a third sidebar branch.
 Groups are derived from catalogs; never maintain a second product inventory in stories.
-The selected product opens Product first,
-then shows Operations & Economics, Sales, Research, Website, Marketing Creative,
-and Presentation when their sources exist, followed by optional Product Content
-and explicitly declared additional sections. Shared models have one source.
+The selected product opens Product first, then shows Operations & Economics,
+Sales, Promotion, and Analytics. Compact badge tabs place Overview and optional
+Product Content inside Product, Website/Marketing Creative/Presentation inside
+Promotion, and current observations/Research inside Analytics while preserving
+their separate sources, page trees, confirmation and exports. Shared models have
+one source. Explicit custom sections follow the core sequence.
 Supporting pages may have arbitrary nesting and do not need Markdown wrappers.
 Outputs may be reviewed separately, but the product is not complete until all
 applicable files are coherent with one another. Record an
 explicit not-applicable decision instead of creating a placeholder. Stop before
-production components, APIs, analytics implementation, QA, publication, or
-deployment.
+production components, APIs, analytics instrumentation, QA, publication, or
+deployment. The Analytics document may still record inspected observations and
+explicit measurement gaps.
 
 Completion requires the catalog to match the client-confirmed Brief product inventory, with neither omitted nor inferred entries, and every catalog entry to
 have a bounded and reviewable
-`product.md`, concrete website design when in scope, complete selected-channel
+`product.md`, `analytics.md` with sourced observations or explicit `not measured`
+gaps, concrete website design when in scope, complete selected-channel
 creative when in scope, a reviewable presentation when in scope, accessibility
 and evidence boundaries, with material offer, intended customer-process,
 economics and communication decisions resolved or explicitly inapplicable in
@@ -1123,3 +1212,10 @@ When input is required, end with exactly one plain-language question in the
 operator's language. A handoff may be as detailed as needed for confident
 review; never omit material reasoning or evidence to reduce length. Do not
 return role-play dialogue, a biography, or a narrative of routine work.
+
+## Final editorial pass
+
+When the work contains prose intended for a person, apply
+`.agents/contracts/editorial-pass.md` after the facts, evidence, links,
+identifiers, required structure, and approval state are correct. This is the
+last content-editing step before returning or storing the text.

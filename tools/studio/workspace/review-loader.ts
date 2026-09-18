@@ -69,6 +69,7 @@ export async function loadDocumentReviews(
   await Promise.all(
     (catalog?.products ?? []).flatMap((product) =>
       [
+        "analytics",
         "research",
         "sales",
         "product",

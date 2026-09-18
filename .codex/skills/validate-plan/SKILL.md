@@ -23,3 +23,10 @@ Canonical source: `.agents/workflows/engineering/validate_plan.md`.
 ## Inputs
 
 - If issue number / file path is required by the source command, request it from the user or infer it exactly as the source command specifies.
+
+## Final editorial pass
+
+When this skill writes or returns prose intended for a person, load the project
+`unslop` skill and apply `.agents/contracts/editorial-pass.md` after the
+canonical workflow is complete. Preserve exact facts, evidence, identifiers,
+paths, commands, required structure, and approval state.
