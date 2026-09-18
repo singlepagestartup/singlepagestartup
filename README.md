@@ -461,10 +461,12 @@ Here are the available categories and examples of keywords that trigger them:
 | **Authentication error** | 401 | unauthorized, invalid credentials, token required, no session |
 | **Permission error** | 403 | forbidden, permission denied, only order owner |
 | **Validation error** | 400 | invalid data, missing headers, no id provided, invalid url |
-| **Unprocessable Entity error** | 422 | expected string, invalid type, unprocessable entity |
+| **Unprocessable Entity error** | 422 | expected string, invalid body['data'], unprocessable entity |
 | **Payment error** | 400 | payment intent not found, stripe secret key not found, currency required |
 | **Not Found error** | 404 | not found, entity not found, form not found |
 | **Internal error** | 500 | internal server error, jwt secret not provided, configuration error |
+
+A message that opens with a category phrase keeps that category even when its details match another one: `Validation error. Expected string, got: object` stays a 400 Validation error, while a bare `Expected string, got: object` is a 422 Unprocessable Entity error.
 
 If no specific pattern is matched, the error will be classified as a generic Internal error with a 500 status code, ensuring that no error goes unhandled.
 

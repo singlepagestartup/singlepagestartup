@@ -33,6 +33,10 @@ describe("util — HTTP error classification", () => {
       "Passwords do not match",
       "Code is expired. Resend again.",
       "Account already exists",
+
+      "Validation error. Invalid body['data']: undefined. Expected string, got: undefined",
+      "Validation error. Unprocessable Entity",
+      "Validation error. Invalid type. Expected email, got: string",
     ])("maps '%s' → 400 Validation error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(400);

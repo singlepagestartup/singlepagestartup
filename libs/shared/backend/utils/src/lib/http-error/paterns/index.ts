@@ -62,6 +62,23 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
     ],
   },
   {
+    // A message that declares its own category keeps that category, even when
+    // its details also match an unprocessable-entity shape below.
+    status: 400,
+    category: "Validation error",
+    patterns: [/^validation error\b/i],
+  },
+  {
+    status: 422,
+    category: "Unprocessable Entity error",
+    patterns: [
+      /expected string/i,
+      /invalid body\['data'\]/i,
+      /unprocessable entity/i,
+      /invalid type[.]? expected email, got:/i,
+    ],
+  },
+  {
     status: 400,
     category: "Validation error",
     patterns: [
