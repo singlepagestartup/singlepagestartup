@@ -84,9 +84,187 @@ exception filter returned. See Incident 1.
 
 ## Summary
 
+Branch `claude/issue-229-error-mapping`, three commits from `origin/main`:
+
+| Commit       | Issue | Subject                                                           |
+| ------------ | ----- | ----------------------------------------------------------------- |
+| `b124c57c41` | #241  | restore the 422 category the mapper lost                          |
+| `ebe7c0ad92` | #229  | answer an expired JWT with 401 and keep the token out of the logs |
+| `fd18256bbe` | #232  | answer a unique violation with 409 and no database detail         |
+
+Nothing is pushed and no pull request exists; the lead verifies the branch first.
+
 ### Changes Made
 
-- (populated during implementation)
+**`b124c57c41` (#241)**
+
+- `libs/shared/backend/utils/src/lib/http-error/type/index.ts` — added
+  `Unprocessable Entity error`.
+- `libs/shared/backend/utils/src/lib/http-error/paterns/index.ts` — restored the
+  422 entry removed in `9d60d206df`, preceded by a narrow 400 entry anchored to
+  `/^validation error\b/i`.
+- `libs/shared/backend/utils/project.json` — target `test` renamed to
+  `jest:test`, reduced to the shared target default.
+- `libs/shared/backend/utils/src/lib/http-error/index.spec.ts` — three prefixed
+  messages locked at 400.
+- `README.md` — corrected the 422 keywords and stated the precedence rule.
+
+**`ebe7c0ad92` (#229)**
+
+- `libs/shared/backend/utils/src/lib/jwt-verify/index.ts` and `index.spec.ts` —
+  new shared `verifyJwt`.
+- `libs/shared/backend/utils/src/lib/http-error/sanitize/index.ts` — new shared
+  `sanitizeErrorMessage`.
+- `libs/shared/backend/utils/src/lib/index.ts` — exports both.
+- `libs/shared/backend/utils/src/lib/http-error/index.ts` — sanitizes the
+  extracted message before classification.
+- `libs/shared/backend/utils/src/lib/http-error/paterns/index.ts` — 401 entries
+  for an expired, invalid, invalid-JWT and not-yet-valid token; the subsumed
+  `/invalid token issued/i` removed.
+- `libs/shared/backend/api/src/lib/filters/exception/index.ts` — sanitizes the
+  joined message, the stack and the nested causes once, before the log, the
+  Telegram report and the response body.
+- Four call sites migrated to `verifyJwt`:
+  `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/is-authorized.ts`,
+  `.../controller/singlepage/authentication/me.ts`,
+  `.../service/singlepage/refresh.ts`,
+  `libs/modules/rbac/models/subject/backend/app/middlewares/src/lib/request-subject-is-owner/index.ts`.
+- Specs: `http-error/index.spec.ts` (credential safety block) and
+  `.../service/singlepage/is-authorized.spec.ts` (expired-token scenario using
+  the real `JwtTokenExpired`).
+
+**`fd18256bbe` (#232)**
+
+- `libs/shared/backend/utils/src/lib/http-error/index.ts` — 409 with
+  `Conflict error. Entity already exists` for a unique violation, `details`
+  unchanged.
+- `libs/shared/backend/utils/src/lib/http-error/type/index.ts` and
+  `paterns/index.ts` — `Conflict error` category and a 409 entry.
+- `libs/shared/backend/utils/src/lib/unique-constraint-error/index.ts` — also
+  recognises the sanitized conflict message and a 409 status.
+- `libs/modules/rbac/.../authentication/oauth/callback.ts` — the protected
+  `isUniqueConstraintError` delegates to the shared helper.
+- `libs/modules/rbac/.../telegram/bootstrap.spec.ts` — conflict fixtures rebuilt
+  around the payload the API now returns.
+- `README.md` — 409 row and a note on the two structural categories.
+- Specs: `http-error/index.spec.ts` (409 block) and
+  `unique-constraint-error/index.spec.ts` (sanitized cross-hop payload).
+
+### Automated verification
+
+- `npx nx run-many --target=jest:test --projects=@sps/backend-utils,@sps/shared-backend-api,@sps/rbac --skip-nx-cache`
+  — 97 passed / 97, 12 passed with 1 skipped / 13, 305 passed / 305.
+- `npx nx run-many --target=eslint:lint --projects=@sps/backend-utils,@sps/shared-backend-api,@sps/rbac --skip-nx-cache`
+  — clean.
+- `npx tsc --noEmit -p libs/shared/backend/utils/tsconfig.json`,
+  `-p libs/shared/backend/api/tsconfig.json`, `-p libs/modules/rbac/tsconfig.json`
+  — clean.
+- `node tools/upstream/migrations.mjs message` — valid for each commit, before
+  and after committing.
+
+### Not done
+
+- No push, no pull request, no `submit_pr_for_code_review.sh`.
+- No verification against a running API; the recipe below is for the lead.
+- The remaining Hono `jwt.verify` call sites are unchanged; they read a token the
+  same handler has just signed.
+- The rest of #240 (scoped test lanes, `package.json` scripts) is untouched.
+
+### Manual verification against a running instance
+
+The worktree's `apps/api/.env` sets `API_SERVICE_URL=http://localhost:4000` and no
+`API_SERVICE_PORT`, so the default port is 4000. To run this worktree on 4011,
+set **both** in `apps/api/.env`, because the global authorization middleware
+calls itself back through `API_SERVICE_URL`; with only the port changed, the
+loopback would reach a different instance:
+
+```
+API_SERVICE_PORT=4011
+API_SERVICE_URL=http://localhost:4011
+```
+
+Then, from the worktree root, `npm run api:dev`.
+
+**(a) Expired JWT to 401, #229**
+
+Sign an expired token; the secret is read from the file and never printed:
+
+```bash
+bun -e '
+const text = await Bun.file("apps/api/.env").text();
+const line = text.split("\n").find((l) => l.startsWith("RBAC_JWT_SECRET="));
+const secret = line.slice("RBAC_JWT_SECRET=".length).trim();
+const { sign } = await import("hono/jwt");
+const now = Math.floor(Date.now() / 1000);
+console.log(await sign({ exp: now - 60, iat: now - 3600, subject: { id: "00000000-0000-0000-0000-000000000001" } }, secret));
+'
+```
+
+```bash
+TOKEN="<the printed token>"
+curl -i -H "Authorization: Bearer $TOKEN" \
+  http://localhost:4011/api/rbac/subjects/authentication/me
+```
+
+Expected: `HTTP/1.1 401`, and a body shaped
+`{"requestId":"...","path":".../authentication/me","method":"GET","status":401,"error":"Authentication error. Token expired","stack":"HTTPException: Authentication error. Token expired\n    at ...","cause":[{"message":"Authentication error. Token expired","stack":"..."}]}`.
+The check that matters: `grep -c "$TOKEN"` over the whole response is 0, and the
+same holds for the API log lines for that request. Before this change the same
+call returned 500 with `Internal server error: token (<the whole token>) expired`.
+
+A protected route with the same header, for example
+`curl -i -H "Authorization: Bearer $TOKEN" http://localhost:4011/api/blog/articles`,
+exercises the middleware loopback and must also return 401 with no token in the
+body or in either of the two log records.
+
+**(b) Unique violation to 409, #232**
+
+```bash
+SECRET=$(grep -m1 '^RBAC_SECRET_KEY=' apps/api/.env | cut -d= -f2-)
+SLUG="conflict-check-$(date +%s)"
+curl -s -o /dev/null -w '%{http_code}\n' -X POST http://localhost:4011/api/blog/articles \
+  -H "X-RBAC-SECRET-KEY: $SECRET" \
+  -F "data={\"slug\":\"$SLUG\",\"adminTitle\":\"conflict check\"}"
+curl -i -X POST http://localhost:4011/api/blog/articles \
+  -H "X-RBAC-SECRET-KEY: $SECRET" \
+  -F "data={\"slug\":\"$SLUG\",\"adminTitle\":\"conflict check\"}"
+```
+
+Expected: the first call `201`, the second `HTTP/1.1 409` with
+`{"requestId":"...","path":".../api/blog/articles","method":"POST","status":409,"error":"Conflict error. Entity already exists","stack":"...","cause":[{"message":"Conflict error. Entity already exists","stack":"..."}]}`.
+The checks that matter: the body contains neither `sps_blog_article_slug_unique`
+nor `duplicate key` nor the submitted slug, and no Telegram report is sent,
+because the status is below 500. Before this change the second call returned 500
+with the constraint name in `error`, `stack` and `cause`.
+
+**(c) Zod-shaped message to 422, #241**
+
+The notification template render handler throws its body message without a
+category prefix, and rejects a `data` part that is not a string. Any uuid works,
+because the check runs before the lookup:
+
+```bash
+SECRET=$(grep -m1 '^RBAC_SECRET_KEY=' apps/api/.env | cut -d= -f2-)
+printf 'not-a-string' > /tmp/sps-422-probe.txt
+curl -i -X POST \
+  "http://localhost:4011/api/notification/templates/00000000-0000-0000-0000-000000000001/render" \
+  -H "X-RBAC-SECRET-KEY: $SECRET" \
+  -F "data=@/tmp/sps-422-probe.txt"
+```
+
+Expected: `HTTP/1.1 422` with
+`"error":"Invalid body['data']: ... . Expected string, got: object"`. Before this
+change the same call returned 400.
+
+The counterpart that must not move: the same probe against a generic REST create
+route, whose handler prefixes the message with `Validation error.`, still returns
+400:
+
+```bash
+curl -i -X POST http://localhost:4011/api/blog/articles \
+  -H "X-RBAC-SECRET-KEY: $SECRET" \
+  -F "data=@/tmp/sps-422-probe.txt"
+```
 
 ### Pull Request
 
@@ -94,9 +272,10 @@ exception filter returned. See Incident 1.
 
 ### Final Status
 
-- [ ] All phases completed
-- [ ] All automated verification passed
+- [x] All phases completed
+- [x] All automated verification passed
+- [ ] Manual verification against a running API: for the lead
 
 ---
 
-**Last updated**: 2026-09-19T01:10:00Z
+**Last updated**: 2026-09-19T01:30:00Z
