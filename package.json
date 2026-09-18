@@ -57,6 +57,8 @@
     "adapt-upstream:test": "node --test tools/upstream/migrations.test.mjs",
     "singlepagestartup:github:check": "bun tools/singlepagestartup/github/check.ts",
     "singlepagestartup:github:test": "node --test tools/singlepagestartup/github/check.test.mjs",
+    "singlepagestartup:pipeline:check": "bun tools/singlepagestartup/pipeline/check.ts",
+    "singlepagestartup:pipeline:test": "bun test tools/singlepagestartup/pipeline/check.test.ts",
     "knowledge:index": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/knowledge:index --"
   },
   "dependencies": {
