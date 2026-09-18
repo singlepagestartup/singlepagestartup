@@ -78,10 +78,14 @@ function sentences(markdown: string): string[] {
     .filter((line) => !/^\s*(#{1,6}\s|\||>)/.test(line))
     .map((line) => line.replace(/^\s*(?:[-*+]|\d+[.)])\s+/, ""))
     .join("\n");
-  return prose
-    .split(/(?<=[.!?])\s+|\n{2,}/)
-    .map((sentence) => sentence.replace(/<!--|-->/g, " ").trim())
-    .filter((sentence) => sentence.split(/\s+/).length >= MINIMUM_WORDS);
+  return (
+    prose
+      .split(/(?<=[.!?])\s+|\n{2,}/)
+      // A template comment holds the instruction, so only its markers go; `--!>`
+      // closes a comment as well as `-->`.
+      .map((sentence) => sentence.replace(/<!--|--!?>/g, " ").trim())
+      .filter((sentence) => sentence.split(/\s+/).length >= MINIMUM_WORDS)
+  );
 }
 
 async function markdownFiles(root: string): Promise<string[]> {
