@@ -71,9 +71,9 @@ confirmation:
   content_sha256: 91f9368e4f450d3a1b82a775df616972fe8aab756c6890331292f5327fdc4d84
 review:
   dependencies:
-    brief: a395763652f2102e1373bb6e0e3ad6fa33267aeeb7326e25b518f13465dff69d
+    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
     model.framework-service: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
-    product.ai-chat.research: 28aa90e90dfe6cdc80b4dade029f6447cb7c861f2f9657156e36ce4a9cee64bc
+    product.ai-chat.research: 6b9b404ced17a62287e65b1e631e3244c3258a5f4515483d60303bd4a9786a1b
 ---
 
 # Product

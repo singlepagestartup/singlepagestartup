@@ -62,11 +62,15 @@ sources:
     scope: |
       Documents the person uploads are split into chunks, vectorized and stored so the
       service retrieves the relevant parts as context, a retrieval-augmented generation
-      design. The operator counts this grounding among the product's selling points. Two
-      things are not settled and are not asserted here: how the capability is described to a
-      customer, since Brand keeps the mechanism out of the ordinary product flow, and whether
-      the grounding differentiates the product, since product Research records that ChatGPT
-      Projects and Chatbase already offer document-grounded context.
+      design. There is no ceiling on the number of files: every uploaded document is
+      vectorized and can take part in answering, and the service selects the most relevant
+      parts for each question. The operator counts that capacity among the product's selling
+      points, against general assistants that hold a project's files in the low tens; product
+      Research records the documented limit and the confidence in it. Two things are not
+      settled and are not asserted here. How the capability is described to a customer is
+      undecided, since Brand keeps the mechanism out of the ordinary product flow. Whether a
+      larger corpus produces better answers for this customer is unresolved; the capacity
+      difference is documented, the benefit is not.
   service_terms:
     type: client-claim
     resolution: operator-fact
@@ -208,7 +212,7 @@ The project owner makes product decisions. Selling custom websites is outside th
 
 ## Customers and value
 
-AI Chat is intended for people with a business idea or early-stage project whose material is scattered across notes, documents, screenshots and partial decisions. They supply what they already have or answer guided questions; the service organizes it into a reviewable project model, shows what is missing or contradictory, and keeps the accepted result available for later questions, criticism and materials. The first setup session is intended to take about one focused hour, with unresolved questions left open. The same decisions assemble a landing page from SinglePageStartup blocks, edited in a private sandbox with an immediate preview and no public address. Uploaded notes and documents are split into chunks, vectorized and stored, so the service retrieves the relevant parts as context for its answers. The operator counts this grounding among the product's selling points. How it is described to a customer is not selected: Brand keeps vectors, retrieval and storage out of the ordinary product flow, so the benefit has to be expressed without naming the mechanism. The desired value is a usable project model, answers grounded in the person's own material and a first page that can reach real customers; better answer quality than a general chat without that context is a goal to test.
+AI Chat is intended for people with a business idea or early-stage project whose material is scattered across notes, documents, screenshots and partial decisions. They supply what they already have or answer guided questions; the service organizes it into a reviewable project model, shows what is missing or contradictory, and keeps the accepted result available for later questions, criticism and materials. The first setup session is intended to take about one focused hour, with unresolved questions left open. The same decisions assemble a landing page from SinglePageStartup blocks, edited in a private sandbox with an immediate preview and no public address. Uploaded notes and documents are split into chunks, vectorized and stored, so the service retrieves the relevant parts as context for its answers. There is no ceiling on how many files a person adds: every document is vectorized and can take part in answering, and the service selects the most relevant parts each time. The operator counts that capacity among the product's selling points, because a general assistant holds a project's files in the low tens. How it is described to a customer is not selected: Brand keeps vectors, retrieval and storage out of the ordinary product flow, so the benefit has to be expressed without naming the mechanism. The desired value is a usable project model, answers grounded in the person's own material and a first page that can reach real customers; better answer quality than a general chat without that context is a goal to test.
 
 The second audience is novice AI-assisted makers, or vibe coders. They mainly converse with a coding agent in Claude Code or Codex Desktop. The agent changes the code; the person reviews the result and interface, for example in VS Code.
 
