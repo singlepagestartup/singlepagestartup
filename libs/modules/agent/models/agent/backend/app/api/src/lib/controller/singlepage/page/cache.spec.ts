@@ -10,8 +10,13 @@ const mockLoggerInfo = jest.fn();
 const mockLoggerError = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES: 3,
   HOST_SERVICE_URL: "http://localhost:3000/",
   RBAC_SECRET_KEY: "test-rbac-secret",
+}));
+
+jest.mock("@sps/agent/models/agent/sdk/model", () => ({
+  runIdHeader: "X-SPS-AGENT-RUN-ID",
 }));
 
 jest.mock("@sps/shared-configuration", () => ({
@@ -45,18 +50,28 @@ jest.mock("@sps/backend-utils", () => ({
   },
 }));
 
-import { Handler } from "./cache";
+import {
+  Handler,
+  PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS,
+} from "./cache";
 
 const originalFetch = globalThis.fetch;
 
-function createContext() {
+function createContext(props?: { runId?: string }) {
   return {
     json: jest.fn((payload: unknown) => payload),
+    req: {
+      header: jest.fn(() => props?.runId),
+      path: "/api/agent/agents/host-module-page-cache",
+    },
   } as any;
 }
 
-function createHandler() {
+function createHandler(props?: { isRunSuperseded?: jest.Mock }) {
   return new Handler({
+    agentRun: {
+      isRunSuperseded: props?.isRunSuperseded || jest.fn(),
+    },
     hostModule: {
       page: {
         urls: jest.fn().mockResolvedValue([
@@ -181,6 +196,70 @@ describe("Given: Host page URLs use the documented string contract", () => {
     expect(result).toEqual({
       data: {
         ok: true,
+      },
+    });
+  });
+
+  /**
+   * BDD Scenario: a superseded run stops before the URL list ends.
+   *
+   * Given: a dispatched run whose slug is already owned by a later run.
+   * When: the page-cache handler reaches the next URL after the check interval.
+   * Then: it stops and reports the reason instead of warming the rest of the site.
+   */
+  it("Then: stops warming pages once its run was superseded", async () => {
+    const isRunSuperseded = jest.fn().mockResolvedValue(true);
+    const handler = createHandler({ isRunSuperseded });
+    jest.spyOn(handler, "revalidatePage").mockResolvedValue(undefined);
+    const fetchPage = jest.fn().mockResolvedValue({
+      ok: true,
+    });
+    globalThis.fetch = fetchPage as any;
+    jest
+      .spyOn(Date, "now")
+      .mockReturnValueOnce(0)
+      .mockReturnValue(PAGE_CACHE_SUPERSEDE_CHECK_INTERVAL_IN_MILLISECONDS);
+
+    const result = await handler.execute(
+      createContext({ runId: "run-id" }),
+      jest.fn(),
+    );
+
+    expect(isRunSuperseded).toHaveBeenCalledWith({
+      slug: "host-module-page-cache",
+      runId: "run-id",
+    });
+    expect(fetchPage).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      data: {
+        ok: false,
+        stopped: "superseded",
+      },
+    });
+  });
+
+  /**
+   * BDD Scenario: repeated page failures end the run.
+   *
+   * Given: every page fetch fails and the configured failure bound is three.
+   * When: the page-cache handler processes the URL list.
+   * Then: it stops after the third consecutive failure and reports the reason.
+   */
+  it("Then: stops after the configured number of consecutive failures", async () => {
+    const handler = createHandler();
+    jest.spyOn(handler, "revalidatePage").mockResolvedValue(undefined);
+    const fetchPage = jest.fn().mockResolvedValue({
+      ok: false,
+    });
+    globalThis.fetch = fetchPage as any;
+
+    const result = await handler.execute(createContext(), jest.fn());
+
+    expect(fetchPage).toHaveBeenCalledTimes(3);
+    expect(result).toEqual({
+      data: {
+        ok: false,
+        stopped: "failures",
       },
     });
   });
