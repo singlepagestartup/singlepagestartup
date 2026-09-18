@@ -5,11 +5,11 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    brief: 83d4aadfbdc83227f855dae61d050deabca18ad34de8bd3f6a38de0c4c0e70ed
-    model.framework-service: c8a792962f8250e6fc649ac02a907dcbdccdeeb711603c670f06eebd101f9f8e
+    brief: 6b2c413d4d8f686e53dc2886c93c5ad79c8e04b93d75158f0a1fb15051b3fe2f
+    model.framework-service: 24505045708eaee8184c7d988841e54b6408be46051b785d18989c6329a14a80
     product.ai-chat.analytics: 2c7ded58308d628b9d7cd6ad99155b0d77f81bc152a2d6b136c9326c67d26716
     product.ai-chat.page.research.business-users: b0850082b935aeb58b98ce777a8cb42644e8c8ebd475b69d753b23e6335d43e3
-    product.ai-chat.page.research.competitors: 7ee0d41e789c5dcb07f5df6dd893f9ba0b5844f7496157dd85acfce48b55cfe9
+    product.ai-chat.page.research.competitors: 056114aeb7d73a34138d82204f51242b618eb473f971a687ba1b543ff8f2842f
     product.ai-chat.sales: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400
 ---
 
