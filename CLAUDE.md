@@ -100,143 +100,22 @@ For special-purpose tasks, see `.claude/commands/README.md` for the full command
 
 Use `singlepagestartup` (Codex), `/singlepagestartup` (Claude), or a
 plain-language request to start, continue, inspect, or change a project before
-engineering. The workflow uses `00-business`, `10-strategy`, `20-brand`,
-`30-design`, and `40-products`. Before every invocation it fetches the configured GitHub branch,
-scans relevant commits published after the first approved strategy commit, and
-applies fact and dependency side effects before stage work. Its layer-local
-`apps/studio/workspace/utils/pre-development/<layer>.yaml` cursor survives new model
-contexts and is reconciled against the indexed living artifacts at every launch.
-After the cursor is read, mandatory pipeline compatibility reconciliation
-compares completed, active, and later non-empty artifacts with the current
-checked-out workflow, templates, index, and completion rules. A synchronized
-shared-pipeline change therefore routes missing files, sections, schema keys, or
-decisions to the earliest affected stage in both framework and downstream
-repositories without a separate command or stored pipeline version.
-AI methods, question-routing rules, and stage completion criteria live in
-`.agents/`. During `00-business`, confirmed Brief is followed by initial Product, shared
-Operations & Economics model sources, and whole Sales intake from client inputs.
-There is no standalone Business document. Models have stable catalog IDs and
-may serve several products; sources live in `products/<layer>/models/<id>/`.
-Product owns Customer Segments and Value Propositions; Sales owns the complete
-customer process through an overview and per-segment decision profiles and Customer
-Journey Maps (CJM). Product declares stable customer_segments IDs; shared Studio
-utilities render the segment sidebar and maps from Sales v2. Model sources own
-resources, activities, partnerships, revenue, costs and financing. Follow
-`.agents/contracts/product-models.md`. Material questions, metrics, risks,
-constraints, and sources stay in the documents that own those decisions;
-confirmation stays in source metadata. Do not maintain a separate workspace
-decision checklist or approval summary. Template headings or generic prose
-never complete a stage. Named professional methods or benchmarks are used only with an
-authoritative source, explicit fit, and limitations for a material decision.
-Before business or market work starts, the operator confirms a compact brief
-that separates the primary decision subject, reference projects, historical
-context, and out-of-scope topics, and records the current or intended products
-in scope. Supporting acquisition activities and internal work remain concise
-context in Brief and Strategy. `00-business` records only client statements,
-confirmed intentions, supplied-material observations, and explicit unknowns;
-external research never fills or silently corrects client facts. Each active
-product owns Research and a machine-readable Sales process in its product
-folder. Product Research starts at `10-strategy` before strategic selection;
-cross-product conclusions belong to Strategy and cite the relevant products.
-There is no business-wide Research document. Product Sales intake records
-supplied current or confirmed intended processes. Strategy defines one concrete
-final picture of the whole project after it satisfies the approved Brief as
-fully as known constraints allow. It connects project-wide marketing goals,
-audiences, positioning, product roles, coordinated channels, customer journeys
-and measurable growth, with separate audience-growth and sales-product
-priorities. It describes the intended operating state and durable management
-rules, not the roadmap or transition path. Product work owns campaign execution
-and business learning; engineering tests remain in engineering. Strategy is not
-a first-experiment plan.
-The same five-section Strategy template and quality criteria apply to framework
-and downstream projects. Each startup derives its strategy from its own Brief
-and research; inherited framework choices and approval remain reference context.
-After shared workflow updates, pipeline reconciliation reviews existing startup
-strategies even when their cursor has advanced to a later stage.
-The `40-products` set is a prospective business plan and requirements for later
-engineering in both framework and downstream projects. Product ends with
-`Business goals and metrics`; Sales readiness means the intended business process
-is complete. Research concerns market and business choices; Presentation addresses
-clients, partners or investors. Installation checks, runtime tests, bug repair and
-release/license-source audits are not business-stage completion gates. Keep planned
-behavior and forecasts distinct from observed results and never invent operator
-budgets or figures. Reconcile old implementation-audit product documents at
-`40-products`, preserving valid approvals of unchanged upstream decisions. See
-`.agents/contracts/product-models.md` and
-`.agents/contracts/pipeline-reconciliation.md`.
-`40-products` retains every client-confirmed Brief product regardless of marketing priority. Strategy never removes catalog entries. Unknowns are routed as operator facts,
-research questions, professional choices, or evidence gaps. An assumption never
-answers an operator-controlled fact such as budget, capacity, rights, support,
-or decision authority. Strategy and brand remain proposals until confirmed in
-plain language; no separate stage command is required. Quality and completeness
-take precedence over response length, number of turns, execution time, or token
-use.
-Primary review documents own `confirmation` metadata under
-`.agents/contracts/document-confirmation.md`. Studio shows a concise confirmation
-state in the header; the projection and metadata retain source-layer provenance.
-Empty startup inherits the base status; changed
-startup content requires its own confirmation. A confirmation fingerprint covers
-the complete resolved body and becomes invalid when that body changes. Inherited
-singlepage confirmation never approves a downstream project's stage.
-Resolved states are `unconfirmed`, `confirmed`, `changed`, and `stale`. Each
-document's `review.dependencies` stores fingerprints of inspected direct inputs.
-Changed upstream inputs make dependents stale, including product-local files.
-Agents review impact before consuming them: no material effect refreshes only
-the input snapshot; material impact keeps `review.stale` until corrected and,
-where required, confirmed. Never renew approval by copying a hash. The canonical
-confirmation contract defines the shared resolver and transitions.
-Every primary review document appears in the resolved `default` projection and
-strongly targets a five-to-seven-minute review (about 1,400 words per page),
-without a hard word, line, source or segment cap. Preserve material information;
-split long topics into navigable pages under `.agents/contracts/document-readability.md`.
-Git retains history; material sources stay with their owning statements. Brand owns the meaning that
-should form in the audience's mind. During `30-design`, a separate layered
-`design.md` translates approved Brand into visual identity, interface, photography, and
-illustration decisions. Photography and illustration use the same objective
-prompt, production, example, and visual-review contract. Design structure is
-project-configurable through `design/<layer>/layout.yaml`: ordered built-in or
-custom Markdown/React/HTML/media sections, or a complete TSX/JSX template. Empty
-startup inherits the base layout; a populated startup layout replaces it with
-layer-owned files and no implicit base-file fallback. Document section inheritance
-and layered CSS stay separate. Shared support stays in `utils/design/` and
-`utils/components/`; project templates and section data stay in `design/<layer>/`. During `40-products`, each active product
-adds a self-contained Product, Sales, Promotion, and Analytics set around its
-model and Research. Product groups Overview with optional product-defined Product
-Content; Promotion groups Website, Marketing Creative, and Presentation without
-merging their sources; Analytics groups current observations and Research. Every
-active product owns Analytics by `40-products`; missing measurements stay
-explicitly `not measured`. Products may extend any core tab or add sections with nested Markdown, HTML,
-JSX/TSX, image, and media pages through the catalog. Product-specific files stay
-in their layer folder; shared loaders and tests live in `utils/products/`.
-React presentations compose TSX pages and retain PDF export. No mandatory
-Markdown schema applies to additional pages. A non-empty startup Product catalog replaces the entire
-singlepage catalog including models so unrelated products and models never mix.
-None may redefine an upstream decision.
-The framework repository writes the `singlepage` sources; downstream
-repositories write the `startup` sources. Workspace keeps `assets/`, `products/`,
-and `styles/` at its root. Products contain their catalog, Markdown, YAML data,
-and React entry points. Both `products/singlepage/` and `products/startup/`
-exist from the outset with their own `catalog.yaml`; an empty startup catalog
-is the explicit inheritance boundary. Shared components, stories, review helpers, indexes,
-configuration, and workflow state live in `workspace/utils/`. All project business context
-lives under `apps/studio/workspace/**`; only project-invariant role methods and
-templates live under `.agents/**`.
-`apps/studio/workspace/utils/config.yaml` defaults unknown repositories to `startup`
-and explicitly maps the canonical framework repository to `singlepage`.
-Layered startup index entries declare their base with `extends` and use
-`sections`, `replace`, `keyed`, or atomic `product-catalog`
-resolution. Inherited framework facts are reference context until the client confirms
-applicability in the owning startup source. There is no standalone Evidence
-document; current facts, sources, and constraints stay in their owning documents.
-Studio consistently exposes `singlepage`, `startup`, and resolved `default`;
-agents edit only the active source layer and never write a default copy.
-
-The seven pre-development professions are executable custom agents, not merely
-Markdown references. Codex discovers them from `.codex/agents/*.toml` and Claude
-from `.claude/agents/*.md`; every adapter must explicitly load its canonical
-role, which contains responsibility and professional method in one file. Source
-URLs in `.agents/roles/SOURCES.md` are provenance only. The agent researches
-external sources only when the current project needs fresh evidence.
+engineering. The canonical process is `.agents/workflows/pre-development.md`.
+Its stage machine, `00-business`, `10-strategy`, `20-brand`, `30-design` and
+`40-products` with owners, active artifacts, executable checks and
+manual-review criteria, is `.agents/pipeline/pre-development.yaml`, executed by
+`npm run singlepagestartup:pipeline:check`. Every invocation runs the GitHub
+preflight, reads the layer-local cursor
+`apps/studio/workspace/utils/pre-development/<layer>.yaml`, runs the check and
+repairs its gaps before stage work. Layers, projections and write ownership are
+defined in `.agents/contracts/inheritance.md`; claims, unknowns and assets in
+`.agents/contracts/evidence.md`; approval and review state in
+`.agents/contracts/document-confirmation.md`. The seven pre-development
+professions are executable custom agents discovered from `.codex/agents/*.toml`
+and `.claude/agents/*.md`; every adapter loads its canonical role from
+`.agents/roles/`, which holds responsibility and method in one file. All
+project business context lives under `apps/studio/workspace/**`; only
+project-invariant methods, templates and contracts live under `.agents/**`.
 
 ### Downstream adaptation command
 

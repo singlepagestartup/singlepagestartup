@@ -10,7 +10,7 @@ customer_segments: [] # Stable IDs described in Customer Segments and referenced
 Describe the intended offer and experience before engineering. Keep client facts,
 market evidence and proposed outcomes distinct; do not invent operator numbers.
 Runtime checks, bug repair and release/license-source audits are not completion
-criteria. Follow .agents/contracts/product-models.md. -->
+criteria. -->
 
 ## Product identity
 

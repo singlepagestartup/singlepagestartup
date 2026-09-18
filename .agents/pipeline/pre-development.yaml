@@ -157,19 +157,19 @@ stages:
 legacy_shapes:
   - id: decision-profile
     detect: decision-profile
-    procedure: contracts/pipeline-reconciliation.md#retiring-the-former-decision-profile
+    procedure: migrations/README.md#retired-procedures
   - id: standalone-business
     detect: standalone-business
-    procedure: contracts/pipeline-reconciliation.md#retiring-standalone-business
+    procedure: migrations/README.md#retired-procedures
   - id: catalog-v1
     detect: catalog-v1
-    procedure: contracts/pipeline-reconciliation.md#retiring-standalone-business
+    procedure: migrations/README.md#retired-procedures
   - id: sales-v1
     detect: sales-v1
-    procedure: contracts/pipeline-reconciliation.md#sales-segment-compatibility
+    procedure: migrations/README.md#retired-procedures
   - id: evidence-register-codes
     detect: evidence-register-codes
-    procedure: contracts/pipeline-reconciliation.md#layer-and-inheritance-rules
+    procedure: migrations/README.md#retired-procedures
   - id: legacy-cursor-anchors
     detect: legacy-cursor-anchors
-    procedure: contracts/pipeline-reconciliation.md#compact-strategy-migration
+    procedure: migrations/README.md#retired-procedures

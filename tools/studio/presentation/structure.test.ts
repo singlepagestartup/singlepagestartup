@@ -423,13 +423,14 @@ describe("Studio presentation structure", () => {
   /**
    * BDD Scenario: Hold photography and illustration to the same quality contract
    * Given imagery quality is a primary Design gate
-   * When the workflow, role, template, and shared renderer are inspected
+   * When the roles, templates, and shared renderer are inspected
    * Then both media families require the same structured prompts, examples, and visual review
    */
   test("requires symmetric, visually verified media systems", () => {
-    const workflow = source(".agents/workflows/pre-development.md");
     const role = source(".agents/roles/brand-designer.md");
+    const roleText = role.replace(/\s+/g, " ");
     const briefRole = source(".agents/roles/account-manager.md");
+    const briefRoleText = briefRole.replace(/\s+/g, " ");
     const briefTemplate = source(".agents/templates/brief.md");
     const template = source(".agents/templates/design.md");
     const component = source(
@@ -452,46 +453,42 @@ describe("Studio presentation structure", () => {
     ]) {
       expect(media.split(heading)).toHaveLength(3);
     }
-    expect(workflow).toContain(
-      "Each active media family needs at least three materially different",
+    expect(roleText).toContain(
+      "visually review at least three materially different examples",
     );
-    expect(workflow).toContain("Brief's `Visual reference intake`");
-    expect(workflow).toContain("`brief/<layer>.md#visual-reference-intake`");
-    expect(workflow).toContain("marketing creative");
-    expect(workflow).toContain("Typography intake covers existing font files");
-    expect(workflow).toContain(
-      "Do not accept one mixed or unlabeled moodboard",
+    expect(roleText).toContain("`brief/<layer>.md#visual-reference-intake`");
+    expect(roleText).toContain("marketing creative");
+    expect(roleText).toContain("Typography intake includes existing files");
+    expect(roleText).toContain(
+      "never silently classify a mixed, unlabeled set as completed intake",
     );
-    expect(workflow).toContain("operator to correct or re-upload a mismatch");
-    expect(workflow).toContain(
-      "remove its exact file, registry entry, and\nstale current-artifact mentions",
+    expect(roleText).toContain("Reject or request re-upload of mismatches");
+    expect(roleText).toContain(
+      "remove its exact file, registry row, and stale current links",
     );
-    expect(briefRole.replace(/\s+/g, " ")).toContain(
+    expect(briefRoleText).toContain(
       "remove its exact file, Assets row, and stale current links",
     );
-    expect(workflow).toContain("Client visual preference profile");
-    expect(workflow).toContain(
-      "Return that description in\nthe operator's language",
+    expect(roleText).toContain("Client visual preference profile");
+    expect(roleText).toContain("Return it in the operator's language");
+    expect(roleText).toContain("five separately labeled sets");
+    expect(roleText).toContain("do not invent a replacement direction");
+    expect(roleText).toContain(
+      "Separate reference-derived visual technique from project-derived scene semantics",
     );
-    expect(role).toContain("five separately labeled sets");
-    expect(role).toContain("do not invent a replacement direction");
-    expect(workflow).toContain(
-      "Keep reference-derived style and project-derived scene semantics as separate",
+    expect(roleText).toContain(
+      "the approved Brief and Brand determine subject, action, environment, props, and meaning",
     );
-    expect(workflow).toContain(
-      "The approved Brief and Brand define what is depicted",
+    expect(roleText).toContain(
+      "Never copy a reference's setting or narrative by default",
     );
-    expect(role).toContain(
-      "Separate reference-derived visual technique from project-derived scene",
+    expect(roleText).toContain(
+      "Distinguish optional effects from shared traits",
     );
-    expect(role).toContain(
-      "Never copy a reference's\n  setting or narrative by default",
-    );
-    expect(workflow).toContain("Optional techniques stay optional");
-    expect(role).toContain("Devices are optional scene props");
-    expect(role).toContain("Keep each master prompt compact");
-    expect(role).toContain("Design never duplicates that intake register");
-    expect(briefRole).toContain("Record client taste references as five");
+    expect(roleText).toContain("Devices are optional scene props");
+    expect(roleText).toContain("Keep each master prompt compact");
+    expect(roleText).toContain("Design never duplicates that intake register");
+    expect(briefRoleText).toContain("Record client taste references as five");
     expect(briefTemplate).toContain("## Visual reference intake");
     expect(briefTemplate).toMatch(/^\| Marketing creative\s+\|/m);
     expect(briefTemplate).toContain("supplied-unreviewed");
@@ -502,12 +499,9 @@ describe("Studio presentation structure", () => {
     expect(template).toContain(
       "confirmation or correction before selecting the visual territory",
     );
-    expect(workflow).toContain(
-      "Choose the visible structure to fit the project's stylistic requirements",
-    );
-    expect(role).toContain("Treat photography and illustration as primary");
-    expect(workflow).toContain("category-defining structure, count, scale");
-    expect(role).toContain("category-defining structure, count, scale");
+    expect(roleText).toContain("select/order relevant built-in blocks");
+    expect(roleText).toContain("Treat photography and illustration as primary");
+    expect(roleText).toContain("category-defining structure, count, scale");
     expect(
       template.match(/category-defining structure, count, scale/g),
     ).toHaveLength(2);
@@ -533,15 +527,17 @@ describe("Studio presentation structure", () => {
     expect(component.match(/data\.conceptSummary/g)).toHaveLength(1);
     expect(component).not.toContain("function ReferenceIntake");
     expect(component).not.toContain("data.referenceIntake");
-    expect(workflow).toContain("original aspect ratio without cropping");
+    expect(roleText).toContain("Show every original aspect ratio uncropped");
     expect(template).not.toContain("centered `55% × 55%` crop-safe");
     expect(template).toContain("### Reusable graphic language");
     expect(template).toContain(
       "One positive paragraph explaining the selected style",
     );
     expect(template).not.toContain("## Graphic language");
-    expect(workflow).toContain("absence of duplicate status/heading content");
-    expect(role).toContain("Do not add\n  a second page menu, asset counters");
+    expect(roleText).toContain(
+      "keep repeated titles, statuses and process metadata out of the mockup",
+    );
+    expect(roleText).toContain("Do not add a second page menu, asset counters");
     expect(component).toContain('className="block h-auto w-full"');
 
     const assetIndex = parse(
@@ -576,11 +572,11 @@ describe("Studio presentation structure", () => {
   /**
    * BDD Scenario: Bind typography and layout rules to real implementation tokens
    * Given Design is shared by singlepage and downstream startup projects
-   * When the workflow, source, parser, and layered CSS are inspected
+   * When the role, source, parser, and layered CSS are inspected
    * Then fonts are registered and verifiable while layout uses named Tailwind utilities
    */
   test("binds typography and layout to registered assets and Tailwind", () => {
-    const workflow = source(".agents/workflows/pre-development.md");
+    const role = source(".agents/roles/brand-designer.md").replace(/\s+/g, " ");
     const template = source(".agents/templates/design.md");
     const design = source("apps/studio/workspace/design/singlepage.md");
     const parser = source("apps/studio/workspace/utils/design/data.ts");
@@ -590,8 +586,8 @@ describe("Studio presentation structure", () => {
     const styles = source("apps/studio/workspace/styles/singlepage.css");
 
     expect(template).toMatch(/^\| Role\s+\| CSS family\s+\| Weights\s+\|/m);
-    expect(workflow).toContain("`document.fonts.check(...)`");
-    expect(workflow).toContain("Tailwind `max-w-7xl` (`1280px`)");
+    expect(role).toContain("`document.fonts.check(...)`");
+    expect(role).toContain("Tailwind `max-w-7xl` (`1280px`)");
     expect(design).toContain("singlepage-font-cormorant-garamond-variable");
     expect(design).toContain("`max-w-7xl` (`1280px`)");
     expect(design).not.toContain("`1200px` grid");

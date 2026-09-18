@@ -9,9 +9,9 @@ confirmation:
 # Segment research
 
 <!-- Suggested detail structure, adaptable to the segment. Register this page
-under catalog section research; use actual Product/Sales IDs. Follow
-.agents/contracts/research-sales-audit.md and document-readability.md.
-Do not leave template instructions as completed research. -->
+under catalog section research; use actual Product/Sales IDs. The Market
+Researcher role defines the audit method. Do not leave template instructions
+as completed research. -->
 
 ## Customer and decision
 

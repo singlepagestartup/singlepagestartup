@@ -177,13 +177,10 @@ Engineering research, plans, and implementation notes stay exclusively in
 `Workspace/30 Design/default` renders the effective Design document and assets
 through the selected `workspace/design/<layer>/layout.yaml`. The base lists
 reusable overview, logo, color, typography, interface, photography, and
-illustration blocks.
-Projects may reorder or omit these blocks, add Markdown/React/HTML/media sections,
-or provide a complete TSX/JSX template. Layout files resolve atomically: empty
-startup inherits the base; a populated startup layout replaces it, and every
-custom file comes from that layout's own layer without file fallback. Design
-Markdown continues to inherit by sections and CSS by the existing layer cascade.
-The workspace README documents the schema, custom-template props, and examples.
+illustration blocks; projects may reorder or omit them, add
+Markdown/React/HTML/media sections, or provide a complete TSX/JSX template. The
+workspace README documents the schema, custom-template props, and examples;
+layout inheritance follows `.agents/contracts/inheritance.md`.
 
 All three projections use the same loader and review-status wrapper. An entirely
 custom template receives the resolved source document and assets without requiring
@@ -191,29 +188,22 @@ the legacy field schema. Startup inspection remains empty until startup has
 meaningful data or its own layout. Layout and component changes require visual
 review; document confirmation does not automatically approve extra sources.
 
-`Workspace/00 Client Request` contains Brief; initial Product, model and Sales sources are prepared next under Products. It records
-client statements, confirmed intentions, supplied-material observations, and
-unknowns, with attribution. External market research belongs to individual
-products and starts before strategic selection at `10-strategy`.
+`Workspace/00 Client Request` contains Brief; initial Product, model and Sales
+sources are prepared next under Products.
 
-`Workspace/40 Products` displays every client-confirmed product, including products outside the current launch or experiment. Each product
-links a model and owns Product, Sales, Research, Website, Marketing Creative, and
-Presentation outputs. Product `sections` can extend these tabs or add further
-tabs with nested Markdown, HTML, JSX/TSX, image, and media pages. Shared loaders
-and tests live in `workspace/utils/products/`; page files and supporting materials
-stay inside their product's layer folder. React decks retain PDF export. The
-catalog schema and examples are in `workspace/README.md`. An
-empty `products/startup/catalog.yaml` inherits the complete singlepage catalog.
-Both layer folders and their catalogs are retained from the outset as explicit
-base/extension boundaries, following the structure used in `libs/modules`. A
-startup catalog with at least one product replaces the complete singlepage
-catalog, so offers from unrelated businesses are never mixed. The exporter
+`Workspace/40 Products` displays every client-confirmed product. Each product
+links a model and owns Product, Sales, Research, Website, Marketing Creative,
+and Presentation outputs; product `sections` can extend these tabs or add
+further tabs with nested Markdown, HTML, JSX/TSX, image, and media pages. Shared
+loaders and tests live in `workspace/utils/products/`; page files and supporting
+materials stay inside their product's layer folder. React decks retain PDF
+export. The catalog schema and examples are in `workspace/README.md`; the
+atomic catalog rule is in `.agents/contracts/inheritance.md`. The exporter
 renders the selected default product's Presentation from the same story.
-Current generated identity
-assets registered below the workspace asset tree render as actual SVG or raster
-content. Client intake, legacy material, stock, and public references remain
-provenance-only unless their registry disposition explicitly allows the
-requested rendered use.
+Current generated identity assets registered below the workspace asset tree
+render as actual SVG or raster content. Client intake, legacy material, stock,
+and public references remain provenance-only unless their registry disposition
+explicitly allows the requested rendered use.
 
 Studio runtime CSS is project-neutral. Font files and their licenses are
 registered below `workspace/assets/<layer>/fonts/`.
@@ -222,56 +212,28 @@ framework tokens, `startup.css` contains downstream overrides only, and
 `default.css` imports both in that order. The singlepage source story imports
 the base stylesheet; resolved stories and exports import `default.css`.
 
-SinglePageStartup itself is developed through the colocated `singlepage` files.
-A downstream project starts with zero-content sibling `startup` files and writes
-only its overrides there. `apps/studio/workspace/utils/index/singlepage.yaml` and
-`apps/studio/workspace/utils/index/startup.yaml` remain structural registries, not
-content stores. The startup index explicitly declares each `extends` relation
-and resolution strategy. Missing or empty startup content passes through the
-singlepage source; populated content follows the declared strategy in the
-resolved `default` view.
+SinglePageStartup itself is developed through the colocated `singlepage` files;
+a downstream project writes only its overrides to the sibling `startup` files.
+`apps/studio/workspace/utils/index/<layer>.yaml` remains a structural registry,
+not a content store; the resolution rules are in
+`.agents/contracts/inheritance.md`.
 
 ## Document confirmation
 
-Primary Markdown review sources carry YAML frontmatter with
-`confirmation.confirmed: false`; Sales and Assets use the same root key in YAML.
-After explicit user confirmation, the record also contains `by`, `at`, `source`,
-and `content_sha256`. The header shows confirmation, its layer, the document's
-purpose, and how to use it. It hides metadata and the duplicate body H1.
-
-Empty startup inherits singlepage content and its attributed status. Changed
-startup content requires its own approval; explicit false overrides base true.
-Startup can confirm the complete inherited or partially overridden document
-with metadata only. Its fingerprint covers the resolved body, including retained
-base sections. An effective body change invalidates the old confirmation.
-An inherited singlepage approval does not satisfy a startup approval gate.
+Primary review sources carry `confirmation` metadata and `review.dependencies`
+snapshots as defined in
+[the shared confirmation contract](../../.agents/contracts/document-confirmation.md).
+The header shows the resolved state (`unconfirmed`, `confirmed`, `changed` or
+`stale`), the document's purpose and how to use it, and hides the metadata and
+the duplicate body H1. The agent loader, the browser and the review helper share
+`tools/studio/workspace/document.ts`, the merge contract and the review
+resolver, which adds product-local dependencies from the selected catalog.
 
 Read the current effective fingerprint without recording consent:
 
 ```bash
 bun tools/studio/workspace/document-review.ts --file apps/studio/workspace/products/startup/models/example/model.md
 ```
-
-The agent loader and browser share `tools/studio/workspace/document.ts` and the
-merge contract. Sources and templates start unconfirmed; partial decisions do
-not approve a whole document. See
-[the shared confirmation contract](../../.agents/contracts/document-confirmation.md).
-
-The resolved status is `unconfirmed`, `confirmed`, `changed`, or `stale`.
-`review.dependencies` records the last inspected direct input fingerprints.
-Changes to effective inputs, missing inputs, and upstream stale states trigger
-`stale` even when this document's body is unchanged. The shared review resolver
-adds product-local dependencies from the selected catalog and is used by Studio,
-the agent loader, and the review helper. Metadata-only edits do not change body
-fingerprints. A hidden base-section change has no effect on a startup override.
-
-The helper returns current input fingerprints as well as the current body hash.
-After an impact review with no material effect, update only the input snapshot;
-preserve unchanged approval. For material impact, retain `review.stale` with a
-reason and source IDs until revision and any required user confirmation finish.
-Never copy hashes to make unresolved work appear approved. No standalone Evidence
-source is loaded: current facts and attribution belong to the owning documents,
-external sources to product Research, rights to Assets, and history to Git.
 
 ## Figma metadata
 
