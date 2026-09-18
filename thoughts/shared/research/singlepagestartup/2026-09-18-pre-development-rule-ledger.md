@@ -856,3 +856,11 @@ The report prints the document's own state beneath `stale`. The review resolver 
 - `npm run studio:validate` passes: 171 + 3 + 5 + 15 tests. The framework report reads 20 passed, 4 gaps (0 structural, 3 approval, 1 decision), 0 legacy shapes: one check more than phase 3 because `brief.stamp-current` passes there, and the same four gaps.
 - The snapshot is unchanged by this group: `underlying` is a resolved field, not document content.
 - The m2commerce copy moves from 15 passed, 8 gaps to 15 passed, 9 gaps (3 structural, 4 approval, 2 decision). The new gap is `brief.stamp-current`: that Brief was edited after it was confirmed, which is exactly what the dry run predicted would pass silently.
+
+### Tools
+
+`document-review.ts` gained `--repository-root <path>`, so an impact review can read a downstream checkout instead of silently reading the working directory, and `--refresh`, which writes the inspected fingerprints into one document's `review.dependencies`.
+
+The refresh is a splice, not a re-render. Setting the value through the YAML document API and re-emitting the file rewrapped long scalars and expanded flow sequences elsewhere in it; on the m2commerce catalog that produced dozens of unrelated changed lines. The writer now replaces the exact source range of the existing `dependencies` node, keeps whatever trailing whitespace the range covered, and handles the inline `dependencies: {}` form separately. Across the six shared documents of the m2commerce copy every changed line is a fingerprint, and a refresh that computes the same values writes nothing.
+
+A document that records no `dependencies` block is refused with what to do instead, because guessing where the block belongs is the part a reviewer must decide. `confirmation` and `review.stale` are never touched: approval follows from the user and an unresolved material impact follows from the correction, not from a refreshed hash. `document-confirmation.md` now names the command in the no-material-effect step, where the old text said only "update the snapshot".
