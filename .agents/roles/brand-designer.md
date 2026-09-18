@@ -189,13 +189,16 @@ output.
 - Ship rendered interface specimens whenever the project ships a product
   surface, declared as layer-owned HTML sections in `design/<layer>/layout.yaml`
   and written as framework-free fragments over the `--workspace-brand-*` tokens
-  with state expressed in CSS and each specimen's exact class recipe printed
-  beside it. The Design template lists the required minimum; every specimen
+  with state expressed in CSS (`hover`, `focus-visible`, `has-[:checked]`)
+  because injected scripts do not run, and each specimen's exact class recipe
+  printed beside it so a product surface is built from that exact string. The
+  Design template lists the required minimum; every specimen
   declares `data-specimen="<id>"`, uses only the confirmed semantic roles and
   type steps (a missing step is added to the document as a proposal and
   confirmed, never improvised in markup), never frames supplied artwork with a
   second background, and is omitted only with a reasoned
-  `interface_review.omitted_specimens.<id>` entry.
+  `interface_review.omitted_specimens.<id>` entry. Change a rule and its
+  specimen in the same revision.
 - Configure the Design review through the project's `design/<layer>/layout.yaml`:
   select/order relevant built-in blocks, add Markdown/React/HTML/media
   sections, or provide a complete layer-owned TSX/JSX template. Choose the

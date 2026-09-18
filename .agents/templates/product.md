@@ -6,7 +6,7 @@ customer_segments: [] # Stable IDs described in Customer Segments and referenced
 
 # Product
 
-<!-- One product or service in a prospective business plan. Prefer about 1,400 words per page; preserve material information if longer.
+<!-- One product or service in a prospective business plan.
 Describe the intended offer and experience before engineering. Keep client facts,
 market evidence and proposed outcomes distinct; do not invent operator numbers.
 Runtime checks, bug repair and release/license-source audits are not completion

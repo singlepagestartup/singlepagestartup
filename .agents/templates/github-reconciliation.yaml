@@ -9,4 +9,15 @@ rules:
     paths: []
     affected_artifacts: []
     earliest_stage: 00-business
+# One entry per inspected commit. Write summary as a block scalar: a plain
+# scalar stops the preflight from parsing this file as soon as the text
+# contains a colon followed by a space.
+#
+#   - commit: 0123456789abcdef0123456789abcdef01234567
+#     outcome: material
+#     summary: |
+#       Licensing: the framework now ships under MIT, so the licence
+#       constraint recorded in Strategy no longer applies.
+#     affected_artifacts:
+#       - strategy
 reconciliations: []

@@ -816,4 +816,25 @@ Words loaded by a typical invocation (workflow, six contracts, one entry file, t
 - The pipeline check on the framework layer prints the same report as phase 2: 19 passed, 4 gaps (3 approval, 1 decision), no structural gaps, no legacy shapes, computed cursor `10-strategy`.
 - The resolved workspace snapshot differs from `2026-09-18-pre-development-goldens.txt` in exactly 8 of 182 lines: the hashes of `template.product` and `template.product-research` in both layers and both projections, caused by the reference fixes. Every document state, dependency count and business hash is unchanged. The post-phase-3 snapshot is `2026-09-18-pre-development-goldens-phase3.txt` and is the baseline for phases 4 and 5.
 - The check against a read-only copy of the m2commerce workspace reports 15 passed, 8 gaps and no legacy shapes, unchanged by the rewrite.
-- Reproducing a snapshot line: load the workspace with `loadWorkspace` for each layer and projection and `loadDocumentReviews` for each layer; the hash is the first 16 hexadecimal characters of SHA-256 over the raw resolved content (`loadedEntries[].content`, or the review document's `source`), not over the parsed body, which is why an empty startup file hashes to `e3b0c44298fc1c14`; `deps` is the number of entries in the review's `dependencies`. The generator itself is not kept in the repository.
+- Reproducing a snapshot line: load the workspace with `loadWorkspace` for each layer and projection and `loadDocumentReviews` for each layer; the hash is the first 16 hexadecimal characters of SHA-256 over the raw resolved content (`loadedEntries[].content`, or the review document's `source`), not over the parsed body, which is why an empty startup file hashes to `e3b0c44298fc1c14`; `deps` is the number of entries in the review's `dependencies`. The generator itself is not kept in the repository. Sort the whole file as text: the layer/projection prefix orders the groups.
+
+## Phase 4 outcome
+
+Recorded on branch `claude/agents-pipeline-tests`, cut from `main` after PR #250 merged as `a6bdcaade3`.
+
+### Templates
+
+The nine readability restatements are gone: `brand.md`, `creative.md`, `design.md`, `product.md`, `product-model.md`, `product-research.md`, `sales-process.yaml`, `strategy.md` and `website.md` no longer repeat the workflow's per-page target, and `brief.md` keeps its own 500-800 word figure without the second sentence. The workflow's `Primary review documents` bullet is the only home left.
+
+Two template comments that restated a role were cut to what the template alone owns. `brief.md` `Visual reference intake` keeps the one-table rule, the "links, not folder paths" nuance and the machine contract, and now names the five frontmatter keys (`interface-and-website-appearance`, `typography`, `photography`, `illustration`, `marketing-creative`) that until now existed only in `checks.ts`. Everything about inspecting, describing and confirming a category moved out; the Account Manager role already owned it. `design.md` `Interface and product surfaces` keeps the required specimen minimum and the IDs `studio:validate` enforces; how a specimen is written, declared and omitted is the Brand Designer role's, which gained the two facts the template held alone (state must be CSS because injected scripts do not run, and a rule and its specimen change in the same revision).
+
+The intake status vocabulary is aligned on four values. `visual-intake-ready` keeps accepting `ready` and `out-of-scope` as the ready states; the template and the Account Manager role, which named only `missing`, `supplied-unreviewed` and `ready`, now also name `out-of-scope` and say what earns it: an operator statement that the project ships nothing in that category. Absent intake stays `missing`.
+
+`github-reconciliation.yaml` gained a commented example entry whose `summary` is a block scalar, with the reason: a plain scalar stops the preflight parsing the ledger as soon as the summary contains a colon followed by a space.
+
+The TSV keeps its phase-3 disposition and gains no `phase4` column. Its 222 template rows are marked `template:unchanged-until-phase-4`, but a row's recorded sentence is often assembled from several comment lines or table cells, so no substring test tells a rewritten comment block from an untouched one; a mechanical column would have relabelled 80 sentences that this group never touched. The section above is the per-file record instead.
+
+### Goldens after the template group
+
+- `npm run studio:validate` passes: 171 + 3 + 5 + 10 tests, and the pipeline report is unchanged at 19 passed, 4 gaps (0 structural, 3 approval, 1 decision), 0 legacy shapes.
+- The snapshot differs from `2026-09-18-pre-development-goldens-phase3.txt` in exactly 40 of 182 lines: the hashes of the ten edited templates in both layers and both projections. No document state, resolution or dependency count changed, and `template.github-reconciliation` is not an indexed entry, so its edit does not appear. The new baseline is `2026-09-18-pre-development-goldens-phase4.txt`.

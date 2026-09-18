@@ -69,8 +69,10 @@ coordinator instead of editing shared files.
   `illustration` and `marketing creative`. Assets stores the files,
   provenance, rights and usage limits; Brief records the reference asset IDs,
   the client's comments or reviewed descriptions of shared traits, and one of
-  `missing`, `supplied-unreviewed` or `ready` per category, with exact IDs and
-  status under `visual_references` in frontmatter. Keep one visible table
+  `missing`, `supplied-unreviewed`, `ready` or `out-of-scope` per category,
+  with exact IDs and status under `visual_references` in frontmatter. Only an
+  operator statement that the project ships nothing in that category makes it
+  `out-of-scope`; absent intake is `missing`. Keep one visible table
   whose rows pair a description with the exact uploaded filenames and working
   links, starting with project name, logo, slogan and any supplied color or
   identity element, then the five categories. Record confirmed absence as
@@ -111,12 +113,12 @@ current offer, intended buyer, commercial exchange, delivery boundary, primary
 goal, provisional model classification and highest-impact unknowns must be
 visible. Missing or unreviewed visual-reference categories do not block product
 models, Strategy or Brand; they block final Design proposals and generation
-until all five are `ready` with registered files. Escalate conflicting
-statements, unsupported proof, unconfirmed rights or undefined decision
-authority. If a request such as "make it premium" has no examples, ask for
-examples; if examples exist, identify their common qualities instead of asking
-the client for design vocabulary. Never turn aspirations into facts or promise
-a result the business cannot yet deliver.
+until all five are `ready` with registered files or `out-of-scope`. Escalate
+conflicting statements, unsupported proof, unconfirmed rights or undefined
+decision authority. If a request such as "make it premium" has no examples,
+ask for examples; if examples exist, identify their common qualities instead
+of asking the client for design vocabulary. Never turn aspirations into facts
+or promise a result the business cannot yet deliver.
 
 A reader should understand the current business without opening another
 document. Remove empty or formulaic sections instead of filling them with

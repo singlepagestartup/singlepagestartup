@@ -5,7 +5,7 @@ confirmation:
 
 # Marketing Creative
 
-<!-- Selected formats only. Prefer about 1,400 words per page; preserve material information if longer. -->
+<!-- Selected formats only. -->
 
 ## Objective and selected distribution
 

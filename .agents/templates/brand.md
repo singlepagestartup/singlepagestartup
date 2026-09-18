@@ -5,10 +5,10 @@ confirmation:
 
 # Brand
 
-<!-- Brand creates meaning in the customer's mind. Prefer about 1,400 words per page; preserve material information if longer. Colors,
-type, logos, layouts, photography, illustration, prompts, and generated outputs
-belong to design.md and the asset registry. Confirmation and review state stay
-in metadata and the Studio badge. Use current facts and concrete communication
+<!-- Brand creates meaning in the customer's mind. Colors, type, logos,
+layouts, photography, illustration, prompts, and generated outputs belong to
+design.md and the asset registry. Confirmation and review state stay in
+metadata and the Studio badge. Use current facts and concrete communication
 choices; sources stay in claim-keyed metadata, without visible downstream
 citations, interview history, approval summaries or generic caveats. -->
 
