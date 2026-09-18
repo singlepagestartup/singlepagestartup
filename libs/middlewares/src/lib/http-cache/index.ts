@@ -2,6 +2,7 @@ import { createMiddleware } from "hono/factory";
 import { Provider as StoreProvider } from "@sps/providers-kv";
 import {
   defaultCompiledTopicRules,
+  HTTP_CACHE_MAX_ENTRY_BYTES,
   IRouteRule,
   KV_PROVIDER,
   KV_TTL,
@@ -12,6 +13,7 @@ import {
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { createExcludedRoutesMatcher } from "./routes";
+import { createCacheGuard, ICacheGuard } from "./guard";
 import { logger } from "@sps/backend-utils";
 
 const CACHE_DATA_PREFIX = "http-cache:data";
@@ -65,10 +67,15 @@ export function buildVersionedDataPrefix(
 
 export class Middleware {
   storeProvider: StoreProvider;
+  guard: ICacheGuard;
   private excludedRoutesMatcher: RouteMatcher;
 
   constructor(options?: IMiddlewareOptions) {
     this.storeProvider = new StoreProvider({ type: KV_PROVIDER });
+    // Every KV call on the request path goes through this guard (issue #233):
+    // a cache that cannot answer within its deadline yields a miss or a
+    // skipped write, never a stalled or failed request.
+    this.guard = createCacheGuard();
     // Three exclusion layers composed through the shared RouteMatcher:
     // constructor options → project startup (routes/startup.ts) → framework
     // defaults (routes/singlepage.ts). Legacy `excludedPathPatterns` regexes
@@ -82,11 +89,27 @@ export class Middleware {
     this.excludedRoutesMatcher = createExcludedRoutesMatcher(optionRoutes);
   }
 
-  private async getCacheVersion(path: string): Promise<number> {
-    const rawVersion = await this.storeProvider.get({
-      prefix: CACHE_VERSION_PREFIX,
-      key: path,
+  /**
+   * Reads one version counter. Returns `null` when the KV store could not
+   * answer (issue #233): a missing key legitimately means generation 0, but an
+   * unreachable store must NOT be read as generation 0 — that would let a
+   * degraded read serve a body from a generation the caller is not on. `null`
+   * makes the caller skip the cache for this request instead.
+   */
+  private async getCacheVersion(path: string): Promise<number | null> {
+    const rawVersion = await this.guard.run<string | null | undefined>({
+      name: `version read ${path}`,
+      fallback: undefined,
+      execute: async () =>
+        this.storeProvider.get({
+          prefix: CACHE_VERSION_PREFIX,
+          key: path,
+        }),
     });
+
+    if (rawVersion === undefined) {
+      return null;
+    }
 
     if (!rawVersion) {
       return DEFAULT_CACHE_VERSION;
@@ -103,7 +126,7 @@ export class Middleware {
 
   private async getTopicVersions(
     topics: string[],
-  ): Promise<Record<string, number>> {
+  ): Promise<Record<string, number> | null> {
     const entries = await Promise.all(
       topics.map(async (topic) => {
         const version = await this.getCacheVersion(getTopicVersionKey(topic));
@@ -112,7 +135,13 @@ export class Middleware {
       }),
     );
 
-    return Object.fromEntries(entries);
+    // One unreadable topic version is enough to make the whole vector
+    // untrustworthy; skip the cache rather than build a key from a guess.
+    if (entries.some(([, version]) => version === null)) {
+      return null;
+    }
+
+    return Object.fromEntries(entries) as Record<string, number>;
   }
 
   private async bumpCacheVersion(path: string): Promise<void> {
@@ -120,9 +149,71 @@ export class Middleware {
       return;
     }
 
-    await this.storeProvider.incr({
-      prefix: CACHE_VERSION_PREFIX,
-      key: path,
+    await this.guard.run<void>({
+      name: `version bump ${path}`,
+      fallback: undefined,
+      execute: async () => {
+        // Issue #233: version counters carry the same expiry as the data keys
+        // they address, refreshed on every bump. An idle path's counters and
+        // its cached bodies then expire together, and the counter can only
+        // reset to 0 after every body from an earlier generation is gone.
+        await this.storeProvider.incr({
+          prefix: CACHE_VERSION_PREFIX,
+          key: path,
+          options: { ttl: KV_TTL },
+        });
+      },
+    });
+  }
+
+  /**
+   * Reads a cached body. A failure is indistinguishable from a miss for the
+   * caller, which is the point: the handler runs either way.
+   */
+  private async readCachedResponse(props: {
+    prefix: string;
+    key: string;
+  }): Promise<string | null> {
+    return this.guard.run<string | null>({
+      name: `response read ${props.prefix}`,
+      fallback: null,
+      execute: async () =>
+        this.storeProvider.get({ prefix: props.prefix, key: props.key }),
+    });
+  }
+
+  /**
+   * Stores a cached body unless it exceeds the admission cap. The production
+   * incident multiplied ~2.5 MiB collection responses across generations and
+   * query variants; refusing the largest bodies removes most of the retained
+   * bytes and costs only a later miss.
+   */
+  private async writeCachedResponse(props: {
+    prefix: string;
+    key: string;
+    value: string;
+  }): Promise<void> {
+    const bytes = Buffer.byteLength(props.value, "utf8");
+
+    if (bytes > HTTP_CACHE_MAX_ENTRY_BYTES) {
+      logger.debug(
+        `HTTP cache entry not stored, ${bytes} bytes exceeds HTTP_CACHE_MAX_ENTRY_BYTES=${HTTP_CACHE_MAX_ENTRY_BYTES}: ${props.prefix}`,
+      );
+
+      return;
+    }
+
+    await this.guard.run<void>({
+      name: `response write ${props.prefix}`,
+      fallback: undefined,
+      execute: async () => {
+        await this.storeProvider.set({
+          prefix: props.prefix,
+          key: props.key,
+          value: props.value,
+          options: { ttl: KV_TTL },
+        });
+      },
     });
   }
 
@@ -169,6 +260,10 @@ export class Middleware {
 
       let cacheVersion = DEFAULT_CACHE_VERSION;
       let topicVersionsByTopic: Record<string, number> = {};
+      // Set only when the generation vector was actually read (issue #233).
+      // It gates the write-back below: a request served while the KV store was
+      // unreachable must not be stored under a guessed generation.
+      let isCacheAddressable = false;
 
       if (isCacheableGet) {
         // Topic-versioned caching (issue #195): the key embeds per-topic
@@ -180,17 +275,24 @@ export class Middleware {
           pathname,
           defaultCompiledTopicRules,
         );
-        [cacheVersion, topicVersionsByTopic] = await Promise.all([
+        const [pathVersion, topicVersions] = await Promise.all([
           this.getCacheVersion(path),
           this.getTopicVersions(readTopics),
         ]);
+
+        isCacheAddressable = pathVersion !== null && topicVersions !== null;
+        cacheVersion = pathVersion ?? DEFAULT_CACHE_VERSION;
+        topicVersionsByTopic = topicVersions ?? {};
+      }
+
+      if (isCacheAddressable) {
         const versionedDataPrefix = buildVersionedDataPrefix(
           path,
           cacheVersion,
           topicVersionsByTopic,
         );
 
-        const cachedValue = await this.storeProvider.get({
+        const cachedValue = await this.readCachedResponse({
           prefix: versionedDataPrefix,
           key: params,
         });
@@ -263,8 +365,11 @@ export class Middleware {
         try {
           if (c.res.status >= 200 && c.res.status < 300) {
             // Mirror the read gate (issue #195 F1): excluded GETs are read
-            // straight through and never written back to the cache.
-            if (isCacheableGet) {
+            // straight through and never written back to the cache. Issue #233
+            // narrows the same gate — `isCacheAddressable` means a cacheable
+            // GET whose generation vector was actually read, and a response
+            // produced while the KV store was unreachable has no address.
+            if (isCacheAddressable) {
               const resJson = await c.res.clone().json();
               const versionedDataPrefix = buildVersionedDataPrefix(
                 path,
@@ -272,11 +377,10 @@ export class Middleware {
                 topicVersionsByTopic,
               );
 
-              await this.storeProvider.set({
+              await this.writeCachedResponse({
                 prefix: versionedDataPrefix,
                 key: params,
                 value: JSON.stringify(resJson),
-                options: { ttl: KV_TTL },
               });
             }
           } else {

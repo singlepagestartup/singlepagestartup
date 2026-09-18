@@ -64,6 +64,27 @@ export const KV_REST_API_URL = process.env["KV_REST_API_URL"];
 export const KV_REST_API_TOKEN = process.env["KV_REST_API_TOKEN"];
 export const KV_REST_API_READ_ONLY_TOKEN =
   process.env["KV_REST_API_READ_ONLY_TOKEN"];
+/**
+ * Bounds for the shared KV client (issue #233). A cache lookup must never
+ * outlive the request it is supposed to speed up: `KV_COMMAND_TIMEOUT_MS` is
+ * the per-command deadline, `KV_CONNECT_TIMEOUT_MS` the connection deadline,
+ * and `KV_MAX_RETRIES_PER_REQUEST` how many times a queued command is resent
+ * across reconnects before it is failed. Raise them only when a project
+ * knowingly prefers waiting over serving an uncached response.
+ */
+export const KV_COMMAND_TIMEOUT_MS =
+  Number(process.env["KV_COMMAND_TIMEOUT_MS"]) || 250;
+export const KV_CONNECT_TIMEOUT_MS =
+  Number(process.env["KV_CONNECT_TIMEOUT_MS"]) || 2000;
+export const KV_MAX_RETRIES_PER_REQUEST =
+  Number(process.env["KV_MAX_RETRIES_PER_REQUEST"]) || 1;
+/**
+ * Admission cap for the HTTP response cache (issue #233). Responses larger
+ * than this are served but never stored, so one unbounded collection read
+ * cannot be multiplied across cache generations and query variants.
+ */
+export const HTTP_CACHE_MAX_ENTRY_BYTES =
+  Number(process.env["HTTP_CACHE_MAX_ENTRY_BYTES"]) || 1024 * 1024;
 
 /**
  * SEO metadata

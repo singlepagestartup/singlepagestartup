@@ -1,0 +1,128 @@
+# HTTP response cache
+
+Memoizes GET responses in the KV store. Registered in `apps/api/app.ts` only
+when `MIDDLEWARE_HTTP_CACHE === "true"`.
+
+The cache is identity-blind: the key is the request URL, the generation vector
+and the query string. A caller whose response must not be shared sends
+`Cache-Control: no-store`, or its route is excluded (see
+[Extension seams](#extension-seams)).
+
+## Keys
+
+```
+http-cache:data:<request url without query>:v<pathVersion>:t<topicVector>:<sha256(query string)>
+http-cache:version:<sha256(path or "topic:<topic>")>
+```
+
+`<request url without query>` is `c.req.url`, so it carries scheme and host:
+the same route reached through `http://api:4000` and through the public
+hostname forms separate key families. `topicVector` is the versions of the
+topics derived from the read path, sorted by topic name.
+
+## Generations
+
+A successful mutation increments the counters for its path, its path without a
+trailing id, `/rbac/permissions` and every topic it resolves. It deletes
+nothing. Later reads compute a different `v`/`t` prefix and therefore miss; the
+bodies stored under the previous prefix become unreachable and expire.
+
+Superseded generations are left to expire on purpose. Deleting them at mutation
+time needs a key scan per mutation, which is a full keyspace walk on the
+instance that serves the request path, and a scan that races with concurrent
+writes can delete a generation another request is currently writing. Expiry
+needs neither.
+
+What bounds them instead:
+
+- **Both key kinds expire.** Data keys are written with `EX KV_TTL`. Version
+  counters are incremented with the same TTL, refreshed on every bump
+  (`libs/providers/kv/src/lib/redis/index.ts`). An idle path's counters and
+  bodies therefore expire together, and a system that stops receiving traffic
+  returns to an empty cache namespace.
+- **An expiring counter cannot resurrect a stale body.** A body stored at
+  generation `g` expires at `write + KV_TTL`. The bump that moved the counter
+  past `g` happened after that write and refreshed the counter to
+  `bump + KV_TTL`. So whenever a counter expires and reads as generation 0
+  again, every body from an earlier generation has already expired.
+- **Large responses are never stored.** A serialized body above
+  `HTTP_CACHE_MAX_ENTRY_BYTES` is served and skipped. One unbounded collection
+  read cannot be multiplied across generations and query variants — the shape
+  that filled a production Redis instance (issue #233).
+
+## Failure behaviour
+
+The cache is an optimization, so a KV failure must cost a cache hit, not a
+request. Every KV call on the request path goes through `guard.ts`, which
+returns a fallback on any rejection and on its own deadline:
+
+| Call           | On failure or timeout                                    |
+| -------------- | -------------------------------------------------------- |
+| Version read   | Cache skipped for this request: no lookup, no write-back |
+| Response read  | Miss; the handler produces the response                  |
+| Response write | Skipped; the response is served                          |
+| Version bump   | Skipped; the mutation response is returned unchanged     |
+
+A failed version read skips the cache instead of assuming generation 0, so a
+degraded read never serves a body from a generation the caller is not on. A
+failed bump leaves cached reads stale until their TTL expires; that is the
+accepted cost of answering the mutation.
+
+Failures are reported at warn level once per backoff interval, and the first
+success after a failure reports recovery, so an outage is two lines rather than
+one per request.
+
+Below the guard, the shared ioredis client carries `connectTimeout`,
+`commandTimeout`, a small `maxRetriesPerRequest` and `enableOfflineQueue: false`
+(`libs/providers/kv/src/lib/redis/index.ts`). Without them a command issued
+while Redis was down was queued for an unbounded time, which is how a Redis
+restart left a surviving API process hanging on every cacheable GET.
+
+## Environment
+
+| Variable                     | Default | Meaning                                                 |
+| ---------------------------- | ------- | ------------------------------------------------------- |
+| `MIDDLEWARE_HTTP_CACHE`      | unset   | The middleware is registered only when this is `true`   |
+| `KV_TTL`                     | 30      | Seconds a cached body and its version counters live     |
+| `HTTP_CACHE_MAX_ENTRY_BYTES` | 1048576 | Largest serialized response that may be stored          |
+| `KV_COMMAND_TIMEOUT_MS`      | 250     | Per-command deadline, also the guard's default deadline |
+| `KV_CONNECT_TIMEOUT_MS`      | 2000    | Connection deadline                                     |
+| `KV_MAX_RETRIES_PER_REQUEST` | 1       | How often a command is resent across reconnects         |
+
+## Redis memory policy
+
+`apps/redis/docker-compose.redis.yaml` and
+`tools/deployer/redis/docker-compose.redis.yaml.j2` start Redis with
+`--maxmemory` and `--maxmemory-policy`, from `REDIS_MAXMEMORY` (default
+`256mb`) and `REDIS_MAXMEMORY_POLICY` (default `allkeys-lru`). Without a limit
+Redis grows until the host's OOM killer stops it, which is what took the
+instance down repeatedly during the incident.
+
+`allkeys-lru` lets Redis evict any key once the instance is full, including
+namespaces this cache does not own: the MCP OAuth store (`mcp:oauth:*`) and
+subject preferences (`rbac:subject:*`) share the instance. Both of those write
+with an expiry, so `volatile-lru` would not spare them either, and a separate
+logical database does not help — eviction is a property of the instance. A
+deployment that cannot afford to lose those records puts them on their own
+Redis instance. The memory limit is what keeps the host alive, whichever
+policy is chosen.
+
+## Ordering contract
+
+`RevalidationMiddleware` is registered before this middleware in
+`apps/api/app.ts` so that the mutation version bumps, which are awaited,
+complete before the WebSocket broadcast that follows them. See
+`libs/middlewares/src/lib/revalidation/README.md`; the order is asserted in
+`apps/api/specs/singlepage/index.spec.ts`.
+
+## Extension seams
+
+- `routes/startup.ts` — project cache exclusions.
+- `IMiddlewareOptions.excludedRoutes` / `excludedPathPatterns` — exclusions
+  passed from `apps/api/app.ts`.
+- The environment variables above — a project changes the budgets without
+  editing a framework file.
+
+Exclusions bypass only the GET response cache. A mutation on an excluded path
+still bumps its versions, so a cached read elsewhere cannot go stale because of
+an exclusion.

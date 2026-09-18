@@ -35,6 +35,10 @@ add_env "COMPOSE_PROJECT_NAME" $REPO_NAME
 
 add_env "REDIS_DATABASES" 16
 
+add_env "REDIS_MAXMEMORY" "256mb"
+
+add_env "REDIS_MAXMEMORY_POLICY" "allkeys-lru"
+
 add_env "REDIS_PASSWORD" $(generate_random_string)
 
 REDIS_PORT=$(get_available_port 6379)

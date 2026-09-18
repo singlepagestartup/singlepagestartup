@@ -5,9 +5,79 @@ import {
   KV_USERNAME,
   KV_PASSWORD,
   KV_HOST,
+  KV_COMMAND_TIMEOUT_MS,
+  KV_CONNECT_TIMEOUT_MS,
+  KV_MAX_RETRIES_PER_REQUEST,
   hash,
 } from "@sps/shared-utils";
 import { logger } from "@sps/backend-utils";
+
+/**
+ * Bounded client options (issue #233).
+ *
+ * The production incident turned a Redis outage into a permanently hanging
+ * API process: without `commandTimeout` a sent command could wait forever,
+ * and with ioredis's default offline queue a command issued while the socket
+ * was down was buffered instead of failing. Every option below exists to make
+ * a failing cache fail FAST, so the caller can fall back to the handler:
+ *
+ * - `connectTimeout` / `commandTimeout` — hard deadlines, from the env.
+ * - `maxRetriesPerRequest` — small, so a command is not resent across many
+ *   reconnect cycles before it is failed.
+ * - `enableOfflineQueue: false` — a command issued while the connection is
+ *   down rejects immediately instead of being queued for an unknown time.
+ * - `reconnectOnError` — still always reconnects, but no longer logs per
+ *   error; connection-state logging is attached once per client below.
+ */
+export function buildRedisOptions(): RedisOptions {
+  return {
+    host: KV_HOST,
+    port: KV_PORT,
+    username: KV_USERNAME,
+    password: KV_PASSWORD,
+    connectTimeout: KV_CONNECT_TIMEOUT_MS,
+    commandTimeout: KV_COMMAND_TIMEOUT_MS,
+    maxRetriesPerRequest: KV_MAX_RETRIES_PER_REQUEST,
+    enableOfflineQueue: false,
+    retryStrategy: (times) => Math.min(times * 50, 2000),
+    reconnectOnError: () => true,
+  };
+}
+
+/**
+ * Reports connection state changes once each (issue #233). While Redis is
+ * down ioredis emits an `error` per reconnect attempt and every consumer
+ * emits one per failed command; logging all of them buries the outage in its
+ * own noise. A repeated identical error while already degraded is dropped.
+ */
+export function attachConnectionStateLogging(client: Redis): void {
+  let lastReportedError: string | undefined;
+  let isDegraded = false;
+
+  client.on("error", (error: Error) => {
+    const message = error?.message || String(error);
+
+    if (isDegraded && message === lastReportedError) {
+      return;
+    }
+
+    isDegraded = true;
+    lastReportedError = message;
+
+    logger.warn(`KV connection error: ${message}`);
+  });
+
+  client.on("ready", () => {
+    if (!isDegraded) {
+      return;
+    }
+
+    isDegraded = false;
+    lastReportedError = undefined;
+
+    logger.info("KV connection restored.");
+  });
+}
 
 export class Provider implements IProvider {
   private static instance: Redis;
@@ -17,21 +87,10 @@ export class Provider implements IProvider {
 
   constructor() {
     if (!Provider.instance) {
-      const connectionCredentials: RedisOptions = {
-        host: KV_HOST,
-        port: KV_PORT,
-        username: KV_USERNAME,
-        password: KV_PASSWORD,
-        maxRetriesPerRequest: 10,
-        retryStrategy: (times) => Math.min(times * 50, 2000),
-        reconnectOnError: (err) => {
-          logger.error("Redis error:", err);
-          return true;
-        },
-      };
-
-      Provider.instance = new Redis(connectionCredentials);
+      Provider.instance = new Redis(buildRedisOptions());
       this.client = Provider.instance;
+
+      attachConnectionStateLogging(Provider.instance);
 
       if (!Provider.isShutdownHookSet) {
         Provider.isShutdownHookSet = true;
@@ -77,7 +136,11 @@ export class Provider implements IProvider {
     const redisKey = `${props.prefix}:${hashedKey}`;
     const value = await this.client.incr(redisKey);
 
-    if (props.options?.ttl && value === 1) {
+    // Issue #233: refresh the expiry on EVERY increment, not only when the
+    // counter is created. A counter that is bumped forever used to keep its
+    // missing (or first) TTL forever, which is how `http-cache:version:*`
+    // became the part of the key space nothing could reclaim.
+    if (props.options?.ttl) {
       await this.client.expire(redisKey, props.options.ttl);
     }
 
