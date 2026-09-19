@@ -8,6 +8,11 @@ import {
   Service as Refresh,
   IExecuteProps as IRefreshExecuteProps,
 } from "./refresh";
+import { Service as Init, IExecuteProps as IInitExecuteProps } from "./init";
+import {
+  Service as RecordActivity,
+  IExecuteProps as IRecordActivityExecuteProps,
+} from "./record-activity";
 import {
   Service as AuthenticationEmailAndPassword,
   IExecuteProps as IAuthenticationEmailAndPasswordExecuteProps,
@@ -35,6 +40,7 @@ import {
 import {
   Service as DeleteAnonymousSubjects,
   IExecuteProps as IDeleteAnonymousSubjectsExecuteProps,
+  IRetentionBlocker as IAnonymousSubjectRetentionBlocker,
 } from "./delete-anonymous-subjects";
 import {
   Service as Deanonymize,
@@ -75,6 +81,7 @@ import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subj
 import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
+import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as RolesToEcommerceModuleProductsService } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/service";
 import {
   Service as TelegramBootstrap,
@@ -145,6 +152,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   subjectsToRoles: SubjectsToRolesService;
   subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+  subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -177,6 +185,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     subjectsToRoles: SubjectsToRolesService,
     @inject(SubjectDI.ISubjectsToEcommerceModuleOrdersService)
     subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService,
+    @inject(SubjectDI.ISubjectsToBillingModuleCurrenciesService)
+    subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService,
   ) {
     super(repository);
     this.socialModule = socialModule;
@@ -198,6 +208,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.subjectsToSocialModuleProfiles = subjectsToSocialModuleProfiles;
     this.subjectsToRoles = subjectsToRoles;
     this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
+    this.subjectsToBillingModuleCurrencies = subjectsToBillingModuleCurrencies;
   }
 
   async isAuthorized(props: IIsAuthorizedExecuteProps): Promise<any> {
@@ -266,8 +277,26 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new Logout(this.repository).execute();
   }
 
+  async recordActivity(props: IRecordActivityExecuteProps) {
+    return new RecordActivity({
+      update: ({ id, data }) => this.update({ id, data }),
+    }).execute(props);
+  }
+
+  async init(props: IInitExecuteProps) {
+    return new Init({
+      findById: ({ id }) => this.findById({ id }),
+      recordActivity: (recordActivityProps) =>
+        this.recordActivity(recordActivityProps),
+    }).execute(props);
+  }
+
   async refresh(props: IRefreshExecuteProps) {
-    return new Refresh(this.repository).execute(props);
+    return new Refresh({
+      repository: this.repository,
+      recordActivity: (recordActivityProps) =>
+        this.recordActivity(recordActivityProps),
+    }).execute(props);
   }
 
   async authenticationLoginAndPassowrd(
@@ -303,8 +332,42 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async deleteAnonymousSubjects(props?: IDeleteAnonymousSubjectsExecuteProps) {
     return new DeleteAnonymousSubjects({
       find: (findProps) => this.find(findProps),
-      subjectsToIdentities: this.subjectsToIdentities,
+      delete: ({ id }) => this.delete({ id }),
+      blockers: this.anonymousSubjectRetentionBlockers(),
     }).execute(props);
+  }
+
+  /**
+   * Relations that keep an inactive anonymous subject. A project extends the
+   * list from its `startup` service subclass when it owns other subject
+   * relations.
+   */
+  anonymousSubjectRetentionBlockers(): IAnonymousSubjectRetentionBlocker[] {
+    return [
+      {
+        reason: "identity",
+        find: (findProps) => this.subjectsToIdentities.find(findProps),
+      },
+      {
+        reason: "ecommerce-module-order",
+        find: (findProps) =>
+          this.subjectsToEcommerceModuleOrders.find(findProps),
+      },
+      {
+        reason: "social-module-profile",
+        find: (findProps) =>
+          this.subjectsToSocialModuleProfiles.find(findProps),
+      },
+      {
+        reason: "role",
+        find: (findProps) => this.subjectsToRoles.find(findProps),
+      },
+      {
+        reason: "billing-module-currency",
+        find: (findProps) =>
+          this.subjectsToBillingModuleCurrencies.find(findProps),
+      },
+    ];
   }
 
   async deanonymize(props: IDeanonymizeExecuteProps) {
