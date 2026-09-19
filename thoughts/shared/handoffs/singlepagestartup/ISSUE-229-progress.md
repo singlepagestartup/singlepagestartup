@@ -207,7 +207,7 @@ curl -i -H "Authorization: Bearer $TOKEN" \
 ```
 
 Expected: `HTTP/1.1 401`, and a body shaped
-`{"requestId":"...","path":".../authentication/me","method":"GET","status":401,"error":"Authentication error. Token expired","stack":"HTTPException: Authentication error. Token expired\n    at ...","cause":[{"message":"Authentication error. Token expired","stack":"..."}]}`.
+`{"requestId":"...","path":".../authentication/me","method":"GET","status":401,"error":"Authentication error. Token expired","stack":"Error: Authentication error. Token expired\n    at ...","cause":[{"message":"Authentication error. Token expired","stack":"..."}]}`.
 The check that matters: `grep -c "$TOKEN"` over the whole response is 0, and the
 same holds for the API log lines for that request. Before this change the same
 call returned 500 with `Internal server error: token (<the whole token>) expired`.
@@ -278,4 +278,93 @@ curl -i -X POST http://localhost:4011/api/blog/articles \
 
 ---
 
-**Last updated**: 2026-09-19T01:30:00Z
+## Follow-up after the lead's verification
+
+The lead verified (a), (b) and (c) on a running instance; all three behaved as
+described. One gap was found and closed in the fourth code commit on this
+branch, `fix(backend-utils): describe zod issues in 422 responses`.
+
+### The gap
+
+`POST /api/blog/articles` with `data={"slug":123}` answered 422, but with an
+empty text: `{"status":422,"error":"","cause":[{"message":""}]}`. The shared
+repository rethrows a failed schema parse as
+`new Error(JSON.stringify({ zodError: error.issues }))`
+(`libs/shared/backend/api/src/lib/repository/database/index.ts:105`, `:131`,
+`:160`, `:176`, `:222`, `:254`, `:311`). That payload has no `message` key, so
+the mapper returned the raw JSON as the message, and the exception filter's JSON
+branch found nothing to push into `errorMessages`.
+
+### The fix
+
+- `libs/shared/backend/utils/src/lib/http-error/zod-issues/index.ts` (new) —
+  `formatZodIssues` turns the issue list into
+  `Unprocessable Entity error. <path>: <issue message>`, joins the first three
+  with `; `, counts the rest, and drops a trailing quoted `received '<value>'`
+  segment so request data stays out of the client-facing text. It accepts either
+  the issue array the repository sends or an object with an `issues` array.
+- `libs/shared/backend/utils/src/lib/http-error/index.ts` — when the parsed
+  payload carries `zodError`, the mapper returns 422 with that message and keeps
+  the issue list in `details`, which the handler passes as the exception cause
+  and the filter does not serialize.
+- `libs/shared/backend/utils/src/lib/http-error/index.spec.ts` — five scenarios:
+  a type mismatch described by path, a missing field, a quoted submitted value
+  that must not survive, several issues with a counted remainder, and an empty
+  payload that keeps its previous classification.
+- `README.md` — the behaviour is documented under the category table.
+
+A second case is fixed with it: a missing required field serializes as
+`{"message":"Required"}` inside the payload, which matched no pattern and fell
+to 500. It now answers 422 as well.
+
+`Validation error.` prefixed messages are untouched, because this branch runs
+only for a payload with a `zodError` key.
+
+### Verification of the follow-up
+
+- `npx nx run @sps/backend-utils:jest:test --skip-nx-cache` — 102 passed / 102.
+- `npx nx run @sps/shared-backend-api:jest:test --skip-nx-cache` — 12 passed,
+  1 skipped.
+- `npx nx run-many --target=eslint:lint --projects=@sps/backend-utils,@sps/shared-backend-api --skip-nx-cache`
+  — clean.
+- `npx tsc --noEmit -p libs/shared/backend/utils/tsconfig.json` and
+  `-p libs/shared/backend/api/tsconfig.json` — clean.
+- The mapper and the real exception filter were also driven with the article
+  insert schema outside the suite, which is where the expected body below comes
+  from.
+
+### (d) Zod type error carries a readable message
+
+```bash
+SECRET=$(grep -m1 '^RBAC_SECRET_KEY=' apps/api/.env | cut -d= -f2-)
+curl -i -X POST http://localhost:4011/api/blog/articles \
+  -H "X-RBAC-SECRET-KEY: $SECRET" \
+  -F 'data={"slug":123}'
+```
+
+Expected `HTTP/1.1 422` and:
+
+```json
+{
+  "requestId": "<x-request-id>",
+  "path": "http://localhost:4011/api/blog/articles",
+  "method": "POST",
+  "status": 422,
+  "error": "Unprocessable Entity error. slug: Expected string, received number",
+  "stack": "Error: Unprocessable Entity error. slug: Expected string, received number\n    at ...",
+  "cause": [
+    {
+      "message": "Unprocessable Entity error. slug: Expected string, received number",
+      "stack": "..."
+    }
+  ]
+}
+```
+
+The article insert schema reports exactly one issue for this body, so the
+message has no `; ` list and no `and N more` suffix. The probes in (a), (b) and
+(c) are unchanged.
+
+---
+
+**Last updated**: 2026-09-19T02:10:00Z

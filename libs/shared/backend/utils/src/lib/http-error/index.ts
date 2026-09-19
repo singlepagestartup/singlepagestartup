@@ -4,6 +4,7 @@ import { ErrorPatternEntry, UtilsProp } from "./type";
 import { parseCategoryFromMessage } from "./parser";
 import { extractMessage, extractOriginalError } from "./extract";
 import { util as sanitizeMessage } from "./sanitize";
+import { util as formatZodIssues } from "./zod-issues";
 import { util as isUniqueConstraintError } from "../unique-constraint-error";
 
 export function util(error: any): UtilsProp {
@@ -54,6 +55,20 @@ export function util(error: any): UtilsProp {
         message: parsedMessage,
         category: "Internal error",
         details: parsedDetails,
+      };
+    }
+
+    // The shared repository serializes a failed schema parse as `{ zodError }`
+    // with no message of its own, so the issues are described here and kept in
+    // the details for server-side use.
+    const zodMessage = formatZodIssues(parsed?.zodError);
+
+    if (zodMessage) {
+      return {
+        status: 422,
+        message: zodMessage,
+        category: "Unprocessable Entity error",
+        details: parsed.zodError,
       };
     }
   } catch {

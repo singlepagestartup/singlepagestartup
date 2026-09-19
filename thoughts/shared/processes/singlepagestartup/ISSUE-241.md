@@ -3,7 +3,7 @@ issue_number: 241
 issue_title: "Restore or retire the documented 422 Unprocessable Entity category in the shared HTTP error mapper"
 repository: singlepagestartup
 created_at: 2026-09-18T00:20:00Z
-last_updated: 2026-09-18T23:45:00Z
+last_updated: 2026-09-19T02:10:00Z
 status: active
 current_phase: complete
 ---
@@ -47,13 +47,13 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Summary: Added `Unprocessable Entity error` to `ErrorCategory`, restored the 422 pattern entry verbatim, added a narrow 400 entry anchored to a leading `Validation error` phrase directly before it, renamed the Nx target `test` to `jest:test`, corrected the README keyword list and stated the precedence rule under the table.
 - Outputs: commit on `claude/issue-229-error-mapping`; `npx nx run @sps/backend-utils:jest:test` 78 passed, 78 total.
-- Notes: Only two framework messages change status, both the unprefixed "body['data'] is not a string" text in the ecommerce order update and notification template render controllers.
+- Notes: Only two framework messages change status, both the unprefixed "body['data'] is not a string" text in the ecommerce order update and notification template render controllers. A follow-up commit gave zod payloads a readable 422 message; see Incident 3.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 2 -->
+<!-- incident-count: 3 -->
 
 ### Incident 1 — Project item was not immediately visible to the status helper
 
@@ -75,6 +75,17 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: When adding a shape-based pattern to the table, check whether framework messages carrying an explicit category prefix also match it, and place the anchored entry first.
 - **References**: `libs/shared/backend/utils/src/lib/http-error/paterns/index.ts`, `libs/shared/backend/api/src/lib/controllers/rest/handler/create/index.ts:23-26`
 
+### Incident 3 — A 422 with an empty message body
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The lead's verification found that `POST /api/blog/articles` with `data={"slug":123}` answered 422 with `{"error":"","cause":[{"message":""}]}`.
+- **Root Cause**: The shared repository rethrows a failed schema parse as `new Error(JSON.stringify({ zodError: error.issues }))`. That payload has no `message` key, so the mapper matched `/expected string/i` against the raw JSON text and returned the JSON as the message; the exception filter then parsed it as JSON, found no `message`, and produced an empty error text. A missing required field did not even reach 422, because `"message":"Required"` matches no pattern.
+- **Fix**: A `formatZodIssues` helper under `http-error/zod-issues` turns the issue list into `Unprocessable Entity error. <path>: <issue message>`, and the mapper returns that with 422, keeping the issues in `details`. The trailing quoted `received '<value>'` segment is dropped so request data stays out of the message.
+- **Preventive Action**: When a pattern matches a serialized payload rather than a human message, check what the exception filter will print, not only the status the mapper returns.
+- **References**: `libs/shared/backend/utils/src/lib/http-error/zod-issues/index.ts`, `libs/shared/backend/api/src/lib/repository/database/index.ts:222`
+
 ## Reusable Learnings
 
 - The README error-category table, `ErrorCategory`, the pattern table and `index.spec.ts` are four copies of one contract; changes to the mapper must update all four in the same commit.
+- A status is only half of an error contract. The exception filter builds the client text from `error.message`, and a message that happens to be JSON is parsed rather than printed, so a payload without a `message` key reaches the client as an empty string.

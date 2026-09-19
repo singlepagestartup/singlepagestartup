@@ -117,6 +117,120 @@ describe("util — HTTP error classification", () => {
     });
   });
 
+  // ------------------- 422 ZOD ISSUE PAYLOADS -------------------
+  describe("422 - serialized zod issues", () => {
+    function zodError(issues: unknown[]) {
+      return new Error(JSON.stringify({ zodError: issues }));
+    }
+
+    /**
+     * BDD Scenario
+     * Given: the shared repository serialized a failed schema parse, whose
+     * payload carries no message of its own.
+     * When: the error is classified.
+     * Then: the result is 422 with a message naming the path and the issue,
+     * and the issues stay available as details.
+     */
+    test("describes a type mismatch by path and issue", () => {
+      const issues = [
+        {
+          code: "invalid_type",
+          expected: "string",
+          received: "number",
+          path: ["slug"],
+          message: "Expected string, received number",
+        },
+      ];
+      const result = util(zodError(issues));
+      expect(result.status).toBe(422);
+      expect(result.category).toBe("Unprocessable Entity error");
+      expect(result.message).toBe(
+        "Unprocessable Entity error. slug: Expected string, received number",
+      );
+      expect(result.details).toEqual(issues);
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a missing required field, whose issue message is only "Required".
+     * When: the error is classified.
+     * Then: the path makes the message readable instead of falling to 500.
+     */
+    test("names the field of a missing value", () => {
+      const result = util(
+        zodError([
+          {
+            code: "invalid_type",
+            expected: "string",
+            received: "undefined",
+            path: ["slug"],
+            message: "Required",
+          },
+        ]),
+      );
+      expect(result.status).toBe(422);
+      expect(result.message).toBe("Unprocessable Entity error. slug: Required");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: an issue whose message quotes the value the caller submitted.
+     * When: the error is classified.
+     * Then: the expected options survive and the submitted value does not.
+     */
+    test("keeps the submitted value out of the message", () => {
+      const result = util(
+        zodError([
+          {
+            code: "invalid_enum_value",
+            options: ["admin", "user"],
+            received: "sup3rs3cret",
+            path: ["role"],
+            message:
+              "Invalid enum value. Expected 'admin' | 'user', received 'sup3rs3cret'",
+          },
+        ]),
+      );
+      expect(result.status).toBe(422);
+      expect(result.message).toBe(
+        "Unprocessable Entity error. role: Invalid enum value. Expected 'admin' | 'user'",
+      );
+      expect(result.message).not.toContain("sup3rs3cret");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a payload with more issues than the message reports.
+     * When: the error is classified.
+     * Then: the first few are described and the rest are counted.
+     */
+    test("reports the first issues and counts the rest", () => {
+      const result = util(
+        zodError([
+          { path: ["a"], message: "Required" },
+          { path: ["b"], message: "Required" },
+          { path: ["c", 0, "d"], message: "Required" },
+          { path: ["e"], message: "Required" },
+        ]),
+      );
+      expect(result.message).toBe(
+        "Unprocessable Entity error. a: Required; b: Required; c.0.d: Required; and 1 more",
+      );
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a serialized payload that is not a zod issue list.
+     * When: the error is classified.
+     * Then: the existing classification is unchanged.
+     */
+    test("ignores a payload that carries no issues", () => {
+      const result = util(new Error(JSON.stringify({ zodError: [] })));
+      expect(result.status).toBe(500);
+      expect(result.category).toBe("Internal error");
+    });
+  });
+
   // ------------------- 409 CONFLICT ERROR -------------------
   describe("409 - Conflict error", () => {
     const constraint = "sps_blog_article_slug_unique";
