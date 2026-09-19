@@ -85,6 +85,20 @@ export class Handler {
         throw new Error("Not Found error. No entity found");
       }
 
+      // Asked before the currency: a product the subject already holds does not
+      // need a price, and a second cart order for it would be counted twice by
+      // the badge, the total and the order list, which all read every open cart
+      // of the subject.
+      const openCartOrderWithProductId =
+        await this.service.ecommerceModuleFindOpenCartOrderWithProduct({
+          subjectId: id,
+          productId,
+        });
+
+      if (openCartOrderWithProductId) {
+        throw new Error("Validation error. Product is already in the cart");
+      }
+
       // Resolved before the first write: the order, its subject link, its
       // product line and its store link would otherwise be committed only for
       // the currency link to fail, leaving a cart order no total can be
@@ -94,125 +108,6 @@ export class Handler {
           productId,
           billingModuleCurrencyId: data["billingModule"]?.currency?.id,
         });
-
-      const existingOrdersToProducts =
-        await this.service.ecommerceModule.ordersToProducts.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "productId",
-                  method: "eq",
-                  value: productId,
-                },
-              ],
-            },
-          },
-        });
-
-      const existingOrdersToSubjects =
-        await this.service.subjectsToEcommerceModuleOrders.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "subjectId",
-                  method: "eq",
-                  value: id,
-                },
-              ],
-            },
-          },
-        });
-
-      if (existingOrdersToProducts?.length) {
-        if (existingOrdersToSubjects?.length) {
-          const subjectToProductOrders = existingOrdersToProducts.filter(
-            (orderToProduct) => {
-              return existingOrdersToSubjects.find((orderToSubject) => {
-                return (
-                  orderToProduct.orderId ===
-                  orderToSubject.ecommerceModuleOrderId
-                );
-              });
-            },
-          );
-
-          if (subjectToProductOrders.length) {
-            const ordersWithSubjectAndProduct =
-              await this.service.ecommerceModule.order.find({
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "id",
-                        method: "inArray",
-                        value: subjectToProductOrders.map(
-                          (orderToProduct) => orderToProduct.orderId,
-                        ),
-                      },
-                      {
-                        column: "status",
-                        method: "eq",
-                        value: "new",
-                      },
-                    ],
-                  },
-                },
-              });
-
-            if (ordersWithSubjectAndProduct?.length) {
-              const existingStoresToOrders =
-                await this.service.ecommerceModule.storesToOrders.find({
-                  params: {
-                    filters: {
-                      and: [
-                        {
-                          column: "storeId",
-                          method: "eq",
-                          value: id,
-                        },
-                        {
-                          column: "orderId",
-                          method: "inArray",
-                          value: ordersWithSubjectAndProduct?.map((order) => {
-                            return order.id;
-                          }),
-                        },
-                      ],
-                    },
-                  },
-                });
-
-              if (existingStoresToOrders?.length) {
-                const ordersToBillingModuleCurrencies =
-                  await this.service.ecommerceModule.ordersToBillingModuleCurrencies.find(
-                    {
-                      params: {
-                        filters: {
-                          and: [
-                            {
-                              column: "orderId",
-                              method: "inArray",
-                              value:
-                                existingStoresToOrders?.map(
-                                  (storeToOrder) => storeToOrder.orderId,
-                                ) || [],
-                            },
-                          ],
-                        },
-                      },
-                    },
-                  );
-
-                if (ordersToBillingModuleCurrencies?.length) {
-                  throw new Error("Internal error. Order already exists");
-                }
-              }
-            }
-          }
-        }
-      }
 
       const order = await ecommerceOrderApi.create({
         data: {},
