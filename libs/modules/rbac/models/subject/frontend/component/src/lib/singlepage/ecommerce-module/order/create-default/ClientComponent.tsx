@@ -6,10 +6,12 @@ import { useForm } from "react-hook-form";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button, Form } from "@sps/shared-ui-shadcn";
+import { Form } from "@sps/shared-ui-shadcn";
 import { Component as BillingModuleCurrency } from "@sps/billing/models/currency/frontend/component";
+import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
+import { AddToCartButton } from "./AddToCartButton";
 import { Component as ProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
 import { Component as AttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/frontend/component";
 import { Component as AttributeKey } from "@sps/ecommerce/models/attribute-key/frontend/component";
@@ -29,6 +31,21 @@ const formSchema = z.object({
 
 export function Component(props: IComponentPropsExtended) {
   const ecommerceProductsCart = api.ecommerceModuleOrderCreate({});
+  const { mutate, isPending, isSuccess } = ecommerceProductsCart;
+
+  /**
+   * `undefined` until the product's price currencies are known. A product with
+   * no price in any currency cannot be ordered, so the control stays disabled
+   * instead of sending a request the API rejects.
+   */
+  const [billingModuleCurrencies, setBillingModuleCurrencies] = useState<
+    IBillingModuleCurrency[] | undefined
+  >(undefined);
+
+  const hasPrice =
+    billingModuleCurrencies === undefined
+      ? undefined
+      : billingModuleCurrencies.length > 0;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,18 +61,25 @@ export function Component(props: IComponentPropsExtended) {
     },
   });
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
-    ecommerceProductsCart.mutate({
-      id: props.data.id,
-      data,
-    });
-  }
+  const onSubmit = useCallback(
+    (data: z.infer<typeof formSchema>) => {
+      mutate({
+        id: props.data.id,
+        data,
+      });
+    },
+    [mutate, props.data.id],
+  );
+
+  const onAddToCart = useCallback(() => {
+    form.handleSubmit(onSubmit)();
+  }, [form, onSubmit]);
 
   useEffect(() => {
-    if (ecommerceProductsCart.isSuccess) {
+    if (isSuccess) {
       toast.success("Updated successfully");
     }
-  }, [ecommerceProductsCart.isSuccess]);
+  }, [isSuccess]);
 
   return (
     <div
@@ -173,6 +197,7 @@ export function Component(props: IComponentPropsExtended) {
                                 <BillingModuleCurrency
                                   isServer={false}
                                   variant="find"
+                                  set={setBillingModuleCurrencies}
                                   apiProps={{
                                     params: {
                                       filters: {
@@ -194,7 +219,7 @@ export function Component(props: IComponentPropsExtended) {
                                   }}
                                 >
                                   {({ data: billingModuleCurrencies }) => {
-                                    if (!billingModuleCurrencies) {
+                                    if (!billingModuleCurrencies?.length) {
                                       return null;
                                     }
 
@@ -231,14 +256,11 @@ export function Component(props: IComponentPropsExtended) {
         </AttributeKey>
 
         <div className="flex w-full gap-1">
-          <Button
-            onClick={form.handleSubmit(onSubmit)}
-            variant="secondary"
-            className="w-full flex shrink-0"
-            disabled={ecommerceProductsCart.isPending}
-          >
-            {ecommerceProductsCart.isPending ? "Adding..." : "Add to cart"}
-          </Button>
+          <AddToCartButton
+            hasPrice={hasPrice}
+            isPending={isPending}
+            onClick={onAddToCart}
+          />
         </div>
       </Form>
     </div>

@@ -11,6 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       product={props.product}
       store={props.store}
+      billingModule={props.billingModule}
     />
   );
 }
