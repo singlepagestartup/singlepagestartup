@@ -52,6 +52,8 @@
     "studio:presentation:test": "bun test apps/studio/workspace/utils/components/PresentationWorkspace.test.tsx tools/studio/products/research-ids.test.ts tools/studio/products/stories.test.tsx tools/studio/presentation/output.test.ts tools/studio/presentation/structure.test.ts tools/studio/workspace/merge.test.ts tools/studio/workspace/document.test.ts tools/studio/design/brandbook.test.ts tools/studio/design/specimens.test.ts tools/studio/workspace/review.test.ts apps/studio/workspace/utils/components/ArtifactBrowser.test.tsx apps/studio/workspace/utils/components/ProjectDesign.test.tsx apps/studio/workspace/utils/design/data.test.ts apps/studio/workspace/utils/products/sales.test.ts apps/studio/workspace/utils/products/catalog.test.ts apps/studio/workspace/utils/products/models.test.ts apps/studio/workspace/utils/products/presentation-data.test.ts apps/studio/workspace/utils/products/pages.test.tsx apps/studio/workspace/utils/design/layout.test.tsx apps/studio/workspace/utils/downloads.test.ts",
     "agents:editorial:test": "node --test tools/agents/editorial-pass.test.mjs",
     "agents:duplicates:check": "bun tools/agents/duplicate-sentences.ts",
+    "agents:statements:check": "bun tools/agents/statement-form.ts",
+    "agents:statements:test": "bun test tools/agents/statement-form.test.ts",
     "agents:duplicates:test": "bun test tools/agents/duplicate-sentences.test.ts",
     "adapt-upstream:check": "node tools/upstream/migrations.mjs check",
     "adapt-upstream:complete": "node tools/upstream/migrations.mjs complete",

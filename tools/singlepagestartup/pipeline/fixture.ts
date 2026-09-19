@@ -326,17 +326,9 @@ export async function createDownstreamFixture(
     `${productRoot}/catalog.yaml`,
     stringify({
       schema: "singlepagestartup.product-catalog.v2",
-      models: [
-        {
-          id: MODEL_ID,
-          name: "Fixture model",
-          source: `models/${MODEL_ID}/model.md`,
-        },
-      ],
       products: [
         {
           id: PRODUCT_ID,
-          model: MODEL_ID,
           name: "Fixture product",
           summary: "A downstream product used to exercise the pipeline checks.",
           research: `${PRODUCT_ID}/research.md`,
@@ -346,19 +338,6 @@ export async function createDownstreamFixture(
         },
       ],
     }),
-  );
-  write(
-    root,
-    `${productRoot}/models/${MODEL_ID}/model.md`,
-    withMetadata(
-      markdown(
-        "Operations & Economics",
-        project(sectionsOf("templates/product-model.md")),
-      ),
-      {
-        confirmation: { confirmed: false },
-      },
-    ),
   );
   write(
     root,

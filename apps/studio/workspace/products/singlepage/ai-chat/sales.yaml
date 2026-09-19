@@ -3,25 +3,35 @@ product_id: ai-chat
 readiness: blocked
 owner: The SinglePageStartup project creator currently owns every sales and
   service stage.
-seller: The SinglePageStartup project creator operates AI Chat. Payments will be
-  accepted in Russia through an online cash register. The seller's legal name
-  and payment details have not been recorded yet.
+seller: The SinglePageStartup project creator operates AI Chat. Payments are
+  accepted in Russia through an online cash register. The operator configures the
+  payment-accepting party's legal name, payment details and receipt flow in the
+  product's own interface, so they are not a pre-development decision here.
 pricing: The framework-service model records token purchases as the revenue
-  model for AI Chat. The token unit, price, currency, packages, payment timing,
-  expiry and refund terms have not been defined yet.
+  model for AI Chat. The billable unit is the provider tokens a request consumes,
+  with generation the larger share. The customer does not pick the model. The
+  router selects one per request from the models the product offers, and because
+  their prices differ by about an order of magnitude the balance is charged on
+  what the turn cost in money, not on the provider tokens it used. One internal
+  token is USD 0.001 of provider cost; one token is charged when the input is sent
+  to the model and the balance is settled once the answer returns and its actual
+  cost is known. Tokens are sold in roubles at a thirty per cent margin over
+  provider cost, converted at a fixed 100 roubles per dollar, so a token costs the
+  customer 0.13 roubles and no request costs less than that. Purchased tokens do
+  not expire, purchases are normally final, and a refund is a case-by-case
+  decision rather than a published entitlement. Top-ups are sold in five packages
+  of 100, 300, 500, 1,000 and 3,000 roubles at the same token price, so a larger
+  package carries no extra discount.
 capacity: One project owner runs the service and processes support requests
   within 24 hours. Continuous live support and higher service levels have not
   been defined.
 blockers:
-  - Define the token unit, price, currency, packages, payment timing, expiry and
-    refund terms.
-  - Record the payment-accepting party's exact legal and payment details and
-    configure the required Russian online receipt flow.
-  - Name the selected AI, storage and infrastructure providers and publish the
-    applicable processing and backup terms.
-  - Define the GitHub authorization scope, supported server providers,
-    deployment-credential handling, domain connection and recovery for failed
-    deployments.
+  - Write what customers are told about how their uploaded material is processed,
+    where it is stored and how long backups are kept. The facts are settled. The
+    service runs on Contabo in Amsterdam, OpenRouter is the selected AI and
+    embedding provider, document text reaches it both to be embedded and as
+    retrieved context, vectors stay in the project's own PostgreSQL with
+    pgvector, and host backups persist for up to six months after deletion.
 segments:
   - id: business-users
     name: Early-stage project owners
@@ -522,5 +532,4 @@ confirmation:
   content_sha256: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400
 review:
   dependencies:
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
-    product.ai-chat.product: 128b557ac48280f0ad09eefbe05fdc4e54a8aaa4c8c972205ffa5f53cb6cbc9e
+    product.ai-chat.product: 42ddf02fc96144fbda92fbffde2ff32d5c115b3d66f5108cad5855e271b2f5dd

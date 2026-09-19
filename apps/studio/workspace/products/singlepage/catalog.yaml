@@ -1,11 +1,6 @@
 schema: singlepagestartup.product-catalog.v2
-models:
-  - id: framework-service
-    name: Framework and AI service
-    source: models/framework-service/model.md
 products:
   - id: singlepagestartup
-    model: framework-service
     name: Code Framework
     summary:
       A reusable foundation for makers and coding agents to deploy to their
@@ -102,7 +97,6 @@ products:
               text: singlepagestartup/content/build-with-an-agent.md
               preview: singlepagestartup/content/Guide.tsx
   - id: ai-chat
-    model: framework-service
     name: AI Chat
     summary: Upload notes, documents, screenshots and images, review a compact
       five-stage project model in about one focused session, then keep working

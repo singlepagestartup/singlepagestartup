@@ -55,11 +55,60 @@ fit without customer evidence.
 ## Offer and usage
 
 - Define the intended access or deliverable unit, included and excluded scope,
-  usage experience, support, rights and dependencies. Link the model Revenue
-  Streams for money terms; Sales owns the complete customer process.
+  usage experience, support, rights and dependencies. Revenue Streams below
+  carries the money terms; Sales owns the complete customer process.
 - Describe how the customer obtains value, continues using the offer and, when
   relevant, adopts it again. These are product requirements, not installation
   instructions, runtime acceptance checks or a debugging plan.
+
+## Revenue Streams
+
+Per segment: the payer, the unit they pay for, the price or the rule that
+calculates it, the currency, whether it is one-off or recurring, when payment is
+taken, and the commercial conditions that matter. A product that charges no money
+is still paid: state what it receives instead, such as attention, adoption,
+contributions or the customers it sends to another product, and keep the exchange
+as concrete as a price. Distinguish customer revenue from financing. Terms live
+here once; Sales references them while keeping its own process.
+
+## Key Activities
+
+The activities that create and deliver this product's value, and who owns each.
+Link the Sales process rather than describing it again.
+
+## Key Resources
+
+The people, infrastructure, financial and intellectual resources this product
+needs, with stable resource IDs, owner, availability and material constraints. A
+resource shared with another product is named in both, each stating the share it
+carries and the basis for that share.
+
+## Key Partnerships
+
+Suppliers and partners, what each one does, how much the product depends on them,
+and the evidence for that. An integration is not a partnership agreement. State
+material unknowns rather than filling them.
+
+## Cost Structure
+
+The costs that follow from the activities, resources and partners above: fixed or
+variable, the amount, currency and period when known, and the assumptions behind
+any calculation. Separate cash expense from founder time. A cost shared with
+another product appears in both with the basis for its split stated, so the same
+money is never counted twice.
+
+### Funding
+
+Who supplies capital or subsidy, on what conditions and within what limits, kept
+separate from customer Revenue Streams. Do not invent budgets, financing or
+contribution margins.
+
+## Assumptions and decision rules
+
+Stable assumption IDs tied to this product's decisions, with attribution and
+state; material unknowns, objections, signals and the consequence of each for a
+decision. Link the Research that tests an assumption instead of copying its
+findings. An operator fact blocks only the decisions that need it.
 
 ## Business goals and metrics
 

@@ -88,10 +88,10 @@ sources:
   license:
     classification: client-claim
     source: apps/studio/workspace/brief/singlepage.md#sources.license
-    date: 2026-09-12
-    supports: MIT is the selected distribution license and publication is reported.
-    inspected_snapshot: https://github.com/singlepagestartup/singlepagestartup/blob/48fff95f2ffe5c6fcfb435ae50700df029608bbe/LICENSE
-    limitation: The inspected local HEAD and origin/main contain proprietary terms; MIT remains the operator-selected distribution model.
+    date: 2026-09-18
+    supports: MIT is the selected distribution license, and inspected origin/main carries the MIT text.
+    inspected_snapshot: https://github.com/singlepagestartup/singlepagestartup/blob/1df352484f23a8615962da490771028b7f87f536/LICENSE
+    limitation: The license governs the distributed source only; it establishes no runtime behavior, adoption or support commitment.
   inventory:
     classification: verified-fact
     source: Brief repository observation, 2026-09-12.
@@ -100,7 +100,6 @@ sources:
 review:
   dependencies:
     brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
     product.singlepagestartup.research: 629f3131efae5b5778d2bf8cb4a6bf7b98b5d223f4174d6583c93ad3a1bcf01e
 ---
 
@@ -148,6 +147,79 @@ The offer includes source code, documentation and agent instructions; account an
 The selected distribution model is free code under MIT through GitHub. [Revenue Streams](../models/framework-service/model.md#revenue-streams) owns the money terms. Coding-agent subscriptions, infrastructure and hosted AI Chat usage are separate. Help and maintenance are provided as time permits; custom implementation and managed hosting are outside the offer.
 
 In the intended experience, a person discovers SPS through AI Chat, a demonstration, task guidance or a relevant community answer. Publishing a page from AI Chat creates the customer's repository on this foundation; a maker with another concrete software need instead follows **Run the project on your machine** to GitHub and asks a coding agent to deploy and adapt the project. Buying chat tokens is not required. The maker describes changes, reviews the interface and develops the product; the same foundation can support the next idea.
+
+## Revenue Streams
+
+| Segment | Payer and unit                                            | Terms                                                                                                                                                                   |
+| ------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Makers  | The maker pays nothing in money for the code.             | MIT licence, no checkout, no licence fee. The price is paid in social capital: a star, a fork, a recommendation, an improvement contributed back.                       |
+| Project | The maker who later needs hosted work arrives at AI Chat. | A maker who trusts the foundation is the cheapest customer AI Chat can get. This return is intended, not measured; no conversion rate from adoption to purchase exists. |
+
+The recorded attention baseline is 4 stars and 2 forks. Attention, adoption,
+repeat use and contributions are counted separately, because a star costs the
+maker nothing while a contribution costs them work. What a star or a fork is
+worth against a paid AI Chat customer is unmeasured.
+
+## Key Activities
+
+Develop and maintain the shared foundation, its modules and its documentation,
+and keep them usable by makers and their coding agents. Help makers adapt the
+code to their own businesses, as time permits.
+
+This product also carries the project's promotion: demonstrations and tutorials,
+short videos cut from them, searchable use-case pages and answers in relevant
+communities. Promotion belongs here because what it buys is exactly what this
+product is paid in, and because a maker who arrives through it can go on to AI
+Chat. The intended journey is in [Sales](sales.yaml); it is not repeated here.
+
+## Key Resources
+
+| Resource ID       | Scope and share                                                                                                                           | Availability                                                     |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `founder-time`    | Half of the owner's working time, split evenly with AI Chat because development and promotion serve both and cannot be traced separately. | Allocated as the project develops; no recurring hours committed. |
+| `repository`      | The shared code and documentation, developed by a team over several years. Counted here; AI Chat runs on the same base.                   | 16 modules, 65 models, 91 relations.                             |
+| `identity-assets` | The shared brand, fonts and visual materials.                                                                                             | Current approved identity and registered assets.                 |
+
+## Key Partnerships
+
+GitHub distributes the code and holds the repository that each published
+customer page is created in, which makes it a dependency of both this product
+and AI Chat's publication step. No agreement or dedicated supplier terms exist;
+the dependency rests on a public platform's ordinary service. Makers choose the
+coding agents and external services for their own projects, and those choices
+are outside this product.
+
+## Cost Structure
+
+| Expense              | Basis                                                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Development and help | Half of the owner's time, per the `founder-time` split. Owner time, not cash.                                             |
+| Promotion            | All of it: demonstrations, short videos, searchable pages and community participation, in owner time and any money spent. |
+| Distribution         | None. GitHub carries the code at no charge to the project.                                                                |
+
+This product spends no cash of its own. Its whole cost is owner time, and the
+half it does not carry sits in AI Chat under the same resource ID, so the same
+hours are never counted twice.
+
+### Funding
+
+The owner's time and money fund this product, and AI Chat revenue is what makes
+that affordable. No external financing is committed and no recurring budget is
+set.
+
+## Assumptions and decision rules
+
+- `bridge`: a useful chat experience encourages interested makers to adopt the
+  foundation.
+- `framework-growth`: attention and stars are counted apart from product use,
+  repeat use and contributions, because only the last two show the price was
+  actually paid.
+- `channel-access`: use the selected organic channels and prioritise the topics
+  that attract relevant makers.
+- `capacity`: promotion and help scale to available time and money; help with
+  the code stays best-effort, with no response or resolution commitment.
+- `proof`: [Research](research.md) examines these assumptions. No numerical
+  growth or savings claim is established.
 
 ## Business goals and metrics
 

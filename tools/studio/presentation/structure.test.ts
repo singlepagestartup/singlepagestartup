@@ -139,17 +139,23 @@ describe("Studio presentation structure", () => {
 
   /**
    * BDD Scenario: Keep every product definition decision-ready
-   * Given the framework owns one canonical Product Overview contract
+   * Given the framework owns one canonical Product contract covering offer and economics
    * When the template and both current framework products are validated
-   * Then all use the same six sections and the superseded shallow structure is absent
+   * Then all use the same sections and the superseded shallow structure is absent
    */
-  test("enforces the six-section Product Overview contract", () => {
+  test("enforces the Product contract, offer and economics together", () => {
     const expectedSections = [
       "Product identity",
       "Customer Segments",
       "Problem and desired progress",
       "Value Propositions",
       "Offer and usage",
+      "Revenue Streams",
+      "Key Activities",
+      "Key Resources",
+      "Key Partnerships",
+      "Cost Structure",
+      "Assumptions and decision rules",
       "Business goals and metrics",
     ];
     const template = source(".agents/templates/product.md");

@@ -6,8 +6,9 @@
  */
 
 import { afterAll, describe, expect, test } from "bun:test";
-import { rmSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import path from "node:path";
+import { parse } from "yaml";
 
 import { loadDocumentReviews } from "../../studio/workspace/review-loader";
 import { formatPipelineReport, runPipelineCheck } from "./check";
@@ -441,5 +442,36 @@ describe("pipeline check on this repository", () => {
     expect(stamp.status === "gap").toBe(
       (brief.state === "stale" ? brief.underlying : brief.state) === "changed",
     );
+  });
+
+  /**
+   * BDD Scenario: A catalog without a shared model is the ordinary shape
+   * Given a downstream catalog whose product declares no model of its own
+   * When the pipeline is checked
+   * Then the model gate is skipped instead of demanding an intermediate document
+   */
+  test("does not require a shared model beside the products", async () => {
+    const { root, workspaceRoot } = await fixture(repositoryRoot);
+    const catalogPath = path.join(
+      workspaceRoot,
+      "products/startup/catalog.yaml",
+    );
+    const catalog = parse(readFileSync(catalogPath, "utf8")) as {
+      models?: unknown[];
+      products: Array<Record<string, unknown>>;
+    };
+    expect(catalog.models).toBeUndefined();
+    expect(catalog.products.every((product) => !product.model)).toBe(true);
+
+    const report = await runPipelineCheck({
+      repositoryRoot: root,
+      repositoryIdentity: "example/downstream",
+    });
+    expect(
+      report.stages
+        .flatMap((stage) => stage.checks)
+        .filter((entry) => entry.status === "gap" && /model/.test(entry.id)),
+    ).toEqual([]);
+    expect(report.status).toBe("clean");
   });
 });

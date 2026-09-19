@@ -2,89 +2,43 @@ import type { ReactNode } from "react";
 
 import type { IDocumentConfirmation } from "../../../../../tools/studio/workspace/document";
 
-const purposes: Record<string, { purpose: string; usage: string }> = {
-  brief: {
-    purpose:
-      "Captures the client's request, products, goals, constraints, and supplied materials.",
-    usage:
-      "Use it to agree on the project scope and identify the client answers needed before making decisions.",
-  },
-  model: {
-    purpose:
-      "Explains the linked model's revenue, funding, resources, activities, partnerships and costs.",
-    usage:
-      "Edit common facts here once. Per-product terms retain their product IDs; Sales owns the complete customer process.",
-  },
-  strategy: {
-    purpose:
-      "Defines the project's intended final marketing system using the Brief and external research.",
-    usage:
-      "Use it to review how audiences, product roles, channels, customer journeys, and measurable outcomes work together in the target state.",
-  },
-  brand: {
-    purpose:
-      "Defines how the business should be understood: its meaning, promise, voice, and evidence boundaries.",
-    usage:
-      "Use it to keep product messages, visual design, and marketing consistent with the confirmed brand direction.",
-  },
-  design: {
-    purpose:
-      "Translates the brand and client references into reusable identity, typography, color, interface, photography, and illustration rules.",
-    usage:
-      "Use it to review the visual direction before applying it to product pages, campaigns, and presentations.",
-  },
-  analytics: {
-    purpose:
-      "Collects current funnel, usage, revenue, and cost observations with their periods and sources.",
-    usage:
-      "Use it to see what is actually happening before Research interprets the evidence and Product decisions change.",
-  },
-  research: {
-    purpose:
-      "Checks each customer segment's needs, motives, acquisition and journey against evidence, and compares competing offers.",
-    usage:
-      "Use the findings, sources and limitations to refine Sales, positioning, website copy and marketing messages.",
-  },
-  sales: {
-    purpose:
-      "Connects customer needs and buying motives with acquisition, decisions, and continued use.",
-    usage:
-      "Use the segment profiles and Customer Journey Maps (CJM) to shape relevant website copy, marketing messages, and customer relationships.",
-  },
-  product: {
-    purpose:
-      "Defines this product's customer, problem, value, offer, and evidence boundaries.",
-    usage:
-      "Use it as the common brief for Sales, promotional materials, measurement, and Research decisions.",
-  },
-  website: {
-    purpose:
-      "Specifies this product's visitor journey, page content, interactions, and conversion path.",
-    usage:
-      "Use it to review what visitors must understand and do before website implementation starts.",
-  },
-  creative: {
-    purpose:
-      "Defines this product's selected marketing messages, formats, assets, and destinations.",
-    usage:
-      "Use it to review the campaign materials against the product offer, brand, and available proof.",
-  },
-  "asset-index": {
-    purpose:
-      "Registers supplied and generated files, their origins, usage rights, and review states.",
-    usage:
-      "Use it to select permitted assets and trace the source of each visual or document.",
-  },
+/**
+ * One line per document kind: what it decides, and what breaks when it is wrong.
+ *
+ * The owner reviews these pages in order without knowing the framework, so the
+ * header answers the only question they have on opening one, which is whether
+ * to read it. Restating the document below it, or explaining how to use it,
+ * costs a line and answers nothing.
+ */
+const purposes: Record<string, string> = {
+  brief:
+    "Everything the client stated and everything still unknown. A wrong answer here misdirects every later decision.",
+  model:
+    "Shared resources, per-product prices, costs and funding. Wrong here, and every product's numbers are wrong.",
+  strategy:
+    "The marketing system the Brief has to add up to. Wrong, and brand, design and product priorities aim at the wrong opportunity.",
+  brand:
+    "What the business means, promises and sounds like, and how far its proof reaches.",
+  design:
+    "The visual system every product inherits: identity, type, color, interface, photography, illustration.",
+  analytics:
+    "What was observed, with the window and source of each number. Research does the interpreting.",
+  research:
+    "External evidence on segments, competitors and alternatives, with its limits. Product and Sales cite it; it decides nothing on its own.",
+  sales:
+    "The whole customer process for this product, from first contact to continued use.",
+  product:
+    "This product's customer, problem, value and offer. Its website, campaigns and deck all apply it.",
+  website:
+    "What a visitor has to understand and do, page by page, before implementation starts.",
+  creative:
+    "The campaign messages, formats and assets selected for this product.",
+  "asset-index":
+    "Every supplied and generated file, with its origin, rights and review state.",
 };
 
 export function documentPurpose(kind: string, fallback = "") {
-  return (
-    purposes[kind] ?? {
-      purpose: fallback,
-      usage:
-        "Use this document as the current reference for its decisions and constraints.",
-    }
-  );
+  return { purpose: purposes[kind] ?? fallback };
 }
 
 export interface IDocumentHeaderProps {
@@ -92,7 +46,6 @@ export interface IDocumentHeaderProps {
   confirmation?: IDocumentConfirmation;
   title: string;
   purpose: string;
-  usage: string;
 }
 
 export function DocumentHeader({
@@ -100,7 +53,6 @@ export function DocumentHeader({
   confirmation,
   title,
   purpose,
-  usage,
 }: IDocumentHeaderProps) {
   return (
     <header className="mb-8 w-full rounded-3xl bg-slate-950 p-7 text-white shadow-xl md:p-10">
@@ -114,13 +66,14 @@ export function DocumentHeader({
           <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
             {title}
           </h1>
-          <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
-            {purpose}
-          </p>
+          {purpose ? (
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
+              {purpose}
+            </p>
+          ) : null}
         </div>
         {actions}
       </div>
-      <p className="mt-6 text-xs leading-5 text-slate-400">{usage}</p>
     </header>
   );
 }
