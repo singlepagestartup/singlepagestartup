@@ -62,6 +62,10 @@ import {
   IExecuteProps as IEcommerceOrderResolveCurrencyProps,
 } from "./ecommerce/order/resolve-currency";
 import {
+  Service as EcommerceOrderFindOpenCartOrderWithProduct,
+  IExecuteProps as IEcommerceOrderFindOpenCartOrderWithProductProps,
+} from "./ecommerce/order/find-open-cart-order-with-product";
+import {
   SubjectDI,
   type IBillingModule,
   type IBroadcastModule,
@@ -334,6 +338,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new EcommerceOrderResolveCurrency({
       ecommerceModule: this.ecommerceModule,
       billingModule: this.billingModule,
+    }).execute(props);
+  }
+
+  async ecommerceModuleFindOpenCartOrderWithProduct(
+    props: IEcommerceOrderFindOpenCartOrderWithProductProps,
+  ): Promise<string | null> {
+    return new EcommerceOrderFindOpenCartOrderWithProduct({
+      ecommerceModule: this.ecommerceModule,
+      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
     }).execute(props);
   }
 
