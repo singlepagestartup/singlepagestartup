@@ -44,9 +44,9 @@ Each module contains:
 If anything is unclear, read the relevant README files instead of guessing.
 
 Before storing, publishing, or returning prose intended for a person, make the
-final editorial pass defined in `.agents/contracts/editorial-pass.md`. Codex
-loads `.codex/skills/unslop/SKILL.md`; other providers apply the same canonical
-contract directly. Run it after facts, evidence, links, identifiers, required
+final editorial pass defined in `.agents/contracts/editorial-pass.md`. Every provider applies that
+one contract, with `.agents/references/unslop-patterns.md` beside it while
+editing. Run it after facts, evidence, links, identifiers, required
 structure, and approval state are correct. It applies in the requested language
 and must preserve meaning, uncertainty, terminology, formatting, and voice.
 

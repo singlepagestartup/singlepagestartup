@@ -47,10 +47,6 @@ stages:
       - id: catalog.matches-brief
         check: catalog-matches-brief
         artifact: products
-      - id: models.sections
-        check: model-sections
-        artifact: products
-        template: templates/product-model.md
       - id: products.sections
         check: product-sections
         artifact: products
@@ -61,7 +57,7 @@ stages:
     manual_review:
       - The confirmed scope names the primary decision subject, its boundaries and every product in scope with an attributable operator confirmation.
       - Client facts, confirmed intentions, supplied-material observations and unknowns are attributed; no operator fact is answered by an assumption.
-      - Initial Product, Operations & Economics and Sales intake record only client inputs; missing details are explicit unknowns, not invented values.
+      - Initial Product, its economics and Sales intake record only client inputs; missing details are explicit unknowns, not invented values.
   - id: 10-strategy
     title: Strategy
     owners: [market-researcher, strategist]

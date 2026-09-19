@@ -63,17 +63,15 @@ confirmation:
   confirmed: true
   by: operator
   at: "2026-09-18"
-  source: "Operator re-confirmed the current AI Chat Product on 2026-09-18 after
-    the coordinator checked its body against the confirmed Brief and corrected
-    the superseded audience-value-and-flow source record: «Да, оба». The
-    2026-09-17 approval it replaces was stamped against a body the commit hooks
-    then reformatted."
-  content_sha256: 91f9368e4f450d3a1b82a775df616972fe8aab756c6890331292f5327fdc4d84
+  source: "Operator read the Product after it gained the five Business Model Canvas
+    sections it now owns, the editorial pass removed the publication path stated three
+    times over, and the terms that had been recorded as undefined were replaced by the
+    settled token, provider and publication decisions: «да, подтверждаю продукт»."
+  content_sha256: 42ddf02fc96144fbda92fbffde2ff32d5c115b3d66f5108cad5855e271b2f5dd
 review:
   dependencies:
-    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
-    product.ai-chat.research: 6b9b404ced17a62287e65b1e631e3244c3258a5f4515483d60303bd4a9786a1b
+    brief: c58b70512b9bc7ea71c0051f5ffecf1c0b733d413e96023e491b2ec08a39cb5e
+    product.ai-chat.research: 43ac95c2a57afc5c0e31b2d805e9b2785355eeafb32a9499061a01638f65dafa
 ---
 
 # Product
@@ -115,13 +113,11 @@ The user can upload notes, documents, screenshots and images or enter what is kn
 
 The setup is structured to produce a reviewed project model in about one focused hour. A person can leave an answer unknown, return later or open the relevant detailed section when a decision, process or material needs more work.
 
-AI Chat assembles this model through the SinglePageStartup method, developed through long-term work combining and adapting business, marketing and product-development methods. The document structure, ownership of decisions and links between sections are designed for work with AI agents: an agent can identify where a fact belongs, find gaps and contradictions, update the owning section and reuse accepted decisions in later work.
+The model is assembled through the SinglePageStartup method, which the owner built by combining and adapting business, marketing and product-development practice. Its structure, its ownership of decisions and the links between sections exist so an agent can work in it: place a fact where it belongs, find a gap or a contradiction, correct the owning section and reuse an accepted decision later.
 
-The resulting project model remains editable and can be exported as a document for use elsewhere. Inside AI Chat, the user can discuss an idea, request criticism, compare alternatives, update the relevant sections or prepare a material without restating the business. AI Chat uses what is already known, points out weak reasoning and asks only for information needed by the current decision.
+The result stays editable and exports as a document for use elsewhere. Inside the chat the person can develop an idea, ask for criticism, weigh alternatives or prepare a material without explaining the business again, because the chat asks only for what the current decision is missing.
 
-The same foundation supports a landing-page sandbox assembled from SinglePageStartup blocks. Its offer and text come from the project decisions. Edits are stored with the project and appear immediately in the frontend preview. The preview itself has no public address.
-
-When the user is ready to publish, the interface asks them to authenticate with GitHub and authorize access to the project repository. SinglePageStartup creates the repository in the user's account. The user then connects an existing server or opens an account with a hosting provider such as Beget or Timeweb and supplies the required deployment key. The system configures automatic deployment from the repository to that server. The authorized GitHub connection remains available so later approved changes can update the same repository and public site. Code Framework supplies the deployable SinglePageStartup blocks and application foundation.
+The same decisions assemble a landing-page sandbox from SinglePageStartup blocks. Edits are saved with the project and appear immediately in the preview, which has no public address until the person publishes it. Publication is described under Offer and usage.
 
 General AI chats without a maintained project structure, separate planning documents and independent landing-page tools are relevant alternatives. Current [Research](research.md) compares business-context chat alternatives; the guided-project and first-page progression requires further comparison. More useful work and a shorter path from the sandbox to a public customer test are intended outcomes, not established advantages.
 
@@ -138,17 +134,100 @@ Access provides the hosted workspace and this intended sequence:
 7. Buy tokens whenever the available balance is insufficient for the next operation; return to the exact saved task after payment.
 8. When the page is ready, authenticate with GitHub, create the project repository, connect a server and publish through the configured deployment pipeline. Use the same Code Framework route for another concrete software need.
 
-Access uses email-and-password registration and login. The free portion becomes available after authentication; Google and other social sign-in are not planned. The intended implementation splits the project page, uploaded documents and permitted extensions into chunks, vectorizes them and retrieves the relevant parts as context for an answer. This technical mechanism stays out of the normal customer explanation.
+Registration is by email and password; Google and other social sign-in are not planned. Uploaded documents are split into chunks, vectorized and retrieved as context for each answer, with no limit on how many a person adds. Brand keeps that mechanism out of the ordinary customer explanation.
 
-The service sends the data needed for a request to selected AI model providers under their applicable terms. Account deletion removes the active account and project data controlled by SinglePageStartup. Infrastructure-provider backups may retain copies for up to six months under the provider's system process; the project cannot shorten that backup period. Generated project materials are produced within the service for the user's project. The current offer does not rely on third-party creative materials, while provider terms still govern model processing.
+Publication authorizes GitHub for the single repository it creates in the person's account, accepts a deployment key for Beget or Timeweb, and configures deployment through GitHub Actions, which also runs any redeployment. A domain the person already owns is attached through the hosting provider's API. This branch needs no token purchase, and the same route serves a chatbot or another digital product built on Code Framework.
 
-The interface shows the token balance during intake and continued work. When the balance is insufficient, the current work is preserved and the user can choose a token package, pay and return to the interrupted task. This purchase point may occur while materials are being processed, while documents are being refined or during later chat. [Revenue Streams](../models/framework-service/model.md#revenue-streams) owns token definitions and money terms.
+The balance is visible during intake and later work. When it runs out the current task is preserved, and the person picks a package, pays and returns to it. Revenue Streams below owns the money terms.
 
-When a site, chatbot or another digital product is needed, AI Chat introduces Code Framework in that context, names the relevant functions already available and leads to **Publish on my server**. For a landing page, the guided path connects GitHub, creates the repository, accepts the user's server key and configures automatic deployment. The interface shows this route beside relevant product and landing-page work. Token purchase is not required for this branch.
+A request sends the data it needs to the selected AI provider under that provider's terms. Deleting an account removes the account and the project data the service controls, while the host's backups keep copies for up to six months, which the project cannot shorten.
 
-[Sales](sales.yaml) owns discovery, project intake, landing-page sandbox creation and review, repository and server publication, continued work, purchases, help and the contextual framework path. The project owner currently handles every service stage alone. Support requests are processed within 24 hours as the initial service level; continuous live coverage is not promised.
+[Sales](sales.yaml) owns the whole customer process from discovery to continued use. The owner runs every service stage alone and processes support requests within 24 hours as the initial service level, without continuous live coverage. AI Chat does not act on behalf of the business or guarantee market results.
 
-The SinglePageStartup creator operates AI Chat and owns its hosting and domain management. The landing-page sandbox is available only inside the workspace. Publication uses a repository in the user's GitHub account and a server or hosting account controlled by the user. The user authorizes the repository access required to create it and apply later approved changes, then provides the deployment key required by the connected server. The exact GitHub authorization scope, supported hosting providers, key lifecycle, domain connection and failure recovery remain implementation decisions. The payment-accepting party is in Russian jurisdiction and will use an online cash register. Token price, unit, packages, payment timing, expiry, refunds and the exact legal/payment details still need definition. These open commercial terms belong to AI Chat; they do not change the free framework offer. AI Chat does not act on behalf of the business or guarantee market results.
+## Revenue Streams
+
+| Element        | Terms                                                                                                                                                                    |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Payer and unit | The person using the chat buys tokens. One internal token is USD 0.001 of provider cost.                                                                                 |
+| Price          | Sold at a thirty per cent margin over that cost, converted at a fixed 100 roubles per dollar, so a token costs 0.13 roubles.                                             |
+| Packages       | Five top-ups: 100, 300, 500, 1,000 and 3,000 roubles, at the same token price, so a larger package carries no discount.                                                  |
+| Payment timing | One token is charged when the input is sent to the model; the balance is settled once the answer returns and its cost is known. No request costs less than 0.13 roubles. |
+| Conditions     | Tokens do not expire. Purchases are normally final; a refund is a case-by-case decision, not a published entitlement. Registration grants the current free allowance.    |
+| Collection     | Payments are accepted in Russia through an online cash register. The accepting party and its details are configured in the product interface, not decided here.          |
+
+The margin is taken at top-up and not again on consumption, which is charged at
+cost. Settlement rounds each turn up to a whole token, which adds an unmeasured
+surplus, largest on cheap models. The fixed 100-rouble rate holds the margin only
+while the market rate stays at or below it. No revenue or paying-customer
+forecast is set.
+
+## Key Activities
+
+Develop and operate the hosted chat: intake of the customer's material, the
+project model built from it, retrieval over the uploaded corpus, the landing-page
+sandbox, and publication to the customer's own repository and server. Process
+support requests within 24 hours as the initial service level, without continuous
+live coverage or a resolution deadline. The intended customer process is in
+[Sales](sales.yaml); it is not repeated here.
+
+## Key Resources
+
+| Resource ID       | Scope and share                                                                                                                                  | Availability                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `founder-time`    | Half of the owner's working time, split evenly with Code Framework because development and promotion serve both and cannot be traced separately. | Allocated as the project develops; no recurring hours committed.      |
+| `repository`      | The same shared codebase Code Framework distributes, which this service runs on. Counted under Code Framework.                                   | 16 modules, 65 models, 91 relations.                                  |
+| `service-host`    | A Contabo server in Amsterdam running the service and its PostgreSQL with pgvector, where the uploaded corpus and its vectors are stored.        | Carried entirely by this product; Code Framework consumes none of it. |
+| `provider-budget` | Owner-funded AI, storage and payment expenses.                                                                                                   | No ongoing cash allowance is set.                                     |
+
+## Key Partnerships
+
+| Partner              | Function and dependence                                                                                                                                                                                   |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OpenRouter           | Every model call and every embedding. The offered models are the ones its router declares, and `qwen/qwen3-embedding-8b` vectorizes uploads. A change to its prices changes this product's cost directly. |
+| Contabo              | The Amsterdam server holding the service and the corpus. Its backups keep copies for up to six months after an account is deleted, which the project cannot shorten.                                      |
+| Online cash register | Accepting payments in Russia.                                                                                                                                                                             |
+| GitHub               | Authorization for the single repository publication creates in the customer's account, and the Actions workflow that deploys it.                                                                          |
+| Beget, Timeweb       | The hosting providers a customer deploys their own page to, named as the supported options. Their restrictions on OpenRouter are why this service does not run there.                                     |
+
+No partnership agreement or dedicated supplier terms exist with any of them. The
+customer's own domain is attached through their provider's API and is never sold
+or registered by this product.
+
+## Cost Structure
+
+| Expense                 | Basis                                                                                                                                                      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Development and support | Half of the owner's time, per the `founder-time` split. Owner time, not cash.                                                                              |
+| AI usage                | OpenRouter calls, variable with use. Charged to the customer's balance through the token terms above.                                                      |
+| Embedding and storage   | Vectorizing each uploaded document and holding the corpus in pgvector. Variable with what customers upload, not with what they pay, and charged to no one. |
+| Hosting                 | The Contabo server, fixed against use.                                                                                                                     |
+| Payment acceptance      | Online cash register fees.                                                                                                                                 |
+
+Promotion is not a cost of this product; it sits with Code Framework, which is
+what promotion is paid in. The half of owner time this product does not carry is
+in Code Framework under the same resource ID, so the same hours are never counted
+twice. Recurring totals are unset.
+
+### Funding
+
+The owner's time and money cover the service until its receipts do. Revenue from
+this product is what makes the free framework affordable, and the two are kept
+apart so neither hides the other. No external financing is committed.
+
+## Assumptions and decision rules
+
+- `service-viability`: useful answers and repeat token purchases have to cover
+  the service's costs. The selected terms price answers alone, while embedding
+  and storage grow with each customer's uploads because the offer sets no file
+  limit. The rounding surplus is treated as rough compensation; the two have
+  never been compared, and no cost per document is defined.
+- `capacity`: support scales to available time, at 24 hours as the initial
+  service level and no resolution commitment.
+- `answer-quality`: answers grounded in the customer's own material are intended
+  to beat a general chat without that context. This is a goal to test; no
+  comparison has been made.
+- `proof`: [Research](research.md) examines these assumptions. No adoption,
+  retention or margin result is established.
 
 ## Business goals and metrics
 

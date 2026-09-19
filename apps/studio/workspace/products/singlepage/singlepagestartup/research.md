@@ -7,9 +7,9 @@ confirmation:
 sources:
   license:
     classification: client-claim
-    source: Brief sources.license and Product sources.license; operator selected MIT and reported publication, 2026-09-12.
-    limitation: Inspection on 2026-09-13 found the same proprietary terms in working-tree, HEAD and fetched origin/main LICENSE. The exact MIT source remains unresolved; selected terms do not establish the inspected download license.
-    inspected_snapshot: https://github.com/singlepagestartup/singlepagestartup/blob/48fff95f2ffe5c6fcfb435ae50700df029608bbe/LICENSE
+    source: Brief sources.license and Product sources.license; operator selected MIT, and commit 914115d1be published it, 2026-09-18.
+    limitation: The fetched origin/main LICENSE carries the MIT text and the README states the same terms. The license covers the downloadable source only; competitor comparisons still rest on their own published terms.
+    inspected_snapshot: https://github.com/singlepagestartup/singlepagestartup/blob/1df352484f23a8615962da490771028b7f87f536/LICENSE
   repository_inspection:
     classification: verified-fact
     inspected_at: 2026-09-13
@@ -22,20 +22,19 @@ sources:
     limitation: Read-only source and platform inspection; no new installation, compatibility, novice completion or savings test.
 review:
   dependencies:
-    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
+    brief: c58b70512b9bc7ea71c0051f5ffecf1c0b733d413e96023e491b2ec08a39cb5e
     product.singlepagestartup.analytics: ce1e12bfa58ab6764f42861a779e9a4d3d6b836f6bfb7b8b9d997c887bbc2015
     product.singlepagestartup.page.research.competitors: 6efcf5101e989dfc5ad439d9fa04fcc41792696fdc97e520c795b03128673a6a
     product.singlepagestartup.page.research.developer-agents: d0ac4e91c7d319e4e796c69be6b76a77b2a8aa8dee7f14fbe27fbb10910899a5
     product.singlepagestartup.page.research.makers: 13ddcd6b09cb312bd06cc7ec810b7cd7d2d0d25be3ca5ecbca35e714344f7f19
-    product.singlepagestartup.sales: 5f4d91f14898077c62d3576a0dd298c4393d3aa788e05df4d42bf6d85b0cbf13
+    product.singlepagestartup.sales: b291b673e781bdb8836db7bf5c10d7b7099beeb3bcfa98038f935f26d66f2d1a
 ---
 
 # Code Framework research
 
 ## Decision and scope
 
-For `singlepagestartup`, assess audience needs, alternatives, differentiation and distribution for a free framework. The project owner decides priorities; model `framework-service` owns `bridge`, `framework-growth`, `channel-access` and `proof`.
+For `singlepagestartup`, assess audience needs, alternatives, differentiation and distribution for a framework that charges no money and is paid in social capital. The project owner decides priorities; [Product](product.md) owns `bridge`, `framework-growth`, `channel-access` and `proof`.
 
 This worldwide desk review combines client input, primary user studies, first-person practitioner accounts and official offers checked 2026-09-13. It assesses the proposed Sales details for both segments, not just whether their tools exist. Document structure is not market evidence; audience assumptions and desired experiences remain proposals. This review contains no direct SPS customer interviews or tracked complete customer journeys.
 
@@ -61,7 +60,7 @@ Free common functions, demonstrations and agent guidance are already offered els
 
 ## Price, channels, and evidence
 
-**CF-SPS-03 — client terms.** Code costs 0, funded by the owner; agent and infrastructure charges are separate. AI Chat token revenue is a different product income stream. [C1]
+**CF-SPS-03 — client terms.** The code carries no charge and is funded by the owner; its price is paid in stars, forks, recommendations and contributions. Agent and infrastructure charges are the maker's own. AI Chat token revenue is a different product income stream. [C1]
 
 | Finding       | Distribution implication                                                                                                                                                                    |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -91,7 +90,7 @@ Accessed 2026-09-13. Vendor sources reflect commercial/ecosystem interests, not 
 
 | ID      | Source                                                                                                                                                                                                                                             | Scope                         |
 | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| C1      | [Brief](../../../brief/singlepage.md), [model](../models/framework-service/model.md)                                                                                                                                                               | Client intentions and terms.  |
+| C1      | [Brief](../../../brief/singlepage.md), [Product](product.md)                                                                                                                                                                                       | Client intentions and terms.  |
 | S1      | Anthropic, [Claude Code](https://code.claude.com/docs/en/overview)                                                                                                                                                                                 | Agent capabilities.           |
 | S2 / S3 | GitHub, [templates](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template), [feedback](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-an-issue) | Distribution mechanics.       |
 | S4 / S5 | YouTube, [links](https://support.google.com/youtube/answer/13748639?hl=en), [Shorts](https://support.google.com/youtube/answer/12836917?hl=en)                                                                                                     | Discovery mechanics.          |

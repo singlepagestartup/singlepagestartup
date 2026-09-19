@@ -694,13 +694,11 @@ async function runCheck(
             items.push(`${model.id}: unexpected ${section}`);
       }
       if (!context.catalog.models.length)
-        return context.catalog.products.length
-          ? result(
-              check,
-              "gap",
-              "products exist but no shared model is declared",
-            )
-          : result(check, "skipped", "the catalog has no models yet");
+        return result(
+          check,
+          "skipped",
+          "the catalog declares no model, which is the ordinary shape: a product owns its own economics",
+        );
       return items.length
         ? result(check, "gap", "model sections differ from the template", {
             items,

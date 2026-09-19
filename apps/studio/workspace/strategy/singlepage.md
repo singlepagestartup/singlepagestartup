@@ -3,16 +3,15 @@ confirmation:
   confirmed: true
   by: operator
   at: "2026-09-18"
-  source: "Operator re-confirmed the current Strategy on 2026-09-18 after the coordinator checked it against the confirmed Brief and found no correction needed: «Да, оба». The 2026-09-17 approval it replaces was stamped against a body the commit hooks then reformatted."
-  content_sha256: d68e88a81632b3ddf4f57431d6963c9d74c28bf2ba0a3d9578fb2d925fe3bf82
+  source: "Operator read the Strategy after the editorial pass split the direction into one paragraph per product, replaced the growth-loop metaphor with the mechanism, and after Code Framework was recorded as paid in social capital rather than free: «да, подтверждаю стратегию»."
+  content_sha256: eb19f447e5827c306c69f2bcc71f46325588847549efdd2c9d198018e2fcc566
 review:
   dependencies:
-    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
-    product.ai-chat.research: 6b9b404ced17a62287e65b1e631e3244c3258a5f4515483d60303bd4a9786a1b
-    product.ai-chat.sales: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400
-    product.singlepagestartup.research: 629f3131efae5b5778d2bf8cb4a6bf7b98b5d223f4174d6583c93ad3a1bcf01e
-    product.singlepagestartup.sales: 5f4d91f14898077c62d3576a0dd298c4393d3aa788e05df4d42bf6d85b0cbf13
+    brief: c58b70512b9bc7ea71c0051f5ffecf1c0b733d413e96023e491b2ec08a39cb5e
+    product.ai-chat.research: 43ac95c2a57afc5c0e31b2d805e9b2785355eeafb32a9499061a01638f65dafa
+    product.ai-chat.sales: e683535ef23ac30a979d14b0e9e8bb283d46088625e0154ef42c46571cc2793d
+    product.singlepagestartup.research: 701750f671f10c53facf325cd0c445738db088b304dea025a7610a897f096d74
+    product.singlepagestartup.sales: b291b673e781bdb8836db7bf5c10d7b7099beeb3bcfa98038f935f26d66f2d1a
 sources:
   strategic_direction_and_products:
     classification: client-claim
@@ -144,7 +143,7 @@ sources:
     classification: assumption
     resolution: professional-choice
     source: apps/studio/workspace/brief/singlepage.md
-    crosscheck: apps/studio/workspace/products/singlepage/models/framework-service/model.md
+    crosscheck: apps/studio/workspace/products/singlepage/ai-chat/product.md
     source_keys:
       - sources.funding
       - sources.current_business
@@ -153,42 +152,48 @@ sources:
     supports: Allocate effort to usefulness and reusable organic material; expand
       acquisition only where activation, paid retention or adoption supports it;
       separate attention, use, revenue and contributions.
-    limitation: Ongoing capacity/budget, token terms and operating costs remain
-      unselected. No scoped experiment ceiling becomes a recurring commitment.
+    limitation: Token terms are owned by the model and Sales; ongoing capacity,
+      budget and operating costs remain unselected, so no revenue or margin outcome
+      follows from the terms alone. No scoped
+      experiment ceiling becomes a recurring commitment.
   release_license:
     classification: client-claim
     source: apps/studio/workspace/brief/singlepage.md
     source_keys:
       - sources.license
-    date: 2026-09-12
-    inspected_snapshot: https://github.com/singlepagestartup/singlepagestartup/blob/48fff95f2ffe5c6fcfb435ae50700df029608bbe/LICENSE
-    limitation: Operator selected MIT and reported publication; inspected local HEAD
-      and origin/main contained proprietary terms. Match a release claim to its
-      exact source; no claim here that inspected main is MIT.
+    date: 2026-09-18
+    inspected_snapshot: https://github.com/singlepagestartup/singlepagestartup/blob/1df352484f23a8615962da490771028b7f87f536/LICENSE
+    limitation: Inspected origin/main now carries the MIT text, published in commit
+      914115d1be. The license governs the distributed source only; it verifies no
+      runtime behavior, adoption or support level.
 ---
 
 # Strategy
 
 ## Strategic direction
 
-SinglePageStartup operates as one business with two complementary products. **AI Chat (`ai-chat`)** is the primary hosted experience and revenue product: people bring existing notes, documents and partial decisions or answer guided questions; the service organizes that input into a project for review, then remains available for developing and critically examining ideas, preparing materials and assembling a private landing-page sandbox from SinglePageStartup blocks. Sandbox data is stored with the project and can be rendered immediately in the frontend. When the page is ready, AI Chat guides GitHub authorization, repository creation, server connection and automatic deployment. They buy tokens when continued use remains valuable. **Code Framework (`singlepagestartup`)** supplies the deployable foundation for that public site or another concrete software need: makers reuse tested common functions, deploy to their server, adapt the product with coding agents and can improve the shared base. AI Chat demonstrates and applies the framework without requiring the customer to configure every technical step manually.
+SinglePageStartup runs as one business with two products that feed each other.
 
-The **audience-growth priority** is recognition through a visible progression from scattered project material to an approved structure, a useful follow-up discussion, a landing-page sandbox and publication through the user's repository and server. The **sales-product priority** is repeat use of AI Chat and token revenue. SinglePageStartup is positioned as a practical system for organizing an early project, thinking through it with a context-aware counterpart and turning accepted decisions into products and customer-facing materials.
+**AI Chat (`ai-chat`)** is the hosted experience people pay for. They bring the notes and half-made decisions they already have, or answer guided questions instead, and the service arranges that input into a project they can review. It then stays available: to develop an idea, to argue against one, to prepare materials, and to assemble a private landing-page sandbox from SinglePageStartup blocks. Sandbox data is stored with the project and renders immediately in the frontend. When the page is ready, AI Chat walks the customer through GitHub authorization, repository creation, server connection and automatic deployment. Tokens are bought when continued use is still worth it.
 
-The final system satisfies the Brief when the hosted service turns a person's available material into an accepted project context, helps them develop and challenge later ideas from that context, assembles the first landing page for review in a sandbox, and can carry the approved page through a user-owned repository to a user-controlled server. The central trade-off is depth over reach: approved project foundations, useful continued work, usable results and reusable guidance receive priority over broad distribution that does not lead to use, revenue or adoption.
+**Code Framework (`singlepagestartup`)** is the foundation that public site is deployed from, and the one a maker reuses for any other concrete software need. Makers take tested common functions, deploy to their own server, adapt the product with coding agents, and can improve the shared base in return. AI Chat is what the framework looks like when the customer does not have to configure each technical step by hand.
+
+The **audience-growth priority** is recognition earned by showing one project move all the way through: scattered material, an approved structure, a discussion that was worth having, a landing-page sandbox, and publication through the user's own repository and server. The **sales-product priority** is repeat use of AI Chat and the token revenue that follows it. SinglePageStartup is positioned as a working way to organize an early project, think it through with a counterpart that already knows the context, and turn the accepted decisions into products and customer-facing materials.
+
+The system satisfies the Brief once the hosted service turns whatever material a person has into an accepted project context, helps them build on that context and argue with it later, assembles a first landing page for review in a sandbox, and carries the approved page through a repository the user owns to a server the user controls. The trade-off it accepts is depth over reach: an approved project foundation, work that stays useful and guidance that can be reused come before distribution that reaches more people without leading to use, revenue or adoption.
 
 ## Audiences and product roles
 
-| Audience and situation                                                                                                      | Value and promise                                                                                                                                                                                    | Product role and desired behavior                                                                                                                                                                                                              |
-| --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| People with a business idea or early-stage project whose information is scattered across notes, documents and conversations | Supply available material or answer guided questions; review the proposed project structure; develop and question later ideas from the accepted context; prepare and inspect a landing-page sandbox. | **AI Chat (`ai-chat`)**: primary hosted entry, token-based revenue and a live demonstration of the framework. Earn continued use by structuring project knowledge and supporting reasoned later discussion, decisions, materials and products. |
-| Novice makers, including vibe coders, with a concrete site, chatbot or product need                                         | Reuse team-tested registration, carts, payments and other relevant common functions while concentrating on their product's own rules.                                                                | **Code Framework (`singlepagestartup`)**: free code and documentation for server deployment, adaptation and reuse. Adoption and community improvements are its outcomes.                                                                       |
+| Audience and situation                                                                                                      | Value and promise                                                                                                                                                                                    | Product role and desired behavior                                                                                                                                                                                                                                                        |
+| --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| People with a business idea or early-stage project whose information is scattered across notes, documents and conversations | Supply available material or answer guided questions; review the proposed project structure; develop and question later ideas from the accepted context; prepare and inspect a landing-page sandbox. | **AI Chat (`ai-chat`)**: primary hosted entry, token-based revenue and a live demonstration of the framework. Earn continued use by structuring project knowledge and supporting reasoned later discussion, decisions, materials and products.                                           |
+| Novice makers, including vibe coders, with a concrete site, chatbot or product need                                         | Reuse team-tested registration, carts, payments and other relevant common functions while concentrating on their product's own rules.                                                                | **Code Framework (`singlepagestartup`)**: code and documentation carrying no charge, for server deployment, adaptation and reuse. It is paid in social capital instead: stars, forks, recommendations, contributions back, and makers who reach AI Chat already trusting the foundation. |
 
 Agents that independently select SPS form an additional adoption audience. Clear machine-readable documentation, reliable shared functions and attributable examples let agents recommend the framework without changing the primary human customer paths.
 
 ## Growth system
 
-The growth system is a closed, organic loop built around demonstrated customer value. A real project moves from scattered input to an approved structure, a useful discussion or criticism, a landing-page sandbox and a later decision or product change. That progression becomes a working demonstration, a searchable explanation, short-form material and a relevant community answer. Every representation returns the audience to the same owned use case and then to the appropriate product experience.
+Growth feeds on the work the product already does, with no paid distribution. One real project moves from scattered input to an approved structure, to a discussion or a criticism that changed something, to a landing-page sandbox, and on to a later decision or product change. That same run becomes a demonstration, a searchable explanation, a short video and an answer in a community thread. Each of those returns the audience to the one owned use case, and from there into the product.
 
 | Channel or mechanism                             | Role and audience                                                     | Content or value                                                                                                                       | Destination and contribution                                                                                  |
 | ------------------------------------------------ | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -222,6 +227,6 @@ This is the intended customer experience inside the operating system, rather tha
 | Framework adoption     | GitHub connections, project repositories, working server deployments, useful adaptations and next-product reuse       | Documentation and shared capabilities concentrate on actual connection, deployment, adaptation and reuse points where users stall.      |
 | Community growth       | Recommendations, useful contributions and later agent-led adoption                                                    | Recurring needs and accepted improvements become clearer documentation and stronger public examples.                                    |
 
-Resource allocation follows a durable hierarchy: completed project foundations, useful results and repeat use outrank reach; reusable demonstrations and documentation outrank one-off distribution; additional acquisition is justified only by activation, repeat paid use or framework adoption. Organic distribution fits owner funding and lets one verified example serve several channels. Separate-site operation and support remain within the owner's confirmed capacity and funding, which are not invented by this Strategy.
+Resources follow a standing order of precedence: a completed project foundation, a useful result and repeat use outrank reach; a demonstration or a document that can be reused outranks one-off distribution; and more acquisition is justified only by activation, repeat paid use or framework adoption. Organic distribution is what owner funding affords, and it lets one verified example serve several channels. Separate-site operation and support remain within the owner's confirmed capacity and funding, which are not invented by this Strategy.
 
-Token offers, project-page acceptance, landing-page sandbox requirements and server-adoption requirements remain owned by the relevant Product, model and Sales sources. Strategy uses their approved definitions without duplicating or silently changing them.
+Token offers, project-page acceptance, landing-page sandbox requirements and server-adoption requirements stay with the Product and Sales sources that own them. Strategy uses their approved definitions without duplicating them or changing them quietly.

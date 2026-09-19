@@ -264,11 +264,10 @@ export function parseProductCatalog(
       throw new Error(`${layer} product ${id} needs name and summary`);
     }
     const model = typeof product.model === "string" ? product.model : undefined;
-    if (
-      (value.schema === "singlepagestartup.product-catalog.v2" && !model) ||
-      (model && !modelIds.has(model))
-    )
-      throw new Error(`${layer}.${id} needs a model from its own catalog`);
+    if (model && !modelIds.has(model))
+      throw new Error(
+        `${layer}.${id} names model ${model}, which its own catalog does not declare`,
+      );
     if (Boolean(product.presentation) !== Boolean(product.presentation_data))
       throw new Error(
         `${layer}.${id} presentation and presentation_data must be declared together`,

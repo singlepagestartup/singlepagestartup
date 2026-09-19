@@ -186,9 +186,9 @@ answered the manual-review criteria.
 - Keep one current decision per topic. Before saving, find every earlier
   statement about a changed fact and replace or remove it in the same edit;
   never append a corrected answer below an obsolete one. Artifacts contain no
-  interview chronology, invalidation history, session logs, handoff prose,
-  workflow-owned sections or repeated decisions; Git keeps history, metadata
-  keeps review state, and the handoff carries coordination. A completed
+  session logs, handoff prose, workflow-owned sections or repeated decisions;
+  Git keeps history, metadata keeps review state, and the handoff carries
+  coordination. The editorial contract owns the form each statement takes. A completed
   heading or fluent generic prose is not a completed artifact.
 - A full professional rerun is a replacement projection: start from the
   template and the stable upstream dependency closure, do not use the previous
