@@ -83,7 +83,12 @@ With the offline queue off, commands issued before the client reaches `ready`
 cache path that is a miss; other `@sps/providers-kv` callers see the error.
 A project that prefers to absorb short reconnects sets
 `KV_ENABLE_OFFLINE_QUEUE=true`; `commandTimeout` applies to a queued command
-as well, so the wait stays bounded.
+as well, so the wait stays bounded. That last guarantee belongs to ioredis
+rather than to this repository — `sendCommand` arms the deadline before the
+branch that buffers the command — so `redis/offline-queue.spec.ts` pins it
+against the real client. An upgrade that moved the deadline after that branch
+would otherwise turn this escape hatch back into the unbounded wait above
+without changing a single option assertion.
 
 ## Environment
 
