@@ -32,7 +32,8 @@ export class Handler {
       const total = await this.service.getTotal({ id });
 
       return c.json({
-        data: total,
+        data: total.totals,
+        unpriced: total.unpriced,
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
