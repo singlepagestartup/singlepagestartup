@@ -1,7 +1,7 @@
 import { RBAC_JWT_SECRET, createMemoryCache } from "@sps/shared-utils";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
 import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
-import * as jwt from "hono/jwt";
+import { verifyJwt } from "@sps/backend-utils";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import { inject, injectable } from "inversify";
 import { SubjectDI } from "../../di";
@@ -124,7 +124,7 @@ export class Service {
       subjectId = cache.get<string>(tokenCacheKey);
 
       if (!subjectId) {
-        const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET);
+        const decoded = await verifyJwt(authorization, RBAC_JWT_SECRET);
 
         if (!decoded.subject?.["id"]) {
           throw new Error("Validation error. No subject provided in the token");

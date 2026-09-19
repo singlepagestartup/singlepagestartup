@@ -3,9 +3,9 @@ issue_number: 232
 issue_title: "Map PostgreSQL unique violations to HTTP 409 without exposing database details"
 repository: singlepagestartup
 created_at: 2026-09-17T23:12:39Z
-last_updated: 2026-09-17T23:12:39Z
+last_updated: 2026-09-19T01:10:00Z
 status: active
-current_phase: research
+current_phase: complete
 ---
 
 # Process Log: ISSUE-232 - Map PostgreSQL unique violations to HTTP 409 without exposing database details
@@ -18,10 +18,10 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Create: completed
 - Research: completed
-- Plan: not_started
-- Implement: not_started
-- Current phase: research
-- Next step: human review, then core/20-plan
+- Plan: completed
+- Implement: completed
+- Current phase: complete
+- Next step: lead verification of branch `claude/issue-229-error-mapping`, then PR
 
 ## Phase Notes
 
@@ -44,21 +44,21 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Plan
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Planned together with #229 and #241, which change the same four files. #232 is Phase 3 of the shared plan and lands last. The detection reuses the shared `isUniqueConstraintError` helper, which already reads the driver code, the duplicate-key text and nested causes, instead of adding a second matcher.
+- Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-229.md`, `thoughts/shared/plans/singlepagestartup/ISSUE-232.md`
+- Notes: Plan approval was delegated to the lead, so the session did not wait for a review gate.
 
 ### Implement
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: The mapper now answers a unique violation with 409 and the fixed message `Conflict error. Entity already exists`, keeping the driver error on `details` for server-side use. `Conflict error` joined `ErrorCategory`, the pattern table gained a 409 entry for outer hops, and the README table a 409 row. Because the recovery paths in the Telegram bootstrap and the OAuth callback read that message one HTTP hop away, the shared helper also recognises the sanitized signature, and the callback's private copy of the check now delegates to the shared helper.
+- Outputs: commit on `claude/issue-229-error-mapping`; 97 + 12 + 305 tests pass across `@sps/backend-utils`, `@sps/shared-backend-api` and `@sps/rbac`.
+- Notes: The research's open question about `findOrCreate` is unchanged: a lost race there now surfaces as 409 rather than 500, and no locking was added.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 3 -->
+<!-- incident-count: 4 -->
 
 ### Incident 1 — Editorial-pass contract missing
 
@@ -90,6 +90,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: When the plan adds scenarios to this spec, state explicitly how the pre-existing 422 block is handled and run the suite through `npx nx run @sps/backend-utils:test` (the project declares `test`, not `jest:test`).
 - **References**: `libs/shared/backend/utils/src/lib/http-error/index.spec.ts:100-114`, `libs/shared/backend/utils/src/lib/http-error/paterns/index.ts`, `libs/shared/backend/utils/project.json`, `README.md:451-459`
 
+### Incident 4 — Conflict recovery reads the message one HTTP hop away
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Sanitizing the conflict message would have silently disabled the Telegram bootstrap replay and the OAuth identity-link recovery, both of which match `duplicate key value violates unique constraint` against what they catch.
+- **Root Cause**: The research recorded that these paths catch the driver error before any mapper call. They call server SDKs over HTTP, so they catch the `HTTPException` that `responsePipe` builds from the remote app's JSON body, produced after the remote handler already ran the mapper. Their specs kept passing because the fixtures still carried the old raw payload.
+- **Fix**: The shared `isUniqueConstraintError` also recognises the fixed conflict message and a 409 status, anywhere in the message, the record or a nested cause; the OAuth callback delegates its private check to the shared helper; the bootstrap fixtures were rebuilt around the payload the API now returns.
+- **Preventive Action**: Treat a framework error message as a contract between HTTP hops. Before changing one, grep for matchers and check which side of a server-SDK call each one runs on.
+- **References**: `libs/shared/backend/utils/src/lib/unique-constraint-error/index.ts`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.ts:832`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/authentication/oauth/callback.ts:601`
+
 ## Reusable Learnings
 
 - `postgres` 3.4.5 exposes `code`, `constraint_name`, `table_name`, `column_name`, `schema_name`, and `detail` as own properties of `PostgresError`; Drizzle 0.38.4 and the shared repository `insert` pass that object through unchanged, so handler-level code can read the structured fields directly.
@@ -97,3 +107,5 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Each Hono app level registers its own `ExceptionFilter`; Hono wraps mounted routes with the innermost custom `onError`, so log amplification comes from HTTP hops between model apps, not from nested `app.route` levels within one process.
 - `@sps/backend-utils` runs its Jest suite through the Nx target `test` (executor `@nx/jest:jest`), while `@sps/shared-backend-api` uses `jest:test`; neither package is in `package.json` `test:unit:shared` or `test:unit:scoped`.
 - The sandbox rejects compound Bash commands that use arithmetic on shell variables or multi-line heredocs in a worktree session; use `awk` ranges or the Write tool instead of `$((...))` and `cat <<EOF`.
+- Cross-model calls in this repository always cross an HTTP boundary through a server SDK, so an error message produced by one model app is an interface for the next one. A sanitization change is an interface change.
+- `isUniqueConstraintError` is the single shared conflict predicate; module code should call it rather than keeping a private regex, so a change to the wire format is made once.
