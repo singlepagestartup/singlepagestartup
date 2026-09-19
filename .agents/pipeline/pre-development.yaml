@@ -44,6 +44,9 @@ stages:
       - id: brief.stamp-current
         check: stamp-current
         artifact: brief
+      - id: brief.no-change-log
+        check: no-change-log
+        artifact: brief
       - id: catalog.matches-brief
         check: catalog-matches-brief
         artifact: products
@@ -77,6 +80,9 @@ stages:
       - id: strategy.confirmed
         check: confirmed
         artifact: strategy
+      - id: strategy.no-change-log
+        check: no-change-log
+        artifact: strategy
     manual_review:
       - Strategy presents one coherent target state that fulfills the approved Brief, not a roadmap, a task list or a first-experiment plan.
       - Audience-growth and sales-product priorities are named, every confirmed product has a role, and channels have a role, content, destination and contribution.
@@ -92,6 +98,9 @@ stages:
         template: templates/brand.md
       - id: brand.confirmed
         check: confirmed
+        artifact: brand
+      - id: brand.no-change-log
+        check: no-change-log
         artifact: brand
     manual_review:
       - Brand owns meaning, message hierarchy, proof boundary, objections, voice, naming and consistency rules; colors, type, imagery and layouts stay in Design.
@@ -111,6 +120,9 @@ stages:
       - id: design.confirmed
         check: confirmed
         artifact: design
+      - id: design.no-change-log
+        check: no-change-log
+        artifact: design
       - id: assets.generated-registered
         check: generated-assets-registered
         artifact: assets
@@ -122,6 +134,9 @@ stages:
         artifact: design
       - id: design.specimens-rendered
         check: specimens-rendered
+        artifact: design
+      - id: design.specimen-catalogue
+        check: specimen-catalogue
         artifact: design
     manual_review:
       - The Client visual preference profile was confirmed by the operator before any visual territory, token, prompt or generated asset was selected.

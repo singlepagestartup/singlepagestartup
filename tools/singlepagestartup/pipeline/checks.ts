@@ -9,7 +9,11 @@ import {
 } from "../../../apps/studio/workspace/utils/products/catalog";
 import { parseSalesProcess } from "../../../apps/studio/workspace/utils/products/sales";
 import { findUnownedBrandbook } from "../../studio/design/brandbook";
-import { findMissingSpecimens } from "../../studio/design/specimens";
+import { findChangeLogShapes } from "./change-log";
+import {
+  findMissingSpecimens,
+  findSpecimenDeviations,
+} from "../../studio/design/specimens";
 import {
   validateProductCatalogFiles,
   validateProductSectionFiles,
@@ -379,6 +383,31 @@ function describeState(
 }
 
 /**
+ * A document states what is in force. The revision that produced a statement,
+ * the alternative it replaced and the date a review happened live in Git and in
+ * the attribution beside the statement, so the body carries none of them.
+ */
+function noChangeLog(
+  context: IPipelineContext,
+  check: IPipelineCheck,
+): ICheckResult {
+  const document = context.documents[check.artifact];
+  const findings = findChangeLogShapes(document.ownBody);
+  return findings.length
+    ? result(check, "gap", `${check.artifact} body carries a change log`, {
+        items: findings.map(
+          ({ line, match, detail }) =>
+            `${document.ownPath}:${line} \u00b7 "${match}" \u2014 ${detail}`,
+        ),
+      })
+    : result(
+        check,
+        "pass",
+        `${check.artifact} states what is in force without a change log`,
+      );
+}
+
+/**
  * A confirmation stamp covers the body it was recorded against. Once that body
  * changes the stamp stops meaning anything, whether or not upstream inputs
  * also moved; a document that carries no stamp has nothing to invalidate.
@@ -636,6 +665,8 @@ async function runCheck(
       return confirmedInLayer(context, check);
     case "stamp-current":
       return stampCurrent(context, check);
+    case "no-change-log":
+      return noChangeLog(context, check);
     case "catalog-matches-brief": {
       const products = scopeProducts(context);
       if (!products)
@@ -875,6 +906,20 @@ async function runCheck(
             context.layer === "startup"
               ? "the startup layer owns its Design and assets"
               : "not applicable to the framework layer",
+          );
+    }
+    case "specimen-catalogue": {
+      const findings = await findSpecimenDeviations(context.workspaceRoot);
+      return findings.length
+        ? result(check, "gap", "the project renamed or invented a wrapper", {
+            items: findings.map(
+              ({ requirement, detail }) => `${requirement}: ${detail}`,
+            ),
+          })
+        : result(
+            check,
+            "pass",
+            "every section and specimen keeps the name the framework gives it",
           );
     }
     case "specimens-rendered": {

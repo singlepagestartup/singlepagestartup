@@ -51,3 +51,9 @@ Before returning the text, check that every paragraph has a specific purpose,
 every claim is as precise as its evidence allows, one concept keeps one name,
 no sentence names who decided something or when outside an attribution field,
 and no sentence sounds reusable in an unrelated project without changes.
+
+For a workspace document the state rule is also executable:
+`npm run singlepagestartup:pipeline:check` reports a date that sits inside a
+statement and wording that contrasts an earlier edition with the one in force.
+It checks the shapes, not the judgment, so a clean report does not replace this
+pass.
