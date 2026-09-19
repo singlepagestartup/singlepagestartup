@@ -14,6 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/agent/agents";
+export const runIdHeader = "X-SPS-AGENT-RUN-ID";
 export const variants = ["default"];
 export const query = {};
 export const options = {

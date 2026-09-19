@@ -25,6 +25,42 @@ configuration metadata used by the automation layer.
 - `admin-form`: admin UI create/edit form.
 - `admin-table`: admin UI table for browsing agents.
 
+## Scheduled Run Lifecycle
+
+`POST /api/agent/agents/cron` decides which agents are due and starts their
+runs; it does not wait for them. The decisions and the marker reads and writes
+belong to the agent-run service (`service/singlepage/agent-run.ts`), and the
+controller only composes them.
+
+One run is a pair of Broadcast messages on the `cron` channel. Before the
+dispatch the runner replaces the slug's earlier markers with a running marker
+that carries a `runId`; the finished marker with the same `runId` is written by
+whoever observed the outcome. A handler that the runner dispatched records its
+own completion through the `agent-run` route middleware
+(`backend/app/middlewares/src/lib/agent-run`), which reads the
+`X-SPS-AGENT-RUN-ID` header and writes the marker in a `finally`, so a failing
+handler also closes its run. The runner records a result only when the dispatch
+itself failed, for example a refused connection or an immediate error status; a
+handler that is still working when the dispatch window closes is left running.
+
+A running marker blocks the next dispatch of the same slug until it is finished
+or `AGENT_MAX_DURATION_IN_SECONDS` passes. After that the run counts as lost:
+the next due tick claims the slug again and its marker names the superseded
+`runId`, and the lost run can no longer record a result. Running and finished
+markers expire no earlier than the maximum run duration.
+
+Environment knobs:
+
+- `AGENT_MAX_DURATION_IN_SECONDS` (default 5400): how long a running marker
+  blocks re-dispatch, and the minimum lifetime of a marker.
+- `AGENT_CRON_MAX_CONCURRENCY` (default 3): how many agents one tick dispatches
+  at a time.
+- `AGENT_CRON_DISPATCH_TIMEOUT_IN_SECONDS` (default 10): how long a dispatch
+  waits for the response before handing the run over to the handler.
+- `AGENT_PAGE_CACHE_MAX_CONSECUTIVE_FAILURES` (default 10): how many pages in a
+  row may fail before `host-module-page-cache` stops. That handler also stops
+  between URLs when its run was superseded.
+
 ## Telegram Thread Commands
 
 The singlepage agent service owns Telegram thread commands:

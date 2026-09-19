@@ -18,6 +18,7 @@ import { Handler as NotificationModuleTopicsSendAll } from "./notification-modul
 import { Handler as BroadcastModuleMessageDeleteExpired } from "./broadcast-module/message/delete-expied";
 import { Handler as RbacModuleSubjectDeleteAnonymous } from "./rbac-module/subject/delete-anonymous";
 import { Handler as RbacModuleSubjectCheck } from "./rbac-module/subject/check";
+import { AgentRun } from "../../../../../middlewares";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -26,6 +27,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   constructor(@inject(DI.IService) service: Service) {
     super(service);
     this.service = service;
+
+    const agentRun = new AgentRun(service).init();
+
     this.bindHttpRoutes([
       {
         method: "GET",
@@ -60,11 +64,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "POST",
         path: "/dummy",
+        middlewares: [agentRun],
         handler: this.dummy,
       },
       {
         method: "POST",
         path: "/ecommerce-module-orders-check",
+        middlewares: [agentRun],
         handler: this.ecommerceModuleOrdersCheck,
       },
       {
@@ -80,11 +86,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "POST",
         path: "/host-module-page-cache",
+        middlewares: [agentRun],
         handler: this.hostModulePageCache,
       },
       {
         method: "POST",
         path: "/telegram-bot",
+        middlewares: [agentRun],
         handler: this.telegramBot,
       },
       {
@@ -95,41 +103,49 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "POST",
         path: "/billing-module-payment-intents-check",
+        middlewares: [agentRun],
         handler: this.billingModulePaymentIntentsCheck,
       },
       {
         method: "POST",
         path: "/notification-module-topics-send-all",
+        middlewares: [agentRun],
         handler: this.notificationModuleTopicsSendAll,
       },
       {
         method: "POST",
         path: "/broadcast-module-messages-delete-expired",
+        middlewares: [agentRun],
         handler: this.broadcastModuleMessageDeleteExpired,
       },
       {
         method: "POST",
         path: "/ecommerce-module-orders-delete-canceled",
+        middlewares: [agentRun],
         handler: this.ecommerceModuleOrdersDeleteCanceled,
       },
       {
         method: "POST",
         path: "/billing-module-payment-intents-delete-failed",
+        middlewares: [agentRun],
         handler: this.billingModulePaymentIntentsDeleteFailed,
       },
       {
         method: "POST",
         path: "/billing-module-invoices-delete-failed",
+        middlewares: [agentRun],
         handler: this.billingModuleInvoicesDeleteFailed,
       },
       {
         method: "POST",
         path: "/rbac-module-subjects-delete-anonymous",
+        middlewares: [agentRun],
         handler: this.rbacModuleSubjectDeleteAnonymous,
       },
       {
         method: "POST",
         path: "/rbac-module-subjects-check",
+        middlewares: [agentRun],
         handler: this.rbacModuleSubjectCheck,
       },
     ]);
