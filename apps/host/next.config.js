@@ -67,6 +67,9 @@ function makeConfig() {
               value:
                 "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, X-Set-Cookie",
             },
+            // Applied here so every future route under app/api inherits it
+            // without restating it in the handler.
+            { key: "X-Content-Type-Options", value: "nosniff" },
           ],
         },
       ];
