@@ -61,6 +61,11 @@ import {
   type IResult as IAuthenticationEthereumVirtualMachineResult,
 } from "./authentication/ethereum-virtual-machine";
 import {
+  action as authenticationEthereumVirtualMachineNonce,
+  type IProps as IAuthenticationEthereumVirtualMachineNonceProps,
+  type IResult as IAuthenticationEthereumVirtualMachineNonceResult,
+} from "./authentication/ethereum-virtual-machine/nonce";
+import {
   action as authenticationEmailAndPasswordResetPassword,
   type IProps as IAuthenticationEmailAndPasswordResetPasswordProps,
   type IResult as IAuthenticationEmailAndPasswordResetPasswordResult,
@@ -372,6 +377,7 @@ export type IProps = {
   IAuthenticationInitProps: IAuthenticationInitProps;
   IAuthenticationMeProps: IAuthenticationMeProps;
   IAuthenticationEthereumVirtualMachineProps: IAuthenticationEthereumVirtualMachineProps;
+  IAuthenticationEthereumVirtualMachineNonceProps: IAuthenticationEthereumVirtualMachineNonceProps;
   IAuthenticationEmailAndPasswordAuthenticationProps: IAuthenticationEmailAndPasswordAuthenticationProps;
   IAuthenticationEmailAndPasswordRegistrationProps: IAuthenticationEmailAndPasswordRegistrationProps;
   IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
@@ -449,6 +455,7 @@ export type IResult = {
   IAuthenticationInitResult: IAuthenticationInitResult;
   IAuthenticationMeResult: IAuthenticationMeResult;
   IAuthenticationEthereumVirtualMachineResult: IAuthenticationEthereumVirtualMachineResult;
+  IAuthenticationEthereumVirtualMachineNonceResult: IAuthenticationEthereumVirtualMachineNonceResult;
   IAuthenticationEmailAndPasswordAuthenticationResult: IAuthenticationEmailAndPasswordAuthenticationResult;
   IAuthenticationEmailAndPasswordRegistrationResult: IAuthenticationEmailAndPasswordRegistrationResult;
   IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
@@ -533,6 +540,7 @@ export const api = {
   authenticationInit,
   authenticationMe,
   authenticationEthereumVirtualMachine,
+  authenticationEthereumVirtualMachineNonce,
   authenticationEmailAndPasswordAuthentication,
   authenticationEmailAndPasswordRegistration,
   authenticationIsAuthorized,

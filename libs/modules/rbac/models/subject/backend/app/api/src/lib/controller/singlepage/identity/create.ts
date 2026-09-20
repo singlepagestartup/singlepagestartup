@@ -1,11 +1,8 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import * as jwt from "hono/jwt";
-import { authorization, getHttpErrorType } from "@sps/backend-utils";
+import { getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../service";
-import { createPublicClient, http } from "viem";
-import { mainnet } from "viem/chains";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 
@@ -18,29 +15,13 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
-      }
-
       if (!RBAC_SECRET_KEY) {
         throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
-      const token = authorization(c);
-
-      if (!token) {
-        throw new Error("Validation error. No token");
-      }
-
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
-
+      // Ownership of `:uuid` is settled by the route middleware, so the
+      // handler parses the body and calls the service, nothing else.
       const uuid = c.req.param("uuid");
-
-      if (decoded?.["subject"]?.["id"] !== uuid) {
-        throw new Error(
-          "Validation error. Only identity owner can create identity.",
-        );
-      }
 
       const body = await c.req.parseBody();
 
@@ -50,40 +31,20 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      const provider = data.provider.replaceAll("-", "_");
-
-      if (!provider) {
+      if (typeof data?.provider !== "string" || !data.provider) {
         throw new Error("Validation error. No provider provided");
       }
+
+      const provider = data.provider.replaceAll("-", "_");
 
       if (provider === "ethereum_virtual_machine") {
         const { message, signature, address } = data;
 
-        if (!message || !signature) {
-          throw new Error("Validation error. Invalid message or signature");
-        }
-
-        const isActualDateInMessage =
-          Date.now() - parseInt(message) < 1000 * 60 * 5;
-
-        if (!isActualDateInMessage) {
-          throw new Error("Validation error. Invalid date in message");
-        }
-
-        const publicClient = createPublicClient({
-          chain: mainnet,
-          transport: http(),
-        });
-
-        const valid = await publicClient.verifyMessage({
-          message,
-          signature,
-          address,
-        });
-
-        if (!valid) {
-          throw new Error("Validation error. Invalid signature");
-        }
+        const verified =
+          await this.service.authenticationEthereumVirtualMachineVerify({
+            data: { message, signature, address },
+            purpose: "link",
+          });
 
         const identities = await this.service.identity.find({
           params: {
@@ -92,7 +53,7 @@ export class Handler {
                 {
                   column: "account",
                   method: "eq",
-                  value: address.toLowerCase(),
+                  value: verified.address,
                 },
               ],
             },
@@ -105,7 +66,7 @@ export class Handler {
 
         const identity = await identityApi.create({
           data: {
-            account: address.toLowerCase(),
+            account: verified.address,
             provider: "ethereum_virtual_machine",
           },
           options: {

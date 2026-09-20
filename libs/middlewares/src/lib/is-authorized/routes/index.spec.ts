@@ -46,6 +46,29 @@ describe("is-authorized allowed routes", () => {
   });
 
   /**
+   * BDD Scenario: the EVM nonce route is reachable without authentication.
+   *
+   * Given: the framework allow-list.
+   * When: the nonce path is matched for POST.
+   * Then: the route is allowed, and no unrelated subject path is allowed by
+   * the same rule.
+   */
+  it("allows the wallet login challenge without authentication", () => {
+    expect(
+      matcher.matches(
+        "/api/rbac/subjects/authentication/ethereum-virtual-machine/nonce",
+        "POST",
+      ),
+    ).toBe(true);
+    expect(
+      matcher.matches(
+        "/api/rbac/subjects/11111111-1111-1111-1111-111111111111/identities",
+        "POST",
+      ),
+    ).toBe(false);
+  });
+
+  /**
    * BDD Scenario: Project/option extensions are honored.
    */
   it("honors project/option allowed-route extensions", () => {

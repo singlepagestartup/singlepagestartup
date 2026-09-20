@@ -23,6 +23,7 @@ import { Handler as AuthenticationInit } from "./authentication/init";
 import { Handler as AuthenticationEmailAndPasswordAuthentication } from "./authentication/email-and-password/authentication";
 import { Handler as AuthenticationRefresh } from "./authentication/refresh";
 import { Handler as AuthenticationEthereumVirtualMachine } from "./authentication/ethereum-virtual-machine";
+import { Handler as AuthenticationEthereumVirtualMachineNonce } from "./authentication/ethereum-virtual-machine/nonce";
 import { Handler as AuthenticationOAuthStart } from "./authentication/oauth/start";
 import { Handler as AuthenticationOAuthCallback } from "./authentication/oauth/callback";
 import { Handler as AuthenticationOAuthExchange } from "./authentication/oauth/exchange";
@@ -145,6 +146,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/authentication/email-and-password/registration",
         handler: this.authenticationEmailAndPasswordRegistraion,
+      },
+      {
+        method: "POST",
+        path: "/authentication/ethereum-virtual-machine/nonce",
+        handler: this.authenticationEthereumVirtualMachineNonce,
       },
       {
         method: "POST",
@@ -354,6 +360,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/:uuid/identities",
         handler: this.identitiesCreate,
+        middlewares: [new RequestSubjectIdOwner().init({ param: "uuid" })],
       },
       {
         method: "POST",
@@ -730,6 +737,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     next: any,
   ): Promise<Response> {
     return new AuthenticationEthereumVirtualMachine(this.service).execute(
+      c,
+      next,
+    );
+  }
+
+  async authenticationEthereumVirtualMachineNonce(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new AuthenticationEthereumVirtualMachineNonce(this.service).execute(
       c,
       next,
     );

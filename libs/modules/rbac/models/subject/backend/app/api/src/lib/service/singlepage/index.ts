@@ -21,6 +21,14 @@ import {
   IExecuteProps as IAuthenticationEthereumVirtualMachineExecuteProps,
 } from "./authentication/ethereum-virtual-machine";
 import {
+  Service as AuthenticationEthereumVirtualMachineNonce,
+  IExecuteProps as IAuthenticationEthereumVirtualMachineNonceExecuteProps,
+} from "./authentication/ethereum-virtual-machine/nonce";
+import {
+  Service as AuthenticationEthereumVirtualMachineVerify,
+  IExecuteProps as IAuthenticationEthereumVirtualMachineVerifyExecuteProps,
+} from "./authentication/ethereum-virtual-machine/verify";
+import {
   Service as AuthenticationOAuthStart,
   IExecuteProps as IAuthenticationOAuthStartExecuteProps,
 } from "./authentication/oauth/start";
@@ -279,7 +287,28 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async authenticationEthereumVirtualMachine(
     props: IAuthenticationEthereumVirtualMachineExecuteProps,
   ) {
-    return new AuthenticationEthereumVirtualMachine(this.repository).execute(
+    return new AuthenticationEthereumVirtualMachine(this.repository, {
+      verify: (verifyProps) =>
+        this.authenticationEthereumVirtualMachineVerify(verifyProps),
+    }).execute(props);
+  }
+
+  async authenticationEthereumVirtualMachineNonce(
+    props: IAuthenticationEthereumVirtualMachineNonceExecuteProps,
+  ) {
+    return this.getAuthenticationEthereumVirtualMachineNonceService().execute(
+      props,
+    );
+  }
+
+  /**
+   * The single verification path: the anonymous login route and the
+   * authenticated identity-linking route both come through here.
+   */
+  async authenticationEthereumVirtualMachineVerify(
+    props: IAuthenticationEthereumVirtualMachineVerifyExecuteProps,
+  ) {
+    return this.getAuthenticationEthereumVirtualMachineVerifyService().execute(
       props,
     );
   }
@@ -443,6 +472,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       billingModule: this.billingModule,
       subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
     }).execute(props);
+  }
+
+  /**
+   * The wallet challenge seams. A project overrides these in
+   * `service/startup` to return its own subclass - a different message
+   * template, a wider set of accepted origins, another nonce lifetime.
+   */
+  protected getAuthenticationEthereumVirtualMachineNonceService() {
+    return new AuthenticationEthereumVirtualMachineNonce(this.repository);
+  }
+
+  protected getAuthenticationEthereumVirtualMachineVerifyService() {
+    return new AuthenticationEthereumVirtualMachineVerify(this.repository);
   }
 
   protected getChatLifecycleService() {

@@ -13,8 +13,9 @@ import { disconnect, signMessage } from "@wagmi/core";
 import { ethereumVirtualMachine } from "@sps/shared-frontend-client-web3";
 import { cn } from "@sps/shared-frontend-client-utils";
 
+// The signed text is issued by the server; only the provider stays a form
+// value, because it selects which identity flow the submission belongs to.
 const formSchema = z.object({
-  message: z.string().min(8),
   provider: z.string(),
 });
 
@@ -25,12 +26,12 @@ export function Component(props: IComponentPropsExtended) {
   const [isClient, setIsClient] = useState(false);
 
   const authenticateEthereumVirtualMachine = api.identityCreate({});
+  const nonce = api.authenticationEthereumVirtualMachineNonce({ mute: true });
   const account = useAccount();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      message: Date.now().toString(),
       provider: "ethereum-virtual-machine",
     },
   });
@@ -51,10 +52,18 @@ export function Component(props: IComponentPropsExtended) {
 
       signMessagePopupOpened = true;
 
+      const challenge = await nonce.mutateAsync({
+        data: {
+          address: account.address,
+          purpose: "link",
+          chainId: account.chainId,
+        },
+      });
+
       const signedMessage = await signMessage(
         ethereumVirtualMachine.wagmiConfig.default,
         {
-          message: data.message,
+          message: challenge.message,
         },
       );
 
@@ -62,11 +71,15 @@ export function Component(props: IComponentPropsExtended) {
         id: props.data.id,
         data: {
           ...data,
+          message: challenge.message,
           signature: signedMessage,
           address: account.address,
         },
       });
     } catch (error: any) {
+      // The link mutation may never start, so the guard is released here
+      // rather than only in the effect that watches its status.
+      signMessagePopupOpened = false;
       toast.error("An error occurred:" + error.message);
     }
   }

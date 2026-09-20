@@ -16,9 +16,9 @@ import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-
 import { cn } from "@sps/shared-frontend-client-utils";
 import { useJwt } from "react-jwt";
 
-const formSchema = z.object({
-  message: z.string().min(8),
-});
+// The signed text is issued by the server, so the form carries no fields of
+// its own; it is kept for the submit handling the effects below rely on.
+const formSchema = z.object({});
 
 let signMessagePopupOpened = false;
 
@@ -34,17 +34,16 @@ export function Component(props: IComponentPropsExtended) {
 
   const authenticateEthereumVirtualMachine =
     api.authenticationEthereumVirtualMachine({});
+  const nonce = api.authenticationEthereumVirtualMachineNonce({ mute: true });
   const logout = api.authenticationLogout({});
   const account = useAccount();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      message: Date.now().toString(),
-    },
+    defaultValues: {},
   });
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit() {
     try {
       if (!ethereumVirtualMachine.wagmiConfig?.default) {
         return;
@@ -64,21 +63,32 @@ export function Component(props: IComponentPropsExtended) {
 
       signMessagePopupOpened = true;
 
+      const challenge = await nonce.mutateAsync({
+        data: {
+          address: account.address,
+          purpose: "authentication",
+          chainId: account.chainId,
+        },
+      });
+
       const signedMessage = await signMessage(
         ethereumVirtualMachine.wagmiConfig.default,
         {
-          message: data.message,
+          message: challenge.message,
         },
       );
 
       authenticateEthereumVirtualMachine.mutate({
         data: {
-          message: data.message,
+          message: challenge.message,
           signature: signedMessage,
           address: account.address,
         },
       });
     } catch (error: any) {
+      // The login mutation may never start, so the guard is released here
+      // rather than only in the effect that watches its status.
+      signMessagePopupOpened = false;
       toast.error("An error occurred:" + error.message);
     }
   }

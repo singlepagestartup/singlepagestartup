@@ -678,12 +678,61 @@ paths:
                   ok:
                     type: boolean
 
+  /rbac/subjects/authentication/ethereum-virtual-machine/nonce:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: EVM login challenge
+      description: >-
+        Issue the single-use EIP-4361 message a wallet must sign. The message
+        is returned whole and must be signed and posted back unchanged; it
+        expires after RBAC_EVM_NONCE_LIFETIME_IN_SECONDS and a second
+        redemption of the same nonce is refused.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"address": "0x0000000000000000000000000000000000000000", "purpose": "authentication", "chainId": 1}'
+              required:
+                - data
+      responses:
+        "201":
+          description: Challenge
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nonce:
+                    type: string
+                  message:
+                    type: string
+                  issuedAt:
+                    type: string
+                  expiresAt:
+                    type: string
+                required:
+                  - nonce
+                  - message
+                  - issuedAt
+                  - expiresAt
+
   /rbac/subjects/authentication/ethereum-virtual-machine:
     post:
       tags:
         - "rbac-subject"
       summary: Authentication EVM
-      description: Authenticate using Ethereum signature
+      description: >-
+        Authenticate with a wallet signature over the EIP-4361 message the
+        nonce endpoint issued. The message must be the one the server returned;
+        a bare timestamp is refused unless
+        RBAC_EVM_LEGACY_TIMESTAMP_MESSAGE is on.
       requestBody:
         required: true
         content:

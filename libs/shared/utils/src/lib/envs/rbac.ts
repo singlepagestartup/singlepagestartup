@@ -42,3 +42,41 @@ export const RBAC_OAUTH_EXCHANGE_LIFETIME_IN_SECONDS =
  */
 export const RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY =
   process.env["RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY"] === "true";
+
+/**
+ * How long a wallet login challenge stays redeemable. It is also the upper
+ * bound on the age of the `Issued At` a signed message may carry, so a short
+ * value is what keeps a captured signature from being useful later.
+ */
+export const RBAC_EVM_NONCE_LIFETIME_IN_SECONDS =
+  Number(process.env["RBAC_EVM_NONCE_LIFETIME_IN_SECONDS"]) || 120;
+/**
+ * How far ahead of the server a wallet's clock may be. The default is 0: a
+ * message dated in the future is refused, which is the direction the previous
+ * check missed entirely. Raise it only for a deployment that has measured the
+ * skew it needs.
+ */
+export const RBAC_EVM_MAX_CLOCK_SKEW_IN_SECONDS =
+  Number(process.env["RBAC_EVM_MAX_CLOCK_SKEW_IN_SECONDS"]) || 0;
+/**
+ * Compatibility knob for one release. Wallet login now signs an EIP-4361
+ * message the server issued; a project whose own wallet variant still signs a
+ * bare millisecond timestamp sets this to `true` until that variant is
+ * updated. The future-dated rejection applies on the legacy path too, so the
+ * flag restores the old message format and not the old freshness rule.
+ */
+export const RBAC_EVM_LEGACY_TIMESTAMP_MESSAGE =
+  process.env["RBAC_EVM_LEGACY_TIMESTAMP_MESSAGE"] === "true";
+/**
+ * The RPC endpoint signature verification may call. Empty keeps viem's chain
+ * default, which is a single public endpoint; a deployment that does not want
+ * an anonymous route reaching a third party points this at its own node.
+ */
+export const RBAC_EVM_RPC_URL = process.env["RBAC_EVM_RPC_URL"] || "";
+/**
+ * Deadline for that call. Verification falls back to local recovery when the
+ * contract check fails, so the timeout bounds how long an anonymous request
+ * can hold a connection open on a slow RPC.
+ */
+export const RBAC_EVM_RPC_TIMEOUT_IN_MILLISECONDS =
+  Number(process.env["RBAC_EVM_RPC_TIMEOUT_IN_MILLISECONDS"]) || 5000;
