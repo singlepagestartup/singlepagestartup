@@ -17,6 +17,14 @@ import {
 import { type IService } from "../../service";
 import { DI } from "../../di/constants";
 import { IController } from "../interface";
+import { RequireRbacSecretMiddleware } from "../../middleware";
+
+/**
+ * Routes that are never anonymous, whatever list a controller binds. A
+ * controller that re-binds one of them inherits the guard; one that must
+ * re-open it sets requiresSecret to false (issue #276).
+ */
+const SECRET_ONLY_PATHS = new Set(["/dump"]);
 
 @injectable()
 export class Controller<DTO extends Record<string, unknown>>
@@ -39,6 +47,7 @@ export class Controller<DTO extends Record<string, unknown>>
         method: "GET",
         path: "/dump",
         handler: this.dump,
+        requiresSecret: true,
       },
       {
         method: "GET",
@@ -141,9 +150,21 @@ export class Controller<DTO extends Record<string, unknown>>
 
     for (const route of routes) {
       const handler = route.handler.bind(this);
+      const requiresSecret =
+        route.requiresSecret ?? SECRET_ONLY_PATHS.has(route.path);
+
       this.httpRoutes.push({
         ...route,
+        requiresSecret,
         handler,
+        ...(requiresSecret
+          ? {
+              middlewares: [
+                new RequireRbacSecretMiddleware().init(),
+                ...(route.middlewares || []),
+              ],
+            }
+          : {}),
       });
     }
   }
