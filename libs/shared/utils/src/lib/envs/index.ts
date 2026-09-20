@@ -9,3 +9,4 @@ export * from "./artificial-intelligence";
 export * from "./crm";
 export * from "./openapi";
 export * from "./notification";
+export * from "./api";

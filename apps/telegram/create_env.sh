@@ -1,6 +1,18 @@
 #!/bin/bash
 . ../../tools/deployer/get_env.sh
 
+add_env() {
+    echo "$1=$2" >> .env
+}
+
+# Check is .env file exists
+if [ -f .env ]; then
+    echo "File .env already exists"
+    exit 1
+fi
+
+umask 077
+
 echo "TELEGRAM_SERVICE_BOT_TOKEN=" >> .env
 
 if [ ! -z $CODESPACE_NAME ]; then
@@ -17,3 +29,5 @@ fi
 
 RBAC_SECRET_KEY=$(get_env "$BASH_SOURCE" "RBAC_SECRET_KEY" "../api/.env")
 add_env "RBAC_SECRET_KEY" $RBAC_SECRET_KEY
+
+chmod 600 .env
