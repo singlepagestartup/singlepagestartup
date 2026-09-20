@@ -3,11 +3,13 @@
  *
  * Given: shared REST controllers register generic model routes.
  * When: default routes are bound or the count handler executes.
- * Then: GET /count is registered before parameterized item routes and returns numeric data.
+ * Then: GET /count is registered before parameterized item routes and returns
+ *       numeric data, and the dump route is bound as secret-only.
  */
 
 import { Controller } from ".";
 import { Handler as CountHandler } from "./handler/count";
+import { type IController } from "../interface";
 
 const createService = () =>
   ({
@@ -21,6 +23,19 @@ const createService = () =>
     seed: jest.fn(),
     findOrCreate: jest.fn(),
   }) as any;
+
+class CustomController extends Controller<any> {
+  constructor(service: any, routes: IController<any>["httpRoutes"]) {
+    super(service);
+    this.bindHttpRoutes(routes);
+  }
+}
+
+const findRoute = (controller: Controller<any>, path: string) => {
+  return controller.httpRoutes.find((route) => {
+    return route.method === "GET" && route.path === path;
+  });
+};
 
 describe("REST Controller", () => {
   /**
@@ -83,5 +98,96 @@ describe("REST Controller", () => {
     expect(json).toHaveBeenCalledWith({
       data: 9,
     });
+  });
+
+  /**
+   * BDD Scenario: the dump route is marked as secret-only by default.
+   *
+   * Given: the default shared REST controller.
+   * When: its HTTP routes are inspected.
+   * Then: the GET /dump entry carries requiresSecret and its guard, and no
+   *       read route does.
+   */
+  it("binds GET /dump as secret-only and leaves the read routes open", () => {
+    const controller = new Controller(createService());
+
+    expect(findRoute(controller, "/dump")?.requiresSecret).toBe(true);
+    expect(findRoute(controller, "/dump")?.middlewares).toHaveLength(1);
+    expect(findRoute(controller, "/")?.requiresSecret).toBe(false);
+    expect(findRoute(controller, "/")?.middlewares).toBeUndefined();
+    expect(findRoute(controller, "/count")?.requiresSecret).toBe(false);
+    expect(findRoute(controller, "/:uuid")?.requiresSecret).toBe(false);
+  });
+
+  /**
+   * BDD Scenario: a controller that re-binds /dump inherits the mark.
+   *
+   * Given: a controller that calls bindHttpRoutes with its own route list
+   *        containing GET /dump and no explicit flag.
+   * When: its HTTP routes are inspected.
+   * Then: the dump entry is marked secret-only and carries the guard.
+   */
+  it("marks a re-bound GET /dump without an explicit flag", () => {
+    const controller = new CustomController(createService(), [
+      {
+        method: "GET",
+        path: "/dump",
+        handler: Controller.prototype.dump,
+      },
+      {
+        method: "GET",
+        path: "/",
+        handler: Controller.prototype.find,
+      },
+    ]);
+
+    expect(findRoute(controller, "/dump")?.requiresSecret).toBe(true);
+    expect(findRoute(controller, "/dump")?.middlewares).toHaveLength(1);
+    expect(findRoute(controller, "/")?.requiresSecret).toBe(false);
+  });
+
+  /**
+   * BDD Scenario: a project can re-open dump deliberately.
+   *
+   * Given: a controller that binds GET /dump with requiresSecret set to false.
+   * When: its HTTP routes are inspected.
+   * Then: the flag is preserved and no guard is attached, so the startup seam
+   *       still works.
+   */
+  it("preserves a deliberately re-opened GET /dump", () => {
+    const controller = new CustomController(createService(), [
+      {
+        method: "GET",
+        path: "/dump",
+        handler: Controller.prototype.dump,
+        requiresSecret: false,
+      },
+    ]);
+
+    expect(findRoute(controller, "/dump")?.requiresSecret).toBe(false);
+    expect(findRoute(controller, "/dump")?.middlewares).toBeUndefined();
+  });
+
+  /**
+   * BDD Scenario: a guarded route keeps the middlewares it declared.
+   *
+   * Given: a controller that binds GET /dump with an ownership middleware.
+   * When: its HTTP routes are inspected.
+   * Then: the guard is first and the declared middleware follows it.
+   */
+  it("keeps a guarded route's own middlewares behind the guard", () => {
+    const ownMiddleware = jest.fn() as any;
+    const controller = new CustomController(createService(), [
+      {
+        method: "GET",
+        path: "/dump",
+        handler: Controller.prototype.dump,
+        middlewares: [ownMiddleware],
+      },
+    ]);
+    const middlewares = findRoute(controller, "/dump")?.middlewares;
+
+    expect(middlewares).toHaveLength(2);
+    expect(middlewares?.[1]).toBe(ownMiddleware);
   });
 });
