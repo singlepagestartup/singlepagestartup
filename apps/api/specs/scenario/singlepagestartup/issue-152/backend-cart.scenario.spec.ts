@@ -35,6 +35,10 @@ async function clearHttpCache() {
   const response = await requestApi({
     method: "GET",
     path: "/api/http-cache/clear",
+    // Flushing is an operator action and the route is guarded on itself
+    // (issue #277), so the scenario presents the same credential it uses for
+    // the other operator reads here.
+    includeSecret: true,
   });
 
   if (response.status !== 200) {

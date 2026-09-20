@@ -72,6 +72,44 @@ describe("apps/api singlepage contract", () => {
   });
 
   /**
+   * BDD Scenario: a route registered before the authorization middleware
+   *               carries its own guard.
+   *
+   * Given: apps/api/app.ts registers the HTTP-cache clear route before the
+   *        is-authorized middleware, so that middleware never runs for it and
+   *        neither the allow-list nor a project deny rule can refuse a caller.
+   * When:  the source of app.ts and of the http-cache middleware is read.
+   * Then:  setRoutes still precedes the is-authorized registration, and the
+   *        clear route is still composed with the RBAC secret guard — the two
+   *        facts hold together or the route is open (issue #277).
+   */
+  it("guards the cache-clear route it registers ahead of the authorization middleware", () => {
+    const appSource = readFileSync(
+      resolve(process.cwd(), "apps/api/app.ts"),
+      "utf-8",
+    );
+    const httpCacheSource = readFileSync(
+      resolve(process.cwd(), "libs/middlewares/src/lib/http-cache/index.ts"),
+      "utf-8",
+    );
+
+    const setRoutesIndex = appSource.indexOf(
+      "httpCacheMiddleware.setRoutes(app);",
+    );
+    const authIndex = appSource.indexOf(
+      "app.use(isAuthorizedMiddleware.init());",
+    );
+
+    expect(setRoutesIndex).toBeGreaterThan(-1);
+    expect(authIndex).toBeGreaterThan(-1);
+    expect(setRoutesIndex).toBeLessThan(authIndex);
+
+    expect(httpCacheSource).toContain(
+      'app.get("/api/http-cache/clear", requireRbacSecret(), ',
+    );
+  });
+
+  /**
    * BDD Scenario: production migrations run without blocking the API.
    *
    * Given: a production API container starts and applies repository migrations.

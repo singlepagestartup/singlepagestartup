@@ -108,6 +108,20 @@ describe("is-authorized allowed routes", () => {
   });
 
   /**
+   * BDD Scenario: the allow-list no longer claims to govern the clear route.
+   *
+   * Given: the composed allow-list matcher.
+   * When: /api/http-cache/clear is tested for GET.
+   * Then: it is not allowed — and that answer decides nothing, because the
+   *       route is registered before this middleware and carries its own
+   *       guard (issue #277). The rule was removed so the table stops
+   *       claiming an authority it never had here.
+   */
+  it("does not allow the cache-clear route the rule table cannot reach", () => {
+    expect(matcher.matches("/api/http-cache/clear", "GET")).toBe(false);
+  });
+
+  /**
    * BDD Scenario: Project/option extensions are honored.
    */
   it("honors project/option allowed-route extensions", () => {
