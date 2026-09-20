@@ -3,10 +3,10 @@ import path from "node:path";
 import { parse } from "yaml";
 
 import {
-  documentConfirmation,
   hasMarkdownContent,
   parseDocument,
   type DocumentLayer,
+  type IDocumentConfirmation,
 } from "../workspace/document";
 
 /** Stage order of the pre-development pipeline, used to gate this check. */
@@ -62,6 +62,21 @@ function registeredAssets(source: string): number {
   }
 }
 
+/** Name the document's own state, and the layer when an approval sits upstream. */
+function describeOwnership(
+  confirmation: IDocumentConfirmation | undefined,
+): string {
+  if (!confirmation) return "unconfirmed";
+  const { state, underlying, layer, sources } = confirmation;
+  const named =
+    underlying && underlying !== "unconfirmed"
+      ? `${state} over ${underlying}`
+      : state;
+  const from = sources?.length ? ` from ${sources.join(", ")}` : "";
+  const where = layer === "startup" ? "" : ` in the ${layer} layer`;
+  return `${named}${from}${where}`;
+}
+
 /**
  * A downstream project must own its brandbook rather than shipping the
  * framework's. Inheritance is the explicit starting state, so this only applies
@@ -70,6 +85,7 @@ function registeredAssets(source: string): number {
 export async function findUnownedBrandbook(
   workspaceRoot: string,
   layer: DocumentLayer,
+  confirmation: IDocumentConfirmation | undefined,
 ): Promise<IBrandbookFinding[]> {
   if (layer !== "startup") return [];
 
@@ -88,16 +104,15 @@ export async function findUnownedBrandbook(
         "The document is empty, so the project would ship the framework's visual system as if it were its own.",
     });
   } else {
-    // An inherited singlepage approval never satisfies a startup gate.
-    const confirmation = documentConfirmation(design, "startup");
-    if (!confirmation.confirmed)
+    // The resolved review owns this state. Recomputing it here would hash the
+    // layer's own file while the stamp covers the body a reader is shown, so
+    // one document would answer two different questions. An inherited
+    // singlepage approval still never satisfies a startup gate.
+    const own = confirmation?.underlying ?? confirmation?.state;
+    if (own !== "confirmed" || confirmation?.layer !== "startup")
       findings.push({
         requirement: "design/startup.md holds its own confirmation",
-        detail: `Resolved state is ${confirmation.state}${
-          confirmation.sources?.length
-            ? ` from ${confirmation.sources.join(", ")}`
-            : ""
-        }; a downstream Design needs its own operator approval.`,
+        detail: `Resolved state is ${describeOwnership(confirmation)}; a downstream Design needs its own operator approval.`,
       });
   }
 
@@ -115,8 +130,13 @@ export async function findUnownedBrandbook(
 export async function validateOwnedBrandbook(
   workspaceRoot: string,
   layer: DocumentLayer,
+  confirmation: IDocumentConfirmation | undefined,
 ): Promise<void> {
-  const findings = await findUnownedBrandbook(workspaceRoot, layer);
+  const findings = await findUnownedBrandbook(
+    workspaceRoot,
+    layer,
+    confirmation,
+  );
   if (!findings.length) return;
   throw new Error(
     [

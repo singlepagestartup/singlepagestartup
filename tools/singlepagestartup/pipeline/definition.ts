@@ -12,6 +12,8 @@ export const CHECK_KINDS = [
   "confirmed",
   "stamp-current",
   "no-change-log",
+  "framework-headings",
+  "documents-formatted",
   "catalog-matches-brief",
   "model-sections",
   "product-sections",

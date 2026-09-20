@@ -47,6 +47,12 @@ stages:
       - id: brief.no-change-log
         check: no-change-log
         artifact: brief
+      - id: brief.framework-headings
+        check: framework-headings
+        artifact: brief
+      - id: brief.formatted
+        check: documents-formatted
+        artifact: brief
       - id: catalog.matches-brief
         check: catalog-matches-brief
         artifact: products
@@ -83,6 +89,12 @@ stages:
       - id: strategy.no-change-log
         check: no-change-log
         artifact: strategy
+      - id: strategy.framework-headings
+        check: framework-headings
+        artifact: strategy
+      - id: strategy.formatted
+        check: documents-formatted
+        artifact: strategy
     manual_review:
       - Strategy presents one coherent target state that fulfills the approved Brief, not a roadmap, a task list or a first-experiment plan.
       - Audience-growth and sales-product priorities are named, every confirmed product has a role, and channels have a role, content, destination and contribution.
@@ -101,6 +113,12 @@ stages:
         artifact: brand
       - id: brand.no-change-log
         check: no-change-log
+        artifact: brand
+      - id: brand.framework-headings
+        check: framework-headings
+        artifact: brand
+      - id: brand.formatted
+        check: documents-formatted
         artifact: brand
     manual_review:
       - Brand owns meaning, message hierarchy, proof boundary, objections, voice, naming and consistency rules; colors, type, imagery and layouts stay in Design.
@@ -122,6 +140,12 @@ stages:
         artifact: design
       - id: design.no-change-log
         check: no-change-log
+        artifact: design
+      - id: design.framework-headings
+        check: framework-headings
+        artifact: design
+      - id: design.formatted
+        check: documents-formatted
         artifact: design
       - id: assets.generated-registered
         check: generated-assets-registered

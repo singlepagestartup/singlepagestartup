@@ -9,6 +9,10 @@ import {
 } from "../../../apps/studio/workspace/utils/products/catalog";
 import { parseSalesProcess } from "../../../apps/studio/workspace/utils/products/sales";
 import { findUnownedBrandbook } from "../../studio/design/brandbook";
+import {
+  findTranslatedHeadings,
+  findUnformattedDocuments,
+} from "../../studio/workspace/document-shape";
 import { findChangeLogShapes } from "./change-log";
 import {
   findMissingSpecimens,
@@ -283,12 +287,18 @@ function compareSections(
   const actual = headings(document.body);
   const ownHeadings = new Set(headings(document.ownBody));
   const missing = required.filter((section) => !actual.includes(section));
-  const extra = actual.filter((section) => !required.includes(section));
+  // A layer adds the sections its business needs. Only a section that appears
+  // without any layer owning it signals template drift rather than a decision.
+  const extra = actual.filter(
+    (section) =>
+      !required.includes(section) &&
+      !(layer === "startup" && document.ownBody && ownHeadings.has(section)),
+  );
   if (!missing.length && !extra.length)
     return result(
       check,
       "pass",
-      `${label} uses the ${required.length} template sections`,
+      `${label} carries the ${required.length} template sections`,
     );
   return result(check, "gap", `${label} differs from the template sections`, {
     items: [
@@ -380,6 +390,65 @@ function describeState(
   return underlying && underlying !== "unconfirmed"
     ? `${state} over ${underlying}`
     : state;
+}
+
+/**
+ * The framework names a section once. A layer that translates or drops an
+ * inherited heading splits one section into two, so an inherited name is used
+ * exactly and extra sections sit beside it.
+ */
+async function frameworkHeadings(
+  context: IPipelineContext,
+  check: IPipelineCheck,
+): Promise<ICheckResult> {
+  if (context.layer === "singlepage")
+    return result(check, "skipped", "the framework layer declares the names");
+  const document = context.documents[check.artifact];
+  const findings = findTranslatedHeadings({
+    framework: await readOptional(
+      ownSourcePath(context.workspaceRoot, check.artifact, "singlepage"),
+    ),
+    project: await readOptional(
+      ownSourcePath(context.workspaceRoot, check.artifact, context.layer),
+    ),
+    projectPath: document.ownPath,
+  });
+  return findings.length
+    ? result(check, "gap", `${check.artifact} renamed an inherited heading`, {
+        items: findings.map(({ detail }) => detail),
+      })
+    : result(
+        check,
+        "pass",
+        `${check.artifact} spells every inherited heading as the framework does`,
+      );
+}
+
+/**
+ * The commit hook formats Markdown, so a stamp taken before formatting covers a
+ * body that stops existing at the next commit. Format first, then read the
+ * fingerprint.
+ */
+async function documentsFormatted(
+  context: IPipelineContext,
+  check: IPipelineCheck,
+): Promise<ICheckResult> {
+  const file = ownSourcePath(
+    context.workspaceRoot,
+    check.artifact,
+    context.layer,
+  );
+  const findings = await findUnformattedDocuments([
+    {
+      path: file,
+      source: await readOptional(file),
+    },
+  ]);
+  return findings.length
+    ? result(check, "gap", `${check.artifact} is not in its committed form`, {
+        items: findings.map(({ detail }) => detail),
+      })
+    : result(check, "pass", `${check.artifact} is already formatted`);
 }
 
 /**
@@ -667,6 +736,10 @@ async function runCheck(
       return stampCurrent(context, check);
     case "no-change-log":
       return noChangeLog(context, check);
+    case "framework-headings":
+      return frameworkHeadings(context, check);
+    case "documents-formatted":
+      return documentsFormatted(context, check);
     case "catalog-matches-brief": {
       const products = scopeProducts(context);
       if (!products)
@@ -892,6 +965,7 @@ async function runCheck(
       const findings = await findUnownedBrandbook(
         context.workspaceRoot,
         context.layer,
+        context.documents.design.review?.confirmation,
       );
       return findings.length
         ? result(check, "gap", "the project does not own its brandbook", {
