@@ -33,6 +33,11 @@ Read the current fingerprint without recording consent:
 bun tools/studio/workspace/document-review.ts --file apps/studio/workspace/<artifact>/<layer>.md
 ```
 
+The repository formats Markdown on commit, so a fingerprint read from an
+unformatted body covers a body the next commit replaces and the stamp is stale
+before anyone sees it. Format first, then read. The pipeline check reports a
+document that is not yet in the form the commit hook produces.
+
 The helper accepts product-local Markdown and Sales YAML and returns the
 `content_sha256`, the current `review.dependencies` and the transitive
 dependents with their states. `--repository-root <path>` inspects another

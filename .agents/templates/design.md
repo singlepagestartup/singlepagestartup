@@ -117,6 +117,14 @@ illustration is active. Point at the rendered specimens from the boundary
 below. studio:validate fails a documented interface language that does not
 render them: actions, selection, status, fields, navigation, editorial-entry,
 content-card, icon-card, item-grid, plus dark-pair when a Dark column exists.
+Section and specimen names belong to the framework: the sections are
+`Interface kit` and `Content blocks`, and the specimens are named
+Actions, Selection, Status and progress, Fields and data rows, Navigation,
+Dark pair, Editorial entry, Photo cards, Icon cards, Numbered steps,
+Illustration and text, Repeated item grid, Offer comparison and Contextual
+sheet. A project restyles a block and rewrites its
+content in any format the layout accepts; it never translates a heading,
+renames a section or ships a block outside the catalogue.
 The Brand Designer role owns how a specimen is written, declared and omitted. -->
 
 ### Purpose and evidence boundary
