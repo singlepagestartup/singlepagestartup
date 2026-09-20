@@ -1,4 +1,5 @@
 import { IDumpResult, ISeedResult } from "../configuration";
+import { type IFilter } from "../query-builder/filters";
 import { FindServiceProps } from "../services/interfaces";
 
 export interface ITransferable {
@@ -14,6 +15,12 @@ interface IDefaultRepository extends ITransferable {
   insert: (data: any) => Promise<any>;
   deleteFirstByField: (field: string, value: any) => Promise<any>;
   updateFirstByField: (field: string, value: any, data: any) => Promise<any>;
+  consumeFirstByField: (
+    field: string,
+    value: any,
+    data: any,
+    predicate?: { and: IFilter[] },
+  ) => Promise<any>;
 }
 
 export interface IRepository extends IDefaultRepository {}

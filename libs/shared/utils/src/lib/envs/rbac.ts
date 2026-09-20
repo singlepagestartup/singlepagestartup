@@ -33,3 +33,12 @@ export const RBAC_OAUTH_STATE_LIFETIME_IN_SECONDS =
   Number(process.env["RBAC_OAUTH_STATE_LIFETIME_IN_SECONDS"]) || 600;
 export const RBAC_OAUTH_EXCHANGE_LIFETIME_IN_SECONDS =
   Number(process.env["RBAC_OAUTH_EXCHANGE_LIFETIME_IN_SECONDS"]) || 120;
+/**
+ * Compatibility knob for one release. The exchange code is a session-granting
+ * credential, so it now travels in an HttpOnly cookie instead of the redirect
+ * query string. A deployment whose API and host sit on different registrable
+ * domains never receives that cookie on the `SameSite=Lax` exchange POST, and
+ * sets this to `true` until the two are brought onto one site.
+ */
+export const RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY =
+  process.env["RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY"] === "true";

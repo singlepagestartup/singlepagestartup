@@ -52,13 +52,20 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `RBAC_OAUTH_GOOGLE_CLIENT_ID`: Google OAuth client id.
 - `RBAC_OAUTH_GOOGLE_CLIENT_SECRET`: Google OAuth client secret.
 - `RBAC_OAUTH_GOOGLE_REDIRECT_URI`: optional explicit callback URI (fallback is `${API_SERVICE_URL}/api/rbac/subjects/authentication/oauth/google/callback`).
-- `RBAC_OAUTH_SUCCESS_REDIRECT_PATH`: host path used after successful callback/exchange handoff (default `/`).
+- `RBAC_OAUTH_SUCCESS_REDIRECT_PATH`: host path used after successful callback/exchange handoff (default `/`). It is validated like any other redirect target; a value that does not resolve to a path on `NEXT_PUBLIC_HOST_SERVICE_URL` falls back to `/`.
 - `RBAC_OAUTH_STATE_LIFETIME_IN_SECONDS`: OAuth state TTL (default `600`).
 - `RBAC_OAUTH_EXCHANGE_LIFETIME_IN_SECONDS`: OAuth exchange code TTL (default `120`).
+- `RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY`: compatibility knob, default `false`. The exchange code is a session-granting credential, so it travels in the HttpOnly `rbac.oauth.exchange-code` cookie. Set it to `true` for one release if the API and the host are on different registrable domains, where a `SameSite=Lax` cookie is not sent with the exchange POST: the callback then also puts the code in the `code` query parameter and the exchange route accepts it from the request body.
+
+## OAuth Redirect Targets
+
+- A redirect target is accepted only when it resolves to a path on `NEXT_PUBLIC_HOST_SERVICE_URL`. `//host`, `/\host` and absolute URLs on another origin all fall back to `RBAC_OAUTH_SUCCESS_REDIRECT_PATH`.
+- The target is validated when it is stored at start and again when it is used at callback, so a row written before this rule existed cannot redirect off-origin either.
+- A project that genuinely returns to a second origin overrides `getAllowedRedirectOrigins()` on the OAuth start and callback services in the `startup` layer.
 
 ## OAuth Subject Resolution Rules
 
-- OAuth callback stores temporary data in `rbac.action` records (`oauth-state`, `oauth-exchange`) and marks them as consumed to prevent replay.
+- OAuth callback stores temporary data in `rbac.action` records (`oauth-state`, `oauth-exchange`) and consumes them to prevent replay. Consumption is a conditional update (`POST /rbac/actions/{id}/consume`), so two requests holding the same state or the same code cannot both proceed. The exchange row is consumed before any token is signed.
 - Priority for selecting target subject:
 
 1. Existing `oauth_google` identity by provider account (`account`) and its linked subject.
@@ -68,9 +75,9 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 
 - If OAuth identity is already linked to another subject, login is performed into that already linked subject.
 - In `flow=link`, authenticated source subject is required.
-- Callback redirects to host with either:
+- Callback redirects to a path on the host origin with either:
 
-1. `?code=<oauth-exchange-action-id>` on success.
+1. `?oauthExchange=<provider>` on success, with the code in the HttpOnly `rbac.oauth.exchange-code` cookie. `?code=<oauth-exchange-action-id>` is added as well while `RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY` is on.
 2. `?oauthError=<error-code>` on failure.
 
 ## Fields

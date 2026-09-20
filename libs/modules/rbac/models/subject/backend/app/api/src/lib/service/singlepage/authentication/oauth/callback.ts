@@ -2,13 +2,19 @@ import { IRepository } from "@sps/shared-backend-api";
 import {
   API_SERVICE_URL,
   NEXT_PUBLIC_HOST_SERVICE_URL,
+  RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY,
   RBAC_OAUTH_EXCHANGE_LIFETIME_IN_SECONDS,
   RBAC_OAUTH_GOOGLE_CLIENT_ID,
   RBAC_OAUTH_GOOGLE_CLIENT_SECRET,
   RBAC_OAUTH_GOOGLE_REDIRECT_URI,
-  RBAC_OAUTH_SUCCESS_REDIRECT_PATH,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
+import {
+  consumeOauthAction,
+  getHostRedirectOrigins,
+  resolveDefaultRedirectPath,
+  resolveRedirectTarget,
+} from "./utils";
 import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectsToActionsApi } from "@sps/rbac/relations/subjects-to-actions/sdk/server";
 import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/server";
@@ -47,6 +53,16 @@ export type IExecuteProps = {
 
 export type IResult = {
   redirectUrl: string;
+  /**
+   * The normalised path the browser is sent to. It is safe to log; the built
+   * URL is not, because a project may still carry the code in its query.
+   */
+  redirectPath: string;
+  /**
+   * Handed to the controller instead of being embedded in `redirectUrl`, so a
+   * session-granting credential stops travelling in a URL.
+   */
+  exchangeCode?: string;
 };
 
 export class Service {
@@ -93,7 +109,9 @@ export class Service {
 
     const payload = (oauthStateAction.payload || {}) as TOAuthStatePayload;
     const oauthPayload = payload.oauth;
-    const redirectPath = oauthPayload?.redirectTo || defaultRedirectPath;
+    // A row written before redirect validation existed can still carry an
+    // off-origin target, so the stored value is normalised on the way out too.
+    const redirectPath = this.normalizeRedirectPath(oauthPayload?.redirectTo);
 
     if (payload.type !== "oauth-state") {
       return this.errorResult("invalid_oauth_state_type", redirectPath);
@@ -110,6 +128,8 @@ export class Service {
       return this.errorResult("invalid_oauth_state_flow", redirectPath);
     }
 
+    // Kept for one release: a row consumed by the previous implementation only
+    // carries the mark in its payload.
     if (oauthPayload?.consumedAt) {
       return this.errorResult("oauth_state_consumed", redirectPath);
     }
@@ -120,24 +140,17 @@ export class Service {
       return this.errorResult("oauth_state_expired", redirectPath);
     }
 
-    await rbacActionApi.update({
+    const consumedState = await consumeOauthAction({
       id: oauthStateAction.id,
-      data: {
-        ...oauthStateAction,
-        payload: {
-          ...payload,
-          oauth: {
-            ...oauthPayload,
-            consumedAt: new Date().toISOString(),
-          },
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
+      payload,
+      secretKey: RBAC_SECRET_KEY,
     });
+
+    // The state is claimed by the write, so a second callback carrying the
+    // same state loses the race here instead of completing a second sign-in.
+    if (!consumedState) {
+      return this.errorResult("oauth_state_consumed", redirectPath);
+    }
 
     const profile = await this.getGoogleProfile({ code: props.code }).catch(
       () => undefined,
@@ -276,9 +289,16 @@ export class Service {
       redirectUrl: this.buildHostRedirectUrl({
         path: redirectPath,
         params: {
-          code: exchangeAction.id,
+          // A marker, not a credential: it tells the landing page that a code
+          // is waiting in the cookie, without naming the code.
+          oauthExchange: props.provider,
+          ...(RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY
+            ? { code: exchangeAction.id }
+            : {}),
         },
       }),
+      redirectPath,
+      exchangeCode: exchangeAction.id,
     };
   }
 
@@ -757,13 +777,16 @@ export class Service {
   }
 
   protected errorResult(code: string, path?: string): IResult {
+    const redirectPath = this.normalizeRedirectPath(path);
+
     return {
       redirectUrl: this.buildHostRedirectUrl({
-        path: path || this.getDefaultRedirectPath(),
+        path: redirectPath,
         params: {
           oauthError: code,
         },
       }),
+      redirectPath,
     };
   }
 
@@ -781,26 +804,24 @@ export class Service {
     return url.toString();
   }
 
-  protected normalizeRedirectPath(path: string) {
-    if (!path || typeof path !== "string") {
-      return this.getDefaultRedirectPath();
-    }
-
-    if (path.startsWith("/")) {
-      return path;
-    }
-
-    return this.getDefaultRedirectPath();
+  protected normalizeRedirectPath(path?: unknown) {
+    return resolveRedirectTarget({
+      target: path,
+      allowedOrigins: this.getAllowedRedirectOrigins(),
+    });
   }
 
   protected getDefaultRedirectPath() {
-    if (
-      RBAC_OAUTH_SUCCESS_REDIRECT_PATH &&
-      RBAC_OAUTH_SUCCESS_REDIRECT_PATH.startsWith("/")
-    ) {
-      return RBAC_OAUTH_SUCCESS_REDIRECT_PATH;
-    }
+    return resolveDefaultRedirectPath({
+      allowedOrigins: this.getAllowedRedirectOrigins(),
+    });
+  }
 
-    return "/";
+  /**
+   * The origins a redirect may land on. A project that signs in on one origin
+   * and returns to another overrides this one method in `service/startup`.
+   */
+  protected getAllowedRedirectOrigins() {
+    return getHostRedirectOrigins();
   }
 }
