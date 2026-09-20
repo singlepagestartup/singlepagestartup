@@ -41,6 +41,7 @@
       "@sps/host/*": ["libs/modules/host/*"],
       "@sps/mcp": ["apps/mcp/src/index.ts"],
       "@sps/middlewares": ["libs/middlewares/src/index.ts"],
+      "@sps/middlewares/*": ["libs/middlewares/src/lib/*"],
       "@sps/notification/*": ["libs/modules/notification/*"],
       "@sps/providers-db": ["libs/providers/db/src/index.ts"],
       "@sps/providers-file-storage": [

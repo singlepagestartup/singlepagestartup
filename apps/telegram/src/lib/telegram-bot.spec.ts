@@ -24,6 +24,10 @@ const mockBillingPaymentIntentsToInvoicesFind = jest.fn();
 const mockEcommerceOrdersToPaymentIntentsFind = jest.fn();
 const mockEcommerceOrderFind = jest.fn();
 
+const TELEGRAM_WEBHOOK_SECRET = "9c4a1f7e2b5d8036a9c4a1f7e2b5d8036";
+
+let mockWebhookSecret: string | undefined = TELEGRAM_WEBHOOK_SECRET;
+
 jest.mock("@sps/shared-utils", () => {
   return {
     NEXT_PUBLIC_TELEGRAM_SERVICE_URL: "https://telegram.example.com",
@@ -32,6 +36,12 @@ jest.mock("@sps/shared-utils", () => {
     RBAC_SECRET_KEY: "rbac-secret",
     TELEGRAM_SERVICE_BOT_TOKEN: "telegram-token",
     TELEGRAM_SERVICE_BOT_USERNAME: "singlepagestartup_bot",
+    // A getter so a scenario can withdraw the configured secret; the transport
+    // reads this value when it constructs and when it registers, never at
+    // module scope.
+    get TELEGRAM_SERVICE_WEBHOOK_SECRET() {
+      return mockWebhookSecret;
+    },
   };
 });
 
@@ -106,6 +116,7 @@ jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
   },
 }));
 
+import { Hono } from "hono";
 import {
   isTelegramBotAuthoredMessage,
   isDuplicateTelegramStarPaymentError,
@@ -599,11 +610,15 @@ describe("Given: Telegram bot-authored service messages", () => {
 });
 
 describe("Given: the Agent Telegram command catalog", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   /**
    * BDD Scenario
    * Given: startup overrides are resolved by the Agent service in apps/api.
    * When: the Telegram transport starts.
-   * Then: it publishes that catalog to every global chat scope before installing the webhook.
+   * Then: it publishes that catalog to every global chat scope.
    */
   it("When: the bot starts Then: it synchronizes Agent commands with Telegram", async () => {
     const commands = [
@@ -649,16 +664,167 @@ describe("Given: the Agent Telegram command catalog", () => {
         type: "all_chat_administrators",
       },
     });
+    // Inverted from the original ordering, which required the catalog to be
+    // published first. Registration now leads, because the handler rejects
+    // every delivery that is not signed with the secret this call installs.
+    expect(setWebhook.mock.invocationCallOrder[0]).toBeLessThan(
+      setMyCommands.mock.invocationCallOrder[0],
+    );
+    expect(bot.telegramPublishedCommands).toEqual(commands);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a webhook secret is configured for the Telegram transport.
+   * When: the transport registers its webhook with Telegram.
+   * Then: the registration carries the secret so Telegram signs every delivery.
+   */
+  it("When: the bot registers its webhook Then: the registration carries the secret", async () => {
+    const setMyCommands = jest.fn().mockResolvedValue(true);
+    const setWebhook = jest.fn().mockResolvedValue(true);
+    mockTelegramCommands.mockResolvedValue([]);
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    bot.instance = {
+      api: {
+        setMyCommands,
+        setWebhook,
+      },
+    };
+
+    await expect(bot.run()).resolves.toBe(true);
+
     expect(setWebhook).toHaveBeenCalledWith(
       "https://telegram.example.com/api/telegram",
       {
         allowed_updates: [],
+        secret_token: TELEGRAM_WEBHOOK_SECRET,
       },
     );
-    expect(setMyCommands.mock.invocationCallOrder[0]).toBeLessThan(
-      setWebhook.mock.invocationCallOrder[0],
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the API command catalog is unavailable at startup.
+   * When: the transport runs its startup synchronization.
+   * Then: the webhook registration has already been attempted before the catalog fetch.
+   */
+  it("When: the catalog is unavailable Then: webhook registration is not blocked behind it", async () => {
+    const setMyCommands = jest.fn().mockResolvedValue(true);
+    const setWebhook = jest.fn().mockResolvedValue(true);
+    mockTelegramCommands.mockRejectedValue(new Error("fetch failed"));
+    const bot = Object.create(TelegarmBot.prototype) as any;
+    bot.instance = {
+      api: {
+        setMyCommands,
+        setWebhook,
+      },
+    };
+
+    await expect(bot.run()).rejects.toThrow("fetch failed");
+
+    // Ordering inverted deliberately: the handler now rejects any delivery
+    // that is not signed, so an unreachable API must not stretch the rejection
+    // window from process start out to API availability.
+    expect(setWebhook).toHaveBeenCalledTimes(1);
+    expect(setMyCommands).not.toHaveBeenCalled();
+  });
+});
+
+describe("Given: the Telegram webhook secret", () => {
+  afterEach(() => {
+    mockWebhookSecret = TELEGRAM_WEBHOOK_SECRET;
+  });
+
+  function createWebhookRoute() {
+    const telegramBot = new TelegarmBot();
+
+    // Bot information is pre-set so grammY's lazy initialization does not call
+    // the Telegram API; the secret comparison runs immediately after it.
+    (telegramBot.instance as any).botInfo = {
+      id: 1,
+      is_bot: true,
+      first_name: "SinglePageStartup",
+      username: "singlepagestartup_bot",
+      can_join_groups: true,
+      can_read_all_group_messages: false,
+      supports_inline_queries: false,
+    };
+
+    const hono = new Hono();
+    hono.post("/", (c) => telegramBot.webhookHandler(c) as any);
+
+    return hono;
+  }
+
+  function deliverUpdate(hono: Hono, secretToken?: string) {
+    return hono.request("/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(secretToken === undefined
+          ? {}
+          : { "X-Telegram-Bot-Api-Secret-Token": secretToken }),
+      },
+      body: JSON.stringify({ update_id: 1 }),
+    });
+  }
+
+  /**
+   * BDD Scenario
+   * Given: a bot token is configured but no webhook secret is.
+   * When: the Telegram transport is constructed.
+   * Then: construction fails with a configuration error naming the missing variable.
+   */
+  it("When: the webhook secret is missing Then: the transport refuses to start", () => {
+    mockWebhookSecret = undefined;
+
+    expect(() => new TelegarmBot()).toThrow(/TELEGRAM_SERVICE_WEBHOOK_SECRET/);
+
+    mockWebhookSecret = "too-short-to-be-a-secret";
+
+    expect(() => new TelegarmBot()).toThrow(/TELEGRAM_SERVICE_WEBHOOK_SECRET/);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a webhook secret is configured for the Telegram transport.
+   * When: a delivery arrives without the secret header Telegram attaches.
+   * Then: the delivery is refused instead of being treated as a real update.
+   */
+  it("When: a delivery carries no secret header Then: it is refused", async () => {
+    const response = await deliverUpdate(createWebhookRoute());
+
+    expect(response.status).toBe(401);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a webhook secret is configured for the Telegram transport.
+   * When: a delivery arrives with a secret header that does not match.
+   * Then: the delivery is refused.
+   */
+  it("When: a delivery carries the wrong secret header Then: it is refused", async () => {
+    const response = await deliverUpdate(
+      createWebhookRoute(),
+      "0000000000000000000000000000000000",
     );
-    expect(bot.telegramPublishedCommands).toEqual(commands);
+
+    expect(response.status).toBe(401);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a webhook secret is configured for the Telegram transport.
+   * When: a delivery arrives with the configured secret header.
+   * Then: the delivery is accepted and handled.
+   */
+  it("When: a delivery carries the configured secret header Then: it is accepted", async () => {
+    const response = await deliverUpdate(
+      createWebhookRoute(),
+      TELEGRAM_WEBHOOK_SECRET,
+    );
+
+    expect(response.status).toBe(200);
   });
 });
 

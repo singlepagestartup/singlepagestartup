@@ -11,6 +11,7 @@ import {
   TELEGRAM_SERVICE_BOT_TOKEN,
   TELEGRAM_SERVICE_BOT_USERNAME,
   TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
+  TELEGRAM_SERVICE_WEBHOOK_SECRET,
 } from "@sps/shared-utils";
 import {
   Bot as GrammyBot,
@@ -298,6 +299,21 @@ export function isDuplicateTelegramStarPaymentError(error: unknown) {
   return /invoice is already paid by another telegram charge/i.test(message);
 }
 
+/**
+ * Telegram accepts 1-256 characters for `secret_token`; the floor below is the
+ * repository's own, chosen so a value is at least 32 bytes of CSPRNG output in
+ * hex. A short value is treated as absent because a guessable secret gates the
+ * webhook no better than no secret at all.
+ */
+export const TELEGRAM_WEBHOOK_SECRET_MIN_LENGTH = 32;
+
+export function isUsableTelegramWebhookSecret(secret: string | undefined) {
+  return (
+    typeof secret === "string" &&
+    secret.length >= TELEGRAM_WEBHOOK_SECRET_MIN_LENGTH
+  );
+}
+
 export class TelegarmBot {
   instance: GrammyBot<TelegramBotContext>;
   webhookHandler: ReturnType<typeof webhookCallback>;
@@ -318,11 +334,28 @@ export class TelegarmBot {
       return;
     }
 
+    // grammY compares the received X-Telegram-Bot-Api-Secret-Token against the
+    // configured one with a plain inequality, so an unconfigured secret makes
+    // both sides undefined and admits any unsigned POST. Refusing to construct
+    // is the only way to keep that state unreachable.
+    if (!isUsableTelegramWebhookSecret(TELEGRAM_SERVICE_WEBHOOK_SECRET)) {
+      throw new Error(
+        "Configuration error. TELEGRAM_SERVICE_WEBHOOK_SECRET is not set or is" +
+          ` shorter than ${TELEGRAM_WEBHOOK_SECRET_MIN_LENGTH} characters.` +
+          " Generate one with `openssl rand -hex 32`, set it on every Telegram" +
+          " service instance, and restart the service so startup re-registers" +
+          " the webhook with it. Until that registration lands Telegram still" +
+          " delivers without the header and the service rejects it.",
+      );
+    }
+
     this.instance = new GrammyBot<TelegramBotContext>(
       TELEGRAM_SERVICE_BOT_TOKEN || "",
     );
 
-    this.webhookHandler = webhookCallback(this.instance, "hono") as any;
+    this.webhookHandler = webhookCallback(this.instance, "hono", {
+      secretToken: TELEGRAM_SERVICE_WEBHOOK_SECRET,
+    }) as any;
   }
 
   private getTelegramMessageThreadId(props: { ctx: GrammyContext }) {
@@ -1152,6 +1185,18 @@ export class TelegarmBot {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
     }
 
+    const endpoint = NEXT_PUBLIC_TELEGRAM_SERVICE_URL + "/api/telegram";
+
+    // Registration runs before the command catalog is fetched: the update
+    // handler already rejects deliveries that carry no secret, so an
+    // unreachable API must not hold the new registration back and stretch that
+    // rejection window from process start to API availability.
+    const res = await this.instance.api.setWebhook(endpoint, {
+      // Empty list resets any previous webhook update filter and enables all updates.
+      allowed_updates: [],
+      secret_token: TELEGRAM_SERVICE_WEBHOOK_SECRET,
+    });
+
     const commands = await agentModuleAgentApi.telegramCommands({
       options: {
         headers: {
@@ -1180,13 +1225,6 @@ export class TelegarmBot {
         },
       }),
     ]);
-
-    const endpoint = NEXT_PUBLIC_TELEGRAM_SERVICE_URL + "/api/telegram";
-
-    const res = await this.instance.api.setWebhook(endpoint, {
-      // Empty list resets any previous webhook update filter and enables all updates.
-      allowed_updates: [],
-    });
 
     return res;
   }
