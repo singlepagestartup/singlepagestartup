@@ -7,6 +7,7 @@ import { DI } from "../../../../di/constants";
 import { type IService } from "../../../../service";
 import { type IParseQueryMiddlewareGeneric } from "../../../../middleware";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { projectOutput } from "../output-schema";
 
 @injectable()
 export class Handler<
@@ -23,7 +24,7 @@ export class Handler<
       const data = await this.service.find({ params: c.var.parsedQuery });
 
       return c.json({
-        data,
+        data: projectOutput({ c, service: this.service, data }),
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

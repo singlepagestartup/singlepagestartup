@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import {
   IRouteRule,
   NEXT_PUBLIC_HOST_SERVICE_URL,
+  RBAC_PRIVILEGED_CONTEXT_KEY,
   RBAC_SECRET_KEY,
   RouteMatcher,
   createMemoryCache,
@@ -57,6 +58,14 @@ export class Middleware {
       }
 
       if (secretKey && secretKey === RBAC_SECRET_KEY) {
+        /**
+         * Marks the operator caller so the REST boundary skips a model's
+         * `outputSchema` projection (issue #270): the framework's own login,
+         * OAuth linking and wallet login read identity secret columns back
+         * over loopback HTTP with this key.
+         */
+        c.set(RBAC_PRIVILEGED_CONTEXT_KEY, true);
+
         return next();
       }
 

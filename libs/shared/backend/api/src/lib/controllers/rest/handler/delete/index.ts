@@ -6,6 +6,7 @@ import { inject, injectable } from "inversify";
 import { DI } from "../../../../di/constants";
 import { type IService } from "../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { projectOutput } from "../output-schema";
 
 @injectable()
 export class Handler<
@@ -25,7 +26,7 @@ export class Handler<
       const data = await this.service.delete({ id: uuid });
 
       return c.json({
-        data,
+        data: projectOutput({ c, service: this.service, data }),
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
