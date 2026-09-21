@@ -1,12 +1,9 @@
 #!/bin/bash
 . ../../tools/deployer/get_env.sh
+. ../../tools/deployer/generate_secret.sh
 
 add_env() {
     echo "$1=$2" >> .env
-}
-
-generate_random_string() {
-    echo $RANDOM | md5sum | head -c 32;
 }
 
 # Check is .env file exists
@@ -16,6 +13,7 @@ if [ -f .env ]; then
 fi
 
 # Clear env file
+umask 077
 > .env
 echo "Created /.env file"
 
@@ -80,16 +78,16 @@ add_env "KV_PORT" $KV_PORT
 KV_PASSWORD=$(get_env "$BASH_SOURCE" "REDIS_PASSWORD" ../redis/.env)
 add_env "KV_PASSWORD" $KV_PASSWORD
 
-RBAC_COOKIE_SESSION_SECRET=$(generate_random_string)
+RBAC_COOKIE_SESSION_SECRET=$(generate_secret 32) || exit 1
 add_env "RBAC_COOKIE_SESSION_SECRET" $RBAC_COOKIE_SESSION_SECRET
 
-RBAC_JWT_SECRET=$(generate_random_string)
+RBAC_JWT_SECRET=$(generate_secret 32) || exit 1
 add_env "RBAC_JWT_SECRET" $RBAC_JWT_SECRET
 
-RBAC_SECRET_KEY=$(generate_random_string)
+RBAC_SECRET_KEY=$(generate_secret 32) || exit 1
 add_env "RBAC_SECRET_KEY" $RBAC_SECRET_KEY
 
-MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET=$(generate_random_string)
+MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET=$(generate_secret 32) || exit 1
 add_env "MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET" $MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET
 add_env "MCP_SERVICE_URL" "http://127.0.0.1:3001/mcp"
 
@@ -103,5 +101,25 @@ add_env "OLLAMA_URL" "http://localhost:11434"
 add_env "ANTHROPIC_API_KEY" ""
 add_env "ANTHROPIC_MODEL" "claude-sonnet-4-20250514"
 
-add_env "RBAC_SUBJECT_IDENTITY_EMAIL" "admin@example.com"
-add_env "RBAC_SUBJECT_IDENTITY_PASSWORD" "Password123!"
+# The bootstrap administrator. Both values may be supplied through the process
+# environment, which is how CI and scripted setups keep a known credential.
+RBAC_SUBJECT_IDENTITY_EMAIL="${RBAC_SUBJECT_IDENTITY_EMAIL:-admin@example.com}"
+add_env "RBAC_SUBJECT_IDENTITY_EMAIL" "$RBAC_SUBJECT_IDENTITY_EMAIL"
+
+ADMIN_PASSWORD_WAS_GENERATED=false
+
+if [ -z "$RBAC_SUBJECT_IDENTITY_PASSWORD" ]; then
+    RBAC_SUBJECT_IDENTITY_PASSWORD=$(generate_secret 16) || exit 1
+    ADMIN_PASSWORD_WAS_GENERATED=true
+fi
+
+add_env "RBAC_SUBJECT_IDENTITY_PASSWORD" "$RBAC_SUBJECT_IDENTITY_PASSWORD"
+
+chmod 600 .env
+
+echo "Bootstrap admin: $RBAC_SUBJECT_IDENTITY_EMAIL"
+
+if [ "$ADMIN_PASSWORD_WAS_GENERATED" = true ]; then
+    echo "Bootstrap admin password (shown once, stored in apps/api/.env): $RBAC_SUBJECT_IDENTITY_PASSWORD"
+    echo "Copy it into .agents/.env as API_RBAC_SUBJECT_IDENTITY_PASSWORD if you run browser tests."
+fi
