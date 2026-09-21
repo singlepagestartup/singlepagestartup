@@ -33,6 +33,11 @@ describe("util — HTTP error classification", () => {
       "Passwords do not match",
       "Code is expired. Resend again.",
       "Account already exists",
+
+      "Validation error. Unknown filter method 'between'",
+      "Validation error. Unknown column 'absent'",
+      "Validation error. 'filters.and' must be an array",
+      "Validation error. Json key is longer than 64 characters",
     ])("maps '%s' → 400 Validation error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(400);

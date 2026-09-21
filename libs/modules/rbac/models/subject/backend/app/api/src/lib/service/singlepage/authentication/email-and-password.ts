@@ -96,7 +96,7 @@ export class Service {
         ? [
             {
               column: "slug",
-              method: "in",
+              method: "inArray",
               value: props.roles?.map((role) => role.slug),
             },
           ]
