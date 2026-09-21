@@ -11,7 +11,10 @@ export type {
 
 export type { IModuleSeedConfig } from "./lib/seeder/Seeder";
 export type { QueryBuilderProps as PopulateQueryBuilderProps } from "./lib/query-builder/populate";
-export type { QueryBuilderProps as FiltersQueryBuilderProps } from "./lib/query-builder/filters";
+export type {
+  QueryBuilderProps as FiltersQueryBuilderProps,
+  IFilter as IQueryBuilderFilter,
+} from "./lib/query-builder/filters";
 export * from "./lib/filters";
 export * from "./lib/controllers";
 export * from "./lib/app";
