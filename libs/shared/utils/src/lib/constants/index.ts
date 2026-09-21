@@ -15,3 +15,20 @@ export const UUID_PATH_SEGMENT_REGEX =
  */
 export const UUID_PATH_PREFIX_REGEX =
   /(.*\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/;
+
+/**
+ * Providers whose email the framework treats as proven, because the address
+ * arrives from the provider over a server-to-server channel rather than from
+ * the person signing up (issue #280).
+ *
+ * `telegram` and the legacy `email` provider are deliberately absent: both can
+ * carry an address without establishing ownership of it.
+ *
+ * Used by the interim registration guard, which refuses a password
+ * registration for an address one of these already holds. That guard goes away
+ * once registration confirms an address of its own, and this list then decides
+ * which identities may be linked rather than which block a registration.
+ */
+export const ADDRESS_VERIFYING_PROVIDERS = Object.freeze([
+  "oauth_google",
+] as const);
