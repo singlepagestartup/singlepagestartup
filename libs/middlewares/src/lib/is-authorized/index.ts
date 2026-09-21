@@ -60,7 +60,7 @@ export class Middleware {
       if (secretKey && secretKey === RBAC_SECRET_KEY) {
         /**
          * Marks the operator caller so the REST boundary skips a model's
-         * `outputSchema` projection (issue #270): the framework's own login,
+         * `outputSchema` stripping (issue #270): the framework's own login,
          * OAuth linking and wallet login read identity secret columns back
          * over loopback HTTP with this key.
          */

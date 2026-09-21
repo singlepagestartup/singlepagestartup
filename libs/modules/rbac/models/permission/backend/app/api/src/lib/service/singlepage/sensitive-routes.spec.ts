@@ -64,6 +64,50 @@ describe("Given: the framework sensitive-route list", () => {
 
   /**
    * BDD Scenario
+   * Given: the subject count route and the identities listed below a subject.
+   * When: each is matched.
+   * Then: both are sensitive, because one counts subjects and the other answers with identity rows.
+   */
+  it("When: the subject count and nested identity reads are matched Then: reports both as sensitive", async () => {
+    const service = createService();
+
+    await expect(
+      service.isSensitiveRoute("/api/rbac/subjects/count", "GET"),
+    ).resolves.toBe(true);
+    await expect(
+      service.isSensitiveRoute(
+        "/api/rbac/subjects/2f0d0a4b-25af-43d6-a6f2-5a425784895c/identities",
+        "GET",
+      ),
+    ).resolves.toBe(true);
+    await expect(
+      service.isSensitiveRoute(
+        "/api/rbac/subjects/2f0d0a4b-25af-43d6-a6f2-5a425784895c/identities/8c1f0f3e-1f4a-4f0e-9d2b-73c2a5e1b0aa",
+        "GET",
+      ),
+    ).resolves.toBe(true);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the subject-scoped routes the seed leaves anonymous on purpose.
+   * When: they are matched after the subject rule was widened.
+   * Then: they stay public, so the widening did not overreach.
+   */
+  it("When: other subject-scoped routes are matched Then: leaves them public", async () => {
+    const service = createService();
+
+    for (const path of [
+      "/api/rbac/subjects/2f0d0a4b-25af-43d6-a6f2-5a425784895c/ecommerce-module/cart",
+      "/api/rbac/subjects/2f0d0a4b-25af-43d6-a6f2-5a425784895c/crm-module/forms",
+      "/api/rbac/subjects/2f0d0a4b-25af-43d6-a6f2-5a425784895c/social-module/chats",
+    ]) {
+      await expect(service.isSensitiveRoute(path, "GET")).resolves.toBe(false);
+    }
+  });
+
+  /**
+   * BDD Scenario
    * Given: reads that the seed leaves role-less on purpose.
    * When: they are matched against the list.
    * Then: none of them is sensitive, so the public surface is unchanged.

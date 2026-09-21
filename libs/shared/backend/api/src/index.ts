@@ -1,4 +1,10 @@
 export { queryBuilder } from "./lib/query-builder";
+/**
+ * Response serialisation applied at the REST boundary (issue #270). Exported so
+ * a module's hand-written handler can strip the same columns the shared REST
+ * handlers do.
+ */
+export { applyOutputSchema } from "./lib/output-schema";
 
 export { Seeder } from "./lib/seeder/Seeder";
 export { Dumper } from "./lib/dumper/Dumper";

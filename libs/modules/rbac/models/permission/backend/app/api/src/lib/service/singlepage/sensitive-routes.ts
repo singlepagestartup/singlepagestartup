@@ -14,9 +14,10 @@ import { IRouteRule } from "@sps/shared-utils";
  * The expressions are anchored on purpose: a path that merely contains
  * `identities` as part of another segment must not match, and each rule
  * declares its method so the same path under another verb is decided on its
- * own. The subject rule stops at the collection and the id form, because the
- * subject-scoped cart, CRM-form and chat routes below it are legitimately
- * anonymous.
+ * own. The subject rule covers the collection, its count and the id form, and
+ * separately the identities below a subject, because that route answers with
+ * identity rows. The other subject-scoped routes — cart, CRM form and chat —
+ * are legitimately anonymous and stay open.
  */
 export const sensitiveRoutes: IRouteRule[] = [
   {
@@ -24,7 +25,11 @@ export const sensitiveRoutes: IRouteRule[] = [
     methods: ["GET"],
   },
   {
-    regexPath: /^\/api\/rbac\/subjects(\/[0-9a-f-]+)?$/i,
+    regexPath: /^\/api\/rbac\/subjects(\/count|\/[0-9a-f-]+)?$/i,
+    methods: ["GET"],
+  },
+  {
+    regexPath: /^\/api\/rbac\/subjects\/[0-9a-f-]+\/identities(\/.*)?$/i,
     methods: ["GET"],
   },
   {

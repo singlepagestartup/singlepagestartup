@@ -6,7 +6,7 @@ import { inject, injectable } from "inversify";
 import { type IService } from "../../../../service";
 import { DI } from "../../../../di/constants";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { projectOutput } from "../output-schema";
+import { applyOutputSchema } from "../../../../output-schema";
 
 @injectable()
 export class Handler<
@@ -38,7 +38,7 @@ export class Handler<
       const entity = await this.service.update({ id: uuid, data });
 
       return c.json({
-        data: projectOutput({ c, service: this.service, data: entity }),
+        data: applyOutputSchema({ c, service: this.service, data: entity }),
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

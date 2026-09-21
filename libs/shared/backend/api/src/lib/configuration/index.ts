@@ -55,7 +55,7 @@ export interface IRepositoryConfiguration {
   insertSchema: ZodObject<any>;
   selectSchema: ZodObject<any>;
   /**
-   * Response projection applied at the REST boundary (issue #270), NOT in the
+   * Response shape applied at the REST boundary (issue #270), NOT in the
    * repository: internal flows read columns back out of repository results —
    * the RBAC identity salt, password hash and reset code are read by login,
    * OAuth linking and wallet login, several of them over loopback HTTP — so a
