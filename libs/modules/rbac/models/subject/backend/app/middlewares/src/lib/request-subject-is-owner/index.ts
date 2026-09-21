@@ -9,7 +9,14 @@ import * as jwt from "hono/jwt";
 export interface IMiddlewareGeneric {}
 
 export class Middleware {
-  init(): MiddlewareHandler<any, any, {}> {
+  /**
+   * `param` names the route parameter holding the subject id. It defaults to
+   * `id`; routes registered with another name - the identity routes use
+   * `uuid` - pass theirs instead of keeping their own copy of this check.
+   */
+  init(options: { param?: string } = {}): MiddlewareHandler<any, any, {}> {
+    const param = options.param || "id";
+
     return createMiddleware(async (c, next) => {
       try {
         if (!RBAC_JWT_SECRET) {
@@ -23,7 +30,7 @@ export class Middleware {
         const secretKey =
           c.req.header("X-RBAC-SECRET-KEY") || getCookie(c, "rbac.secret-key");
 
-        const id = c.req.param("id");
+        const id = c.req.param(param);
 
         if (!id) {
           throw new Error("Validation error. No id provided");

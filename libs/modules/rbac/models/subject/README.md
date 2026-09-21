@@ -42,10 +42,27 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `POST /rbac/subjects/authentication/email-and-password/registration`: register by email+password.
 - `POST /rbac/subjects/authentication/email-and-password/forgot-password`: request reset code.
 - `POST /rbac/subjects/authentication/email-and-password/reset-password`: reset password by code.
-- `POST /rbac/subjects/authentication/ethereum-virtual-machine`: EVM signature login.
+- `POST /rbac/subjects/authentication/ethereum-virtual-machine/nonce`: issue the single-use EIP-4361 message a wallet must sign.
+- `POST /rbac/subjects/authentication/ethereum-virtual-machine`: EVM signature login over that message.
 - `POST /rbac/subjects/authentication/oauth/{provider}`: start OAuth flow (`google`).
 - `GET /rbac/subjects/authentication/oauth/{provider}/callback`: OAuth provider callback.
 - `POST /rbac/subjects/authentication/oauth/exchange`: exchange one-time code to JWT/refresh.
+
+## Wallet Login Configuration
+
+- `RBAC_EVM_NONCE_LIFETIME_IN_SECONDS`: challenge TTL, and the upper bound on the age of `Issued At` in a signed message (default `120`).
+- `RBAC_EVM_MAX_CLOCK_SKEW_IN_SECONDS`: how far ahead of the server a wallet clock may be (default `0`, so a future-dated message is refused).
+- `RBAC_EVM_LEGACY_TIMESTAMP_MESSAGE`: compatibility knob, default `false`. Wallet login signs a message the server issued; set this to `true` for one release if a project client still signs a bare millisecond timestamp. The lower bound applies on that path too, so a future-dated timestamp is refused either way.
+- `RBAC_EVM_RPC_URL`: RPC endpoint used for signature verification (default empty, which keeps viem's chain default, a public endpoint).
+- `RBAC_EVM_RPC_TIMEOUT_IN_MILLISECONDS`: deadline for that call (default `5000`).
+
+## Wallet Login Rules
+
+- The client asks the nonce route for a challenge, the wallet signs the returned message unchanged, and the client posts `{ address, message, signature }` back. The message is never assembled in the browser.
+- The challenge is an `rbac.action` row (`evm-nonce`) bound to the address, the chain and the purpose (`authentication` or `link`), with an explicit `expiresAt`. It is claimed by a conditional update (`POST /rbac/actions/{id}/consume`) whose predicate covers the row type, the unconsumed mark and the expiry, so two requests holding the same nonce cannot both proceed.
+- Verification order: parse, domain and URI, `Issued At` bounded in both directions, address, signature, then the claim. No token is signed and no identity is written before the claim succeeds.
+- The identity-linking route `POST /rbac/subjects/{uuid}/identities` uses the same verifier with `purpose: "link"`, and its ownership check is the `RequestSubjectIdOwner` route middleware.
+- A project that signs in on another origin, or wants another message template, overrides `getAuthenticationEthereumVirtualMachineNonceService()` and `getAuthenticationEthereumVirtualMachineVerifyService()` in the `startup` service layer.
 
 ## OAuth Configuration
 

@@ -24,6 +24,16 @@ export const allowedRoutes: IRouteRule[] = [
     regexPath: /\/api\/rbac\/subjects\/authentication\/oauth\/.*/,
     methods: ["GET", "POST"],
   },
+  /**
+   * The wallet login challenge. The rule below already matches it as a prefix,
+   * but that one is due to be anchored; an explicit entry keeps an anonymous
+   * caller able to ask for the value it is then required to sign.
+   */
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/authentication\/ethereum-virtual-machine\/nonce$/,
+    methods: ["POST"],
+  },
   {
     regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
     methods: ["POST"],

@@ -15,27 +15,27 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { persistAuthenticationTokens } from "./persist-authentication-tokens";
 
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
+  mute?: boolean;
 };
 
 export type IResult =
-  IParentResult["IAuthenticationEthereumVirtualMachineResult"];
+  IParentResult["IAuthenticationEthereumVirtualMachineNonceResult"];
 
 export function action(props: IProps) {
   return useMutation<
     IResult,
     DefaultError,
-    IParentProps["IAuthenticationEthereumVirtualMachineProps"]
+    IParentProps["IAuthenticationEthereumVirtualMachineNonceProps"]
   >({
-    mutationKey: [`${route}/authentication/ethereum-virtual-machine`],
+    mutationKey: [`${route}/authentication/ethereum-virtual-machine/nonce`],
     mutationFn: async (
-      mutationFunctionProps: IParentProps["IAuthenticationEthereumVirtualMachineProps"],
+      mutationFunctionProps: IParentProps["IAuthenticationEthereumVirtualMachineNonceProps"],
     ) => {
       try {
-        const result = await api.authenticationEthereumVirtualMachine({
+        const result = await api.authenticationEthereumVirtualMachineNonce({
           ...mutationFunctionProps,
           options: {
             ...mutationFunctionProps.options,
@@ -44,11 +44,11 @@ export function action(props: IProps) {
           host: clientHost,
         });
 
-        persistAuthenticationTokens(result);
-
         return result;
       } catch (error: any) {
-        toast.error(error.message);
+        if (!props?.mute) {
+          toast.error(error.message);
+        }
 
         throw error;
       }
@@ -56,7 +56,7 @@ export function action(props: IProps) {
     onSuccess(data) {
       globalActionsStore.getState().addAction({
         type: "mutation",
-        name: `${route}/authentication/ethereum-virtual-machine`,
+        name: `${route}/authentication/ethereum-virtual-machine/nonce`,
         props: this,
         result: data,
         timestamp: Date.now(),

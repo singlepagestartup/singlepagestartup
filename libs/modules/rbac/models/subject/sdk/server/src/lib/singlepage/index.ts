@@ -146,6 +146,11 @@ import {
   type IResult as IAuthenticationEthereumVirtualMachineResult,
 } from "./authentication/ethereum-virtual-machine";
 import {
+  action as authenticationEthereumVirtualMachineNonce,
+  type IProps as IAuthenticationEthereumVirtualMachineNonceProps,
+  type IResult as IAuthenticationEthereumVirtualMachineNonceResult,
+} from "./authentication/ethereum-virtual-machine/nonce";
+import {
   action as authenticationEmailAndPasswordAuthentication,
   type IProps as IAuthenticationEmailAndPasswordAuthenticationProps,
   type IResult as IAuthenticationEmailAndPasswordAuthenticationResult,
@@ -431,6 +436,7 @@ export type IProps = {
   IAuthenticationMeProps: IAuthenticationMeProps;
   IAuthenticationInitProps: IAuthenticationInitProps;
   IAuthenticationEthereumVirtualMachineProps: IAuthenticationEthereumVirtualMachineProps;
+  IAuthenticationEthereumVirtualMachineNonceProps: IAuthenticationEthereumVirtualMachineNonceProps;
   IAuthenticationEmailAndPasswordAuthenticationProps: IAuthenticationEmailAndPasswordAuthenticationProps;
   IAuthenticationEmailAndPasswordRegistrationProps: IAuthenticationEmailAndPasswordRegistrationProps;
   IAuthenticationEmailAndPasswordForgotPasswordProps: IAuthenticationEmailAndPasswordForgotPasswordProps;
@@ -518,6 +524,7 @@ export type IResult = {
   IAuthenticationMeResult: IAuthenticationMeResult;
   IAuthenticationInitResult: IAuthenticationInitResult;
   IAuthenticationEthereumVirtualMachineResult: IAuthenticationEthereumVirtualMachineResult;
+  IAuthenticationEthereumVirtualMachineNonceResult: IAuthenticationEthereumVirtualMachineNonceResult;
   IAuthenticationEmailAndPasswordAuthenticationResult: IAuthenticationEmailAndPasswordAuthenticationResult;
   IAuthenticationEmailAndPasswordRegistrationResult: IAuthenticationEmailAndPasswordRegistrationResult;
   IAuthenticationEmailAndPasswordForgotPasswordResult: IAuthenticationEmailAndPasswordForgotPasswordResult;
@@ -612,6 +619,7 @@ export const api = {
   authenticationMe,
   authenticationInit,
   authenticationEthereumVirtualMachine,
+  authenticationEthereumVirtualMachineNonce,
   authenticationEmailAndPasswordAuthentication,
   authenticationEmailAndPasswordRegistration,
   authenticationEmailAndPasswordForgotPassword,
