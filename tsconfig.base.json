@@ -32,6 +32,7 @@
       "@sps/agent/*": ["libs/modules/agent/*"],
       "@sps/analytic/*": ["libs/modules/analytic/*"],
       "@sps/backend-utils": ["libs/shared/backend/utils/src/index.ts"],
+      "@sps/backend-utils/*": ["libs/shared/backend/utils/src/lib/*"],
       "@sps/billing/*": ["libs/modules/billing/*"],
       "@sps/blog/*": ["libs/modules/blog/*"],
       "@sps/broadcast/*": ["libs/modules/broadcast/*"],

@@ -110,6 +110,13 @@ function makeConfig() {
 
       return config;
     },
+    // Specs are excluded from this app's tsconfig so Next does not compile
+    // them, which leaves the build's bundled linter unable to parse them.
+    // Linting runs as its own target (`nx run host:eslint:lint`), so the build
+    // does not need to repeat it.
+    eslint: {
+      ignoreDuringBuilds: true,
+    },
     logging: false,
   });
 }
