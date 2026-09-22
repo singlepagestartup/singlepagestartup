@@ -1320,6 +1320,8 @@ paths:
   # apps/telegram
   /telegram/run:
     $ref: "./apps/telegram/paths.yaml#/paths/~1telegram~1run"
+  /telegram/stop:
+    $ref: "./apps/telegram/paths.yaml#/paths/~1telegram~1stop"
 
 components:
   securitySchemes:

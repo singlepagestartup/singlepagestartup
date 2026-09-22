@@ -1,5 +1,6 @@
 #!/bin/bash
 . ../../tools/deployer/get_env.sh
+. ../../tools/deployer/generate_secret.sh
 
 add_env() {
     echo "$1=$2" >> .env
@@ -14,6 +15,8 @@ fi
 umask 077
 
 echo "TELEGRAM_SERVICE_BOT_TOKEN=" >> .env
+TELEGRAM_SERVICE_WEBHOOK_SECRET=$(generate_secret 32) || exit 1
+add_env "TELEGRAM_SERVICE_WEBHOOK_SECRET" $TELEGRAM_SERVICE_WEBHOOK_SECRET
 
 if [ ! -z $CODESPACE_NAME ]; then
     NEXT_PUBLIC_TELEGRAM_SERVICE_URL=https://$CODESPACE_NAME-8000.app.github.dev
