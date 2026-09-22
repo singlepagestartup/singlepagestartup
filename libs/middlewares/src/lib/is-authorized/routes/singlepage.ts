@@ -43,8 +43,8 @@ export const allowedRoutes: IRouteRule[] = [
   /**
    * The read surface of the public modules, one shape per route: find, count
    * and find-by-id on every entity, plus the three page reads the host app
-   * calls anonymously. The single unanchored prefix rule these replaced also
-   * opened /dump on all 30 of their entities, and would open whatever route a
+   * calls anonymously. The single unanchored prefix rule these replaced
+   * matched every path under those modules, so it would open whatever route a
    * module adds next (issue #276).
    */
   {

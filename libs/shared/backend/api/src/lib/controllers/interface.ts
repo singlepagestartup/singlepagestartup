@@ -16,12 +16,6 @@ export interface IHttpRoute {
   handler: Handler<any, string, BlankInput, HandlerResponse<any>>;
   method: "GET" | "POST" | "DELETE" | "PATCH";
   middlewares?: ReturnType<typeof createMiddleware>[];
-  /**
-   * Marks a route only an operator holding the RBAC secret may call. Routes
-   * that are never anonymous default to true when they are bound; a project
-   * that must re-open one sets it to false deliberately (issue #276).
-   */
-  requiresSecret?: boolean;
 }
 
 export interface IRoute extends IHttpRoute {}
@@ -50,6 +44,4 @@ export interface IController<DTO extends Record<string, unknown>> {
   create: (c: Context, next: any) => Response | Promise<Response>;
   update: (c: Context, next: any) => Response | Promise<Response>;
   delete: (c: Context, next: any) => Response | Promise<Response>;
-  dump: (c: Context, next: any) => Response | Promise<Response>;
-  seed: (c: Context, next: any) => Response | Promise<Response>;
 }

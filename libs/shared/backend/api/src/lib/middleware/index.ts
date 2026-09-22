@@ -12,7 +12,3 @@ export {
   Middleware as ParseBodyMiddleware,
   type IGeneric as IParseBodyMiddlewareGeneric,
 } from "./parse-body";
-export {
-  Middleware as RequireRbacSecretMiddleware,
-  type IMiddlewareGeneric as IRequireRbacSecretMiddlewareGeneric,
-} from "./require-rbac-secret";
