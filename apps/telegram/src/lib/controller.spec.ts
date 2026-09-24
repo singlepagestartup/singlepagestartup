@@ -13,9 +13,9 @@
 
 const mockOperatorSecretHandler = jest.fn();
 
-jest.mock("@sps/middlewares/operator-secret", () => {
+jest.mock("@sps/middlewares", () => {
   return {
-    Middleware: class {
+    OperatorSecretMiddleware: class {
       init() {
         return mockOperatorSecretHandler;
       }
