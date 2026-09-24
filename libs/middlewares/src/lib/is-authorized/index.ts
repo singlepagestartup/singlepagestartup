@@ -65,7 +65,7 @@ export class Middleware {
       }
 
       try {
-        const headers: HeadersInit = {
+        const headers: Record<string, string> = {
           ...(secretKey ? { "X-RBAC-SECRET-KEY": secretKey } : {}),
           ...(authorization ? { Authorization: authorization } : {}),
           "Cache-Control": "no-store",
