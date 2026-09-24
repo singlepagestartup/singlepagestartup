@@ -1,9 +1,4 @@
-// Imported from its own entry rather than the package barrel: this module
-// uses node:crypto, and the barrel is also reachable from browser-bundled code.
-import {
-  rbacSecretMatches,
-  readRbacSecret,
-} from "@sps/backend-utils/rbac-secret";
+import { rbacSecretMatches, readRbacSecret } from "@sps/backend-utils";
 import { MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
