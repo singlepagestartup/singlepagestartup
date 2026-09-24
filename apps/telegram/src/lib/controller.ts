@@ -4,10 +4,7 @@ import { Service } from "./service";
 import { Context, MiddlewareHandler } from "hono";
 import { TelegarmBot } from "./telegram-bot";
 import { HTTPException } from "hono/http-exception";
-// Imported from its own path rather than the package barrel: the barrel also
-// pulls the API middlewares, and with them the KV provider and the broadcast
-// and RBAC SDKs, into a transport that needs none of them.
-import { Middleware as OperatorSecretMiddleware } from "@sps/middlewares/operator-secret";
+import { OperatorSecretMiddleware } from "@sps/middlewares";
 
 @injectable()
 export class Controller {

@@ -59,6 +59,33 @@ describe("template render service", () => {
   });
 
   /**
+   * BDD Scenario: A JSON content type does not change how the body is read
+   *
+   * Given the host generator answers with a JSON content type
+   * When the template render service fetches the rendered template
+   * Then it returns the body unchanged, because it reads the body as text
+   */
+  it("returns the body unchanged when the host generator declares JSON", async () => {
+    const renderedTemplate = JSON.stringify({
+      method: "sendMessage",
+      props: ["Message text", { parse_mode: "MarkdownV2" }],
+    });
+    jest.spyOn(global, "fetch").mockResolvedValue(
+      new Response(renderedTemplate, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }) as any,
+    );
+    const service = createService();
+
+    await expect(
+      service.render({ id: "template-id", type: "telegram", payload: {} }),
+    ).resolves.toBe(renderedTemplate);
+  });
+
+  /**
    * BDD Scenario: Empty generator body is treated as not rendered
    *
    * Given the host generator returns a successful response with an empty body

@@ -267,6 +267,8 @@ export class Middleware {
 
           return jsonResponse;
         }
+
+        return undefined;
       });
 
       if (pipe.length > index + 1) {
