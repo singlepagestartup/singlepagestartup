@@ -5,10 +5,7 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
-// Imported from its own path rather than the package barrel: the barrel also
-// re-exports the operator-credential helpers, which pull node:crypto into a
-// module the host bundles for the browser.
-import { util as logger } from "@sps/backend-utils/logger";
+import { logger } from "@sps/backend-utils";
 
 export async function action(props: { catchErrors?: boolean; host?: string }) {
   try {
