@@ -27,6 +27,14 @@ export type IChangePassword = {
     newPassword: string;
   };
 };
+
+/**
+ * Salt for the bcrypt round a sign-in spends when no usable identity answers
+ * for the address (issue #310), so an unknown address takes as long as a wrong
+ * password. Cost 10 matches the salts registration generates.
+ */
+const UNKNOWN_IDENTITY_SALT = bcrypt.genSaltSync(10);
+
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   /**
@@ -176,27 +184,25 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       },
     });
 
-    if (!identities?.length) {
-      throw new Error("Not Found error. Invalid credentials");
-    }
-
-    if (identities.length > 1) {
+    if (identities && identities.length > 1) {
       throw new Error("Validation error. Multiple identities found");
     }
 
-    const identity = identities[0];
+    const identity = identities?.[0];
 
-    if (!identity.salt) {
-      throw new Error("Validation error. No salt found for this identity");
-    }
-
+    /**
+     * One answer for an unknown address, an identity without a salt and a
+     * wrong password (issue #310): the same error from one statement, after
+     * one bcrypt round on every path, so neither the message nor the time
+     * tells a caller whether the address has an account.
+     */
     const saltedPassword = await bcrypt.hash(
       props.data.password,
-      identity.salt,
+      identity?.salt || UNKNOWN_IDENTITY_SALT,
     );
 
-    if (saltedPassword !== identity.password) {
-      throw new Error("Validation error. Invalid credentials");
+    if (!identity?.salt || saltedPassword !== identity.password) {
+      throw new Error("Authentication error. Invalid credentials");
     }
 
     if (identity.code) {

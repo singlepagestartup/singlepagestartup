@@ -1,11 +1,14 @@
 /**
- * BDD Suite: password registration against an address another method holds.
+ * BDD Suite: password registration and sign-in against stored identities.
  *
  * Given: identities stored with the providers that created them.
- * When: a password registration arrives for an address.
- * Then: it is refused when a provider that proves the address already holds
- *       it, and proceeds otherwise, storing a bcrypt hash (issue #280 interim
- *       guard).
+ * When: a password registration or a password sign-in arrives for an address.
+ * Then: registration is refused when a provider that proves the address
+ *       already holds it, and proceeds otherwise, storing a bcrypt hash (issue
+ *       #280 interim guard); sign-in answers an unknown address, an identity
+ *       without a salt and a wrong password with one error after one bcrypt
+ *       round each, and returns the identity for the right password (issue
+ *       #310).
  */
 
 import bcrypt from "bcrypt";
@@ -39,11 +42,16 @@ const mockCreate = jest.fn(async (props: { data: IRow }) => {
   return { id: "identity-new", ...props.data };
 });
 
+const mockUpdate = jest.fn(async (props: { id: string; data: IRow }) => {
+  return { ...props.data, id: props.id };
+});
+
 jest.mock("@sps/rbac/models/identity/sdk/server", () => {
   return {
     api: {
       find: (props: any) => mockFind(props),
       create: (props: any) => mockCreate(props),
+      update: (props: any) => mockUpdate(props),
     },
   };
 });
@@ -158,5 +166,119 @@ describe("Given: a password registration for an address", () => {
       email: "new@example.com",
       provider: "email_and_password",
     });
+  });
+});
+
+function signIn(login: string, password: string) {
+  return new Service({} as any).emailAndPassowrd({
+    data: { type: "login", login, password },
+  });
+}
+
+async function storeIdentity(props: { password: string; withSalt?: boolean }) {
+  const salt = await bcrypt.genSalt(4);
+
+  mockRows = [
+    {
+      id: "identity-owner",
+      email: "owner@example.com",
+      provider: "email_and_password",
+      ...(props.withSalt === false ? {} : { salt }),
+      password: await bcrypt.hash(props.password, salt),
+    },
+  ];
+}
+
+async function rejection(promise: Promise<unknown>) {
+  try {
+    await promise;
+  } catch (error) {
+    return (error as Error).message;
+  }
+
+  throw new Error("The sign-in was expected to be refused");
+}
+
+describe("Given: a password sign-in for an address", () => {
+  beforeEach(() => {
+    mockRows = [];
+    mockFind.mockClear();
+    mockUpdate.mockClear();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: one password identity holds the address.
+   * When: a sign-in arrives for an unknown address and another with a wrong
+   *       password for the known one.
+   * Then: both are refused with the same error.
+   */
+  it("refuses an unknown address and a wrong password with the same error", async () => {
+    await storeIdentity({ password: "correct horse battery" });
+
+    const unknown = await rejection(
+      signIn("nobody@example.com", "correct horse battery"),
+    );
+    const wrong = await rejection(
+      signIn("owner@example.com", "incorrect horse battery"),
+    );
+
+    expect(unknown).toBe("Authentication error. Invalid credentials");
+    expect(wrong).toBe(unknown);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: one password identity holds the address.
+   * When: a sign-in arrives for an unknown address and another with a wrong
+   *       password.
+   * Then: each spends exactly one bcrypt round, so the time taken does not
+   *       tell the two apart.
+   */
+  it("spends one bcrypt round for an unknown address as for a wrong password", async () => {
+    await storeIdentity({ password: "correct horse battery" });
+
+    const hash = jest.spyOn(bcrypt, "hash");
+
+    await rejection(signIn("nobody@example.com", "correct horse battery"));
+
+    expect(hash).toHaveBeenCalledTimes(1);
+
+    await rejection(signIn("owner@example.com", "incorrect horse battery"));
+
+    expect(hash).toHaveBeenCalledTimes(2);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a password identity stored without a salt.
+   * When: a sign-in arrives for it.
+   * Then: it is refused with the same error as an unknown address.
+   */
+  it("refuses an identity without a salt with the same error", async () => {
+    await storeIdentity({ password: "correct horse battery", withSalt: false });
+
+    await expect(
+      signIn("owner@example.com", "correct horse battery"),
+    ).rejects.toThrow("Authentication error. Invalid credentials");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: one password identity holds the address.
+   * When: a sign-in arrives with the right password in another letter case of
+   *       the address.
+   * Then: the identity is returned.
+   */
+  it("returns the identity for the right password", async () => {
+    await storeIdentity({ password: "correct horse battery" });
+
+    await expect(
+      signIn("Owner@Example.com", "correct horse battery"),
+    ).resolves.toMatchObject({ id: "identity-owner" });
   });
 });

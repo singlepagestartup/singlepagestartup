@@ -6,6 +6,17 @@ import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import bcrypt from "bcrypt";
 import { getHttpErrorType } from "@sps/backend-utils";
 
+/**
+ * The answer to every request, whether or not a reset code was stored
+ * (issue #310), so the response does not tell whether an address has an
+ * account.
+ */
+const ACCEPTED = {
+  data: {
+    ok: true,
+  },
+};
+
 export class Handler {
   service: Service;
 
@@ -46,12 +57,10 @@ export class Handler {
         },
       });
 
-      if (!identities?.length) {
-        throw new Error("Not Found error. No identities found");
-      }
-
-      if (identities.length > 1) {
-        throw new Error("Authentication error. Multiple identities found");
+      // A reset code is stored only for exactly one identity linked to a
+      // subject; every other address gets the same answer.
+      if (identities?.length !== 1) {
+        return c.json(ACCEPTED, 201);
       }
 
       const subjectsToIdentities = await this.service.subjectsToIdentities.find(
@@ -71,7 +80,7 @@ export class Handler {
       );
 
       if (!subjectsToIdentities?.length) {
-        throw new Error("Not Found error. No subjects to identities found");
+        return c.json(ACCEPTED, 201);
       }
 
       const code = bcrypt.genSaltSync(10).replaceAll("/", "");
@@ -120,14 +129,7 @@ export class Handler {
       //   },
       // });
 
-      return c.json(
-        {
-          data: {
-            ok: true,
-          },
-        },
-        201,
-      );
+      return c.json(ACCEPTED, 201);
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
