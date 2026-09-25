@@ -5,7 +5,6 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
-import { logger } from "@sps/backend-utils";
 
 export async function action(props: { catchErrors?: boolean; host?: string }) {
   try {
@@ -59,7 +58,7 @@ export async function action(props: { catchErrors?: boolean; host?: string }) {
 
     return paths;
   } catch (error) {
-    logger.error(error);
+    console.error(error);
     return [];
   }
 }
