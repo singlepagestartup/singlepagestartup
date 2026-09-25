@@ -7,6 +7,29 @@ Audio transcription runs inside the API/RBAC message flow and uses:
 - `OPEN_AI_API_KEY` - required when audio transcription should run.
 - `OPEN_AI_TRANSCRIPTION_MODEL` - optional, defaults to `gpt-4o-transcribe`.
 
+Error responses and bug reports come from the shared exception filter
+(`libs/shared/backend/api/src/lib/filters/exception`), which also serves the
+Telegram service, and use:
+
+- `API_ERROR_DETAILS` - `full` adds `stack` and `cause` to every error body;
+  `brief` leaves them out. Unset, it is `full` when `NODE_ENV` is `development`
+  or `test` and `brief` otherwise, including an unset `NODE_ENV`, which is how
+  the Docker image and the deployer run the API. `create_env.sh` writes `full`
+  and the deployer template writes `brief`. A request that carries the operator
+  secret, in the `X-RBAC-SECRET-KEY` header or the `rbac.secret-key` cookie,
+  receives `stack` and `cause` in both modes.
+- `BUG_SERVICE_TELEGRAM_BOT_TOKEN`, `BUG_SERVICE_TELEGRAM_CHAT_ID`,
+  `BUG_SERVICE_PROJECT` - optional. When all three are set, a 5xx is sent to
+  that Telegram chat after the response has been returned; a failed send is
+  logged and never changes the response.
+- `BUG_SERVICE_REPORT_WINDOW_IN_SECONDS` - optional, defaults to `300`. A
+  failure is reported once per status, method and route pattern within this
+  window; repeats inside it are only logged.
+
+Every error body carries `requestId`, and the API log records the same failure
+with its message, stack and causes under `🚨 Exception [<requestId>]`, so a
+brief body is enough to find the full record in the container log.
+
 ## Guidelines
 
 - `apps/api/app.ts` is the **only** host: mount every module backend app via `app.route("/api/<module>", moduleApp.hono)`; modules must not expose their own servers.

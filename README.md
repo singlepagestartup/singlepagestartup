@@ -430,9 +430,11 @@ If you need to understand why data updates/refetches happen in UI (chat, cart, c
 
 - All errors intercepted through `ExceptionFilter`
 - Standardized error responses:
-  - `statusCode` — error code
-  - `message` — error description
-  - `requestId` — unique ID for request traceability
+  - `status` — HTTP status code
+  - `error` — error message
+  - `requestId` — unique ID for request traceability; the API log records the failure with its stack under `🚨 Exception [<requestId>]`
+  - `path`, `method` — the failed request
+  - `stack`, `cause` — only when `API_ERROR_DETAILS` resolves to `full` or the request carries the operator secret (see `apps/api/README.md`, "Environment")
 
 #### Automatic Error Categorization
 

@@ -149,6 +149,13 @@ maintenance window, and leaving it set is an explicit decision to keep running
 on an authorization bypass that can be found offline. The report names keys and
 verdicts only, never a value.
 
+`tools/deployer/api/api.env.j2` writes `API_ERROR_DETAILS=brief`, so a
+deployment answers errors without the stack trace and the cause chain. Each
+error body still carries a `requestId`, and the API container log holds the full
+record under that id. A request sent with the operator secret receives the full
+body. To return the full body to every caller, add `API_ERROR_DETAILS=full` to
+the variables `api.sh` passes to `create_api.yaml`.
+
 ### Rotating the secrets of a deployment that already bootstrapped
 
 Until this change, the bootstrap scripts derived every generated credential from
