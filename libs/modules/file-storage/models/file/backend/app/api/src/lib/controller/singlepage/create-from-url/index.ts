@@ -1,7 +1,11 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
+import {
+  FILE_STORAGE_FOLDER,
+  FILE_STORAGE_MAX_UPLOAD_BYTES,
+  FILE_STORAGE_PROVIDER,
+} from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
 import { fileTypeFromBuffer } from "file-type";
 import { imageSize } from "image-size";
@@ -32,7 +36,14 @@ export class Handler {
         throw new Error("Validation error. Invalid url");
       }
 
-      const file = await fetchOutboundUrl(data.url)
+      const file = await fetchOutboundUrl(
+        data.url,
+        {},
+        {
+          maxResponseBytes: FILE_STORAGE_MAX_UPLOAD_BYTES,
+          limitName: "upload",
+        },
+      )
         .then(async (res) => {
           return await res.blob();
         })

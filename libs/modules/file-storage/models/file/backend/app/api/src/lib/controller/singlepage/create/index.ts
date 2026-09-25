@@ -16,10 +16,23 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      const body = await c.req.parseBody();
+      const body = await c.req.parseBody({ all: true });
 
       if (!body) {
         throw new Error("Validation error. Invalid body");
+      }
+
+      /**
+       * A file record keeps one file in its `file` column, so an upload
+       * carries one file (issue #304). Repeated fields are parsed as arrays,
+       * so a second file is counted here instead of replacing the first.
+       */
+      const fileCount = Object.values(body)
+        .flat()
+        .filter((value) => value instanceof File).length;
+
+      if (fileCount > 1) {
+        throw new Error("Validation error. Multiple files are not allowed");
       }
 
       const parsedBody: {

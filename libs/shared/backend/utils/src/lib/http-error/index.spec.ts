@@ -124,6 +124,19 @@ describe("util — HTTP error classification", () => {
     });
   });
 
+  // ------------------- 413 PAYLOAD TOO LARGE ERROR -------------------
+  describe("413 - Payload Too Large error", () => {
+    test.each([
+      "Payload Too Large",
+      "Payload Too Large error. The upload limit is 52428800 bytes",
+      "payload too large",
+    ])("maps '%s' → 413 Payload Too Large error", (msg) => {
+      const result = util(new Error(msg));
+      expect(result.status).toBe(413);
+      expect(result.category).toBe("Payload Too Large error");
+    });
+  });
+
   // ------------------- 422 ZOD ISSUE PAYLOADS -------------------
   describe("422 - serialized zod issues", () => {
     function zodError(issues: unknown[]) {
