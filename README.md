@@ -648,6 +648,12 @@ Detailed documentation for each module can be found in their respective director
 - [startup](./libs/modules/startup/README.md) - project-specific models/relations and custom widgets.
 - [website-builder](./libs/modules/website-builder/README.md) - UI components and layout-building widgets.
 
+## Security
+
+Report a weakness through GitHub private vulnerability reporting, never in a
+public issue. [SECURITY.md](./SECURITY.md) has the reporting steps, the
+response and disclosure policy, and the deployment hardening pointers.
+
 ## License
 
 SinglePageStartup is released under the MIT License. You may use, copy, modify, merge, publish, distribute, sublicense and sell copies of the code, including in commercial products, provided the copyright notice and the permission notice travel with it. The software comes with no warranty.
