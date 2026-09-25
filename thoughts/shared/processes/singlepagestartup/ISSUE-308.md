@@ -3,9 +3,9 @@ issue_number: 308
 issue_title: "Anchor the remaining authorization allow rules and restrict CORS origins"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-26T03:00:00Z
+last_updated: 2026-09-26T03:25:00Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-308 - Anchor the remaining authorization allow rules and restrict CORS origins
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: commit, push and open the pull request; then the lead reviews
+- Implement: completed
+- Current phase: complete
+- Next step: code review of pull request #341, then merge; rebase on #328 if it lands first
 
 ## Phase Notes
 
@@ -46,7 +46,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: all four phases landed as planned. Every framework allow rule is anchored at both ends; the channel messages, channel by id, channel links and RBAC graph reads now go through the permission service; the dead origin write is gone; `API_CORS_ALLOWED_ORIGINS` and `resolveCorsOrigin` limit the echoed origins when set, in the API, Telegram and OpenAPI apps; the value is documented and wired through the deployer. Unit lanes, lint and type-check match or improve on the baseline, each guard fails its spec when reverted, and HTTP probes on port 4308 show the before and after.
-- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-308-progress.md` (evidence per phase).
+- Outputs: commits `9db93cb1e0` (allow-list) and `41f13af908` (CORS origins), `thoughts/shared/handoffs/singlepagestartup/ISSUE-308-progress.md` (evidence per phase), pull request #341 with its description in `thoughts/shared/prs/341_description.md`.
 - Notes: the throwaway channel, message and anonymous subjects were deleted and the API stopped. The Telegram and OpenAPI apps were checked in process rather than on a port, so the Telegram bot configured in the local environment never registered a webhook.
 
 ## Incident Log

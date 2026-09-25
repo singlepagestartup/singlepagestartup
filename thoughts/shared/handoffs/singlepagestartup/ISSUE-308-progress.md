@@ -3,7 +3,8 @@ issue_number: 308
 issue_title: "Anchor the remaining authorization allow rules and restrict CORS origins"
 start_date: 2026-09-25T22:55:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-308.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-308 - Anchor the remaining authorization allow rules and restrict CORS origins
@@ -118,8 +119,8 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/341
+- [x] PR number: 341
 
 ### Final Status
 
@@ -129,4 +130,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-09-26T03:10:00+03:00
+**Last updated**: 2026-09-26T03:25:00+03:00
