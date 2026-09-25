@@ -11,10 +11,10 @@ export interface IValidateWebhookIdentifiersProps {
  * are used as filter values.
  *
  * A `uuidFields` entry must be a canonical uuid. The shared query builder
- * rewrites an `eq` filter on a uuid column into a text `LIKE` when the value is
- * not a canonical uuid, so an unvalidated identifier either matches unrelated
- * rows or silently returns nothing. The same `validate` predicate is used here
- * and in `libs/shared/backend/api/src/lib/query-builder/filters.ts`.
+ * compares it with the uuid column as it arrives, and PostgreSQL rejects a
+ * value that is not a uuid, which the error mapper answers as a 500 carrying
+ * that value into the response, the log and the bug report. Checking it first
+ * refuses it with a 400 before any query runs.
  *
  * A `stringFields` entry must be a string when the provider sends it. An empty
  * value is accepted, because providers echo fields that SPS never sets.
