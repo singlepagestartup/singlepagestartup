@@ -558,7 +558,7 @@ describe("cache-bump / broadcast topic parity (issue #195 F2)", () => {
  *        stalled request.
  */
 describe("KV failures degrade the cache, not the request", () => {
-  const collectionPath = "/api/rbac/subjects";
+  const collectionPath = "/api/ecommerce/orders";
   const collectionUrl = `http://api:4000${collectionPath}`;
 
   function createFailOpenMiddleware(store: unknown) {
@@ -724,7 +724,7 @@ describe("KV failures degrade the cache, not the request", () => {
  *        response above the admission cap is served but not stored.
  */
 describe("bounded cache generations", () => {
-  const collectionPath = "/api/rbac/subjects";
+  const collectionPath = "/api/ecommerce/orders";
   const collectionUrl = `http://api:4000${collectionPath}`;
 
   function createTtlRecordingStore() {

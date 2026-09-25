@@ -45,4 +45,16 @@ export const excludedRoutes: IRouteRule[] = [
     regexPath:
       /^\/api\/rbac\/subjects\/[0-9a-f-]+\/social-module\/profiles\/[0-9a-f-]+\/chats\/[0-9a-f-]+\/actions$/i,
   },
+
+  // --- Authorization-sensitive reads (issue #270) ---
+  // The cache answers before the is-authorized middleware runs
+  // (`apps/api/app.ts`), so a response stored for a privileged caller could be
+  // replayed to an anonymous one. These are the same route families the RBAC
+  // permission service refuses to leave public by omission
+  // (`.../models/permission/.../service/singlepage/sensitive-routes.ts`);
+  // excluding them removes the interaction without reordering the stack.
+  { regexPath: /^\/api\/rbac\/identities(\/.*)?$/i },
+  { regexPath: /^\/api\/rbac\/subjects(\/[0-9a-f-]+)?$/i },
+  { regexPath: /^\/api\/rbac\/subjects-to-identities(\/.*)?$/i },
+  { regexPath: /^\/api\/rbac\/roles(\/.*)?$/i },
 ];

@@ -12,3 +12,8 @@ export {
   type ILocalizedFieldValue,
   type INormalizeLocalizedFieldOptions,
 } from "./localized-field";
+export {
+  assertCredentialColumnsAreHashed,
+  isBcryptHash,
+  isBcryptSalt,
+} from "./bcrypt-columns";
