@@ -20,6 +20,7 @@ import {
 } from "./sales";
 import { parseDocument } from "../../../../../tools/studio/workspace/document";
 import { salesSegmentPages } from "../components/SalesSegment";
+import { splitProductDocument } from "./economics";
 import { parseProductPresentation } from "./presentation-data";
 import {
   resolveProductSections,
@@ -190,6 +191,9 @@ function view(
       );
     }
     const model = catalog.models.find(({ id }) => id === entry.model);
+    const productHalves = splitProductDocument(
+      documentSource(catalog.layer, entry.product),
+    );
     const sections = resolveProductSections(
       entry.sections,
       catalog.layer,
@@ -247,32 +251,24 @@ function view(
         "content",
       ),
       documents: [
-        ...(model
-          ? [
-              {
-                content: documentSource(catalog.layer, model.source),
-                kind: "model" as const,
-                label: "02 Operations & Economics",
-                confirmation:
-                  workspaceReviews[
-                    id === "singlepage" ? "singlepage" : "default"
-                  ].get(`model.${model.id}`)?.confirmation ??
-                  documentConfirmation(
-                    documentSource(catalog.layer, model.source),
-                    catalog.layer,
-                    "markdown",
-                  ),
-                sourcePath: `apps/studio/workspace/products/${catalog.layer}/${model.source}`,
-              },
-            ]
-          : []),
         {
-          content: documentSource(catalog.layer, entry.product),
+          content: productHalves.offer,
           kind: "product" as const,
           confirmation: confirmation("product", entry.product),
           label: "01 Product" as const,
           sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.product}`,
         },
+        ...(productHalves.economics
+          ? [
+              {
+                content: productHalves.economics,
+                kind: "model" as const,
+                label: "02 Operations & Economics",
+                confirmation: confirmation("product", entry.product),
+                sourcePath: `apps/studio/workspace/products/${catalog.layer}/${entry.product}`,
+              },
+            ]
+          : []),
         {
           content: documentSource(catalog.layer, entry.research),
           kind: "research" as const,

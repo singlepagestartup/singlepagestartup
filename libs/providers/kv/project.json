@@ -4,7 +4,8 @@
   "sourceRoot": "libs/providers/kv/src",
   "projectType": "library",
   "targets": {
-    "tsc:build": {}
+    "tsc:build": {},
+    "jest:test": {}
   },
   "tags": []
 }

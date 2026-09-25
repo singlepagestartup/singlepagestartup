@@ -10,7 +10,16 @@ import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
+import type { IDocumentConfirmation } from "../workspace/document";
 import { findUnownedBrandbook, validateOwnedBrandbook } from "./brandbook";
+
+const ownApproval: IDocumentConfirmation = {
+  confirmed: true,
+  state: "confirmed",
+  layer: "startup",
+  by: "operator",
+  at: "2026-09-20",
+};
 
 const confirmedDesign = `---
 confirmation:
@@ -68,7 +77,9 @@ describe("downstream brandbook", () => {
       "assets/startup.yaml": "",
     });
 
-    expect(await findUnownedBrandbook(root, "singlepage")).toEqual([]);
+    expect(await findUnownedBrandbook(root, "singlepage", undefined)).toEqual(
+      [],
+    );
   });
 
   /**
@@ -84,7 +95,7 @@ describe("downstream brandbook", () => {
       "assets/startup.yaml": "",
     });
 
-    expect(await findUnownedBrandbook(root, "startup")).toEqual([]);
+    expect(await findUnownedBrandbook(root, "startup", undefined)).toEqual([]);
   });
 
   /**
@@ -100,15 +111,15 @@ describe("downstream brandbook", () => {
       "assets/startup.yaml": "",
     });
 
-    const findings = await findUnownedBrandbook(root, "startup");
+    const findings = await findUnownedBrandbook(root, "startup", undefined);
 
     expect(findings.map(({ requirement }) => requirement)).toEqual([
       "design/startup.md carries this project's own decisions",
       "assets/startup.yaml registers this project's own assets",
     ]);
-    await expect(validateOwnedBrandbook(root, "startup")).rejects.toThrow(
-      "without owning its brandbook",
-    );
+    await expect(
+      validateOwnedBrandbook(root, "startup", undefined),
+    ).rejects.toThrow("without owning its brandbook");
   });
 
   /**
@@ -125,7 +136,7 @@ describe("downstream brandbook", () => {
     });
 
     expect(
-      (await findUnownedBrandbook(root, "startup")).map(
+      (await findUnownedBrandbook(root, "startup", undefined)).map(
         ({ requirement }) => requirement,
       ),
     ).toEqual(["design/startup.md carries this project's own decisions"]);
@@ -145,7 +156,7 @@ describe("downstream brandbook", () => {
     });
 
     expect(
-      (await findUnownedBrandbook(root, "startup")).map(
+      (await findUnownedBrandbook(root, "startup", undefined)).map(
         ({ requirement }) => requirement,
       ),
     ).toEqual(["design/startup.md holds its own confirmation"]);
@@ -170,9 +181,65 @@ describe("downstream brandbook", () => {
       "assets/startup.yaml": "assets:\n  - id: startup-font\n",
     });
 
-    expect(await findUnownedBrandbook(root, "startup")).toEqual([]);
+    expect(await findUnownedBrandbook(root, "startup", ownApproval)).toEqual(
+      [],
+    );
     await expect(
-      validateOwnedBrandbook(root, "startup"),
+      validateOwnedBrandbook(root, "startup", ownApproval),
     ).resolves.toBeUndefined();
+  });
+  /**
+   * BDD Scenario: A project that translated the document title
+   * Given the layer's own file and the body a reader is shown differ by their title
+   * When the workspace is validated
+   * Then the resolved approval decides, because one document holds one state
+   */
+  test("accepts an approval recorded against the body a reader is shown", async () => {
+    const root = await workspace({
+      "utils/pre-development/startup.yaml": atDesign,
+      "design/startup.md": `---
+confirmation:
+  confirmed: true
+  by: operator
+  at: "2026-09-20"
+  source: Operator confirmed the downstream Design in chat.
+  content_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+---
+
+# Дизайн
+
+## Visual system
+
+Our own canvas, accent and type pairing.
+`,
+      "assets/startup.yaml": "assets:\n  - id: startup-font\n",
+    });
+
+    expect(await findUnownedBrandbook(root, "startup", ownApproval)).toEqual(
+      [],
+    );
+  });
+
+  /**
+   * BDD Scenario: An approval that belongs to the framework layer
+   * Given the resolved approval names the singlepage layer
+   * When the workspace is validated
+   * Then inheritance is reported with the layer that holds the approval
+   */
+  test("reports an approval that belongs to the framework layer", async () => {
+    const root = await workspace({
+      "utils/pre-development/startup.yaml": atDesign,
+      "design/startup.md": "# Design\n\nOur own canvas and accent.\n",
+      "assets/startup.yaml": "assets:\n  - id: startup-font\n",
+    });
+
+    const findings = await findUnownedBrandbook(root, "startup", {
+      confirmed: true,
+      state: "confirmed",
+      layer: "singlepage",
+    });
+
+    expect(findings).toHaveLength(1);
+    expect(findings[0].detail).toContain("in the singlepage layer");
   });
 });

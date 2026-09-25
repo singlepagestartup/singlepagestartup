@@ -6,6 +6,7 @@ import { inject, injectable } from "inversify";
 import { type IService } from "../../../../service";
 import { DI } from "../../../../di/constants";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { applyOutputSchema } from "../../../../output-schema";
 
 @injectable()
 export class Handler<
@@ -33,7 +34,7 @@ export class Handler<
 
       return c.json(
         {
-          data: entity,
+          data: applyOutputSchema({ c, service: this.service, data: entity }),
         },
         statusCode,
       );

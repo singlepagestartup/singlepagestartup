@@ -681,19 +681,17 @@ describe("Given: two Telegram updates race to bootstrap the same account", () =>
     });
   }
 
-  function buildConflictError(constraintName: string) {
+  function buildConflictError() {
+    // The API answers a unique violation with a sanitized 409, so the losing
+    // request learns that it lost without learning which constraint it hit.
     const payload = {
-      message: `Internal server error: duplicate key value violates unique constraint "${constraintName}"`,
-      status: 500,
-      cause: [
-        {
-          message: `Internal server error: duplicate key value violates unique constraint "${constraintName}"`,
-        },
-      ],
+      message: "Conflict error. Entity already exists",
+      status: 409,
+      cause: [{ message: "Conflict error. Entity already exists" }],
     };
 
     return Object.assign(new Error(JSON.stringify(payload)), {
-      status: 500,
+      status: 409,
       cause: payload,
     });
   }
@@ -707,9 +705,7 @@ describe("Given: two Telegram updates race to bootstrap the same account", () =>
     const bootstrapResult = { rbacModuleSubject: { id: "subject-1" } } as any;
     const executeOnce = jest
       .spyOn(service as any, "executeOnce")
-      .mockRejectedValueOnce(
-        buildConflictError("sps_rc_identity_telegram_account_unique"),
-      )
+      .mockRejectedValueOnce(buildConflictError())
       .mockResolvedValueOnce(bootstrapResult);
     jest.spyOn(service as any, "getConflictRetryDelays").mockReturnValue([0]);
 
@@ -724,7 +720,7 @@ describe("Given: two Telegram updates race to bootstrap the same account", () =>
     const bootstrapResult = { rbacModuleSubject: { id: "subject-1" } } as any;
     const executeOnce = jest
       .spyOn(service as any, "executeOnce")
-      .mockRejectedValueOnce(buildConflictError("sl_thread_slug_unique"))
+      .mockRejectedValueOnce(buildConflictError())
       .mockResolvedValueOnce(bootstrapResult);
     jest.spyOn(service as any, "getConflictRetryDelays").mockReturnValue([0]);
 
@@ -778,9 +774,7 @@ describe("Given: two Telegram updates race to bootstrap the same account", () =>
 
   it("stops replaying once the configured conflict retries are exhausted", async () => {
     const service = buildService();
-    const failure = buildConflictError(
-      "sps_rc_identity_telegram_account_unique",
-    );
+    const failure = buildConflictError();
     const executeOnce = jest
       .spyOn(service as any, "executeOnce")
       .mockRejectedValue(failure);
@@ -817,13 +811,12 @@ describe("Given: a telegram identity is claimed by two requests at once", () => 
 
   function buildLinkConflict() {
     const payload = {
-      message:
-        'Internal server error: duplicate key value violates unique constraint "sps_rc_subject_identity_identity_unique"',
-      status: 500,
+      message: "Conflict error. Entity already exists",
+      status: 409,
     };
 
     return Object.assign(new Error(JSON.stringify(payload)), {
-      status: 500,
+      status: 409,
       cause: payload,
     });
   }

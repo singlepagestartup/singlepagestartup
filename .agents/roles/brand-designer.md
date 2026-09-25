@@ -199,6 +199,20 @@ output.
   second background, and is omitted only with a reasoned
   `interface_review.omitted_specimens.<id>` entry. Change a rule and its
   specimen in the same revision.
+- The framework owns the wrapper and the project owns the content. A section
+  the framework declares in `design/singlepage/layout.yaml` keeps its title,
+  `Interface kit` and `Content blocks`, and every specimen keeps the name the
+  catalogue in `tools/studio/design/specimens.ts` gives it:
+  Actions, Selection, Status and progress, Fields and data rows, Navigation,
+  Dark pair, Editorial entry, Photo cards, Icon cards, Numbered steps,
+  Illustration and text, Repeated item grid, Offer comparison and Contextual
+  sheet.
+  A downstream Design changes the styling, the composition and the way a block
+  carries information, and writes that content as HTML, Markdown or a
+  component. It does not translate a specimen heading, rename a section or
+  ship a block the catalogue does not define. A surface that needs a block the
+  catalogue lacks gets it added to the catalogue and rendered in the framework
+  kit first, so every project inherits the same wrapper.
 - Configure the Design review through the project's `design/<layer>/layout.yaml`:
   select/order relevant built-in blocks, add Markdown/React/HTML/media
   sections, or provide a complete layer-owned TSX/JSX template. Choose the

@@ -44,6 +44,15 @@ unit, and nothing merges by accident.
    `config.local.yaml`, then the committed default. That file may contain only
    `active_layer`; a value that conflicts with a detected identity is an error.
 
+A heading is part of the structure a layer inherits, not of its content. Every
+heading the framework document declares appears in the layer that inherits it,
+spelled exactly the same way, including the title: a document headed `# Design`
+upstream stays `# Design` downstream, and `## Strategy` never becomes
+`## Стратегия`. A layer writes the body of an inherited section in its own
+language and adds whatever sections its business needs beside them; it does not
+translate, rename or drop one it inherits, because the name is how both layers
+refer to the same section. The pipeline check reports a renamed heading.
+
 The GitHub preflight, the workspace loader, the pipeline check and the
 presentation export share this resolver. Explicit layer arguments exist only as
 assertions for validators, diagnostics and read-only source projections; a

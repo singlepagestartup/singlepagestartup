@@ -1,4 +1,5 @@
 import { cpSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { format } from "prettier";
 import os from "node:os";
 import path from "node:path";
 import { stringify } from "yaml";
@@ -78,6 +79,15 @@ function write(root: string, relative: string, content: string) {
   const file = path.join(root, relative);
   mkdirSync(path.dirname(file), { recursive: true });
   writeFileSync(file, content);
+}
+
+/**
+ * The repository formats Markdown on commit, so a fixture body has to be in
+ * that form before it is hashed. Formatting after the stamp would leave every
+ * fixture document reading as changed.
+ */
+async function formatMarkdownSource(source: string): Promise<string> {
+  return format(source, { parser: "markdown" });
 }
 
 export async function createDownstreamFixture(
@@ -278,6 +288,10 @@ export async function createDownstreamFixture(
       }),
     );
   };
+  for (const kind of SHARED_DOCUMENTS) {
+    base[kind] = await formatMarkdownSource(base[kind]);
+    overlay[kind] = await formatMarkdownSource(overlay[kind]);
+  }
   for (const kind of SHARED_DOCUMENTS) writeShared(kind);
 
   const assets = [
@@ -326,17 +340,9 @@ export async function createDownstreamFixture(
     `${productRoot}/catalog.yaml`,
     stringify({
       schema: "singlepagestartup.product-catalog.v2",
-      models: [
-        {
-          id: MODEL_ID,
-          name: "Fixture model",
-          source: `models/${MODEL_ID}/model.md`,
-        },
-      ],
       products: [
         {
           id: PRODUCT_ID,
-          model: MODEL_ID,
           name: "Fixture product",
           summary: "A downstream product used to exercise the pipeline checks.",
           research: `${PRODUCT_ID}/research.md`,
@@ -346,19 +352,6 @@ export async function createDownstreamFixture(
         },
       ],
     }),
-  );
-  write(
-    root,
-    `${productRoot}/models/${MODEL_ID}/model.md`,
-    withMetadata(
-      markdown(
-        "Operations & Economics",
-        project(sectionsOf("templates/product-model.md")),
-      ),
-      {
-        confirmation: { confirmed: false },
-      },
-    ),
   );
   write(
     root,

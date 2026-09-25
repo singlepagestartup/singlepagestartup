@@ -57,7 +57,6 @@ entries:
 exports: []
 imports:
   - template.brief
-  - template.product-model
   - template.product-research
   - template.product-analytics
   - template.sales-process

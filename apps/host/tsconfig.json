@@ -38,6 +38,10 @@
   ],
   "exclude": [
     "node_modules",
-    "e2e"
+    "e2e",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ]
 }

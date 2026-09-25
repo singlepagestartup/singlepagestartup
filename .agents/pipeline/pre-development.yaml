@@ -44,13 +44,18 @@ stages:
       - id: brief.stamp-current
         check: stamp-current
         artifact: brief
+      - id: brief.no-change-log
+        check: no-change-log
+        artifact: brief
+      - id: brief.framework-headings
+        check: framework-headings
+        artifact: brief
+      - id: brief.formatted
+        check: documents-formatted
+        artifact: brief
       - id: catalog.matches-brief
         check: catalog-matches-brief
         artifact: products
-      - id: models.sections
-        check: model-sections
-        artifact: products
-        template: templates/product-model.md
       - id: products.sections
         check: product-sections
         artifact: products
@@ -61,7 +66,7 @@ stages:
     manual_review:
       - The confirmed scope names the primary decision subject, its boundaries and every product in scope with an attributable operator confirmation.
       - Client facts, confirmed intentions, supplied-material observations and unknowns are attributed; no operator fact is answered by an assumption.
-      - Initial Product, Operations & Economics and Sales intake record only client inputs; missing details are explicit unknowns, not invented values.
+      - Initial Product, its economics and Sales intake record only client inputs; missing details are explicit unknowns, not invented values.
   - id: 10-strategy
     title: Strategy
     owners: [market-researcher, strategist]
@@ -81,6 +86,15 @@ stages:
       - id: strategy.confirmed
         check: confirmed
         artifact: strategy
+      - id: strategy.no-change-log
+        check: no-change-log
+        artifact: strategy
+      - id: strategy.framework-headings
+        check: framework-headings
+        artifact: strategy
+      - id: strategy.formatted
+        check: documents-formatted
+        artifact: strategy
     manual_review:
       - Strategy presents one coherent target state that fulfills the approved Brief, not a roadmap, a task list or a first-experiment plan.
       - Audience-growth and sales-product priorities are named, every confirmed product has a role, and channels have a role, content, destination and contribution.
@@ -96,6 +110,15 @@ stages:
         template: templates/brand.md
       - id: brand.confirmed
         check: confirmed
+        artifact: brand
+      - id: brand.no-change-log
+        check: no-change-log
+        artifact: brand
+      - id: brand.framework-headings
+        check: framework-headings
+        artifact: brand
+      - id: brand.formatted
+        check: documents-formatted
         artifact: brand
     manual_review:
       - Brand owns meaning, message hierarchy, proof boundary, objections, voice, naming and consistency rules; colors, type, imagery and layouts stay in Design.
@@ -115,6 +138,15 @@ stages:
       - id: design.confirmed
         check: confirmed
         artifact: design
+      - id: design.no-change-log
+        check: no-change-log
+        artifact: design
+      - id: design.framework-headings
+        check: framework-headings
+        artifact: design
+      - id: design.formatted
+        check: documents-formatted
+        artifact: design
       - id: assets.generated-registered
         check: generated-assets-registered
         artifact: assets
@@ -126,6 +158,9 @@ stages:
         artifact: design
       - id: design.specimens-rendered
         check: specimens-rendered
+        artifact: design
+      - id: design.specimen-catalogue
+        check: specimen-catalogue
         artifact: design
     manual_review:
       - The Client visual preference profile was confirmed by the operator before any visual territory, token, prompt or generated asset was selected.

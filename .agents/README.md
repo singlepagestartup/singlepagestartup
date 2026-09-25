@@ -5,6 +5,21 @@ professional responsibilities, invariant contracts, and tool capabilities.
 Provider directories such as `.claude/` and `.codex/` contain only native
 discovery metadata and adapters to these files.
 
+## Adding a capability
+
+A new skill, command, workflow, role or contract is written here, in
+provider-neutral form, whatever assistant is asked to create it. The provider
+directories then receive one adapter each: a short file carrying that
+provider's discovery metadata, the line `Canonical source: <path>` and the
+instruction to read it. An adapter that also states a rule creates a second
+home for it, and the two copies drift the moment either is edited; the
+providers stop behaving alike, and the difference only surfaces when someone
+notices the output is worse on one of them.
+
+`tools/agents/duplicate-sentences.ts` enforces one home per rule, and
+`tools/agents/editorial-pass.test.mjs` requires every adapter to point at the
+canonical file it adapts. Both run in the repository checks.
+
 ## Ownership
 
 - `workflows/engineering/` preserves the existing GitHub-Project-gated

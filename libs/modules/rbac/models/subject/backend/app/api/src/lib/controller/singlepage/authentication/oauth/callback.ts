@@ -1,7 +1,9 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { setCookie } from "hono/cookie";
 import { Service } from "../../../../service";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { getHttpErrorType, logger } from "@sps/backend-utils";
+import { exchangeCodeCookieName, exchangeCodeCookieOptions } from "./cookie";
 
 export class Handler {
   service: Service;
@@ -27,12 +29,23 @@ export class Handler {
           c.req.query("error_description") || c.req.query("errorDescription"),
       });
 
-      console.log("oauth/callback handled", {
+      if (entity.exchangeCode) {
+        setCookie(
+          c,
+          exchangeCodeCookieName,
+          entity.exchangeCode,
+          exchangeCodeCookieOptions,
+        );
+      }
+
+      // Neither the exchange code nor the built URL is a field here: the URL
+      // is what used to carry the code into the log.
+      logger.info("oauth/callback handled", {
         provider,
         state: c.req.query("state"),
-        codeExists: Boolean(c.req.query("code")),
+        hasCode: Boolean(c.req.query("code")),
         error: c.req.query("error"),
-        redirectUrl: entity.redirectUrl,
+        redirectPath: entity.redirectPath,
       });
 
       return c.redirect(entity.redirectUrl, 302);
