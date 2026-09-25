@@ -117,6 +117,7 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /no (uuid|productid|notification\.topic\.slug) provided/i,
       /files are not supported/i,
       /multiple files are not allowed/i,
+      /payload too large/i,
       /no id provided/i,
     ],
   },

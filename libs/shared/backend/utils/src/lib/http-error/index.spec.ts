@@ -30,6 +30,7 @@ describe("util — HTTP error classification", () => {
       "Provider google is not allowed",
       "Files are not supported",
       "Multiple files are not allowed",
+      "Payload Too Large",
       "Passwords do not match",
       "Code is expired. Resend again.",
       "Account already exists",

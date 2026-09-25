@@ -4,6 +4,7 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/file-storage/models/file/backend/repository/database";
 import { Context } from "hono";
 import { Service } from "../../service";
+import { RequestBodyFitsUploadLimit } from "../../../../../middlewares";
 import { Handler as Create } from "./create";
 import { Handler as CreateFromUrl } from "./create-from-url";
 import { Handler as Delete } from "./delete";
@@ -37,6 +38,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/",
         handler: this.create,
+        middlewares: [new RequestBodyFitsUploadLimit().init()],
       },
       {
         method: "POST",
@@ -52,6 +54,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "PATCH",
         path: "/:uuid",
         handler: this.update,
+        middlewares: [new RequestBodyFitsUploadLimit().init()],
       },
       {
         method: "DELETE",
