@@ -738,6 +738,98 @@ describe("MCP content-management generic operations", () => {
   });
 
   /**
+   * BDD Scenario: Delete needs the delete scope
+   * Given an HTTP connection whose token carries only mcp:content
+   * When delete-apply runs with the exact preview token
+   * Then the operation is refused before the SDK delete runs
+   */
+  it("refuses delete apply for a connection without the delete scope", async () => {
+    const api = createApi([{ id: "widget-1", adminTitle: "Articles" }]);
+    const registry = [createDescriptor(api)];
+
+    await expect(
+      applyDeleteContentModelRecord(
+        {
+          module: "blog",
+          model: "widget",
+          id: "widget-1",
+          confirm: true,
+          confirmationToken: "model:blog:widget:widget-1",
+        },
+        { registry, authHeaders, scopes: ["mcp:content"] },
+      ),
+    ).rejects.toThrow(
+      "Permission error. delete on blog.widget requires the mcp:content:delete scope",
+    );
+    expect(api.delete).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: An approved delete scope deletes
+   * Given an HTTP connection whose token carries both content scopes
+   * When delete-apply runs with the exact preview token
+   * Then the SDK delete runs for the selected record
+   */
+  it("applies delete for a connection with the delete scope", async () => {
+    const api = createApi([{ id: "widget-1", adminTitle: "Articles" }]);
+    const registry = [createDescriptor(api)];
+
+    await expect(
+      applyDeleteContentModelRecord(
+        {
+          module: "blog",
+          model: "widget",
+          id: "widget-1",
+          confirm: true,
+          confirmationToken: "model:blog:widget:widget-1",
+        },
+        {
+          registry,
+          authHeaders,
+          scopes: ["mcp:content", "mcp:content:delete"],
+        },
+      ),
+    ).resolves.toEqual({ id: "widget-1", deleted: true });
+    expect(api.delete).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * BDD Scenario: mcp:content keeps reading, writing and previewing deletes
+   * Given an HTTP connection whose token carries only mcp:content
+   * When it finds, updates and previews a delete
+   * Then each operation reaches the SDK as before
+   */
+  it("keeps reads, writes and delete previews for mcp:content", async () => {
+    const api = createApi([{ id: "widget-1", adminTitle: "Articles" }]);
+    const registry = [createDescriptor(api)];
+    const options = { registry, authHeaders, scopes: ["mcp:content"] };
+
+    await expect(
+      findContentModelRecords({ module: "blog", model: "widget" }, options),
+    ).resolves.toHaveLength(1);
+    await expect(
+      updateContentModelRecord(
+        {
+          module: "blog",
+          model: "widget",
+          id: "widget-1",
+          dryRun: false,
+          data: { adminTitle: "Renamed" },
+        },
+        options,
+      ),
+    ).resolves.toEqual({ id: "widget-1", adminTitle: "Renamed" });
+    await expect(
+      previewDeleteContentModelRecord(
+        { module: "blog", model: "widget", id: "widget-1" },
+        options,
+      ),
+    ).resolves.toMatchObject({
+      confirmationToken: "model:blog:widget:widget-1",
+    });
+  });
+
+  /**
    * BDD Scenario: Delete preview includes known relation context
    * Given a blog widget is linked through host external widget relations
    * When Codex previews deleting the blog widget
