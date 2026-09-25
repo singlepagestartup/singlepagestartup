@@ -9,7 +9,6 @@
     "next:dev": {
       "executor": "@nx/next:server",
       "defaultConfiguration": "development",
-      "cache": true,
       "options": {
         "buildTarget": "next:build",
         "dev": true,

@@ -106,7 +106,10 @@ function makeConfig() {
         { test: /\.map$/, use: "ignore-loader" },
       );
 
-      config.externals.push("pino-pretty", "lokijs", "encoding");
+      // Optional modules of the wallet libraries that are not installed. The
+      // `@x402/*` peers of `@coinbase/cdp-sdk` are reached through wagmi's Base
+      // Account connector, which this app does not configure.
+      config.externals.push("pino-pretty", "lokijs", "encoding", /^@x402\//);
 
       return config;
     },
