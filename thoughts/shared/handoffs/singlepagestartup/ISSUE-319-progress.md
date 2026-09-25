@@ -3,7 +3,8 @@ issue_number: 319
 issue_title: "Harden the deployer edge and server configuration"
 start_date: 2026-09-25T21:30:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-319.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-319 - Harden the deployer edge and server configuration
@@ -127,8 +128,8 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/328
+- [x] PR number: 328 (description in `thoughts/shared/prs/328_description.md`)
 
 ### Final Status
 
@@ -138,4 +139,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-09-25T23:10:00Z
+**Last updated**: 2026-09-25T23:30:00Z

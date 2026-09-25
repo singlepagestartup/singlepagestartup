@@ -5,7 +5,7 @@ repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
 last_updated: 2026-09-26T00:20:00+03:00
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-319 - Harden the deployer edge and server configuration
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: push, open the pull request and address the lead's review
+- Implement: completed
+- Current phase: complete
+- Next step: code review of pull request #328 by the lead
 
 ## Phase Notes
 
@@ -45,7 +45,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: four phases implemented and verified in three code commits: `39a1b6b0ce` (cron secret end to end), `5fdbc85ef1` (Traefik access log and security headers), `483dcfed65` (SSH host keys). Evidence is in `thoughts/shared/handoffs/singlepagestartup/ISSUE-319-progress.md`.
-- Outputs: the commits above and this issue's research, plan, process and progress files.
+- Outputs: the commits above, this issue's research, plan, process and progress files, and pull request #328 (`thoughts/shared/prs/328_description.md`).
 - Notes: the HTTP proof ran against a throwaway database, because the API's local database holds scheduled agents that a valid cron call would run. The ticket file stays local because it describes items outside the agreed scope.
 
 ## Incident Log
