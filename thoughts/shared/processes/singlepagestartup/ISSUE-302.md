@@ -3,9 +3,9 @@ issue_number: 302
 issue_title: "Review the payment webhook provider gate"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-25T21:20:00Z
+last_updated: 2026-09-25T21:47:52Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-302 - Review the payment webhook provider gate
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: implement the three plan phases and record verification in the progress file
+- Implement: completed
+- Current phase: complete
+- Next step: code review of PR #327, then merge
 
 ## Phase Notes
 
@@ -44,9 +44,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Implement
 
-- Summary: in progress.
-- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-302-progress.md`
-- Notes: —
+- Summary: the webhook refuses providers outside the list through `isProviderAllowed`, which payment creation also uses; `dummy` left the code default and is listed explicitly for local development. Unit specs, a DB-backed scenario, mutation checks and an HTTP proof on port 4302 passed.
+- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-302-progress.md`, PR #327 (`thoughts/shared/prs/327_description.md`), commits `3094210fb0` and `2c459dfb7d`.
+- Notes: no GitHub Project status change and no issue comment in this wave; the lead reviews the pull request.
 
 ## Incident Log
 
