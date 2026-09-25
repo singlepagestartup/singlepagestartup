@@ -246,6 +246,40 @@ docker service logs traefik_traefik --since 10m
 Never leave `DEBUG` enabled after troubleshooting; it can repeatedly expose
 dynamic routing details and credential hashes in logs.
 
+### Traefik access log and security headers
+
+Traefik writes one JSON line per request to stdout, beside its own log, and
+drops every request header value from that line because requests carry
+credentials in headers. Read both with:
+
+```bash
+docker service logs traefik_traefik --since 10m
+```
+
+The Traefik container log rotates at 10 MB and keeps three files, like the
+application services.
+
+The api, host, mcp and telegram routers attach a headers middleware that sends:
+
+- `Strict-Transport-Security: max-age=31536000`, without `includeSubDomains` or
+  `preload`, because the host may run on the apex domain and hostnames outside
+  this deployer would be pinned to HTTPS as well;
+- `X-Content-Type-Options: nosniff`;
+- `Referrer-Policy: strict-origin-when-cross-origin`.
+
+No `Content-Security-Policy` and no frame policy are sent: pages embed widgets
+in frames, and a content policy has to be written for each application.
+
+Each service defines its middleware in its own labels, beside its router.
+Traefik restarts on every service deployment, because `domain.sh` forces a
+Traefik update to load the service certificate, and a middleware defined on the
+Traefik service's own labels can be missing after a restart
+([traefik/traefik#9363](https://github.com/traefik/traefik/issues/9363)); every
+router that references a missing middleware stops being served.
+
+`./traefik.sh up` applies the access log, and each service's own script applies
+its headers. `./up.sh` runs both.
+
 ### Hardened rollout and verification
 
 Before rollout, confirm DNS and certificates for the Portainer HTTPS hostname
