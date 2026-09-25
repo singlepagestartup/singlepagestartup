@@ -3,19 +3,24 @@
  *
  * Given: the bootstrap generator used to derive secrets from the shell
  *        `$RANDOM` variable, whose entire output set is 32768 MD5 digests.
- * When:  the API reads its configured secrets at start-up.
+ * When:  the API, MCP or Telegram service reads its configured secrets at
+ *        start-up.
  * Then:  a value from that set is named as legacy, a missing or short value is
  *        named as such, only the authorization secret and the token signing key
- *        are fatal, and no report line ever carries the value itself.
+ *        are fatal, MCP and Telegram judge only the values they have set, and no
+ *        report line ever carries the value itself.
  */
 
 import {
+  assessConfiguredSecrets,
   assessSecret,
   assessSecrets,
   formatSecretAssessment,
   isFatalSecretAssessment,
   isLegacyRandomSecret,
   CHECKED_SECRET_NAMES,
+  MCP_CHECKED_SECRET_NAMES,
+  TELEGRAM_CHECKED_SECRET_NAMES,
 } from ".";
 
 // Produced by the removed generator, `echo 0 | md5sum | head -c 32`. The digest
@@ -118,6 +123,60 @@ describe("assessSecrets", () => {
       "ok",
       "missing",
     ]);
+  });
+});
+
+describe("assessConfiguredSecrets", () => {
+  /**
+   * BDD Scenario: A service is judged on the values it has set.
+   */
+  it("judges only the MCP secrets that carry a value", () => {
+    expect(
+      assessConfiguredSecrets(
+        {
+          RBAC_JWT_SECRET: rotated,
+          MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET: "a".repeat(20),
+        },
+        MCP_CHECKED_SECRET_NAMES,
+      ),
+    ).toEqual([
+      { name: "RBAC_JWT_SECRET", verdict: "ok" },
+      { name: "MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET", verdict: "short" },
+    ]);
+  });
+
+  /**
+   * BDD Scenario: A legacy RBAC value stops a service boot.
+   */
+  it("makes a legacy RBAC value held by Telegram fatal", () => {
+    const findings = assessConfiguredSecrets(
+      {
+        RBAC_SECRET_KEY: legacyDigestOfZero,
+        RBAC_JWT_SECRET: rotated,
+        TELEGRAM_SERVICE_WEBHOOK_SECRET: legacyDigestOfMaximum,
+      },
+      TELEGRAM_CHECKED_SECRET_NAMES,
+    );
+
+    expect(findings.filter(isFatalSecretAssessment)).toEqual([
+      { name: "RBAC_SECRET_KEY", verdict: "legacy" },
+    ]);
+    expect(findings).toContainEqual({
+      name: "TELEGRAM_SERVICE_WEBHOOK_SECRET",
+      verdict: "legacy",
+    });
+  });
+
+  /**
+   * BDD Scenario: An absent value does not stop a service boot.
+   */
+  it("finds nothing fatal for an MCP service without the operator secret", () => {
+    expect(
+      assessConfiguredSecrets(
+        { RBAC_JWT_SECRET: rotated },
+        MCP_CHECKED_SECRET_NAMES,
+      ).filter(isFatalSecretAssessment),
+    ).toEqual([]);
   });
 });
 

@@ -10,6 +10,15 @@ export type IMcpRequestExtra = RequestHandlerExtra<
   ServerNotification
 >;
 
+/**
+ * OAuth scopes of the MCP connector. `mcp:content` reads, creates and updates
+ * content. Deleting needs `mcp:content:delete`, which a token carries only when
+ * the authorization request asked for it and the user approved it.
+ */
+export const MCP_CONTENT_SCOPE = "mcp:content";
+export const MCP_CONTENT_DELETE_SCOPE = "mcp:content:delete";
+export const MCP_SCOPES = [MCP_CONTENT_SCOPE, MCP_CONTENT_DELETE_SCOPE];
+
 function firstHeaderValue(value: string | string[] | undefined) {
   if (Array.isArray(value)) {
     return value[0];

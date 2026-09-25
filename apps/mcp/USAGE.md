@@ -199,6 +199,11 @@ Use `model-record-delete-preview` / `relation-record-delete-preview` and pass
 the exact returned token to the matching `*-delete-apply` tool with
 `confirm: true`.
 
+On an OAuth connection the apply step needs the `mcp:content:delete` scope. A
+permission error from `*-delete-apply` means the connection was not granted
+it: nothing was deleted, and the user has to reconnect the client and allow
+deleting on the consent step.
+
 ### Localized Page Field Update
 
 ```text

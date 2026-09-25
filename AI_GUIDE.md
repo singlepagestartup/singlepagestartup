@@ -172,6 +172,8 @@ If Codex Desktop is launched only through the app UI and cannot read environment
 
 Claude Desktop and Claude.ai remote connectors cannot reach local `127.0.0.1`; use Claude Code for local HTTP MCP, or expose the MCP server over HTTPS.
 
+OAuth connections read and write with the `mcp:content` scope. Deleting needs `mcp:content:delete`, which the user grants on the consent step of the MCP login (Codex: `--scopes "mcp:content mcp:content:delete"`). The `X-RBAC-SECRET-KEY` configs above are not limited by scopes.
+
 MCP SDK calls require the configured API service URL. `./up.sh` creates the local env files expected by the API/MCP workflow, but MCP content/API access does not read `RBAC_SECRET_KEY` from the MCP `.env`. Pass auth with the MCP request, matching the frontend/API contract: `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, cookie `rbac.subject.jwt`, or cookie `rbac.secret-key`. Tool input schemas do not expose direct auth fields; resources and tools need auth from transport headers, cookies, MCP auth info, or request metadata.
 
 ### 6.1 MCP content-management workflow

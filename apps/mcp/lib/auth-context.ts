@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { API_SERVICE_URL } from "@sps/shared-utils";
 
 export type IMcpRequestAuthContext = {
   authorization?: string;
@@ -11,6 +12,20 @@ export type IMcpRequestAuthContext = {
 const authStorage = new AsyncLocalStorage<IMcpRequestAuthContext>();
 
 let fetchForwardingInstalled = false;
+
+/**
+ * Forwarded credentials go to the SinglePageStartup API only; a request to any
+ * other origin is sent exactly as its caller built it.
+ */
+function isApiServiceRequest(input: RequestInfo | URL) {
+  const url = input instanceof Request ? input.url : String(input);
+
+  try {
+    return new URL(url).origin === new URL(API_SERVICE_URL).origin;
+  } catch {
+    return false;
+  }
+}
 
 function mergeHeaders(
   headers: Headers,
@@ -52,6 +67,10 @@ export function installMcpFetchAuthForwarding() {
   const originalFetch = globalThis.fetch.bind(globalThis);
 
   globalThis.fetch = async (input, init) => {
+    if (!isApiServiceRequest(input)) {
+      return originalFetch(input, init);
+    }
+
     const context = getMcpRequestAuthContext();
     const request = input instanceof Request ? input : undefined;
     const headers = mergeHeaders(
