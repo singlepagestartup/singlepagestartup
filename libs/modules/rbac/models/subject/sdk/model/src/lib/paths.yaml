@@ -198,6 +198,54 @@ paths:
                 required:
                   - data
 
+  /rbac/subjects/delete-anonymous:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Delete anonymous subjects
+      description: Delete one bounded batch of inactive anonymous subjects that own nothing
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Cleanup counts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      scanned:
+                        type: integer
+                      deleted:
+                        type: integer
+                      failed:
+                        type: integer
+                      retained:
+                        type: integer
+                      retainedByReason:
+                        type: object
+                        additionalProperties:
+                          type: integer
+                    required:
+                      - scanned
+                      - deleted
+                      - failed
+                      - retained
+                required:
+                  - data
+
   /rbac/subjects/{id}/check:
     post:
       tags:

@@ -47,6 +47,40 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `GET /rbac/subjects/authentication/oauth/{provider}/callback`: OAuth provider callback.
 - `POST /rbac/subjects/authentication/oauth/exchange`: exchange one-time code to JWT/refresh.
 
+## Anonymous Session Lifecycle
+
+A subject and a JWT are issued on the first visit, including public browsing,
+so visitor actions can be recorded from the first request.
+
+`GET /rbac/subjects/authentication/init` reuses a session instead of creating
+one whenever the request carries a token this installation signed - in the
+`rbac.subject.jwt` cookie or the `Authorization` header - and the subject in
+that token still exists. A request with no token, with a malformed or expired
+token, or with a token for a deleted subject creates a subject, so first-visit
+creation is unchanged.
+
+`init` with reuse and `POST /rbac/subjects/authentication/refresh` record
+activity by touching `updatedAt`, at most once per activity interval. Retention
+reads that column, which is why a returning visitor is never treated as
+abandoned.
+
+`POST /rbac/subjects/delete-anonymous` (secret key only, called by the
+`rbac-module-subjects-delete-anonymous` agent) deletes one bounded batch of
+inactive anonymous subjects and returns scanned, deleted, failed and
+retained-by-reason counts. A subject is kept when it is not the `default`
+variant or when it has one of these relations: an identity, an ecommerce order,
+a social profile, a role, or a billing currency balance. A project adds its own
+blockers by overriding `anonymousSubjectRetentionBlockers` in its `startup`
+subject service.
+
+- `RBAC_ANONYMOUS_SUBJECT_ACTIVITY_INTERVAL_IN_SECONDS`: minimum interval
+  between two activity writes for one subject (default `3600`).
+- `RBAC_ANONYMOUS_SUBJECT_RETENTION_IN_SECONDS`: inactivity after which an
+  anonymous subject without blockers becomes eligible for deletion (default
+  `2592000`, 30 days). It is independent of the token lifetimes.
+- `RBAC_ANONYMOUS_SUBJECT_CLEANUP_BATCH_SIZE`: subjects examined per cleanup
+  run (default `500`). A larger backlog drains over consecutive runs.
+
 ## OAuth Configuration
 
 - `RBAC_OAUTH_GOOGLE_CLIENT_ID`: Google OAuth client id.

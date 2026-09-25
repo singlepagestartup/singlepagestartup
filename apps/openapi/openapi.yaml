@@ -148,6 +148,8 @@ paths:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1notify"
   /rbac/subjects/check:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1check"
+  /rbac/subjects/delete-anonymous:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1delete-anonymous"
   /rbac/subjects/{id}/check:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1check"
   /rbac/subjects/{id}/identities:
