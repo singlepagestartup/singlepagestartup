@@ -28,9 +28,11 @@ export const excludedRoutes: IRouteRule[] = [
   // --- Reads not describable by a mutation path/topic ---
   // Issue-152: subject cart aggregate counters — exact-path cache
   // invalidation may leave stale quantity/total after cart mutations.
+  // Issue #257: the per-order counters are excluded for the same reason, and
+  // because the cache answers before the route's owner checks run.
   {
     regexPath:
-      /^\/api\/rbac\/subjects\/[0-9a-f-]+\/ecommerce-module\/orders\/(quantity|total)$/i,
+      /^\/api\/rbac\/subjects\/[0-9a-f-]+\/ecommerce-module\/orders(\/[0-9a-f-]+)?\/(quantity|total)$/i,
   },
   // Issue-195 defense-in-depth: chat thread messages and chat actions reads.
   // Message update/delete mutations hit chat-scoped paths and can never bump
