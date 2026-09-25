@@ -3,6 +3,7 @@ import { serve, type ServerWebSocket } from "bun";
 import { createBunWebSocket } from "hono/bun";
 import { app } from "./app";
 import {
+  API_MAX_REQUEST_BODY_BYTES,
   API_SECRET_STRENGTH,
   API_SERVICE_PORT,
   assessSecrets,
@@ -44,4 +45,5 @@ serve({
   port: API_SERVICE_PORT,
   websocket,
   idleTimeout: 0,
+  maxRequestBodySize: API_MAX_REQUEST_BODY_BYTES,
 });

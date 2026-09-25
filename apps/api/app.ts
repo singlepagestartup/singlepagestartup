@@ -3,7 +3,11 @@ import { cors } from "hono/cors";
 import { createBunWebSocket } from "hono/bun";
 import { join, normalize } from "node:path";
 import { type ServerWebSocket } from "bun";
-import { ExceptionFilter, ParseQueryMiddleware } from "@sps/shared-backend-api";
+import {
+  ExceptionFilter,
+  ParseQueryMiddleware,
+  RequestBodyFitsLimitMiddleware,
+} from "@sps/shared-backend-api";
 import {
   IsAuthorizedMiddleware,
   RevalidationMiddleware,
@@ -62,6 +66,16 @@ app.use(
     maxAge: 86400,
   }),
 );
+
+/**
+ * Every route refuses a request body larger than `API_MAX_REQUEST_BODY_BYTES`.
+ * Bun's `maxRequestBodySize` (see `server.ts`) refuses a declared length above
+ * it before any route runs; this middleware also counts a body without a
+ * declared length while a route reads it. Module routes may pass a smaller
+ * limit of their own, as the file-storage upload routes do.
+ */
+const requestBodyFitsLimitMiddleware = new RequestBodyFitsLimitMiddleware();
+app.use(requestBodyFitsLimitMiddleware.init());
 
 const exceptionFilter = new ExceptionFilter();
 app.onError((err, c) => exceptionFilter.catch(err, c));

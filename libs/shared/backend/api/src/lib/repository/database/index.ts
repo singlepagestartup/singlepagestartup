@@ -18,6 +18,21 @@ import { type IFilter } from "../../query-builder/filters";
 import { FindServiceProps } from "../../services/interfaces";
 import { type IRepository } from "../interface";
 
+/**
+ * Sort directions `find` accepts in `orderBy.and[].method`. The method names
+ * the `drizzle-orm` export that is called with the sort column, so no other
+ * name may reach that lookup.
+ */
+export const ALLOWED_ORDER_BY_METHODS = Object.freeze(["asc", "desc"] as const);
+
+export type IAllowedOrderByMethod = (typeof ALLOWED_ORDER_BY_METHODS)[number];
+
+/**
+ * A plain column identifier. Unlike a filter column, a sort column takes no
+ * json key.
+ */
+const ORDER_BY_COLUMN_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
 function isDateSchema(value: unknown): boolean {
   if (value instanceof ZodDate) {
     return true;
@@ -28,6 +43,25 @@ function isDateSchema(value: unknown): boolean {
   }
 
   return false;
+}
+
+function parseOrderByMethod(method: unknown): IAllowedOrderByMethod {
+  if (
+    typeof method !== "string" ||
+    !ALLOWED_ORDER_BY_METHODS.includes(method as IAllowedOrderByMethod)
+  ) {
+    throw new Error(`Validation error. Unknown orderBy method '${method}'`);
+  }
+
+  return method as IAllowedOrderByMethod;
+}
+
+function parseOrderByColumn(column: unknown): string {
+  if (typeof column !== "string" || !ORDER_BY_COLUMN_PATTERN.test(column)) {
+    throw new Error("Validation error. OrderBy column must be an identifier");
+  }
+
+  return column;
 }
 
 @injectable()
@@ -59,30 +93,7 @@ export class Database<T extends PgTableWithColumns<any>>
         filters: props?.params?.filters,
       });
 
-      if (props?.params?.orderBy?.and && !props.params.orderBy.and?.[0]) {
-        throw new Error(
-          "You need to pass an orderBy array with 'column' and 'method' for each item",
-        );
-      }
-
-      if (
-        props?.params?.orderBy?.and.length &&
-        !props?.params?.orderBy?.and.every((ob) => ob.column && ob.method)
-      ) {
-        throw new Error(
-          "You need to pass an orderBy array with 'column' and 'method' for each item",
-        );
-      }
-
-      const order =
-        props?.params?.orderBy?.and?.length &&
-        props.params.orderBy.and[0].method
-          ? methods[props.params.orderBy.and[0].method as any](
-              this.Table[props.params.orderBy.and[0].column],
-            )
-          : "orderIndex" in this.Table
-            ? methods.asc(this.Table.orderIndex)
-            : null;
+      const order = this.prepareOrderBy(props?.params?.orderBy);
 
       const records = await this.db
         .select()
@@ -90,7 +101,7 @@ export class Database<T extends PgTableWithColumns<any>>
         .where(filters ? methods.and(...filters) : undefined)
         .limit(Number(props?.params?.limit) as number)
         .offset(Number(props?.params?.offset) as number)
-        .orderBy(order)
+        .orderBy(...order)
         .execute();
 
       const sanitizedRecords = records.map((record) => {
@@ -351,6 +362,50 @@ export class Database<T extends PgTableWithColumns<any>>
 
       throw error;
     }
+  }
+
+  /**
+   * The sort `find` applies. Every item of `orderBy.and` needs an allowed
+   * direction and a column of this table, and the first item is the one
+   * applied. Without a sort, a table with `orderIndex` is read in that order.
+   */
+  protected prepareOrderBy(
+    orderBy?: NonNullable<FindServiceProps["params"]>["orderBy"],
+  ): methods.SQL[] {
+    if (!orderBy?.and) {
+      return "orderIndex" in this.Table
+        ? [methods.asc(this.Table.orderIndex)]
+        : [];
+    }
+
+    if (!Array.isArray(orderBy.and)) {
+      throw new Error("Validation error. 'orderBy.and' must be an array");
+    }
+
+    if (
+      !orderBy.and.length ||
+      !orderBy.and.every((item) => item?.column && item?.method)
+    ) {
+      throw new Error(
+        "Validation error. You need to pass an orderBy array with 'column' and 'method' for each item",
+      );
+    }
+
+    const order = orderBy.and.map((item) => {
+      const method = parseOrderByMethod(item.method);
+      const column = parseOrderByColumn(item.column);
+      const tableColumn = this.Table[column];
+
+      // The table object also carries functions, such as `enableRLS` and its
+      // prototype members, which a truthiness check would take for columns.
+      if (!methods.is(tableColumn, methods.Column)) {
+        throw new Error(`Validation error. Unknown column '${column}'`);
+      }
+
+      return methods[method](tableColumn);
+    });
+
+    return order.slice(0, 1);
   }
 
   protected prepareWritableData(data: any) {
