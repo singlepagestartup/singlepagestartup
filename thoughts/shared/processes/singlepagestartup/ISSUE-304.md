@@ -3,7 +3,7 @@ issue_number: 304
 issue_title: "Harden upload validation and static file delivery"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-25T21:59:27Z
+last_updated: 2026-09-25T22:05:22Z
 status: active
 current_phase: implement
 ---
@@ -21,7 +21,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Plan: completed
 - Implement: in_progress
 - Current phase: implement
-- Next step: commit, push the branch and open the pull request; then lead review
+- Next step: lead review of PR #331; fixes land on the same branch
 
 ## Phase Notes
 
@@ -73,7 +73,8 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   type and scenario checks pass; each guard was mutation-checked; the
   behavior was proven with `curl` and in Chromium against the API on 4304.
 - Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-304-progress.md`,
-  code and specs listed there.
+  code and specs listed there; commits `473c88d29c` and `39f810e541`;
+  PR #331 (`thoughts/shared/prs/331_description.md`).
 - Notes: the `create-from-url` scenarios live in the controller spec. The
   scenario suite ran through the jest CLI because the shared Redis does not
   answer and the runner's cache preflight fails.

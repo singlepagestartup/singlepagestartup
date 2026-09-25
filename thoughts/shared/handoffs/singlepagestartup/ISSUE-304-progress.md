@@ -219,11 +219,12 @@ status: in_progress
 ### Commits
 
 - `473c88d29c` fix(file-storage): serve uploads sandboxed and limit upload size and count
+- `39f810e541` docs: record research, plan and process for issue 304
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/331
+- [x] PR number: 331 (description saved at `thoughts/shared/prs/331_description.md`)
 
 ### Final Status
 
@@ -233,4 +234,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-09-25T21:58:16Z
+**Last updated**: 2026-09-25T22:05:22Z
