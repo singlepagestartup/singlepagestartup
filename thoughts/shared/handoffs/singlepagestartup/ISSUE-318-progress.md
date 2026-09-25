@@ -248,8 +248,8 @@ the file on exit; its fingerprint matched afterwards. Nothing connected to
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/333 (published by the lead after the agent's push was refused by the session's safety classifier)
+- [x] PR number: #333
 
 ### Final Status
 
