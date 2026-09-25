@@ -3,7 +3,8 @@ issue_number: 317
 issue_title: "Complete the Docker ignore list, pin base images and run as a non-root user"
 start_date: 2026-09-25T21:45:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-317.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-317 - Complete the Docker ignore list, pin base images and run as a non-root user
@@ -95,8 +96,8 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/326
+- [x] PR number: 326
 
 ### Final Status
 

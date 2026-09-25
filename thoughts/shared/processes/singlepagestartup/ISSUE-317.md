@@ -5,7 +5,7 @@ repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
 last_updated: 2026-09-25T23:10:00Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-317 - Complete the Docker ignore list, pin base images and run as a non-root user
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: implement the three plan phases and record evidence in `thoughts/shared/handoffs/singlepagestartup/ISSUE-317-progress.md`
+- Implement: completed
+- Current phase: complete
+- Next step: code review of https://github.com/singlepagestartup/singlepagestartup/pull/326, then the ownership step on running servers before the first release that runs as `node`
 
 ## Phase Notes
 
