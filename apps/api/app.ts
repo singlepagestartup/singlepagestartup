@@ -98,6 +98,17 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
       headers.set("Content-Type", file.type);
     }
     headers.set("Content-Length", String(file.size));
+    /**
+     * Uploaded files are served from the API origin, so a file opened in a
+     * tab must not run as a document of that origin (issue #304). `nosniff`
+     * keeps the browser on the declared type, and `sandbox` gives a file
+     * opened as a document an opaque origin with scripts, forms and plugins
+     * disabled. Browsers apply `nosniff` only to script and style loads and a
+     * CSP only to documents and workers, so `<img>`, `<video>`, `<audio>` and
+     * CSS backgrounds that embed these files are not affected.
+     */
+    headers.set("X-Content-Type-Options", "nosniff");
+    headers.set("Content-Security-Policy", "sandbox");
 
     if (c.req.method === "HEAD") {
       return new Response(null, {

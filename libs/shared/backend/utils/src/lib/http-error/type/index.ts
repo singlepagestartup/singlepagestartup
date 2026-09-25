@@ -8,6 +8,7 @@ export type ErrorCategory =
   | "Not Found error"
   | "Conflict error"
   | "Unprocessable Entity error"
+  | "Payload Too Large error"
   | "Payment error"
   | "Internal error"
   | "Other";

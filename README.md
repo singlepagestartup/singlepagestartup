@@ -465,6 +465,7 @@ Here are the available categories and examples of keywords that trigger them:
 | **Payment error** | 400 | payment intent not found, stripe secret key not found, currency required |
 | **Not Found error** | 404 | not found, entity not found, form not found |
 | **Conflict error** | 409 | duplicate key value violates unique constraint, conflict error |
+| **Payload Too Large error** | 413 | payload too large |
 | **Internal error** | 500 | internal server error, jwt secret not provided, configuration error |
 
 A message that opens with a category phrase keeps that category even when its details match another one: `Validation error. Expected string, got: object` stays a 400 Validation error, while a bare `Expected string, got: object` is a 422 Unprocessable Entity error.
