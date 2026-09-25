@@ -8,27 +8,35 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   ansible:
     timeout-minutes: 60
     name: ansible run script
     runs-on: ubuntu-latest
+    env:
+      BRANCH_NAME: ${{ github.ref_name }}
     defaults:
       run:
         working-directory: ./tools/deployer
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Set script file name
         id: set-script-file-name
-        run: echo "SCRIPT_FILE_NAME=$(echo ${{ github.ref_name }} | cut -d'-' -f2)" >> $GITHUB_OUTPUT
+        run: echo "SCRIPT_FILE_NAME=$(echo "$BRANCH_NAME" | cut -d'-' -f2)" >> "$GITHUB_OUTPUT"
       - name: Set script args
         id: set-script-args
-        run: echo "ARGS=$(echo ${{ github.ref_name }} | cut -d'-' -f3- | tr '-' ' ')" >> $GITHUB_OUTPUT
+        run: echo "ARGS=$(echo "$BRANCH_NAME" | cut -d'-' -f3- | tr '-' ' ')" >> "$GITHUB_OUTPUT"
       - name: Script and args
+        env:
+          SCRIPT_FILE_NAME: ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}
+          ARGS: ${{ steps.set-script-args.outputs.ARGS }}
         run: |
-          echo SCRIPT: ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}.sh
-          echo ARGS: ${{ steps.set-script-args.outputs.ARGS }}
+          echo "SCRIPT: ${SCRIPT_FILE_NAME}.sh"
+          echo "ARGS: ${ARGS}"
       - name: Add deployer PREVIEW secrets to env file
         if: contains(github.ref_name, '-preview')
         run: |
@@ -123,7 +131,7 @@ jobs:
             "DOCKER_HUB_URL ${{ secrets.PREVIEW_DOCKER_HUB_URL }}"\
             "DOCKER_HUB_LOGIN_USERNAME ${{ secrets.PREVIEW_DOCKER_HUB_LOGIN_USERNAME }}"\
             "GITHUB_TOKEN ${{ secrets.PREVIEW_GH_TOKEN }}"\
-            "GITHUB_REPOSITORY ${{ github.repository_owner }}/${{ github.event.repository.name }}"\
+            "GITHUB_REPOSITORY ${GITHUB_REPOSITORY}"\
             "GOOGLE_TAG_MANAGER_ID ${{ secrets.PREVIEW_GOOGLE_TAG_MANAGER_ID }}"\
             "GOOGLE_ANALYTICS_ID ${{ secrets.PREVIEW_GOOGLE_ANALYTICS_ID }}"\
             "STRIPE_API_KEY ${{ secrets.PREVIEW_STRIPE_API_KEY }}"\
@@ -242,7 +250,7 @@ jobs:
             "DOCKER_HUB_URL ${{ secrets.DOCKER_HUB_URL }}"\
             "DOCKER_HUB_LOGIN_USERNAME ${{ secrets.DOCKER_HUB_LOGIN_USERNAME }}"\
             "GITHUB_TOKEN ${{ secrets.GH_TOKEN }}"\
-            "GITHUB_REPOSITORY ${{ github.repository_owner }}/${{ github.event.repository.name }}"\
+            "GITHUB_REPOSITORY ${GITHUB_REPOSITORY}"\
             "GOOGLE_TAG_MANAGER_ID ${{ secrets.GOOGLE_TAG_MANAGER_ID }}"\
             "GOOGLE_ANALYTICS_ID ${{ secrets.GOOGLE_ANALYTICS_ID }}"\
             "STRIPE_API_KEY ${{ secrets.STRIPE_API_KEY }}"\
@@ -270,7 +278,9 @@ jobs:
       - name: Make script file executable
         run: |
           chmod +x \
-            ./$(echo ${{ github.ref_name }} | cut -d'-' -f2).sh
+            "./$(echo "$BRANCH_NAME" | cut -d'-' -f2).sh"
       - name: Run service script
+        env:
+          SCRIPT_FILE_NAME: ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}
         run: |
-          ./$(echo ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}).sh
+          "./${SCRIPT_FILE_NAME}.sh"

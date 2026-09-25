@@ -6,6 +6,9 @@ on:
       - released
       - prereleased
 
+permissions:
+  contents: read
+
 concurrency:
   group: release-deployment-${{ github.event.release.prerelease && 'preview' || 'production' }}
   cancel-in-progress: false

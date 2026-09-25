@@ -336,6 +336,18 @@ with mode `0600` before Ansible connects. When `github_deployer.sh` is used, it
 encodes `ANSIBLE_PRIVATE_KEY_FILE` automatically if
 `ANSIBLE_PRIVATE_KEY_BASE64` is empty.
 
+A deployment runs when a pull request from `main` into one of the branches that
+`github_deployer.sh` creates is merged: `ansible-up` or `ansible-down`, and
+`ansible-up-preview` or `ansible-down-preview` for the preview environment. The
+`Env` workflow (`.github/workflows/deployer.yml`) starts only for pull requests
+into `ansible-*` branches and calls `.github/workflows/ansible.yml` only after a
+merge. That workflow runs the script named by the second segment of the branch
+name, `up.sh` or `down.sh`, and uses the `PREVIEW_` secrets when the name
+contains `-preview`. Closing the pull request without merging deploys nothing.
+To start a deployment by hand, choose **Run workflow** on the `Ansible` workflow
+and select one of these branches; the run uses that branch's copy of the
+workflow files. A run started from `main` finds no script and fails.
+
 Never commit a Lightsail private key, the generated `inventory.yaml`, or a real
 `.env` file. They are ignored by the repository.
 

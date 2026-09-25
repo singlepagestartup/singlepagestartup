@@ -2,6 +2,11 @@ name: Env
 on:
   pull_request:
     types: [closed]
+    branches:
+      - "ansible-*"
+
+permissions:
+  contents: read
 
 jobs:
   server:
