@@ -17,7 +17,7 @@ jobs:
     name: ansible run script
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: ${{ github.ref_name }}
+      BRANCH_NAME: ${{ inputs.BRANCH || github.ref_name }}
     defaults:
       run:
         working-directory: ./tools/deployer
@@ -38,7 +38,7 @@ jobs:
           echo "SCRIPT: ${SCRIPT_FILE_NAME}.sh"
           echo "ARGS: ${ARGS}"
       - name: Add deployer PREVIEW secrets to env file
-        if: contains(github.ref_name, '-preview')
+        if: contains(env.BRANCH_NAME, '-preview')
         run: |
           secrets=(\
             "PROJECT_NAME ${{ secrets.PREVIEW_PROJECT_NAME }}"\
@@ -157,7 +157,7 @@ jobs:
             echo "$secret_name=$secret_value" >> .env
           done
       - name: Add deployer default secrets to env file
-        if: ${{ !contains(github.ref_name, '-preview') }}
+        if: ${{ !contains(env.BRANCH_NAME, '-preview') }}
         run: |
           secrets=(\
             "PROJECT_NAME ${{ secrets.PROJECT_NAME }}"\

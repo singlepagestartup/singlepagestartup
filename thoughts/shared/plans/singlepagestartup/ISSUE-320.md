@@ -25,7 +25,7 @@ The research document `thoughts/shared/research/singlepagestartup/ISSUE-320.md` 
 
 ## Desired End State
 
-Ten workflows remain. Each declares `permissions: contents: read` at the top. Each third-party `uses:` reads `owner/repo@<40-hex commit> # vX.Y.Z`, where the commit is both the one the replaced major tag points at and the one the exact release tag points at. `deployer.yml` starts only for pull requests into `ansible-*` branches, and its job still requires a merge. No `run:` script contains a `github.*` expression, a step output or `inputs.TAG`; the only expressions left in `run:` are secrets and the boolean `inputs.PRERELEASE`. The "GitHub Actions deployment" section of `tools/deployer/README.md` says how a deployment run starts.
+Ten workflows remain. Each declares `permissions: contents: read` at the top. Each third-party `uses:` reads `owner/repo@<40-hex commit> # vX.Y.Z`, where the commit is the one behind the exact release tag and behind that release's major tag. Every pin keeps the major version the line used before, except the checkout in `prepare-docker-images.yml`, which moves from `v4` to the `v5.1.0` commit the other workflows use. `deployer.yml` starts only for pull requests into `ansible-*` branches, and its job requires a merge. `ansible.yml` takes the branch name from its `BRANCH` input when a workflow calls it and from the branch a manual run starts from; the script and the secret set both follow that one value. No `run:` script contains a `github.*` expression, a step output or `inputs.TAG`; the only expressions left in `run:` are secrets and the boolean `inputs.PRERELEASE`. The "GitHub Actions deployment" section of `tools/deployer/README.md` says how a deployment run starts.
 
 Verification: the scratchpad harness reports no violation against the new tree and 45 against the original one; every `run:` script passes `bash -n`; a simulation of the changed steps prints the same script name, arguments, `.env` line, webhook URL and image references as the original for ordinary branch names and tags, and runs nothing for a branch name that contains a command substitution; `gh api` confirms each pinned commit; `prettier --check` passes.
 
@@ -56,15 +56,16 @@ The five service workflows use no token. They declare `contents: read`, the same
 - `ansible.yml:126` and `:245` build the value that the runner already exports as `GITHUB_REPOSITORY`.
 - `tools/deployer/get_env.sh:3-25` reads deployer values only from the `.env` file, so a job-level `BRANCH_NAME` variable cannot change what the deployer scripts read; no deployer script reads `BRANCH_NAME` from its environment (`github_deployer.sh:270` and `github_releaser.sh:51` assign it before use, and neither runs in this workflow).
 - A called workflow can only narrow the token permissions of its caller (GitHub reusable-workflow reference).
+- `jobs.<job_id>.env` may read the `inputs` context, and a step `if:` may read `env` (GitHub contexts reference, context availability table).
 
 ## What We're NOT Doing
 
 - Repository and organization settings are not part of this change.
 - No `write` scope is added anywhere: no remaining workflow writes through the `GITHUB_TOKEN`.
 - Secrets stay rendered into `run:` in `ansible.yml`, `docker-image.yml` and `prepare-docker-images.yml`. Their values are set by the repository owner, and moving the two secret arrays of `ansible.yml` into `env:` would rewrite about 220 lines of deployment configuration.
-- No action is upgraded. `prepare-docker-images.yml` keeps `actions/checkout` v4, pinned to `v4.4.0`; the others keep their major versions.
+- No action moves to a new major version, except the checkout in `prepare-docker-images.yml`, which joins the `v5.1.0` commit that `ansible.yml` and `docker-image.yml` use.
 - No Dependabot configuration for action updates.
-- The script selection in `ansible.yml` stays as it is: the unused `BRANCH` input, the printed arguments that are not passed to the script, and the `contains(github.ref_name, '-preview')` conditions, which are expressions and never reach the shell.
+- The selection rules in `ansible.yml` stay: the second field of the branch name picks the script, `-preview` picks the secret set, and the printed arguments are not passed to the script.
 - `tools/deployer/github_releaser.sh`, which still creates `update-host` branches, and the scripts in `tools/deployer/icp/` stay unchanged.
 - No spec file. The change is workflow configuration, the repository's BDD convention rules out tests that read source text (`README.md`, "Testing Convention", item 7), and no test lane covers `.github/`. The one-off harness lives in the session scratchpad, as `.agents/contracts/engineering/code-placement.md` places one-off analysis.
 - No branch on the remote is pushed to except this issue's own branch; the deployment branches pick up the new files through the owner's usual pull request from `main`.
@@ -73,7 +74,7 @@ The five service workflows use no token. They declare `contents: read`, the same
 
 - A published release or prerelease runs `release.yml`: image build and push, image pull through Portainer, then the five service webhooks. Job graph, inputs, secrets and `concurrency` are unchanged; each called workflow gets `contents: read`, which is all it uses.
 - Manual runs of `docker-image.yml`, `prepare-docker-images.yml` (with its `TAG` and `PRERELEASE` inputs), the five service workflows and `ansible.yml` keep their `workflow_dispatch` triggers.
-- Merging a pull request from `main` into `ansible-up`, `ansible-down`, `ansible-up-preview` or `ansible-down-preview` still runs `up.sh` or `down.sh` with the matching secret set; the simulation checks the script name, the arguments and the `GITHUB_REPOSITORY` line for each of the four names.
+- Merging a pull request from `main` into `ansible-up`, `ansible-down`, `ansible-up-preview` or `ansible-down-preview` still runs `up.sh` or `down.sh` with the matching secret set; the simulation checks the script name, the arguments and the `GITHUB_REPOSITORY` line for each of the four names, both when `deployer.yml` calls the workflow and on a manual run.
 - Local deployment from `tools/deployer` does not touch the workflows.
 
 ## Implementation Approach
@@ -98,7 +99,7 @@ Remove the two workflows that serve no branch and make the deployment trigger li
 
 **File**: `.github/workflows/deployer.yml`
 **Why**: every closed pull request in the repository starts it today; only merged pull requests into `ansible-*` branches deploy.
-**Changes**: add a `branches` filter with `ansible-*` under the `pull_request` trigger. Keep `types: [closed]`, the job condition with `merged == true`, `secrets: inherit` and the `BRANCH` input.
+**Changes**: add a `branches` filter with `ansible-*` under the `pull_request` trigger and reduce the job condition to `github.event.pull_request.merged == true`, since the filter already limits the branch. Keep `types: [closed]`, `secrets: inherit` and the `BRANCH` input.
 
 #### 3. Deployer documentation
 
@@ -132,7 +133,7 @@ Pass branch names, step outputs and release tags to scripts as environment varia
 
 **File**: `.github/workflows/ansible.yml`
 **Why**: lines 24, 27 and 273 render `github.ref_name` into the script unquoted, lines 30-31 and 276 render step outputs derived from it, and lines 126 and 245 render `github.repository_owner` and `github.event.repository.name`.
-**Changes**: a job-level `env` entry `BRANCH_NAME` set from `github.ref_name`; lines 24, 27 and 273 read `"$BRANCH_NAME"`, and `$GITHUB_OUTPUT` is quoted; the "Script and args" and "Run service script" steps receive `SCRIPT_FILE_NAME` and `ARGS` through step-level `env` and quote them; lines 126 and 245 use `${GITHUB_REPOSITORY}`, the runner variable with the same `owner/name` value.
+**Changes**: a job-level `env` entry `BRANCH_NAME` set from the `BRANCH` input, with `github.ref_name` as the fallback for a manual run; lines 24, 27 and 273 read `"$BRANCH_NAME"`, and `$GITHUB_OUTPUT` is quoted; the two `-preview` conditions read `env.BRANCH_NAME`; the "Script and args" and "Run service script" steps receive `SCRIPT_FILE_NAME` and `ARGS` through step-level `env` and quote them; lines 126 and 245 use `${GITHUB_REPOSITORY}`, the runner variable with the same `owner/name` value.
 
 #### 2. Service webhook workflows
 
@@ -173,7 +174,7 @@ Replace every third-party tag with the commit it points at, and declare the toke
 | File and line                                  | From                          | To                                                                           |
 | ---------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------- |
 | `ansible.yml:21`, `docker-image.yml:23`        | `actions/checkout@v5`         | `actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0`         |
-| `prepare-docker-images.yml:32`                 | `actions/checkout@v4`         | `actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0`         |
+| `prepare-docker-images.yml:32`                 | `actions/checkout@v4`         | `actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0`         |
 | `docker-image.yml:101`                         | `docker/login-action@v4`      | `docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0`      |
 | `docker-image.yml:110`, `docker-image.yml:124` | `docker/build-push-action@v7` | `docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0` |
 
@@ -190,7 +191,7 @@ Replace every third-party tag with the commit it points at, and declare the toke
 #### Automated Verification:
 
 - [x] Every workflow parses with `js-yaml`, and the harness reports no violation.
-- [x] For each pin, `gh api repos/<owner>/<repo>/git/ref/tags/<exact tag>` and `.../git/ref/tags/<replaced major tag>` resolve to the pinned commit (dereferencing a tag object if one appears).
+- [x] For each pin, `gh api repos/<owner>/<repo>/git/ref/tags/<exact tag>` and `.../git/ref/tags/<major tag of that release>` resolve to the pinned commit (dereferencing a tag object if one appears).
 - [x] `npx prettier --check .github/workflows/*.yml` passes.
 
 #### Manual Verification:
@@ -229,3 +230,5 @@ Closed pull requests outside `ansible-*` no longer start a skipped `Env` run. No
 - Original ticket: `thoughts/shared/tickets/singlepagestartup/ISSUE-320.md` (local, not committed)
 - Research: `thoughts/shared/research/singlepagestartup/ISSUE-320.md`
 - Process: `thoughts/shared/processes/singlepagestartup/ISSUE-320.md`
+
+<!-- Last synced at: 2026-09-25T21:39:00Z (review of pull request #323: BRANCH input with ref fallback, -preview conditions on env.BRANCH_NAME, merge guard alone in deployer.yml, checkout v5.1.0 in prepare-docker-images.yml) -->

@@ -44,6 +44,16 @@ No Nx project owns `.github/workflows/` or `tools/deployer/README.md`, so no jes
 
 After the push, the checks on pull request #323 passed: CodeQL `Analyze (actions)`, `Analyze (javascript-typescript)`, `Analyze (python)` and Socket Security. Code scanning lists 20 open `actions/missing-workflow-permissions` alerts in `.github/workflows` on `main` and none on `refs/pull/323/merge`.
 
+### Review round 1 (pull request #323)
+
+- [x] Started: 2026-09-25T21:30Z
+- [x] Completed: 2026-09-25T21:40Z
+- [x] Automated verification: harness `OK: no violations` (45 on the original files); `simulate.mjs` ALL CHECKS PASSED with 29 identical comparisons and 0 differences; `verify-pins.sh` OK for all six pinned lines; `npx prettier --check .github/workflows/*.yml` PASSED; `node tools/agents/code-placement.mjs` PASSED
+
+**Notes**: four requested changes. `ansible.yml` sets `BRANCH_NAME` from `${{ inputs.BRANCH || github.ref_name }}`, so the value `deployer.yml` passes wins and a manual run falls back to its own branch; the two `-preview` conditions read `env.BRANCH_NAME` (the contexts reference allows `inputs` in `jobs.<job_id>.env` and `env` in a step `if:`). `deployer.yml` keeps only `github.event.pull_request.merged == true`, since the `ansible-*` filter already limits the base branch. `prepare-docker-images.yml` checks out with `fbc6f39… # v5.1.0` like the other workflows.
+
+The simulation now runs each of the four deployment branch names twice, once as called by `deployer.yml` (`BRANCH` set to the branch) and once as a manual dispatch (no input); both match the original files. A caller passing `BRANCH=ansible-down-preview` on the ref `ansible-up` gets `down.sh` and the preview secrets. Mutation check: reading `BRANCH_NAME` from `github.ref_name` again makes that caller get `up.sh` with the default secrets; reading the two conditions from `github.ref_name` again makes it get `down.sh` with the default secrets. Both fail the simulation, and restoring the file returns `git diff | shasum` to `753cd7c97b56`. `verify-pins.sh` now checks each pin against the exact release tag and that release's major tag, and reports the tag the line used at `78d7d43125` (`@v4` for `prepare-docker-images.yml`, the same major for the other five).
+
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
@@ -56,11 +66,11 @@ After the push, the checks on pull request #323 passed: CodeQL `Analyze (actions
 ### Changes Made
 
 - Deleted `.github/workflows/deploy-to-icp.yml` and `.github/workflows/update-host.yml`.
-- `.github/workflows/deployer.yml`: `branches: ["ansible-*"]` on the `pull_request` trigger; `permissions: contents: read`.
-- `.github/workflows/ansible.yml`: `BRANCH_NAME` job variable, step outputs through `env:`, `GITHUB_REPOSITORY` from the runner, pinned checkout, `permissions: contents: read`.
+- `.github/workflows/deployer.yml`: `branches: ["ansible-*"]` on the `pull_request` trigger; job condition reduced to the merge guard; `permissions: contents: read`.
+- `.github/workflows/ansible.yml`: `BRANCH_NAME` job variable from the `BRANCH` input with a `github.ref_name` fallback, `-preview` conditions on `env.BRANCH_NAME`, step outputs through `env:`, `GITHUB_REPOSITORY` from the runner, pinned checkout, `permissions: contents: read`.
 - `.github/workflows/{api,host,llm,mcp,telegram}.yml`: `IMAGE_TAG` job variable, `permissions: contents: read`.
 - `.github/workflows/docker-image.yml`: `IMAGE_TAG` in "Set image tags", three pinned actions (four lines), `permissions: contents: read`.
-- `.github/workflows/prepare-docker-images.yml`: pinned checkout, `permissions: contents: read`.
+- `.github/workflows/prepare-docker-images.yml`: checkout pinned to the `v5.1.0` commit, `permissions: contents: read`.
 - `.github/workflows/release.yml`: `permissions: contents: read`.
 - `tools/deployer/README.md`: how a GitHub Actions deployment starts.
 
@@ -77,4 +87,4 @@ After the push, the checks on pull request #323 passed: CodeQL `Analyze (actions
 
 ---
 
-**Last updated**: 2026-09-25T21:21:00Z
+**Last updated**: 2026-09-25T21:40:00Z

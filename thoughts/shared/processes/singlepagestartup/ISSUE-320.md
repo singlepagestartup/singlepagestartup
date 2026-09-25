@@ -3,7 +3,7 @@ issue_number: 320
 issue_title: "Add workflow permissions, pin actions and remove unused pull-request workflows"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-25T21:21:00Z
+last_updated: 2026-09-25T21:40:00Z
 status: active
 current_phase: complete
 ---
@@ -21,7 +21,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Plan: completed
 - Implement: completed
 - Current phase: complete
-- Next step: code review of pull request #323
+- Next step: second review of pull request #323 after the review fixes
 
 ## Phase Notes
 
@@ -47,6 +47,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Summary: `deploy-to-icp.yml` and `update-host.yml` deleted; `deployer.yml` limited to `ansible-*` base branches; `ansible.yml` reads the branch through `BRANCH_NAME`, the step outputs through `env:` and the repository through the runner variable; the five service workflows and `docker-image.yml` read the release tag through `IMAGE_TAG`; six `uses:` lines pinned to commits with version comments; `permissions: contents: read` in the ten remaining workflows; the deployer README says how a deployment run starts.
 - Outputs: commit `34b6d14fb1`; pull request #323 (`thoughts/shared/prs/323_description.md`); `thoughts/shared/handoffs/singlepagestartup/ISSUE-320-progress.md`.
 - Notes: no Nx project owns the changed paths, so verification is a scratchpad harness (parse, permissions, pins, `run:` expression allow-list, `bash -n`, `workflow_call` contracts, pull-request guards), an old-versus-new simulation of the changed steps with placeholder secrets, `gh api` checks of every pinned commit, `prettier --check` and the code-placement check. The mutation check restored one guard of each kind and saw the harness and the simulation fail.
+- Review round 1: the review of #323 asked for four changes, all applied. `ansible.yml` reads the branch from its `BRANCH` input with a `github.ref_name` fallback and bases the `-preview` secret choice on the same variable; `deployer.yml` keeps only the merge guard behind its `ansible-*` filter; `prepare-docker-images.yml` uses the `v5.1.0` checkout commit. Simulation, harness and pin checks pass again; the details are in the progress file.
 
 ## Incident Log
 
@@ -69,3 +70,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - A `pull_request` workflow with `types: [closed]` sees the base branch in `github.ref` and `github.ref_name` once the pull request is merged; only a pull request closed without a merge carries `refs/pull/<number>/merge`.
 - Before removing a workflow, `gh api repos/<owner>/<repo>/actions/workflows/<id>/runs` and `gh api "repos/<owner>/<repo>/pulls?state=all&base=<branch>"` show whether anything still starts it.
 - A run that calls a reusable workflow is recorded under the caller, so a called workflow with zero runs of its own can still be in use.
+- A reusable workflow that declares an input should read it, with a fallback for `workflow_dispatch` (`inputs.X || github.ref_name`), and every condition that depends on the same value should read one job variable rather than a second context.
