@@ -1,5 +1,6 @@
 import { DI, type IRepository } from "@sps/shared-backend-api";
 import {
+  RBAC_JWT_ALGORITHM,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
   createMemoryCache,
@@ -83,6 +84,7 @@ export class Service {
       const decoded = await jwt.verify(
         authorization,
         RBAC_JWT_SECRET as string,
+        RBAC_JWT_ALGORITHM,
       );
 
       if (!decoded.subject?.["id"]) {

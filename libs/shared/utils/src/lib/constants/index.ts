@@ -41,3 +41,10 @@ export const ADDRESS_VERIFYING_PROVIDERS = Object.freeze([
  * loopback reads that need the full row travel with it.
  */
 export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
+
+/**
+ * Algorithm of the RBAC subject JWT. `sign()` from `hono/jwt` issues every
+ * token with its default, HS256; `verify()` requires the expected algorithm
+ * and rejects a token whose header names another one.
+ */
+export const RBAC_JWT_ALGORITHM = "HS256";

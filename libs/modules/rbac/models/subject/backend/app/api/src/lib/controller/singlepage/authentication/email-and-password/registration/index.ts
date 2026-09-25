@@ -1,4 +1,4 @@
-import { RBAC_JWT_SECRET } from "@sps/shared-utils";
+import { RBAC_JWT_ALGORITHM, RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
@@ -33,7 +33,11 @@ export class Handler {
         roles: data.roles || [],
       });
 
-      const decodedJwt = await jwt.verify(entity.jwt, RBAC_JWT_SECRET);
+      const decodedJwt = await jwt.verify(
+        entity.jwt,
+        RBAC_JWT_SECRET,
+        RBAC_JWT_ALGORITHM,
+      );
 
       if (!decodedJwt.exp) {
         throw new Error("Validation error. Invalid token issued");

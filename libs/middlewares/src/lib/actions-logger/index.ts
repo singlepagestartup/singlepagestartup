@@ -4,6 +4,7 @@ import {
   IRouteRule,
   KV_PROVIDER,
   normalizeRoutePath,
+  RBAC_JWT_ALGORITHM,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
   RouteMatcher,
@@ -68,7 +69,11 @@ export class Middleware {
           void (async () => {
             try {
               const resJson = await c.res.clone().json();
-              const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+              const decoded = await jwt.verify(
+                token,
+                RBAC_JWT_SECRET,
+                RBAC_JWT_ALGORITHM,
+              );
 
               const contentType = c.req.header("content-type");
               let requestData: any = {};

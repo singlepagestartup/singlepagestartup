@@ -1,4 +1,8 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  RBAC_JWT_ALGORITHM,
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
@@ -50,7 +54,11 @@ export class Handler {
         );
       }
 
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(
+        token,
+        RBAC_JWT_SECRET,
+        RBAC_JWT_ALGORITHM,
+      );
 
       const body = await c.req.parseBody();
 
