@@ -62,6 +62,10 @@ import {
   IExecuteProps as IEcommerceOrderResolveCurrencyProps,
 } from "./ecommerce/order/resolve-currency";
 import {
+  Service as EcommerceOrderAssertSubjectOwns,
+  IExecuteProps as IEcommerceOrderAssertSubjectOwnsProps,
+} from "./ecommerce/order/assert-subject-owns";
+import {
   SubjectDI,
   type IBillingModule,
   type IBroadcastModule,
@@ -334,6 +338,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new EcommerceOrderResolveCurrency({
       ecommerceModule: this.ecommerceModule,
       billingModule: this.billingModule,
+    }).execute(props);
+  }
+
+  async ecommerceModuleAssertSubjectOwnsOrder(
+    props: IEcommerceOrderAssertSubjectOwnsProps,
+  ): Promise<void> {
+    return new EcommerceOrderAssertSubjectOwns({
+      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
     }).execute(props);
   }
 
