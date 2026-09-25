@@ -1,10 +1,10 @@
 "use client";
 
-import { Component as RbacModuleSubjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component";
 import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/frontend/component";
-import { ISpsComponentBase } from "@sps/ui-adapter";
+import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
+import { IComponentProps } from "./interface";
 
-export function Component(props: ISpsComponentBase) {
+export function Component(props: IComponentProps) {
   return (
     <RbacModuleSubject isServer={false} variant="authentication-me-default">
       {({ data: subject }) => {
@@ -13,36 +13,39 @@ export function Component(props: ISpsComponentBase) {
         }
 
         return (
-          <RbacModuleSubjectsToEcommerceModuleOrders
+          <RbacModuleSubject
             isServer={false}
-            variant="find"
+            variant="ecommerce-module-order-list-default"
+            data={subject}
+            language={props.language}
             apiProps={{
               params: {
                 filters: {
                   and: [
                     {
-                      column: "subjectId",
+                      column: "type",
                       method: "eq",
-                      value: subject.id,
+                      value: "cart",
                     },
                   ],
                 },
               },
             }}
           >
-            {({ data }) => {
-              return data?.map((entity, index) => {
+            {({ data: ecommerceModuleOrders }) => {
+              return ecommerceModuleOrders?.map((ecommerceModuleOrder) => {
                 return (
-                  <RbacModuleSubjectsToEcommerceModuleOrders
-                    key={index}
+                  <EcommerceModuleOrder
+                    key={ecommerceModuleOrder.id}
                     isServer={false}
-                    variant="default"
-                    data={entity}
+                    variant="cart-default"
+                    data={ecommerceModuleOrder}
+                    language={props.language}
                   />
                 );
               });
             }}
-          </RbacModuleSubjectsToEcommerceModuleOrders>
+          </RbacModuleSubject>
         );
       }}
     </RbacModuleSubject>

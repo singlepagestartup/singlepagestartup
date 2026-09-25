@@ -1,5 +1,6 @@
 import { RBAC_JWT_SECRET, createMemoryCache } from "@sps/shared-utils";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
+import { rolelessPermissions } from "@sps/rbac/models/permission/backend/repository/database";
 import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
 import { logger, verifyJwt } from "@sps/backend-utils";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
@@ -83,15 +84,17 @@ export class Service {
   }
 
   /**
-   * One-shot inventory of the permission rows that carry no role — the routes
-   * this deployment answers for anonymous callers (issue #270). A project
-   * upgrading reads its own surface here instead of auditing the seed by hand.
+   * The permission rows that carry no role and are missing from the reviewed
+   * `rolelessPermissions` list, as `METHOD path` (issue #303). The rbac unit
+   * lane runs it against the seed and the boot report against the live table,
+   * so a new role-less row fails the lane and appears in the log until it is
+   * listed.
    *
    * It lives on this service rather than on the permission service because the
    * attachments come from the roles-to-permissions relation, and this is the
    * only class holding both reads.
    */
-  protected async reportRolelessPermissions() {
+  async findUnlistedRolelessPermissions() {
     const [permissions, rolesToPermissions] = await Promise.all([
       this.permissionService.find(),
       this.rolesToPermissionsService.find(),
@@ -102,20 +105,32 @@ export class Service {
         (roleToPermission) => roleToPermission.permissionId,
       ),
     );
+    const listedRolelessPermissions = new Set(rolelessPermissions);
 
-    const roleless = permissions
+    return permissions
       .filter((permission) => !permissionIdsWithRole.has(permission.id))
       .map((permission) => `${permission.method} ${permission.path}`)
+      .filter((permission) => !listedRolelessPermissions.has(permission))
       .sort();
+  }
 
-    if (!roleless.length) {
+  /**
+   * One-shot inventory of the role-less permission rows missing from the list,
+   * which this deployment answers for anonymous callers unless the route is
+   * sensitive (issues #270, #303). A project upgrading reads here the rows it
+   * still has to review.
+   */
+  protected async reportRolelessPermissions() {
+    const unlisted = await this.findUnlistedRolelessPermissions();
+
+    if (!unlisted.length) {
       return;
     }
 
     logger.warn(
       [
-        `RBAC: ${roleless.length} permission(s) carry no role and stay public unless the route is sensitive:`,
-        ...roleless,
+        `RBAC: ${unlisted.length} permission(s) carry no role and are missing from the reviewed list; they stay public unless the route is sensitive:`,
+        ...unlisted,
       ].join("\n"),
     );
   }

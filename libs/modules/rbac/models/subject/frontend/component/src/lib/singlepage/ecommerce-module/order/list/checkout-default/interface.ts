@@ -3,7 +3,7 @@ import { IModel } from "@sps/rbac/models/subject/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/default/interface";
+} from "@sps/shared-frontend-components/singlepage/subject-default/interface";
 
 export const variant = "ecommerce-module-order-list-checkout-default" as const;
 

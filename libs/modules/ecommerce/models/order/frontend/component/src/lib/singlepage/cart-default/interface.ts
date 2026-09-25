@@ -8,7 +8,7 @@ import {
 export const variant = "cart-default" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {
+  extends Omit<IParentComponentProps<IModel, typeof variant>, "apiProps"> {
   language: string;
   billingModuleCurrencyId?: string;
 }
