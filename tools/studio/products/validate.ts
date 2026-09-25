@@ -19,14 +19,13 @@ export const productHeadings = [
   "Problem and desired progress",
   "Value Propositions",
   "Offer and usage",
-  "Business goals and metrics",
-];
-export const modelHeadings = [
-  "Model scope",
   "Revenue Streams",
-  "Delivery and resources",
+  "Key Activities",
+  "Key Resources",
+  "Key Partnerships",
   "Cost Structure",
   "Assumptions and decision rules",
+  "Business goals and metrics",
 ];
 export const analyticsHeadings = [
   "Measurement scope",
@@ -60,8 +59,6 @@ export async function validateProductCatalogFiles(
         `${source} must use canonical sections: ${headings.join(", ")}; preserve project extensions in catalog pages`,
       );
   }
-  for (const model of catalog.models)
-    await primary(model.source, modelHeadings);
   const researchDocuments: IResearchFindingDocument[] = [];
   for (const product of catalog.products) {
     for (const field of [

@@ -7,9 +7,15 @@ export { util as verifyJwt } from "./jwt-verify";
 export { util as isUniqueConstraintError } from "./unique-constraint-error";
 export { util as blobifyFiles } from "./blobify-files";
 export { util as telegramMarkdownFormatter } from "./telegram-markdown-formatter";
+export { rbacSecretMatches, readRbacSecret } from "./rbac-secret";
 export {
   normalizeLocalizedField,
   localizedFieldHasValue,
   type ILocalizedFieldValue,
   type INormalizeLocalizedFieldOptions,
 } from "./localized-field";
+export {
+  assertCredentialColumnsAreHashed,
+  isBcryptHash,
+  isBcryptSalt,
+} from "./bcrypt-columns";

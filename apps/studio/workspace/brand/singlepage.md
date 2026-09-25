@@ -105,7 +105,8 @@ sources:
       proof; the interface should demonstrate project understanding without
       explaining retrieval, vectors or database storage to the user.
     limitation: Named release-license claims must match that release's source;
-      selected MIT intent does not verify the inspected release.
+      inspected origin/main carries the MIT text, which verifies the terms of the
+      distributed code and nothing about its behavior.
   consistency_rules:
     classification: constraint
     resolution: professional-choice
@@ -115,7 +116,7 @@ sources:
       - sources.current_business
       - sources.license
     crosschecks:
-      - apps/studio/workspace/products/singlepage/models/framework-service/model.md
+      - apps/studio/workspace/products/singlepage/singlepagestartup/product.md
       - apps/studio/workspace/products/singlepage/singlepagestartup/research.md#price-channels-and-evidence
     supports: Free code does not include hosted chat, coding-agent or infrastructure
       costs; initial AI Chat support requests are processed within 24 hours

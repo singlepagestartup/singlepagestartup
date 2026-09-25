@@ -24,6 +24,10 @@ Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh iss
 
 Follow `.agents/contracts/engineering/knowledge-first.md`: the plan, research document, and process log already contain the verified context for this issue. Navigate by their `file:line` references instead of re-searching the codebase; check the incident logs before debugging anything; investigate from scratch only where the plan turns out to mismatch reality (and record that mismatch as an incident).
 
+## Placement Preflight
+
+Follow `.agents/contracts/engineering/code-placement.md`: before creating any file, name what kind of thing it is and put it where that kind already lives. List the target directory and check the siblings are the same kind; search for an existing home before making a new one. Do not add a layer, a top-level directory or a shared package to fit a change — where nothing fits, raise it and wait rather than inventing a seam.
+
 ## Status Gate
 
 **Entry**: Issue must be in "Ready for Dev" or "In Dev" status (the latter allows resuming an interrupted session)

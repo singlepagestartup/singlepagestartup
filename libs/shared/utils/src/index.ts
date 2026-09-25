@@ -5,6 +5,7 @@ export { util as shortenerBySymbols } from "./lib/shortener-by-symbols";
 export { util as buildTreePaths } from "./lib/build-tree-paths";
 export { util as hash } from "./lib/hash";
 export * from "./lib/envs";
+export * from "./lib/secret-strength";
 export * from "./lib/constants";
 export * from "./lib/topics";
 export * from "./lib/routes";

@@ -37,6 +37,10 @@ describe("util — HTTP error classification", () => {
       "Validation error. Invalid body['data']: undefined. Expected string, got: undefined",
       "Validation error. Unprocessable Entity",
       "Validation error. Invalid type. Expected email, got: string",
+      "Validation error. Unknown filter method 'between'",
+      "Validation error. Unknown column 'absent'",
+      "Validation error. 'filters.and' must be an array",
+      "Validation error. Json key is longer than 64 characters",
     ])("maps '%s' → 400 Validation error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(400);
@@ -110,6 +114,9 @@ describe("util — HTTP error classification", () => {
       "Invalid type. Expected email, got: string",
       "Expected string",
       "Invalid body['data']",
+      "Expected number, received string",
+      "Invalid type. Expected uuid, got: text",
+      "Invalid body['files']",
     ])("maps '%s' → 422 Unprocessable Entity error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(422);

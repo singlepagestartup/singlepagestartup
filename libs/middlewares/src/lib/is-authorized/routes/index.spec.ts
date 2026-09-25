@@ -46,6 +46,82 @@ describe("is-authorized allowed routes", () => {
   });
 
   /**
+   * BDD Scenario: public module reads are allowed, dump and unknown reads
+   *               are not.
+   *
+   * Given: the composed allow-list matcher with the anchored read rules.
+   * When: the four public read shapes and the dump path are tested for each of
+   *       host, website-builder and file-storage.
+   * Then: find, count, find-by-id and the three page reads are allowed and the
+   *       dump path is not.
+   */
+  it("allows the public module reads without opening their dump route", () => {
+    const uuid = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
+
+    for (const module of ["host", "website-builder", "file-storage"]) {
+      expect(matcher.matches(`/api/${module}/widgets`, "GET")).toBe(true);
+      expect(matcher.matches(`/api/${module}/widgets/`, "GET")).toBe(true);
+      expect(matcher.matches(`/api/${module}/widgets/count`, "GET")).toBe(true);
+      expect(matcher.matches(`/api/${module}/widgets/${uuid}`, "GET")).toBe(
+        true,
+      );
+      expect(matcher.matches(`/api/${module}/widgets/dump`, "GET")).toBe(false);
+    }
+
+    expect(matcher.matches("/api/host/pages/find-by-url", "GET")).toBe(true);
+    expect(matcher.matches("/api/host/pages/urls", "GET")).toBe(true);
+    expect(matcher.matches("/api/host/pages/url-segment-value", "GET")).toBe(
+      true,
+    );
+    expect(
+      matcher.matches("/api/website-builder/widgets-to-sliders/dump", "GET"),
+    ).toBe(false);
+  });
+
+  /**
+   * BDD Scenario: an rbac or broadcast rule does not open a prefix sibling.
+   *
+   * Given: the composed allow-list matcher.
+   * When: /api/broadcast/channels-to-messages/dump and
+   *       /api/rbac/subjects-to-roles/dump are tested.
+   * Then: both stay open to the allow-list, so the route guard is what closes
+   *       them — a rule table cannot express "never anonymous".
+   */
+  it("still opens the prefix siblings the rbac and broadcast rules cover", () => {
+    expect(
+      matcher.matches("/api/broadcast/channels-to-messages/dump", "GET"),
+    ).toBe(true);
+    expect(matcher.matches("/api/rbac/subjects-to-roles/dump", "GET")).toBe(
+      true,
+    );
+  });
+
+  /**
+   * BDD Scenario: the revalidation rule is gone.
+   *
+   * Given: the composed allow-list matcher.
+   * When: the path the removed rule named is tested.
+   * Then: it is not allowed, because no route serves it.
+   */
+  it("does not allow the revalidation path no route serves", () => {
+    expect(matcher.matches("/api/revalidation/revalidate", "GET")).toBe(false);
+  });
+
+  /**
+   * BDD Scenario: the allow-list no longer claims to govern the clear route.
+   *
+   * Given: the composed allow-list matcher.
+   * When: /api/http-cache/clear is tested for GET.
+   * Then: it is not allowed — and that answer decides nothing, because the
+   *       route is registered before this middleware and carries its own
+   *       guard (issue #277). The rule was removed so the table stops
+   *       claiming an authority it never had here.
+   */
+  it("does not allow the cache-clear route the rule table cannot reach", () => {
+    expect(matcher.matches("/api/http-cache/clear", "GET")).toBe(false);
+  });
+
+  /**
    * BDD Scenario: Project/option extensions are honored.
    */
   it("honors project/option allowed-route extensions", () => {

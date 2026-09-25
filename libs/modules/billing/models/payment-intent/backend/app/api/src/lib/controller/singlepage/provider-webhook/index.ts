@@ -3,7 +3,12 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { RBAC_SECRET_KEY, STRIPE_SECRET_KEY } from "@sps/shared-utils";
 import Stripe from "stripe";
-import { getHttpErrorType, logger } from "@sps/backend-utils";
+import {
+  getHttpErrorType,
+  logger,
+  rbacSecretMatches,
+  readRbacSecret,
+} from "@sps/backend-utils";
 import { IModel as Invoice } from "@sps/billing/models/invoice/sdk/model";
 import { IModel as PaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
@@ -158,10 +163,11 @@ export class Handler {
           callback: this.service.updatePaymentIntentStatus,
         });
       } else if (provider === "telegram-star") {
-        const rbacSecretKeyHeader =
-          c.req.header("X-RBAC-SECRET-KEY") || headers["x-rbac-secret-key"];
-
-        if (rbacSecretKeyHeader !== RBAC_SECRET_KEY) {
+        // Compared through the shared primitive rather than inline. A plain
+        // inequality is only safe here because a configuration guard above
+        // rejects an unset secret first; the primitive does not depend on
+        // that guard staying there, and compares in constant time.
+        if (!rbacSecretMatches(readRbacSecret(c))) {
           throw new Error(
             "Forbidden error. Invalid Telegram Star webhook secret",
           );

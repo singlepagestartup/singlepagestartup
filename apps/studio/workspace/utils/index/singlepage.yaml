@@ -47,11 +47,6 @@ entries:
     path: .agents/templates/brief.md
     description: Compact client brief structure.
     uses: []
-  - id: template.product-model
-    kind: template
-    path: .agents/templates/product-model.md
-    description: Shared product-model operating resources, revenue, funding and costs.
-    uses: []
   - id: template.product-research
     kind: template
     path: .agents/templates/product-research.md
@@ -109,7 +104,6 @@ entries:
     uses: []
 exports:
   - template.brief
-  - template.product-model
   - template.product-research
   - template.product-analytics
   - template.sales-process

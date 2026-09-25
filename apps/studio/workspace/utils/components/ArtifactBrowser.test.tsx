@@ -55,7 +55,8 @@ describe("ArtifactDocument", () => {
     expect(html).toContain(">Brief</h1>");
     expect(html.match(/<h1(?: |>|\n)/g) ?? []).toHaveLength(1);
     expect(html).toContain("Needs confirmation");
-    expect(html).toContain("agree on the project scope");
+    expect(html).toContain("misdirects every later decision");
+    expect(html).not.toContain("Use it to");
     expect(html).toContain('aria-label="Download Markdown"');
     expect(html).toContain('aria-label="Download HTML"');
     expect(html).not.toContain("this projection is read-only");

@@ -401,18 +401,18 @@ If you need to understand why data updates/refetches happen in UI (chat, cart, c
 
 ### Standard Operations
 
-| Operation                  | Description                                    |
-| -------------------------- | ---------------------------------------------- |
-| GET /model                 | Fetch a list of entities (FindHandler)         |
-| GET /model/:id             | Fetch an entity by ID (FindByIdHandler)        |
-| POST /model                | Create a new entity (CreateHandler)            |
-| PATCH /model/:id           | Update an entity by ID (UpdateHandler)         |
-| DELETE /model/:id          | Delete an entity by ID (DeleteHandler)         |
-| POST /model/dump           | Dump data of the model (DumpHandler)           |
-| POST /model/seed           | Seed data into the model (SeedHandler)         |
-| POST /model/find-or-create | Find or create an entity (FindOrCreateHandler) |
-| POST /model/bulk-create    | Bulk create entities (BulkCreateHandler)       |
-| PATCH /model/bulk-update   | Bulk update entities (BulkUpdateHandler)       |
+| Operation                  | Description                                                                 |
+| -------------------------- | --------------------------------------------------------------------------- |
+| GET /model                 | Fetch a list of entities (FindHandler)                                      |
+| GET /model/count           | Count entities (CountHandler)                                               |
+| GET /model/:id             | Fetch an entity by ID (FindByIdHandler)                                     |
+| POST /model                | Create a new entity (CreateHandler)                                         |
+| PATCH /model/:id           | Update an entity by ID (UpdateHandler)                                      |
+| DELETE /model/:id          | Delete an entity by ID (DeleteHandler)                                      |
+| GET /model/dump            | Dump data of the model (DumpHandler); requires the X-RBAC-SECRET-KEY header |
+| POST /model/find-or-create | Find or create an entity (FindOrCreateHandler)                              |
+| POST /model/bulk           | Bulk create entities (BulkCreateHandler)                                    |
+| PATCH /model/bulk          | Bulk update entities (BulkUpdateHandler)                                    |
 
 ### Middlewares
 

@@ -78,9 +78,14 @@ function getAudioTranscriptionStatus(
   }
 
   const record = value as Record<string, unknown>;
+  const error = record.error;
 
   return {
     status: String(record.status || ""),
+    errorCategory:
+      error && typeof error === "object"
+        ? String((error as Record<string, unknown>).category || "")
+        : "",
   };
 }
 
@@ -271,9 +276,11 @@ export function Component(props: IClientComponentProps) {
         {audioTranscription?.status &&
         audioTranscription.status !== "completed" ? (
           <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
-            {audioTranscription.status === "failed"
-              ? "Transcription failed"
-              : "Transcription processing"}
+            {audioTranscription.status !== "failed"
+              ? "Transcription processing"
+              : audioTranscription.errorCategory === "silence"
+                ? "No speech detected"
+                : "Transcription failed"}
           </div>
         ) : null}
         <SocialModuleMessagesToFileStorageModuleFiles

@@ -526,6 +526,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
+  protected isTelegramMissingThreadError(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    return message.toLowerCase().includes("message thread not found");
+  }
+
   protected async markAsError(params: { notification: IModel }) {
     const updatedNotification = await this.update({
       id: params.notification.id,
@@ -662,6 +668,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     provider: "Amazon SES" | "Telegram";
     id: string;
     template: ITemplate;
+    dropMessageThreadId?: boolean;
   }): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
@@ -751,6 +758,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
         if (renderResult) {
           const parsedRenderResult = JSON.parse(renderResult);
+
+          if (props.dropMessageThreadId) {
+            const renderedOptions = parsedRenderResult.props?.[1];
+
+            if (renderedOptions && typeof renderedOptions === "object") {
+              delete (renderedOptions as { message_thread_id?: unknown })
+                .message_thread_id;
+            }
+          }
 
           const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
 
@@ -1147,6 +1163,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         } catch (error) {
           if (this.isTelegramBlockedRecipientError(error)) {
             return await this.markAsError({ notification });
+          }
+
+          if (this.isTelegramMissingThreadError(error)) {
+            return await this.provider({
+              method: "telegram",
+              provider: "Telegram",
+              id: params.id,
+              template,
+              dropMessageThreadId: true,
+            });
           }
 
           throw error;

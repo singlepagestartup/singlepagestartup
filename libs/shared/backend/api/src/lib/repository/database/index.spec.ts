@@ -16,13 +16,18 @@ import { DI } from "../../di/constants";
 import { Database } from ".";
 import { IRepository } from "../interface";
 import fs from "fs/promises";
-import { integer, pgTable, text } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 const CountTestTable = pgTable("count_test", {
   id: text("id"),
   status: text("status"),
   orderIndex: integer("order_index"),
+});
+
+const ConsumeTestTable = pgTable("consume_test", {
+  id: text("id"),
+  consumedAt: timestamp("consumed_at"),
 });
 
 const baseConfiguration: IConfiguration["repository"] = {
@@ -197,6 +202,144 @@ describe("Database", () => {
 
       expect(insertedRows[0].finishedAt).toBeInstanceOf(Date);
       expect(result.finishedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  describe("consumeFirstByField", () => {
+    function createConsumeRepository() {
+      const configuration = new Configuration({
+        repository: {
+          ...baseConfiguration,
+          Table: ConsumeTestTable,
+          insertSchema: z.object({
+            id: z.string().optional(),
+            consumedAt: z.date().nullable().optional(),
+          }),
+          selectSchema: z.object({
+            id: z.string(),
+            consumedAt: z.date().nullable().optional(),
+          }),
+        },
+      });
+      const container = new Container();
+      container
+        .bind<IConfiguration>(DI.IConfiguration)
+        .toConstantValue(configuration);
+      container.bind<IRepository>(DI.IRepository).to(Database);
+
+      const repository = container.get<IRepository>(DI.IRepository);
+      const execute = jest.fn();
+      const returning = jest.fn().mockReturnValue({ execute });
+      const where = jest.fn().mockReturnValue({ returning });
+      const set = jest.fn().mockReturnValue({ where });
+      const update = jest.fn().mockReturnValue({ set });
+      const select = jest.fn();
+
+      (repository as any).db = { update, select };
+
+      return { repository, execute, where, set, update, select };
+    }
+
+    const notConsumedYet = {
+      and: [
+        {
+          column: "consumedAt",
+          method: "isNull" as const,
+          value: undefined,
+        },
+      ],
+    };
+
+    /**
+     * BDD Scenario: conditional consume returns nothing when the predicate no longer holds.
+     *
+     * Given: a row whose consumedAt is already set.
+     * When: consumeFirstByField runs with a "not yet consumed" predicate.
+     * Then: no row is returned and the stored row is unchanged.
+     */
+    it("returns nothing when the predicate no longer holds", async () => {
+      const { repository, execute, update } = createConsumeRepository();
+
+      execute.mockResolvedValue([]);
+
+      const result = await repository.consumeFirstByField(
+        "id",
+        "row-1",
+        { consumedAt: new Date() },
+        notConsumedYet,
+      );
+
+      expect(result).toBeUndefined();
+      expect(update).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * BDD Scenario: the claim is one write, not a read followed by a write.
+     *
+     * Given: a repository row and a predicate that still holds.
+     * When: consumeFirstByField claims it.
+     * Then: the row comes back, the predicate travelled with the update, and no
+     * select preceded it.
+     */
+    it("claims the row in a single conditional write", async () => {
+      const { repository, execute, where, set, select } =
+        createConsumeRepository();
+
+      execute.mockResolvedValue([{ id: "row-1", consumedAt: new Date() }]);
+
+      const result = await repository.consumeFirstByField(
+        "id",
+        "row-1",
+        { consumedAt: new Date() },
+        notConsumedYet,
+      );
+
+      expect(result?.id).toBe("row-1");
+      expect(select).not.toHaveBeenCalled();
+      expect(where).toHaveBeenCalledWith(expect.anything());
+      expect(set).toHaveBeenCalledWith(
+        expect.objectContaining({ consumedAt: expect.any(Date) }),
+      );
+    });
+
+    /**
+     * BDD Scenario: a patch rather than a whole row.
+     *
+     * Given: the caller passes only the fields it wants changed.
+     * When: consumeFirstByField parses them.
+     * Then: the partial insert schema accepts the patch and stamps updatedAt.
+     */
+    it("accepts a partial patch and coerces its date strings", async () => {
+      const { repository, execute, set } = createConsumeRepository();
+
+      execute.mockResolvedValue([{ id: "row-1", consumedAt: new Date() }]);
+
+      await repository.consumeFirstByField(
+        "id",
+        "row-1",
+        { consumedAt: "2026-05-20T00:00:00.000Z" },
+        notConsumedYet,
+      );
+
+      expect(set).toHaveBeenCalledWith(
+        expect.objectContaining({ consumedAt: expect.any(Date) }),
+      );
+    });
+
+    /**
+     * BDD Scenario: a field the table does not have.
+     *
+     * Given: the caller names a column that is not on the table.
+     * When: consumeFirstByField runs.
+     * Then: it refuses before issuing any write.
+     */
+    it("refuses a field the table does not have", async () => {
+      const { repository, update } = createConsumeRepository();
+
+      await expect(
+        repository.consumeFirstByField("missing", "row-1", {}, notConsumedYet),
+      ).rejects.toThrow("Field missing does not exist");
+      expect(update).not.toHaveBeenCalled();
     });
   });
 
