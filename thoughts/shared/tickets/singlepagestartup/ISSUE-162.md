@@ -3,71 +3,65 @@
 ## Metadata
 
 **URL**: https://github.com/singlepagestartup/singlepagestartup/issues/162
-**Status**: Deferred — upstream Turbopack dev OOM remains unresolved
+**Status**: Dev, build and start verified on `next@16.3.6` with a postinstall shim; branch `issue-162` awaits review
 **Created**: 2026-04-19
+**Verified**: 2026-09-25
 **Priority**: medium
 **Size**: large
 **Type**: refactoring
-**Latest tested version**: `next@16.3.0-canary.97` (2026-07-28)
+**Latest tested version**: `next@16.3.6`
 
 ---
 
 ## Problem to Solve
 
-The host application was originally pinned to `next@15.4.8` in both the workspace root and [apps/host/package.json](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/package.json). The `issue-162` branch now contains a retry on Next.js `16.3.0-canary.97`, but the migration remains incomplete because Turbopack dev still exhausts memory while compiling the single catch-all route.
+`main` pins the host application to `next@15.4.8` in the workspace root and in [apps/host/package.json](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/package.json). Every earlier move to Next.js 16 produced a working production build and a Turbopack dev server that exhausted the V8 heap on the first request through the single `[[...url]]` catch-all route.
 
-## Current Status — 2026-07-28
+The route is the site builder's only composition entry point: one page renders host layouts, pages and widgets, and through `widgets-to-external-widgets` any widget of any business module. Splitting it into route segments, fragments, micro frontends or separate Next.js apps is not an acceptable workaround.
 
-The problem is **not resolved** on the latest available Next.js build tested, `16.3.0-canary.97`.
+## Root cause
 
-- A clean installation was performed after removing all workspace `node_modules`, `.next`, and Nx cache data.
-- Next.js companion packages were aligned to `16.3.0-canary.97`; React and React DOM were updated to `19.2.8`.
-- The production Turbopack build succeeds after the required Next 16 API/config migrations.
-- `next start` succeeds and `/en` returns HTTP 200.
-- Turbopack dev still crashes on the first request through the single `[[...url]]` catch-all route:
-  - memory eviction `auto`: OOM near the default 9.2 GB heap limit;
-  - memory eviction `full`: OOM near 9.0 GB;
-  - memory eviction `auto` with a 16 GB heap: OOM near 15.8 GB.
+The dev-mode crash is not a Turbopack compilation problem. It is the React Flight client that `next` bundles for development.
 
-Increasing the heap only postpones the failure, and the new eviction implementation does not release the initial catch-all compilation graph before the heap is exhausted.
+- `transferReferencedDebugInfo` in the Flight client copies every unnamed `_debugInfo` entry (async I/O debug info) from a referenced chunk into the receiving chunk each time a `$ref` resolves. In a deep server-component tree with many awaited fetches the arrays grow multiplicatively. The SSR process allocates about 350 MB/s and dies within 25 to 85 seconds, either with `RangeError: Invalid array length` followed by `TypeError: chunk.reason.enqueueModel is not a function`, or with `FATAL ERROR: Ineffective mark-compacts near heap limit`.
+- Evidence: a sampling heap profile taken through the Node inspector during the request (`next dev --inspect`, `HeapProfiler.startSampling`) attributes 5.19 GB of 5.55 GB live allocations to `transferReferencedDebugInfo` in `node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js`.
+- Upstream: [facebook/react#37343](https://github.com/facebook/react/issues/37343), fixed by [facebook/react#37481](https://github.com/facebook/react/pull/37481) (merged 2026-09-02, released in React 19.3.0). `next@16.3.6` bundles `react@19.3.0-canary-cbb046ab-20260731`, which predates the fix. `next@16.4.0-canary.47` bundles `react@19.3.0-canary-8b0da1c6-20260922`, which contains it.
+- Production runtimes carry no debug info, which is why `next build` and `next start` passed in every attempt.
+- Raising `--max-old-space-size`, `experimental.turbopackMemoryEviction`, `--disable-source-maps` and `--no-server-fast-refresh` do not change the outcome.
 
-The issue remains closed and the GitHub Project item remains `Done` as a deferred historical attempt. Reopen the issue and retry the migration when a newer Next.js canary or release contains further Turbopack initial-graph memory improvements.
+## Current state of branch `issue-162`
 
-The architecture constraint remains mandatory: `apps/host/app/[[...url]]/page.tsx` stays the single composition entry point, and splitting the tree into route fragments, microfrontends, or separate Next.js apps is not an acceptable workaround.
+- `next`, `@next/bundle-analyzer`, `@next/third-parties` and `eslint-config-next` at `16.3.6`; `react` and `react-dom` at `19.2.8`; `@types/react` at `19.2.17`; `@nx/next` at `22.0.2`, which supports `next <17`.
+- [tools/runtime/patch-next-flight-debug-info.mjs](/Users/rogwild/code/singlepagestartup/sps-lite/tools/runtime/patch-next-flight-debug-info.mjs) runs from the root `postinstall` script and rewrites `transferReferencedDebugInfo` in the 20 development Flight client bundles under `node_modules/next/dist/compiled` to the upstream implementation, a per-chunk `Set` that transfers each entry once. The script is idempotent, never fails an install, and prints `nothing to patch` once the installed Next ships the fix; that message is the signal to delete the script and the hook. Tests: `node --test tools/runtime/patch-next-flight-debug-info.test.mjs`.
+- [apps/host/next.config.js](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/next.config.js) sets `agentRules: false`, because Next 16.3 otherwise writes `AGENTS.md` and `CLAUDE.md` into `apps/host` on every dev start, and no longer sets `experimental.turbopackMemoryEviction`, whose default is already `auto`.
+- Kept from the earlier retry: [apps/host/proxy.ts](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/proxy.ts) replaces `middleware.ts`, `experimental_ppr` is gone from the catch-all page, the revalidate route calls `revalidateTag(tag, "max")`, and the Next config is exported as an async function that drops the removed `eslint` key.
+- `main` is merged into the branch through PR [#301](https://github.com/singlepagestartup/singlepagestartup/pull/301).
 
-## Key Details
+## Verification
 
-- Current workspace state:
-  - Root [package.json](/Users/rogwild/code/singlepagestartup/sps-lite/package.json) and [apps/host/package.json](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/package.json) both pin `next` to `15.4.8`.
-  - The repo already uses `react@19.0.0`, `react-dom@19.0.0`, `typescript@5.x`, and `@nx/next@22.0.2`.
-  - [apps/host/project.json](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/project.json) runs the app through Nx `@nx/next` executors with `turbo: true` in dev.
-- Official compatibility and upgrade notes:
-  - Next.js 16 upgrade guide: [nextjs.org/docs/app/guides/upgrading/version-16](https://nextjs.org/docs/app/guides/upgrading/version-16)
-  - Next.js 16 release notes: [nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
-  - Latest stable patch `v16.2.4`: [github.com/vercel/next.js/releases/tag/v16.2.4](https://github.com/vercel/next.js/releases/tag/v16.2.4)
-  - Nx `@nx/next` support matrix says `next >=14.0.0 <17.0.0` is supported: [nx.dev/docs/technologies/react/next/introduction](https://nx.dev/docs/technologies/react/next/introduction)
-- Repo-specific migration hotspots already identified:
-  - [apps/host/middleware.ts](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/middleware.ts) still uses the deprecated `middleware` file convention. Next.js 16 renames this convention to `proxy`.
-  - [apps/host/app/[[...url]]/page.tsx](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/app/[[...url]]/page.tsx) exports `experimental_ppr = true`, which was removed in Next.js 16.
-  - The same catch-all page already uses async `params`, which is good because synchronous request APIs are fully removed in Next.js 16.
-  - Route handlers such as [apps/host/app/api/revalidate/route.ts](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/app/api/revalidate/route.ts), [apps/host/app/robots.txt/route.ts](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/app/robots.txt/route.ts), and [apps/host/app/sitemap.xml/route.ts](/Users/rogwild/code/singlepagestartup/sps-lite/apps/host/app/sitemap.xml/route.ts) should be regression-checked after the upgrade because Next.js 16 changes the long-term direction around Cache Components and route segment config.
-  - Supporting packages tied to Next.js are still on 15.x and must be aligned during the migration: `@next/bundle-analyzer`, `@next/third-parties`, and `eslint-config-next`.
-  - The host relation renderer in [libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/Component.tsx](/Users/rogwild/code/singlepagestartup/sps-lite/libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/Component.tsx) is a known high-risk path because the previous upgrade attempt surfaced an out-of-memory crash while rendering module widgets through `widgets-to-external-widgets`, while host-level `layouts`, `pages`, and `widgets` still rendered.
-  - Prior migration attempt reference: GitHub issue [#113](https://github.com/singlepagestartup/singlepagestartup/issues/113) targeted `next@16.0.1-canary.1`, but the user later reported a Turbopack dev crash with `FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory` after the app became ready and started rendering external module widgets.
-- Version 16 removal and behavior changes relevant to this repo:
-  - `middleware` is deprecated/renamed to `proxy`.
-  - `experimental_ppr` route segment config is removed.
-  - `next lint` is removed, though this repo already relies on Nx + ESLint instead of `next lint`.
-  - Node.js 20.9+ is required; repo baseline already targets Node 20+.
+Cold install in a fresh worktree without `node_modules`, `.nx` or `apps/host/.next`; API served from the same branch.
 
-## Implementation Notes
+| Check                                                                      | Result                                                                                                                                                                         |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npx nx run host:next:dev` (Turbopack), first `GET /en` after a cold start | 200 in 44.8 s, full page                                                                                                                                                       |
+| warm `GET /en`                                                             | 200 in 2.4 to 6.5 s, 1.05 MB, widgets from billing, crm, ecommerce, file-storage, host, rbac and website-builder                                                               |
+| `GET /`                                                                    | 307 to `/en` through `proxy.ts`                                                                                                                                                |
+| `GET /en/admin`                                                            | 200                                                                                                                                                                            |
+| `next-server` RSS during the cold request                                  | peaks near 3 GB, returns to about 0.5 GB after memory eviction                                                                                                                 |
+| the same request without the shim                                          | heap OOM at 9.0 to 9.4 GB in every run                                                                                                                                         |
+| `host:next:build` (Turbopack, `--max-old-space-size=12288`)                | passes: compiled in 45 s, TypeScript 2.3 min, 7 static pages                                                                                                                   |
+| `host:next:start`, `GET /en`                                               | 200 in 1.2 s, 257 KB with billing, crm, ecommerce, file-storage, host and website-builder widgets; cached repeat 5 ms; `/` 307 to `/en`; `/en/admin` and `/api/revalidate` 200 |
+| shim unit tests                                                            | 6 passed                                                                                                                                                                       |
 
-- Use the Next.js codemod path as a first pass, but expect manual cleanup for Nx config and SPS-specific routing:
-  - `npx @next/codemod@canary upgrade latest`
-  - `npx @next/codemod@latest middleware-to-proxy .`
-  - `npx @next/codemod@latest remove-experimental-ppr .`
-- Update `next`, `@next/bundle-analyzer`, `@next/third-parties`, and `eslint-config-next` together; verify whether `react`, `react-dom`, `@types/react`, and `@types/react-dom` also need alignment to the latest supported pair.
-- Decide explicitly whether the app should stay on the previous caching model after the version bump or opt into `cacheComponents`; do not silently replace `experimental_ppr` without validating the intended rendering model.
-- Before verification, delete Next.js build/dev artifacts so checks run from a cold state instead of reusing stale `.next` or Turbopack outputs.
-- Verification must include both production build and production start, not just dev mode: at minimum `host:next:build` and `host:next:start`, plus the scoped lint/test surface touched by the migration.
-- During verification, explicitly exercise the rendering path for module widgets mounted through `widgets-to-external-widgets` and treat memory growth or OOM in that path as a blocking regression even if the host shell, `layouts`, `pages`, and host `widgets` still render.
+## Remaining work
+
+- Review the branch and open the pull request from `issue-162` to `main`.
+- Delete the shim and its `postinstall` hook when the installed `next` bundles React with facebook/react#37481; `node tools/runtime/patch-next-flight-debug-info.mjs` then prints `nothing to patch`.
+- `next@16.4.0-canary.47` ships the fixed Flight client (checked by reading its bundled `app-page-turbo.runtime.dev.js`); it was not run against this app. The branch stays on the stable release.
+
+## References
+
+- Next.js 16 upgrade guide: [nextjs.org/docs/app/guides/upgrading/version-16](https://nextjs.org/docs/app/guides/upgrading/version-16)
+- Next.js 16.3 Turbopack memory eviction: [nextjs.org/blog/next-16-3-turbopack](https://nextjs.org/blog/next-16-3-turbopack)
+- `@nx/next` support matrix, `next >=14.0.0 <17.0.0`: [nx.dev/docs/technologies/react/next/introduction](https://nx.dev/docs/technologies/react/next/introduction)
+- Earlier attempt on `next@16.0.1-canary.1`: [#113](https://github.com/singlepagestartup/singlepagestartup/issues/113)

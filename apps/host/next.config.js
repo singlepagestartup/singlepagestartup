@@ -26,9 +26,9 @@ function makeConfig() {
     reactStrictMode: true,
     deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
     staticPageGenerationTimeout: 6000,
-    experimental: {
-      turbopackMemoryEviction: "auto",
-    },
+    // The repository keeps its own AGENTS.md and CLAUDE.md; stop Next.js from
+    // generating a second pair inside apps/host on every dev start.
+    agentRules: false,
     images: {
       unoptimized: true,
       remotePatterns: [
