@@ -11,7 +11,10 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /no session/i,
       /authorization error/i,
       /no subject provided in the token/i,
-      /invalid token issued/i,
+      /invalid token/i,
+      /invalid jwt token/i,
+      /token .*expired/i,
+      /is being used before it's valid/i,
       /signature mismatched/i,
       /invalid signature/i,
       /jwt malformed/i,
@@ -62,16 +65,31 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
     ],
   },
   {
-    // Placed before the 400 block: the first entry whose pattern matches wins,
-    // and `/invalid (data|body)/i` there would otherwise claim these messages.
-    // A body that parsed but failed a type or shape check is unprocessable
-    // rather than malformed.
+    status: 409,
+    category: "Conflict error",
+    patterns: [
+      /conflict error/i,
+      /duplicate key value violates unique constraint/i,
+    ],
+  },
+  {
+    // A message that declares its own category keeps that category, even when
+    // its details also match an unprocessable-entity shape below.
+    status: 400,
+    category: "Validation error",
+    patterns: [/^validation error\b/i],
+  },
+  {
+    // Placed before the general 400 entry, whose `/invalid (data|body)/i` would
+    // otherwise claim these messages. A body that parsed but failed a type or
+    // shape check is unprocessable rather than malformed; a message that
+    // declares `Validation error.` has already matched the entry above.
     status: 422,
     category: "Unprocessable Entity error",
     patterns: [
       /unprocessable entity/i,
       /expected (string|number|boolean|array|object|date)/i,
-      /invalid type\. expected .+, got: .+/i,
+      /invalid type[.]? expected .+, got:/i,
       /invalid body\[.+\]/i,
     ],
   },

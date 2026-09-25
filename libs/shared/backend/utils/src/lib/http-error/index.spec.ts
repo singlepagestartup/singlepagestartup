@@ -34,6 +34,9 @@ describe("util — HTTP error classification", () => {
       "Code is expired. Resend again.",
       "Account already exists",
 
+      "Validation error. Invalid body['data']: undefined. Expected string, got: undefined",
+      "Validation error. Unprocessable Entity",
+      "Validation error. Invalid type. Expected email, got: string",
       "Validation error. Unknown filter method 'between'",
       "Validation error. Unknown column 'absent'",
       "Validation error. 'filters.and' must be an array",
@@ -111,10 +114,295 @@ describe("util — HTTP error classification", () => {
       "Invalid type. Expected email, got: string",
       "Expected string",
       "Invalid body['data']",
+      "Expected number, received string",
+      "Invalid type. Expected uuid, got: text",
+      "Invalid body['files']",
     ])("maps '%s' → 422 Unprocessable Entity error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(422);
       expect(result.category).toBe("Unprocessable Entity error");
+    });
+  });
+
+  // ------------------- 422 ZOD ISSUE PAYLOADS -------------------
+  describe("422 - serialized zod issues", () => {
+    function zodError(issues: unknown[]) {
+      return new Error(JSON.stringify({ zodError: issues }));
+    }
+
+    /**
+     * BDD Scenario
+     * Given: the shared repository serialized a failed schema parse, whose
+     * payload carries no message of its own.
+     * When: the error is classified.
+     * Then: the result is 422 with a message naming the path and the issue,
+     * and the issues stay available as details.
+     */
+    test("describes a type mismatch by path and issue", () => {
+      const issues = [
+        {
+          code: "invalid_type",
+          expected: "string",
+          received: "number",
+          path: ["slug"],
+          message: "Expected string, received number",
+        },
+      ];
+      const result = util(zodError(issues));
+      expect(result.status).toBe(422);
+      expect(result.category).toBe("Unprocessable Entity error");
+      expect(result.message).toBe(
+        "Unprocessable Entity error. slug: Expected string, received number",
+      );
+      expect(result.details).toEqual(issues);
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a missing required field, whose issue message is only "Required".
+     * When: the error is classified.
+     * Then: the path makes the message readable instead of falling to 500.
+     */
+    test("names the field of a missing value", () => {
+      const result = util(
+        zodError([
+          {
+            code: "invalid_type",
+            expected: "string",
+            received: "undefined",
+            path: ["slug"],
+            message: "Required",
+          },
+        ]),
+      );
+      expect(result.status).toBe(422);
+      expect(result.message).toBe("Unprocessable Entity error. slug: Required");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: an issue whose message quotes the value the caller submitted.
+     * When: the error is classified.
+     * Then: the expected options survive and the submitted value does not.
+     */
+    test("keeps the submitted value out of the message", () => {
+      const result = util(
+        zodError([
+          {
+            code: "invalid_enum_value",
+            options: ["admin", "user"],
+            received: "sup3rs3cret",
+            path: ["role"],
+            message:
+              "Invalid enum value. Expected 'admin' | 'user', received 'sup3rs3cret'",
+          },
+        ]),
+      );
+      expect(result.status).toBe(422);
+      expect(result.message).toBe(
+        "Unprocessable Entity error. role: Invalid enum value. Expected 'admin' | 'user'",
+      );
+      expect(result.message).not.toContain("sup3rs3cret");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a payload with more issues than the message reports.
+     * When: the error is classified.
+     * Then: the first few are described and the rest are counted.
+     */
+    test("reports the first issues and counts the rest", () => {
+      const result = util(
+        zodError([
+          { path: ["a"], message: "Required" },
+          { path: ["b"], message: "Required" },
+          { path: ["c", 0, "d"], message: "Required" },
+          { path: ["e"], message: "Required" },
+        ]),
+      );
+      expect(result.message).toBe(
+        "Unprocessable Entity error. a: Required; b: Required; c.0.d: Required; and 1 more",
+      );
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a serialized payload that is not a zod issue list.
+     * When: the error is classified.
+     * Then: the existing classification is unchanged.
+     */
+    test("ignores a payload that carries no issues", () => {
+      const result = util(new Error(JSON.stringify({ zodError: [] })));
+      expect(result.status).toBe(500);
+      expect(result.category).toBe("Internal error");
+    });
+  });
+
+  // ------------------- 409 CONFLICT ERROR -------------------
+  describe("409 - Conflict error", () => {
+    const constraint = "sps_blog_article_slug_unique";
+    const driverMessage = `duplicate key value violates unique constraint "${constraint}"`;
+
+    function driverError() {
+      return Object.assign(new Error(driverMessage), {
+        name: "PostgresError",
+        code: "23505",
+        constraint_name: constraint,
+        table_name: "sps_blog_article",
+        column_name: "slug",
+        detail: "Key (slug)=(already-taken) already exists.",
+      });
+    }
+
+    /**
+     * BDD Scenario
+     * Given: a PostgreSQL unique violation as the driver raises it.
+     * When: the error is classified.
+     * Then: the result is a 409 whose message names no database object.
+     */
+    test("maps a driver unique violation → 409 with a generic message", () => {
+      const result = util(driverError());
+      expect(result.status).toBe(409);
+      expect(result.category).toBe("Conflict error");
+      expect(result.message).toBe("Conflict error. Entity already exists");
+      expect(result.message).not.toContain(constraint);
+      expect(result.message).not.toContain("sps_blog_article");
+      expect(result.message).not.toContain("already-taken");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: the same violation wrapped as a cause by a calling layer.
+     * When: the error is classified.
+     * Then: it is still a 409, and the driver error stays available as details.
+     */
+    test("recognizes a wrapped unique violation and keeps the driver error in details", () => {
+      const cause = driverError();
+      const result = util(new Error("Request not created", { cause }));
+      expect(result.status).toBe(409);
+      expect(result.message).toBe("Conflict error. Entity already exists");
+      expect(result.details).toBe(cause);
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a downstream error body that a server SDK hop re-encoded as JSON.
+     * When: the error is classified on the calling hop.
+     * Then: the conflict is recognized instead of being repeated as a 500.
+     */
+    test("recognizes a unique violation carried by a serialized payload", () => {
+      const result = util(
+        new Error(
+          JSON.stringify({
+            message: `Internal server error: ${driverMessage}`,
+            status: 500,
+            requestId: "request-1",
+          }),
+        ),
+      );
+      expect(result.status).toBe(409);
+      expect(result.message).toBe("Conflict error. Entity already exists");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: an already sanitized conflict message from an inner hop.
+     * When: the error is classified.
+     * Then: the category survives the hop.
+     */
+    test("keeps the category for an already sanitized conflict message", () => {
+      const result = util(new Error("Conflict error. Entity already exists"));
+      expect(result.status).toBe(409);
+      expect(result.category).toBe("Conflict error");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a database failure that is not a unique violation.
+     * When: the error is classified.
+     * Then: it keeps mapping to 500.
+     */
+    test("leaves a non-unique database failure at 500", () => {
+      const result = util(
+        Object.assign(new Error('relation "sps_blog_article" does not exist'), {
+          name: "PostgresError",
+          code: "42P01",
+        }),
+      );
+      expect(result.status).toBe(500);
+      expect(result.category).toBe("Internal error");
+    });
+  });
+
+  // ------------------- CREDENTIAL SAFETY -------------------
+  describe("401 - JWT failures carry no token", () => {
+    const token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJqZWN0Ijp7ImlkIjoiMSJ9fQ.s1gn4tur3";
+
+    /**
+     * BDD Scenario
+     * Given: a Hono JWT failure message that embeds the token.
+     * When: the error is classified.
+     * Then: the result is 401 and the returned message repeats no part of the token.
+     */
+    test.each([
+      `token (${token}) expired`,
+      `invalid JWT token: ${token}`,
+      `token(${token}) signature mismatched`,
+      `token (${token}) is being used before it's valid`,
+    ])("maps '%s' → 401 without the token", (msg) => {
+      const result = util(new Error(msg));
+      expect(result.status).toBe(401);
+      expect(result.category).toBe("Authentication error");
+      expect(result.message).not.toContain(token);
+      expect(result.message).toContain("<redacted>");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: the fixed messages the shared verification helper throws.
+     * When: they are classified.
+     * Then: they reach 401 rather than the 403 pattern for "authentication".
+     */
+    test.each([
+      "Authentication error. Token expired",
+      "Authentication error. Invalid token",
+    ])("maps '%s' → 401 Authentication error", (msg) => {
+      const result = util(new Error(msg));
+      expect(result.status).toBe(401);
+      expect(result.category).toBe("Authentication error");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a downstream error body that a server SDK hop re-encoded as JSON.
+     * When: the error is classified.
+     * Then: the downstream status survives and the token does not.
+     */
+    test("keeps a serialized downstream payload parseable while removing the token", () => {
+      const result = util(
+        new Error(
+          JSON.stringify({
+            message: `token (${token}) expired`,
+            status: 401,
+            requestId: "request-1",
+          }),
+        ),
+      );
+      expect(result.status).toBe(401);
+      expect(result.category).toBe("Authentication error");
+      expect(result.message).not.toContain(token);
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a message with no credential in it.
+     * When: the error is classified.
+     * Then: the text is returned unchanged.
+     */
+    test("leaves an ordinary message untouched", () => {
+      const result = util(new Error("Entity with param abc-123 not found"));
+      expect(result.message).toBe("Entity with param abc-123 not found");
     });
   });
 

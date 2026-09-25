@@ -21,6 +21,7 @@ jest.mock("hono/jwt", () => ({
   }),
 }));
 
+import { JwtTokenExpired } from "hono/utils/jwt/types";
 import { verify } from "hono/jwt";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
 import { Service } from "./is-authorized";
@@ -135,6 +136,41 @@ describe("Given: injected RBAC services", () => {
         },
       },
     });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: Hono rejects verification with its expired-token error, whose
+   * message embeds the token.
+   * When: a request carrying that token is authorized.
+   * Then: the failure reaches the caller as a fixed authentication error that
+   * repeats no part of the token.
+   */
+  it("When: the token is expired Then: fails with a token-free authentication error", async () => {
+    const token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJqZWN0Ijp7ImlkIjoiMSJ9fQ.s1gn4tur3";
+
+    (verify as jest.Mock).mockRejectedValueOnce(new JwtTokenExpired(token));
+
+    const service = new Service(
+      { resolveByRoute: jest.fn() } as any,
+      { find: jest.fn() } as any,
+      { find: jest.fn() } as any,
+    );
+
+    const execution = service.execute({
+      permission: {
+        route: "/private-route-for-expired-token",
+        method: "GET",
+        type: "HTTP",
+      },
+      authorization: { value: token },
+    });
+
+    await expect(execution).rejects.toThrow(
+      "Authentication error. Token expired",
+    );
+    await expect(execution).rejects.not.toThrow(token);
   });
 });
 

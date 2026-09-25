@@ -461,10 +461,17 @@ Here are the available categories and examples of keywords that trigger them:
 | **Authentication error** | 401 | unauthorized, invalid credentials, token required, no session |
 | **Permission error** | 403 | forbidden, permission denied, only order owner |
 | **Validation error** | 400 | invalid data, missing headers, no id provided, invalid url |
-| **Unprocessable Entity error** | 422 | expected string, invalid type, unprocessable entity |
+| **Unprocessable Entity error** | 422 | expected string, invalid body['data'], unprocessable entity |
 | **Payment error** | 400 | payment intent not found, stripe secret key not found, currency required |
 | **Not Found error** | 404 | not found, entity not found, form not found |
+| **Conflict error** | 409 | duplicate key value violates unique constraint, conflict error |
 | **Internal error** | 500 | internal server error, jwt secret not provided, configuration error |
+
+A message that opens with a category phrase keeps that category even when its details match another one: `Validation error. Expected string, got: object` stays a 400 Validation error, while a bare `Expected string, got: object` is a 422 Unprocessable Entity error.
+
+Two categories are not decided by keywords alone. A PostgreSQL unique violation is recognized by its SQLSTATE `23505`, including through a nested cause, and always answers with the fixed message `Conflict error. Entity already exists`, so no constraint name reaches the client. A JWT verification failure is redacted before it is classified, because the underlying library writes the token into its own message.
+
+A failed schema parse, which the shared repository rethrows as `{ "zodError": [...] }`, is answered with 422 and a message naming the field and the issue, such as `Unprocessable Entity error. slug: Expected string, received number`. The first few issues are listed and the rest are counted; the submitted value is left out, and the full issue list stays in the exception cause for server-side use.
 
 If no specific pattern is matched, the error will be classified as a generic Internal error with a 500 status code, ensuring that no error goes unhandled.
 
