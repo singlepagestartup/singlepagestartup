@@ -206,14 +206,12 @@ describe("Given: a role-less permission on a sensitive route", () => {
         },
       }) as any,
       {
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            {
-              permissionId: "permission-identities-count",
-              roleId: "role-admin",
-            },
-          ]),
+        find: jest.fn().mockResolvedValue([
+          {
+            permissionId: "permission-identities-count",
+            roleId: "role-admin",
+          },
+        ]),
       } as any,
       subjectsToRolesService as any,
     );
