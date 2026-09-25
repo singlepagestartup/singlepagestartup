@@ -1,10 +1,11 @@
 /**
  * BDD Suite: RBAC secret comparison.
  *
- * Given: a deployment whose RBAC_SECRET_KEY may be set, empty or absent.
+ * Given: a deployment whose RBAC_SECRET_KEY, or another configured secret, may
+ *        be set, empty or absent.
  * When: a caller-supplied secret is compared against it.
- * Then: only an exact match passes, and an unconfigured deployment refuses
- *       every caller instead of accepting an empty one.
+ * Then: only an exact match passes, and an unconfigured secret refuses every
+ *       caller instead of accepting an empty one.
  */
 
 let mockConfiguredSecret: string | undefined;
@@ -16,7 +17,7 @@ jest.mock("@sps/shared-utils", () => ({
 }));
 
 import { Hono } from "hono";
-import { rbacSecretMatches, readRbacSecret } from "./index";
+import { rbacSecretMatches, readRbacSecret, secretMatches } from "./index";
 
 const CONFIGURED_SECRET = "configured-operator-secret";
 
@@ -117,6 +118,51 @@ describe("Given: a deployment configured no operator credential", () => {
 
     expect(rbacSecretMatches("")).toBe(false);
     expect(rbacSecretMatches("any-value")).toBe(false);
+  });
+});
+
+describe("Given: a route secret other than the operator credential", () => {
+  const ROUTE_SECRET = "configured-route-secret";
+
+  /**
+   * BDD Scenario: the caller holds the route secret.
+   *
+   * Given: a secret configured for one route.
+   * When: the caller presents exactly that value.
+   * Then: the comparison passes.
+   */
+  it("accepts a candidate that matches the configured secret", () => {
+    expect(secretMatches(ROUTE_SECRET, ROUTE_SECRET)).toBe(true);
+  });
+
+  /**
+   * BDD Scenario: near misses and other lengths.
+   *
+   * Given: a secret configured for one route.
+   * When: the caller presents a value differing in one byte or in length.
+   * Then: the comparison fails without throwing.
+   */
+  it("rejects a one-byte miss and a candidate of another length", () => {
+    const nearMiss = `${ROUTE_SECRET.slice(0, -1)}X`;
+
+    expect(secretMatches(ROUTE_SECRET, nearMiss)).toBe(false);
+    expect(() => secretMatches(ROUTE_SECRET, "short")).not.toThrow();
+    expect(secretMatches(ROUTE_SECRET, "short")).toBe(false);
+  });
+
+  /**
+   * BDD Scenario: the route secret is not configured.
+   *
+   * Given: a route whose secret is absent or the empty string.
+   * When: a caller presents nothing, an empty value or any value.
+   * Then: every caller is refused, so an unset secret opens nothing.
+   */
+  it("refuses every candidate when the configured secret is unset or empty", () => {
+    expect(secretMatches(undefined, undefined)).toBe(false);
+    expect(secretMatches(undefined, "any-value")).toBe(false);
+    expect(secretMatches(null, null)).toBe(false);
+    expect(secretMatches("", "")).toBe(false);
+    expect(secretMatches("", "any-value")).toBe(false);
   });
 });
 
