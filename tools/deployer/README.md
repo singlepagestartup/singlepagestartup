@@ -329,9 +329,9 @@ a placeholder token would break uploads on the next deploy.
 FILE_STORAGE_MAX_UPLOAD_BYTES=52428800
 ```
 
-`api.sh` writes it into the server API environment. Bun refuses request bodies
-above 128 MiB, so a larger value also needs `maxRequestBodySize` raised in
-`apps/api/server.ts`.
+`api.sh` writes it into the server API environment. The API refuses any
+request body above `API_MAX_REQUEST_BODY_BYTES` (128 MiB by default), so a
+larger value also needs that setting raised.
 
 ## Let's Encrypt certificates
 
