@@ -64,7 +64,7 @@ async function getCacheVersion(provider: KvProvider, path: string) {
     : 0;
 }
 
-const HTTP_CACHE_DATA_PREFIX = "http-cache:data";
+const HTTP_CACHE_DATA_PREFIX = "http-cache:data:v2";
 
 // Contract copies of the http-cache key helpers (importing @sps/middlewares
 // into jest drags ESM-only server deps). Must stay in sync with

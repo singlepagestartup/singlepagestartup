@@ -227,6 +227,19 @@ describe("buildVersionedDataPrefix", () => {
   it("falls back to a stable vector for topic-less paths", () => {
     expect(buildVersionedDataPrefix("/api/unknown", 3, {})).toContain(":v3:t0");
   });
+
+  /**
+   * BDD Scenario: Stored bodies live in the namespace of the credential gate.
+   * Given: a GET URL and its generation vector.
+   * When:  the versioned cache-data prefix is built.
+   * Then:  it starts with `http-cache:data:v2:`, so a body stored before issue
+   *        #306 under `http-cache:data:<url>` is never looked up again.
+   */
+  it("places stored bodies under the v2 data namespace", () => {
+    expect(
+      buildVersionedDataPrefix("http://api:4000/api/host/pages", 3, {}),
+    ).toBe("http-cache:data:v2:http://api:4000/api/host/pages:v3:t0");
+  });
 });
 
 describe("getTopicVersionKey", () => {
@@ -255,7 +268,7 @@ describe("HTTP-cache clear route access and namespace isolation", () => {
    */
   function createClearRouteApp() {
     const keys = new Set([
-      "http-cache:data:/api/pages:v0:t0:response-hash",
+      "http-cache:data:v2:/api/pages:v0:t0:response-hash",
       "http-cache:version:path-hash",
       "mcp:oauth:client:mcp-client-id",
       "mcp:oauth:refresh:refresh-token",
@@ -304,9 +317,12 @@ describe("HTTP-cache clear route access and namespace isolation", () => {
     await expect(response.json()).resolves.toEqual({
       message: "Cache cleared",
     });
-    expect(deletedPrefixes).toEqual(["http-cache:data", "http-cache:version"]);
+    expect(deletedPrefixes).toEqual([
+      "http-cache:data:v2",
+      "http-cache:version",
+    ]);
     expect(keys).not.toContain(
-      "http-cache:data:/api/pages:v0:t0:response-hash",
+      "http-cache:data:v2:/api/pages:v0:t0:response-hash",
     );
     expect(keys).not.toContain("http-cache:version:path-hash");
     expect(keys).toContain("mcp:oauth:client:mcp-client-id");
@@ -333,7 +349,7 @@ describe("HTTP-cache clear route access and namespace isolation", () => {
 
     expect(response.status).toBe(401);
     expect(deletedPrefixes).toEqual([]);
-    expect(keys).toContain("http-cache:data:/api/pages:v0:t0:response-hash");
+    expect(keys).toContain("http-cache:data:v2:/api/pages:v0:t0:response-hash");
   });
 
   /**
@@ -845,7 +861,7 @@ describe("bounded cache generations", () => {
 
     expect(recording.writes.length).toBe(1);
     expect(recording.writes[0].prefix).toContain(
-      `http-cache:data:${collectionUrl}`,
+      `http-cache:data:v2:${collectionUrl}`,
     );
   });
 });

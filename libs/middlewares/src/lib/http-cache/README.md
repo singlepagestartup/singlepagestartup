@@ -14,9 +14,15 @@ its route is excluded (see [Extension seams](#extension-seams)).
 ## Keys
 
 ```
-http-cache:data:<request url without query>:v<pathVersion>:t<topicVector>:<sha256(query string)>
+http-cache:data:v2:<request url without query>:v<pathVersion>:t<topicVector>:<sha256(query string)>
 http-cache:version:<sha256(path or "topic:<topic>")>
 ```
+
+`v2` is the namespace of bodies stored under the credential rule below (issue
+#306). Bodies written before it, under `http-cache:data:<url>`, may have been
+produced for a credentialed caller; this release never looks them up and they
+expire on their TTL, so an upgrade needs no flush. Code that reads these keys
+directly, such as the issue-152 scenario helpers, uses the same prefix.
 
 `<request url without query>` is `c.req.url`, so it carries scheme and host:
 the same route reached through `http://api:4000` and through the public
@@ -94,9 +100,10 @@ What bounds them instead:
 ## The clear route
 
 `setRoutes(app)` registers one endpoint, `GET /api/http-cache/clear`. It
-deletes both namespaces this middleware owns — `http-cache:data` and
+deletes both namespaces this middleware reads — `http-cache:data:v2` and
 `http-cache:version` — and nothing else, so the MCP OAuth store and subject
-preferences that share the instance survive it.
+preferences that share the instance survive it. Bodies left under the
+pre-`v2` namespace are not read and are left to expire.
 
 It requires the operator credential: `X-RBAC-SECRET-KEY`, or the
 `rbac.secret-key` cookie, compared in constant time against `RBAC_SECRET_KEY`.

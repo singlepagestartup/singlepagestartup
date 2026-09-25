@@ -17,7 +17,13 @@ import { createCacheGuard, ICacheGuard } from "./guard";
 import { Middleware as OperatorSecretMiddleware } from "../operator-secret";
 import { authorization, logger, readRbacSecret } from "@sps/backend-utils";
 
-const CACHE_DATA_PREFIX = "http-cache:data";
+/**
+ * Namespace of stored bodies. `v2` starts with the credential gate (issue
+ * #306): bodies written before it, under `http-cache:data:<url>`, may have
+ * been produced for a credentialed caller, so this release never looks them up
+ * and they expire on their TTL.
+ */
+const CACHE_DATA_PREFIX = "http-cache:data:v2";
 const CACHE_VERSION_PREFIX = "http-cache:version";
 const DEFAULT_CACHE_VERSION = 0;
 
