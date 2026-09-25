@@ -1,10 +1,5 @@
 #!/bin/bash
-
-if ! [ -x "$(command -v md5sum)" ]; then
-    echo 'Error: md5sum is not installed.' >&2
-    # install bun
-    brew install md5sha1sum | bash
-fi
+. ../../tools/deployer/generate_secret.sh
 
 # Check is .env file exists
 if [ -f .env ]; then
@@ -13,15 +8,12 @@ if [ -f .env ]; then
 fi
 
 # Clear env file
+umask 077
 > .env
 echo "Created /db/.env file"
 
 add_env() {
     echo "$1=$2" >> .env
-}
-
-generate_random_string() {
-    echo $RANDOM | md5sum | head -c 32;
 }
 
 get_available_port() {
@@ -45,7 +37,9 @@ add_env "POSTGRES_DB" $REPO_NAME
 
 add_env "POSTGRES_USER" $REPO_NAME
 
-add_env "POSTGRES_PASSWORD" $(generate_random_string)
+POSTGRES_PASSWORD=$(generate_secret 32) || exit 1
+
+add_env "POSTGRES_PASSWORD" $POSTGRES_PASSWORD
 
 POSTGRES_PORT=$(get_available_port 5432)
 
@@ -54,3 +48,5 @@ add_env "POSTGRES_PORT" $POSTGRES_PORT
 ADMINER_PORT=$(get_available_port 8080)
 
 add_env "ADMINER_PORT" $ADMINER_PORT
+
+chmod 600 .env

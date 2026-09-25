@@ -3,9 +3,9 @@ issue_number: 229
 issue_title: "Map expired JWT failures to 401 without logging token contents"
 repository: singlepagestartup
 created_at: 2026-09-17T23:12:00Z
-last_updated: 2026-09-17T23:12:00Z
+last_updated: 2026-09-19T00:25:00Z
 status: active
-current_phase: research
+current_phase: complete
 ---
 
 # Process Log: ISSUE-229 - Map expired JWT failures to 401 without logging token contents
@@ -18,10 +18,10 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Create: completed
 - Research: completed
-- Plan: not_started
-- Implement: not_started
-- Current phase: research
-- Next step: human review, then core/20-plan
+- Plan: completed
+- Implement: completed
+- Current phase: complete
+- Next step: lead verification of branch `claude/issue-229-error-mapping`, then PR
 
 ## Phase Notes
 
@@ -39,21 +39,21 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Plan
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Planned together with #232 and #241, which change the same four files. #229 is Phase 2 of the shared plan and lands after the 422 restoration, so the mapper spec is green before new scenarios are added. Scope for the shared verification helper was limited to the four call sites that verify a token supplied by an unauthenticated caller.
+- Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-229.md`
+- Notes: Plan approval was delegated to the lead, so the session did not wait for a review gate.
 
 ### Implement
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Added `verifyJwt` and `sanitizeErrorMessage` to `@sps/backend-utils`; the helper converts Hono JWT failures into `Authentication error. Token expired` or `Authentication error. Invalid token` by `error.name` and rethrows everything else. The mapper sanitizes the extracted message before classification, the 401 pattern list gained entries for an expired token, an invalid token, an invalid JWT token and a not-yet-valid token, and the exception filter sanitizes the joined message, the stack and the nested causes before they reach the log, the Telegram report and the response body. The four unauthenticated entry points that verify a caller-supplied token now use the helper.
+- Outputs: commit on `claude/issue-229-error-mapping`; 91 + 12 + 305 tests pass across `@sps/backend-utils`, `@sps/shared-backend-api` and `@sps/rbac`.
+- Notes: The old research question about which `jwt.verify` sites are in scope is answered in the plan's "What We're NOT Doing" section.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 3 -->
+<!-- incident-count: 5 -->
 
 ### Incident 1 — Editorial-pass contract referenced by CLAUDE.md does not exist
 
@@ -85,6 +85,26 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: In worktree sessions, keep each git command standalone, avoid shell functions and loops around git, and use the Write/Edit tools for file creation.
 - **References**: This session's Bash refusals; `thoughts/shared/tickets/singlepagestartup/ISSUE-229.md` (written via Write tool).
 
+### Incident 4 — A not-yet-valid token had no 401 pattern
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The new mapper scenario for Hono's `JwtTokenNotBefore` message failed with `Expected: 401, Received: 500`.
+- **Root Cause**: The 401 list covered expiry, invalidity and signature mismatch after this change, but not `token (...) is being used before it's valid`.
+- **Fix**: Added `/is being used before it's valid/i` to the 401 entry, so every Hono credential failure classifies as 401 even at the call sites this change did not migrate.
+- **Preventive Action**: When mapping a library's error family, enumerate the library's error classes rather than the messages seen in production.
+- **References**: `libs/shared/backend/utils/src/lib/http-error/paterns/index.ts`, `node_modules/hono/dist/utils/jwt/types.js`
+
+### Incident 5 — Sanitizing the joined message shadowed the Telegram report variable
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: After hoisting the sanitized text into `const message`, the Telegram block still declared its own `const message` that interpolated `message`, which is a temporal dead zone reference.
+- **Root Cause**: The filter used the same name for the joined error text and for the composed notification.
+- **Fix**: Renamed the notification variable to `report`; the sanitized error text keeps the name `message`.
+- **Preventive Action**: When lifting an expression into a named constant, grep the enclosing function for that name before choosing it.
+- **References**: `libs/shared/backend/api/src/lib/filters/exception/index.ts`
+
 ## Reusable Learnings
 
 - The global `IsAuthorizedMiddleware` authorizes over an HTTP loopback to `/api/rbac/subjects/authentication/is-authorized`; any error raised there passes through `ExceptionFilter` twice (loopback request and original request), and `responsePipe` re-encodes the first response as a JSON-string `HTTPException.message` that `getHttpErrorType` decodes in its JSON branch (`http-error/index.ts:11-44`). Stack fragments listing both `authentication/is-authorized/index.ts:76` and `middlewares/is-authorized/index.ts:107` are this double pass.
@@ -92,3 +112,5 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - The 401 pattern list is evaluated before the 403 list; `/authentication/i` lives in the 403 entry, so a message beginning `Authentication error.` maps to 403 unless it contains a 401-listed phrase or uses the `[Authentication error]` bracket prefix.
 - `libs/modules/rbac/jest.config.ts` excludes the `authentication/is-authorized` controller spec and `.integration.spec.ts` files; the service spec mocks `hono/jwt` to always succeed.
 - `hono` sources are not in the worktree; read them from the main checkout's `node_modules` at the lockfile version when a worktree has not been installed.
+- Hono's JWT failures are identifiable by `error.name` (`JwtTokenExpired`, `JwtTokenInvalid`, `JwtTokenSignatureMismatched`, `JwtTokenNotBefore`, `JwtHeaderInvalid`, `JwtPayloadRequiresAud`), which is stable while the message text is not and carries the credential. `JwtAlgorithmNotImplemented` is a configuration fault and must not become a 401.
+- A spec can drive Hono's real verification instead of mocking it: sign with a past `exp` for expiry, verify with a different secret for a signature mismatch, pass an empty secret for a `DataError` and an undefined one for a `TypeError`.

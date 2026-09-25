@@ -457,18 +457,27 @@ export const GET = async (request: NextRequest) => {
       }
     }
 
+    // ImageResponse sets the image content type itself; nosniff keeps a
+    // rasterised body from being re-interpreted as a document.
     return new ImageResponse(
       createElement(Component, { ...parsedParams, data } as any),
       {
         width,
         height,
         fonts,
+        headers: {
+          "X-Content-Type-Options": "nosniff",
+        },
       },
     );
   } catch (error: any) {
+    // The route is unauthenticated, so decode and render internals stay in the
+    // host log instead of travelling back to the caller.
+    console.error("Image generator render failed:", error);
+
     return NextResponse.json(
       {
-        error: error.message,
+        error: "Not Found",
       },
       { status: 404 },
     );

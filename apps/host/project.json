@@ -5,6 +5,7 @@
   "projectType": "application",
   "tags": [],
   "targets": {
+    "jest:test": {},
     "next:dev": {
       "executor": "@nx/next:server",
       "defaultConfiguration": "development",

@@ -4,13 +4,13 @@ import {
   RBAC_JWT_SECRET,
   RBAC_OAUTH_GOOGLE_CLIENT_ID,
   RBAC_OAUTH_GOOGLE_REDIRECT_URI,
-  RBAC_OAUTH_SUCCESS_REDIRECT_PATH,
   RBAC_OAUTH_STATE_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
 import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectsToActionsApi } from "@sps/rbac/relations/subjects-to-actions/sdk/server";
 import * as jwt from "hono/jwt";
+import { getHostRedirectOrigins, resolveRedirectTarget } from "./utils";
 
 export type IExecuteProps = {
   provider: string;
@@ -72,8 +72,9 @@ export class Service {
             provider: props.provider,
             flow,
             sourceSubjectId: sourceSubjectId || null,
-            redirectTo:
-              props.data?.redirectTo || RBAC_OAUTH_SUCCESS_REDIRECT_PATH,
+            // Validated here as well as at the callback, so a target that will
+            // never be honoured is not carried around in the database.
+            redirectTo: this.normalizeRedirectPath(props.data?.redirectTo),
             consumedAt: null,
           },
         },
@@ -107,6 +108,21 @@ export class Service {
       state: oauthStateAction.id,
       authorizationUrl,
     };
+  }
+
+  protected normalizeRedirectPath(path?: unknown) {
+    return resolveRedirectTarget({
+      target: path,
+      allowedOrigins: this.getAllowedRedirectOrigins(),
+    });
+  }
+
+  /**
+   * The origins a redirect may land on. A project that signs in on one origin
+   * and returns to another overrides this one method in `service/startup`.
+   */
+  protected getAllowedRedirectOrigins() {
+    return getHostRedirectOrigins();
   }
 
   protected async getSourceSubjectId(authorization?: string) {

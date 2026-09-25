@@ -7,9 +7,19 @@ import {
   options,
 } from "@sps/rbac/models/action/sdk/model";
 
-export type IProps = {};
+import {
+  action as consume,
+  type IProps as IConsumeProps,
+  type IResult as IConsumeResult,
+} from "./consume";
 
-export type IResult = {};
+export type IProps = {
+  IConsumeProps: IConsumeProps;
+};
+
+export type IResult = {
+  IConsumeResult: IConsumeResult;
+};
 
 export const api = {
   ...factory<IModel>({
@@ -18,4 +28,5 @@ export const api = {
     params: query,
     options,
   }),
+  consume,
 };

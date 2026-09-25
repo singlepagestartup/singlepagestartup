@@ -158,3 +158,113 @@ reconciliations:
     summary: The merge publishes the already inspected portable document-export
       change without an additional business decision, claim or dependency impact.
     affected_artifacts: []
+  - commit: 818f097d229eadc9b839d7dd8538ddf66bfc07e4
+    outcome: no-material-effect
+    summary: The relevance match is package.json, which adds Studio design and
+      editorial test scripts. The AI Chat materials and design gates in the same
+      commit are the living artifacts already present in this checkout, so they
+      state no decision beyond what those documents record.
+    affected_artifacts: []
+  - commit: a085b98f6b4ecc30e4b6680f115232223e548818
+    outcome: no-material-effect
+    summary:
+      The merge publishes the inspected portable-export and materials work
+      with no package.json change against its first parent and no additional
+      business decision.
+    affected_artifacts: []
+  - commit: 4d5f13b70dcd3ecdd8d5fb009a41025c6e376aeb
+    outcome: no-material-effect
+    summary:
+      Scenario specs move out of the api unit lane and an MCP spec reads the
+      shared API_SERVICE_URL instead of a hard-coded localhost address. Test lane
+      hygiene changes no offer, claim, proof boundary or product promise.
+    affected_artifacts: []
+  - commit: 344072c5d6be1508c60ac19fba27754f7f3244a1
+    outcome: no-material-effect
+    summary: The merge publishes the same test lane change without an additional
+      business decision.
+    affected_artifacts: []
+  - commit: 0ff45fd562313b412785eaa427474d7b60e8449f
+    outcome: no-material-effect
+    summary:
+      package.json adds the pipeline check and its test script. Declaring the
+      stage machine is workflow tooling and changes no business fact or claim.
+    affected_artifacts: []
+  - commit: 6082b2c9589ff4a8c0fe544a1949e4c67291b3e8
+    outcome: no-material-effect
+    summary:
+      The Telegram bootstrap replays on a unique-constraint conflict instead
+      of failing, with the rbac README describing the same behavior. A concurrency
+      correction inside identity and access states no new capability, price,
+      audience or support level.
+    affected_artifacts: []
+  - commit: e8298dee790600228db716a2e316c16d0f4d73f2
+    outcome: no-material-effect
+    summary:
+      The merge publishes the inspected bootstrap conflict replay and adds no
+      separate business decision.
+    affected_artifacts: []
+  - commit: 87f2f37f082a4d3f904eda060375cde66d1efcea
+    outcome: no-material-effect
+    summary: The branch merge carries the already inspected test lane, bootstrap
+      replay and package script changes into a working branch without a business
+      decision of its own.
+    affected_artifacts: []
+  - commit: 80bf5cdb1483a2427c6566eebab1173667d8050f
+    outcome: no-material-effect
+    summary: The merge publishes the inspected pipeline check tooling with no
+      additional business decision.
+    affected_artifacts: []
+  - commit: ef5ab1c072c4df51c89d35c957d875095f46103f
+    outcome: no-material-effect
+    summary:
+      The bootstrap conflict retry budget grows each delay so one request can
+      lose several natural keys in sequence. A retry timing correction changes no
+      current business claim or service commitment.
+    affected_artifacts: []
+  - commit: 9c504e0d9cc863937f8a12243c92f00564941347
+    outcome: no-material-effect
+    summary: The merge publishes the inspected retry budget change and adds no
+      separate business decision.
+    affected_artifacts: []
+  - commit: f22b2d54e468e2be31bfa7fa8d1679ffcff70667
+    outcome: no-material-effect
+    summary:
+      package.json adds the duplicate-sentence check and its test. Asserting
+      agent contracts instead of wording is workflow tooling and states no business
+      fact.
+    affected_artifacts: []
+  - commit: a2644214ba74a5e86a03e1587c63acf35ca10d09
+    outcome: no-material-effect
+    summary: The merge publishes the inspected agent contract tests with no
+      additional business decision.
+    affected_artifacts: []
+  - commit: 914115d1bea5a707b3de70c3769fed53e66314ee
+    outcome: material
+    summary:
+      LICENSE and the README License section now carry the MIT text, which
+      the operator had selected while both files still stated proprietary terms.
+      Inspected origin/main confirms the published MIT terms. Brief sources.license
+      already records the verification; Strategy release_license, Brand
+      voice_and_claims and the Code Framework Product and Research license sources
+      were corrected, because each still limited its claim on the ground that the
+      inspected release was proprietary. The approved audience, offer, free price,
+      acquisition focus and support level are unchanged, and the license verifies
+      the distributed source only, not runtime behavior or adoption.
+    affected_artifacts:
+      - singlepage.strategy
+      - singlepage.brand
+      - singlepage.products
+  - commit: 434b31efc1dc5133776a1e31a230ccd80e2e7aeb
+    outcome: no-material-effect
+    summary:
+      A getting-started guide is added and the README points to it and raises
+      the stated Node.js version to 24. Onboarding documentation for the existing
+      free framework introduces no offer, price, audience or support commitment.
+    affected_artifacts: []
+  - commit: 1df352484f23a8615962da490771028b7f87f536
+    outcome: no-material-effect
+    summary: ai.sh reads the project configuration from .agents/.env instead of
+      .claude/.env. Moving a provider-neutral config path changes no business fact,
+      claim or product promise.
+    affected_artifacts: []

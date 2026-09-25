@@ -67,6 +67,9 @@ function makeConfig() {
               value:
                 "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, X-Set-Cookie",
             },
+            // Applied here so every future route under app/api inherits it
+            // without restating it in the handler.
+            { key: "X-Content-Type-Options", value: "nosniff" },
           ],
         },
       ];
@@ -106,6 +109,13 @@ function makeConfig() {
       config.externals.push("pino-pretty", "lokijs", "encoding");
 
       return config;
+    },
+    // Specs are excluded from this app's tsconfig so Next does not compile
+    // them, which leaves the build's bundled linter unable to parse them.
+    // Linting runs as its own target (`nx run host:eslint:lint`), so the build
+    // does not need to repeat it.
+    eslint: {
+      ignoreDuringBuilds: true,
     },
     logging: false,
   });

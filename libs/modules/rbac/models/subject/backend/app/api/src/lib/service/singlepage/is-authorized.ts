@@ -1,12 +1,13 @@
 import { RBAC_JWT_SECRET, createMemoryCache } from "@sps/shared-utils";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
 import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
-import * as jwt from "hono/jwt";
+import { logger, verifyJwt } from "@sps/backend-utils";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import { inject, injectable } from "inversify";
 import { SubjectDI } from "../../di";
 
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
+let rolelessPermissionsReported = false;
 
 export type IExecuteProps = {
   permission: {
@@ -81,6 +82,44 @@ export class Service {
     return roleIds;
   }
 
+  /**
+   * One-shot inventory of the permission rows that carry no role — the routes
+   * this deployment answers for anonymous callers (issue #270). A project
+   * upgrading reads its own surface here instead of auditing the seed by hand.
+   *
+   * It lives on this service rather than on the permission service because the
+   * attachments come from the roles-to-permissions relation, and this is the
+   * only class holding both reads.
+   */
+  protected async reportRolelessPermissions() {
+    const [permissions, rolesToPermissions] = await Promise.all([
+      this.permissionService.find(),
+      this.rolesToPermissionsService.find(),
+    ]);
+
+    const permissionIdsWithRole = new Set(
+      rolesToPermissions.map(
+        (roleToPermission) => roleToPermission.permissionId,
+      ),
+    );
+
+    const roleless = permissions
+      .filter((permission) => !permissionIdsWithRole.has(permission.id))
+      .map((permission) => `${permission.method} ${permission.path}`)
+      .sort();
+
+    if (!roleless.length) {
+      return;
+    }
+
+    logger.warn(
+      [
+        `RBAC: ${roleless.length} permission(s) carry no role and stay public unless the route is sensitive:`,
+        ...roleless,
+      ].join("\n"),
+    );
+  }
+
   protected async getRoleIdsByPermissionId(permissionId?: string) {
     if (!permissionId) {
       return [];
@@ -116,6 +155,14 @@ export class Service {
       throw new Error("Configuration error. RBAC_JWT_SECRET is not defined");
     }
 
+    if (!rolelessPermissionsReported) {
+      rolelessPermissionsReported = true;
+
+      this.reportRolelessPermissions().catch((error) => {
+        logger.error(error);
+      });
+    }
+
     let subjectId: string | undefined = undefined;
     const authorization = props.authorization.value;
 
@@ -124,7 +171,7 @@ export class Service {
       subjectId = cache.get<string>(tokenCacheKey);
 
       if (!subjectId) {
-        const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET);
+        const decoded = await verifyJwt(authorization, RBAC_JWT_SECRET);
 
         if (!decoded.subject?.["id"]) {
           throw new Error("Validation error. No subject provided in the token");
@@ -186,10 +233,15 @@ export class Service {
       );
 
       /**
-       * Permissions without roles are public
+       * Permissions without roles are public, except on the routes the
+       * framework refuses to leave open by omission (issue #270). The rule
+       * only subtracts: every other role-less row keeps its behavior.
        */
       if (!permissionRoleIds.size) {
-        authorized = true;
+        authorized = !(await this.permissionService.isSensitiveRoute(
+          props.permission.route,
+          props.permission.method,
+        ));
       }
 
       if (!authorized && subjectId) {

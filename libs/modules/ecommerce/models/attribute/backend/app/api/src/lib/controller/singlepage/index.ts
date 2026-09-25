@@ -21,11 +21,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "GET",
-        path: "/dump",
-        handler: this.dump,
-      },
-      {
-        method: "GET",
         path: "/count",
         handler: this.count,
       },

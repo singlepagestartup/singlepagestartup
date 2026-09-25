@@ -3,7 +3,6 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
     product.singlepagestartup.product: 1bd3022ba57bd99882728e561cec47013e32d16dc2a138e8598efd17184e70e6
 ---
 

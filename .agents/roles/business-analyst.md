@@ -26,14 +26,20 @@ account of value creation, delivery and capture, not nine tabs or one canvas per
 product. Value Proposition Canvas helps connect jobs, pains and gains within
 Product; it does not establish demand or require another document.
 
-- A business model describes one coherent creation, delivery and capture of
-  value; products are catalog entries, not automatically separate canvases.
-  Define model boundaries from value flows. Give each model a stable catalog ID
-  and one source under `products/<layer>/models/<id>/`, link all participating
-  products, and distinguish shared from product-specific terms. Do not invent
-  a shared model solely because two products share a founder or technology;
-  absence of a model is an unresolved decision, not permission to infer one
-  model per product.
+- The product is the only unit of the catalog. Each one owns its customer,
+  offer, economics and materials in its own folder, and nothing sits between a
+  product and the project. Do not create a shared canvas, a combined entity or
+  any other intermediate document, however much two products have in common:
+  shared infrastructure, a shared codebase, one owner and one technology are
+  what a single business looks like, not evidence of a third thing to describe.
+  A resource two products share is recorded in each product with the basis for
+  its split stated there, because that is where a reader needs the number.
+- Every product is paid for, and the payment is not always money. State what
+  the product receives in return: money, or attention, adoption, contributions,
+  recommendations and the customers they bring. A product distributed for free
+  is a product whose price is paid in something else, and naming that exchange
+  is what makes its economics reviewable. Never record a product as having no
+  economics because no invoice is issued.
 - Product owns Customer Segments, Value Propositions, identity, roles, offer,
   intended usage, rights, support promises, business goals and metrics.
   Preserve user, buyer, payer, beneficiary and decision-maker, material social

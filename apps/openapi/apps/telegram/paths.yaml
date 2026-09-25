@@ -3,13 +3,23 @@ paths:
     post:
       tags:
         - "app-telegram"
-      summary: List of models
-      description: Get list of available models from OpenRouter
+      summary: Run Telegram bot
+      description: >-
+        Operator lever. Registers the Telegram webhook with the service webhook
+        secret and republishes the Agent command catalog. Requires the operator
+        credential.
       servers:
         - url: http://localhost:8000/api
           description: Local Telegram App
         - url: https://telegram.singlepagestartup.com
           description: Production Telegram App
+      parameters:
+        - name: X-RBAC-SECRET-KEY
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Operator credential for the Telegram service control routes
       requestBody:
         required: true
         content:
@@ -36,3 +46,42 @@ paths:
                       ok:
                         type: boolean
                 additionalProperties: true
+        "401":
+          description: Missing or invalid operator credential
+  /telegram/stop:
+    post:
+      tags:
+        - "app-telegram"
+      summary: Stop Telegram bot
+      description: >-
+        Operator lever. Deletes the Telegram webhook registration, which
+        silences the bot until something registers it again. Requires the
+        operator credential.
+      servers:
+        - url: http://localhost:8000/api
+          description: Local Telegram App
+        - url: https://telegram.singlepagestartup.com
+          description: Production Telegram App
+      parameters:
+        - name: X-RBAC-SECRET-KEY
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Operator credential for the Telegram service control routes
+      responses:
+        "200":
+          description: Successfully stopped Telegram bot
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                additionalProperties: true
+        "401":
+          description: Missing or invalid operator credential

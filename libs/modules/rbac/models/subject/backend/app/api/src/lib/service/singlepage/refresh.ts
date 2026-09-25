@@ -6,6 +6,7 @@ import {
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
 import * as jwt from "hono/jwt";
+import { verifyJwt } from "@sps/backend-utils";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 
 export type IExecuteProps = {
@@ -32,7 +33,7 @@ export class Service {
       );
     }
 
-    const decoded = await jwt.verify(props.refresh, RBAC_JWT_SECRET);
+    const decoded = await verifyJwt(props.refresh, RBAC_JWT_SECRET);
 
     const subjectId = decoded.subject?.["id"];
 
