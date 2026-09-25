@@ -14,7 +14,7 @@ import {
 import { MiddlewareHandler } from "hono";
 import { createExcludedRoutesMatcher } from "./routes";
 import { createCacheGuard, ICacheGuard } from "./guard";
-import { requireRbacSecret } from "./require-rbac-secret";
+import { Middleware as OperatorSecretMiddleware } from "../operator-secret";
 import { logger } from "@sps/backend-utils";
 
 const CACHE_DATA_PREFIX = "http-cache:data";
@@ -411,7 +411,9 @@ export class Middleware {
     // Flushing is an operator action, and this route answers before the
     // is-authorized middleware exists (issue #277), so the credential check
     // has to travel with the route rather than sit in the allow-list.
-    app.get("/api/http-cache/clear", requireRbacSecret(), async (c) => {
+    const operatorSecret = new OperatorSecretMiddleware();
+
+    app.get("/api/http-cache/clear", operatorSecret.init(), async (c) => {
       await Promise.all([
         this.storeProvider.delByPrefix({ prefix: CACHE_DATA_PREFIX }),
         this.storeProvider.delByPrefix({ prefix: CACHE_VERSION_PREFIX }),

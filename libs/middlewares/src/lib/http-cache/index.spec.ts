@@ -24,8 +24,8 @@ jest.mock("@sps/backend-utils", () => {
     },
     websocketManager: { broadcastMessage: jest.fn() },
     // The comparison is driven per scenario here; what it does with a real
-    // RBAC_SECRET_KEY is pinned in `require-rbac-secret.spec.ts` and in the
-    // primitive's own suite.
+    // RBAC_SECRET_KEY is pinned in the operator-secret middleware's suite and
+    // in the primitive's own suite.
     readRbacSecret: (c: any) => c.req.header("X-RBAC-SECRET-KEY"),
     rbacSecretMatches: jest.fn(),
   };

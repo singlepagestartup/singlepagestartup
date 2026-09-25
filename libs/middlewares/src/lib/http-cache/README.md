@@ -62,16 +62,17 @@ It requires the operator credential: `X-RBAC-SECRET-KEY`, or the
 A deployment that never set that variable refuses every caller rather than
 admitting every caller, so the route cannot be flushed over HTTP there at all.
 
-The credential is checked by a guard composed into the route definition
-(`require-rbac-secret.ts`) rather than by the is-authorized middleware, and
-that is not a style choice. `setRoutes(app)` runs before
+The credential is checked by the operator-secret middleware
+(`../operator-secret`), composed into the route definition rather than left
+to the is-authorized middleware, and that is not a style choice. `setRoutes(app)` runs before
 `app.use(isAuthorizedMiddleware.init())` in `apps/api/app.ts`, and Hono answers
 from the first matching handler: the authorization middleware is never reached
 for this path. Its allow-list, and the `routes/startup.ts` deny seam a project
 would normally reach for, therefore have no bearing on it — an allow rule for
 this path is inert, which is why the framework's rule table no longer carries
-one (issue #277). `apps/api/specs/singlepage/index.spec.ts` pins the ordering
-together with the guard, because the two facts only make sense read together.
+one (issue #277). Because the guard travels with the route, it holds wherever
+`setRoutes` is called; `index.spec.ts` proves it on an application that has no
+authorization middleware at all.
 
 The flush is not free: each namespace is deleted with `delByPrefix`, a
 `SCAN`/`DEL` walk of the whole Redis keyspace, and the two run concurrently.
