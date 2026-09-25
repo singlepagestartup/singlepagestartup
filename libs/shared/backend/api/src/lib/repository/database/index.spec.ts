@@ -16,7 +16,13 @@ import { DI } from "../../di/constants";
 import { Database } from ".";
 import { IRepository } from "../interface";
 import fs from "fs/promises";
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  PgDialect,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 const CountTestTable = pgTable("count_test", {
@@ -24,6 +30,19 @@ const CountTestTable = pgTable("count_test", {
   status: text("status"),
   orderIndex: integer("order_index"),
 });
+
+const SortTestTable = pgTable("sort_test", {
+  id: text("id"),
+  status: text("status"),
+  orderIndex: integer("order_index"),
+});
+
+const UnorderedTestTable = pgTable("unordered_test", {
+  id: text("id"),
+  status: text("status"),
+});
+
+const dialect = new PgDialect();
 
 const ConsumeTestTable = pgTable("consume_test", {
   id: text("id"),
@@ -49,6 +68,225 @@ const baseConfiguration: IConfiguration["repository"] = {
 };
 
 describe("Database", () => {
+  describe("find", () => {
+    function createFindRepository(Table: any = SortTestTable) {
+      const configuration = new Configuration({
+        repository: {
+          ...baseConfiguration,
+          Table,
+        },
+      });
+      const container = new Container();
+      container
+        .bind<IConfiguration>(DI.IConfiguration)
+        .toConstantValue(configuration);
+      container.bind<IRepository>(DI.IRepository).to(Database);
+
+      const repository = container.get<IRepository>(DI.IRepository);
+      const execute = jest.fn().mockResolvedValue([]);
+      const orderBy = jest.fn().mockReturnValue({ execute });
+      const offset = jest.fn().mockReturnValue({ orderBy });
+      const limit = jest.fn().mockReturnValue({ offset });
+      const where = jest.fn().mockReturnValue({ limit });
+      const from = jest.fn().mockReturnValue({ where });
+      const select = jest.fn().mockReturnValue({ from });
+
+      (repository as any).db = { select };
+
+      return { repository, select, orderBy };
+    }
+
+    function renderedOrder(orderBy: jest.Mock) {
+      return orderBy.mock.calls[0].map(
+        (expression: any) => dialect.sqlToQuery(expression).sql,
+      );
+    }
+
+    /**
+     * BDD Scenario: a sort in an allowed direction.
+     *
+     * Given: a repository over a table with an orderIndex column.
+     * When: find is called with a sort on that column in an allowed direction.
+     * Then: the query is ordered by the column in that direction.
+     */
+    it.each(["asc", "desc"] as const)(
+      "orders the query by the column in the %s direction",
+      async (method) => {
+        const { repository, orderBy } = createFindRepository();
+
+        await repository.find({
+          params: { orderBy: { and: [{ column: "orderIndex", method }] } },
+        });
+
+        expect(renderedOrder(orderBy)).toEqual([
+          `"sort_test"."order_index" ${method}`,
+        ]);
+      },
+    );
+
+    /**
+     * BDD Scenario: a sort method outside the allow-list.
+     *
+     * Given: a sort whose method names another drizzle-orm export, an object
+     * prototype member or an upper-case direction.
+     * When: find is called with it.
+     * Then: it refuses with a validation error before any query is built.
+     */
+    it.each(["sql", "count", "constructor", "ASC"])(
+      "refuses the sort method '%s'",
+      async (method) => {
+        const { repository, select } = createFindRepository();
+
+        await expect(
+          repository.find({
+            params: {
+              orderBy: {
+                and: [{ column: "orderIndex", method: method as any }],
+              },
+            },
+          }),
+        ).rejects.toThrow(
+          `Validation error. Unknown orderBy method '${method}'`,
+        );
+        expect(select).not.toHaveBeenCalled();
+      },
+    );
+
+    /**
+     * BDD Scenario: a sort column the table does not have.
+     *
+     * Given: a sort whose column is absent from the table, an object prototype
+     * member or a function the drizzle table carries.
+     * When: find is called with it.
+     * Then: it refuses with a validation error naming the column.
+     */
+    it.each(["missing", "constructor", "enableRLS"])(
+      "refuses the sort column '%s'",
+      async (column) => {
+        const { repository, select } = createFindRepository();
+
+        await expect(
+          repository.find({
+            params: { orderBy: { and: [{ column, method: "asc" }] } },
+          }),
+        ).rejects.toThrow(`Validation error. Unknown column '${column}'`);
+        expect(select).not.toHaveBeenCalled();
+      },
+    );
+
+    /**
+     * BDD Scenario: a sort column that is not an identifier.
+     *
+     * Given: a sort column carrying a direction or a json key.
+     * When: find is called with it.
+     * Then: it refuses with a validation error.
+     */
+    it.each(["orderIndex desc", "status->>en"])(
+      "refuses the sort column '%s' that is not an identifier",
+      async (column) => {
+        const { repository } = createFindRepository();
+
+        await expect(
+          repository.find({
+            params: { orderBy: { and: [{ column, method: "asc" }] } },
+          }),
+        ).rejects.toThrow(
+          "Validation error. OrderBy column must be an identifier",
+        );
+      },
+    );
+
+    /**
+     * BDD Scenario: several sort items.
+     *
+     * Given: a sort with two items.
+     * When: find is called with both valid, then with an invalid second item.
+     * Then: only the first item orders the query, and an invalid second item
+     * refuses the request although it is not applied.
+     */
+    it("validates every sort item and applies the first", async () => {
+      const valid = createFindRepository();
+
+      await valid.repository.find({
+        params: {
+          orderBy: {
+            and: [
+              { column: "orderIndex", method: "desc" },
+              { column: "status", method: "asc" },
+            ],
+          },
+        },
+      });
+
+      expect(renderedOrder(valid.orderBy)).toEqual([
+        '"sort_test"."order_index" desc',
+      ]);
+
+      const invalid = createFindRepository();
+
+      await expect(
+        invalid.repository.find({
+          params: {
+            orderBy: {
+              and: [
+                { column: "orderIndex", method: "desc" },
+                { column: "status", method: "sql" as any },
+              ],
+            },
+          },
+        }),
+      ).rejects.toThrow("Validation error. Unknown orderBy method 'sql'");
+      expect(invalid.select).not.toHaveBeenCalled();
+    });
+
+    /**
+     * BDD Scenario: a malformed sort group.
+     *
+     * Given: a sort group that is a string, an empty array or an item without a method.
+     * When: find is called with it.
+     * Then: it refuses with a validation error instead of a TypeError.
+     */
+    it("refuses a sort group that is not a list of complete items", async () => {
+      const { repository } = createFindRepository();
+
+      await expect(
+        repository.find({ params: { orderBy: { and: "orderIndex" as any } } }),
+      ).rejects.toThrow("Validation error. 'orderBy.and' must be an array");
+      await expect(
+        repository.find({ params: { orderBy: { and: [] } } }),
+      ).rejects.toThrow(
+        "Validation error. You need to pass an orderBy array with 'column' and 'method' for each item",
+      );
+      await expect(
+        repository.find({
+          params: { orderBy: { and: [{ column: "orderIndex" } as any] } },
+        }),
+      ).rejects.toThrow(
+        "Validation error. You need to pass an orderBy array with 'column' and 'method' for each item",
+      );
+    });
+
+    /**
+     * BDD Scenario: no sort requested.
+     *
+     * Given: one table with an orderIndex column and one without.
+     * When: find is called without a sort.
+     * Then: the first is read in orderIndex order and the second unordered.
+     */
+    it("reads by orderIndex when no sort is requested", async () => {
+      const ordered = createFindRepository(SortTestTable);
+      const unordered = createFindRepository(UnorderedTestTable);
+
+      await ordered.repository.find();
+      await unordered.repository.find({ params: { limit: 10 } });
+
+      expect(renderedOrder(ordered.orderBy)).toEqual([
+        '"sort_test"."order_index" asc',
+      ]);
+      expect(unordered.orderBy).toHaveBeenCalledWith();
+    });
+  });
+
   describe("count", () => {
     /**
      * BDD Scenario: unfiltered repository count.
