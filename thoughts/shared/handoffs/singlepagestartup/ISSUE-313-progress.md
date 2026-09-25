@@ -3,7 +3,8 @@ issue_number: 313
 issue_title: "Bound list reads, request bodies, timeouts and WebSocket connections"
 start_date: 2026-09-25T22:10:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-313.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-313 - Bound list reads, request bodies, timeouts and WebSocket connections
@@ -76,8 +77,8 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/334
+- [x] PR number: 334
 
 ### Final Status
 
@@ -87,4 +88,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-09-25T23:30:00Z
+**Last updated**: 2026-09-25T23:45:00Z

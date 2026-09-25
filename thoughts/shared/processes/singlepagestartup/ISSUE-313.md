@@ -3,9 +3,9 @@ issue_number: 313
 issue_title: "Bound list reads, request bodies, timeouts and WebSocket connections"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-25T23:15:00Z
+last_updated: 2026-09-25T23:45:00Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-313 - Bound list reads, request bodies, timeouts and WebSocket connections
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: complete implementation, verify, commit and open the pull request
+- Implement: completed
+- Current phase: complete
+- Next step: code review of pull request #334, then merge
 
 ## Phase Notes
 
@@ -45,7 +45,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: both phases are implemented and verified in commits `0d53ec4a1d` (sort allow-list) and `1c7dd010fb` (body limit setting); the progress file holds every command and result, including the mutation checks and the HTTP runs on port 4313.
-- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-313-progress.md`.
+- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-313-progress.md`, pull request #334 with its description in `thoughts/shared/prs/334_description.md`.
 - Notes: `tsc --noEmit -p apps/api/tsconfig.json` reports 25 Bun typing errors in files this branch does not touch; none is in a changed file. `api:eslint:lint` took about ten minutes on this machine.
 
 ## Incident Log
