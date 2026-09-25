@@ -7,6 +7,7 @@ import { Service } from "../../../../service";
 import { type IResult } from "@sps/ecommerce/models/order/sdk/server";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
+import { type IUnpricedOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service/singlepage/get-total";
 
 export class Handler {
   service: Service;
@@ -61,6 +62,7 @@ export class Handler {
       if (!subjectsToEcommerceModuleOrders?.length) {
         return c.json({
           data: [],
+          unpriced: [],
         });
       }
 
@@ -95,6 +97,7 @@ export class Handler {
       if (!ecommerceModuleOrdersWithCartType?.length) {
         return c.json({
           data: [],
+          unpriced: [],
         });
       }
 
@@ -109,13 +112,17 @@ export class Handler {
         }
       >();
 
+      const unpriced: IUnpricedOrderToProduct[] = [];
+
       for (const ecommerceModuleOrder of ecommerceModuleOrdersWithCartType) {
         const ecommerceModuleOrderTotals =
           await this.service.ecommerceModule.order.findByIdTotal({
             id: ecommerceModuleOrder.id,
           });
 
-        for (const ecommerceModuleOrderTotal of ecommerceModuleOrderTotals) {
+        unpriced.push(...ecommerceModuleOrderTotals.unpriced);
+
+        for (const ecommerceModuleOrderTotal of ecommerceModuleOrderTotals.totals) {
           const currencyId = ecommerceModuleOrderTotal.billingModuleCurrency.id;
           if (totalsMap.has(currencyId)) {
             const entry = totalsMap.get(currencyId)!;
@@ -124,7 +131,7 @@ export class Handler {
             if (!entry.orders.some((o) => o.id === ecommerceModuleOrder.id)) {
               entry.orders.push({
                 ...ecommerceModuleOrder,
-                total: ecommerceModuleOrderTotals,
+                total: ecommerceModuleOrderTotals.totals,
               });
             }
           } else {
@@ -135,7 +142,7 @@ export class Handler {
               orders: [
                 {
                   ...ecommerceModuleOrder,
-                  total: ecommerceModuleOrderTotals,
+                  total: ecommerceModuleOrderTotals.totals,
                 },
               ],
             });
@@ -145,6 +152,7 @@ export class Handler {
 
       return c.json({
         data: Array.from(totalsMap.values()),
+        unpriced,
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

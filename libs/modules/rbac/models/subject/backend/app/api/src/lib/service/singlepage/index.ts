@@ -64,6 +64,14 @@ import {
   IExecuteProps as IEcommerceOrderProceedProps,
 } from "./ecommerce/order/proceed";
 import {
+  Service as EcommerceOrderResolveCurrency,
+  IExecuteProps as IEcommerceOrderResolveCurrencyProps,
+} from "./ecommerce/order/resolve-currency";
+import {
+  Service as EcommerceOrderAssertSubjectOwns,
+  IExecuteProps as IEcommerceOrderAssertSubjectOwnsProps,
+} from "./ecommerce/order/assert-subject-owns";
+import {
   SubjectDI,
   type IBillingModule,
   type IBroadcastModule,
@@ -383,6 +391,23 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       findById: ({ id }) => this.findById({ id }),
       ecommerceModule: this.ecommerceModule,
       billingModule: this.billingModule,
+      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+    }).execute(props);
+  }
+
+  async ecommerceModuleResolveOrderCurrency(
+    props: IEcommerceOrderResolveCurrencyProps,
+  ): Promise<string> {
+    return new EcommerceOrderResolveCurrency({
+      ecommerceModule: this.ecommerceModule,
+      billingModule: this.billingModule,
+    }).execute(props);
+  }
+
+  async ecommerceModuleAssertSubjectOwnsOrder(
+    props: IEcommerceOrderAssertSubjectOwnsProps,
+  ): Promise<void> {
+    return new EcommerceOrderAssertSubjectOwns({
       subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
     }).execute(props);
   }

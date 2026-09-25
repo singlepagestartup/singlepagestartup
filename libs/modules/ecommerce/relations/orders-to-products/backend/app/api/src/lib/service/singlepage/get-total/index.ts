@@ -1,4 +1,5 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { logger } from "@sps/backend-utils";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { IModel as IOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
@@ -13,6 +14,22 @@ export type IExecuteProps = {
   id: string;
 };
 
+export type ITotal = {
+  total: number;
+  billingModuleCurrency: IBillingModuleCurrency;
+};
+
+export type IUnpricedOrderToProduct = {
+  ordersToProductsId: string;
+  productId: string;
+  reason: string;
+};
+
+export type IExecuteResult = {
+  totals: ITotal[];
+  unpriced: IUnpricedOrderToProduct[];
+};
+
 type IConstructorProps = {
   findById: (props: { id: string }) => Promise<IOrderToProduct | null>;
   product: ProductService;
@@ -23,6 +40,14 @@ type IConstructorProps = {
   attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
 };
 
+/**
+ * Computes the total of a single order line.
+ *
+ * A line whose product carries no price in any billing currency yields no
+ * total and is reported instead of throwing: one such line, left behind by a
+ * failed add-to-cart or by incomplete catalog data, must not take the whole
+ * cart down with it.
+ */
 export class Service {
   findById: IConstructorProps["findById"];
   product: ProductService;
@@ -43,7 +68,7 @@ export class Service {
       props.attributesToBillingModuleCurrencies;
   }
 
-  async execute(props: IExecuteProps) {
+  async execute(props: IExecuteProps): Promise<IExecuteResult> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
@@ -76,17 +101,14 @@ export class Service {
 
     const priceAttributeKey = priceAttributeKeys[0];
 
-    const result: {
-      total: number;
-      billingModuleCurrency: IBillingModuleCurrency;
-    }[] = [];
+    const totals: ITotal[] = [];
 
     const product = await this.product.findById({
       id: entity.productId,
     });
 
     if (!product) {
-      throw new Error("Product not found");
+      return this.unpriced({ entity, reason: "Product not found" });
     }
 
     const productToAttributes = await this.productsToAttributes.find({
@@ -104,7 +126,10 @@ export class Service {
     });
 
     if (!productToAttributes?.length) {
-      throw new Error("Product does not have any attributes");
+      return this.unpriced({
+        entity,
+        reason: "Product does not have any attributes",
+      });
     }
 
     const productPriceAttributeKeysToAttributes =
@@ -130,8 +155,13 @@ export class Service {
       });
 
     if (!productPriceAttributeKeysToAttributes?.length) {
-      throw new Error("Product does not have any price attributes");
+      return this.unpriced({
+        entity,
+        reason: "Product does not have any price attributes",
+      });
     }
+
+    let skippedPriceAttributes = 0;
 
     for (const productPriceAttributeKeyToAttribute of productPriceAttributeKeysToAttributes) {
       const priceAttribute = await this.attribute.findById({
@@ -139,7 +169,8 @@ export class Service {
       });
 
       if (!priceAttribute) {
-        throw new Error("Price attribute not found");
+        skippedPriceAttributes += 1;
+        continue;
       }
 
       const attributesToBillingModuleCurrencies =
@@ -158,7 +189,8 @@ export class Service {
         });
 
       if (!attributesToBillingModuleCurrencies?.length) {
-        throw new Error("Product does not have any target price attributes");
+        skippedPriceAttributes += 1;
+        continue;
       }
 
       const billingModuleCurrency = await billingModuleCurrencyApi.findById({
@@ -171,15 +203,62 @@ export class Service {
       });
 
       if (!billingModuleCurrency) {
-        throw new Error("Billing module currency not found");
+        skippedPriceAttributes += 1;
+        continue;
       }
 
-      result.push({
+      totals.push({
         total: entity.quantity * Number(priceAttribute.number),
         billingModuleCurrency,
       });
     }
 
-    return result;
+    if (!totals.length) {
+      return this.unpriced({
+        entity,
+        reason: "Product does not have any target price attributes",
+      });
+    }
+
+    if (skippedPriceAttributes) {
+      logger.warn(
+        "ecommerce/orders-to-products/get-total: skipped price attributes without a billing currency",
+        {
+          ordersToProductsId: entity.id,
+          productId: entity.productId,
+          skippedPriceAttributes,
+        },
+      );
+    }
+
+    return {
+      totals,
+      unpriced: [],
+    };
+  }
+
+  private unpriced(props: {
+    entity: IOrderToProduct;
+    reason: string;
+  }): IExecuteResult {
+    logger.warn(
+      "ecommerce/orders-to-products/get-total: order line has no price in an available currency",
+      {
+        ordersToProductsId: props.entity.id,
+        productId: props.entity.productId,
+        reason: props.reason,
+      },
+    );
+
+    return {
+      totals: [],
+      unpriced: [
+        {
+          ordersToProductsId: props.entity.id,
+          productId: props.entity.productId,
+          reason: props.reason,
+        },
+      ],
+    };
   }
 }

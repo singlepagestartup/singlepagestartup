@@ -307,11 +307,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/:id/ecommerce-module/orders/:orderId/quantity",
         handler: this.ecommerceModuleOrderIdQuantity,
+        middlewares: [new RequestSubjectIdOwner().init()],
       },
       {
         method: "GET",
         path: "/:id/ecommerce-module/orders/:orderId/total",
         handler: this.ecommerceModuleOrderIdTotal,
+        middlewares: [new RequestSubjectIdOwner().init()],
       },
       {
         method: "POST",
