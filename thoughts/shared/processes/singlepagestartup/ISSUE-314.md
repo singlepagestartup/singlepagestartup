@@ -3,9 +3,9 @@ issue_number: 314
 issue_title: "Review error response contents and error telemetry"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-25T22:40:00Z
+last_updated: 2026-09-25T23:20:00Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-314 - Review error response contents and error telemetry
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: finish verification, commit, publish the pull request
+- Implement: completed
+- Current phase: complete
+- Next step: code review of #332 by the lead, then merge
 
 ## Phase Notes
 
@@ -44,9 +44,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Implement
 
-- Summary: in progress; see `thoughts/shared/handoffs/singlepagestartup/ISSUE-314-progress.md`.
-- Outputs: —
-- Notes: —
+- Summary: the filter gates `stack` and `cause` behind `API_ERROR_DETAILS` or the operator secret, generates a request id when the header is missing, and sends the bug report unawaited, once per status, method and route pattern per window. Eighteen BDD scenarios, eight mutation checks and an HTTP proof on port 4314 under five process environments passed.
+- Outputs: commits `87c5626463` and `b48725eca0`, pull request #332 (`thoughts/shared/prs/332_description.md`), progress file `thoughts/shared/handoffs/singlepagestartup/ISSUE-314-progress.md`.
+- Notes: the GitHub Project status helpers and issue comments were not run, per the security-wave instructions.
 
 ## Incident Log
 

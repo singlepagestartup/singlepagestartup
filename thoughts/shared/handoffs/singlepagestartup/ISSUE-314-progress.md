@@ -3,7 +3,8 @@ issue_number: 314
 issue_title: "Review error response contents and error telemetry"
 start_date: 2026-09-25T22:10:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-314.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-314 - Review error response contents and error telemetry
@@ -127,10 +128,12 @@ status: in_progress
 - `apps/api/create_env.sh`, `tools/deployer/api/api.env.j2`: explicit mode per environment.
 - `apps/api/README.md`, `tools/deployer/README.md`, `README.md`: documentation.
 
+Commits: `87c5626463` (fix), `b48725eca0` (research, plan, process, progress), and the pull request description commit on top.
+
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/332
+- [x] PR number: 332
 
 ### Final Status
 
@@ -140,4 +143,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-09-25T22:58:00Z
+**Last updated**: 2026-09-25T23:20:00Z
