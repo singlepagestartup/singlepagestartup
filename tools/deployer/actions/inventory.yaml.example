@@ -1,6 +1,6 @@
 ungrouped:
   vars:
-    ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null"
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new"
   hosts:
     ANSIBLE_HOST:
       ansible_user: ubuntu

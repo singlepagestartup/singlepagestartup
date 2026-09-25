@@ -89,7 +89,7 @@ mkdir -p "$(dirname "$INVENTORY_PATH")"
 {
     echo "ungrouped:"
     echo "  vars:"
-    echo "    ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null'"
+    echo "    ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'"
     echo "  hosts:"
     printf "    %s:\n" "$(yaml_quote "$ANSIBLE_HOST")"
     printf "      ansible_user: %s\n" "$(yaml_quote "$ANSIBLE_USER")"
