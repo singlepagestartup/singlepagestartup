@@ -3,11 +3,13 @@
  *
  * Given: shared REST controllers register generic model routes.
  * When: default routes are bound or the count handler executes.
- * Then: GET /count is registered before parameterized item routes and returns numeric data.
+ * Then: GET /count is registered before parameterized item routes and returns
+ *       numeric data, and no dump route is exposed over HTTP at all.
  */
 
 import { Controller } from ".";
 import { Handler as CountHandler } from "./handler/count";
+import { type IController } from "../interface";
 
 const createService = () =>
   ({
@@ -21,6 +23,19 @@ const createService = () =>
     seed: jest.fn(),
     findOrCreate: jest.fn(),
   }) as any;
+
+class CustomController extends Controller<any> {
+  constructor(service: any, routes: IController<any>["httpRoutes"]) {
+    super(service);
+    this.bindHttpRoutes(routes);
+  }
+}
+
+const findRoute = (controller: Controller<any>, path: string) => {
+  return controller.httpRoutes.find((route) => {
+    return route.method === "GET" && route.path === path;
+  });
+};
 
 describe("REST Controller", () => {
   /**
@@ -83,5 +98,57 @@ describe("REST Controller", () => {
     expect(json).toHaveBeenCalledWith({
       data: 9,
     });
+  });
+
+  /**
+   * BDD Scenario: the dump action is not reachable over HTTP.
+   *
+   * Given: the default shared REST controller.
+   * When: its HTTP routes are inspected.
+   * Then: no dump route is registered, because dumping runs in process from
+   *       the db:dump target and was never called over HTTP.
+   */
+  it("exposes no dump route over HTTP", () => {
+    const controller = new Controller(createService());
+
+    expect(findRoute(controller, "/dump")).toBeUndefined();
+    expect(
+      controller.httpRoutes.some((route) => route.path.includes("dump")),
+    ).toBe(false);
+  });
+
+  /**
+   * BDD Scenario: a controller binding its own list gets no dump route.
+   *
+   * Given: a controller binding an explicit route list with no dump entry.
+   * When: its HTTP routes are inspected.
+   * Then: the read routes are registered and no dump route appears.
+   */
+  it("registers no dump route for a controller binding its own list", () => {
+    const controller = new CustomController(createService(), [
+      { method: "GET", path: "/", handler: jest.fn() },
+      { method: "GET", path: "/count", handler: jest.fn() },
+    ]);
+
+    expect(findRoute(controller, "/")).toBeDefined();
+    expect(findRoute(controller, "/count")).toBeDefined();
+    expect(findRoute(controller, "/dump")).toBeUndefined();
+  });
+
+  /**
+   * BDD Scenario: a route keeps the middlewares it declares.
+   *
+   * Given: a controller binding a route that carries its own middleware.
+   * When: its HTTP routes are inspected.
+   * Then: the middleware list is exactly what the route declared, because
+   *       binding no longer rewrites it.
+   */
+  it("preserves a route's own middlewares", () => {
+    const own = jest.fn();
+    const controller = new CustomController(createService(), [
+      { method: "GET", path: "/", handler: jest.fn(), middlewares: [own] },
+    ]);
+
+    expect(findRoute(controller, "/")?.middlewares).toEqual([own]);
   });
 });

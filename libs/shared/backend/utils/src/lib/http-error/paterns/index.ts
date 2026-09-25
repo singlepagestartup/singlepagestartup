@@ -62,6 +62,20 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
     ],
   },
   {
+    // Placed before the 400 block: the first entry whose pattern matches wins,
+    // and `/invalid (data|body)/i` there would otherwise claim these messages.
+    // A body that parsed but failed a type or shape check is unprocessable
+    // rather than malformed.
+    status: 422,
+    category: "Unprocessable Entity error",
+    patterns: [
+      /unprocessable entity/i,
+      /expected (string|number|boolean|array|object|date)/i,
+      /invalid type\. expected .+, got: .+/i,
+      /invalid body\[.+\]/i,
+    ],
+  },
+  {
     status: 400,
     category: "Validation error",
     patterns: [

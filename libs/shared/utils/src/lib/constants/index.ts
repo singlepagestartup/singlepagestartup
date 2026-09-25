@@ -32,3 +32,12 @@ export const UUID_PATH_PREFIX_REGEX =
 export const ADDRESS_VERIFYING_PROVIDERS = Object.freeze([
   "oauth_google",
 ] as const);
+
+/**
+ * Hono context variable set by the is-authorized middleware when the request
+ * carried a valid `X-RBAC-SECRET-KEY` (issue #270). The REST boundary reads it
+ * to decide whether a model's `outputSchema` projection applies: the operator
+ * secret is the trust boundary the framework already has, and the internal
+ * loopback reads that need the full row travel with it.
+ */
+export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";

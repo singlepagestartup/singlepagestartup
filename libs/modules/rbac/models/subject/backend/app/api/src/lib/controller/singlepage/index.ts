@@ -113,11 +113,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "GET",
-        path: "/dump",
-        handler: this.dump,
-      },
-      {
-        method: "GET",
         path: "/authentication/is-authorized",
         handler: this.authenticationIsAuthorized,
       },

@@ -5,6 +5,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
+. "$ROOT_DIR/tools/deployer/get_env.sh"
+
 PROJECT_NAMESPACE="${1:-}"
 ISSUE_NUMBER="${2:-}"
 
@@ -142,17 +144,66 @@ else
   fi
 fi
 
+# The clear route is an operator endpoint: it takes the same credential the
+# scenario specs read out of apps/api/.env for their own requests. The
+# environment wins over the file, matching dotenv's precedence in
+# specs/scenario/.../test-utils/env.ts.
+SCENARIO_RBAC_SECRET_KEY="${RBAC_SECRET_KEY:-}"
+
+if [ -z "$SCENARIO_RBAC_SECRET_KEY" ]; then
+  SCENARIO_RBAC_SECRET_KEY="$(
+    get_env "${BASH_SOURCE[0]}" "RBAC_SECRET_KEY" "$ROOT_DIR/apps/api/.env" |
+      tail -n 1 | tr -d '\r' || true
+  )"
+fi
+
+if [ -z "$SCENARIO_RBAC_SECRET_KEY" ]; then
+  echo "[scenario] RBAC_SECRET_KEY is not set in the environment or in apps/api/.env."
+  echo "[scenario] The scenario suite needs it for its own requests, and the"
+  echo "[scenario] HTTP cache preflight now needs it as well."
+  exit 1
+fi
+
+# Truncated first: a connection that never completes leaves the previous run's
+# body behind, and the branches below read as if it were this one's.
+: >/tmp/sps-api-scenario-cache-check.log
+
 HTTP_CACHE_STATUS="$(
   curl --silent --output /tmp/sps-api-scenario-cache-check.log \
     --write-out "%{http_code}" \
     --max-time 5 \
+    --header "X-RBAC-SECRET-KEY: $SCENARIO_RBAC_SECRET_KEY" \
     "$API_BASE_URL/api/http-cache/clear" || true
 )"
 
 if [ "$HTTP_CACHE_STATUS" != "200" ]; then
   echo "[scenario] HTTP cache middleware preflight failed."
   echo "[scenario] Expected GET /api/http-cache/clear to return 200, got: $HTTP_CACHE_STATUS"
-  echo "[scenario] If API is already running, restart it with MIDDLEWARE_HTTP_CACHE=true."
+
+  # With the cache middleware off the clear route is not registered, so the
+  # request reaches the authorization middleware instead: a refusal alone does
+  # not say whether the credential or the cache setting is wrong.
+  case "$HTTP_CACHE_STATUS" in
+    401 | 403)
+      echo "[scenario] The credential was refused, either by the clear route (cache"
+      echo "[scenario] middleware on) or by the authorization middleware (cache"
+      echo "[scenario] middleware off). RBAC_SECRET_KEY must match the value the"
+      echo "[scenario] running API was started with, and an API started without it"
+      echo "[scenario] refuses every caller. If it matches, restart the API with"
+      echo "[scenario] MIDDLEWARE_HTTP_CACHE=true."
+      ;;
+    404)
+      echo "[scenario] The clear route is not registered, so the cache middleware is"
+      echo "[scenario] off. Restart the API with MIDDLEWARE_HTTP_CACHE=true."
+      ;;
+    000)
+      echo "[scenario] No response from ${API_BASE_URL} within 5 seconds."
+      ;;
+    *)
+      echo "[scenario] If API is already running, restart it with MIDDLEWARE_HTTP_CACHE=true."
+      ;;
+  esac
+
   echo "[scenario] Last response body:"
   cat /tmp/sps-api-scenario-cache-check.log || true
   exit 1

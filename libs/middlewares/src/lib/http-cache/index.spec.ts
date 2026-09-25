@@ -23,14 +23,21 @@ jest.mock("@sps/backend-utils", () => {
       debug: jest.fn(),
     },
     websocketManager: { broadcastMessage: jest.fn() },
+    // The comparison is driven per scenario here; what it does with a real
+    // RBAC_SECRET_KEY is pinned in the operator-secret middleware's suite and
+    // in the primitive's own suite.
+    readRbacSecret: (c: any) => c.req.header("X-RBAC-SECRET-KEY"),
+    rbacSecretMatches: jest.fn(),
   };
 });
 
+import { Hono } from "hono";
 import {
   deriveTopicsFromPath,
   HTTP_CACHE_MAX_ENTRY_BYTES,
   KV_TTL,
 } from "@sps/shared-utils";
+import { rbacSecretMatches } from "@sps/backend-utils";
 import {
   Middleware,
   buildVersionedDataPrefix,
@@ -38,6 +45,9 @@ import {
 } from "./index";
 import { createCacheGuard } from "./guard";
 import { Middleware as RevalidationMiddleware } from "../revalidation";
+
+const mockRbacSecretMatches = rbacSecretMatches as jest.Mock;
+const OPERATOR_SECRET = "configured-operator-secret";
 
 const SID = "303302a0-4eb7-4cef-af04-74d7e8e72442";
 const PID = "88862025-5c38-4ce8-bb4c-4c5c511b874c";
@@ -221,15 +231,22 @@ describe("getTopicVersionKey", () => {
   });
 });
 
-describe("HTTP-cache clear route namespace isolation", () => {
+/**
+ * BDD Suite: cache-clear route access.
+ *
+ * Given: the HTTP-cache middleware registers its clear route on a Hono app.
+ * When:  the route is called with, without and with a wrong RBAC secret.
+ * Then:  only the accepted credential reaches the flush, a refusal deletes
+ *        nothing, and the flush still touches only the two namespaces this
+ *        middleware owns.
+ */
+describe("HTTP-cache clear route access and namespace isolation", () => {
   /**
-   * BDD Scenario: Clearing HTTP cache preserves unrelated Redis state.
-   * Given: HTTP-cache keys, an MCP OAuth client, and a user preference share
-   *        the same KV backend.
-   * When:  GET /api/http-cache/clear is handled.
-   * Then:  only the HTTP-cache data and version namespaces are deleted.
+   * Registers the middleware's routes on a real Hono app, so a test reaches
+   * the flush the way a request does — through every handler composed into
+   * the route, not through a handler captured out of the registration.
    */
-  it("preserves MCP OAuth and user KV keys", async () => {
+  function createClearRouteApp() {
     const keys = new Set([
       "http-cache:data:/api/pages:v0:t0:response-hash",
       "http-cache:version:path-hash",
@@ -251,26 +268,35 @@ describe("HTTP-cache clear route namespace isolation", () => {
       },
     } as any;
 
-    let clearRouteHandler:
-      | ((context: { json: (body: unknown) => unknown }) => Promise<unknown>)
-      | undefined;
-    middleware.setRoutes({
-      get(
-        path: string,
-        handler: (context: {
-          json: (body: unknown) => unknown;
-        }) => Promise<unknown>,
-      ) {
-        if (path === "/api/http-cache/clear") {
-          clearRouteHandler = handler;
-        }
-      },
+    const app = new Hono();
+    middleware.setRoutes(app);
+
+    return { app, keys, deletedPrefixes };
+  }
+
+  beforeEach(() => {
+    mockRbacSecretMatches.mockReset();
+  });
+
+  /**
+   * BDD Scenario: Clearing HTTP cache preserves unrelated Redis state.
+   * Given: HTTP-cache keys, an MCP OAuth client, and a user preference share
+   *        the same KV backend, and the caller holds the operator credential.
+   * When:  GET /api/http-cache/clear is handled.
+   * Then:  only the HTTP-cache data and version namespaces are deleted.
+   */
+  it("preserves MCP OAuth and user KV keys", async () => {
+    mockRbacSecretMatches.mockReturnValue(true);
+    const { app, keys, deletedPrefixes } = createClearRouteApp();
+
+    const response = await app.request("/api/http-cache/clear", {
+      headers: { "X-RBAC-SECRET-KEY": OPERATOR_SECRET },
     });
 
-    expect(clearRouteHandler).toBeDefined();
-    const json = jest.fn((body) => body);
-    await clearRouteHandler?.({ json });
-
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      message: "Cache cleared",
+    });
     expect(deletedPrefixes).toEqual(["http-cache:data", "http-cache:version"]);
     expect(keys).not.toContain(
       "http-cache:data:/api/pages:v0:t0:response-hash",
@@ -281,7 +307,76 @@ describe("HTTP-cache clear route namespace isolation", () => {
     expect(keys).toContain(
       "rbac:subject:openrouter-model-favorites:subject-hash",
     );
-    expect(json).toHaveBeenCalledWith({ message: "Cache cleared" });
+  });
+
+  /**
+   * BDD Scenario: an anonymous caller reaches nothing.
+   *
+   * Given: the route registered on a Hono app and a request with no
+   *        credential.
+   * When:  GET /api/http-cache/clear is handled.
+   * Then:  it answers 401 and no prefix is deleted, so the two keyspace walks
+   *        never start.
+   */
+  it("refuses an anonymous request and deletes nothing", async () => {
+    mockRbacSecretMatches.mockReturnValue(false);
+    const { app, keys, deletedPrefixes } = createClearRouteApp();
+
+    const response = await app.request("/api/http-cache/clear");
+
+    expect(response.status).toBe(401);
+    expect(deletedPrefixes).toEqual([]);
+    expect(keys).toContain("http-cache:data:/api/pages:v0:t0:response-hash");
+  });
+
+  /**
+   * BDD Scenario: a wrong credential reaches nothing either.
+   *
+   * Given: a caller presenting a value the comparison rejects.
+   * When:  GET /api/http-cache/clear is handled.
+   * Then:  it answers 401, nothing is deleted, and the credential the caller
+   *        sent is what was compared.
+   */
+  it("refuses a wrong credential and deletes nothing", async () => {
+    mockRbacSecretMatches.mockReturnValue(false);
+    const { app, deletedPrefixes } = createClearRouteApp();
+
+    const response = await app.request("/api/http-cache/clear", {
+      headers: { "X-RBAC-SECRET-KEY": "not-the-operator-secret" },
+    });
+
+    expect(response.status).toBe(401);
+    expect(deletedPrefixes).toEqual([]);
+    expect(mockRbacSecretMatches).toHaveBeenCalledWith(
+      "not-the-operator-secret",
+    );
+  });
+
+  /**
+   * BDD Scenario: the guard is part of the route, not of the application.
+   *
+   * Given: the middleware registering its routes on an app that records the
+   *        handlers each path receives.
+   * When:  setRoutes is called.
+   * Then:  the clear path is registered with the guard ahead of the flush, so
+   *        the route carries its own refusal wherever it is mounted.
+   */
+  it("registers the guard before the flush handler on the clear path", () => {
+    const registeredHandlersByPath: Record<string, unknown[]> = {};
+    const middleware = new Middleware();
+    middleware.storeProvider = { async delByPrefix() {} } as any;
+
+    middleware.setRoutes({
+      get(path: string, ...handlers: unknown[]) {
+        registeredHandlersByPath[path] = handlers;
+      },
+    });
+
+    const clearRouteHandlers =
+      registeredHandlersByPath["/api/http-cache/clear"];
+
+    expect(clearRouteHandlers).toHaveLength(2);
+    expect(typeof clearRouteHandlers?.[0]).toBe("function");
   });
 });
 
@@ -463,7 +558,7 @@ describe("cache-bump / broadcast topic parity (issue #195 F2)", () => {
  *        stalled request.
  */
 describe("KV failures degrade the cache, not the request", () => {
-  const collectionPath = "/api/rbac/subjects";
+  const collectionPath = "/api/ecommerce/orders";
   const collectionUrl = `http://api:4000${collectionPath}`;
 
   function createFailOpenMiddleware(store: unknown) {
@@ -629,7 +724,7 @@ describe("KV failures degrade the cache, not the request", () => {
  *        response above the admission cap is served but not stored.
  */
 describe("bounded cache generations", () => {
-  const collectionPath = "/api/rbac/subjects";
+  const collectionPath = "/api/ecommerce/orders";
   const collectionUrl = `http://api:4000${collectionPath}`;
 
   function createTtlRecordingStore() {

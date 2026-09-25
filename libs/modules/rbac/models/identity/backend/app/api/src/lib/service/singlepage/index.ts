@@ -10,6 +10,7 @@ import {
 import { api } from "@sps/rbac/models/identity/sdk/server";
 import bcrypt from "bcrypt";
 import { IModel } from "@sps/rbac/models/identity/sdk/model";
+import { assertCredentialColumnsAreHashed } from "@sps/backend-utils";
 
 export type IEmailAndPassword = {
   data: {
@@ -28,6 +29,23 @@ export type IChangePassword = {
 };
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  /**
+   * Rejects a credential column the generic update path would otherwise write
+   * verbatim (issue #270). The admin form posts the whole model back, so an
+   * edit that never touched the password field would still send one — empty
+   * once the output schema stopped returning it — and silently lock the account
+   * out. Registration, `changePassword`, reset-password and forgot-password all
+   * store bcrypt output, so they pass unchanged.
+   */
+  async update(props: {
+    id: string;
+    data: (typeof Table)["$inferSelect"];
+  }): Promise<(typeof Table)["$inferSelect"] | null> {
+    assertCredentialColumnsAreHashed(props.data);
+
+    return super.update(props);
+  }
+
   async emailAndPassowrd(props: IEmailAndPassword): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is required");
