@@ -1,0 +1,91 @@
+---
+issue_number: 307
+issue_title: "Validate URLs the API fetches on behalf of callers"
+repository: singlepagestartup
+created_at: 2026-09-25T00:00:00Z
+last_updated: 2026-09-26T00:35:00Z
+status: active
+current_phase: implement
+---
+
+# Process Log: ISSUE-307 - Validate URLs the API fetches on behalf of callers
+
+## Purpose
+
+Tracks cross-phase execution notes, incidents, reusable fixes, and workflow learnings.
+
+## Phase Status
+
+- Create: completed
+- Research: completed
+- Plan: completed
+- Implement: in_progress
+- Current phase: implement
+- Next step: the lead reviews #335 again; it merges after #331 and then targets `main`
+
+## Phase Notes
+
+### Create
+
+- Summary: raised by the 2026-09-25 security review (`thoughts/shared/research/singlepagestartup/2026-09-25-security-review.md`), findings N-05. The issue is under embargo: neutral public title, detail only in the local ticket.
+- Incidents: none.
+
+### Research
+
+- Summary: both call sites pass the caller's URL to `fetch` unchanged, with redirects followed and no timeout or size bound. Under Bun the same `fetch` also reads `file:` URLs from disk and signs `s3:` URLs with the process credentials. The observer's only producer (RBAC checkout) and `/generate` reach the deployment's own API and host by URL, which resolve to loopback or overlay addresses, so those origins must stay reachable.
+- Outputs: `thoughts/shared/research/singlepagestartup/ISSUE-307.md`.
+- Notes: runtime behaviour was probed in the session scratchpad with Bun 1.3.6 and Node 24.11.0 (DNS, `BlockList`, redirects, `Host` header, URL parsing). Five further stored-URL fetches are recorded as outside this issue.
+
+### Plan
+
+- Summary: one guard and fetch wrapper in `@sps/backend-utils` (`outbound-url`), three settings in `envs/api.ts`, one-line changes at both call sites, deployer registration and a README section. The four service URLs are allowed without configuration; plain-HTTP requests go to the checked address. Plan approval is delegated to the issue agent for this wave.
+- Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-307.md`.
+- Notes: the other stored-URL fetches and the operator secret inside observer payloads are recorded as out of scope for the lead to route.
+
+### Implement
+
+- Summary: `@sps/backend-utils` exports `assertOutboundUrl` and `fetchOutboundUrl`; `create-from-url` and the observer pipeline call the wrapper. Settings `OUTBOUND_URL_ALLOWED_ORIGINS`, `OUTBOUND_URL_TIMEOUT_MS` and `OUTBOUND_URL_MAX_RESPONSE_BYTES` live in `envs/api.ts` and pass through the deployer chain. Unit suites, lint, type checks, mutation checks and two HTTP runs on port 4307 (create-from-url and the observer) pass.
+- Outputs: commit `0a3b75c122`; `thoughts/shared/handoffs/singlepagestartup/ISSUE-307-progress.md`.
+- Notes: the first HTTP run exposed Incident 2; the matcher was rewritten and the run repeated.
+- Review of #335: one response limit shared with #331. `fetchOutboundUrl` takes `{ maxResponseBytes, limitName }` (`b0967ae43f`); #331 is merged without a rebase and `create-from-url` reads once under `FILE_STORAGE_MAX_UPLOAD_BYTES`, answering 413 above it (`394578e148`); the reader checks live in the outbound URL spec (`42dc7df57c`). The pull request targets `claude/issue-304-upload-delivery`.
+
+## Incident Log
+
+<!-- incident-count: 3 -->
+
+### Incident 1 — zsh modifier swallowed the lint target name
+
+- **Phase**: Implement
+- **Occurrences**: 2
+- **Symptom**: `npx nx run $p:eslint:lint` in a loop failed with `Cannot find project 'slint'`.
+- **Root Cause**: zsh reads `$p:e` as the "extension" modifier.
+- **Fix**: `npx nx run "${p}:eslint:lint"`.
+- **Preventive Action**: brace a shell variable whenever a colon follows it. It recurred as `git show $B:libs/...`, where `:l` is the lower-case modifier.
+- **References**: progress file, Incident 1.
+
+### Incident 2 — the address check passed everything in the API runtime
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: the first HTTP run fetched loopback, private and metadata URLs although the unit suites passed.
+- **Root Cause**: the API runs Bun 1.2.5 from `node_modules`, where `BlockList.check` from `node:net` returns false for every address. Runtime probes used the global Bun 1.3.6 and Jest runs under Node, where `BlockList` works.
+- **Fix**: range matching on address bytes in the guard, extra spec cases, a table check under Bun 1.2.5 and 1.3.6, and a repeated HTTP run.
+- **Preventive Action**: probe with `node_modules/.bin/bun`; keep security checks in plain JavaScript; run the HTTP check for anything whose behavior depends on the runtime.
+- **References**: progress file, Incident 2; `libs/shared/backend/utils/src/lib/outbound-url/index.ts`.
+
+### Incident 3 — merging #331 left two semantic conflicts
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: after a clean textual merge of #331, its route spec failed three `create-from-url` cases; with DNS stubbed, the streamed case still showed the body read to the end.
+- **Root Cause**: the guard resolves the fetched host, and #331's spec host does not resolve; and the merged handler read the download twice, first under the 50 MiB default, then under the upload limit.
+- **Fix**: a DNS stub in #331's spec, and one read in `create-from-url` through `fetchOutboundUrl` with the upload limit. The options parameter was committed before the merge so the merge commit is green.
+- **Preventive Action**: run the merged branch's specs before committing a merge that touches the same call path.
+- **References**: progress file, Incident 3; merge commit `394578e148`.
+
+## Reusable Learnings
+
+- The API runs the Bun from `node_modules` (1.2.5), not the global `bun`. Probe runtime APIs with `node_modules/.bin/bun`.
+- `BlockList` from `node:net` matches nothing in Bun 1.2.5; do not rely on it in code the API runs.
+- The unit lane runs under Node, so a change whose behavior depends on the Bun runtime needs an HTTP run against the API.
+- A clean textual merge can still stack two readers of one response body; the other branch's specs catch it when they assert where reading stops.

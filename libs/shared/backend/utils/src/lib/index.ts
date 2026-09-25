@@ -8,6 +8,7 @@ export { util as isUniqueConstraintError } from "./unique-constraint-error";
 export { util as blobifyFiles } from "./blobify-files";
 export { util as telegramMarkdownFormatter } from "./telegram-markdown-formatter";
 export { rbacSecretMatches, readRbacSecret } from "./rbac-secret";
+export { assertOutboundUrl, fetchOutboundUrl } from "./outbound-url";
 export {
   normalizeLocalizedField,
   localizedFieldHasValue,
