@@ -29,6 +29,7 @@ import { Handler as AuthenticationOAuthExchange } from "./authentication/oauth/e
 
 import { Handler as Notify } from "./notify";
 import { Handler as Check } from "./check";
+import { Handler as DeleteAnonymous } from "./delete-anonymous";
 import { Handler as FindByIdCheck } from "./findById/check";
 
 import { Handler as IdentitiesList } from "./identity/find";
@@ -195,6 +196,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/check",
         handler: this.check,
+      },
+      {
+        method: "POST",
+        path: "/delete-anonymous",
+        handler: this.deleteAnonymous,
       },
       {
         method: "POST",
@@ -795,6 +801,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async check(c: Context, next: any): Promise<Response> {
     return new Check(this.service).execute(c, next);
+  }
+
+  async deleteAnonymous(c: Context, next: any): Promise<Response> {
+    return new DeleteAnonymous(this.service).execute(c, next);
   }
 
   async findByIdCheck(c: Context, next: any): Promise<Response> {
