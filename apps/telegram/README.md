@@ -58,7 +58,9 @@ Main app-level variables are documented in `.env.example`:
 - `RBAC_JWT_SECRET`
 
 Subscription channel variables are also defined there when the bot must enforce
-channel membership.
+channel membership. `API_CORS_ALLOWED_ORIGINS` optionally limits the browser
+origins the service answers for cross-origin requests, as in the API
+(`apps/api/README.md`).
 
 ## Webhook and control route authentication
 
