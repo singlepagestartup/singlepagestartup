@@ -117,5 +117,13 @@ export const BUG_SERVICE_TELEGRAM_BOT_TOKEN =
 export const BUG_SERVICE_TELEGRAM_CHAT_ID =
   process.env["BUG_SERVICE_TELEGRAM_CHAT_ID"];
 export const BUG_SERVICE_PROJECT = process.env["BUG_SERVICE_PROJECT"];
+/**
+ * How long the exception filter remembers a reported failure (issue #314). A
+ * 5xx reaches the bug chat once per status, method and matched route pattern
+ * within this window, so a burst of one failure sends one message and a failure
+ * that persists is reported again after the window passes.
+ */
+export const BUG_SERVICE_REPORT_WINDOW_IN_SECONDS =
+  Number(process.env["BUG_SERVICE_REPORT_WINDOW_IN_SECONDS"]) || 300;
 
 export const ADMIN_BASE_PATH = process.env["ADMIN_BASE_PATH"] || "/admin";

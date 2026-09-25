@@ -23,6 +23,10 @@ add_env "FILE_STORAGE_SEED" true
 add_env "STARTUP_SEED" true
 add_env "FILE_STORAGE_FOLDER" "file-storage/static"
 
+# Error bodies on this machine carry the stack trace and the cause chain; a
+# deployment answers without them (apps/api/README.md, "Environment").
+add_env "API_ERROR_DETAILS" "full"
+
 if [ ! -z $CODESPACE_NAME ]; then
     NEXT_PUBLIC_API_SERVICE_URL=https://$CODESPACE_NAME-4000.app.github.dev
     # add_env "NEXT_PUBLIC_API_SERVICE_URL" $NEXT_PUBLIC_API_SERVICE_URL
