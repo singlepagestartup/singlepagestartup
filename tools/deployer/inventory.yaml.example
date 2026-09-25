@@ -1,6 +1,6 @@
 ungrouped:
   vars:
-    ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null"
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new"
   hosts:
     # AWS Lightsail Ubuntu with SSH key authentication.
     "XX.XXX.XXX.XXX":

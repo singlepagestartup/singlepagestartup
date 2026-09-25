@@ -52,6 +52,18 @@ ansible all -m ping
 Inventory generation restricts the configured private key to mode `0600`,
 which is accepted by OpenSSH and prevents accidental group or public access.
 
+The first connection records the server's host key in `~/.ssh/known_hosts`
+(`StrictHostKeyChecking=accept-new`), and every later connection must present
+the same key; a changed key stops the connection with key and password
+authentication alike. After rebuilding a server on the same address, remove its
+old entry before deploying:
+
+```bash
+ssh-keygen -R 203.0.113.10
+# when ANSIBLE_PORT is not 22
+ssh-keygen -R '[203.0.113.10]:2222'
+```
+
 Then provision the server and deploy all configured services:
 
 ```bash
@@ -392,6 +404,12 @@ Leave `ANSIBLE_PASSWORD` empty. Preview deployments use the corresponding
 with mode `0600` before Ansible connects. When `github_deployer.sh` is used, it
 encodes `ANSIBLE_PRIVATE_KEY_FILE` automatically if
 `ANSIBLE_PRIVATE_KEY_BASE64` is empty.
+
+GitHub-hosted runners start every run with an empty `known_hosts`, so each
+workflow run accepts the host key the server presents first. Host key checking
+therefore protects deployments run from an operator's machine; to protect
+workflow runs as well, write the server's verified key to the runner's
+`~/.ssh/known_hosts` before the deployer connects.
 
 Never commit a Lightsail private key, the generated `inventory.yaml`, or a real
 `.env` file. They are ignored by the repository.
