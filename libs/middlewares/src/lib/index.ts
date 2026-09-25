@@ -33,3 +33,7 @@ export {
   type IMiddlewareGeneric as IBillRouteMiddlewareGeneric,
   type IMiddlewareOptions as IBillRouteMiddlewareOptions,
 } from "./bill-route";
+export {
+  Middleware as OperatorSecretMiddleware,
+  type IMiddlewareGeneric as IOperatorSecretMiddlewareGeneric,
+} from "./operator-secret";

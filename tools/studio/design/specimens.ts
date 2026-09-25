@@ -30,9 +30,44 @@ export const conditionalSpecimens = {
   "dark-pair": "the Semantic color system declares a Dark column",
 } as const;
 
+/**
+ * Part of the catalogue and available to every layer, but owed only when the
+ * surfaces a project ships call for them.
+ */
+export const optionalSpecimens = {
+  "media-and-text": "an illustration beside the statement it explains",
+  "numbered-steps": "the ordered steps a visitor walks through",
+  "offer-comparison": "the offers a visitor chooses between",
+  "contextual-sheet": "the sheet a phone keeps in view while the page scrolls",
+} as const;
+
 export type SpecimenId =
   | keyof typeof requiredSpecimens
-  | keyof typeof conditionalSpecimens;
+  | keyof typeof conditionalSpecimens
+  | keyof typeof optionalSpecimens;
+
+/**
+ * The wrapper belongs to the framework and a project supplies the content, so a
+ * specimen keeps one name in every layer. A downstream Design restyles a block
+ * and changes how it carries information; it does not rename one, invent one or
+ * translate its heading.
+ */
+export const specimenTitles: Record<SpecimenId, string> = {
+  actions: "Actions",
+  selection: "Selection",
+  status: "Status and progress",
+  fields: "Fields and data rows",
+  navigation: "Navigation",
+  "dark-pair": "Dark pair",
+  "editorial-entry": "Editorial entry",
+  "content-card": "Photo cards",
+  "icon-card": "Icon cards",
+  "media-and-text": "Illustration and text",
+  "numbered-steps": "Numbered steps",
+  "item-grid": "Repeated item grid",
+  "offer-comparison": "Offer comparison",
+  "contextual-sheet": "Contextual sheet",
+};
 
 const interfaceHeading = /^##\s+Interface and product surfaces\s*$/m;
 
@@ -135,6 +170,87 @@ export async function findMissingSpecimens(
       requirement: `Design declares a \`${id}\` specimen`,
       detail: `Nothing in the resolved Design layout renders ${description}. Add it to a layer-owned HTML section with data-specimen="${id}", or record interface_review.omitted_specimens.${id} with the reason it is out of scope.`,
     }));
+}
+
+/** The heading a specimen prints, when its section is HTML this file can read. */
+function specimenHeadings(html: string): Map<string, string | undefined> {
+  const found = new Map<string, string | undefined>();
+  const marks = [...html.matchAll(/data-specimen="([a-z0-9-]+)"/g)];
+  marks.forEach((mark, index) => {
+    const from = mark.index! + mark[0].length;
+    const to = marks[index + 1]?.index ?? html.length;
+    const heading = /<h3[^>]*>\s*([\s\S]*?)\s*<\/h3>/.exec(
+      html.slice(from, to),
+    );
+    found.set(
+      mark[1],
+      heading ? heading[1].replace(/\s+/g, " ").trim() : undefined,
+    );
+  });
+  return found;
+}
+
+/**
+ * The framework owns the wrapper: which blocks exist, what each one is called
+ * and what the section that holds them is called. A downstream Design restyles
+ * a block and changes how it carries information, so a deviation here is a
+ * renamed or invented wrapper rather than a design decision.
+ */
+export async function findSpecimenDeviations(
+  workspaceRoot: string,
+): Promise<IBrandbookFinding[]> {
+  const sources = await Promise.all(
+    (["singlepage", "startup"] as const).map(async (layer) =>
+      parseDesignLayout(
+        await read(path.join(workspaceRoot, "design", layer, "layout.yaml")),
+        layer,
+      ),
+    ),
+  );
+  const framework = sources[0];
+  const layout = resolveDesignLayout(framework, sources[1]);
+  if (layout.layer === "singlepage") return [];
+
+  const findings: IBrandbookFinding[] = [];
+  const frameworkTitles = new Map(
+    (framework?.sections ?? [])
+      .filter(({ source }) => source)
+      .map(({ id, title }) => [id, title] as const),
+  );
+  for (const section of layout.sections) {
+    const owned = frameworkTitles.get(section.id);
+    if (owned && section.title !== owned)
+      findings.push({
+        requirement: `Design section \`${section.id}\` keeps its framework title`,
+        detail: `design/${layout.layer}/layout.yaml calls it "${section.title}"; the framework section is "${owned}". A project restyles a section, it does not rename one.`,
+      });
+  }
+
+  await Promise.all(
+    layout.sections
+      .filter(({ source }) => source && /\.html?$/i.test(source))
+      .map(async ({ id, source }) => {
+        const file = path.join(workspaceRoot, "design", layout.layer, source!);
+        for (const [specimen, heading] of specimenHeadings(await read(file))) {
+          const title = specimenTitles[specimen as SpecimenId];
+          if (!title) {
+            findings.push({
+              requirement: `Design section \`${id}\` renders only catalogued specimens`,
+              detail: `design/${layout.layer}/${source} declares data-specimen="${specimen}", which no layer of the framework defines. Add the block to the framework catalogue before a project ships it.`,
+            });
+            continue;
+          }
+          if (heading !== undefined && heading !== title)
+            findings.push({
+              requirement: `Specimen \`${specimen}\` keeps its framework title`,
+              detail: `design/${layout.layer}/${source} heads it "${heading}"; the framework calls it "${title}". The wrapper name is the framework's, the content is the project's.`,
+            });
+        }
+      }),
+  );
+  return findings.sort((left, right) =>
+    left.requirement.localeCompare(right.requirement),
+  );
 }
 
 export async function validateRequiredSpecimens(

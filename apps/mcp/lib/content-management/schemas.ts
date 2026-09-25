@@ -5,6 +5,7 @@ export const ContentEntityKeySchema = z.string().min(1);
 export const ContentFilterMethodSchema = z.enum([
   "eq",
   "ne",
+  "not",
   "gt",
   "gte",
   "lt",

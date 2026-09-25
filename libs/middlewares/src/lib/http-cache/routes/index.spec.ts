@@ -64,6 +64,28 @@ describe("http-cache excluded routes", () => {
   });
 
   /**
+   * BDD Scenario: per-order cart counters (issue #257) are excluded.
+   *
+   * Given: a subject's per-order quantity and total routes.
+   * When: the exclusion matcher reads their paths.
+   * Then: both bypass the cache, which answers before the owner checks run.
+   */
+  it("excludes the per-order cart counters", () => {
+    const OID = "5d0b3a8e-2f4c-4b1a-9e6d-7c8b9a0f1e2d";
+
+    expect(
+      matcher.matches(
+        `/api/rbac/subjects/${SID}/ecommerce-module/orders/${OID}/quantity`,
+      ),
+    ).toBe(true);
+    expect(
+      matcher.matches(
+        `/api/rbac/subjects/${SID}/ecommerce-module/orders/${OID}/total`,
+      ),
+    ).toBe(true);
+  });
+
+  /**
    * BDD Scenario: Ordinary model reads are cached (NOT excluded).
    */
   it("does not exclude ordinary model reads", () => {

@@ -1,13 +1,15 @@
 import {
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+  RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY,
 } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
 import { Service } from "../../../../service";
-import { setCookie } from "hono/cookie";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { exchangeCodeCookieName } from "./cookie";
 
 export class Handler {
   service: Service;
@@ -28,21 +30,27 @@ export class Handler {
         );
       }
 
-      const body = await c.req.parseBody();
+      const code = await this.getExchangeCode(c);
 
-      if (typeof body.data !== "string") {
-        throw new Error("Validation error. Invalid request body");
-      }
-
-      const data = JSON.parse(body.data);
-
-      if (!data.code || typeof data.code !== "string") {
+      if (!code) {
         throw new Error("Validation error. OAuth exchange code is required");
       }
 
-      const entity = await this.service.authenticationOAuthExchange({
-        code: data.code,
-      });
+      let entity: Awaited<ReturnType<Service["authenticationOAuthExchange"]>>;
+
+      try {
+        entity = await this.service.authenticationOAuthExchange({
+          code,
+        });
+      } catch (error: any) {
+        // The code is single use either way: a failed redemption must not
+        // leave it in the browser to be replayed.
+        deleteCookie(c, exchangeCodeCookieName, { path: "/" });
+
+        throw error;
+      }
+
+      deleteCookie(c, exchangeCodeCookieName, { path: "/" });
 
       const decoded = await jwt.verify(entity.jwt, RBAC_JWT_SECRET);
 
@@ -69,5 +77,39 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
+  }
+
+  /**
+   * The cookie is the supported source. The request body is read only while
+   * `RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY` is on, which is the one-release escape
+   * hatch for a deployment whose API and host are not on the same site.
+   */
+  protected async getExchangeCode(c: Context) {
+    const cookieCode = getCookie(c, exchangeCodeCookieName);
+
+    if (cookieCode) {
+      return cookieCode;
+    }
+
+    if (!RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY) {
+      return undefined;
+    }
+
+    const body = (await c.req.parseBody().catch(() => ({}))) as Record<
+      string,
+      string | File
+    >;
+
+    if (typeof body["data"] !== "string") {
+      return undefined;
+    }
+
+    const data = JSON.parse(body["data"]);
+
+    if (!data.code || typeof data.code !== "string") {
+      return undefined;
+    }
+
+    return data.code;
   }
 }

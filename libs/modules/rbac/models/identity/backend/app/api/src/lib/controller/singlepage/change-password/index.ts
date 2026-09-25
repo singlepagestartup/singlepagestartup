@@ -2,6 +2,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { applyOutputSchema } from "@sps/shared-backend-api";
 
 export class Handler {
   service: Service;
@@ -27,9 +28,15 @@ export class Handler {
         data,
       });
 
+      /**
+       * This handler builds its own response instead of going through the
+       * shared REST handlers, so it has to apply the model's output schema
+       * itself (issue #270). Without it the identity password hash, salt and
+       * reset code are returned to the caller.
+       */
       return c.json(
         {
-          data: entity,
+          data: applyOutputSchema({ c, service: this.service, data: entity }),
         },
         201,
       );

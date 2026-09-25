@@ -28,6 +28,14 @@ export class Handler {
         throw new Error("Validation error. No orderId provided");
       }
 
+      // Ownership is checked before the order is read: a missing order and
+      // another subject's order are refused alike, so the answer does not
+      // reveal which order ids exist.
+      await this.service.ecommerceModuleAssertSubjectOwnsOrder({
+        subjectId: id,
+        ecommerceModuleOrderId: orderId,
+      });
+
       const ecommerceModuleOrder =
         await this.service.ecommerceModule.order.findById({
           id: orderId,
@@ -36,11 +44,6 @@ export class Handler {
       if (!ecommerceModuleOrder) {
         throw new Error("Not Found error. No order found");
       }
-
-      await this.service.ecommerceModuleAssertSubjectOwnsOrder({
-        subjectId: id,
-        ecommerceModuleOrderId: orderId,
-      });
 
       const ecommerceModuleOrderTotals =
         await this.service.ecommerceModule.order.findByIdTotal({

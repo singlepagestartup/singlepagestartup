@@ -15,3 +15,12 @@ export const UUID_PATH_SEGMENT_REGEX =
  */
 export const UUID_PATH_PREFIX_REGEX =
   /(.*\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/;
+
+/**
+ * Hono context variable set by the is-authorized middleware when the request
+ * carried a valid `X-RBAC-SECRET-KEY` (issue #270). The REST boundary reads it
+ * to decide whether a model's `outputSchema` projection applies: the operator
+ * secret is the trust boundary the framework already has, and the internal
+ * loopback reads that need the full row travel with it.
+ */
+export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";

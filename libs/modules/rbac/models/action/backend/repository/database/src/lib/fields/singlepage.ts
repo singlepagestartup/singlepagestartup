@@ -11,4 +11,9 @@ export const fields = {
     .notNull()
     .default(sql`NOW() + INTERVAL '6 hours'`),
   payload: pgCore.jsonb("payload").$type<{ [key: string]: any }>().default({}),
+  /**
+   * Single-use mark. It is a column rather than a payload key so that a
+   * conditional update can claim the row in one write.
+   */
+  consumedAt: pgCore.timestamp("consumed_at", { mode: "date" }),
 };

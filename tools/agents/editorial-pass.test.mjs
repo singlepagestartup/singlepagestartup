@@ -3,6 +3,7 @@
  * Given the canonical SPS roles, workflows, provider adapters, and Codex skills
  * When the agent-system contract is validated
  * Then every human-facing output path requires the shared final editorial pass
+ *  and no provider directory holds editing rules of its own
  */
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
@@ -11,6 +12,7 @@ import test from "node:test";
 
 const repository = process.cwd();
 const contractPath = ".agents/contracts/editorial-pass.md";
+const patternsPath = ".agents/references/unslop-patterns.md";
 
 function filesUnder(directory, extension) {
   const result = [];
@@ -60,13 +62,26 @@ test("canonical roles and workflows require the final editorial pass", () => {
  * BDD Scenario: Codex skills apply the project editor
  * Given every project Codex skill
  * When the skill instructions are inspected
- * Then prose-producing skills invoke unslop and the unslop skill supports any language
+ * Then prose-producing skills invoke unslop and unslop itself only adapts the contract
  */
 test("Codex skills route human-facing prose through unslop", () => {
   const skills = filesUnder(".codex/skills", "SKILL.md");
   const unslop = skills.find((path) => path.endsWith("/unslop/SKILL.md"));
   assert.ok(unslop, "missing project unslop skill");
-  assert.match(source(unslop), /human-facing prose in any language/);
+  const adapter = source(unslop);
+  assert.match(adapter, /human-facing prose in any language/);
+  assert.ok(
+    adapter.includes(contractPath),
+    "unslop must point at the contract",
+  );
+  assert.ok(
+    adapter.includes(patternsPath),
+    "unslop must point at the pattern reference",
+  );
+  assert.ok(
+    adapter.split("\n").length < 40,
+    "unslop is an adapter; its rules belong to the canonical contract",
+  );
 
   for (const path of skills.filter((value) => value !== unslop)) {
     const content = source(path);

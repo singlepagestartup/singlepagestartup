@@ -3,7 +3,7 @@
  *
  * Given: a subject asks for the quantity of one order by id.
  * When: the per-order quantity route executes.
- * Then: the owner receives the order quantity, and anyone else is refused before the quantity is computed.
+ * Then: the owner receives the order quantity, and a caller who does not own the order is refused before the order is read, whether or not it exists.
  */
 
 jest.mock("@sps/backend-utils", () => ({
@@ -117,26 +117,46 @@ describe("Given: a subject reads the quantity of a single order", () => {
       new Handler(service).execute(createContext(), jest.fn()),
     ).rejects.toThrow(NOT_OWNED_ERROR);
 
+    expect(service.ecommerceModule.order.findById).not.toHaveBeenCalled();
     expect(findByIdQuantity).not.toHaveBeenCalled();
   });
 
   /**
    * BDD Scenario: an order id that resolves to nothing.
    *
-   * Given: the order id does not exist.
+   * Given: the order id does not exist, so no relation links the subject to it.
+   * When: the per-order quantity route executes.
+   * Then: the request is refused exactly as for another subject's order, before
+   *       the order is read, so the answer does not reveal which ids exist.
+   */
+  it("When: the order does not exist Then: the request is refused as for another subject's order", async () => {
+    const { findByIdQuantity, service } = createService({
+      order: null,
+      ownsOrder: false,
+    });
+
+    await expect(
+      new Handler(service).execute(createContext(), jest.fn()),
+    ).rejects.toThrow(NOT_OWNED_ERROR);
+
+    expect(service.ecommerceModule.order.findById).not.toHaveBeenCalled();
+    expect(findByIdQuantity).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: the owner's order is gone.
+   *
+   * Given: a relation still links the subject to an order that was deleted.
    * When: the per-order quantity route executes.
    * Then: the request fails as not found and no quantity is computed.
    */
-  it("When: the order does not exist Then: the request fails as not found", async () => {
+  it("When: the subject owns an order that no longer exists Then: the request fails as not found", async () => {
     const { findByIdQuantity, service } = createService({ order: null });
 
     await expect(
       new Handler(service).execute(createContext(), jest.fn()),
     ).rejects.toThrow("Not Found error. No order found");
 
-    expect(
-      service.ecommerceModuleAssertSubjectOwnsOrder,
-    ).not.toHaveBeenCalled();
     expect(findByIdQuantity).not.toHaveBeenCalled();
   });
 });

@@ -31,15 +31,17 @@ Each module contains:
 - Use relation components with `variant="find"` and filter via `apiProps.params.filters.and`.
 - Backend only hosted in `apps/api/app.ts`.
 - Backend route middleware must live in the module's `backend/app/middlewares/src/lib/*` folder and be exported from that middleware package; controllers should only compose route definitions, middleware instances, and handlers.
+- Put a new file where its kind already lives, not beside whatever calls it: a constant belongs with the shared constants, a pure predicate in a utils package, a service beside the other services. List the target directory first and check the siblings are the same kind of thing. Do not add a layer, a top-level directory, or a shared package to make a change fit; where nothing fits, say so and agree the exception before writing it. See `.agents/contracts/engineering/code-placement.md`.
+- When one file is no longer enough for a thing, move it into a folder named after it and make it that folder's `index.ts`. Never leave a file beside a folder of the same name — importers of `./thing` resolve to either, so the thing ends up living in two places under one name.
 - Do not edit repository data snapshots under `libs/modules/<module>/<relations|models>/<name>/backend/repository/database/src/lib/data/*` to implement behavior or UI fixes; change runtime code, configuration, migrations, or explicit data-management flows instead.
 - When changing a Drizzle table schema or fields, run the appropriate `repository-generate` target instead of hand-writing migration SQL or `migrations/meta/*` journal/snapshot files. For example, use `npx nx run @sps/<module>:models:<model>:repository-generate` or the matching relation target; use `npx nx run api:db:generate` only when intentionally regenerating all repository migrations.
 
 If anything is unclear, read the relevant README files instead of guessing.
 
 Before storing, publishing, or returning prose intended for a person, make the
-final editorial pass defined in `.agents/contracts/editorial-pass.md`. Codex
-loads `.codex/skills/unslop/SKILL.md`; other providers apply the same canonical
-contract directly. Run it after facts, evidence, links, identifiers, required
+final editorial pass defined in `.agents/contracts/editorial-pass.md`. Every provider applies that
+one contract, with `.agents/references/unslop-patterns.md` beside it while
+editing. Run it after facts, evidence, links, identifiers, required
 structure, and approval state are correct. It applies in the requested language
 and must preserve meaning, uncertainty, terminology, formatting, and voice.
 
@@ -120,6 +122,7 @@ adaptation outcomes separate; a pending adaptation does not make a merge fail.
 - Enforce TypeScript interface-first style, PascalCase components, and consistent export order.
 - Confirm frontend changes obey the Tailwind/shadcn preset rules, variant structure, and SDK-based data fetching.
 - Confirm backend changes preserve the layered architecture (repository/service/controller) and never bypass shared utilities (logging, caching, RBAC, revalidation).
+- Confirm every new file sits with its own kind: constants with constants, pure helpers in a utils package, services beside services; and that no new layer, top-level directory, or shared package was introduced to fit the change.
 - Ensure schema changes were followed by the Drizzle generation command; do not manually create migration SQL, snapshots, or `_journal.json` entries.
 - List rows are memoized (`React.memo`) with stable id-based keys; handlers passed to rows are wrapped in `useCallback`.
 - Pending state is scoped per item (`<action>ingId: string | null`), never a shared boolean broadcast to every row.
