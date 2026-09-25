@@ -352,6 +352,27 @@ describe("Query Builder | Filters", () => {
   });
 
   /**
+   * BDD Scenario: a column name the table object answers without a column.
+   *
+   * Given: filters naming an object prototype member or a function the drizzle
+   * table carries, on a plain column and as the base of a json path.
+   * When: the builder compiles them.
+   * Then: each one is refused as an unknown column and no predicate is built.
+   */
+  it.each([
+    ["constructor", "constructor"],
+    ["enableRLS", "enableRLS"],
+    ["constructor->>en", "constructor"],
+  ])(
+    "rejects the column '%s', which is not a column of the table",
+    (column, name) => {
+      expect(() => {
+        compile({ and: [{ column, method: "eq", value: "x" }] });
+      }).toThrow(`Validation error. Unknown column '${name}'`);
+    },
+  );
+
+  /**
    * BDD Scenario: filter group shape.
    *
    * Given: filters.and supplied as an object.
