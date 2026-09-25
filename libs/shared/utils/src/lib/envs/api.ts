@@ -16,7 +16,8 @@ export const API_SECRET_STRENGTH: "enforce" | "report" =
  * in `OUTBOUND_URL_ALLOWED_ORIGINS` (comma-separated, for example
  * `http://crm:8080`); any other host must resolve to public addresses only.
  * `OUTBOUND_URL_TIMEOUT_MS` covers the whole exchange, redirects and body
- * included, and `OUTBOUND_URL_MAX_RESPONSE_BYTES` is the largest body read.
+ * included, and `OUTBOUND_URL_MAX_RESPONSE_BYTES` is the largest body read when
+ * the caller sets no limit of its own.
  */
 export const OUTBOUND_URL_ALLOWED_ORIGINS =
   process.env["OUTBOUND_URL_ALLOWED_ORIGINS"] || "";

@@ -700,54 +700,79 @@ describe("Given: the checked URL answers with a redirect", () => {
   });
 });
 
-describe("Given: the response body is limited to 1024 bytes", () => {
+describe("Given: the response body is limited to 1024 bytes by default", () => {
   /**
-   * BDD Scenario: a declared size above the cap.
+   * BDD Scenario: a declared size above the limit.
    *
-   * Given: a response whose Content-Length is above the cap.
+   * Given: a response whose Content-Length is above the default limit.
    * When: the URL is fetched.
-   * Then: the call is refused.
+   * Then: the call is refused with the Payload Too Large category naming the
+   *       response limit, and the body is cancelled without being read.
    */
   it("refuses a response that declares a larger size", async () => {
+    const cancelled = jest.fn();
     resolvesTo(PUBLIC_ADDRESS);
     mockFetch.mockResolvedValue(
-      new Response("small", { headers: { "content-length": "2048" } }),
+      new Response(new ReadableStream({ cancel: cancelled }), {
+        headers: { "content-length": "2048" },
+      }),
     );
 
     await expect(
       fetchOutboundUrl("https://images.example.com/huge.png"),
     ).rejects.toThrow(
-      "Validation error. Outbound URL response is larger than 1024 bytes",
+      "Payload Too Large error. The response limit is 1024 bytes",
     );
+    expect(cancelled).toHaveBeenCalledTimes(1);
   });
 
   /**
-   * BDD Scenario: a streamed body above the cap.
+   * BDD Scenario: a streamed body above the limit.
    *
-   * Given: a response without Content-Length whose chunks add up to more than
-   *        the cap.
+   * Given: a response without Content-Length that streams 10000 bytes in
+   *        100-byte chunks.
    * When: the URL is fetched.
-   * Then: the call is refused once the cap is passed.
+   * Then: reading stops at the chunk that passes the limit, the stream is
+   *       cancelled, and the call is refused with the Payload Too Large
+   *       category.
    */
-  it("refuses a streamed body that grows past the cap", async () => {
+  it("stops reading a streamed body at the chunk that passes the limit", async () => {
+    let pulledChunks = 0;
+    const cancelled = jest.fn();
     resolvesTo(PUBLIC_ADDRESS);
-    mockFetch.mockResolvedValue(new Response(streamOf(800, 800)));
+    mockFetch.mockResolvedValue(
+      new Response(
+        new ReadableStream({
+          pull(controller) {
+            pulledChunks += 1;
+            controller.enqueue(new Uint8Array(100));
+
+            if (pulledChunks === 100) {
+              controller.close();
+            }
+          },
+          cancel: cancelled,
+        }),
+      ),
+    );
 
     await expect(
       fetchOutboundUrl("https://images.example.com/stream"),
     ).rejects.toThrow(
-      "Validation error. Outbound URL response is larger than 1024 bytes",
+      "Payload Too Large error. The response limit is 1024 bytes",
     );
+    expect(cancelled).toHaveBeenCalledTimes(1);
+    expect(pulledChunks).toBeLessThan(20);
   });
 
   /**
-   * BDD Scenario: a body exactly at the cap.
+   * BDD Scenario: a body exactly at the limit.
    *
    * Given: a response of 1024 bytes with a status and a content type.
    * When: the URL is fetched.
    * Then: the caller receives the whole body, the status and the headers.
    */
-  it("returns a body at the cap with its status and headers", async () => {
+  it("returns a body at the limit with its status and headers", async () => {
     resolvesTo(PUBLIC_ADDRESS);
     mockFetch.mockResolvedValue(
       new Response(streamOf(512, 512), {
@@ -764,6 +789,51 @@ describe("Given: the response body is limited to 1024 bytes", () => {
     expect(body.size).toBe(1024);
     expect(response.status).toBe(203);
     expect(response.headers.get("content-type")).toBe("image/png");
+  });
+});
+
+describe("Given: the caller sets its own response limit", () => {
+  /**
+   * BDD Scenario: a smaller limit with its own name.
+   *
+   * Given: a caller limit of 256 bytes named "upload" and a 512-byte response.
+   * When: the URL is fetched with that limit.
+   * Then: the call is refused with the Payload Too Large category naming the
+   *       upload limit.
+   */
+  it("refuses a body above the caller's limit and names that limit", async () => {
+    resolvesTo(PUBLIC_ADDRESS);
+    mockFetch.mockResolvedValue(new Response(new Uint8Array(512)));
+
+    await expect(
+      fetchOutboundUrl(
+        "https://images.example.com/cat.png",
+        {},
+        { maxResponseBytes: 256, limitName: "upload" },
+      ),
+    ).rejects.toThrow("Payload Too Large error. The upload limit is 256 bytes");
+  });
+
+  /**
+   * BDD Scenario: a larger limit set by the caller.
+   *
+   * Given: a caller limit of 4096 bytes and a 2048-byte response, which is
+   *        above the 1024-byte default.
+   * When: the URL is fetched with that limit.
+   * Then: the whole body reaches the caller, because the caller's limit
+   *       replaces the default.
+   */
+  it("reads past the default when the caller's limit is larger", async () => {
+    resolvesTo(PUBLIC_ADDRESS);
+    mockFetch.mockResolvedValue(new Response(new Uint8Array(2048)));
+
+    const response = await fetchOutboundUrl(
+      "https://images.example.com/large.png",
+      {},
+      { maxResponseBytes: 4096 },
+    );
+
+    expect((await response.blob()).size).toBe(2048);
   });
 });
 

@@ -19,6 +19,20 @@ export interface IOutboundUrlTarget {
   address?: string;
 }
 
+export interface IFetchOutboundUrlOptions {
+  /**
+   * Largest body read, in bytes. Defaults to `OUTBOUND_URL_MAX_RESPONSE_BYTES`;
+   * a caller whose download has a limit of its own, such as the file-storage
+   * upload limit, passes that limit here.
+   */
+  maxResponseBytes?: number;
+  /**
+   * The limit named in the refusal, "The <limitName> limit is N bytes".
+   * Defaults to "response".
+   */
+  limitName?: string;
+}
+
 /** Redirect hops followed before the request is refused. */
 export const OUTBOUND_URL_MAX_REDIRECTS = 5;
 
@@ -137,12 +151,20 @@ export async function assertOutboundUrl(
  * checked too. A 303, and a 301 or 302 answering a POST, continue as a GET
  * without the body, as `fetch` itself does; a hop to another origin drops the
  * credential headers. The returned response holds the body already read, so
- * the size cap applies before the caller sees any of it.
+ * the size limit applies before the caller sees any of it: a body above
+ * `options.maxResponseBytes` is refused with the `Payload Too Large error`
+ * category, which answers 413.
  */
 export async function fetchOutboundUrl(
   value: string | URL,
   init: RequestInit = {},
+  options: IFetchOutboundUrlOptions = {},
 ): Promise<Response> {
+  const limit = {
+    maxResponseBytes:
+      options.maxResponseBytes ?? OUTBOUND_URL_MAX_RESPONSE_BYTES,
+    limitName: options.limitName ?? "response",
+  };
   const deadline = AbortSignal.timeout(OUTBOUND_URL_TIMEOUT_MS);
   const signal = init.signal
     ? AbortSignal.any([init.signal, deadline])
@@ -173,7 +195,7 @@ export async function fetchOutboundUrl(
       const next = response.headers.get("location");
 
       if (!REDIRECT_STATUSES.includes(response.status) || !next) {
-        return await readBody(response);
+        return await readBody(response, limit);
       }
 
       await response.body?.cancel();
@@ -336,18 +358,21 @@ function getRedirectedRequest(
 }
 
 /**
- * Reads the body up to `OUTBOUND_URL_MAX_RESPONSE_BYTES` and returns it as a
- * new response with the original status and headers.
+ * Reads the body up to `limit.maxResponseBytes` and returns it as a new
+ * response with the original status and headers. A declared `Content-Length`
+ * above the limit is refused before the body is read; any other body is counted
+ * while it streams, and the stream is cancelled as soon as it passes the limit.
  */
-async function readBody(response: Response): Promise<Response> {
-  const declaredSize = Number(response.headers.get("content-length"));
+async function readBody(
+  response: Response,
+  limit: Required<IFetchOutboundUrlOptions>,
+): Promise<Response> {
+  const tooLargeMessage = `Payload Too Large error. The ${limit.limitName} limit is ${limit.maxResponseBytes} bytes`;
 
-  if (declaredSize > OUTBOUND_URL_MAX_RESPONSE_BYTES) {
+  if (Number(response.headers.get("content-length")) > limit.maxResponseBytes) {
     await response.body?.cancel();
 
-    throw new Error(
-      `Validation error. Outbound URL response is larger than ${OUTBOUND_URL_MAX_RESPONSE_BYTES} bytes`,
-    );
+    throw new Error(tooLargeMessage);
   }
 
   const chunks: Uint8Array[] = [];
@@ -365,12 +390,10 @@ async function readBody(response: Response): Promise<Response> {
 
       size += value.byteLength;
 
-      if (size > OUTBOUND_URL_MAX_RESPONSE_BYTES) {
+      if (size > limit.maxResponseBytes) {
         await reader.cancel();
 
-        throw new Error(
-          `Validation error. Outbound URL response is larger than ${OUTBOUND_URL_MAX_RESPONSE_BYTES} bytes`,
-        );
+        throw new Error(tooLargeMessage);
       }
 
       chunks.push(value);
