@@ -84,21 +84,37 @@ status: in_progress
 - Observer run: two throwaway observer messages triggered by `create-from-url` on port 4307. The step to `169.254.169.254` was not sent and its message stayed (200 after the trigger); the step on the API origin ran and its message was deleted (404). The log shows one refusal and no deadline hit. The remaining message and the trigger's file row were deleted (200, then 404).
 - Server stopped; port 4307 free; `git status --short --ignored apps/api/public` is empty.
 
+### Phase 5: Review changes (PR #335)
+
+- [x] Started: 2026-09-26T02:00:00Z
+- [x] Completed: 2026-09-26T03:10:00Z
+- [x] Automated verification: PASSED
+
+**Notes**:
+
+- `b0967ae43f` (before the merge, so that the merge resolution can use it): `fetchOutboundUrl(value, init, options)` with `maxResponseBytes` (default `OUTBOUND_URL_MAX_RESPONSE_BYTES`) and `limitName` (default `response`); a body above the limit is refused with `Payload Too Large error. The <limitName> limit is N bytes`. The outbound URL spec asserts the reader: declared size cancels the body unread, a streamed body stops at the chunk that passes the limit and cancels the source, a caller's smaller limit is named, a caller's larger limit replaces the default. `@sps/backend-utils`: 198 passed. Mutations: caller limit ignored (2 fail), limit name ignored (1 fails), stream not cancelled (1 fails); restored.
+- `394578e148`: `git merge origin/claude/issue-304-upload-delivery` without a rebase. Git merged without textual conflicts; see Incident 3 for the two semantic conflicts. Resolution: `create-from-url` passes `{ maxResponseBytes: FILE_STORAGE_MAX_UPLOAD_BYTES, limitName: "upload" }` and `readBody` is removed; #331's route spec stubs `node:dns/promises` with a public answer; the file model README and the deployer example say `OUTBOUND_URL_MAX_RESPONSE_BYTES` bounds observer responses. Mutation: `create-from-url` without the options fails both route 413 cases; restored.
+- `42dc7df57c`: #331's streamed `create-from-url` route case keeps its 413 status, upload limit message and nothing-stored checks, without repeating the reader checks.
+- Lanes on the final code: `@sps/backend-utils` 7 suites, 201 passed; `@sps/middlewares` 11 suites, 67 passed; `@sps/file-storage` 5 suites, 28 passed. `eslint:lint` for `@sps/backend-utils`, `@sps/shared-utils` and `@sps/file-storage` clean; `npx eslint` on the changed spec clean; `npx tsc --noEmit -p` for the four projects 0 errors; code placement clean.
+- HTTP on port 4307 (`node_modules/bun`, 1.2.5), default limits: `https://speed.cloudflare.com/__down?bytes=60000000` and `https://proof.ovh.net/files/1Gb.dat` answer 413 `Payload Too Large error. The upload limit is 52428800 bytes` without downloading the body (the whole run took 4 s); public, redirected, plain-HTTP and own-origin images 201; loopback, private, metadata, `file:` and credential URLs 400. Observer run: the metadata step is not sent, the own-origin step runs and deletes its message.
+- HTTP with `FILE_STORAGE_MAX_UPLOAD_BYTES=1024`: a 13 KB image with a declared length and `https://www.google.com/` without a `Content-Length` both answer 413 `Payload Too Large error. The upload limit is 1024 bytes`; an 800-byte file answers 201. Every created record was deleted (200, then 404), and `apps/api/public` is clean.
+
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 2 -->
+<!-- incident-count: 3 -->
 
 ### Incident 1 — zsh modifier swallowed the lint target name
 
-- **Occurrences**: 1
+- **Occurrences**: 2
 - **Stage**: Phase 2 - Call sites
 - **Symptom**: a loop running `npx nx run $p:eslint:lint` failed with `Cannot find project 'slint'`.
 - **Root Cause**: zsh reads `$p:e` as the "extension" history modifier, so the project name collapsed and only `slint:lint` remained.
 - **Fix**: brace the variable: `npx nx run "${p}:eslint:lint"`.
 - **Reusable Pattern**: in zsh, always write `${var}:target` when a colon follows a variable.
+- **Second occurrence** (Phase 5): `git show $B:libs/...` read `:l` as the lower-case modifier; `"${B}:libs/..."` fixed it.
 
 ### Incident 2 — the address check passed everything in the API runtime
 
@@ -109,33 +125,47 @@ status: in_progress
 - **Fix**: the guard matches its range table on address bytes (IPv4 in the IPv4-mapped form) and no longer uses `BlockList`. Added spec cases for resolver answer forms, checked the table under Bun 1.2.5 and 1.3.6, and repeated the HTTP run.
 - **Reusable Pattern**: probe runtime behavior with `node_modules/.bin/bun`, the Bun the API runs, not the global `bun`. Keep security checks in plain JavaScript rather than runtime-specific `node:` helpers, and treat the HTTP run as the only check of the Bun runtime, because the unit lane runs under Node.
 
+### Incident 3 — merging #331 left two semantic conflicts
+
+- **Occurrences**: 1
+- **Stage**: Phase 5 - Review changes
+- **Symptom**: after a clean textual merge of `origin/claude/issue-304-upload-delivery`, three `create-from-url` cases of #331's route spec failed; with DNS stubbed, one still failed (`cancelled` not called, all 20 chunks pulled).
+- **Root Cause**: #331's spec fetched `files.example.com`, which does not resolve, and the guard now resolves the host (400). And the merged handler read the body twice: the guarded fetch took the whole stream under the 50 MiB default before #331's `readBody` applied the upload limit, so the download was no longer cut off early.
+- **Fix**: a `node:dns/promises` stub with a public answer in #331's spec, and `create-from-url` passes the upload limit to `fetchOutboundUrl` instead of reading again. The options parameter was committed before the merge, so the merge commit itself is green.
+- **Reusable Pattern**: after merging a branch that touches the same call path, run its specs before committing the merge; a clean textual merge can still stack two readers or bypass a stub-free spec through new I/O.
+
 ## Summary
 
 ### Changes Made
 
-- `libs/shared/backend/utils/src/lib/outbound-url/index.ts` (new): `assertOutboundUrl` and `fetchOutboundUrl`, exported from `@sps/backend-utils`.
+- `libs/shared/backend/utils/src/lib/outbound-url/index.ts` (new): `assertOutboundUrl` and `fetchOutboundUrl(value, init, options)`, exported from `@sps/backend-utils`; a body above the limit is refused with the `Payload Too Large error` category.
 - `libs/shared/utils/src/lib/envs/api.ts`: `OUTBOUND_URL_ALLOWED_ORIGINS` (empty), `OUTBOUND_URL_TIMEOUT_MS` (30000), `OUTBOUND_URL_MAX_RESPONSE_BYTES` (52428800).
-- `create-from-url/index.ts` and `libs/middlewares/src/lib/observer/index.ts`: `fetchOutboundUrl` instead of `fetch`.
-- Specs: `outbound-url/index.spec.ts` (70 cases), `create-from-url/index.spec.ts` (6), `observer/index.spec.ts` (3).
+- `create-from-url/index.ts`: `fetchOutboundUrl` with `FILE_STORAGE_MAX_UPLOAD_BYTES` and the `upload` limit name, replacing `fetch` and #331's `readBody`. `libs/middlewares/src/lib/observer/index.ts`: `fetchOutboundUrl` with the default limit.
+- Specs: `outbound-url/index.spec.ts` (72 cases), `create-from-url/index.spec.ts` (6), `observer/index.spec.ts` (3); #331's route spec gains a DNS stub and leaves the reader checks to the outbound URL spec.
 - Deployer: `tools/deployer/.env.example`, `api.sh`, `github_deployer.sh`, `api/api.env.j2`, `.github/workflows/ansible.yml`.
 - Docs: "Create from a URL" in `libs/modules/file-storage/models/file/README.md`.
 
 ### Final verification
 
-- `npx nx run @sps/backend-utils:jest:test` 196 passed; `@sps/middlewares:jest:test` 67 passed; `@sps/file-storage:jest:test` 12 passed.
-- `eslint:lint` for `@sps/backend-utils`, `@sps/shared-utils`, `@sps/file-storage`, and `npx eslint` on the observer files: clean.
+- `npx nx run @sps/backend-utils:jest:test` 201 passed; `@sps/middlewares:jest:test` 67 passed; `@sps/file-storage:jest:test` 28 passed (after the merge of #331).
+- `eslint:lint` for `@sps/backend-utils`, `@sps/shared-utils`, `@sps/file-storage`, and `npx eslint` on the observer files and the changed route spec: clean.
 - `npx tsc --noEmit -p` for `libs/shared/backend/utils`, `libs/middlewares`, `libs/modules/file-storage`, `libs/shared/utils`: 0 errors.
 - `node tools/agents/code-placement.mjs`: no same-name file and folder pairs.
-- Address table under `node_modules/.bin/bun` (1.2.5) after the last edit: 25 refusals and 7 acceptances as expected, 0 mismatches. The HTTP runs precede only the last edit, which reorders helpers and rewords comments.
+- Address table under `node_modules/.bin/bun` (1.2.5): 25 refusals and 7 acceptances as expected, 0 mismatches.
+- HTTP runs on the final code: see Phase 5.
 
 ### Commits
 
 - `0a3b75c122` fix(backend-utils): validate the URLs the API fetches on behalf of callers
+- `78d4f05438`, `0e7e81714d` docs(thoughts): research, plan, progress and the pull request description
+- `b0967ae43f` refactor(backend-utils): let the caller of fetchOutboundUrl set the response limit
+- `394578e148` Merge branch 'claude/issue-304-upload-delivery' into claude/issue-307-outbound-url-guard
+- `42dc7df57c` test(file-storage): leave the response reader checks to the outbound URL spec
 
 ### Pull Request
 
 - [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/335
-- [x] PR number: 335 (description saved as `thoughts/shared/prs/335_description.md`; awaiting the lead's review)
+- [x] PR number: 335 (description saved as `thoughts/shared/prs/335_description.md`), base `claude/issue-304-upload-delivery`; it returns to `main` when #331 merges
 
 ### Final Status
 
@@ -145,4 +175,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-09-26T00:45:00Z
+**Last updated**: 2026-09-26T03:10:00Z

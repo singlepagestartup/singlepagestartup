@@ -36,8 +36,11 @@ and the host through these call sites at loopback or overlay addresses
   never opens a connection for it. The same holds for every redirect hop.
 - A public image URL still produces a file row; `/generate` still stores the
   host's generated image; the checkout observer pipeline still calls the API.
-- A download stops with 400 when it exceeds `OUTBOUND_URL_MAX_RESPONSE_BYTES`
-  or `OUTBOUND_URL_TIMEOUT_MS`.
+- A `create-from-url` download above `FILE_STORAGE_MAX_UPLOAD_BYTES` (#331) is
+  refused with 413 and `Payload Too Large error. The upload limit is N bytes`;
+  an observer step response above `OUTBOUND_URL_MAX_RESPONSE_BYTES` is refused
+  with the same category naming the response limit; an exchange that passes
+  `OUTBOUND_URL_TIMEOUT_MS` is refused with 400.
 - An operator reaches further internal services by listing their origins in
   `OUTBOUND_URL_ALLOWED_ORIGINS`, set through the deployer like any other API
   variable.
@@ -74,8 +77,9 @@ deleted; loopback and private URLs refused with 400).
 ## What We're NOT Doing
 
 - Authorization of `create-from-url` and of the broadcast routes: #303 and #308.
-- Upload validation, type allow-lists and the upload size cap: #304. The cap
-  here bounds the download only; #304's cap applies to the stored file.
+- Upload validation, type allow-lists and the upload size limit: #304, whose
+  `FILE_STORAGE_MAX_UPLOAD_BYTES` this branch passes to the guarded fetch in
+  `create-from-url`. The branch is stacked on #331 and merges after it.
 - The other server-side reads of stored URLs (notification attachments,
   OpenRouter media inlining, chat file reads for `/learn` and transcription).
   They keep their current behavior and are listed in the research as follow-up
@@ -103,8 +107,10 @@ Defaults and their reasons:
 
 - `OUTBOUND_URL_TIMEOUT_MS=30000`: one deadline for all hops and the body. The
   observer's pipe steps are API checks that answer in seconds.
-- `OUTBOUND_URL_MAX_RESPONSE_BYTES=52428800` (50 MiB): generous for images and
-  short videos while bounding the buffer `create-from-url` holds.
+- `OUTBOUND_URL_MAX_RESPONSE_BYTES=52428800` (50 MiB): the limit for a caller
+  that sets none, which is the observer pipeline. `create-from-url` passes
+  `FILE_STORAGE_MAX_UPLOAD_BYTES`, so the download is read once, under the
+  limit for every upload.
 - `OUTBOUND_URL_ALLOWED_ORIGINS` empty: the service origins are added in code.
 - Redirect limit 5, a constant beside the guard.
 
@@ -148,15 +154,18 @@ import from it.
   `NEXT_PUBLIC_API_SERVICE_URL`, `HOST_SERVICE_URL`,
   `NEXT_PUBLIC_HOST_SERVICE_URL` and every entry of
   `OUTBOUND_URL_ALLOWED_ORIGINS`; entries that do not parse are ignored.
-- `fetchOutboundUrl(url, init)`: one `AbortSignal.timeout` (combined with a
+- `fetchOutboundUrl(url, init, options)`: one `AbortSignal.timeout` (combined with a
   caller signal when given) over the whole exchange; per hop, the guard, then
   `fetch` with `redirect: "manual"`. A plain-HTTP hop with a checked address is
   sent to that address with the original `Host` header. A 301/302 after `POST`
   and a 303 after anything but `GET`/`HEAD` continue as `GET` without body or
   body headers; a hop to another origin drops `Authorization`, `Cookie`,
-  `Proxy-Authorization` and `X-RBAC-SECRET-KEY`. More than five redirects,
-  a declared or streamed body above the cap, and the deadline each end with a
-  `Validation error.` message. The result is a `Response` over the bytes read,
+  `Proxy-Authorization` and `X-RBAC-SECRET-KEY`. More than five redirects and
+  the deadline each end with a `Validation error.` message. A declared or
+  streamed body above `options.maxResponseBytes` (default
+  `OUTBOUND_URL_MAX_RESPONSE_BYTES`) ends with `Payload Too Large error. The
+<options.limitName> limit is N bytes`, the 413 category #331 adds; the
+  default name is `response`. The result is a `Response` over the bytes read,
   with the original status and headers.
 
 #### 3. Export
@@ -215,8 +224,9 @@ Route both call sites through the wrapper and cover each with a spec.
 
 **File**: `libs/modules/file-storage/models/file/backend/app/api/src/lib/controller/singlepage/create-from-url/index.ts`
 **Why**: `:35` fetches the caller's URL.
-**Changes**: call `fetchOutboundUrl(data.url)` instead of `fetch(data.url)`;
-nothing else changes.
+**Changes**: call `fetchOutboundUrl(data.url, {}, { maxResponseBytes:
+FILE_STORAGE_MAX_UPLOAD_BYTES, limitName: "upload" })` instead of `fetch`, and
+remove the `readBody` that #331 adds, so the download is read once.
 
 **File**: `.../create-from-url/index.spec.ts` (new)
 **Changes**: handler spec with the real `getHttpErrorType` and guard, the
@@ -342,7 +352,27 @@ an internal service other than the API and the host must list that origin in
 `OUTBOUND_URL_ALLOWED_ORIGINS`; otherwise those requests are refused with 400
 (`create-from-url`) or logged and skipped (observer).
 
+## Review of #335
+
+`create-from-url` reads its download once, through the guarded fetch, under the
+upload limit that #331 defines:
+
+- [x] `fetchOutboundUrl` takes `{ maxResponseBytes?, limitName? }` beside
+      `init`, defaulting to `OUTBOUND_URL_MAX_RESPONSE_BYTES` and `response`.
+- [x] A body above the limit is refused with the `Payload Too Large error`
+      category (413): `The upload limit is N bytes` for the file-storage call,
+      `The response limit is N bytes` by default.
+- [x] `origin/claude/issue-304-upload-delivery` is merged into this branch
+      without a rebase; `create-from-url` passes `FILE_STORAGE_MAX_UPLOAD_BYTES`
+      and `readBody` is removed. The reader checks live in the outbound URL
+      spec; the `create-from-url` route spec keeps its 413 expectations.
+- [x] The pull request targets `claude/issue-304-upload-delivery` and returns
+      to `main` when #331 merges.
+
 ## References
 
 - Original ticket: `thoughts/shared/tickets/singlepagestartup/ISSUE-307.md`
 - Related research: `thoughts/shared/research/singlepagestartup/ISSUE-307.md`
+- Stacked on: #331 (`claude/issue-304-upload-delivery`)
+
+<!-- Last synced at: 2026-09-26T03:10:00Z -->
