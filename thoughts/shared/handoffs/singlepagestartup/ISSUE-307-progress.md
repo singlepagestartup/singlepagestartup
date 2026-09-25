@@ -134,8 +134,8 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/335
+- [x] PR number: 335 (description saved as `thoughts/shared/prs/335_description.md`; awaiting the lead's review)
 
 ### Final Status
 
