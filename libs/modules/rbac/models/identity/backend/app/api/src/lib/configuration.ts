@@ -3,6 +3,7 @@ import {
   Table,
   insertSchema,
   selectSchema,
+  outputSchema,
   dataDirectory,
 } from "@sps/rbac/models/identity/backend/repository/database";
 import { injectable } from "inversify";
@@ -17,16 +18,12 @@ export class Configuration extends ParentConfiguration {
         insertSchema,
         selectSchema,
         /**
-         * The password hash, its salt and the cleartext password-reset code
-         * never belong in an HTTP response (issue #270). The stripping runs at
-         * the REST boundary, so the in-process and operator-key reads that
-         * authentication depends on still see the full row.
+         * Strips the credential columns from responses to callers without the
+         * operator secret (issue #270). It runs at the REST boundary, so the
+         * in-process and operator-key reads that authentication depends on
+         * still see the full row.
          */
-        outputSchema: selectSchema.omit({
-          password: true,
-          salt: true,
-          code: true,
-        }),
+        outputSchema,
         dump: {
           active: false,
           type: "json",
