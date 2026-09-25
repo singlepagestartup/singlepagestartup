@@ -5,7 +5,7 @@ repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
 last_updated: 2026-09-26T04:25:00Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-310 - Add rate limiting and uniform responses to authentication routes
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: complete implementation, verify, commit and open the pull request
+- Implement: completed
+- Current phase: complete
+- Next step: code review of #340 by the lead; rebase onto main after #311 merges
 
 ## Phase Notes
 
@@ -45,7 +45,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: five phases as planned. Shared helpers in `@sps/backend-utils` (client address reader, fixed-window KV limiter with deadline and fail-open), `RequestRateLimit` on seven subject routes, `OperatorSecretAttemptsMiddleware` registered before the cache and authorization, uniform login and forgot-password answers, deployer pass-through and README. Unit lanes, lint, type checks, 22 mutation checks and an HTTP proof on port 4310 all passed; the proof showed 429 with `Retry-After` at each budget, equal login answers (68.5 / 63.6 ms), the private-network exemption, the wrong-secret log without values, the environment override and the disabled mode.
-- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-310-progress.md`, branch `claude/issue-310-auth-rate-limit`.
+- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-310-progress.md`, branch `claude/issue-310-auth-rate-limit`, pull request #340 (`thoughts/shared/prs/340_description.md`).
 - Notes: a mutation that broke compilation (trailing comma inside `void (...)`) proved nothing and was redone as a behavioral one; `@sps/middlewares` has no `eslint:lint` target, so its new files were linted with `npx eslint` directly; `tsc -p apps/api/tsconfig.json` reports 25 errors in 16 untouched files.
 
 ## Incident Log

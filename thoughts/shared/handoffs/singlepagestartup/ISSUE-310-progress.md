@@ -3,7 +3,8 @@ issue_number: 310
 issue_title: "Add rate limiting and uniform responses to authentication routes"
 start_date: 2026-09-25T22:50:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-310.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-310 - Add rate limiting and uniform responses to authentication routes
@@ -20,6 +21,7 @@ status: in_progress
 - [x] Automated verification: PASSED
 
 **Notes**:
+
 - `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/backend-utils:jest:test --skip-nx-cache`: 8 suites, 167 tests passed (new: `client-address/index.spec.ts` 30 tests, `rate-limit/index.spec.ts` 11 tests).
 - `npx nx run @sps/shared-utils:jest:test --skip-nx-cache`: 12 suites, 74 tests passed.
 - `NODE_OPTIONS=--max-old-space-size=12288 npx nx run-many --target=eslint:lint --projects=@sps/backend-utils,@sps/shared-utils`: passed.
@@ -32,6 +34,7 @@ status: in_progress
 - [x] Automated verification: PASSED (full `@sps/rbac` lane re-run after Phase 4)
 
 **Notes**:
+
 - `npx jest -c libs/modules/rbac/jest.config.ts .../request-rate-limit`: 10 tests passed.
 - `NODE_OPTIONS=--max-old-space-size=12288 npx tsc --noEmit -p libs/modules/rbac/tsconfig.json`: first run found one error in the new spec (store mock type), fixed by typing the helper's store as `IRateLimitStoreProvider`; second run exit 0, 0 errors.
 - The limiter's default clock became `() => Date.now()` so a spec can move `Date.now` without a new seam.
@@ -45,6 +48,7 @@ status: in_progress
 - [x] Automated verification: PASSED
 
 **Notes**:
+
 - `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/middlewares:jest:test --skip-nx-cache`: 11 suites, 72 tests passed (new spec: 8 tests).
 - `npx tsc --noEmit -p libs/middlewares/tsconfig.json`: exit 0, 0 errors. `@sps/middlewares` has no `eslint:lint` target; eslint runs on the files directly in Phase 5.
 - Registered in `apps/api/app.ts` after the WebSocket route and before revalidation.
@@ -57,6 +61,7 @@ status: in_progress
 - [x] Automated verification: PASSED
 
 **Notes**:
+
 - Identity service: one error (`Authentication error. Invalid credentials`) from one statement after one bcrypt round for an unknown address, an identity without a salt and a wrong password; the unknown path hashes with a cost-10 salt generated once per process.
 - Forgot-password: `201 { data: { ok: true } }` from one module constant for every address; a code is stored only for exactly one identity linked to a subject.
 - `libs/modules/rbac/jest.config.ts`: the ignore now names the two placeholder specs (`email-and-password/(authentication|registration)/`), so `forgot-password.spec.ts` runs; `--listTests` confirms the placeholders stay out.
@@ -70,6 +75,7 @@ status: in_progress
 - [x] Automated verification: PASSED
 
 **Notes**:
+
 - Deployer: seven optional settings read with `get_env` (empty when missing), passed to the playbook and written by `api.env.j2` only when set; rendered with Ansible's Jinja2 (`RBAC_RATE_LIMIT_ENABLED=false` and `RBAC_RATE_LIMIT_TRUSTED_PROXIES=2` written, an empty window omitted). `bash -n tools/deployer/api.sh` passed.
 - README: "Rate limits" section in `libs/modules/rbac/models/subject/README.md`.
 - `node tools/agents/code-placement.mjs`: no same-name file and folder pairs.
@@ -118,15 +124,15 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/340
+- [x] PR number: 340
 
 ### Final Status
 
-- [ ] All phases completed
-- [ ] All automated verification passed
-- [ ] Issue marked as Done
+- [x] All phases completed
+- [x] All automated verification passed
+- [ ] Issue marked as Done (after review and merge; project status is handled by the lead)
 
 ---
 
-**Last updated**: 2026-09-26T01:25:00Z
+**Last updated**: 2026-09-26T02:10:00Z
