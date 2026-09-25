@@ -15,6 +15,11 @@ jest.mock("@sps/providers-kv", () => {
 });
 
 jest.mock("@sps/backend-utils", () => {
+  // The credential readers are the real ones, so the cache is exercised with
+  // the header and cookie names the handlers read (issue #306).
+  const { authorization, readRbacSecret } =
+    jest.requireActual("@sps/backend-utils");
+
   return {
     logger: {
       info: jest.fn(),
@@ -23,10 +28,11 @@ jest.mock("@sps/backend-utils", () => {
       debug: jest.fn(),
     },
     websocketManager: { broadcastMessage: jest.fn() },
+    authorization,
+    readRbacSecret,
     // The comparison is driven per scenario here; what it does with a real
     // RBAC_SECRET_KEY is pinned in the operator-secret middleware's suite and
     // in the primitive's own suite.
-    readRbacSecret: (c: any) => c.req.header("X-RBAC-SECRET-KEY"),
     rbacSecretMatches: jest.fn(),
   };
 });
@@ -92,9 +98,9 @@ function createRecordingStore() {
 
 /**
  * Minimal Hono-context double for driving Middleware.init(): exposes the
- * request url/path/method/header surface the handler reads and a settable
- * response. `next` marks the response status (simulating a downstream
- * mutation handler succeeding).
+ * request url/path/method/header surface the handler reads, the raw request
+ * the cookie readers parse, and a settable response. `next` marks the response
+ * status (simulating a downstream mutation handler succeeding).
  */
 function createContext(args: {
   method: string;
@@ -120,6 +126,7 @@ function createContext(args: {
       url: args.url,
       path: args.path,
       method: args.method,
+      raw: new Request(args.url, { method: args.method }),
       header() {
         return undefined;
       },
@@ -220,6 +227,19 @@ describe("buildVersionedDataPrefix", () => {
   it("falls back to a stable vector for topic-less paths", () => {
     expect(buildVersionedDataPrefix("/api/unknown", 3, {})).toContain(":v3:t0");
   });
+
+  /**
+   * BDD Scenario: Stored bodies live in the namespace of the credential gate.
+   * Given: a GET URL and its generation vector.
+   * When:  the versioned cache-data prefix is built.
+   * Then:  it starts with `http-cache:data:v2:`, so a body stored before issue
+   *        #306 under `http-cache:data:<url>` is never looked up again.
+   */
+  it("places stored bodies under the v2 data namespace", () => {
+    expect(
+      buildVersionedDataPrefix("http://api:4000/api/host/pages", 3, {}),
+    ).toBe("http-cache:data:v2:http://api:4000/api/host/pages:v3:t0");
+  });
 });
 
 describe("getTopicVersionKey", () => {
@@ -248,7 +268,7 @@ describe("HTTP-cache clear route access and namespace isolation", () => {
    */
   function createClearRouteApp() {
     const keys = new Set([
-      "http-cache:data:/api/pages:v0:t0:response-hash",
+      "http-cache:data:v2:/api/pages:v0:t0:response-hash",
       "http-cache:version:path-hash",
       "mcp:oauth:client:mcp-client-id",
       "mcp:oauth:refresh:refresh-token",
@@ -297,9 +317,12 @@ describe("HTTP-cache clear route access and namespace isolation", () => {
     await expect(response.json()).resolves.toEqual({
       message: "Cache cleared",
     });
-    expect(deletedPrefixes).toEqual(["http-cache:data", "http-cache:version"]);
+    expect(deletedPrefixes).toEqual([
+      "http-cache:data:v2",
+      "http-cache:version",
+    ]);
     expect(keys).not.toContain(
-      "http-cache:data:/api/pages:v0:t0:response-hash",
+      "http-cache:data:v2:/api/pages:v0:t0:response-hash",
     );
     expect(keys).not.toContain("http-cache:version:path-hash");
     expect(keys).toContain("mcp:oauth:client:mcp-client-id");
@@ -326,7 +349,7 @@ describe("HTTP-cache clear route access and namespace isolation", () => {
 
     expect(response.status).toBe(401);
     expect(deletedPrefixes).toEqual([]);
-    expect(keys).toContain("http-cache:data:/api/pages:v0:t0:response-hash");
+    expect(keys).toContain("http-cache:data:v2:/api/pages:v0:t0:response-hash");
   });
 
   /**
@@ -838,7 +861,221 @@ describe("bounded cache generations", () => {
 
     expect(recording.writes.length).toBe(1);
     expect(recording.writes[0].prefix).toContain(
-      `http-cache:data:${collectionUrl}`,
+      `http-cache:data:v2:${collectionUrl}`,
     );
+  });
+});
+
+/**
+ * BDD Suite: stored bodies are shared only between callers without a
+ * credential (issue #306).
+ *
+ * Given: the HTTP-cache middleware in front of a collection read whose handler
+ *        numbers every response it produces, and a KV store that keeps what is
+ *        written to it.
+ * When:  GET requests arrive without a credential, with a subject token or
+ *        the operator secret in a header or a cookie, or with
+ *        `Cache-Control: no-store`, and a credentialed POST changes the
+ *        collection.
+ * Then:  requests without a credential share one stored body, a credentialed
+ *        request neither receives a stored body nor stores its own, and the
+ *        credentialed POST still rotates the key so the next anonymous read is
+ *        produced afresh.
+ */
+describe("the cache serves and stores bodies only for requests without a credential", () => {
+  const collectionPath = "/api/ecommerce/orders";
+
+  const credentialChannels: Array<[string, Record<string, string>]> = [
+    [
+      "a subject token in the Authorization header",
+      { Authorization: "Bearer subject-token" },
+    ],
+    [
+      "the operator secret in the X-RBAC-SECRET-KEY header",
+      { "X-RBAC-SECRET-KEY": OPERATOR_SECRET },
+    ],
+    [
+      "a subject token in the rbac.subject.jwt cookie",
+      { Cookie: "rbac.subject.jwt=subject-token" },
+    ],
+    [
+      "the operator secret in the rbac.secret-key cookie",
+      { Cookie: `rbac.secret-key=${OPERATOR_SECRET}` },
+    ],
+  ];
+
+  /**
+   * KV double that keeps what is written, so a later request can be answered
+   * from what an earlier one stored.
+   */
+  function createMemoryStore() {
+    const entries = new Map<string, string>();
+    const writtenPrefixes: string[] = [];
+
+    return {
+      writtenPrefixes,
+      store: {
+        async get({ prefix, key }: { prefix: string; key: string }) {
+          return entries.get(`${prefix}:${key}`) ?? null;
+        },
+        async set({
+          prefix,
+          key,
+          value,
+        }: {
+          prefix: string;
+          key: string;
+          value: string;
+        }) {
+          writtenPrefixes.push(prefix);
+          entries.set(`${prefix}:${key}`, value);
+
+          return "OK";
+        },
+        async incr({ prefix, key }: { prefix: string; key: string }) {
+          const version = Number(entries.get(`${prefix}:${key}`) ?? 0) + 1;
+          entries.set(`${prefix}:${key}`, String(version));
+
+          return version;
+        },
+      },
+    };
+  }
+
+  /**
+   * The middleware in front of a collection read that numbers each response
+   * it produces, so a stored body (an earlier number) is told apart from a
+   * fresh one.
+   */
+  function createCollectionApp() {
+    const memory = createMemoryStore();
+    const middleware = new Middleware();
+    middleware.storeProvider = memory.store as any;
+
+    let producedResponses = 0;
+    const app = new Hono();
+
+    app.use(middleware.init());
+    app.get(collectionPath, (c) => {
+      producedResponses += 1;
+
+      return c.json({ data: { response: producedResponses } });
+    });
+    app.post(collectionPath, (c) => c.json({ data: { id: MID } }, 201));
+
+    return { app, memory };
+  }
+
+  /**
+   * Reads the collection and returns the number of the response received. The
+   * middleware writes a GET body after answering, so the read waits for that
+   * write before the next request.
+   */
+  async function readCollection(
+    app: Hono,
+    headers: Record<string, string> = {},
+  ): Promise<number> {
+    const response = await app.request(collectionPath, { headers });
+    const payload = await response.json();
+
+    for (let turn = 0; turn < 5; turn += 1) {
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+
+    return payload.data.response;
+  }
+
+  /**
+   * BDD Scenario: anonymous reads share one stored body.
+   *
+   * Given: nothing stored for the collection.
+   * When:  two GET requests without a credential arrive one after the other.
+   * Then:  the handler produces the first response, it is stored, and the
+   *        second request receives the stored body.
+   */
+  it("stores an anonymous response and serves it to the next anonymous request", async () => {
+    const { app, memory } = createCollectionApp();
+
+    expect(await readCollection(app)).toBe(1);
+    expect(await readCollection(app)).toBe(1);
+    expect(memory.writtenPrefixes).toHaveLength(1);
+  });
+
+  /**
+   * BDD Scenario: a credentialed read bypasses the stored body.
+   *
+   * Given: an anonymous body stored for the collection.
+   * When:  a GET presents a credential in one of the four accepted places.
+   * Then:  it receives a freshly produced response, stores nothing, and the
+   *        next anonymous request still receives the original stored body.
+   */
+  it.each(credentialChannels)(
+    "neither reads nor replaces the stored body for a request with %s",
+    async (_channel, headers) => {
+      const { app, memory } = createCollectionApp();
+
+      expect(await readCollection(app)).toBe(1);
+      expect(await readCollection(app, headers)).toBe(2);
+      expect(await readCollection(app)).toBe(1);
+      expect(memory.writtenPrefixes).toHaveLength(1);
+    },
+  );
+
+  /**
+   * BDD Scenario: a response produced for a credentialed caller never reaches
+   * an anonymous one.
+   *
+   * Given: nothing stored for the collection.
+   * When:  a GET with a credential is answered, then the same URL is
+   *        requested without one.
+   * Then:  the credentialed response was not stored, and the anonymous caller
+   *        receives a response produced for its own request.
+   */
+  it.each(credentialChannels)(
+    "never replays a response produced for a request with %s to an anonymous request",
+    async (_channel, headers) => {
+      const { app, memory } = createCollectionApp();
+
+      expect(await readCollection(app, headers)).toBe(1);
+      expect(memory.writtenPrefixes).toEqual([]);
+      expect(await readCollection(app)).toBe(2);
+    },
+  );
+
+  /**
+   * BDD Scenario: a credentialed mutation still invalidates anonymous reads.
+   *
+   * Given: an anonymous body stored for the collection.
+   * When:  a POST to the collection with a subject token succeeds.
+   * Then:  the collection's version rotates and the next anonymous GET
+   *        receives a freshly produced response.
+   */
+  it("bumps versions for a credentialed mutation so the next anonymous read misses", async () => {
+    const { app } = createCollectionApp();
+
+    expect(await readCollection(app)).toBe(1);
+
+    const mutation = await app.request(collectionPath, {
+      method: "POST",
+      headers: { Authorization: "Bearer subject-token" },
+    });
+
+    expect(mutation.status).toBe(201);
+    expect(await readCollection(app)).toBe(2);
+  });
+
+  /**
+   * BDD Scenario: the `Cache-Control: no-store` opt-out keeps working.
+   *
+   * Given: an anonymous body stored for the collection.
+   * When:  a GET without a credential sends `Cache-Control: no-store`.
+   * Then:  it receives a freshly produced response and stores nothing.
+   */
+  it("keeps the no-store opt-out for a request without a credential", async () => {
+    const { app, memory } = createCollectionApp();
+
+    expect(await readCollection(app)).toBe(1);
+    expect(await readCollection(app, { "Cache-Control": "no-store" })).toBe(2);
+    expect(memory.writtenPrefixes).toHaveLength(1);
   });
 });

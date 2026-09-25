@@ -3,22 +3,69 @@
 Memoizes GET responses in the KV store. Registered in `apps/api/app.ts` only
 when `MIDDLEWARE_HTTP_CACHE === "true"`.
 
-The cache is identity-blind: the key is the request URL, the generation vector
-and the query string. A caller whose response must not be shared sends
-`Cache-Control: no-store`, or its route is excluded (see
-[Extension seams](#extension-seams)).
+The cache serves and stores responses only for requests that carry no
+credential. Its key is the request URL, the generation vector and the query
+string, with no principal in it, so which callers share a body is decided by
+which requests reach the cache at all (see
+[Credentialed requests](#credentialed-requests)). A request without a
+credential also bypasses the cache when it sends `Cache-Control: no-store` or
+its route is excluded (see [Extension seams](#extension-seams)).
 
 ## Keys
 
 ```
-http-cache:data:<request url without query>:v<pathVersion>:t<topicVector>:<sha256(query string)>
+http-cache:data:v2:<request url without query>:v<pathVersion>:t<topicVector>:<sha256(query string)>
 http-cache:version:<sha256(path or "topic:<topic>")>
 ```
+
+`v2` is the namespace of bodies stored under the credential rule below (issue
+#306). Bodies written before it, under `http-cache:data:<url>`, may have been
+produced for a credentialed caller; this release never looks them up and they
+expire on their TTL, so an upgrade needs no flush. Code that reads these keys
+directly, such as the issue-152 scenario helpers, uses the same prefix.
 
 `<request url without query>` is `c.req.url`, so it carries scheme and host:
 the same route reached through `http://api:4000` and through the public
 hostname forms separate key families. `topicVector` is the versions of the
 topics derived from the read path, sorted by topic name.
+
+## Credentialed requests
+
+The middleware runs before `is-authorized` in `apps/api/app.ts`, so an
+anonymous hit is answered without an authorization round trip. A GET that
+presents any of these credentials skips both the lookup and the write-back and
+reaches authorization and its handler every time:
+
+| Credential      | Carried in                 |
+| --------------- | -------------------------- |
+| Subject token   | `Authorization` header     |
+| Subject token   | `rbac.subject.jwt` cookie  |
+| Operator secret | `X-RBAC-SECRET-KEY` header |
+| Operator secret | `rbac.secret-key` cookie   |
+
+The middleware reads them with `authorization` and `readRbacSecret` from
+`@sps/backend-utils`, the helpers the handlers use. Presence decides, not
+validity: an expired or forged token still reaches authorization and gets its
+refusal instead of a stored body.
+
+A request without a credential that misses passes through `is-authorized` like
+any other, and only a 2xx answer is stored. Every stored body was therefore
+produced for a caller without a credential whom authorization admitted, through
+the allow-list or a permission row without a role, and it is replayed only to
+callers without a credential. That needs no route list, so role-less public
+reads such as the product catalog stay cacheable without a permission lookup
+in front of each hit.
+
+The cost is that a request with a credential is never answered from the cache.
+Browsers carry a subject token once `init` has run, and the host layout runs it
+for every visitor, so client-side reads from a browser reach their handlers.
+Operator-secret reads from MCP, agents and the host page service's loopback
+collection reads do too. Server-rendered page reads send no credential and keep
+hitting.
+
+Mutations are not gated. A successful `POST`, `PUT`, `PATCH` or `DELETE` bumps
+its versions whatever credential it carries, because a credentialed write is
+what invalidates the anonymous reads it changed.
 
 ## Generations
 
@@ -53,9 +100,10 @@ What bounds them instead:
 ## The clear route
 
 `setRoutes(app)` registers one endpoint, `GET /api/http-cache/clear`. It
-deletes both namespaces this middleware owns — `http-cache:data` and
+deletes both namespaces this middleware reads — `http-cache:data:v2` and
 `http-cache:version` — and nothing else, so the MCP OAuth store and subject
-preferences that share the instance survive it.
+preferences that share the instance survive it. Bodies left under the
+pre-`v2` namespace are not read and are left to expire.
 
 It requires the operator credential: `X-RBAC-SECRET-KEY`, or the
 `rbac.secret-key` cookie, compared in constant time against `RBAC_SECRET_KEY`.
@@ -169,6 +217,10 @@ complete before the WebSocket broadcast that follows them. See
 Exclusions bypass only the GET response cache. A mutation on an excluded path
 still bumps its versions, so a cached read elsewhere cannot go stale because of
 an exclusion.
+
+There is no seam that lets a credentialed request read or write the cache. The
+key carries no principal, so such a seam would hand one caller's body to
+another.
 
 There is no seam for the clear route's access, deliberately: flushing is an
 operator action, so no project layer should be able to make it anonymous.
