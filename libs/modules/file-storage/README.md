@@ -51,9 +51,9 @@ allowed` and stores nothing; send one request per file instead.
 `FILE_STORAGE_MAX_UPLOAD_BYTES` (default `52428800`, 50 MiB) bounds the
 multipart body of those two routes and the body that
 `POST /api/file-storage/files/create-from-url` downloads. A larger upload
-answers `400 Validation error. Payload Too Large` before it is buffered. Bun
-refuses request bodies above 128 MiB by itself, so a limit above that also needs
-`maxRequestBodySize` raised in `apps/api/server.ts`.
+answers `413 Payload Too Large error. The upload limit is <N> bytes` before it
+is buffered. Bun refuses request bodies above 128 MiB by itself, so a limit
+above that also needs `maxRequestBodySize` raised in `apps/api/server.ts`.
 
 ### Delivery from the API origin
 

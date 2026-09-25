@@ -5,9 +5,9 @@
  *        service, a storage provider double and FILE_STORAGE_MAX_UPLOAD_BYTES
  *        configured.
  * When: uploads arrive on the create, update and create-from-url routes.
- * Then: one file per request is stored, several files and bodies over the
- *       limit are refused with a 400 validation error, and a refused request
- *       uploads and writes nothing.
+ * Then: one file per request is stored, several files are refused with 400
+ *       and bodies over the limit with 413, and a refused request uploads and
+ *       writes nothing.
  */
 
 let mockMaxUploadBytes = 4096;
@@ -247,7 +247,7 @@ describe("file upload routes", () => {
    * BDD Scenario
    * Given: a create request whose declared length is over the upload limit.
    * When: it is posted to the create route.
-   * Then: it is refused with a 400 validation error and nothing is uploaded or created.
+   * Then: it is refused with 413 Payload Too Large and nothing is uploaded or created.
    */
   it("When: a declared upload is over the limit Then: the create route refuses it", async () => {
     mockMaxUploadBytes = 256;
@@ -258,8 +258,10 @@ describe("file upload routes", () => {
 
     const response = await hono.request("/", { method: "POST", ...request });
 
-    expect(response.status).toBe(400);
-    expect(await response.text()).toContain("Payload Too Large");
+    expect(response.status).toBe(413);
+    expect(await response.text()).toContain(
+      "Payload Too Large error. The upload limit is 256 bytes",
+    );
     expect(mockUploadFile).not.toHaveBeenCalled();
     expect(service.create).not.toHaveBeenCalled();
   });
@@ -268,7 +270,7 @@ describe("file upload routes", () => {
    * BDD Scenario
    * Given: a create request streamed without a declared length and larger than the limit.
    * When: the create handler reads it.
-   * Then: it is refused with a 400 validation error and nothing is uploaded or created.
+   * Then: it is refused with 413 Payload Too Large and nothing is uploaded or created.
    */
   it("When: an undeclared upload grows past the limit Then: the create route refuses it", async () => {
     mockMaxUploadBytes = 256;
@@ -280,7 +282,7 @@ describe("file upload routes", () => {
 
     const response = await hono.request("/", { method: "POST", ...request });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(413);
     expect(await response.text()).toContain("Payload Too Large");
     expect(mockUploadFile).not.toHaveBeenCalled();
     expect(service.create).not.toHaveBeenCalled();
@@ -290,7 +292,7 @@ describe("file upload routes", () => {
    * BDD Scenario
    * Given: an update request whose declared length is over the upload limit.
    * When: it is sent to the update route.
-   * Then: it is refused with a 400 validation error and the record is untouched.
+   * Then: it is refused with 413 Payload Too Large and the record is untouched.
    */
   it("When: a declared upload is over the limit Then: the update route refuses it", async () => {
     mockMaxUploadBytes = 256;
@@ -304,7 +306,7 @@ describe("file upload routes", () => {
       ...request,
     });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(413);
     expect(mockUploadFile).not.toHaveBeenCalled();
     expect(service.update).not.toHaveBeenCalled();
   });
@@ -313,7 +315,7 @@ describe("file upload routes", () => {
    * BDD Scenario
    * Given: a URL whose response declares a length over the upload limit.
    * When: create-from-url fetches it.
-   * Then: it is refused with a 400 validation error and nothing is uploaded or created.
+   * Then: it is refused with 413 Payload Too Large and nothing is uploaded or created.
    */
   it("When: a fetched file declares a length over the limit Then: create-from-url refuses it", async () => {
     mockMaxUploadBytes = 256;
@@ -329,8 +331,10 @@ describe("file upload routes", () => {
       ...(await urlImport()),
     });
 
-    expect(response.status).toBe(400);
-    expect(await response.text()).toContain("Payload Too Large");
+    expect(response.status).toBe(413);
+    expect(await response.text()).toContain(
+      "Payload Too Large error. The upload limit is 256 bytes",
+    );
     expect(mockUploadFile).not.toHaveBeenCalled();
     expect(service.create).not.toHaveBeenCalled();
   });
@@ -367,7 +371,10 @@ describe("file upload routes", () => {
       ...(await urlImport()),
     });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(413);
+    expect(await response.text()).toContain(
+      "Payload Too Large error. The upload limit is 256 bytes",
+    );
     expect(cancelled).toHaveBeenCalledTimes(1);
     expect(pulledChunks).toBeLessThan(10);
     expect(mockUploadFile).not.toHaveBeenCalled();

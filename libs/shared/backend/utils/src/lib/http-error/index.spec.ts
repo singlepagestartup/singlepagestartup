@@ -30,7 +30,6 @@ describe("util — HTTP error classification", () => {
       "Provider google is not allowed",
       "Files are not supported",
       "Multiple files are not allowed",
-      "Payload Too Large",
       "Passwords do not match",
       "Code is expired. Resend again.",
       "Account already exists",
@@ -122,6 +121,19 @@ describe("util — HTTP error classification", () => {
       const result = util(new Error(msg));
       expect(result.status).toBe(422);
       expect(result.category).toBe("Unprocessable Entity error");
+    });
+  });
+
+  // ------------------- 413 PAYLOAD TOO LARGE ERROR -------------------
+  describe("413 - Payload Too Large error", () => {
+    test.each([
+      "Payload Too Large",
+      "Payload Too Large error. The upload limit is 52428800 bytes",
+      "payload too large",
+    ])("maps '%s' → 413 Payload Too Large error", (msg) => {
+      const result = util(new Error(msg));
+      expect(result.status).toBe(413);
+      expect(result.category).toBe("Payload Too Large error");
     });
   });
 

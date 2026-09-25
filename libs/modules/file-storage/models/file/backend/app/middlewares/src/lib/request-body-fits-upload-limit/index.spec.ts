@@ -6,7 +6,7 @@
  * When: a request arrives with a body under the limit, a body over it with or
  *       without a declared length, or no body at all.
  * Then: bodies within the limit reach the handler, and a body over it is
- *       refused with a 400 validation error, before the handler runs when its
+ *       refused with 413 Payload Too Large, before the handler runs when its
  *       length is declared.
  */
 
@@ -83,7 +83,7 @@ describe("upload body limit on file routes", () => {
    * BDD Scenario
    * Given: an upload whose declared length is one byte over the limit.
    * When: the upload body limit evaluates it.
-   * Then: the request is refused with a 400 validation error and the handler never runs.
+   * Then: the request is refused with 413 Payload Too Large and the handler never runs.
    */
   it("When: the declared body is over the limit Then: it is refused before the handler runs", async () => {
     const { handler, hono } = createUploadRoute();
@@ -95,7 +95,7 @@ describe("upload body limit on file routes", () => {
       headers: { "content-length": String(body.length) },
     });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(413);
     expect(await response.text()).toContain("Payload Too Large");
     expect(handler).not.toHaveBeenCalled();
   });
@@ -104,9 +104,9 @@ describe("upload body limit on file routes", () => {
    * BDD Scenario
    * Given: an upload streamed without a declared length that grows past the limit.
    * When: the handler reads the body.
-   * Then: the read fails and the request is refused with a 400 validation error.
+   * Then: the read fails and the request is refused with 413 Payload Too Large.
    */
-  it("When: an undeclared body grows past the limit Then: it is refused with a validation error", async () => {
+  it("When: an undeclared body grows past the limit Then: it is refused as too large", async () => {
     const { hono } = createUploadRoute();
 
     const response = await hono.request("/", {
@@ -115,7 +115,7 @@ describe("upload body limit on file routes", () => {
       duplex: "half",
     } as RequestInit);
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(413);
     expect(await response.text()).toContain("Payload Too Large");
   });
 

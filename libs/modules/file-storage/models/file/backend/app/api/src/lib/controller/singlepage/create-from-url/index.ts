@@ -113,15 +113,15 @@ export class Handler {
    * is cancelled as soon as it passes the limit.
    */
   protected async readBody(response: Response) {
+    const tooLargeMessage = `Payload Too Large error. The upload limit is ${FILE_STORAGE_MAX_UPLOAD_BYTES} bytes`;
+
     if (
       Number(response.headers.get("content-length")) >
       FILE_STORAGE_MAX_UPLOAD_BYTES
     ) {
       await response.body?.cancel();
 
-      throw new Error(
-        `Validation error. Payload Too Large. The upload limit is ${FILE_STORAGE_MAX_UPLOAD_BYTES} bytes`,
-      );
+      throw new Error(tooLargeMessage);
     }
 
     if (!response.body) {
@@ -144,9 +144,7 @@ export class Handler {
       if (size > FILE_STORAGE_MAX_UPLOAD_BYTES) {
         await reader.cancel();
 
-        throw new Error(
-          `Validation error. Payload Too Large. The upload limit is ${FILE_STORAGE_MAX_UPLOAD_BYTES} bytes`,
-        );
+        throw new Error(tooLargeMessage);
       }
 
       chunks.push(value);

@@ -73,6 +73,14 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
     ],
   },
   {
+    // A body larger than the configured limit, refused by size rather than
+    // by content. Hono's body limit reports `Payload Too Large`; the
+    // file-storage upload limit throws the same category.
+    status: 413,
+    category: "Payload Too Large error",
+    patterns: [/payload too large/i],
+  },
+  {
     // A message that declares its own category keeps that category, even when
     // its details also match an unprocessable-entity shape below.
     status: 400,
@@ -117,7 +125,6 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /no (uuid|productid|notification\.topic\.slug) provided/i,
       /files are not supported/i,
       /multiple files are not allowed/i,
-      /payload too large/i,
       /no id provided/i,
     ],
   },
