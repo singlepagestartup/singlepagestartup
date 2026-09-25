@@ -3,7 +3,7 @@
  *
  * Given: API server, database, and fixed RBAC test subject are running from apps/api/.env.
  * When: subject adds a product to cart and requests list/quantity endpoints.
- * Then: order + orders-to-products are persisted in DB, list returns cart orders, and quantity returns summed amount.
+ * Then: order + orders-to-products are persisted in DB, list returns cart orders, quantity returns summed amount, and none of the subject's token-bearing reads is stored in the HTTP cache.
  */
 
 import { Provider as KvProvider } from "@sps/providers-kv";
@@ -237,13 +237,29 @@ describe("Given: issue-152 backend cart scenario", () => {
     });
   });
 
-  it("When: cache middleware is enabled Then: /orders is cached but /orders/quantity and /orders/total are excluded", async () => {
+  /**
+   * BDD Scenario: the subject's cart reads never enter the shared cache.
+   *
+   * Given: the HTTP cache middleware is enabled, the subject holds its token,
+   *        and the fixture product is readable without a credential.
+   * When: the subject reads its cart list, quantity and total with its token,
+   *       and an anonymous caller reads the product.
+   * Then: the anonymous product read is stored and none of the cart reads is,
+   *       so no later caller of those URLs is answered with the subject's cart
+   *       (issue #306).
+   */
+  it("When: cart reads carry the subject token Then: none is cached while an anonymous product read is", async () => {
+    if (!fixtures) {
+      throw new Error("Fixtures were not initialized");
+    }
+
     await clearHttpCache();
 
     const apiUrl = getApiUrl();
     const ordersPath = `${apiUrl}/api/rbac/subjects/${subjectId}/ecommerce-module/orders`;
     const quantityPath = `${apiUrl}/api/rbac/subjects/${subjectId}/ecommerce-module/orders/quantity`;
     const totalPath = `${apiUrl}/api/rbac/subjects/${subjectId}/ecommerce-module/orders/total`;
+    const productPath = `${apiUrl}/api/ecommerce/products/${fixtures.productId}`;
 
     await getCartOrdersRaw({
       subjectId,
@@ -258,23 +274,25 @@ describe("Given: issue-152 backend cart scenario", () => {
       path: `/api/rbac/subjects/${subjectId}/ecommerce-module/orders/total`,
       token: jwt,
     });
-
-    await waitForCondition(async () => {
-      return hasCachedResponseForPath(kvProvider, ordersPath, "");
+    await expectOk({
+      method: "GET",
+      path: `/api/ecommerce/products/${fixtures.productId}`,
     });
 
-    const hasQuantityCache = await hasCachedResponseForPath(
-      kvProvider,
-      quantityPath,
-      "",
-    );
-    const hasTotalCache = await hasCachedResponseForPath(
-      kvProvider,
-      totalPath,
-      "",
-    );
+    // The product read is the last request, so once its body is stored the
+    // write-backs of the earlier reads, had there been any, have landed too.
+    await waitForCondition(async () => {
+      return hasCachedResponseForPath(kvProvider, productPath, "");
+    });
 
-    expect(hasQuantityCache).toBe(false);
-    expect(hasTotalCache).toBe(false);
+    expect(await hasCachedResponseForPath(kvProvider, ordersPath, "")).toBe(
+      false,
+    );
+    expect(await hasCachedResponseForPath(kvProvider, quantityPath, "")).toBe(
+      false,
+    );
+    expect(await hasCachedResponseForPath(kvProvider, totalPath, "")).toBe(
+      false,
+    );
   });
 });

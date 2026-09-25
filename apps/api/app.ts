@@ -154,10 +154,11 @@ const revalidationMiddleware = new RevalidationMiddleware();
 app.use(revalidationMiddleware.init());
 
 /**
- * It's not secure, because authorized requests can be cached and served to unauthorized users.
- * But perfomance of the application will rediqulesly increase.
- * Now added "Cache-Control": "no-store" for preventing caching of authorized requests,
- * but it should be added to the request
+ * Registered before authorization on purpose: an anonymous hit is answered
+ * without an authorization round trip. The cache serves and stores bodies only
+ * for requests without a credential (issue #306), so every stored body was
+ * produced for a caller that authorization admitted without one. See
+ * libs/middlewares/src/lib/http-cache/README.md.
  */
 if (MIDDLEWARE_HTTP_CACHE === "true") {
   const httpCacheMiddleware = new HTTPCacheMiddleware();

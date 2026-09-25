@@ -11,11 +11,11 @@ import {
   UUID_PATH_PREFIX_REGEX,
   UUID_PATH_SUFFIX_REGEX,
 } from "@sps/shared-utils";
-import { MiddlewareHandler } from "hono";
+import { Context, MiddlewareHandler } from "hono";
 import { createExcludedRoutesMatcher } from "./routes";
 import { createCacheGuard, ICacheGuard } from "./guard";
 import { Middleware as OperatorSecretMiddleware } from "../operator-secret";
-import { logger } from "@sps/backend-utils";
+import { authorization, logger, readRbacSecret } from "@sps/backend-utils";
 
 const CACHE_DATA_PREFIX = "http-cache:data";
 const CACHE_VERSION_PREFIX = "http-cache:version";
@@ -233,6 +233,23 @@ export class Middleware {
     );
   }
 
+  /**
+   * Whether the request presents a credential (issue #306): a subject token in
+   * the `Authorization` header or the `rbac.subject.jwt` cookie, or the operator
+   * secret in the `X-RBAC-SECRET-KEY` header or the `rbac.secret-key` cookie,
+   * read by the same helpers the handlers use.
+   *
+   * This middleware answers before authorization runs and its key carries no
+   * principal. Keeping credentialed requests out of the lookup and the
+   * write-back means every stored body was produced for a caller without a
+   * credential, whom authorization admitted on that miss, and is only replayed
+   * to another such caller. Presence decides, not validity: an expired or
+   * forged token still reaches authorization and its refusal.
+   */
+  private hasCredentials(c: Context): boolean {
+    return Boolean(authorization(c) || readRbacSecret(c));
+  }
+
   init(): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
       const params = c.req.url.split("?")?.[1] || "";
@@ -255,9 +272,17 @@ export class Middleware {
       // early-return skipped the bump for create-only while update/delete on
       // `/messages/{id}` still bumped — an inconsistent create-only staleness
       // gap. Mutations now always run the bump block, excluded or not.
+      //
+      // Credential gate (issue #306): a request that presents a credential is
+      // kept away from the stored bodies the same way — no lookup, no
+      // write-back — while its mutations still bump, because a credentialed
+      // write is what invalidates the anonymous reads it changed.
       const isCacheExcluded = this.excludedRoutesMatcher.matches(pathname);
       const isCacheableGet =
-        method === "GET" && cacheControl !== "no-store" && !isCacheExcluded;
+        method === "GET" &&
+        cacheControl !== "no-store" &&
+        !isCacheExcluded &&
+        !this.hasCredentials(c);
 
       let cacheVersion = DEFAULT_CACHE_VERSION;
       let topicVersionsByTopic: Record<string, number> = {};
@@ -365,11 +390,12 @@ export class Middleware {
       void (async () => {
         try {
           if (c.res.status >= 200 && c.res.status < 300) {
-            // Mirror the read gate (issue #195 F1): excluded GETs are read
-            // straight through and never written back to the cache. Issue #233
-            // narrows the same gate — `isCacheAddressable` means a cacheable
-            // GET whose generation vector was actually read, and a response
-            // produced while the KV store was unreachable has no address.
+            // Mirror the read gate (issue #195 F1, issue #306): excluded and
+            // credentialed GETs are read straight through and never written
+            // back to the cache. Issue #233 narrows the same gate —
+            // `isCacheAddressable` means a cacheable GET whose generation
+            // vector was actually read, and a response produced while the KV
+            // store was unreachable has no address.
             if (isCacheAddressable) {
               const resJson = await c.res.clone().json();
               const versionedDataPrefix = buildVersionedDataPrefix(

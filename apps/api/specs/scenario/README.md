@@ -28,7 +28,8 @@ GitHub Project workflow and `thoughts/shared/{research,plans}/...` are namespace
 - ISSUE-152 temporary stabilization excludes only:
   - `GET /api/rbac/subjects/:id/ecommerce-module/orders/quantity`
   - `GET /api/rbac/subjects/:id/ecommerce-module/orders/total`
-- Other endpoints remain cacheable and are validated by scenario tests.
+- Reads that carry the subject token or the operator secret are never cached (issue #306), so a scenario request sent with `token` or `includeSecret` always reaches its handler.
+- Anonymous reads of other endpoints remain cacheable and are validated by scenario tests.
 
 ## Frontend scenario component wiring
 
