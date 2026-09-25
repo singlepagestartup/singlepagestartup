@@ -83,12 +83,32 @@ completed_date: 2026-09-25
 - Upgrade window: after restoring the fix without clearing Redis, those two URLs still answered 200 to anonymous callers from the entries written before the upgrade; `GET /api/http-cache/clear` with `X-RBAC-SECRET-KEY` answered 200, the keys were gone, and the anonymous reads answered 400 and 403.
 - Cleanup: throwaway product and subject deleted (200 each); data keys under `http://localhost:4306` deleted; API stopped; private Redis container stopped (`--rm`); throwaway password and scenario credentials deleted from the scratchpad. The shared Redis on 6384 received no keys from this work (the API could not reach it).
 
+### Review round 1: pull request #329
+
+- [x] Started: 2026-09-26
+- [x] Completed: 2026-09-26
+- [x] Automated verification: PASSED
+
+**Notes**: the lead asked to close the upgrade window in code instead of by an operator clear, and to drop that step from the pull request and the downstream trailer.
+
+- `libs/middlewares/src/lib/http-cache/index.ts`: `CACHE_DATA_PREFIX` is `http-cache:data:v2`, with a comment naming issue #306; `CACHE_VERSION_PREFIX` is unchanged.
+- `libs/middlewares/src/lib/http-cache/index.spec.ts`: new spec "places stored bodies under the v2 data namespace"; the clear-route fixture and the admission-cap assertion spell data keys with `v2`.
+- `apps/api/specs/scenario/singlepagestartup/issue-152/backend-cart.scenario.spec.ts`: the key builder copy uses `http-cache:data:v2`. Without it the scenario's positive wait would look for the product under the old prefix and time out.
+- `libs/middlewares/src/lib/http-cache/README.md`: the Keys section explains the `v2` namespace and that an upgrade needs no flush; the clear route section names `http-cache:data:v2`.
+- `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/middlewares:jest:test --skip-nx-cache`: 10 suites, 76 tests passed.
+- Mutation check, prefix set back to `http-cache:data`: 3 failed (the new namespace spec, the clear-route namespace spec and the admission-cap key assertion), 30 passed; restored and compared with `cmp`.
+- `npx tsc --noEmit -p libs/middlewares/tsconfig.json` and `npx tsc --noEmit -p apps/api/specs/scenario/tsconfig.json`: exit 0. `npx eslint` on the http-cache folder and the scenario file: exit 0. Prettier clean.
+- Upgrade on a running API (port 4306, private Redis, `MIDDLEWARE_HTTP_CACHE=true`, `KV_TTL=300`): the `main` middleware stored a subject's Bearer-token cart read and an operator-secret `GET /api/agent/agents?limit=1` under `http-cache:data:http://localhost:4306/...`. The v2 build then started on the same Redis without any clear: both old keys were still present (TTL 280), the same URLs without credentials answered 400 "Validation error. No token" and 403 "Permission error", and no `v2` key was created for them. An anonymous `GET /api/ecommerce/products?limit=1` was stored under `http-cache:data:v2:...` (TTL 299) and the next read three seconds later was a hit (TTL 295).
+- Issue-152 backend scenario on the v2 build with a throwaway registered subject (`--forceExit`): 4 tests passed, so the scenario's `v2` key builder finds the product body.
+- Cleanup: throwaway subjects, identity and links deleted (subject answers 404); keys under both prefixes for port 4306 deleted; API stopped; private Redis container removed; throwaway secrets deleted.
+- Publication: the change is commit `27f92da2d9` on top of the published head. Its trailer tells downstream projects not to run the one-time clear that the first fix commit's trailer asks for, and to use the `v2` prefix. Folding the change into the first fix commit and rewording its trailer needs a force push, which the permission system refused (Incident 4).
+
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 3 -->
+<!-- incident-count: 4 -->
 
 ### Incident 1 — The shared local Redis is unreachable from the host
 
@@ -117,16 +137,25 @@ completed_date: 2026-09-25
 - **Fix**: stopped the process to flush the results; later runs used `--forceExit`.
 - **Reusable Pattern**: run Redis-backed scenario files with `--forceExit` when invoking jest directly.
 
+### Incident 4 — Force push of a reworded commit refused
+
+- **Occurrences**: 1
+- **Stage**: Review round 1
+- **Symptom**: `git push --force-with-lease` of the branch with the reworded fix commit was denied by the auto mode permission classifier ("Git Destructive").
+- **Root Cause**: dropping the clear step from the published fix commit's trailer requires rewriting published history, which the session's permission rules do not allow.
+- **Fix**: rebuilt on the published head; the namespace change is a separate commit whose trailer supersedes the earlier step. The reworded line stays local under `backup/issue-306-reworded`.
+- **Reusable Pattern**: write trailers for the final design before the first push; after publication, supersede instead of rewording unless a force push is explicitly allowed.
+
 ## Summary
 
 ### Changes Made
 
-- `libs/middlewares/src/lib/http-cache/index.ts`: credential gate on the cacheable-GET decision.
+- `libs/middlewares/src/lib/http-cache/index.ts`: credential gate on the cacheable-GET decision; stored bodies under `http-cache:data:v2`.
 - `libs/middlewares/src/lib/http-cache/index.spec.ts`: real credential readers in the mock, a real request in the context double, and the new BDD suite.
-- `libs/middlewares/src/lib/http-cache/README.md`: the credential rule and its cost.
+- `libs/middlewares/src/lib/http-cache/README.md`: the credential rule and its cost; the `v2` data namespace.
 - `libs/middlewares/src/lib/http-cache/routes/singlepage.ts`: issue-270 comment (rules unchanged).
 - `apps/api/app.ts`: comment above the cache registration.
-- `apps/api/specs/scenario/singlepagestartup/issue-152/backend-cart.scenario.spec.ts`: the cache scenario asserts the new contract.
+- `apps/api/specs/scenario/singlepagestartup/issue-152/backend-cart.scenario.spec.ts`: the cache scenario asserts the new contract; its key builder uses the `v2` prefix.
 - `apps/api/specs/scenario/README.md`: cache notes.
 
 ### Pull Request
@@ -142,4 +171,4 @@ completed_date: 2026-09-25
 
 ---
 
-**Last updated**: 2026-09-25T21:58:01Z
+**Last updated**: 2026-09-25T22:17:02Z

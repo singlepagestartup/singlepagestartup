@@ -41,6 +41,9 @@ only for requests that carry no credential.
   `Cache-Control: no-store`.
 - A successful mutation bumps its path and topic versions whatever credential
   it carries, so the anonymous reads it affects miss afterwards.
+- Stored bodies live under `http-cache:data:v2`; a body written before this
+  change, which may have been produced for a credentialed caller, is never
+  looked up again and expires on its TTL, so an upgrade needs no flush.
 - The cache README, the comment in `apps/api/app.ts`, the issue-270 exclusion
   comment and the scenario README describe that contract.
 - Verified by the middleware unit suite (including a mutation check of the
@@ -85,8 +88,6 @@ only for requests that carry no credential.
 - Not changing the client or server SDKs, and not changing `is-authorized`,
   its inline credential reads or its own decision cache; the ticket's agreed
   scope is the response cache.
-- Not rewriting the key format to orphan entries written before the upgrade;
-  see Migration Notes.
 
 ## Implementation Approach
 
@@ -117,7 +118,8 @@ and the write-back (`isCacheAddressable` is only set inside it).
 private method beside the other private helpers that reports whether the
 request presents a credential; add that condition to `isCacheableGet`; extend
 the gate comments to state the contract and that mutation bumps still run for
-credentialed requests.
+credentialed requests; move `CACHE_DATA_PREFIX` to `http-cache:data:v2` with a
+comment naming the issue, and leave `CACHE_VERSION_PREFIX` as it is.
 
 #### 2. Middleware unit suite
 
@@ -132,7 +134,9 @@ served from the cache; for each of the four credential channels a GET neither
 receives the stored anonymous body nor replaces it; a body produced for a
 credentialed caller never reaches a later anonymous caller; a credentialed
 POST still bumps the version so the next anonymous GET misses;
-`Cache-Control: no-store` still bypasses read and write.
+`Cache-Control: no-store` still bypasses read and write. One key-building spec
+asserts that the data prefix carries the `v2` namespace, and the fixtures that
+spell out data keys use it.
 
 ### Success Criteria:
 
@@ -142,6 +146,7 @@ POST still bumps the version so the next anonymous GET misses;
 - [x] Type check passes: `npx tsc --noEmit -p libs/middlewares/tsconfig.json`
 - [x] Lint passes on the changed files: `npx eslint libs/middlewares/src/lib/http-cache` (the package has no `eslint:lint` target)
 - [x] Mutation check: with the credential condition removed the new credential scenarios fail; restored, they pass
+- [x] Mutation check: with the data prefix back at `http-cache:data` the namespace spec fails; restored, it passes
 
 #### Manual Verification:
 
@@ -216,7 +221,8 @@ in the cache.
 **Changes**: the subject reads its cart list, quantity and total with its
 token and an anonymous caller reads the fixture product; the product read is
 found in the cache and none of the cart reads is. The suite header names the
-cache expectation.
+cache expectation, and the scenario's copy of the key builder uses the `v2`
+data prefix.
 
 ### Success Criteria:
 
@@ -278,13 +284,14 @@ Prove the behavior on a running API.
 
 ## Migration Notes
 
-- Bodies stored for credentialed callers before the upgrade stay addressable
-  under their URL until `KV_TTL` expires, a mutation bumps their path or topic,
-  or the clear route runs. The framework's container start runs the seed in
-  the background, and the seed ends by calling the clear route
-  (`start.sh:10-14`, `apps/api/src/db/seed.ts:393-407`). A deployment that does
-  not run the seed clears the cache once after the upgrade:
-  `GET /api/http-cache/clear` with `X-RBAC-SECRET-KEY`.
+- Stored bodies move from `http-cache:data:<url>` to
+  `http-cache:data:v2:<url>`. Bodies written before the upgrade, including
+  those produced for credentialed callers, are never looked up again and
+  expire on their TTL, so a deployment needs no flush. The version counters
+  keep `http-cache:version`, and the clear route flushes `http-cache:data:v2`
+  and the counters.
+- Code that builds or scans data keys directly, such as the issue-152 scenario
+  helpers, uses the new prefix.
 - No schema, environment variable or deployer template changes.
 
 ## References

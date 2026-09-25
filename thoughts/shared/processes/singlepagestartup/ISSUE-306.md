@@ -3,7 +3,7 @@ issue_number: 306
 issue_title: "Scope the HTTP cache to the requesting principal"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-25T21:58:01Z
+last_updated: 2026-09-25T22:17:02Z
 status: active
 current_phase: complete
 ---
@@ -46,13 +46,13 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Summary: the cacheable-GET decision skips requests that present a subject token or the operator secret, in a header or a cookie; mutation bumps, `no-store` and exclusions are unchanged. Documentation, the API comment and the issue-152 scenario follow the new contract. Unit, lint, type-check, scenario and HTTP verification passed; the HTTP run also reproduced the leak on the unfixed middleware and measured the upgrade window that the clear route closes.
 - Outputs: pull request #329; `thoughts/shared/handoffs/singlepagestartup/ISSUE-306-progress.md`; code under `libs/middlewares/src/lib/http-cache/`, `apps/api/app.ts`, `apps/api/specs/scenario/`.
-- Notes: deployments must run the clear route once after the upgrade unless their start-up seed does it (the framework's `start.sh api` does, at the end of the background seed).
+- Notes: review round 1 of pull request #329 moved stored bodies to the `http-cache:data:v2` namespace, so bodies written before the upgrade are never read and no deployment needs a flush. The change is a separate commit whose downstream trailer supersedes the one-time clear in the first fix commit's trailer; rewording that commit instead needs a force push, which the permission system refused. Verified on a running API: bodies stored by the `main` middleware for credentialed callers were not served by the v2 build.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 4 -->
+<!-- incident-count: 5 -->
 
 ### Incident 1 — Parallel research sub-agents could not start
 
@@ -94,8 +94,18 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: pass `--forceExit` when running Redis-backed scenario files with jest directly.
 - **References**: progress file Incident 3
 
+### Incident 5 — Force push of a reworded commit refused
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: `git push --force-with-lease` of the branch with the reworded fix commit was denied by the auto mode permission classifier ("Git Destructive").
+- **Root Cause**: removing an instruction from a published commit's trailer requires rewriting published history; the session's permission rules do not allow that.
+- **Fix**: rebuilt on the published head and added the change as a new commit whose trailer supersedes the earlier instruction; the reworded line is kept locally under `backup/issue-306-reworded` and the combined message is ready for a squash or an authorized force push.
+- **Preventive Action**: write trailers for the final design before the first push; after publication, correct instructions with a superseding commit unless a force push is explicitly allowed.
+- **References**: pull request #329, commit `27f92da2d9`
+
 ## Reusable Learnings
 
 - The HTTP cache key carries no principal, so whether a body may be shared is decided by which requests reach the cache at all; check what a request carries before reasoning about what a route allows.
 - To prove a cache hit, read the data key's TTL before and after the second request: a hit leaves it running down, a miss resets it by writing back. Timing alone is confounded by the authorization caches warming up.
-- A change to the cache's admission rule leaves entries written under the old rule addressable until they expire, are bumped, or the clear route runs; plan the clear as a deployment step.
+- A change to the cache's admission rule leaves entries written under the old rule addressable until they expire; change the data namespace in the same release so they are never read, instead of asking every deployment to flush.
