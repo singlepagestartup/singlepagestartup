@@ -3,13 +3,16 @@
  *
  * Given: tokens signed with the real Hono JWT implementation, whose failure
  * messages embed the token.
- * When: a token is verified through the shared helper.
+ * When: a token is verified through the shared helper, with or without an
+ * expected token type.
  * Then: a credential failure becomes a fixed authentication message that
- * carries no token, and any other failure is rethrown unchanged.
+ * carries no token, a token of another type is refused, a token without a type
+ * passes during the transition, and any other failure is rethrown unchanged.
  */
 
 import * as jwt from "hono/jwt";
 import { util } from ".";
+import { util as signJwt } from "../jwt-sign";
 
 const secret = "test-jwt-secret";
 const otherSecret = "another-jwt-secret";
@@ -101,5 +104,88 @@ describe("verifyJwt — token-free JWT verification failures", () => {
       "Zero-length key is not supported",
     );
     await expect(util(token, undefined as any)).rejects.toThrow(TypeError);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an access token and a refresh token from the shared signer.
+   * When: each is verified with its own type expected.
+   * Then: both payloads are returned.
+   */
+  it("When: the token has the expected type Then: returns the payload", async () => {
+    const access = await signJwt(
+      { subjectId: "subject-1", type: "access", lifetimeInSeconds: 600 },
+      secret,
+    );
+    const refresh = await signJwt(
+      { subjectId: "subject-1", type: "refresh", lifetimeInSeconds: 600 },
+      secret,
+    );
+
+    await expect(
+      util(access, secret, { type: "access" }),
+    ).resolves.toMatchObject({ typ: "access", subject: { id: "subject-1" } });
+    await expect(
+      util(refresh, secret, { type: "refresh" }),
+    ).resolves.toMatchObject({ typ: "refresh", subject: { id: "subject-1" } });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a refresh token and an access token.
+   * When: each is verified where the other type is expected.
+   * Then: both are refused with a fixed authentication message.
+   */
+  it("When: the token has the other type Then: refuses it", async () => {
+    const access = await signJwt(
+      { subjectId: "subject-1", type: "access", lifetimeInSeconds: 600 },
+      secret,
+    );
+    const refresh = await signJwt(
+      { subjectId: "subject-1", type: "refresh", lifetimeInSeconds: 600 },
+      secret,
+    );
+
+    await expect(util(refresh, secret, { type: "access" })).rejects.toThrow(
+      "Authentication error. Invalid token type",
+    );
+    await expect(util(access, secret, { type: "refresh" })).rejects.toThrow(
+      "Authentication error. Invalid token type",
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a token signed before token types existed, with no typ claim.
+   * When: it is verified as an access token and as a refresh token.
+   * Then: both succeed, so sessions issued before the change keep working
+   * until they expire.
+   */
+  it("When: the token predates token types Then: accepts it as either type", async () => {
+    const token = await signedAt(600);
+
+    await expect(
+      util(token, secret, { type: "access" }),
+    ).resolves.toMatchObject({ subject: { id: "subject-1" } });
+    await expect(
+      util(token, secret, { type: "refresh" }),
+    ).resolves.toMatchObject({ subject: { id: "subject-1" } });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a refresh token.
+   * When: it is verified without an expected type.
+   * Then: the payload is returned, as it was before types existed.
+   */
+  it("When: no type is expected Then: accepts a token of any type", async () => {
+    const refresh = await signJwt(
+      { subjectId: "subject-1", type: "refresh", lifetimeInSeconds: 600 },
+      secret,
+    );
+
+    await expect(util(refresh, secret)).resolves.toMatchObject({
+      typ: "refresh",
+    });
   });
 });

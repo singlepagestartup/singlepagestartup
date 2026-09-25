@@ -1,8 +1,13 @@
 import { RBAC_JWT_SECRET, createMemoryCache } from "@sps/shared-utils";
+import { DI, type IRepository } from "@sps/shared-backend-api";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
 import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
 import { logger, verifyJwt } from "@sps/backend-utils";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
+import {
+  type IModel as ISubject,
+  isRbacSubjectTokenRevoked,
+} from "@sps/rbac/models/subject/sdk/model";
 import { inject, injectable } from "inversify";
 import { SubjectDI } from "../../di";
 
@@ -25,6 +30,7 @@ export class Service {
   permissionService: PermissionService;
   rolesToPermissionsService: RolesToPermissionsService;
   subjectsToRolesService: SubjectsToRolesService;
+  repository: IRepository;
 
   constructor(
     @inject(SubjectDI.IPermissionService)
@@ -33,14 +39,93 @@ export class Service {
     rolesToPermissionsService: RolesToPermissionsService,
     @inject(SubjectDI.ISubjectsToRolesService)
     subjectsToRolesService: SubjectsToRolesService,
+    @inject(DI.IRepository) repository: IRepository,
   ) {
     this.permissionService = permissionService;
     this.rolesToPermissionsService = rolesToPermissionsService;
     this.subjectsToRolesService = subjectsToRolesService;
+    this.repository = repository;
   }
 
   invalidateSubjectRoleCache(subjectId: string) {
     cache.del(`subjects-to-roles:subject:${subjectId}`);
+  }
+
+  /**
+   * Drops the cached revocation mark of a subject, so the next request reads
+   * the one logout has just written instead of waiting for the entry to
+   * expire.
+   */
+  invalidateSubjectRevocationCache(subjectId: string) {
+    cache.del(`subject:tokens-valid-after:${subjectId}`);
+  }
+
+  /**
+   * Resolves the subject of an access token. A refresh token, or a token
+   * signed before its subject last logged out, is refused. A token whose
+   * subject no longer exists still resolves to its id, which holds no role.
+   */
+  protected async getSubjectId(authorization: string) {
+    const tokenCacheKey = `jwt:subject:${authorization}`;
+    let claims = cache.get<{ subjectId: string; issuedAt?: number }>(
+      tokenCacheKey,
+    );
+
+    if (!claims) {
+      const decoded = await verifyJwt(
+        authorization,
+        RBAC_JWT_SECRET as string,
+        {
+          type: "access",
+        },
+      );
+
+      if (!decoded.subject?.["id"]) {
+        throw new Error("Validation error. No subject provided in the token");
+      }
+
+      if (typeof decoded.subject["id"] !== "string") {
+        throw new Error("Validation error. Subject ID is not a string");
+      }
+
+      claims = {
+        subjectId: decoded.subject["id"],
+        issuedAt: decoded.iat,
+      };
+      cache.set(tokenCacheKey, claims);
+    }
+
+    const tokensValidAfter = await this.getSubjectTokensValidAfter(
+      claims.subjectId,
+    );
+
+    if (
+      isRbacSubjectTokenRevoked({
+        subject: { tokensValidAfter },
+        issuedAt: claims.issuedAt,
+      })
+    ) {
+      throw new Error("Authentication error. Token revoked");
+    }
+
+    return claims.subjectId;
+  }
+
+  protected async getSubjectTokensValidAfter(subjectId: string) {
+    const cacheKey = `subject:tokens-valid-after:${subjectId}`;
+    const cached = cache.get<{ tokensValidAfter: Date | null }>(cacheKey);
+
+    if (cached) {
+      return cached.tokensValidAfter;
+    }
+
+    const subject: ISubject | undefined =
+      await this.repository.findFirstByField("id", subjectId);
+    const tokensValidAfter = subject?.tokensValidAfter ?? null;
+
+    cache.set(cacheKey, { tokensValidAfter });
+
+    return tokensValidAfter;
   }
 
   protected async getSubjectRoleIds(subjectId: string) {
@@ -167,23 +252,7 @@ export class Service {
     const authorization = props.authorization.value;
 
     if (authorization) {
-      const tokenCacheKey = `jwt:subject:${authorization}`;
-      subjectId = cache.get<string>(tokenCacheKey);
-
-      if (!subjectId) {
-        const decoded = await verifyJwt(authorization, RBAC_JWT_SECRET);
-
-        if (!decoded.subject?.["id"]) {
-          throw new Error("Validation error. No subject provided in the token");
-        }
-
-        if (typeof decoded.subject["id"] !== "string") {
-          throw new Error("Validation error. Subject ID is not a string");
-        }
-
-        subjectId = decoded.subject["id"];
-        cache.set(tokenCacheKey, subjectId);
-      }
+      subjectId = await this.getSubjectId(authorization);
     }
 
     const permissionResolutionCacheKey = [

@@ -458,7 +458,7 @@ Available Error Categories and Keywords
 Here are the available categories and examples of keywords that trigger them:
 | Category | HTTP Status | Example Keywords |
 | ------------------------------ | ----------- | ------------------------------------------------------------------------ |
-| **Authentication error** | 401 | unauthorized, invalid credentials, token required, no session |
+| **Authentication error** | 401 | unauthorized, invalid credentials, token required, no session, token revoked |
 | **Permission error** | 403 | forbidden, permission denied, only order owner |
 | **Validation error** | 400 | invalid data, missing headers, no id provided, invalid url |
 | **Unprocessable Entity error** | 422 | expected string, invalid body['data'], unprocessable entity |

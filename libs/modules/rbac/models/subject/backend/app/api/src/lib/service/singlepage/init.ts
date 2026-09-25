@@ -4,13 +4,14 @@ import {
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import * as jwt from "hono/jwt";
+import { signJwt } from "@sps/backend-utils";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel } from "@sps/rbac/models/subject/sdk/model";
+import { IExecuteProps as IMeExecuteProps } from "./me";
 import { IExecuteProps as IRecordActivityExecuteProps } from "./record-activity";
 
 export interface IConstructorProps {
-  findById: (props: { id: string }) => Promise<IModel | null>;
+  me: (props: IMeExecuteProps) => Promise<IModel | null>;
   recordActivity: (props: IRecordActivityExecuteProps) => Promise<boolean>;
 }
 
@@ -26,18 +27,18 @@ export interface IResult {
 }
 
 /**
- * Initializes a session. A caller that presents a token signed by this
- * installation, whose subject still exists, keeps that subject and receives a
- * fresh token pair; every other caller - no token, a malformed, expired or
- * foreign token, or a token for a deleted subject - gets a new subject, so the
- * first visit still creates one.
+ * Initializes a session. A caller that presents an access token signed by this
+ * installation, whose subject still exists and has not logged out since, keeps
+ * that subject and receives a fresh token pair; every other caller - no token,
+ * a malformed, expired, foreign, refresh or revoked token, or a token for a
+ * deleted subject - gets a new subject, so the first visit still creates one.
  */
 export class Service {
-  findById: IConstructorProps["findById"];
+  me: IConstructorProps["me"];
   recordActivity: IConstructorProps["recordActivity"];
 
   constructor(props: IConstructorProps) {
-    this.findById = props.findById;
+    this.me = props.me;
     this.recordActivity = props.recordActivity;
   }
 
@@ -58,7 +59,6 @@ export class Service {
 
     const existingSubject = await this.resolveSubject({
       token: props.token,
-      secret: RBAC_JWT_SECRET,
     });
 
     if (existingSubject) {
@@ -76,22 +76,20 @@ export class Service {
         },
       }));
 
-    const issuedAt = Math.floor(Date.now() / 1000);
-
-    const jwtToken = await jwt.sign(
+    const jwtToken = await signJwt(
       {
-        exp: issuedAt + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        iat: issuedAt,
-        subject,
+        subjectId: subject.id,
+        type: "access",
+        lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );
 
-    const refreshToken = await jwt.sign(
+    const refreshToken = await signJwt(
       {
-        exp: issuedAt + RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
-        iat: issuedAt,
-        subject,
+        subjectId: subject.id,
+        type: "refresh",
+        lifetimeInSeconds: RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );
@@ -106,35 +104,16 @@ export class Service {
 
   protected async resolveSubject(props: {
     token?: string;
-    secret: string;
   }): Promise<IModel | null> {
     if (!props.token) {
       return null;
     }
 
-    let subjectId: string | undefined = undefined;
-
-    try {
-      const decoded = await jwt.verify(props.token, props.secret);
-      const claimedId = decoded.subject?.["id"];
-
-      if (typeof claimedId === "string" && claimedId) {
-        subjectId = claimedId;
-      }
-    } catch (error: any) {
-      /**
-       * An expired, malformed or foreign token is not a usable session. The
-       * caller gets a new subject and the token is never written anywhere.
-       */
-      return null;
-    }
-
-    if (!subjectId) {
-      return null;
-    }
-
-    const subject = await this.findById({ id: subjectId });
-
-    return subject || null;
+    /**
+     * An expired, malformed, foreign, refresh or revoked token is not a
+     * usable session. The caller gets a new subject and the token is never
+     * written anywhere.
+     */
+    return this.me({ token: props.token }).catch(() => null);
   }
 }
