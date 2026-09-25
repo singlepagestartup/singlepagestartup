@@ -2,8 +2,9 @@
 issue_number: 320
 issue_title: "Add workflow permissions, pin actions and remove unused pull-request workflows"
 start_date: 2026-09-25T21:10:00Z
+completed_date: 2026-09-25T21:21:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-320.md
-status: in_progress
+status: complete
 ---
 
 # Implementation Progress: ISSUE-320 - Add workflow permissions, pin actions and remove unused pull-request workflows
@@ -63,8 +64,8 @@ No Nx project owns `.github/workflows/` or `tools/deployer/README.md`, so no jes
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/323
+- [x] PR number: 323
 
 ### Final Status
 
@@ -74,4 +75,4 @@ No Nx project owns `.github/workflows/` or `tools/deployer/README.md`, so no jes
 
 ---
 
-**Last updated**: 2026-09-25T21:16:00Z
+**Last updated**: 2026-09-25T21:21:00Z

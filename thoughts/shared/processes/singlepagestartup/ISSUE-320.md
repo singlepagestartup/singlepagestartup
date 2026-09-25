@@ -3,9 +3,9 @@ issue_number: 320
 issue_title: "Add workflow permissions, pin actions and remove unused pull-request workflows"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-25T21:17:00Z
+last_updated: 2026-09-25T21:21:00Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-320 - Add workflow permissions, pin actions and remove unused pull-request workflows
@@ -20,8 +20,8 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Research: completed
 - Plan: completed
 - Implement: completed
-- Current phase: implement
-- Next step: code review of the pull request
+- Current phase: complete
+- Next step: code review of pull request #323
 
 ## Phase Notes
 
@@ -45,7 +45,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: `deploy-to-icp.yml` and `update-host.yml` deleted; `deployer.yml` limited to `ansible-*` base branches; `ansible.yml` reads the branch through `BRANCH_NAME`, the step outputs through `env:` and the repository through the runner variable; the five service workflows and `docker-image.yml` read the release tag through `IMAGE_TAG`; six `uses:` lines pinned to commits with version comments; `permissions: contents: read` in the ten remaining workflows; the deployer README says how a deployment run starts.
-- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-320-progress.md`; the changed files listed there.
+- Outputs: commit `34b6d14fb1`; pull request #323 (`thoughts/shared/prs/323_description.md`); `thoughts/shared/handoffs/singlepagestartup/ISSUE-320-progress.md`.
 - Notes: no Nx project owns the changed paths, so verification is a scratchpad harness (parse, permissions, pins, `run:` expression allow-list, `bash -n`, `workflow_call` contracts, pull-request guards), an old-versus-new simulation of the changed steps with placeholder secrets, `gh api` checks of every pinned commit, `prettier --check` and the code-placement check. The mutation check restored one guard of each kind and saw the harness and the simulation fail.
 
 ## Incident Log
