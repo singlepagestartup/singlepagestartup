@@ -103,7 +103,6 @@ export function getMcpAuthHeaders(
 
   const rbacSecretKey =
     getHeader(requestHeaders, "x-rbac-secret-key") ??
-    cookies["rbac.secret-key"] ??
     getAuthInfoExtraString(extra, "x-rbac-secret-key") ??
     getAuthInfoExtraString(extra, "rbacSecretKey") ??
     getMetaString(extra, "x-rbac-secret-key") ??

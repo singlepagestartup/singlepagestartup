@@ -1,11 +1,13 @@
 import { Context } from "hono";
-import { getCookie } from "hono/cookie";
 
+/**
+ * Reads the subject JWT from a request's `Authorization` header, with or
+ * without the `Bearer ` prefix.
+ *
+ * The browser keeps its session in its own cookie on the host origin and
+ * sends it as this header. The API neither writes nor reads a session cookie,
+ * so no cookie authenticates a request.
+ */
 export function util(c: Context) {
-  const authorizationCookie = getCookie(c, "rbac.subject.jwt");
-  const authorizationHeader = c.req.header("Authorization");
-  const authorization =
-    authorizationCookie || authorizationHeader?.replace("Bearer ", "");
-
-  return authorization;
+  return c.req.header("Authorization")?.replace("Bearer ", "");
 }

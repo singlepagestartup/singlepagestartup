@@ -220,7 +220,7 @@ Required environment values are loaded from the app env files created by `./up.s
 
 - Prefer `Authorization: Bearer <jwt>` using the same JWT stored by the frontend in the `rbac.subject.jwt` cookie.
 - For root/service access, pass `X-RBAC-SECRET-KEY` as an MCP request header.
-- HTTP transports may also forward the frontend cookies `rbac.subject.jwt` or `rbac.secret-key`.
+- HTTP transports may also forward the frontend's `rbac.subject.jwt` cookie, which MCP sends to the API as `Authorization: Bearer`. The operator secret is accepted only in the `X-RBAC-SECRET-KEY` header, never in a cookie.
 - Tool input schemas do not expose direct auth fields; pass auth through the MCP transport instead.
 
 Resources do not have per-call input fields, so resource reads must receive auth from the MCP transport headers, cookies, MCP auth info, or request metadata. A typical edit flow is:

@@ -47,15 +47,31 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `GET /rbac/subjects/authentication/oauth/{provider}/callback`: OAuth provider callback.
 - `POST /rbac/subjects/authentication/oauth/exchange`: exchange one-time code to JWT/refresh.
 
+## Session Credentials
+
+- The token routes (`init`, `refresh`, `ethereum-virtual-machine`,
+  `oauth/exchange`, `email-and-password/authentication` and
+  `email-and-password/registration`) answer with `{ jwt, refresh }` in the
+  body and write no session cookie.
+- The browser keeps the JWT in its own `rbac.subject.jwt` cookie on the host
+  origin and the refresh token in localStorage
+  (`persistAuthenticationTokens`), and sends the JWT as
+  `Authorization: Bearer <jwt>` through `saturateHeaders`.
+- The API reads the subject only from the `Authorization` header
+  (`authorization` in `@sps/backend-utils`) and the operator secret only from
+  the `X-RBAC-SECRET-KEY` header (`readRbacSecret`). A cookie carrying either
+  is ignored.
+- `logout` deletes an API-origin `rbac.subject.jwt` cookie that an earlier
+  release may have left in the browser.
+
 ## Anonymous Session Lifecycle
 
 A subject and a JWT are issued on the first visit, including public browsing,
 so visitor actions can be recorded from the first request.
 
 `GET /rbac/subjects/authentication/init` reuses a session instead of creating
-one whenever the request carries a token this installation signed - in the
-`rbac.subject.jwt` cookie or the `Authorization` header - and the subject in
-that token still exists. A request with no token, with a malformed or expired
+one whenever the request carries a token this installation signed in the
+`Authorization` header and the subject in that token still exists. A request with no token, with a malformed or expired
 token, or with a token for a deleted subject creates a subject, so first-visit
 creation is unchanged.
 
