@@ -264,6 +264,25 @@ hardening restores the public `5432`/`9000` configuration and catch-all TCP
 routers. If rollback is unavoidable, restrict those ports at the provider
 firewall first and recheck host listeners immediately afterward.
 
+## Browser origins for the API
+
+The API and Telegram services echo any browser `Origin` in
+`Access-Control-Allow-Origin`, with credentials allowed, until
+`API_CORS_ALLOWED_ORIGINS` is set. A production deployment lists the origins of
+its own front ends in `tools/deployer/.env`, comma-separated and without
+spaces:
+
+```dotenv
+API_CORS_ALLOWED_ORIGINS=https://domain.com,https://admin.domain.com
+```
+
+`api.sh` and `telegram.sh` write the value into both service environments, and
+`github_deployer.sh` creates the matching GitHub Actions secret; preview
+deployments use `PREVIEW_API_CORS_ALLOWED_ORIGINS`. List the host and every
+other front end that calls the API from a browser: an origin that is missing
+from the list cannot read API responses in the browser. An empty value keeps
+the echo. A change takes effect when `api.sh` and `telegram.sh` run again.
+
 ## Knowledge embedding provider
 
 Knowledge uses the private `apps/llm` service and its Ollama embedding model by
