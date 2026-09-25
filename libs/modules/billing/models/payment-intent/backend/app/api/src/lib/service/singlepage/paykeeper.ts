@@ -14,6 +14,7 @@ import {
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
+import { validateWebhookIdentifiers } from "./webhook-identifiers";
 
 interface IMetadata {
   ecommerceModule?: {
@@ -472,7 +473,13 @@ export class Service {
       console.log("🚀 ~ proceed ~ props:", props);
 
       try {
-        console.log("🚀 ~ Processing webhook for orderid:", data.orderid);
+        const { orderid } = validateWebhookIdentifiers({
+          data,
+          uuidFields: ["orderid"],
+          stringFields: ["id", "sum", "clientid"],
+        });
+
+        console.log("🚀 ~ Processing webhook for orderid:", orderid);
         console.log("🚀 ~ Webhook data:", data);
         console.log("🚀 ~ Webhook data.id (PayKeeper invoice ID):", data.id);
 
@@ -483,7 +490,7 @@ export class Service {
                 {
                   column: "paymentIntentId",
                   method: "eq",
-                  value: data.orderid,
+                  value: orderid,
                 },
               ],
             },
@@ -497,7 +504,7 @@ export class Service {
 
         if (!paymentIntentToInvoice || paymentIntentToInvoice.length === 0) {
           throw new Error(
-            `Not Found error. Payment intent to invoice relation not found for payment-intent ID: ${data.orderid}`,
+            `Not Found error. Payment intent to invoice relation not found for payment-intent ID: ${orderid}`,
           );
         }
 
