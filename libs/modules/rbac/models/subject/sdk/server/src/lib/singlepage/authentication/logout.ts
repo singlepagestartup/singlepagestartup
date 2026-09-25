@@ -17,8 +17,7 @@ export interface IProps {
 }
 
 export type IResult = {
-  jwt: string;
-  refresh: string;
+  ok: boolean;
 };
 
 export async function action(props: IProps): Promise<IResult> {
