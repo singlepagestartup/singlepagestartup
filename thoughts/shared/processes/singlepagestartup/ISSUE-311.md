@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
+- Implement: completed
 - Current phase: implement
-- Next step: commit, push and open the pull request; then the lead's review
+- Next step: the lead's review of #339
 
 ## Phase Notes
 
@@ -86,5 +86,6 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ## Reusable Learnings
 
+- Under an embargo, a plan's out-of-scope list states the boundary of this change only (for example "no change to middlewares other than is-authorized") and never describes other open findings, because the plan is published with the fix.
 - An HTTP proof of revocation needs a second token of the same subject with an already cached decision; the token that logs out only proves half of it.
 - The README claim that a leading category phrase keeps its category is true only where the phrase is also a keyword of that category; `Authentication error` is not a 401 keyword, and `/authentication/i` is a 403 one.

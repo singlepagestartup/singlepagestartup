@@ -3,7 +3,7 @@ issue_number: 311
 issue_title: "Distinguish access and refresh tokens and add server-side revocation"
 start_date: 2026-09-26T01:04:00+03:00
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-311.md
-status: in_progress
+status: complete
 ---
 
 # Implementation Progress: ISSUE-311 - Distinguish access and refresh tokens and add server-side revocation
@@ -122,8 +122,8 @@ Route billing was added after the first push: the direct `POST /api/rbac/subject
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/339
+- [x] PR number: 339 (description saved at `thoughts/shared/prs/339_description.md`)
 
 ### Final Status
 
