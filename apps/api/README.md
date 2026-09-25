@@ -11,9 +11,10 @@ The server itself reads:
 
 - `API_MAX_REQUEST_BODY_BYTES` - optional, defaults to `134217728` (128 MiB,
   the limit Bun applies without the option). A request whose `Content-Length`
-  is larger is answered `413` before any route runs. Uploads pass through this
-  server, so keep the value at least as large as the largest upload the
-  deployment accepts.
+  is larger is answered `413` before any route runs, and a body without a
+  declared length is answered `413` once a route reads past the limit. Uploads
+  pass through this server, so keep the value at least as large as the largest
+  upload the deployment accepts.
 
 ## Guidelines
 
