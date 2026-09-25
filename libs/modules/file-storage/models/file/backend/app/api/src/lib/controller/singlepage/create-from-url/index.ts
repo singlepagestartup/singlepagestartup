@@ -5,7 +5,7 @@ import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
 import { fileTypeFromBuffer } from "file-type";
 import { imageSize } from "image-size";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { fetchOutboundUrl, getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -32,7 +32,7 @@ export class Handler {
         throw new Error("Validation error. Invalid url");
       }
 
-      const file = await fetch(data.url)
+      const file = await fetchOutboundUrl(data.url)
         .then(async (res) => {
           return await res.blob();
         })
