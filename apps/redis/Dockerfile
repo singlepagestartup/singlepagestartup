@@ -1,1 +1,1 @@
-FROM redis:latest
+FROM redis:8.10.2-trixie

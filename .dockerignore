@@ -12,8 +12,28 @@ tmp
 .github
 
 ############################
+# Secrets
+############################
+# Local env files and key material stay out of every image. Examples and the
+# tracked, secret-free env defaults are kept.
+**/.env*
+**/*.env
+**/*.env.*
+!**/.env.example
+!**/*.env.example
+!apps/api/.env.production
+!apps/host/.env.development
+!apps/host/.env.production
+!apps/mcp/.env.production
+**/*.pem
+**/*.pem.base64
+**/*.key
+**/*-wallet.txt
+
+############################
 # AI development artifacts
 ############################
+.agents
 .claude
 .codex
 .cursor
@@ -49,13 +69,11 @@ apps/studio
 # Database
 ############################
 apps/db/db_data
-apps/db/.env
 
 ############################
 # redis
 ############################
 apps/redis/redis_data
-apps/redis/.env
 
 ############################
 # host
@@ -63,9 +81,6 @@ apps/redis/.env
 apps/host/.next
 apps/host/out
 apps/host/build
-apps/host/.env
-apps/host/.env*.local
-apps/host/.env*.testing
 apps/host/.vercel
 apps/host/next-env.d.ts
 
@@ -78,8 +93,12 @@ apps/host/coverage
 # host / ICP
 ############################
 apps/host/.dfx
-apps/host/*.key
-apps/host/*.pem
-apps/host/*.pem.base64
-apps/host/*-wallet.txt
-apps/host/.env.cloudflare
+
+############################
+# Deployer
+############################
+# Operator state: inventories, keys and provider credentials. The app
+# create_env.sh scripts source the two helpers kept here.
+tools/deployer
+!tools/deployer/get_env.sh
+!tools/deployer/generate_secret.sh

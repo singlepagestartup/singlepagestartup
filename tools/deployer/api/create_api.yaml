@@ -9,10 +9,14 @@
     portainer_url: "{{ PORTAINER_URL }}"
     telegram_service_bot_token: "{{ TELEGRAM_SERVICE_BOT_TOKEN }}"
   tasks:
+    # The API image runs as uid 1000 and writes uploads into this directory.
     - name: Create api_data directory
       file:
         path: /home/code/api_data
         state: directory
+        owner: "1000"
+        group: "1000"
+        recurse: yes
 
     - name: Read iam.env and set AWS_ACCESS_KEY_ID
       shell: grep "^AWS_ACCESS_KEY_ID=" /home/code/iam.env | cut -d '=' -f2
