@@ -21,7 +21,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Plan: completed
 - Implement: in_progress
 - Current phase: implement
-- Next step: commit, push, open the pull request and wait for the lead's review
+- Next step: lead review of pull request #338; fix on the same branch and reply
 
 ## Phase Notes
 
@@ -45,7 +45,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: all nine phases landed. Specs grew from 9 suites and 54 tests to 12 suites and 91 in `apps/mcp`; `@sps/shared-utils` and `telegram` lanes, lint and type checks pass; four mutation checks confirm the new specs guard the redirect rule, the delete scope, the client TTL extension and the fetch origin check. The HTTP proof against the API on 4316 and MCP on 3316 covered registration, consent, token, read, refused and allowed delete, 413, the fallback without the secret, and least-recently-used session eviction; throwaway data and Redis keys were removed.
-- Outputs: code and documentation listed in `thoughts/shared/handoffs/singlepagestartup/ISSUE-316-progress.md`.
+- Outputs: commits `8a63f092ae` and `c717c8926c`, pull request https://github.com/singlepagestartup/singlepagestartup/pull/338; files listed in `thoughts/shared/handoffs/singlepagestartup/ISSUE-316-progress.md`.
 - Notes: the session idle default is 24 hours and the maximum 500 (about 143 KiB of heap per session); the internal exchange keeps the delete scope for the profile agent.
 
 ## Incident Log

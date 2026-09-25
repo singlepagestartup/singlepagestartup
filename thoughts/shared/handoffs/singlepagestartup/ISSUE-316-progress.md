@@ -138,6 +138,7 @@ HTTP proof, API on 4316 and MCP HTTP on 3316 (Redis store, fallback flag on, `RB
 ### Commits
 
 - `8a63f092ae` fix(mcp): harden OAuth registration, scopes, sessions and outbound credentials
+- `c717c8926c` docs: add research, plan, process and progress for #316
 
 ### Changes Made
 
@@ -152,8 +153,8 @@ HTTP proof, API on 4316 and MCP HTTP on 3316 (Redis store, fallback flag on, `RB
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/338
+- [x] PR number: 338
 
 ### Final Status
 
