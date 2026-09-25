@@ -60,12 +60,59 @@ completed_date: 2026-09-26
 - HTTP on port 4313 with `API_MAX_REQUEST_BODY_BYTES=1048576`: a 2 MiB multipart upload → 413 with an empty body and no exception in the app log; a 512 KiB upload → 201, stored `size` 524288; fixture deleted (`DELETE` → 200), no file left under `apps/api/public`.
 - The server was stopped after each run; nothing listens on 4313.
 
+### Review round 1 (pull request #334)
+
+- [x] Started: 2026-09-26T08:30:00Z
+- [x] Completed: 2026-09-26T09:40:00Z
+- [x] Automated verification: PASSED
+
+**Notes**:
+
+- `git merge --no-ff origin/claude/issue-304-upload-delivery` → no conflict; merge commit `a4e26f8b00`.
+- Trial of the requested placement (file-storage upload limit importing `@sps/middlewares`, reverted afterwards): `nx graph` puts eleven projects on a cycle, and `npx nx run @sps/file-storage:tsc:build` stops with "Could not execute command because the task graph has a circular dependency". With the middleware in `@sps/shared-backend-api`, `nx graph` shows no project on a cycle and `@sps/file-storage:tsc:build` succeeds with its 15 dependency tasks.
+- `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run <project>:jest:test --skip-nx-cache`:
+  - `@sps/shared-backend-api` → 7 suites passed, 1 skipped; 80 tests passed, 1 skipped (7 new middleware scenarios, 3 new filter scenarios);
+  - `@sps/middlewares` → 10 suites, 64 tests passed;
+  - `@sps/file-storage` → 4 suites, 22 tests passed, the #331 middleware and controller specs unchanged;
+  - `api` → 2 suites, 4 tests passed; `@sps/backend-utils` → 6 suites, 133 tests passed; `@sps/shared-utils` → 12 suites, 74 tests passed.
+- `NODE_OPTIONS=--max-old-space-size=12288` `eslint:lint` on `@sps/shared-backend-api`, `@sps/file-storage`, `@sps/shared-utils`, `@sps/backend-utils` and `api` → 0 errors; the 4 warnings are the untouched `controllers/rest/index.ts:139,153` and the two unused directives in the `apps/api` jest configs. `tsc:build` of `@sps/shared-backend-api`, `@sps/file-storage` and `@sps/shared-utils` → success. `tsc --noEmit -p apps/api/tsconfig.json` → the same 25 errors as before, none in a changed file.
+- Mutation checks, each restored with `cmp`:
+  - middleware with `maxSize: Number.POSITIVE_INFINITY` → 4 of the 7 middleware scenarios fail;
+  - middleware ignoring `API_MAX_REQUEST_BODY_BYTES` → 3 fail;
+  - filter column check back to truthiness → the 3 new filter scenarios fail;
+  - registration removed from `apps/api/app.ts` on the running API → a 2 MiB body without a declared length reaches the handler (400 from its validation) instead of 413.
+- HTTP on port 4313 with `API_MAX_REQUEST_BODY_BYTES=1048576` and `FILE_STORAGE_MAX_UPLOAD_BYTES=524288` (bug-report variables blank):
+  - `POST /api/host/widgets` with the operator key, 2 MiB body without a declared length → 413 `Payload Too Large`; 256 KiB body without a declared length → 400 from the handler's own validation; 2 MiB with `Content-Length` → 413 with an empty body from Bun;
+  - `POST /api/file-storage/files`, 768 KiB upload without a declared length → 413; with `Content-Length` → 413 `Payload Too Large error. The upload limit is 524288 bytes`; 256 KiB upload without a declared length → 201, stored `size` 262144, fixture deleted (`DELETE` → 200), no file left under `apps/api/public`;
+  - `GET /api/host/pages` with a filter on `constructor`, `enableRLS` and `constructor->>en` → 400 `Validation error. Unknown column '<name>'`; on `variant` → 200;
+  - the server log holds 5 responses with status 400 and 4 with 413, none 5xx; the server is stopped.
+- Commits: `7fe5d1f1d1` (shared middleware, registration, file-storage wrapper), `2958e194a4` (filter columns), `b3107f8b4e` (#331 notes name `API_MAX_REQUEST_BODY_BYTES`); every message passes `node tools/upstream/migrations.mjs message` before and after committing.
+- `gh pr edit 334 --base claude/issue-304-upload-delivery` → the pull request lists only this branch's files against #331; the description is rewritten and saved to `thoughts/shared/prs/334_description.md`.
+
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 0 -->
+<!-- incident-count: 2 -->
+
+### Incident 1 — The requested middleware path makes the project graph circular
+
+- **Occurrences**: 1
+- **Stage**: Review round 1
+- **Symptom**: `npx nx run @sps/file-storage:tsc:build` stops with "Could not execute command because the task graph has a circular dependency" once the file-storage module imports `@sps/middlewares`.
+- **Root Cause**: `@sps/middlewares` depends on `@sps/rbac` and `@sps/agent`, which depend on `@sps/file-storage`.
+- **Fix**: the shared middleware lives in `@sps/shared-backend-api`, which depends on no module.
+- **Reusable Pattern**: check `npx nx graph --file=<json>` for a path from the imported package back to the importing module before adding the import.
+
+### Incident 2 — zsh modifiers in a loop over Nx targets
+
+- **Occurrences**: 1
+- **Stage**: Review round 1
+- **Symptom**: "Cannot find project 'slint'" from `npx nx run $p:eslint:lint`.
+- **Root Cause**: zsh reads `:e` and `:t` after a parameter as modifiers.
+- **Fix**: `"${p}:eslint:lint"`.
+- **Reusable Pattern**: brace a parameter that a colon follows in zsh.
 
 ## Summary
 
@@ -88,4 +135,4 @@ completed_date: 2026-09-26
 
 ---
 
-**Last updated**: 2026-09-25T23:45:00Z
+**Last updated**: 2026-09-26T09:40:00Z

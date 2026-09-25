@@ -268,6 +268,32 @@ for the other rows.
 - `thoughts/shared/research/singlepagestartup/ISSUE-304.md` (on the issue #304
   branch) - upload limits and static delivery.
 
+## Review round (pull request #334)
+
+- `maxRequestBodySize` is checked against a declared `Content-Length`. Hono's
+  `bodyLimit` (`hono/body-limit`, Hono 4.10.4) checks a declared length the
+  same way and counts a body without one while a route reads it, failing the
+  read with `Payload Too Large` once the count passes the limit.
+- #331 adds the `Payload Too Large error` category (status 413) to
+  `libs/shared/backend/utils/src/lib/http-error/paterns/index.ts` and a
+  file-storage `RequestBodyFitsUploadLimit` that wraps `bodyLimit` with
+  `FILE_STORAGE_MAX_UPLOAD_BYTES`.
+- `@sps/middlewares` imports the SDKs of `@sps/rbac`, `@sps/agent` and
+  `@sps/broadcast`; `@sps/rbac` and `@sps/agent` depend on `@sps/file-storage`.
+  `nx graph` shows no project on a dependency cycle today. An import of
+  `@sps/middlewares` from the file-storage module puts eleven projects on one,
+  and `npx nx run @sps/file-storage:tsc:build` then stops with "Could not
+  execute command because the task graph has a circular dependency".
+  `apps/api/README.md` states that modules never import `libs/middlewares`.
+- `@sps/shared-backend-api` depends only on `@sps/backend-utils`,
+  `@sps/shared-utils` and `@sps/shared-backend-database-config`. Its
+  `src/lib/middleware` folder holds `ParseQueryMiddleware`, which
+  `apps/api/app.ts` and `DefaultApp` both use, and `@sps/file-storage` already
+  imports the package.
+- `query-builder/filters.ts:160-164` accepts a filter column when `table[name]`
+  is truthy, so `constructor`, `enableRLS` and `constructor->>en` pass the
+  lookup the way they passed the sort lookup.
+
 ## Open Questions
 
 None for the agreed scope. The plan records the choice of default and the

@@ -191,6 +191,78 @@ it commented out in the API block of the example.
 
 ---
 
+## Phase 3: Review changes on pull request #334
+
+### Overview
+
+The body limit also holds for a body without a declared length, one wrapper
+around Hono's `bodyLimit` serves both the whole API and the file-storage upload
+routes, and the filter path checks its columns the way the sort path does. The
+branch builds on #331, whose `Payload Too Large error` category the refusal
+uses, so `origin/claude/issue-304-upload-delivery` is merged in and the pull
+request targets that branch.
+
+### Changes Required:
+
+#### 1. Shared request body limit
+
+**File**: `libs/shared/backend/api/src/lib/middleware/request-body-fits-limit/index.ts`
+**Why**: `maxRequestBodySize` bounds a declared length only. Hono's
+`bodyLimit` also counts a body without a declared length while a route reads
+it. The class lives beside `ParseQueryMiddleware`, in the package that both
+`apps/api` and the modules already import. In `libs/middlewares` it would make
+`@sps/file-storage` depend on `@sps/middlewares`, which depends on `@sps/rbac`
+and `@sps/agent`, which depend on `@sps/file-storage`. Nx then refuses
+`@sps/file-storage:tsc:build` because of the circular task graph, and
+`apps/api/README.md` forbids modules to import `libs/middlewares`.
+**Changes**: class `Middleware` with `init()`, options `maxBytes` (default
+`API_MAX_REQUEST_BODY_BYTES`) and `limitName` (default "request body limit"),
+refusing through `getHttpErrorType` with `Payload Too Large error. The <limit
+name> is <N> bytes`; exported as `RequestBodyFitsLimitMiddleware`; a BDD spec
+beside it.
+
+**File**: `apps/api/app.ts`
+**Why**: every route has to be covered.
+**Changes**: register the middleware right after CORS.
+
+**File**: `libs/modules/file-storage/models/file/backend/app/middlewares/src/lib/request-body-fits-upload-limit/index.ts`
+**Why**: the wrapper around `bodyLimit` exists once.
+**Changes**: `RequestBodyFitsUploadLimit` keeps its name, message and spec and
+constructs the shared middleware with `FILE_STORAGE_MAX_UPLOAD_BYTES` and the
+name "upload limit".
+
+#### 2. Filter columns
+
+**File**: `libs/shared/backend/api/src/lib/query-builder/filters.ts`
+**Why**: the filter lookup takes `table[name]` by truthiness, so `constructor`
+and `enableRLS` pass as columns.
+**Changes**: accept only `is(tableColumn, Column)`; a spec beside the filter
+specs.
+
+#### 3. Notes from #331
+
+**Files**: `libs/shared/utils/src/lib/envs/file-storage.ts`,
+`libs/modules/file-storage/README.md`, `tools/deployer/README.md`,
+`tools/deployer/.env.example`
+**Why**: they tell an operator to raise `maxRequestBodySize` in
+`apps/api/server.ts`, which is now `API_MAX_REQUEST_BODY_BYTES`.
+**Changes**: name the setting instead.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- [x] `jest:test` of `@sps/shared-backend-api`, `@sps/middlewares`, `@sps/file-storage`, `api`, `@sps/backend-utils` and `@sps/shared-utils`
+- [x] `eslint:lint` of the changed projects and `tsc:build` of `@sps/shared-backend-api`, `@sps/file-storage` and `@sps/shared-utils`
+- [x] Mutation checks: a middleware without a limit, a middleware that ignores the setting, and a filter column check by truthiness each fail specs
+- [x] No project on a dependency cycle in `nx graph`
+
+#### Manual Verification:
+
+- [x] On port 4313 with small limits: a body without a declared length above the API limit answers 413 on a JSON route and on the upload route, a body within the limits reaches the route, and a filter on `constructor` answers 400
+
+---
+
 ## Testing Strategy
 
 ### Unit Tests:
@@ -234,4 +306,8 @@ that never ordered anything.
 
 - Research: `thoughts/shared/research/singlepagestartup/ISSUE-313.md`
 - Filter validation: issue #269, commit `e3eb1acfe6`
-- Per-route upload limit: issue #304
+- Per-route upload limit: issue #304, pull request #331
+- Review of pull request #334: two inline comments on `apps/api/server.ts` and
+  `libs/shared/backend/api/src/lib/repository/database/index.ts`
+
+<!-- Last synced at: 2026-09-26T09:40:00Z -->

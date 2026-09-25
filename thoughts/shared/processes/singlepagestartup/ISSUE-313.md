@@ -3,9 +3,9 @@ issue_number: 313
 issue_title: "Bound list reads, request bodies, timeouts and WebSocket connections"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-25T23:45:00Z
+last_updated: 2026-09-26T09:30:00Z
 status: active
-current_phase: complete
+current_phase: implement
 ---
 
 # Process Log: ISSUE-313 - Bound list reads, request bodies, timeouts and WebSocket connections
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: completed
-- Current phase: complete
-- Next step: code review of pull request #334, then merge
+- Implement: completed (review round 1 addressed)
+- Current phase: implement
+- Next step: lead review of the review-round commits on pull request #334, then merge after #331
 
 ## Phase Notes
 
@@ -48,11 +48,37 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-313-progress.md`, pull request #334 with its description in `thoughts/shared/prs/334_description.md`.
 - Notes: `tsc --noEmit -p apps/api/tsconfig.json` reports 25 Bun typing errors in files this branch does not touch; none is in a changed file. `api:eslint:lint` took about ten minutes on this machine.
 
+### Review round 1
+
+- Summary: the lead asked for a request body limit that also holds for a body without a declared length, shared with the file-storage upload limit from #331, and for the column check in the filter path. `origin/claude/issue-304-upload-delivery` is merged in (no conflict) and the pull request targets that branch. The shared middleware lives in `@sps/shared-backend-api` instead of `libs/middlewares`; see Incident 1.
+- Outputs: `RequestBodyFitsLimitMiddleware` with its spec, the registration in `apps/api/app.ts`, the thin file-storage wrapper, the filter column check with its spec, and the #331 notes that now name `API_MAX_REQUEST_BODY_BYTES`.
+- Notes: zsh expands `$p:e...` and `$p:t...` as parameter modifiers, so a loop over project names must write `${p}:eslint:lint`; the first lint and build loop ran against the projects `slint` and `shared-backend-apisc` and failed at once.
+
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 0 -->
+<!-- incident-count: 2 -->
+
+### Incident 1 — The requested middleware path makes the project graph circular
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: with the file-storage upload limit importing `@sps/middlewares`, `npx nx run @sps/file-storage:tsc:build` stops with "Could not execute command because the task graph has a circular dependency" (`@sps/file-storage:tsc:build --> @sps/middlewares:tsc:build --> @sps/rbac:tsc:build --> @sps/ecommerce:tsc:build --> @sps/file-storage:tsc:build`), and `nx graph` puts eleven projects on a cycle where there was none.
+- **Root Cause**: `@sps/middlewares` imports the `@sps/rbac`, `@sps/agent` and `@sps/broadcast` SDKs, and `@sps/rbac` and `@sps/agent` depend on `@sps/file-storage`. `apps/api/README.md` already keeps modules from importing `libs/middlewares`.
+- **Fix**: the shared middleware lives in `libs/shared/backend/api/src/lib/middleware/request-body-fits-limit`, beside `ParseQueryMiddleware`, in a package that depends on no module. `nx graph` shows no cycle afterwards.
+- **Preventive Action**: before a module imports a package, check with `npx nx graph --file=<json>` that the package cannot reach the module.
+- **References**: `apps/api/README.md` "Guidelines"; `libs/shared/backend/api/src/lib/middleware/index.ts`.
+
+### Incident 2 — zsh modifiers in a loop over Nx targets
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: `npx nx run $p:eslint:lint` in a zsh loop failed with "Cannot find project 'slint'".
+- **Root Cause**: zsh reads `:e` and `:t` after a parameter as the extension and tail modifiers.
+- **Fix**: write `"${p}:eslint:lint"`.
+- **Preventive Action**: brace every parameter that a colon follows in zsh.
+- **References**: the lint and build loop of review round 1.
 
 ## Reusable Learnings
 
