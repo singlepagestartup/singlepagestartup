@@ -47,7 +47,7 @@ Issue #320 concerns the workflows in `.github/workflows/`: how they reference th
 | `deploy-to-icp.yml`                                         | Deploy project to internetcomputer   | `pull_request`: `closed` into `deploy-to-icp`                          | builds `backend/` and `frontend/`, installs the ICP SDK by piping a remote script into `sh`                                                  | none                                                                                                    |
 | `update-host.yml`                                           | Update frontend                      | `pull_request`: `closed` into `update-frontend`                        | calls `docker-image`, `prepare-docker-images` and `host` with `TAG: ${{ github.sha }}`                                                       | none                                                                                                    |
 
-No file under `.github/` other than `ISSUE_TEMPLATE/` exists, and no composite action lives elsewhere in the repository (`git grep` for `uses:` outside `.github/workflows` finds none).
+Besides `workflows/`, `.github/` holds only `ISSUE_TEMPLATE/`, and no composite action lives elsewhere in the repository (`git grep` finds no versioned `uses:` reference outside `.github/workflows` and `thoughts/`).
 
 ### Third-party action references
 

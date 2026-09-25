@@ -42,6 +42,8 @@ Mutation check: with the `github.ref_name` expression restored in the script-nam
 
 No Nx project owns `.github/workflows/` or `tools/deployer/README.md`, so no jest, eslint or tsc lane applies. `actionlint`, `shellcheck` and `yamllint` are not installed.
 
+After the push, the checks on pull request #323 passed: CodeQL `Analyze (actions)`, `Analyze (javascript-typescript)`, `Analyze (python)` and Socket Security. Code scanning lists 20 open `actions/missing-workflow-permissions` alerts in `.github/workflows` on `main` and none on `refs/pull/323/merge`.
+
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.

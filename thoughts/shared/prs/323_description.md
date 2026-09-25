@@ -34,6 +34,7 @@ Action pins keep the code that runs today; nothing is upgraded.
 - [x] Each pinned commit is the commit behind both the replaced major tag and the exact release tag (`gh api repos/<owner>/<repo>/git/ref/tags/<tag>`; all four are lightweight tags) and exists in the action's repository.
 - [x] Mutation check: restoring one guard of each kind (the `github.ref_name` expression, the branch filter, a tag reference, a permissions block) produced exactly those four harness violations and a failing simulation; restoring the files returned the tree to the committed state.
 - [x] `npx prettier --check` on the changed YAML and Markdown files; `node tools/agents/code-placement.mjs`.
+- [x] Checks on this pull request: CodeQL (`actions`, `javascript-typescript`, `python`) and Socket Security pass. Code scanning lists 20 open `actions/missing-workflow-permissions` alerts in `.github/workflows` on `main` and none on this pull request's merge ref.
 
 `actionlint`, `shellcheck` and `yamllint` were not available on the machine that ran the checks. No Nx project owns the changed paths, so no jest, eslint or tsc lane applies.
 
