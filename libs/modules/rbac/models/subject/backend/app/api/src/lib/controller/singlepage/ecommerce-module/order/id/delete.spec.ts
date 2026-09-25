@@ -23,6 +23,7 @@ jest.mock("@sps/backend-utils", () => ({
     message: error.message,
     details: null,
   }),
+  verifyJwt: jest.requireActual("@sps/backend-utils").verifyJwt,
 }));
 
 jest.mock("hono/jwt", () => ({

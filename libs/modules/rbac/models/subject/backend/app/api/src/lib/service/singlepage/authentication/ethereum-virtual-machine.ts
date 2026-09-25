@@ -8,7 +8,7 @@ import {
 import { Address, createPublicClient, Hex, http } from "viem";
 import { mainnet } from "viem/chains";
 import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
-import * as jwt from "hono/jwt";
+import { signJwt } from "@sps/backend-utils";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
@@ -245,26 +245,20 @@ export class Service {
       throw new Error("Not Found error. No subject found");
     }
 
-    const jwtToken = await jwt.sign(
+    const jwtToken = await signJwt(
       {
-        exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        iat: Math.floor(Date.now() / 1000),
-        subject: {
-          id: subject.id,
-        },
+        subjectId: subject.id,
+        type: "access",
+        lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );
 
-    const refreshToken = await jwt.sign(
+    const refreshToken = await signJwt(
       {
-        exp:
-          Math.floor(Date.now() / 1000) +
-          RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
-        iat: Math.floor(Date.now() / 1000),
-        subject: {
-          id: subject.id,
-        },
+        subjectId: subject.id,
+        type: "refresh",
+        lifetimeInSeconds: RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
       },
       RBAC_JWT_SECRET,
     );

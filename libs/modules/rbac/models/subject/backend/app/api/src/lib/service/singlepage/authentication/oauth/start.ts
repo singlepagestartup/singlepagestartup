@@ -9,7 +9,8 @@ import {
 } from "@sps/shared-utils";
 import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectsToActionsApi } from "@sps/rbac/relations/subjects-to-actions/sdk/server";
-import * as jwt from "hono/jwt";
+import { verifyJwt } from "@sps/backend-utils";
+import { isRbacSubjectTokenRevoked } from "@sps/rbac/models/subject/sdk/model";
 import { getHostRedirectOrigins, resolveRedirectTarget } from "./utils";
 
 export type IExecuteProps = {
@@ -125,22 +126,40 @@ export class Service {
     return getHostRedirectOrigins();
   }
 
+  /**
+   * The subject a signed-in caller links the provider identity to. Only an
+   * access token counts, and only while its subject exists and has not logged
+   * out since the token was signed; anything else starts the flow without a
+   * source subject.
+   */
   protected async getSourceSubjectId(authorization?: string) {
     if (!authorization || !RBAC_JWT_SECRET) {
       return undefined;
     }
 
     try {
-      const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET);
+      const decoded = await verifyJwt(authorization, RBAC_JWT_SECRET, {
+        type: "access",
+      });
       const subjectId = decoded?.subject?.["id"];
-      if (typeof subjectId === "string") {
-        return subjectId;
+
+      if (typeof subjectId !== "string") {
+        return undefined;
       }
+
+      const subject = await this.repository.findFirstByField("id", subjectId);
+
+      if (
+        !subject ||
+        isRbacSubjectTokenRevoked({ subject, issuedAt: decoded.iat })
+      ) {
+        return undefined;
+      }
+
+      return subjectId;
     } catch (error) {
       return undefined;
     }
-
-    return undefined;
   }
 
   protected buildGoogleAuthorizationUrl(props: { state: string }) {

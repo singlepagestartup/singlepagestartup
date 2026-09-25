@@ -360,13 +360,16 @@ describe("util — HTTP error classification", () => {
 
     /**
      * BDD Scenario
-     * Given: the fixed messages the shared verification helper throws.
+     * Given: the fixed messages the shared verification helper throws, and
+     * the refusal of a token revoked by a logout.
      * When: they are classified.
      * Then: they reach 401 rather than the 403 pattern for "authentication".
      */
     test.each([
       "Authentication error. Token expired",
       "Authentication error. Invalid token",
+      "Authentication error. Invalid token type",
+      "Authentication error. Token revoked",
     ])("maps '%s' → 401 Authentication error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(401);

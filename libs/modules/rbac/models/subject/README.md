@@ -12,7 +12,7 @@ Subjects represent authenticated users or actors, and connect identities, roles,
 
 ## Authorization Layering
 
-- `backend/app/api/src/lib/service/singlepage/is-authorized.ts` must stay thin: it resolves `rbac.permission` and role access only.
+- `backend/app/api/src/lib/service/singlepage/is-authorized.ts` must stay thin: it accepts an unrevoked access token (see Session Tokens) and resolves `rbac.permission` and role access only.
 - Permission and relation lookups are injected through Subject DI and use the
   startup-exported backend services. Child projects can override those
   services or the main Subject Service method without a loopback API request.
@@ -35,9 +35,9 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 ## Authentication API
 
 - `GET /rbac/subjects/authentication/init`: initialize anonymous/authenticated session tokens.
-- `GET /rbac/subjects/authentication/me`: get current subject from JWT.
-- `POST /rbac/subjects/authentication/refresh`: refresh JWT/refresh pair.
-- `POST /rbac/subjects/authentication/logout`: logout current session.
+- `GET /rbac/subjects/authentication/me`: the stored subject row of the presented access token; `null` without a token or when the subject no longer exists.
+- `POST /rbac/subjects/authentication/refresh`: exchange a refresh token for a new JWT/refresh pair.
+- `POST /rbac/subjects/authentication/logout`: revoke every token of the presented access token's subject.
 - `POST /rbac/subjects/authentication/email-and-password/authentication`: login by email+password.
 - `POST /rbac/subjects/authentication/email-and-password/registration`: register by email+password.
 - `POST /rbac/subjects/authentication/email-and-password/forgot-password`: request reset code.
@@ -81,6 +81,55 @@ subject service.
 - `RBAC_ANONYMOUS_SUBJECT_CLEANUP_BATCH_SIZE`: subjects examined per cleanup
   run (default `500`). A larger backlog drains over consecutive runs.
 
+## Session Tokens
+
+Every token the framework signs for a subject carries `exp`, `iat`, a unique
+`jti`, its type in `typ`, and `subject: { id }`. The subject row is never
+copied into a token; `me` reads it from the database.
+
+- An access token (`typ: "access"`, `RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS`)
+  authorizes requests. The is-authorized check, `me`, `logout`, session reuse
+  in `init`, the source subject of the OAuth link flow and route billing accept
+  only access tokens.
+- A refresh token (`typ: "refresh"`,
+  `RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS`, or
+  `RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS` from `init`) is
+  accepted only by `POST /rbac/subjects/authentication/refresh`.
+- A token without `typ` was signed before token types existed. It is accepted
+  as either type until it expires, so sessions survive the upgrade; the last of
+  them expires within the longest configured refresh lifetime after the deploy
+  (28 days with the defaults). No framework code signs such tokens any more.
+- Code that signs a subject token, including project code, calls `signJwt`
+  from `@sps/backend-utils` with the subject id, the type and a lifetime. The
+  Telegram bot, the agent module and the subject's internal calls sign access
+  tokens this way.
+- `jti` makes every token unique; nothing consults it yet.
+
+### Logout and revocation
+
+`logout` writes `tokensValidAfter` for the subject of the presented access
+token. Every token of that subject signed in or before that second is refused
+from then on with 401 `Authentication error. Token revoked`, on every device:
+logout ends all sessions of the subject, including the token an MCP connector
+stored, which then has to be authorized again. The Telegram bot and the agent
+module sign a new token for every call and are not affected after that second.
+A token signed later in the same second as the logout is refused as well,
+because `iat` has one-second resolution. `init` answers a revoked token with a
+new subject, and the browser clears a revoked session and starts an anonymous
+one.
+
+A logout without a token, or with an invalid, expired or refresh token, revokes
+nothing and still answers `{ ok: true }`. An already revoked token revokes
+nothing either, so an old token cannot end sessions started after the logout
+that revoked it.
+
+The API process that handles the logout refuses every token of the subject at
+once: logout drops the is-authorized service's cached mark for the subject and
+names the subject in the `RBAC_REVOKED_SUBJECT_CONTEXT_KEY` request variable,
+after which the is-authorized middleware answers none of that subject's tokens
+from its decision cache for as long as those decisions can live. Other API
+instances refuse them once their 30-second cache entries expire.
+
 ## OAuth Configuration
 
 - `RBAC_OAUTH_GOOGLE_CLIENT_ID`: Google OAuth client id.
@@ -121,6 +170,7 @@ subject service.
 - `updatedAt`: last update timestamp.
 - `variant`: display variant.
 - `slug`: URL-friendly unique identifier.
+- `tokensValidAfter`: revocation mark written by logout; tokens of the subject signed in or before its second are refused. Empty until the first logout.
 
 ## Telegram Personal AI Agent
 

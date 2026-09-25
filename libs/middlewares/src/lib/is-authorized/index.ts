@@ -4,13 +4,15 @@ import {
   IRouteRule,
   NEXT_PUBLIC_HOST_SERVICE_URL,
   RBAC_PRIVILEGED_CONTEXT_KEY,
+  RBAC_REVOKED_SUBJECT_CONTEXT_KEY,
   RBAC_SECRET_KEY,
   RouteMatcher,
   createMemoryCache,
 } from "@sps/shared-utils";
-import { MiddlewareHandler } from "hono";
+import { Context, MiddlewareHandler } from "hono";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { getCookie } from "hono/cookie";
+import { decode } from "hono/jwt";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { createAllowedRoutesMatcher } from "./routes";
 
@@ -39,6 +41,12 @@ export class Middleware {
 
   init(): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
+      const proceed = async () => {
+        await next();
+
+        this.markRevokedSubject(c);
+      };
+
       const reqMethod = c.req.method.toUpperCase();
       const reqPath = c.req.path.toLowerCase();
       const secretKey =
@@ -70,7 +78,7 @@ export class Middleware {
       }
 
       if (this.allowedRoutesMatcher.matches(reqPath, reqMethod)) {
-        return next();
+        return proceed();
       }
 
       try {
@@ -81,8 +89,11 @@ export class Middleware {
         };
 
         const cacheKey = `${reqMethod}:${reqPath}:${authorization || ""}:${secretKey || ""}`;
-        if (cache.get<boolean>(cacheKey)) {
-          return next();
+        if (
+          cache.get<boolean>(cacheKey) &&
+          !this.isSubjectRevoked(authorization)
+        ) {
+          return proceed();
         }
 
         const existing = inFlight.get(cacheKey);
@@ -116,7 +127,46 @@ export class Middleware {
         throw new HTTPException(status, { message, cause: details });
       }
 
-      return next();
+      return proceed();
     });
+  }
+
+  /**
+   * A handler that revokes the tokens of a subject, as logout does, names the
+   * subject in the request context. For as long as cached decisions can live,
+   * no token of that subject is answered from them, so the next request with
+   * any of its tokens reaches the subject service, which refuses it.
+   */
+  private markRevokedSubject(c: Context) {
+    const subjectId = c.get(RBAC_REVOKED_SUBJECT_CONTEXT_KEY);
+
+    if (typeof subjectId === "string" && subjectId) {
+      cache.set(`revoked-subject:${subjectId}`, true);
+    }
+  }
+
+  /**
+   * Whether the subject a token names logged out within the cache lifetime.
+   * The payload is read without verification because it only decides whether
+   * a cached decision may be reused: a forged token can make a request skip
+   * the cache, never pass it.
+   */
+  private isSubjectRevoked(authorization?: string) {
+    if (!authorization) {
+      return false;
+    }
+
+    try {
+      const subject = decode(authorization).payload["subject"] as
+        | { id?: unknown }
+        | undefined;
+
+      return (
+        typeof subject?.id === "string" &&
+        Boolean(cache.get<boolean>(`revoked-subject:${subject.id}`))
+      );
+    } catch {
+      return false;
+    }
   }
 }

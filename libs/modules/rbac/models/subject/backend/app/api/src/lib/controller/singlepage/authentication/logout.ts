@@ -1,8 +1,9 @@
+import { RBAC_REVOKED_SUBJECT_CONTEXT_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { Service } from "../../../service";
 import { deleteCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { authorization, getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -13,12 +14,20 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      const data = await this.service.logout();
+      const { subject } = await this.service.logout({
+        token: authorization(c),
+      });
+
+      if (subject) {
+        c.set(RBAC_REVOKED_SUBJECT_CONTEXT_KEY, subject.id);
+      }
 
       deleteCookie(c, "rbac.subject.jwt");
 
       return c.json({
-        data,
+        data: {
+          ok: true,
+        },
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
