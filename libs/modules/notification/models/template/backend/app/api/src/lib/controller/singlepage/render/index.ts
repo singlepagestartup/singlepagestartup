@@ -13,6 +13,11 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       const uuid = c.req.param("uuid");
+
+      if (!uuid) {
+        throw new Error("Validation error. No uuid provided");
+      }
+
       const body = await c.req.parseBody();
 
       const entity = await this.service.findById({

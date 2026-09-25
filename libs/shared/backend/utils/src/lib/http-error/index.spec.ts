@@ -61,6 +61,7 @@ describe("util — HTTP error classification", () => {
       "token(abc.def.ghi) signature mismatched",
       "invalid signature",
       "jwt malformed",
+      'JWT algorithm mismatch: expected "HS256", got "HS512"',
     ])("maps '%s' → 401 Authentication error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(401);

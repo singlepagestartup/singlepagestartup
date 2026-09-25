@@ -76,6 +76,28 @@ describe("verifyJwt — token-free JWT verification failures", () => {
 
   /**
    * BDD Scenario
+   * Given: a token signed with the right secret under another algorithm.
+   * When: it is verified.
+   * Then: the rejection states the token is invalid and repeats no part of it.
+   */
+  it("When: the token names another algorithm Then: reports an invalid token without the token", async () => {
+    const token = await jwt.sign(
+      {
+        exp: Math.floor(Date.now() / 1000) + 600,
+        subject: { id: "subject-1" },
+      },
+      secret,
+      "HS512",
+    );
+
+    await expect(util(token, secret)).rejects.toThrow(
+      "Authentication error. Invalid token",
+    );
+    await expect(util(token, secret)).rejects.not.toThrow(token);
+  });
+
+  /**
+   * BDD Scenario
    * Given: a valid token.
    * When: it is verified.
    * Then: its payload is returned.

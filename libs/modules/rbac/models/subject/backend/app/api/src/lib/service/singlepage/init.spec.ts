@@ -14,6 +14,7 @@ const mockLoggerInfo = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
   RBAC_SECRET_KEY: "test-rbac-secret",
+  RBAC_JWT_ALGORITHM: "HS256",
   RBAC_JWT_SECRET: "test-jwt-secret",
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS: 3600,
   RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS: 2419200,
