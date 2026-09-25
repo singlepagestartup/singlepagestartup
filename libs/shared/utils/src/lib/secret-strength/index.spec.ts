@@ -102,6 +102,7 @@ describe("assessSecrets", () => {
       RBAC_SECRET_KEY: legacyDigestOfZero,
       RBAC_JWT_SECRET: rotated,
       MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET: "a".repeat(20),
+      HOST_SERVICE_REVALIDATION_SECRET: undefined,
       RBAC_COOKIE_SESSION_SECRET: rotated,
       KV_PASSWORD: rotated,
       DATABASE_PASSWORD: undefined,
@@ -114,6 +115,7 @@ describe("assessSecrets", () => {
       "legacy",
       "ok",
       "short",
+      "missing",
       "ok",
       "ok",
       "missing",
@@ -143,6 +145,12 @@ describe("isFatalSecretAssessment", () => {
     ).toBe(false);
     expect(
       isFatalSecretAssessment({ name: "DATABASE_PASSWORD", verdict: "legacy" }),
+    ).toBe(false);
+    expect(
+      isFatalSecretAssessment({
+        name: "HOST_SERVICE_REVALIDATION_SECRET",
+        verdict: "missing",
+      }),
     ).toBe(false);
     expect(
       isFatalSecretAssessment({ name: "RBAC_SECRET_KEY", verdict: "ok" }),

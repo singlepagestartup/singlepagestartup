@@ -14,6 +14,14 @@ export const NEXT_PUBLIC_HOST_SERVICE_URL =
   process.env["NEXT_PUBLIC_HOST_SERVICE_URL"] || "http://localhost:3000";
 export const HOST_SERVICE_URL =
   process.env["HOST_SERVICE_URL"] || "http://localhost:3000";
+/**
+ * Shared by apps.api and apps.host (issue #315). The API sends it with every
+ * call to the host's revalidation route, and the host refuses a call without
+ * it. No default: an absent value refuses every call instead of admitting
+ * every caller.
+ */
+export const HOST_SERVICE_REVALIDATION_SECRET =
+  process.env["HOST_SERVICE_REVALIDATION_SECRET"];
 export const STALE_TIME =
   Number(process.env["NEXT_PUBLIC_STALE_TIME"]) || 60 * 1000;
 export const REVALIDATE: number | undefined =

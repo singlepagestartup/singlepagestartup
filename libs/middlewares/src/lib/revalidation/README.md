@@ -94,6 +94,18 @@ Rules are processed top-to-bottom.
 
 Malformed topics are filtered out (e.g. missing placeholder replacement that produces `..`).
 
+### 5. Host cache revalidation
+
+For each route payload the middleware also calls the host's
+`GET /api/revalidate?tag=<payload>`, so the host drops its cached reads of that
+route (the host SDK tags each cached read with its API route). The tag is
+URL-encoded, and the request carries `HOST_SERVICE_REVALIDATION_SECRET` in the
+`X-Host-Revalidation-Secret` header (`HOST_SERVICE_REVALIDATION_SECRET_HEADER`
+in `@sps/shared-utils`). The host refuses a request without the configured
+value, so the API and the host need the same one; see
+`tools/deployer/README.md`. A refused call is logged as a warning with its
+status, and the write itself still succeeds.
+
 ## Frontend Side
 
 Source:

@@ -1,5 +1,7 @@
 import {
   compileTopicRules,
+  HOST_SERVICE_REVALIDATION_SECRET,
+  HOST_SERVICE_REVALIDATION_SECRET_HEADER,
   HOST_SERVICE_URL,
   ICompiledTopicRule,
   IRouteRule,
@@ -14,7 +16,7 @@ import {
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
-import { websocketManager } from "@sps/backend-utils";
+import { logger, websocketManager } from "@sps/backend-utils";
 import { createNotRevalidatingRoutesMatcher } from "./routes";
 
 export type IMiddlewareGeneric = unknown;
@@ -123,11 +125,35 @@ export class Middleware {
     });
   }
 
+  /**
+   * Asks the host to drop its cached reads of `tag` (issue #315). The host
+   * refuses a call without `HOST_SERVICE_REVALIDATION_SECRET`, so a refusal is
+   * logged: it means pages keep serving the old data until their revalidate
+   * window ends.
+   */
   async revalidateTag(tag: string) {
     try {
-      await fetch(HOST_SERVICE_URL + "/api/revalidate?tag=" + tag);
+      const response = await fetch(
+        HOST_SERVICE_URL + "/api/revalidate?tag=" + encodeURIComponent(tag),
+        {
+          headers: {
+            [HOST_SERVICE_REVALIDATION_SECRET_HEADER]:
+              HOST_SERVICE_REVALIDATION_SECRET ?? "",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        logger.warn(
+          `Host revalidation of ${tag} answered ${response.status}. ` +
+            "A 401 means HOST_SERVICE_REVALIDATION_SECRET is unset or " +
+            "differs between the API and the host.",
+        );
+      }
     } catch (error) {
-      console.log("🚀 ~ revalidateTag ~ error:", error);
+      const reason = error instanceof Error ? error.message : String(error);
+
+      logger.error(`Host revalidation of ${tag} failed: ${reason}`);
     }
   }
 }
