@@ -349,24 +349,21 @@ describe("file upload routes", () => {
    * BDD Scenario
    * Given: a URL whose response streams 2000 bytes in 100-byte chunks without a declared length.
    * When: create-from-url fetches it under a 256-byte limit.
-   * Then: reading stops at the chunk that passes the limit, the stream is cancelled and the request is refused.
+   * Then: it is refused with 413 Payload Too Large and nothing is uploaded or created; where reading
+   *       stops is covered by the fetchOutboundUrl spec.
    */
-  it("When: a fetched file streams past the limit Then: create-from-url stops reading and refuses it", async () => {
+  it("When: a fetched file streams past the limit Then: create-from-url refuses it", async () => {
     mockMaxUploadBytes = 256;
-    let pulledChunks = 0;
-    const cancelled = jest.fn();
     fetchSpy = jest.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
         new ReadableStream({
-          pull(controller) {
-            pulledChunks += 1;
-            controller.enqueue(new Uint8Array(100));
-
-            if (pulledChunks === 20) {
-              controller.close();
+          start(controller) {
+            for (let chunk = 0; chunk < 20; chunk++) {
+              controller.enqueue(new Uint8Array(100));
             }
+
+            controller.close();
           },
-          cancel: cancelled,
         }),
       ),
     );
@@ -381,8 +378,6 @@ describe("file upload routes", () => {
     expect(await response.text()).toContain(
       "Payload Too Large error. The upload limit is 256 bytes",
     );
-    expect(cancelled).toHaveBeenCalledTimes(1);
-    expect(pulledChunks).toBeLessThan(10);
     expect(mockUploadFile).not.toHaveBeenCalled();
     expect(service.create).not.toHaveBeenCalled();
   });
