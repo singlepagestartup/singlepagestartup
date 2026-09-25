@@ -22,7 +22,7 @@ completed_date: 2026-09-26
 
 **Notes**:
 
-- `HOST_SERVICE_REVALIDATION_SECRET` in `libs/shared/utils/src/lib/envs/host.ts` (no default), `HOST_SERVICE_REVALIDATION_SECRET_HEADER = "X-Host-Revalidation-Secret"` in `libs/shared/utils/src/lib/constants/index.ts`.
+- `HOST_SERVICE_REVALIDATION_SECRET` in `libs/shared/utils/src/lib/envs/host.ts` (no default), `HOST_SERVICE_REVALIDATION_SECRET_HEADER = "X-HOST-REVALIDATION-SECRET"` in `libs/shared/utils/src/lib/constants/index.ts`.
 - `apps/host/app/api/revalidate/route.ts`: unset secret → `console.warn` naming the variable and 401; header mismatch → 401 without a log line; the comparison is a private function beside the handler (length check, then `timingSafeEqual`). The import is `crypto`, not `node:crypto`: the host's only other Node built-in imports (`fs/promises`, `path` in the image-generator route) use the unprefixed form in its production build.
 - `apps/host/app/api/revalidate/route.spec.ts`: 10 scenarios.
 - `host:jest:test`: 3 suites, 24 tests passed (baseline 2 and 14).
@@ -66,6 +66,20 @@ completed_date: 2026-09-26
 - Scratch copy of the bootstrap layout: with the new order the host value equals the API's 64-character hex value; with the base order the host value is empty. Both files are mode 0600. The scratch copy was removed; no value was printed.
 - `npx prettier --check` passed on the changed files.
 
+### Review round 1 (pull request 325)
+
+- [x] Started: 2026-09-26T00:30:00Z
+- [x] Completed: 2026-09-26T00:50:00Z
+- [x] Automated verification: PASSED
+
+**Notes**:
+
+- The header is spelled `X-HOST-REVALIDATION-SECRET`, like `X-RBAC-SECRET-KEY` and `X-SPS-SKIP-ACTION-LOGGER`; the constant keeps its name. Both READMEs, the plan and the pull request description use the new spelling.
+- The route spec sends the documented header name as a literal, and the middleware spec's first host-call case asserts the exact header key the API sends, so the specs pin the spelling rather than following the constant.
+- The JSDoc of `revalidationSecretMatches` states why it repeats `rbacSecretMatches`: that helper is bound to `RBAC_SECRET_KEY`, a host route handler must not import `@sps/backend-utils` (#299), and `@sps/shared-utils` cannot use node built-ins.
+- Specs: route 10, revalidation middleware 15, agent page cache 3, all passed.
+- Mutations, each restored: the constant set back to `X-Host-Revalidation-Secret` → the middleware case fails and the route spec passes, because HTTP header names are case-insensitive; the constant set to `X-Revalidation-Token` → the three authorized route cases and the middleware case fail.
+
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
@@ -105,7 +119,7 @@ completed_date: 2026-09-26
 ### Changes Made
 
 - Host route guard with a constant-time comparison and one 401 for every refusal; a host log warning when the secret is unset.
-- Three API-side senders send `X-Host-Revalidation-Secret` and encode their query values; the middleware logs refused and failed calls.
+- Three API-side senders send `X-HOST-REVALIDATION-SECRET` and encode their query values; the middleware logs refused and failed calls.
 - The API boot report names the variable when it is missing or short.
 - Local bootstrap, deployer templates and scripts, and both GitHub secret lists carry one value to the API and the host.
 - Deployer and revalidation READMEs document the contract, rotation and the upgrade step.

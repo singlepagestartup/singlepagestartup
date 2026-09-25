@@ -3,8 +3,9 @@
  *
  * Given: the API asks the host to drop cached pages and reads after a write,
  *        on the route anyone can reach.
- * When: a request arrives with the shared credential, a wrong one, none, or at
- *       a host that has no credential configured.
+ * When: a request arrives with the shared credential in the
+ *       X-HOST-REVALIDATION-SECRET header, a wrong one, none, or at a host
+ *       that has no credential configured.
  * Then: only the configured HOST_SERVICE_REVALIDATION_SECRET revalidates
  *       anything, every refusal is the same 401, and a host without the secret
  *       refuses every caller and names the missing variable in its log.
@@ -29,14 +30,13 @@ jest.mock("next/cache", () => ({
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest } from "next/server";
-import { HOST_SERVICE_REVALIDATION_SECRET_HEADER } from "@sps/shared-utils";
 import { GET } from "./route";
 
 function createRequest(query: string, credential?: string) {
   const headers = new Headers();
 
   if (credential !== undefined) {
-    headers.set(HOST_SERVICE_REVALIDATION_SECRET_HEADER, credential);
+    headers.set("X-HOST-REVALIDATION-SECRET", credential);
   }
 
   return new NextRequest(`http://localhost:3000/api/revalidate?${query}`, {

@@ -205,7 +205,7 @@ force password resets if the deployment is public.
 The host's `/api/revalidate` route drops cached pages and cached API reads.
 The API calls it after every write, on start-up and from the host page-cache
 job, and the route answers only a request that carries
-`HOST_SERVICE_REVALIDATION_SECRET` in the `X-Host-Revalidation-Secret`
+`HOST_SERVICE_REVALIDATION_SECRET` in the `X-HOST-REVALIDATION-SECRET`
 header. The API and the host need the same value.
 
 A deployment that upgrades without the value keeps serving, but nothing

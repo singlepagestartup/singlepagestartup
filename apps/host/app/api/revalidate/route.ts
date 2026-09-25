@@ -67,7 +67,13 @@ function unauthorized() {
 /**
  * Compares the caller's credential with the configured secret in constant
  * time. `timingSafeEqual` throws on buffers of different sizes, so the length
- * is compared first and is the one bit this comparison cannot hide.
+ * is compared first and is the one bit this comparison cannot hide. It repeats
+ * `rbacSecretMatches` instead of importing it: that helper is bound to
+ * `RBAC_SECRET_KEY`, a host route handler must not import `@sps/backend-utils`
+ * (its barrel would bring the logger, the Bun WebSocket manager and the hono
+ * context helpers into the Next server bundle, see #299), and
+ * `@sps/shared-utils` cannot use node built-ins because client components
+ * import it.
  */
 function revalidationSecretMatches(
   secret: string,

@@ -49,4 +49,4 @@ export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
  * request without it.
  */
 export const HOST_SERVICE_REVALIDATION_SECRET_HEADER =
-  "X-Host-Revalidation-Secret";
+  "X-HOST-REVALIDATION-SECRET";

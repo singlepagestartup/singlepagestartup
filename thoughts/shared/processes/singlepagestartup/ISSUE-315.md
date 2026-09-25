@@ -21,7 +21,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Plan: completed
 - Implement: completed
 - Current phase: complete
-- Next step: the lead's review of pull request #325, then merge
+- Next step: approval of pull request #325, then merge
 
 ## Phase Notes
 
@@ -38,7 +38,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Plan
 
-- Summary: three phases. (1) `HOST_SERVICE_REVALIDATION_SECRET` in the host envs file, `X-Host-Revalidation-Secret` in the shared constants, a fail-closed constant-time guard in the route with one 401 for every refusal and a host warning when unset. (2) The middleware, the seed and the agent page cache send the header and encode; the middleware logs refusals; the boot report names the variable. (3) Local bootstrap, deployer, GitHub secret lists and docs. Approval is delegated for this wave.
+- Summary: three phases. (1) `HOST_SERVICE_REVALIDATION_SECRET` in the host envs file, `X-HOST-REVALIDATION-SECRET` in the shared constants, a fail-closed constant-time guard in the route with one 401 for every refusal and a host warning when unset. (2) The middleware, the seed and the agent page cache send the header and encode; the middleware logs refusals; the boot report names the variable. (3) Local bootstrap, deployer, GitHub secret lists and docs. Approval is delegated for this wave.
 - Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-315.md`
 - Notes: the lead's suggestion to generate the value in the deployer templates does not fit: Jinja cannot call `generate_secret`, `api.sh` and `host.sh` would each generate a different value, and the deployer README defines operator-supplied secrets. The plan keeps the operator-supplied model and records the trade-off.
 
@@ -46,7 +46,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Summary: all three phases done. The route refuses without the secret (one 401, a host warning when unset); the middleware, the seed and the agent page cache send the header and encode; the boot report names the variable; local bootstrap, deployer and GitHub secret lists carry it; both READMEs document it. Unit lanes, lint, type checks, nine mutations, template rendering, a bootstrap dry run and an HTTP proof on port 4315 against a stub host all passed.
 - Outputs: commits `5315f887e8` (code) and `776188d73c` (records); pull request https://github.com/singlepagestartup/singlepagestartup/pull/325 with its description in `thoughts/shared/prs/325_description.md`; evidence per command in `thoughts/shared/handoffs/singlepagestartup/ISSUE-315-progress.md`.
-- Notes: the host route imports `crypto` rather than `node:crypto`, matching the host's existing Node built-in imports in its production build. Pre-existing and out of scope: 25 `tsc` errors in 16 untouched files under `apps/api`, two lint warnings in the API's jest configs, `TELEGRAM_SERVICE_WEBHOOK_SECRET` missing from `github_deployer.sh`.
+- Notes: the host route imports `crypto` rather than `node:crypto`, matching the host's existing Node built-in imports in its production build. Review round 1 on #325: the header is spelled `X-HOST-REVALIDATION-SECRET` like the other SPS credential headers, the specs pin that spelling, and the comparison's JSDoc states why it is not `rbacSecretMatches`. Pre-existing and out of scope: 25 `tsc` errors in 16 untouched files under `apps/api`, two lint warnings in the API's jest configs, `TELEGRAM_SERVICE_WEBHOOK_SECRET` missing from `github_deployer.sh`.
 
 ## Incident Log
 

@@ -4,12 +4,12 @@ Closes #315.
 
 The host's `GET /api/revalidate` revalidated any tag or path for any caller, and nothing runs in front of it. Repeating `?path=/&type=layout` emptied the host's page and data caches on demand, and with pages cached for a day every following render went back to the API. The API's revalidation middleware called the route without a credential and appended the tag unencoded.
 
-The route now answers only a request that carries `HOST_SERVICE_REVALIDATION_SECRET` in the `X-Host-Revalidation-Secret` header, compared in constant time, and all three API-side callers send it. A host without the value refuses every call and logs why; the API names the missing value in its start-up report and logs each refused call.
+The route now answers only a request that carries `HOST_SERVICE_REVALIDATION_SECRET` in the `X-HOST-REVALIDATION-SECRET` header, compared in constant time, and all three API-side callers send it. A host without the value refuses every call and logs why; the API names the missing value in its start-up report and logs each refused call.
 
 ## Changes
 
 - `apps/host/app/api/revalidate/route.ts` — the guard. An unset secret logs a warning naming the variable and returns 401; a missing or wrong header returns the same 401 without a log line. The constant-time comparison is a private function beside the handler: the host cannot import `@sps/backend-utils` (its barrel carries the Bun WebSocket manager, a pino logger and hono helpers), and `@sps/shared-utils` stays free of node built-ins because client components import it. Authorized requests behave as before.
-- `libs/shared/utils/src/lib/envs/host.ts` — `HOST_SERVICE_REVALIDATION_SECRET`, no default. `libs/shared/utils/src/lib/constants/index.ts` — `HOST_SERVICE_REVALIDATION_SECRET_HEADER` (`X-Host-Revalidation-Secret`).
+- `libs/shared/utils/src/lib/envs/host.ts` — `HOST_SERVICE_REVALIDATION_SECRET`, no default. `libs/shared/utils/src/lib/constants/index.ts` — `HOST_SERVICE_REVALIDATION_SECRET_HEADER` (`X-HOST-REVALIDATION-SECRET`).
 - `libs/middlewares/src/lib/revalidation/index.ts` — `revalidateTag` encodes the tag, sends the header, logs a non-OK answer with its status through the shared logger, and logs a network failure with its reason (previously `console.log`).
 - `apps/api/src/db/seed.ts` — the root-layout revalidation that runs on every API start sends the header instead of `X-RBAC-SECRET-KEY`, which the host never read.
 - `libs/modules/agent/models/agent/backend/app/api/src/lib/controller/singlepage/page/cache.ts` — `revalidatePage` encodes the page URL and sends the header.
@@ -29,6 +29,7 @@ The route now answers only a request that carries `HOST_SERVICE_REVALIDATION_SEC
 - [x] `eslint:lint` for `host`, `@sps/shared-utils`, `@sps/agent` and `api` (0 errors; two pre-existing warnings in the API's jest configs), and `npx eslint` on the middleware files, which have no lint target.
 - [x] `tsc --noEmit` for the host, `libs/middlewares`, `libs/modules/agent` and `libs/shared/utils`: no errors. `apps/api`: 25 errors in 16 files that this branch does not change.
 - [x] Nine mutations, each restored. Without the host guard, the 7 refusal cases fail; with a length-only comparison, the near-miss and length cases fail; without the unset check, the unconfigured-host case fails. Without the header, the encoding or the refusal warning in the middleware, 3, 1 and 1 cases fail. Without the encoding or the header in the agent page cache, its case fails. Without the name in the start-up report, the ordered case fails.
+- [x] The specs pin the header spelling: with the constant set to another name, the three authorized route cases and the middleware header case fail; with the old mixed case only the middleware case fails, since the host matches header names case-insensitively.
 - [x] Both templates rendered with Ansible and dummy values, with the variable set and with it absent (the line renders empty).
 - [x] Bootstrap dry run in a scratch copy: the host's value equals the API's generated value; with the previous script order the host's value is empty.
 - [x] API on port 4315 against a stub host that records only whether the header is present and matches. A created and deleted fixture made the stub receive encoded tags with a matching header. With the value unset on the API, the start-up report named it missing, each call reached the host with an empty credential and got 401, the API logged each refusal, and the writes still succeeded.
@@ -51,7 +52,7 @@ Adaptation is required in every project that runs the host with the API. The hos
 
 | Variable                           | Default                           | Meaning                                                                         |
 | ---------------------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
-| `HOST_SERVICE_REVALIDATION_SECRET` | none; an absent value refuses all | Shared by the API and the host; sent in the `X-Host-Revalidation-Secret` header |
+| `HOST_SERVICE_REVALIDATION_SECRET` | none; an absent value refuses all | Shared by the API and the host; sent in the `X-HOST-REVALIDATION-SECRET` header |
 
 **Actions:**
 

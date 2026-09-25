@@ -279,8 +279,9 @@ describe("host revalidation call (issue #315)", () => {
    * BDD Scenario: The host call carries the secret and one encoded tag.
    * Given: a tag that contains reserved query characters.
    * When:  the middleware asks the host to revalidate it.
-   * Then:  the request carries the secret header and a single `tag`
-   *        parameter that decodes to exactly that tag.
+   * Then:  the request carries the secret in the X-HOST-REVALIDATION-SECRET
+   *        header and a single `tag` parameter that decodes to exactly that
+   *        tag.
    */
   it("sends the secret and exactly one encoded tag", async () => {
     const tag = "/api/blog/articles/a&path=/&type=layout";
@@ -298,7 +299,7 @@ describe("host revalidation call (issue #315)", () => {
     expect([...requested.searchParams.keys()]).toEqual(["tag"]);
     expect(requested.searchParams.get("tag")).toBe(tag);
     expect(init.headers).toEqual({
-      [HOST_SERVICE_REVALIDATION_SECRET_HEADER]: MOCK_REVALIDATION_SECRET,
+      "X-HOST-REVALIDATION-SECRET": MOCK_REVALIDATION_SECRET,
     });
   });
 

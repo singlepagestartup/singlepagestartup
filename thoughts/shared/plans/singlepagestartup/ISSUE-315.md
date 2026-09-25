@@ -12,7 +12,7 @@ approval: delegated to the issue agent by the 2026-09-25 security wave instructi
 ## Overview
 
 The host's `GET /api/revalidate` answers only callers that present
-`HOST_SERVICE_REVALIDATION_SECRET` in the `X-Host-Revalidation-Secret` header,
+`HOST_SERVICE_REVALIDATION_SECRET` in the `X-HOST-REVALIDATION-SECRET` header,
 compared in constant time. The three API-side callers send it and encode their
 query values, and local bootstrap and the deployer carry one value to both
 services.
@@ -134,7 +134,7 @@ The route refuses every call without the configured secret.
 
 **File**: `libs/shared/utils/src/lib/constants/index.ts`
 **Why**: the header name is a literal shared by the host route and three API callers.
-**Changes**: add `HOST_SERVICE_REVALIDATION_SECRET_HEADER = "X-Host-Revalidation-Secret"` with a JSDoc naming the issue.
+**Changes**: add `HOST_SERVICE_REVALIDATION_SECRET_HEADER = "X-HOST-REVALIDATION-SECRET"` with a JSDoc naming the issue.
 
 #### 2. Host route
 
