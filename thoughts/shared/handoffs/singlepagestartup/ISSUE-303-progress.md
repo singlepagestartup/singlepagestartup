@@ -3,7 +3,8 @@ issue_number: 303
 issue_title: "Review the permission default for routes without roles"
 start_date: 2026-09-25T23:25:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-303.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-303 - Review the permission default for routes without roles
@@ -102,16 +103,17 @@ status: in_progress
 ### Commits
 
 - `40d8282abe` fix(rbac): require the Admin role for order and billing reads
+- `13167d7069` docs: add research, plan and process log for #303
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/346
+- [x] PR number: 346
 
 ### Final Status
 
-- [ ] All phases completed
-- [ ] All automated verification passed
+- [x] All phases completed
+- [x] All automated verification passed
 - [ ] Issue marked as Done
 
 ---
