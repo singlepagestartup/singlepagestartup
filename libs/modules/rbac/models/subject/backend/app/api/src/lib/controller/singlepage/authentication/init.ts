@@ -1,9 +1,6 @@
-import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import * as jwt from "hono/jwt";
 import { Service } from "../../../service";
-import { setCookie } from "hono/cookie";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -15,26 +12,8 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
-      }
-
       const { jwt: jwtToken, refresh: refreshToken } = await this.service.init({
         token: authorization(c),
-      });
-
-      const decodedJwt = await jwt.verify(jwtToken, RBAC_JWT_SECRET);
-
-      if (!decodedJwt.exp) {
-        throw new Error("Validation error. Invalid token issued");
-      }
-
-      setCookie(c, "rbac.subject.jwt", jwtToken, {
-        path: "/",
-        secure: true,
-        httpOnly: false,
-        expires: new Date(decodedJwt.exp * 1000),
-        sameSite: "Strict",
       });
 
       return c.json(
