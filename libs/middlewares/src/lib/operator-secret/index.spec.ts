@@ -4,9 +4,10 @@
  * Given: a service control route composed behind the operator middleware.
  * When: a request arrives with a matching, mismatched, or absent
  *       X-RBAC-SECRET-KEY header.
- * Then: only the matching credential reaches the handler, the rejection never
- *       echoes the submitted value, and a service with no configured secret
- *       rejects every caller instead of admitting every caller.
+ * Then: only the matching credential reaches the handler, the rejection
+ *       echoes neither the submitted value nor the configured one and does
+ *       not name the header, and a service with no configured secret rejects
+ *       every caller instead of admitting every caller.
  */
 
 const mockConfiguredSecret = "3f1c8a0d5e7b2946af13c0d8e5b7a2946";
@@ -76,6 +77,24 @@ describe("operator credential on service control routes", () => {
     expect(body).toBe(await absent.text());
     expect(body).not.toContain(submitted);
     expect(handler).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a request is refused by the operator middleware.
+   * When: the body of the refusal is read.
+   * Then: it names neither the credential header nor the configured secret.
+   */
+  it("When: a request is refused Then: the body discloses neither the header nor the configured secret", async () => {
+    const { hono } = createControlRoute();
+
+    const response = await hono.request("/stop", { method: "POST" });
+    const body = (await response.text()).toLowerCase();
+
+    expect(response.status).toBe(401);
+    expect(body).not.toContain(mockConfiguredSecret.toLowerCase());
+    expect(body).not.toContain("rbac-secret-key");
+    expect(body).not.toContain("rbac_secret_key");
   });
 
   /**

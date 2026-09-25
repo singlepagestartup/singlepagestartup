@@ -66,10 +66,6 @@ export const allowedRoutes: IRouteRule[] = [
     methods: ["GET"],
   },
   {
-    regexPath: /\/api\/http-cache\/clear/,
-    methods: ["GET"],
-  },
-  {
     regexPath: /\/api\/rbac\/permissions$/,
     methods: ["GET"],
   },
