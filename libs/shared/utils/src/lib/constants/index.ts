@@ -41,3 +41,12 @@ export const ADDRESS_VERIFYING_PROVIDERS = Object.freeze([
  * loopback reads that need the full row travel with it.
  */
 export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
+
+/**
+ * Request header that carries `HOST_SERVICE_REVALIDATION_SECRET` from the API
+ * to the host's `/api/revalidate` route (issue #315). The revalidation
+ * middleware, the seed and the agent page cache send it; the route refuses a
+ * request without it.
+ */
+export const HOST_SERVICE_REVALIDATION_SECRET_HEADER =
+  "X-HOST-REVALIDATION-SECRET";

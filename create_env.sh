@@ -47,9 +47,11 @@ elif [ "$1" = "mcp" ]; then
   fi
 fi
 
+# The API's script runs before the host, Telegram and MCP scripts, which copy
+# the secrets it generates from apps/api/.env.
 cd apps/db && ./create_env.sh
 cd ../redis && ./create_env.sh
-cd ../host && ./create_env.sh
 cd ../api && ./create_env.sh
+cd ../host && ./create_env.sh
 cd ../telegram && ./create_env.sh
 cd ../mcp && ./create_env.sh
