@@ -180,14 +180,29 @@ if [ "$HTTP_CACHE_STATUS" != "200" ]; then
   echo "[scenario] HTTP cache middleware preflight failed."
   echo "[scenario] Expected GET /api/http-cache/clear to return 200, got: $HTTP_CACHE_STATUS"
 
-  if [ "$HTTP_CACHE_STATUS" = "401" ]; then
-    echo "[scenario] The route answered, so the cache middleware is on: the"
-    echo "[scenario] credential was refused. RBAC_SECRET_KEY must match the"
-    echo "[scenario] value the running API was started with, and a deployment"
-    echo "[scenario] that leaves it unset refuses every caller."
-  else
-    echo "[scenario] If API is already running, restart it with MIDDLEWARE_HTTP_CACHE=true."
-  fi
+  # With the cache middleware off the clear route is not registered, so the
+  # request reaches the authorization middleware instead: a refusal alone does
+  # not say whether the credential or the cache setting is wrong.
+  case "$HTTP_CACHE_STATUS" in
+    401 | 403)
+      echo "[scenario] The credential was refused, either by the clear route (cache"
+      echo "[scenario] middleware on) or by the authorization middleware (cache"
+      echo "[scenario] middleware off). RBAC_SECRET_KEY must match the value the"
+      echo "[scenario] running API was started with, and an API started without it"
+      echo "[scenario] refuses every caller. If it matches, restart the API with"
+      echo "[scenario] MIDDLEWARE_HTTP_CACHE=true."
+      ;;
+    404)
+      echo "[scenario] The clear route is not registered, so the cache middleware is"
+      echo "[scenario] off. Restart the API with MIDDLEWARE_HTTP_CACHE=true."
+      ;;
+    000)
+      echo "[scenario] No response from ${API_BASE_URL} within 5 seconds."
+      ;;
+    *)
+      echo "[scenario] If API is already running, restart it with MIDDLEWARE_HTTP_CACHE=true."
+      ;;
+  esac
 
   echo "[scenario] Last response body:"
   cat /tmp/sps-api-scenario-cache-check.log || true
