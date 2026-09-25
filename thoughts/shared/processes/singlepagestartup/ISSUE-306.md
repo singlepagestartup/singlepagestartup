@@ -3,9 +3,9 @@ issue_number: 306
 issue_title: "Scope the HTTP cache to the requesting principal"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-25T21:56:09Z
+last_updated: 2026-09-25T21:58:01Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-306 - Scope the HTTP cache to the requesting principal
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: implement the four plan phases, verify, commit, open the pull request
+- Implement: completed
+- Current phase: complete
+- Next step: code review of pull request #329, then merge
 
 ## Phase Notes
 
@@ -45,7 +45,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: the cacheable-GET decision skips requests that present a subject token or the operator secret, in a header or a cookie; mutation bumps, `no-store` and exclusions are unchanged. Documentation, the API comment and the issue-152 scenario follow the new contract. Unit, lint, type-check, scenario and HTTP verification passed; the HTTP run also reproduced the leak on the unfixed middleware and measured the upgrade window that the clear route closes.
-- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-306-progress.md`; code under `libs/middlewares/src/lib/http-cache/`, `apps/api/app.ts`, `apps/api/specs/scenario/`.
+- Outputs: pull request #329; `thoughts/shared/handoffs/singlepagestartup/ISSUE-306-progress.md`; code under `libs/middlewares/src/lib/http-cache/`, `apps/api/app.ts`, `apps/api/specs/scenario/`.
 - Notes: deployments must run the clear route once after the upgrade unless their start-up seed does it (the framework's `start.sh api` does, at the end of the background seed).
 
 ## Incident Log

@@ -3,7 +3,8 @@ issue_number: 306
 issue_title: "Scope the HTTP cache to the requesting principal"
 start_date: 2026-09-25T21:45:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-306.md
-status: in_progress
+status: complete
+completed_date: 2026-09-25
 ---
 
 # Implementation Progress: ISSUE-306 - Scope the HTTP cache to the requesting principal
@@ -130,15 +131,15 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/329
+- [x] PR number: 329 (description saved to `thoughts/shared/prs/329_description.md`)
 
 ### Final Status
 
-- [ ] All phases completed
-- [ ] All automated verification passed
-- [ ] Issue marked as Done
+- [x] All phases completed
+- [x] All automated verification passed
+- [ ] Issue marked as Done (after review and merge)
 
 ---
 
-**Last updated**: 2026-09-26
+**Last updated**: 2026-09-25T21:58:01Z
