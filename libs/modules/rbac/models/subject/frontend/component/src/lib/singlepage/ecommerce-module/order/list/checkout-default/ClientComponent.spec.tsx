@@ -6,15 +6,18 @@
  * BDD Suite: rbac order list checkout behavior.
  *
  * Given: checkout list dependencies are mocked with deterministic order and payment data.
- * When: checkout is submitted from cart list context.
- * Then: single invoice redirects immediately, while multiple invoices render payment links.
+ * When: the cart list renders and checkout is submitted from it.
+ * Then: orders come from the subject's owner-checked cart route, a single invoice
+ * redirects immediately, and multiple invoices render payment links.
  */
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 const mutateAsyncMock = jest.fn();
 const useFormMock = jest.fn();
-const ecommerceModuleOrderApiPropsMock = jest.fn();
+const ecommerceModuleOrderListMock = jest.fn();
+const ecommerceModuleOrderVariantMock = jest.fn();
+const subjectsToEcommerceModuleOrdersMock = jest.fn();
 
 const submitPayload = {
   provider: "stripe",
@@ -39,6 +42,8 @@ afterAll(() => {
   });
 });
 
+jest.mock("server-only", () => ({}), { virtual: true });
+
 jest.mock("next/link", () => ({
   __esModule: true,
   default: ({ children, href, target }: any) => (
@@ -49,11 +54,14 @@ jest.mock("next/link", () => ({
 }));
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
+  Provider: ({ children }: any) => <>{children}</>,
   api: {
     ecommerceModuleOrderCheckout: () => ({
       mutateAsync: mutateAsyncMock,
       isPending: false,
     }),
+    ecommerceModuleOrderList: (...args: unknown[]) =>
+      ecommerceModuleOrderListMock(...args),
   },
 }));
 
@@ -81,45 +89,42 @@ jest.mock("@sps/shared-ui-shadcn", () => ({
 }));
 
 jest.mock("@sps/ui-adapter", () => ({
+  ErrorBoundary: ({ children }: any) => <>{children}</>,
   FormField: ({ name }: any) => <div data-testid={`field-${name}`} />,
 }));
 
 jest.mock(
   "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component",
   () => ({
-    Component: ({ children }: any) =>
-      children
-        ? children({
-            data: [{ ecommerceModuleOrderId: "order-1" }],
-          })
-        : null,
+    Component: (props: any) => {
+      subjectsToEcommerceModuleOrdersMock(props);
+
+      return null;
+    },
   }),
 );
 
 jest.mock("@sps/ecommerce/models/order/frontend/component", () => ({
-  Component: ({ variant, children, apiProps }: any) => {
-    if (variant === "find") {
-      ecommerceModuleOrderApiPropsMock(apiProps);
-      return children ? children({ data: [{ id: "order-1" }] }) : null;
-    }
+  Component: ({ variant, children, data }: any) => {
+    ecommerceModuleOrderVariantMock(variant, data);
 
     if (variant === "cart-default") {
-      return <div data-testid="cart-order">{children}</div>;
+      return <div data-testid={`cart-order-${data.id}`}>{children}</div>;
     }
 
     if (variant === "form-field-default") {
-      return <input data-testid="order-id-field" readOnly={true} />;
+      return <input data-testid={`order-id-field-${data.id}`} readOnly />;
     }
 
     return null;
   },
 }));
 
-jest.mock("../../update-default", () => ({
+jest.mock("../../update-default/Component", () => ({
   Component: () => <div data-testid="update-action">update</div>,
 }));
 
-jest.mock("../../delete-default", () => ({
+jest.mock("../../delete-default/Component", () => ({
   Component: () => <div data-testid="delete-action">delete</div>,
 }));
 
@@ -134,12 +139,29 @@ jest.mock("../total-default", () => ({
 
 import { Component } from "./ClientComponent";
 
+function renderList() {
+  return render(
+    <Component
+      isServer={false}
+      variant="ecommerce-module-order-list-checkout-default"
+      data={{ id: "subject-1" } as any}
+      language="en"
+    />,
+  );
+}
+
 describe("Given: order list checkout component", () => {
   beforeEach(() => {
     mutateAsyncMock.mockReset();
     useFormMock.mockReset();
-    ecommerceModuleOrderApiPropsMock.mockReset();
+    ecommerceModuleOrderListMock.mockReset();
+    ecommerceModuleOrderVariantMock.mockReset();
+    subjectsToEcommerceModuleOrdersMock.mockReset();
     (window.location as any).href = "";
+
+    ecommerceModuleOrderListMock.mockReturnValue({
+      data: [{ id: "order-1", type: "cart", status: "new" }],
+    });
 
     useFormMock.mockReturnValue({
       control: {},
@@ -156,14 +178,7 @@ describe("Given: order list checkout component", () => {
       },
     });
 
-    render(
-      <Component
-        isServer={false}
-        variant="ecommerce-module-order-list-checkout-default"
-        data={{ id: "subject-1" } as any}
-        language="en"
-      />,
-    );
+    renderList();
 
     fireEvent.click(screen.getByRole("button", { name: "Checkout" }));
 
@@ -189,14 +204,7 @@ describe("Given: order list checkout component", () => {
       },
     });
 
-    render(
-      <Component
-        isServer={false}
-        variant="ecommerce-module-order-list-checkout-default"
-        data={{ id: "subject-1" } as any}
-        language="en"
-      />,
-    );
+    renderList();
 
     fireEvent.click(screen.getByRole("button", { name: "Checkout" }));
 
@@ -209,45 +217,25 @@ describe("Given: order list checkout component", () => {
   });
 
   /**
-   * BDD Scenario: render only active cart orders.
+   * BDD Scenario: read the cart through the subject's own route.
    *
-   * Given: the subject has both active and historical cart relations.
-   * When: the checkout list requests its order models.
-   * Then: the model query is restricted to status new and bypasses stale caches.
+   * Given: the subject's cart route answers one active cart order.
+   * When: the checkout list renders.
+   * Then: the list asks that route for the subject's cart and renders the order
+   * card and its form field from the answer, without the module-level order
+   * reads or the subject-to-order relation, which require the Admin role.
    */
-  it("When: checkout list renders Then: it requests only new cart orders", () => {
-    render(
-      <Component
-        isServer={false}
-        variant="ecommerce-module-order-list-checkout-default"
-        data={{ id: "subject-1" } as any}
-        language="en"
-      />,
-    );
+  it("When: checkout list renders Then: it reads the cart through the subject's own route", () => {
+    renderList();
 
-    expect(ecommerceModuleOrderApiPropsMock).toHaveBeenCalledWith({
-      params: {
-        filters: {
-          and: expect.arrayContaining([
-            {
-              column: "type",
-              method: "eq",
-              value: "cart",
-            },
-            {
-              column: "status",
-              method: "eq",
-              value: "new",
-            },
-          ]),
-        },
-      },
-      options: {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      },
-    });
+    expect(ecommerceModuleOrderListMock).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "subject-1" }),
+    );
+    expect(screen.getByTestId("cart-order-order-1")).toBeTruthy();
+    expect(screen.getByTestId("order-id-field-order-1")).toBeTruthy();
+    expect(subjectsToEcommerceModuleOrdersMock).not.toHaveBeenCalled();
+    expect(
+      ecommerceModuleOrderVariantMock.mock.calls.map(([variant]) => variant),
+    ).not.toContain("find");
   });
 });

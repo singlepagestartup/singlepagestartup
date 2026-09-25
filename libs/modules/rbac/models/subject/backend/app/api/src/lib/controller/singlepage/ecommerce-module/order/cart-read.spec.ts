@@ -2,8 +2,9 @@
  * BDD Suite: active cart read controllers.
  *
  * Given: a subject owns orders that may already have progressed past the new state.
- * When: cart list, quantity, and total endpoints load the subject's active cart.
- * Then: every order query is restricted to type cart and status new.
+ * When: cart list, quantity, and total endpoints load the subject's orders.
+ * Then: without filters every order query is restricted to type cart and status new,
+ * and filters passed to the list only narrow the subject's own orders.
  */
 
 const authorizationMock = jest.fn();
@@ -31,11 +32,12 @@ import { Handler as ListHandler } from "./list";
 import { Handler as QuantityHandler } from "./quantity";
 import { Handler as TotalHandler } from "./total";
 
-function createContext() {
+function createContext(parsedQuery?: unknown) {
   return {
     req: {
       param: (name: string) => (name === "id" ? "subject-1" : undefined),
     },
+    get: (name: string) => (name === "parsedQuery" ? parsedQuery : undefined),
     json: jest.fn((payload: unknown) => payload),
   } as any;
 }
@@ -133,5 +135,34 @@ describe("Given: an authenticated subject with historical cart orders", () => {
     await new TotalHandler(service).execute(createContext(), jest.fn());
 
     expectActiveCartFilters(orderFind);
+  });
+
+  /**
+   * BDD Scenario: list the subject's orders of every status.
+   *
+   * Given: the caller filters the list by type cart only.
+   * When: the cart list endpoint executes.
+   * Then: the filter replaces the active-cart default and the query stays
+   * restricted to the orders linked to the subject.
+   */
+  it("When: the list is filtered by the caller Then: the filters apply within the subject's orders", async () => {
+    const { orderFind, service } = createService();
+    const typeFilter = { column: "type", method: "eq", value: "cart" };
+
+    await new ListHandler(service).execute(
+      createContext({ filters: { and: [typeFilter] } }),
+      jest.fn(),
+    );
+
+    expect(orderFind).toHaveBeenCalledWith({
+      params: {
+        filters: {
+          and: [
+            { column: "id", method: "inArray", value: ["order-1"] },
+            typeFilter,
+          ],
+        },
+      },
+    });
   });
 });

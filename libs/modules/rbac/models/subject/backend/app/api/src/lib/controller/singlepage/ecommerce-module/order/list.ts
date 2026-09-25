@@ -61,7 +61,14 @@ export class Handler {
         });
       }
 
-      const ecommerceModuleOrdersWithCartType =
+      /**
+       * Without filters the route answers the active cart. A caller's filters
+       * replace that default but only narrow the subject's own orders, because
+       * the id constraint is always applied (issue #303).
+       */
+      const queryFilters = c.get("parsedQuery")?.filters?.["and"];
+
+      const ecommerceModuleOrders =
         await this.service.ecommerceModule.order.find({
           params: {
             filters: {
@@ -74,29 +81,33 @@ export class Handler {
                       subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
                   ),
                 },
-                {
-                  column: "type",
-                  method: "eq",
-                  value: "cart",
-                },
-                {
-                  column: "status",
-                  method: "eq",
-                  value: "new",
-                },
+                ...(queryFilters?.length
+                  ? queryFilters
+                  : [
+                      {
+                        column: "type",
+                        method: "eq",
+                        value: "cart",
+                      },
+                      {
+                        column: "status",
+                        method: "eq",
+                        value: "new",
+                      },
+                    ]),
               ],
             },
           },
         });
 
-      if (!ecommerceModuleOrdersWithCartType?.length) {
+      if (!ecommerceModuleOrders?.length) {
         return c.json({
           data: [],
         });
       }
 
       return c.json({
-        data: ecommerceModuleOrdersWithCartType,
+        data: ecommerceModuleOrders,
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

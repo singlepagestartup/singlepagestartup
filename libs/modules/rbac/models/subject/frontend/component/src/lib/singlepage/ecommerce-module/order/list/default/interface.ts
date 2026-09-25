@@ -11,7 +11,7 @@ export interface IComponentProps extends ISpsComponentBase {
   data: IModel;
   language: string;
   apiProps?: {
-    params?: IProps["IEcommerceModuleOrderListProps"];
+    params?: IProps["IEcommerceModuleOrderListProps"]["params"];
     options?: Partial<NextRequestOptions>;
   };
   className?: string;
