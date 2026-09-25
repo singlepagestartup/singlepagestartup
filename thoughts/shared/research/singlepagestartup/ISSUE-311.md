@@ -90,6 +90,22 @@ All paths above are under `subject/api/service/singlepage/`. Every payload also 
 - **bill-route** (`service/singlepage/billing/route.ts:74-103`): raw `jwt.verify` with its own 30-second `jwt:subject:` cache, called by the bill-route middleware after the is-authorized middleware (`apps/api/app.ts:171-175`) and reachable directly because its path is allow-listed.
 - **Actions logger** (`libs/middlewares/src/lib/actions-logger/index.ts:71`): verifies the token to attribute a logged action; it runs before the is-authorized middleware in the chain (`apps/api/app.ts:168-172`).
 
+### Verifiers on this branch
+
+In `libs/`, every presented subject token is verified by `verifyJwt` from `@sps/backend-utils`, so the algorithm, the secret and the claim checks have one seam. The type each site accepts:
+
+| Site                                                                                           | Accepted type               |
+| ---------------------------------------------------------------------------------------------- | --------------------------- |
+| is-authorized service `getSubjectId`, and route billing through it                             | access                      |
+| `me` service, which also resolves the token for `init` and logout                              | access                      |
+| `refresh` service                                                                              | refresh                     |
+| OAuth start (link-flow source subject)                                                         | access                      |
+| Ownership middleware `request-subject-is-owner`                                                | access                      |
+| Twelve inline owner checks: ecommerce orders (eight handlers), identities (three), CRM request | access                      |
+| Actions logger                                                                                 | either (it only attributes) |
+
+A token without `typ` passes as either type. Six authentication controllers (`init`, `refresh`, `ethereum-virtual-machine`, `oauth/exchange`, `email-and-password/authentication` and `registration`) call `jwt.verify` from `hono/jwt`, only to read `exp` from the pair the same request has just signed; they verify no presented token. `apps/mcp` verifies subject tokens with its own `jwt.verify` and reads `subject.id`.
+
 ### Logout today
 
 - `POST /api/rbac/subjects/authentication/logout` (`controller/singlepage/index.ts:131-134`) calls `service.logout()`, which returns `{ ok: true }` (`service/singlepage/logout.ts:10-14`), then deletes the `rbac.subject.jwt` cookie and answers `{ data: { ok: true } }` (`controller/singlepage/authentication/logout.ts:14-22`). The handler does not read the token.
