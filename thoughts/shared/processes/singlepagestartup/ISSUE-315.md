@@ -3,9 +3,9 @@ issue_number: 315
 issue_title: "Review the host revalidation route access model"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-25T23:10:00Z
+last_updated: 2026-09-26T00:10:00Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-315 - Review the host revalidation route access model
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: commit, push the branch and open the pull request; then the lead's review
+- Implement: completed
+- Current phase: complete
+- Next step: the lead's review of pull request #325, then merge
 
 ## Phase Notes
 
@@ -45,7 +45,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: all three phases done. The route refuses without the secret (one 401, a host warning when unset); the middleware, the seed and the agent page cache send the header and encode; the boot report names the variable; local bootstrap, deployer and GitHub secret lists carry it; both READMEs document it. Unit lanes, lint, type checks, nine mutations, template rendering, a bootstrap dry run and an HTTP proof on port 4315 against a stub host all passed.
-- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-315-progress.md` (evidence per command), code and spec changes listed there.
+- Outputs: commits `5315f887e8` (code) and `776188d73c` (records); pull request https://github.com/singlepagestartup/singlepagestartup/pull/325 with its description in `thoughts/shared/prs/325_description.md`; evidence per command in `thoughts/shared/handoffs/singlepagestartup/ISSUE-315-progress.md`.
 - Notes: the host route imports `crypto` rather than `node:crypto`, matching the host's existing Node built-in imports in its production build. Pre-existing and out of scope: 25 `tsc` errors in 16 untouched files under `apps/api`, two lint warnings in the API's jest configs, `TELEGRAM_SERVICE_WEBHOOK_SECRET` missing from `github_deployer.sh`.
 
 ## Incident Log

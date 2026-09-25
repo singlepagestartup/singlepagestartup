@@ -3,7 +3,8 @@ issue_number: 315
 issue_title: "Review the host revalidation route access model"
 start_date: 2026-09-25T21:40:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-315.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-315 - Review the host revalidation route access model
@@ -112,11 +113,12 @@ status: in_progress
 ### Commits
 
 - `5315f887e8` fix(host): require a shared secret on the revalidation route
+- `776188d73c` docs(thoughts): record issue 315 research, plan and implementation
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/325
+- [x] PR number: 325 (description in `thoughts/shared/prs/325_description.md`)
 
 ### Final Status
 
@@ -126,4 +128,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-09-25T23:10:00Z
+**Last updated**: 2026-09-26T00:10:00Z
