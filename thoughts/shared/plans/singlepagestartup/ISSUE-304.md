@@ -42,8 +42,8 @@ Research: `thoughts/shared/research/singlepagestartup/ISSUE-304.md`.
 - `FILE_STORAGE_MAX_UPLOAD_BYTES` (default 50 MiB) bounds the multipart body
   of `POST /` and `PATCH /:uuid`, refused before the handler buffers it, and
   the body `create-from-url` fetches, refused before it is buffered past the
-  limit. Every refusal answers 400 through the existing
-  `Validation error` mapping.
+  limit. Every size refusal answers 413 through a `Payload Too Large error`
+  category of the shared error mapping.
 - A multipart request with more than one file answers
   `400 Validation error. Multiple files are not allowed` and stores nothing; a
   request with one file behaves as before.
@@ -240,7 +240,8 @@ chunked body while it streams.
 **Changes**: a `Middleware` class whose `init()` returns `bodyLimit` with
 `maxSize` from `FILE_STORAGE_MAX_UPLOAD_BYTES` and an `onError` that throws
 the `HTTPException` produced by `getHttpErrorType` for a
-`Validation error. Payload Too Large` message. The package exports it as
+`Payload Too Large error. The upload limit is N bytes` message. The package
+exports it as
 `RequestBodyFitsUploadLimit`. The spec covers a body under the limit, a
 declared length over it (refused before the handler runs), a request with no
 body, and the limit following the configured value.
@@ -252,14 +253,19 @@ body, and the limit following the configured value.
 handlers.
 **Changes**: add the middleware to `POST /` and `PATCH /:uuid`.
 
-#### 4. Error keyword
+#### 4. Error category
 
-**Files**: `libs/shared/backend/utils/src/lib/http-error/paterns/index.ts`,
-`libs/shared/backend/utils/src/lib/http-error/index.spec.ts`
-**Why**: a chunked body over the limit fails inside the handler with Hono's
-`Payload Too Large` message, which the mapping answers with 500 today.
-**Changes**: add `/payload too large/i` to the 400 validation keywords and the
-message to the 400 cases of the spec.
+**Files**: `libs/shared/backend/utils/src/lib/http-error/type/index.ts`,
+`libs/shared/backend/utils/src/lib/http-error/paterns/index.ts`,
+`libs/shared/backend/utils/src/lib/http-error/index.spec.ts`, `README.md`
+**Why**: an oversized body has its own status, 413, and the shared mapper is
+where categories get their status; a chunked body over the limit fails inside
+the handler with Hono's `Payload Too Large` message, which the mapping answers
+with 500 today.
+**Changes**: a `Payload Too Large error` category with status 413 matching
+`/payload too large/i`, its cases in the spec, and a row in the root README's
+category table. The middleware and both `create-from-url` checks throw that
+category with the same message.
 
 #### 5. Fetched body in `create-from-url`
 
@@ -280,7 +286,7 @@ the body is refused.
 
 **File**: the Phase 2 controller spec.
 **Changes**: an over-limit multipart body with `Content-Length` and a chunked
-one answer 400 on `POST /` and `PATCH /:uuid` with nothing uploaded or
+one answer 413 on `POST /` and `PATCH /:uuid` with nothing uploaded or
 written; a body under the limit is stored.
 
 ### Success Criteria:
@@ -297,7 +303,7 @@ written; a body under the limit is stored.
 
 #### Manual Verification:
 
-- [x] An over-limit upload to the API on 4304 answers 400, with the default
+- [x] An over-limit upload to the API on 4304 answers 413, with the default
       limit and with a lowered one
 - [x] An upload under the limit still answers 201
 
@@ -359,7 +365,7 @@ it runs the local provider.
   without `Content-Length`, SVG accepted.
 - `create-from-url`: declared length over the limit, streamed body over it,
   body under it.
-- Error mapping: `Payload Too Large` is a 400 validation error.
+- Error mapping: `Payload Too Large` is a 413 `Payload Too Large error`.
 
 ### Integration Tests:
 
@@ -370,7 +376,7 @@ it runs the local provider.
 
 1. Boot the API from the worktree on 4304.
 2. Upload a small SVG with the operator secret; `curl -I` its `/public` URL.
-3. Upload a body above the limit; expect 400.
+3. Upload a body above the limit; expect 413.
 4. Open an SVG with a script in a Chromium tab; the script does not run.
 5. Delete every fixture row and file.
 

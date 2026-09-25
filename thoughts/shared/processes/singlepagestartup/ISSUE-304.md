@@ -3,7 +3,7 @@ issue_number: 304
 issue_title: "Harden upload validation and static file delivery"
 repository: singlepagestartup
 created_at: 2026-09-25T00:00:00Z
-last_updated: 2026-09-25T22:05:22Z
+last_updated: 2026-09-25T22:33:36Z
 status: active
 current_phase: implement
 ---
@@ -78,6 +78,10 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Notes: the `create-from-url` scenarios live in the controller spec. The
   scenario suite ran through the jest CLI because the shared Redis does not
   answer and the runner's cache preflight fails.
+- Review round 1 (PR #331): an upload over the limit answers 413 through a
+  `Payload Too Large error` category of the shared error mapper, thrown with
+  one message by the middleware and both `create-from-url` checks
+  (`da0e2e9493`).
 
 ## Incident Log
 

@@ -135,6 +135,44 @@ status: in_progress
   `git status --short apps/api/public` is empty. The API on 4304 and the
   static server on 4399 are stopped.
 
+## Review Round 1 (PR #331)
+
+**Request**: an oversized body is `413 Payload Too Large`, with its own
+category in the shared error mapper, thrown by the middleware and both
+`create-from-url` checks with one message.
+
+**Changes** (`da0e2e9493`):
+
+- `ErrorCategory` gains `Payload Too Large error`; `httpErrorPatterns` gains a
+  413 entry matching `/payload too large/i`, and the keyword leaves the 400
+  group.
+- The middleware and `readBody` throw
+  `Payload Too Large error. The upload limit is N bytes`; `readBody` builds
+  the message once for both checks.
+- Specs: three 413 cases in the error-mapping spec; the middleware and route
+  specs expect 413 for size, and three route scenarios assert the exact
+  message. Multi-file refusals stay 400.
+- `README.md` category table and `libs/modules/file-storage/README.md` name
+  the status; the environment and middleware comments match.
+
+**Verification**:
+
+- Unit lanes: shared-utils 74, backend-utils 129, api 4, file-storage 22
+  tests passed.
+- Lint for `@sps/shared-utils`, `@sps/backend-utils`, `@sps/file-storage`,
+  `api`: 0 errors, the same 2 existing warnings.
+- Types: the three libraries exit 0; the API program has the same 25 errors
+  as the baseline.
+- Mutation: without the 413 entry, the three mapper cases and seven
+  file-storage size scenarios failed; restored.
+- `curl` on 4304: a declared 51 MiB upload → 413 in 0.002 s with 0 bytes
+  sent, `Payload Too Large error. The upload limit is 52428800 bytes`; the
+  same upload chunked → 413 (`Payload Too Large`); a declared 51 MiB `PATCH`
+  → 413; `create-from-url` of the 51 MiB file → 413 with the same message; two
+  files → 400; one SVG → 201 with `nosniff` and `sandbox`. With
+  `FILE_STORAGE_MAX_UPLOAD_BYTES=4096`: an 8,586-byte MP3 → 413 ("The upload
+  limit is 4096 bytes"), a 111-byte SVG → 201. Fixtures deleted, ports freed.
+
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
@@ -220,6 +258,8 @@ status: in_progress
 
 - `473c88d29c` fix(file-storage): serve uploads sandboxed and limit upload size and count
 - `39f810e541` docs: record research, plan and process for issue 304
+- `bd979372ab` docs(thoughts): add the pull request description for #331
+- `da0e2e9493` fix(file-storage): answer an oversized upload with 413 Payload Too Large
 
 ### Pull Request
 
@@ -234,4 +274,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-09-25T22:05:22Z
+**Last updated**: 2026-09-25T22:33:36Z
