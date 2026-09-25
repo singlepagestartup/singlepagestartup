@@ -3,9 +3,9 @@ issue_number: 233
 issue_title: "Bound HTTP-cache generations and recover requests after Redis OOM/restart"
 repository: singlepagestartup
 created_at: 2026-09-17T23:22:38Z
-last_updated: 2026-09-17T23:22:38Z
+last_updated: 2026-09-18T23:38:48Z
 status: active
-current_phase: research
+current_phase: implement
 ---
 
 # Process Log: ISSUE-233 - Bound HTTP-cache generations and recover requests after Redis OOM/restart
@@ -18,10 +18,10 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Create: completed (issue created on GitHub by the operator; no local create-phase artifact existed)
 - Research: completed
-- Plan: not_started
-- Implement: not_started
-- Current phase: research
-- Next step: human review, then core/20-plan
+- Plan: completed
+- Implement: completed (framework scope; see the Implement notes for what is deliberately left out)
+- Current phase: implement
+- Next step: lead review of branch `claude/issue-233-cache-bounds`, including the manual verification against a running API, then push and PR
 
 ## Phase Notes
 
@@ -41,21 +41,23 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Plan
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Planned the framework part that removes the failure mechanism in three phases: bound the KV client and make every cache call fail open, bound what the cache retains, and give the Redis deployment a memory budget. Numeric budgets stay environment knobs with safe defaults. Plan approval was delegated to the lead, so the phases ran without a review pause.
+- Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-233.md`
+- Notes: The plan deliberately leaves out query canonicalisation, identity-aware keys, per-route TTLs, generation cleanup, the startup path and the public clear route. The last one is owned by a separate change; the others are SEC-04b scope in `thoughts/shared/plans/singlepagestartup/2026-09-19-dead-code-and-security-remediation.md`.
 
 ### Implement
 
-- Summary:
+- Summary: Every KV call on the request path now goes through a guard with a deadline that resolves to a miss or a skipped write; the shared ioredis client carries connect and command deadlines, a small retry budget and no offline queue, and reports connection state once per change. Version counters carry `KV_TTL`, refreshed on every bump, and responses above `HTTP_CACHE_MAX_ENTRY_BYTES` are served but not stored. Redis starts with `--maxmemory` and `--maxmemory-policy` locally and in the deployer template.
 - Outputs:
-- Notes:
+  - `thoughts/shared/handoffs/singlepagestartup/ISSUE-233-progress.md`
+  - `libs/middlewares/src/lib/http-cache/guard.ts`, `libs/middlewares/src/lib/http-cache/README.md`, and the changed files listed in the progress summary
+- Notes: Not done here, by scope: query-string canonicalisation, identity-aware keys, per-route TTLs, active generation cleanup, the `5xx` version bump, the public clear route, the startup migration load, readiness routes and Redis metrics. No push and no PR; the lead verifies the branch against a running instance.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 3 -->
+<!-- incident-count: 4 -->
 
 ### Incident 1 — Editorial-pass contract missing on the research branch
 
@@ -87,8 +89,20 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Treat ticket prose about deployment scripts as claims to verify; the contract spec is the current source of truth for `start.sh`.
 - **References**: `start.sh:10-14`, `apps/api/specs/singlepage/index.spec.ts:74-91`, `thoughts/shared/tickets/singlepagestartup/ISSUE-216.md`
 
+### Incident 4 — `volatile-lru` does not protect the namespaces that share the instance
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The first draft of the middleware README recommended `REDIS_MAXMEMORY_POLICY=volatile-lru` as the safe policy for a deployment whose Redis also holds MCP OAuth tokens and subject preferences.
+- **Root Cause**: `volatile-lru` evicts keys that carry an expiry, and both of those namespaces are written with `EX` (`apps/mcp/lib/oauth.ts:196,213,230`; the subject model-favorites record passes a TTL). The policy would evict exactly what it was supposed to spare.
+- **Fix**: Documented that eviction is a property of the instance, not of a namespace or a logical database, and that records which must survive belong on their own Redis instance; corrected the same claim in `tools/deployer/.env.example`.
+- **Preventive Action**: Before naming a Redis eviction policy as a protection, check whether the keys it is supposed to protect are written with an expiry.
+- **References**: `libs/middlewares/src/lib/http-cache/README.md`, `tools/deployer/.env.example`, `apps/mcp/lib/oauth.ts`
+
 ## Reusable Learnings
 
 - The HTTP-cache key embeds the absolute request URL (`c.req.url`), so the same route reached through `http://api:4000`, `http://localhost:4000`, or the public hostname forms separate key families. Reproductions must use the deployment's `API_SERVICE_URL` host to match production keys.
+- A version counter with a TTL cannot resurrect a stale generation as long as the TTL is refreshed on every bump: the bump that left generation `g` happened after the body at `g` was written, so the counter always outlives that body. This is what makes expiry a sufficient substitute for deleting superseded generations.
+- `@sps/providers-kv` had a `jest.config.ts` but no `jest:test` target, so its specs were never run by any Nx target. When a lib looks untested, check `project.json` before assuming there is nothing to run.
 - The Host page service resolves page existence by fetching entire module collections for every `[module.model.param]` URL segment; any seeded page with such a segment turns every same-depth URL lookup into full-table reads through the API's own cache.
 - `git show <commit>:<path>` is the fastest way to read a contract that a newer branch added when the current branch predates it.

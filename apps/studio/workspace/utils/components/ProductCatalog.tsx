@@ -380,12 +380,6 @@ export function ProductCatalog({
                 {product.summary}
               </p>
             )}
-            {!product.model && (
-              <p className="mt-3 text-sm text-amber-800">
-                This legacy catalog needs model attribution. Existing materials
-                remain available.
-              </p>
-            )}
             <nav
               className="mt-5 flex gap-1 overflow-x-auto"
               aria-label="Product documents"

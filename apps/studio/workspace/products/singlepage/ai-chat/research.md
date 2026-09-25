@@ -5,12 +5,11 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
-    model.framework-service: a511d19e3b8a0e67ce12e2b3d559a19fb9ca8d6f5732627d43db940fd14d3cbd
+    brief: c58b70512b9bc7ea71c0051f5ffecf1c0b733d413e96023e491b2ec08a39cb5e
     product.ai-chat.analytics: 2c7ded58308d628b9d7cd6ad99155b0d77f81bc152a2d6b136c9326c67d26716
     product.ai-chat.page.research.business-users: b0850082b935aeb58b98ce777a8cb42644e8c8ebd475b69d753b23e6335d43e3
     product.ai-chat.page.research.competitors: 393f675f629960a6eb4d281c16b2213444c882a4ac0af3aff3eed0f20407538d
-    product.ai-chat.sales: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400
+    product.ai-chat.sales: e683535ef23ac30a979d14b0e9e8bb283d46088625e0154ef42c46571cc2793d
 ---
 
 # AI Chat research
@@ -49,7 +48,7 @@ The three Sales acquisition routes — `demonstration`, `search` and `community`
 - **AC-SPS-09 — unresolved:** separate useful initial work, return use, token purchase, sandbox completion, successful deployment, demand and Code Framework adoption. None should stand in for another. [AC-SPS-14]
 - **AC-SPS-10 — evidence gap:** price acceptance, repeat use, data expectations, support needs and service costs require direct product-specific learning. Broad assistant adoption or a successful example cannot fill those gaps.
 
-The Sales process remains `blocked` by the token offer, exact legal/payment details, named-provider disclosures and unresolved implementation terms for repository authorization, server credentials and deployment recovery. Email/password access, the free portion, database-backed sandbox preview, guided GitHub publication and the initial 24-hour support promise are operator intentions. Its customer profile and journeys remain coherent proposals for review, not observed customer behavior.
+The Sales process remains `blocked` by the text customers are given about how their material is processed and stored. Email/password access, the free portion, database-backed sandbox preview, guided GitHub publication and the initial 24-hour support promise are operator intentions. Its customer profile and journeys remain coherent proposals for review, not observed customer behavior.
 
 ## Sources
 

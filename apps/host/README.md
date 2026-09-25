@@ -54,7 +54,7 @@ Example:
 
 ### Where tests live
 
-- Unit: colocated with source files as `*.spec.ts` / `*.spec.tsx` across API, shared packages, and all 15 modules.
+- Unit: colocated with source files as `*.spec.ts` / `*.spec.tsx` across API, the host app routes, shared packages, and all 15 modules.
 - Integration:
   - `apps/api/specs/integration/*.integration.spec.ts`
   - `libs/modules/*/backend/app/api/src/lib/*.integration.spec.ts`

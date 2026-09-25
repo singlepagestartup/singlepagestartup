@@ -14,6 +14,7 @@ import {
 } from "../../configuration";
 import { DI } from "../../di/constants";
 import { queryBuilder } from "../../query-builder";
+import { type IFilter } from "../../query-builder/filters";
 import { FindServiceProps } from "../../services/interfaces";
 import { type IRepository } from "../interface";
 
@@ -266,33 +267,9 @@ export class Database<T extends PgTableWithColumns<any>>
 
       const [record] = await this.findByField(field, value);
 
-      const shape = this.insertSchema.shape;
-
-      Object.entries(shape).forEach(([key, value]) => {
-        if (isDateSchema(value) && typeof data[key] === "string") {
-          data[key] = new Date(data[key]);
-        }
-
-        if (
-          [
-            "expiresAt",
-            "date",
-            "datetime",
-            "sendAfter",
-            "createdAt",
-            "updatedAt",
-          ].includes(key) &&
-          typeof data[key] === "string"
-        ) {
-          data[key] = new Date(data[key]);
-        }
-      });
-
-      if (!data.updatedAt) {
-        data.updatedAt = new Date();
-      }
-
-      const plainData: T["$inferInsert"] = this.insertSchema.parse(data);
+      const plainData: T["$inferInsert"] = this.insertSchema.parse(
+        this.prepareWritableData(data),
+      );
 
       const [result] = await this.db
         .update(this.Table)
@@ -313,6 +290,97 @@ export class Database<T extends PgTableWithColumns<any>>
 
       throw error;
     }
+  }
+
+  /**
+   * Single-use write: the predicate is part of the `update ... where`, so the
+   * row is claimed by the write itself instead of by a read that precedes it.
+   * Two concurrent callers can therefore never both observe the row as
+   * unclaimed. `undefined` means no row matched, which is how a caller learns
+   * it lost the race or the row was already consumed.
+   *
+   * `data` is a patch, not a full row, so it is parsed against the partial
+   * insert schema.
+   */
+  async consumeFirstByField(
+    field: string,
+    value: any,
+    data: any,
+    predicate?: { and: IFilter[] },
+  ): Promise<any> {
+    try {
+      if (!this.Table[field]) {
+        throw new Error(`Field ${field} does not exist on table ${this.Table}`);
+      }
+
+      const predicates = queryBuilder.filters({
+        table: this.Table as T,
+        queryFunctions: methods,
+        filters: predicate,
+      });
+
+      const plainData: Partial<T["$inferInsert"]> = this.insertSchema
+        .partial()
+        .parse(this.prepareWritableData(data));
+
+      const [result] = await this.db
+        .update(this.Table)
+        .set(plainData)
+        .where(
+          methods.and(
+            methods.eq(this.Table[field], value),
+            ...(predicates || []),
+          ),
+        )
+        .returning()
+        .execute();
+
+      if (!result) {
+        return undefined;
+      }
+
+      const sanitizedRecord = this.selectSchema.parse(result);
+
+      return sanitizedRecord;
+    } catch (error: any) {
+      logger.error(error);
+
+      if (error instanceof ZodError) {
+        throw new Error(JSON.stringify({ zodError: error.issues }));
+      }
+
+      throw error;
+    }
+  }
+
+  protected prepareWritableData(data: any) {
+    const shape = this.insertSchema.shape;
+
+    Object.entries(shape).forEach(([key, schema]) => {
+      if (isDateSchema(schema) && typeof data[key] === "string") {
+        data[key] = new Date(data[key]);
+      }
+
+      if (
+        [
+          "expiresAt",
+          "date",
+          "datetime",
+          "sendAfter",
+          "createdAt",
+          "updatedAt",
+        ].includes(key) &&
+        typeof data[key] === "string"
+      ) {
+        data[key] = new Date(data[key]);
+      }
+    });
+
+    if (!data.updatedAt) {
+      data.updatedAt = new Date();
+    }
+
+    return data;
   }
 
   async dump(): Promise<IDumpResult> {

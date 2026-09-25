@@ -1,6 +1,18 @@
 #!/bin/bash
 . ../../tools/deployer/get_env.sh
 
+add_env() {
+    echo "$1=$2" >> .env
+}
+
+# Check is .env file exists
+if [ -f .env ]; then
+    echo "File .env already exists"
+    exit 1
+fi
+
+umask 077
+
 echo "API_SERVICE_URL=http://127.0.0.1:4000" >> .env
 echo "MCP_SERVICE_HTTP_HOST=127.0.0.1" >> .env
 echo "MCP_SERVICE_HTTP_PORT=3001" >> .env
@@ -16,3 +28,5 @@ MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET=$(get_env "$BASH_SOURCE" "MCP_SERVICE
 add_env "RBAC_JWT_SECRET" $RBAC_JWT_SECRET
 add_env "RBAC_SECRET_KEY" $RBAC_SECRET_KEY
 add_env "MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET" $MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET
+
+chmod 600 .env

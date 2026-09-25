@@ -4,13 +4,19 @@ import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/permission/backend/repository/database";
 import { Repository } from "../../repository";
 import { Service as PermissionsToBillingModuleCurrenciesService } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/service/singlepage";
-import { createMemoryCache } from "@sps/shared-utils";
+import {
+  RouteMatcher,
+  createMemoryCache,
+  normalizeRoutePath,
+} from "@sps/shared-utils";
 import { match } from "path-to-regexp";
 import { PermissionDI } from "../../di";
 import { type IModel as IPermissionsToBillingModuleCurrencies } from "@sps/rbac/relations/permissions-to-billing-module-currencies/sdk/model";
+import { sensitiveRoutes } from "./sensitive-routes";
 
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
 const matcherCache = new Map<string, ReturnType<typeof match>>();
+const sensitiveRoutesMatcher = new RouteMatcher(sensitiveRoutes);
 
 export type IResolveByRouteProps = {
   permission: {
@@ -44,6 +50,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   invalidateRouteResolutionCache() {
     cache.clear();
     matcherCache.clear();
+  }
+
+  /**
+   * Whether a route stays closed to a caller holding no role, even when the
+   * permission row it resolves to has no role attached (issue #270).
+   *
+   * Public rather than protected because the is-authorized service asks across
+   * a class boundary; async so a project can back its own policy with a read.
+   * This is the documented seam: override it in the `startup` subclass to
+   * widen the list, or to re-open a route the project deliberately serves to
+   * anonymous callers.
+   */
+  async isSensitiveRoute(route: string, method: string): Promise<boolean> {
+    return sensitiveRoutesMatcher.matches(normalizeRoutePath(route), method);
   }
 
   protected async getTemplatePermissions(props: {

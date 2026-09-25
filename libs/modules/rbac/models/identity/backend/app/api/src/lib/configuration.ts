@@ -3,6 +3,7 @@ import {
   Table,
   insertSchema,
   selectSchema,
+  outputSchema,
   dataDirectory,
 } from "@sps/rbac/models/identity/backend/repository/database";
 import { injectable } from "inversify";
@@ -16,6 +17,13 @@ export class Configuration extends ParentConfiguration {
         Table: Table,
         insertSchema,
         selectSchema,
+        /**
+         * Strips the credential columns from responses to callers without the
+         * operator secret (issue #270). It runs at the REST boundary, so the
+         * in-process and operator-key reads that authentication depends on
+         * still see the full row.
+         */
+        outputSchema,
         dump: {
           active: false,
           type: "json",

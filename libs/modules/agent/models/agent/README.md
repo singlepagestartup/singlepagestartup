@@ -25,6 +25,20 @@ configuration metadata used by the automation layer.
 - `admin-form`: admin UI create/edit form.
 - `admin-table`: admin UI table for browsing agents.
 
+## Seeded Agents
+
+The repository ships the agent rows below; `npx nx run api:db:seed` creates
+them and the cron dispatcher runs each one on its interval.
+
+- `billing-module-payment-intents-check` (`* * * * *`).
+- `ecommerce-module-orders-check` (`* * * * *`).
+- `rbac-module-subjects-check` (`* * * * *`): processes subject orders.
+- `rbac-module-subjects-delete-anonymous` (`0 0 * * *`): deletes one bounded
+  batch of inactive anonymous subjects per run by calling
+  `POST /api/rbac/subjects/delete-anonymous`. The retention rules and the batch
+  size belong to the rbac module; see
+  `libs/modules/rbac/models/subject/README.md`.
+
 ## Telegram Thread Commands
 
 The singlepage agent service owns Telegram thread commands:
