@@ -131,8 +131,9 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/342
+- [x] PR number: 342
+- Commits: `0f00341dfe` (code, specs, docs), `e79ce03e25` (research, plan, process, progress), then the saved description `thoughts/shared/prs/342_description.md`.
 
 ### Final Status
 

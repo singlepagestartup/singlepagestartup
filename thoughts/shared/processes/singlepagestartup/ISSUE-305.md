@@ -21,7 +21,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Plan: completed
 - Implement: in_progress
 - Current phase: implement
-- Next step: commit, push and open the pull request, then address the lead's review
+- Next step: pull request #342 is open; address the lead's review on the same branch
 
 ## Phase Notes
 
