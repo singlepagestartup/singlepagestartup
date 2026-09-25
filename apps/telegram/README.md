@@ -14,6 +14,7 @@ This app must stay thin. Domain behavior belongs to modules such as `rbac`,
    ```sh
    cp .env.example .env
    # edit TELEGRAM_SERVICE_BOT_TOKEN and related values
+   # set TELEGRAM_SERVICE_WEBHOOK_SECRET to `openssl rand -hex 32`
    ```
 
 2. Run the bot in development mode:
@@ -49,6 +50,7 @@ This app must stay thin. Domain behavior belongs to modules such as `rbac`,
 Main app-level variables are documented in `.env.example`:
 
 - `TELEGRAM_SERVICE_BOT_TOKEN`
+- `TELEGRAM_SERVICE_WEBHOOK_SECRET`
 - `TELEGRAM_SERVICE_URL`
 - `NEXT_PUBLIC_TELEGRAM_SERVICE_URL`
 - `NEXT_PUBLIC_API_SERVICE_URL`
@@ -57,6 +59,30 @@ Main app-level variables are documented in `.env.example`:
 
 Subscription channel variables are also defined there when the bot must enforce
 channel membership.
+
+## Webhook and control route authentication
+
+`TELEGRAM_SERVICE_WEBHOOK_SECRET` is the shared secret that makes an incoming
+update attributable. Startup passes it to `setWebhook` as `secret_token`, and
+the update handler compares it against the `X-Telegram-Bot-Api-Secret-Token`
+header Telegram then attaches to every delivery. It must be at least 32
+characters and the same value on every instance of a deployment; the service
+refuses to start without it, because an unconfigured secret would make the
+handler accept any unsigned POST.
+
+Registration happens before the Agent command catalog is fetched, so an
+unavailable API cannot hold back a registration the running handler already
+depends on.
+
+Rotating the secret means re-registering: change the value and either restart
+the service or call `POST /api/telegram/run`. The previous value stops being
+accepted the moment the new registration lands, and deliveries are rejected in
+between.
+
+`POST /api/telegram/run` and `POST /api/telegram/stop` are operator levers and
+require the `X-RBAC-SECRET-KEY` header. `run` re-registers the webhook and
+republishes the command catalog; `stop` deletes the registration and silences
+the bot until something re-registers it.
 
 In Docker/Swarm deployments, `env_file` injects the service environment and
 the root `create_env.sh telegram deployment` command writes that process

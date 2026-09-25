@@ -24,6 +24,7 @@ export const statuses = [
   "requires_confirmation",
   "requires_payment_method",
   "succeeded",
+  "failed",
   "canceled",
 ];
 export const query = {};

@@ -1,0 +1,223 @@
+# Stage machine of the pre-development workflow.
+#
+# The structural requirements that .agents/workflows/pre-development.md and its
+# contracts describe in prose are declared here as checks and executed by
+# `npm run singlepagestartup:pipeline:check`. Judgment criteria stay with the
+# owning roles and are listed under manual_review so the report shows them
+# beside the executable result. The command reads the workspace and the layer
+# cursor; it never writes either. Stage IDs, statuses and artifact names are
+# the vocabulary of the existing cursor schema and must not change.
+schema: singlepagestartup.pre-development-pipeline.v1
+cursor:
+  path: apps/studio/workspace/utils/pre-development/<layer>.yaml
+  schema: singlepagestartup.pre-development-state.v1
+  stages: [00-business, 10-strategy, 20-brand, 30-design, 40-products]
+  statuses: [not_started, in_progress, blocked, complete]
+  artifacts:
+    [
+      brief,
+      product-models,
+      product-research,
+      strategy,
+      brand,
+      design,
+      assets,
+      products,
+    ]
+stages:
+  - id: 00-business
+    title: Client Request
+    owners: [account-manager, business-analyst]
+    active_artifacts: [brief, product-models]
+    checks:
+      - id: brief.sections
+        check: sections
+        artifact: brief
+        template: templates/brief.md
+      - id: brief.confirmation-metadata
+        check: frontmatter
+        artifact: brief
+        keys: [confirmation]
+      - id: brief.scope-confirmed
+        check: brief-scope
+        artifact: brief
+      - id: brief.stamp-current
+        check: stamp-current
+        artifact: brief
+      - id: brief.no-change-log
+        check: no-change-log
+        artifact: brief
+      - id: brief.framework-headings
+        check: framework-headings
+        artifact: brief
+      - id: brief.formatted
+        check: documents-formatted
+        artifact: brief
+      - id: catalog.matches-brief
+        check: catalog-matches-brief
+        artifact: products
+      - id: products.sections
+        check: product-sections
+        artifact: products
+        template: templates/product.md
+      - id: sales.schema
+        check: sales-v2
+        artifact: products
+    manual_review:
+      - The confirmed scope names the primary decision subject, its boundaries and every product in scope with an attributable operator confirmation.
+      - Client facts, confirmed intentions, supplied-material observations and unknowns are attributed; no operator fact is answered by an assumption.
+      - Initial Product, its economics and Sales intake record only client inputs; missing details are explicit unknowns, not invented values.
+  - id: 10-strategy
+    title: Strategy
+    owners: [market-researcher, strategist]
+    active_artifacts: [product-research, strategy]
+    checks:
+      - id: research.sections
+        check: research-sections
+        artifact: products
+        template: templates/product-research.md
+      - id: research.finding-prefix
+        check: research-finding-prefix
+        artifact: products
+      - id: strategy.sections
+        check: sections
+        artifact: strategy
+        template: templates/strategy.md
+      - id: strategy.confirmed
+        check: confirmed
+        artifact: strategy
+      - id: strategy.no-change-log
+        check: no-change-log
+        artifact: strategy
+      - id: strategy.framework-headings
+        check: framework-headings
+        artifact: strategy
+      - id: strategy.formatted
+        check: documents-formatted
+        artifact: strategy
+    manual_review:
+      - Strategy presents one coherent target state that fulfills the approved Brief, not a roadmap, a task list or a first-experiment plan.
+      - Audience-growth and sales-product priorities are named, every confirmed product has a role, and channels have a role, content, destination and contribution.
+      - Material unknowns sit beside the affected decision and no operator fact such as budget, capacity or channel access is invented.
+  - id: 20-brand
+    title: Brand
+    owners: [communication-strategist, brand-designer]
+    active_artifacts: [brand]
+    checks:
+      - id: brand.sections
+        check: sections
+        artifact: brand
+        template: templates/brand.md
+      - id: brand.confirmed
+        check: confirmed
+        artifact: brand
+      - id: brand.no-change-log
+        check: no-change-log
+        artifact: brand
+      - id: brand.framework-headings
+        check: framework-headings
+        artifact: brand
+      - id: brand.formatted
+        check: documents-formatted
+        artifact: brand
+    manual_review:
+      - Brand owns meaning, message hierarchy, proof boundary, objections, voice, naming and consistency rules; colors, type, imagery and layouts stay in Design.
+      - Every consequential claim carries evidence or an explicit non-evidence classification.
+  - id: 30-design
+    title: Design
+    owners: [brand-designer]
+    active_artifacts: [design, assets]
+    checks:
+      - id: brief.visual-intake-ready
+        check: visual-intake-ready
+        artifact: brief
+      - id: design.sections
+        check: design-sections
+        artifact: design
+        template: templates/design.md
+      - id: design.confirmed
+        check: confirmed
+        artifact: design
+      - id: design.no-change-log
+        check: no-change-log
+        artifact: design
+      - id: design.framework-headings
+        check: framework-headings
+        artifact: design
+      - id: design.formatted
+        check: documents-formatted
+        artifact: design
+      - id: assets.generated-registered
+        check: generated-assets-registered
+        artifact: assets
+      - id: design.media-examples
+        check: media-examples
+        artifact: design
+      - id: design.brandbook-owned
+        check: brandbook-owned
+        artifact: design
+      - id: design.specimens-rendered
+        check: specimens-rendered
+        artifact: design
+      - id: design.specimen-catalogue
+        check: specimen-catalogue
+        artifact: design
+    manual_review:
+      - The Client visual preference profile was confirmed by the operator before any visual territory, token, prompt or generated asset was selected.
+      - Photography and illustration examples were reviewed together at source size, intended size and small preview; a changed master prompt was retested on three briefs.
+      - Typography roles name an exact CSS family, weights and a registered font asset, and the loaded font was verified in a browser.
+  - id: 40-products
+    title: Products
+    owners:
+      [
+        business-analyst,
+        strategist,
+        web-designer,
+        brand-designer,
+        communication-strategist,
+      ]
+    active_artifacts: [products]
+    checks:
+      - id: catalog.structure
+        check: catalog-structure
+        artifact: products
+      - id: analytics.declared
+        check: analytics-declared
+        artifact: products
+        template: templates/product-analytics.md
+      - id: sales.readiness
+        check: sales-readiness
+        artifact: products
+    manual_review:
+      - Every catalog entry traces to a confirmed Brief product; no product was inferred from a showcase, a repository folder or an idea.
+      - Website, Marketing Creative and Presentation exist for every product where they are in scope, and an explicit not-applicable decision replaces any placeholder.
+      - Product documents describe the intended business plan and requirements; installation checks, runtime tests and release audits are not completion gates.
+# A detected shape is a structural gap of the stage named in owning_stage, so
+# an unmigrated workspace cannot report that stage complete. The stage is the
+# one that owns the documents the shape affects, which is the earliest stage
+# reading them, not the stage where the shape was first written.
+legacy_shapes:
+  - id: decision-profile
+    detect: decision-profile
+    procedure: migrations/README.md#retired-procedures
+    owning_stage: 40-products
+  - id: standalone-business
+    detect: standalone-business
+    procedure: migrations/README.md#retired-procedures
+    owning_stage: 00-business
+  - id: catalog-v1
+    detect: catalog-v1
+    procedure: migrations/README.md#retired-procedures
+    owning_stage: 00-business
+  - id: sales-v1
+    detect: sales-v1
+    procedure: migrations/README.md#retired-procedures
+    owning_stage: 00-business
+  - id: evidence-register-codes
+    detect: evidence-register-codes
+    procedure: migrations/README.md#retired-procedures
+    owning_stage: 00-business
+  - id: legacy-cursor-anchors
+    detect: legacy-cursor-anchors
+    procedure: migrations/README.md#retired-procedures
+    owning_stage: 00-business

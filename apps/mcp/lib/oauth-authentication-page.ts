@@ -4,7 +4,7 @@ export function getOAuthAuthenticationPage() {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SPS MCP OAuth authentication</title>
+    <title>SinglePageStartup MCP OAuth authentication</title>
     <style>
       body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; background: #f8fafc; color: #0f172a; }
       main { max-width: 960px; margin: 40px auto; padding: 0 20px 48px; }
@@ -29,7 +29,7 @@ export function getOAuthAuthenticationPage() {
   </head>
   <body>
     <main>
-      <h1>SPS MCP OAuth authentication</h1>
+      <h1>SinglePageStartup MCP OAuth authentication</h1>
       <p>This page runs the same OAuth steps a remote MCP client performs, but in your browser for local authentication checks.</p>
 
       <section>
@@ -44,7 +44,7 @@ export function getOAuthAuthenticationPage() {
             <input id="redirectUri" readonly />
           </div>
         </div>
-        <p>Click start, then sign in on the SPS login page using an existing SPS email/password.</p>
+        <p>Click start, then sign in on the SinglePageStartup login page using an existing SinglePageStartup email/password.</p>
         <div class="row">
           <button id="startButton" type="button">Start OAuth authentication</button>
           <button id="resetButton" type="button" class="secondary">Reset local state</button>
@@ -114,7 +114,7 @@ export function getOAuthAuthenticationPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            client_name: "SPS MCP browser authentication",
+            client_name: "SinglePageStartup MCP browser authentication",
             redirect_uris: [redirectUri],
           }),
         });

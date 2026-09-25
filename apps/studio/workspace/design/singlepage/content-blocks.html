@@ -1,0 +1,836 @@
+<!--
+  Page-level compositions built from the same tokens as the Interface kit, so a
+  product surface starts from a working block rather than from a description.
+  Each block names the confirmed pattern it implements and prints its structural
+  recipe: the container and grid classes that carry the decision. Inner control
+  classes stay in the Interface kit; do not restate them here.
+
+  Photography and illustration use registered generated masters at their own
+  aspect ratio. The photographs are deliberately 3:2, 4:5 and 1:1, because the
+  confirmed rule displays each original ratio without an automatic crop. A grid
+  that forces object-cover on a square breaks that rule.
+
+  Plain HTML and Tailwind only, with CSS-only states. Reference screenshots are
+  never reproduced: every composition below is this project's own.
+-->
+
+<div class="grid gap-4">
+  <!-- Editorial entry -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="editorial-entry"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Editorial entry</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      One dominant statement, one filled action beside one plain action, then
+      three explanation cards carrying the Accent on only one.
+    </p>
+
+    <div
+      class="mt-6 rounded-xl bg-[var(--workspace-brand-background)] px-5 py-12 md:px-10 md:py-16"
+    >
+      <div class="mx-auto max-w-2xl text-center">
+        <h4
+          class="text-4xl leading-[1.05] font-semibold tracking-tight md:text-6xl"
+          style="font-family: var(--workspace-brand-font-display)"
+        >
+          One page is enough to start.
+        </h4>
+        <p
+          class="mx-auto mt-6 max-w-lg text-sm leading-[22px] text-[var(--workspace-brand-muted)]"
+        >
+          Describe the project once. Preview the landing page, connect a
+          repository, then publish to your own server.
+        </p>
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <button
+            type="button"
+            class="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--workspace-brand-primary)] px-6 text-sm font-semibold text-[var(--workspace-brand-surface)] transition hover:opacity-90"
+          >
+            Start a project
+          </button>
+          <button
+            type="button"
+            class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold underline underline-offset-4 transition hover:opacity-70"
+          >
+            See an example
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-12 grid gap-4 md:grid-cols-3">
+        <div
+          class="rounded-3xl bg-[var(--workspace-brand-accent)] p-6 text-[#111111]"
+        >
+          <h5
+            class="text-[24px] leading-[28px] font-semibold"
+            style="font-family: var(--workspace-brand-font-display)"
+          >
+            Describe
+          </h5>
+          <p class="mt-3 text-sm leading-[22px]">
+            Answer a short set of questions about the business in plain
+            language.
+          </p>
+        </div>
+        <div
+          class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6"
+        >
+          <h5
+            class="text-[24px] leading-[28px] font-semibold"
+            style="font-family: var(--workspace-brand-font-display)"
+          >
+            Preview
+          </h5>
+          <p
+            class="mt-3 text-sm leading-[22px] text-[var(--workspace-brand-muted)]"
+          >
+            Open the generated landing page in a private sandbox and adjust it.
+          </p>
+        </div>
+        <div
+          class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6"
+        >
+          <h5
+            class="text-[24px] leading-[28px] font-semibold"
+            style="font-family: var(--workspace-brand-font-display)"
+          >
+            Publish
+          </h5>
+          <p
+            class="mt-3 text-sm leading-[22px] text-[var(--workspace-brand-muted)]"
+          >
+            Connect the repository and publish the site to your own server.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <p
+      class="mt-6 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <span class="font-semibold tracking-[0.12em] uppercase">Structure</span>
+      <span
+        class="mt-1 block font-mono break-all text-[var(--workspace-brand-muted)]"
+        >mx-auto max-w-2xl text-center → mt-12 grid gap-4 md:grid-cols-3, with
+        exactly one card on bg-[var(--workspace-brand-accent)] text-[#111111] ·
+        card title Primary 24/28, body 14/22</span
+      >
+    </p>
+  </article>
+
+  <!-- Photo cards -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="content-card"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Photo cards</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      Each photograph keeps its own aspect ratio. The three registered masters
+      are 3:2, 4:5 and 1:1, so the grid aligns to the top instead of cropping
+      them to a common shape.
+    </p>
+
+    <div class="mt-6 grid items-start gap-4 md:grid-cols-3">
+      <figure
+        class="overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)]"
+      >
+        <img
+          src="/workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-business-conversation.png"
+          alt="Two partners exchange an idea at a worktable."
+          loading="lazy"
+          class="block h-auto w-full"
+        />
+        <figcaption class="p-5">
+          <span
+            class="inline-flex min-h-7 items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] px-3 text-xs font-semibold text-[var(--workspace-brand-muted)]"
+            ><span
+              class="inline-block h-1.5 w-1.5 rounded-full bg-[var(--workspace-brand-accent)]"
+              aria-hidden="true"
+            ></span
+            >Collaboration</span
+          >
+          <p class="mt-3 font-semibold">Business conversation</p>
+          <p class="mt-1 text-xs text-[var(--workspace-brand-muted)]">
+            3:2 · gesture and warm light
+          </p>
+        </figcaption>
+      </figure>
+      <figure
+        class="overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)]"
+      >
+        <img
+          src="/workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-moment-of-focus.png"
+          alt="A business owner considers an idea through soft foreground reflections."
+          loading="lazy"
+          class="block h-auto w-full"
+        />
+        <figcaption class="p-5">
+          <span
+            class="inline-flex min-h-7 items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] px-3 text-xs font-semibold text-[var(--workspace-brand-muted)]"
+            ><span
+              class="inline-block h-1.5 w-1.5 rounded-full bg-[var(--workspace-brand-accent)]"
+              aria-hidden="true"
+            ></span
+            >Human attention</span
+          >
+          <p class="mt-3 font-semibold">Moment of focus</p>
+          <p class="mt-1 text-xs text-[var(--workspace-brand-muted)]">
+            4:5 · close framing
+          </p>
+        </figcaption>
+      </figure>
+      <figure
+        class="overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)]"
+      >
+        <img
+          src="/workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-work-in-motion.png"
+          alt="A business owner passes a prepared order across a worktable."
+          loading="lazy"
+          class="block h-auto w-full"
+        />
+        <figcaption class="p-5">
+          <span
+            class="inline-flex min-h-7 items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] px-3 text-xs font-semibold text-[var(--workspace-brand-muted)]"
+            ><span
+              class="inline-block h-1.5 w-1.5 rounded-full bg-[var(--workspace-brand-accent)]"
+              aria-hidden="true"
+            ></span
+            >Everyday progress</span
+          >
+          <p class="mt-3 font-semibold">Work in motion</p>
+          <p class="mt-1 text-xs text-[var(--workspace-brand-muted)]">
+            1:1 · low viewpoint
+          </p>
+        </figcaption>
+      </figure>
+    </div>
+
+    <p
+      class="mt-6 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <span class="font-semibold tracking-[0.12em] uppercase">Structure</span>
+      <span
+        class="mt-1 block font-mono break-all text-[var(--workspace-brand-muted)]"
+        >grid items-start gap-4 md:grid-cols-3 → figure overflow-hidden
+        rounded-3xl border · img block h-auto w-full (never aspect-* with
+        object-cover)</span
+      >
+    </p>
+  </article>
+
+  <!-- Icon cards -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="icon-card"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Icon cards</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      A 24px icon grid with 2px strokes, drawn in currentColor so an icon
+      follows its surface. One card carries the Accent locator.
+    </p>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-3xl border border-[var(--workspace-brand-line)] p-6">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="5" y="3" width="14" height="18" rx="2" />
+          <path d="M9 8h6M9 12h6M9 16h3" />
+        </svg>
+        <p class="mt-4 font-semibold">One project page</p>
+        <p
+          class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]"
+        >
+          Every decision about the business stays on a single readable page.
+        </p>
+      </div>
+      <div class="rounded-3xl border border-[var(--workspace-brand-line)] p-6">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 3 3 8l9 5 9-5-9-5Z" />
+          <path d="M3 13l9 5 9-5" />
+        </svg>
+        <p class="mt-4 font-semibold">Reusable modules</p>
+        <p
+          class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]"
+        >
+          Shared functions sit on one foundation instead of being rewritten.
+        </p>
+      </div>
+      <div class="rounded-3xl border border-[var(--workspace-brand-line)] p-6">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18" />
+          <path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18Z" />
+        </svg>
+        <p class="mt-4 font-semibold">Your own server</p>
+        <p
+          class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]"
+        >
+          Publish the finished site where you control the hosting.
+        </p>
+      </div>
+      <div
+        class="rounded-3xl bg-[var(--workspace-brand-accent)] p-6 text-[#111111]"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M13 3 5 13h6l-1 8 8-10h-6l1-8Z" />
+        </svg>
+        <p class="mt-4 font-semibold">Agent-directed changes</p>
+        <p class="mt-2 text-sm leading-[22px]">
+          A coding agent edits the project while a person reviews the result.
+        </p>
+      </div>
+    </div>
+
+    <p
+      class="mt-6 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <span class="font-semibold tracking-[0.12em] uppercase">Structure</span>
+      <span
+        class="mt-1 block font-mono break-all text-[var(--workspace-brand-muted)]"
+        >grid gap-4 sm:grid-cols-2 lg:grid-cols-4 → svg width=24 height=24
+        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"</span
+      >
+    </p>
+  </article>
+
+  <!-- Numbered steps -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="numbered-steps"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Numbered steps</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      Order reads twice: a large numeral sits behind the mark as a ghost, and a
+      chip names the step in words. The numeral never competes with the heading,
+      and one leading action closes the row.
+    </p>
+
+    <div class="mt-6 grid gap-6 md:grid-cols-3">
+      <div>
+        <div class="relative h-24">
+          <span
+            class="absolute top-0 left-10 text-7xl leading-none font-semibold text-[var(--workspace-brand-line)] select-none"
+            aria-hidden="true"
+            >01</span
+          >
+          <svg
+            class="relative"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="5" y="3" width="14" height="18" rx="2" />
+            <path d="M9 8h6M9 12h6M9 16h3" />
+          </svg>
+        </div>
+        <span
+          class="mt-3 inline-flex min-h-7 items-center rounded-full border border-[var(--workspace-brand-line)] px-3 text-xs font-semibold"
+          >Step 1</span
+        >
+        <p class="mt-3 font-semibold">Describe the business</p>
+        <p
+          class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]"
+        >
+          Every stated fact, constraint and unknown lands on one readable page.
+        </p>
+      </div>
+
+      <div>
+        <div class="relative h-24">
+          <span
+            class="absolute top-0 left-10 text-7xl leading-none font-semibold text-[var(--workspace-brand-line)] select-none"
+            aria-hidden="true"
+            >02</span
+          >
+          <svg
+            class="relative"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 3 3 8l9 5 9-5-9-5Z" />
+            <path d="M3 13l9 5 9-5" />
+          </svg>
+        </div>
+        <span
+          class="mt-3 inline-flex min-h-7 items-center rounded-full border border-[var(--workspace-brand-line)] px-3 text-xs font-semibold"
+          >Step 2</span
+        >
+        <p class="mt-3 font-semibold">Review the plan</p>
+        <p
+          class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]"
+        >
+          A person approves the proposed structure before anything is built.
+        </p>
+      </div>
+
+      <div>
+        <div class="relative h-24">
+          <span
+            class="absolute top-0 left-10 text-7xl leading-none font-semibold text-[var(--workspace-brand-line)] select-none"
+            aria-hidden="true"
+            >03</span
+          >
+          <svg
+            class="relative"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M3 12h18" />
+            <path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18Z" />
+          </svg>
+        </div>
+        <span
+          class="mt-3 inline-flex min-h-7 items-center rounded-full border border-[var(--workspace-brand-line)] px-3 text-xs font-semibold"
+          >Step 3</span
+        >
+        <p class="mt-3 font-semibold">Publish</p>
+        <p
+          class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]"
+        >
+          The finished site goes to the server the owner controls.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-8 flex justify-center">
+      <a
+        class="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--workspace-brand-primary)] px-8 text-base font-semibold text-[var(--workspace-brand-surface)]"
+        href="#numbered-steps"
+        >Start a project</a
+      >
+    </div>
+
+    <p
+      class="mt-6 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <span class="font-semibold tracking-[0.12em] uppercase">Structure</span>
+      <span
+        class="mt-1 block font-mono break-all text-[var(--workspace-brand-muted)]"
+        >grid gap-6 md:grid-cols-3 → numeral absolute top-0 left-10 text-7xl
+        text-[var(--workspace-brand-line)] with aria-hidden, mark relative above
+        it · one leading action after every step</span
+      >
+    </p>
+  </article>
+  <!-- Illustration and text -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="media-and-text"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">
+      Illustration and text
+    </h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      One illustration explains one relationship. It keeps its warm off-white
+      background and original square ratio; the copy carries the claim.
+    </p>
+
+    <div class="mt-6 grid items-center gap-8 md:grid-cols-2">
+      <figure
+        class="overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)]"
+      >
+        <img
+          src="/workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-module-hierarchy-v2.png"
+          alt="Reusable software modules joined to a common code foundation."
+          loading="lazy"
+          class="block h-auto w-full"
+        />
+      </figure>
+      <div>
+        <p
+          class="text-xs font-semibold tracking-[0.12em] text-[var(--workspace-brand-muted)] uppercase"
+        >
+          Reusable foundation
+        </p>
+        <h4
+          class="mt-3 text-3xl leading-tight font-semibold"
+          style="font-family: var(--workspace-brand-font-display)"
+        >
+          Modules share one base.
+        </h4>
+        <p class="mt-4 text-sm leading-[22px]">
+          A new product reuses tested common functions and changes only what it
+          needs. The diagram explains the relationship; it is not evidence of an
+          implemented architecture.
+        </p>
+        <button
+          type="button"
+          class="mt-6 inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--workspace-brand-line)] px-6 text-sm font-semibold transition hover:border-[var(--workspace-brand-primary)]"
+        >
+          Read the module guide
+        </button>
+      </div>
+    </div>
+
+    <p
+      class="mt-6 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <span class="font-semibold tracking-[0.12em] uppercase">Structure</span>
+      <span
+        class="mt-1 block font-mono break-all text-[var(--workspace-brand-muted)]"
+        >grid items-center gap-8 md:grid-cols-2 · img block h-auto w-full with
+        the source background preserved</span
+      >
+    </p>
+  </article>
+
+  <!-- Repeated item grid -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="item-grid"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Repeated item grid</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      Uniform cards with a preview, a title, one metadata line and a category
+      pill. The create-new action occupies the first cell instead of floating
+      above the grid.
+    </p>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <button
+        type="button"
+        class="grid min-h-56 place-items-center rounded-3xl border border-dashed border-[var(--workspace-brand-line)] p-6 text-sm font-semibold transition hover:border-[var(--workspace-brand-primary)]"
+      >
+        <span class="grid justify-items-center gap-2">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span>New project</span>
+        </span>
+      </button>
+      <article
+        class="overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)]"
+      >
+        <div class="relative">
+          <span
+            class="absolute top-4 left-4 inline-flex min-h-7 items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-3 text-xs font-semibold"
+            ><span
+              class="inline-block h-1.5 w-1.5 rounded-full bg-[var(--workspace-brand-accent)]"
+              aria-hidden="true"
+            ></span
+            >Published</span
+          >
+          <img
+            src="/workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-framework-inheritance-v2.png"
+            alt="A framework reused by a new product."
+            loading="lazy"
+            class="block h-auto w-full"
+          />
+        </div>
+        <div class="p-5">
+          <p class="font-semibold">Coffee roastery</p>
+          <p class="mt-1 text-xs text-[var(--workspace-brand-muted)]">
+            Updated 21/10/24
+          </p>
+        </div>
+      </article>
+      <article
+        class="overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)]"
+      >
+        <div class="relative">
+          <span
+            class="absolute top-4 left-4 inline-flex min-h-7 items-center rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-3 text-xs font-semibold text-[var(--workspace-brand-muted)]"
+            >Draft</span
+          >
+          <img
+            src="/workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-coordinated-agents-v2.png"
+            alt="A person directing coding assistants toward a shared task."
+            loading="lazy"
+            class="block h-auto w-full"
+          />
+        </div>
+        <div class="p-5">
+          <p class="font-semibold">Agency landing</p>
+          <p class="mt-1 text-xs text-[var(--workspace-brand-muted)]">
+            Updated 07/10/24
+          </p>
+        </div>
+      </article>
+    </div>
+
+    <p
+      class="mt-6 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <span class="font-semibold tracking-[0.12em] uppercase">Structure</span>
+      <span
+        class="mt-1 block font-mono break-all text-[var(--workspace-brand-muted)]"
+        >grid gap-4 sm:grid-cols-2 lg:grid-cols-3 → create-new cell first, as
+        border-dashed · artwork edge to edge, never framed by a second off-white
+        · status pill absolute top-4 left-4</span
+      >
+    </p>
+  </article>
+
+  <!-- Offer comparison -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="offer-comparison"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Offer comparison</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      Summaries of equal width. Exactly one is emphasised by inverting to the
+      dark surface, and only that one carries an Accent action.
+    </p>
+
+    <div class="mt-6 grid items-start gap-4 md:grid-cols-3">
+      <div class="rounded-3xl border border-[var(--workspace-brand-line)] p-6">
+        <p class="font-semibold">Preview</p>
+        <p class="mt-1 text-sm text-[var(--workspace-brand-muted)]">
+          One private landing page
+        </p>
+        <p class="mt-6 text-4xl font-semibold tracking-tight">Free</p>
+        <button
+          type="button"
+          class="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[var(--workspace-brand-line)] px-6 text-sm font-semibold transition hover:border-[var(--workspace-brand-primary)]"
+        >
+          Start
+        </button>
+      </div>
+      <div
+        class="rounded-3xl bg-[var(--workspace-brand-primary)] p-6 text-[var(--workspace-brand-surface)]"
+      >
+        <p class="font-semibold">Publish</p>
+        <p class="mt-1 text-sm opacity-70">Your domain, your server</p>
+        <p class="mt-6 text-4xl font-semibold tracking-tight">
+          $19<span class="text-base font-normal opacity-70">/mo</span>
+        </p>
+        <button
+          type="button"
+          class="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[var(--workspace-brand-accent)] px-6 text-sm font-semibold text-[#111111] transition hover:opacity-90"
+        >
+          Choose Publish
+        </button>
+      </div>
+      <div class="rounded-3xl border border-[var(--workspace-brand-line)] p-6">
+        <p class="font-semibold">Framework</p>
+        <p class="mt-1 text-sm text-[var(--workspace-brand-muted)]">
+          Full source and modules
+        </p>
+        <p class="mt-6 text-4xl font-semibold tracking-tight">
+          $49<span
+            class="text-base font-normal text-[var(--workspace-brand-muted)]"
+            >/mo</span
+          >
+        </p>
+        <button
+          type="button"
+          class="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[var(--workspace-brand-line)] px-6 text-sm font-semibold transition hover:border-[var(--workspace-brand-primary)]"
+        >
+          Choose Framework
+        </button>
+      </div>
+    </div>
+
+    <p
+      class="mt-6 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <span class="font-semibold tracking-[0.12em] uppercase">Structure</span>
+      <span
+        class="mt-1 block font-mono break-all text-[var(--workspace-brand-muted)]"
+        >grid items-start gap-4 md:grid-cols-3 → emphasised column
+        bg-[var(--workspace-brand-primary)]
+        text-[var(--workspace-brand-surface)]</span
+      >
+    </p>
+  </article>
+
+  <!-- Contextual sheet -->
+  <article
+    class="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 md:p-8"
+    data-specimen="contextual-sheet"
+  >
+    <h3 class="text-base leading-[26px] font-semibold">Contextual sheet</h3>
+    <p class="mt-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+      Opens with the subject and its status, then grouped data rows, compact
+      labelled icon actions, and the destructive action set apart below.
+    </p>
+
+    <div
+      class="mt-6 flex justify-center rounded-xl bg-[var(--workspace-brand-background)] p-5 md:p-8"
+    >
+      <div
+        class="w-full max-w-sm rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5"
+      >
+        <div
+          class="mx-auto h-1 w-10 rounded-full bg-[var(--workspace-brand-line)]"
+          aria-hidden="true"
+        ></div>
+        <div class="mt-5 flex items-start justify-between gap-4">
+          <p class="text-lg font-semibold">Coffee roastery</p>
+          <span
+            class="inline-flex min-h-7 items-center rounded-full border border-amber-400 px-3 text-xs font-semibold text-amber-700"
+            >Unpublished</span
+          >
+        </div>
+        <dl class="mt-4 text-sm">
+          <div
+            class="flex items-center justify-between gap-4 border-t border-[var(--workspace-brand-line)] py-3"
+          >
+            <dt class="text-[var(--workspace-brand-muted)]">Pages</dt>
+            <dd>4</dd>
+          </div>
+          <div
+            class="flex items-center justify-between gap-4 border-t border-[var(--workspace-brand-line)] py-3"
+          >
+            <dt class="text-[var(--workspace-brand-muted)]">Last preview</dt>
+            <dd>21/10/24</dd>
+          </div>
+        </dl>
+        <div
+          class="mt-2 grid grid-cols-3 gap-2 border-t border-[var(--workspace-brand-line)] pt-4 text-center text-xs"
+        >
+          <button type="button" class="grid justify-items-center gap-2 py-2">
+            <span
+              class="grid h-10 w-10 place-items-center rounded-full bg-[var(--workspace-brand-background)]"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M4 20h4L19 9l-4-4L4 16v4Z" />
+              </svg>
+            </span>
+            <span>Edit</span>
+          </button>
+          <button type="button" class="grid justify-items-center gap-2 py-2">
+            <span
+              class="grid h-10 w-10 place-items-center rounded-full bg-[var(--workspace-brand-background)]"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+              </svg>
+            </span>
+            <span>Preview</span>
+          </button>
+          <button type="button" class="grid justify-items-center gap-2 py-2">
+            <span
+              class="grid h-10 w-10 place-items-center rounded-full bg-[var(--workspace-brand-background)]"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 16V4M7 9l5-5 5 5" />
+                <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+              </svg>
+            </span>
+            <span>Publish</span>
+          </button>
+        </div>
+        <button
+          type="button"
+          class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-red-300 bg-red-50 px-6 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+        >
+          Delete project
+        </button>
+      </div>
+    </div>
+
+    <p
+      class="mt-6 border-t border-[var(--workspace-brand-line)] pt-6 text-xs leading-4"
+    >
+      <span class="font-semibold tracking-[0.12em] uppercase">Structure</span>
+      <span
+        class="mt-1 block font-mono break-all text-[var(--workspace-brand-muted)]"
+        >w-full max-w-sm rounded-3xl → status beside the subject · grid
+        grid-cols-3 icon actions · destructive separated by mt-4</span
+      >
+    </p>
+  </article>
+</div>

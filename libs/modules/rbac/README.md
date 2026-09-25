@@ -106,9 +106,18 @@ generated migration.
 
 Telegram bootstrap and free-subscription provisioning do not serialize
 requests with application or advisory locks. Concurrent requests execute
-independently: permanent unique indexes reject a conflicting insert, while the
-other request may complete normally. Telegram calls free-subscription
-provisioning only when bootstrap returns
+independently: permanent unique indexes reject a conflicting insert, and the
+request that loses that insert replays bootstrap instead of failing. Every
+bootstrap step is find-or-create, so the replay observes the row the winning
+request just inserted. `isUniqueConstraintError` from `@sps/backend-utils`
+classifies the conflict, including one wrapped by the API response pipe, and
+`TELEGRAM_BOOTSTRAP_CONFLICT_RETRY_DELAYS_MS` bounds the replays and grows
+each delay, because one request can lose several natural keys in sequence:
+a replay restarts at the first find-or-create and meets the next contended
+insert. A request
+that loses the `subjects-to-identities` insert drops the subject it had just
+created, so a replay never leaves an orphaned subject behind. Telegram calls
+free-subscription provisioning only when bootstrap returns
 `shouldCheckoutFreeSubscription=true` (registration or `/start`); ordinary
 messages remain independent from billing.
 

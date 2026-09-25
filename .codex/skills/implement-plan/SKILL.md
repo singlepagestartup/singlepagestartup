@@ -5,11 +5,11 @@ description: "Implements a specific plan file manually."
 
 # implement-plan
 
-Codex wrapper for `.claude/commands/implement_plan.md`.
+Canonical source: `.agents/workflows/engineering/implement_plan.md`.
 
 ## Execution Contract
 
-1. Read `.claude/commands/implement_plan.md` fully before executing.
+1. Read `.agents/workflows/engineering/implement_plan.md` fully before executing.
 2. Execute the same workflow semantics and status gates.
 3. Keep all artifacts in the same paths under `thoughts/shared/*`.
 4. Use existing helper scripts in `.claude/helpers/*.sh` for GitHub status logic.
@@ -23,3 +23,10 @@ Codex wrapper for `.claude/commands/implement_plan.md`.
 ## Inputs
 
 - If issue number / file path is required by the source command, request it from the user or infer it exactly as the source command specifies.
+
+## Final editorial pass
+
+When this skill writes or returns prose intended for a person, load the project
+`unslop` skill and apply `.agents/contracts/editorial-pass.md` after the
+canonical workflow is complete. Preserve exact facts, evidence, identifiers,
+paths, commands, required structure, and approval state.

@@ -5,10 +5,6 @@ add_env() {
     echo "$1=$2" >> .env.local
 }
 
-generate_random_string() {
-    echo $RANDOM | md5sum | head -c 32;
-}
-
 # Check is .env.local file exists
 if [ -f .env.local ]; then
     echo "File .env.local already exists"
@@ -16,6 +12,7 @@ if [ -f .env.local ]; then
 fi
 
 # Clear env file
+umask 077
 > .env.local
 echo "Created /.env.local file"
 
@@ -50,3 +47,5 @@ elif [ ! -z $GITPOD_WORKSPACE_URL ]; then
     # NEXT_PUBLIC_HOST_SERVICE_URL=http://localhost:3000
     # add_env "NEXT_PUBLIC_HOST_SERVICE_URL" $NEXT_PUBLIC_HOST_SERVICE_URL
 fi
+
+chmod 600 .env.local

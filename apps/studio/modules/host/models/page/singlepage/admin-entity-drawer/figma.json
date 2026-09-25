@@ -1,0 +1,27 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "983:1711",
+  "variantName": "admin-entity-drawer",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.admin.entity-drawer",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/models/page/singlepage/admin-entity-drawer",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "admin-entity-drawer",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "admin.entity-drawer",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/models/page/singlepage/admin-entity-drawer/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/models/page/singlepage/admin-entity-drawer/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1711",
+    "sps.figma.storybookReferenceNodeId": "983:1854",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1854",
+  "storybookImageCount": 1
+}

@@ -1,0 +1,376 @@
+---
+confirmation:
+  confirmed: true
+  by: operator
+  at: "2026-09-18"
+  source: "Operator read the Framework price, Funding and framework_exchange statements after Code Framework was recorded as a product paid in social capital rather than one without economics: «да, подтверждаю бриф»."
+  content_sha256: c58b70512b9bc7ea71c0051f5ffecf1c0b733d413e96023e491b2ec08a39cb5e
+intake:
+  scope:
+    confirmed: true
+    at: 2026-09-13
+    source: Operator audience, value and acquisition-flow correction in chat, 2026-09-13; retains the two product IDs explicitly confirmed on 2026-09-11.
+    project: SinglePageStartup
+    products:
+      - singlepagestartup
+      - ai-chat
+  audience_value_and_flow:
+    confirmed: true
+    by: operator
+    at: 2026-09-13
+    source: Operator explicit correction in chat, 2026-09-13, describing business-data AI Chat, token purchases, novice makers working through Claude Code or Codex Desktop, and the button «Развернуть проект на своей машине» leading to GitHub.
+    scope: Confirms the intended audiences, the token-purchase monetization direction and that answers are grounded in the material the person supplies. The framing of the chat's value and the path from the hosted service to the framework were superseded on 2026-09-18; product_direction owns them. The retrieval capability was not superseded; see sources.retrieval. It does not confirm the whole Brief wording, measured answer superiority or public service readiness.
+  product_direction:
+    confirmed: true
+    by: operator
+    at: 2026-09-18
+    source: Operator resolved the contradiction between this Brief and the current Strategy, Brand and Product in chat, 2026-09-18, selecting the Strategy/Brand/Product mechanics.
+    scope: Confirms that AI Chat organizes supplied material into a reviewable project model, keeps it as context for later questions and materials, assembles a landing-page sandbox, and publishes through GitHub authorization, a repository in the user's account, a connected server and configured automatic deployment. Supersedes the 2026-09-13 local-deployment path. It does not confirm the whole Brief wording, implementation status or any measured outcome.
+  visual_direction:
+    confirmed: true
+    by: operator
+    at: 2026-09-13
+    source: "Operator explicitly approved the current Design in chat: «Так, всё, подтверди дизайн. Окей, будем с этим работать. Идём дальше»."
+    scope: Confirms the visual traits reflected in the current Design profile, including people-and-business photography, optional devices, flexible composition and the existing light illustration background. Business facts and whole-Brief confirmation are unchanged.
+sources:
+  current_business:
+    type: client-claim
+    source: Operator Brief review and annotations, 2026-09-12.
+    scope: Product purpose, tested installation and integrations, team development, worldwide distribution, best-effort support, and popularity/use/agent-adoption goals.
+  product_scope:
+    type: client-claim
+    source: Operator product inventory correction, 2026-09-11; brand/product distinction, 2026-08-14.
+    scope: SinglePageStartup owns Code Framework (singlepagestartup) and AI Chat (ai-chat).
+  audience_value_and_flow:
+    type: client-claim
+    source: Operator audience, value and acquisition-flow correction in chat, 2026-09-13.
+    scope: Primary hosted AI Chat for people supplying their own project material. Users may buy tokens and continue as consumers. Novice makers work through coding agents and review the resulting UI. The framing of the chat's value and the route to the framework were superseded on 2026-09-18 by product_direction; the retrieval capability was not. These are intended product behaviors, not verified implementation or adoption.
+  answer_quality:
+    type: client-claim
+    source: Operator desired AI Chat outcome in the audience and value correction, 2026-09-13.
+    scope: Useful advice grounded in the user's business data and better answer quality than ordinary ChatGPT without that context are desired, testable outcomes; no independent comparative measurement is supplied.
+  ai_chat_commercial_terms:
+    type: client-claim
+    resolution: operator-fact
+    source: Operator selected token-purchase monetization in chat, 2026-09-13, then stated the token unit, billing moment, margin and expiry, 2026-09-18.
+    scope: |
+      The billable unit is the provider tokens one request consumes, and generation
+      consumes the larger share. The customer does not pick the model: the service runs
+      one selected model while the offer is being tested, and the model router chooses
+      per request once more than one is offered. The
+      service charges a small amount when it sends the input to the model, then debits
+      the final amount once the answer returns and its actual cost is known. Token
+      top-ups are resold at a thirty per cent margin over the provider cost, which is
+      the service's revenue. Purchased tokens do not expire. The committed billing code
+      sets one internal token at USD 0.001 of provider cost and charges one token up
+      front, then settles the difference once the exact cost is known; that file
+      verifies the constants, not the running service, and carries no thirty per cent
+      markup, which is applied at top-up and deliberately not applied again on
+      consumption. Settlement rounds each turn up to the next whole token, which costs a
+      customer more than the turn did, most visibly on cheap models and short requests.
+      That surplus is accepted as ordinary market pricing and as rough
+      compensation for service costs that are not billed at all, chiefly writing and
+      storing the uploaded corpus. That offset is a judgement, not a measured one, and
+      the two amounts are not reconciled anywhere. Top-ups are sold in five packages of
+      100, 300, 500, 1,000 and 3,000 roubles; the token price is the
+      same in every package, so a larger package buys proportionally
+      more and carries no extra discount. Customers are billed in Russian roubles,
+      converted at a fixed internal accounting rate of 100 roubles per US dollar, so one
+      internal token costs the customer 0.13 roubles and the one-token pre-charge makes
+      0.13 roubles the smallest amount any request can cost. That rate is a working figure rather than a
+      market quote, and because it is fixed while the market rate moves, the thirty per cent is a margin over
+      provider cost only while the real rate stays at or below 100. Purchases are
+      normally final: tokens are bought to be used, and the operator may still refund a
+      customer who insists, as a case-by-case decision rather than a published
+      entitlement. Whether Russian consumer-protection rules oblige more than that is not
+      assessed here. Top-up package sizes remain unselected. These are intended
+      commercial terms, not an implemented billing system or a measured margin.
+  ai_providers:
+    type: client-claim
+    resolution: operator-fact
+    source: Operator named the AI provider in chat, 2026-09-18, and pointed to the subject request handler; the coordinator read that handler at the current checkout.
+    scope: |
+      OpenRouter is the selected AI provider, and the models AI Chat offers are the ones
+      declared in the subject request handler's model router
+      (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts`).
+      That config, version `2026-07-15`, declares five classes — CLASSIFIER, CHAT, CODER,
+      VISION and IMAGE — over fourteen models from five upstream vendors reached through
+      OpenRouter: `anthropic/claude-sonnet-5`; `google/gemini-3.5-flash`,
+      `google/gemini-3.1-flash-lite`, `google/gemini-3.1-flash-image`,
+      `google/gemini-3.1-flash-lite-image`, `google/gemini-3-pro-image`;
+      `minimax/minimax-m3`, `minimax/minimax-m2.7`; `moonshotai/kimi-k2.7-code`;
+      `openai/gpt-5.6-luna`, `openai/gpt-5.6-terra`, `openai/gpt-5.6-sol`,
+      `openai/gpt-5.4-image-2`, `openai/gpt-5-image-mini`. Reading the committed file
+      verifies the declared list at this commit, not the models a customer can reach at
+      runtime; the list changes whenever that config does. The router runs over all
+      fourteen, and the higher spend that brings is accepted because the charge follows
+      the cost.
+      Per-model prices differ by roughly an order of magnitude, so consumption is
+      normalised in money rather than in provider tokens: OpenRouter reports what each
+      call actually cost, those costs are summed across every model one turn touches,
+      and the total is converted into internal tokens at USD 0.001 each. No price table
+      is maintained in the product.
+      Storage and infrastructure providers and the processing and backup terms to
+      publish are still unselected. Embeddings are produced by a Qwen model on OpenRouter:
+      the committed default is `qwen/qwen3-embedding-8b` at 768 dimensions, overridable
+      through `KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL`, with a local `apps/llm` provider as
+      the alternative. The vectors themselves are kept in the project's own PostgreSQL
+      using pgvector, with an HNSW cosine index on the chunk table, so the corpus is not
+      handed to a third-party vector service; document text still reaches OpenRouter to be
+      embedded and again as retrieved context. This is the customer's own risk to take, on the
+      same footing as pasting material into any general assistant; the service does not
+      itself analyse or reuse what it is given. AI Chat runs on Contabo in Amsterdam, in the
+      Netherlands, because the Russian hosts it offers customers restrict access to
+      OpenRouter; those hosts are enough for customers, whose published projects need no
+      model access. Deleting an account removes the material from the product immediately, while the host's backups
+      keep copies for up to six months, which the operator cannot shorten. What customers
+      are told about all of this has not been written yet.
+  deployment_terms:
+    type: client-claim
+    resolution: operator-fact
+    source: Operator stated the publication terms in chat, 2026-09-18.
+    scope: |
+      GitHub authorization is requested for the single repository the service creates,
+      not for the customer's wider account. Beget and Timeweb are the supported hosting
+      providers. A domain the customer has already purchased is attached through the
+      chosen provider's own API; the service does not sell or register domains. Both the
+      first deployment and any redeployment run through GitHub Actions, so a failed
+      deployment is recovered by running the workflow again. How the deployment
+      credentials are stored and protected is settled: the service keeps the hosting
+      deployment key it needs to reach the customer's server, and the customer's GitHub
+      repository already holds its own copy for the Actions workflow. Where the service
+      stores its copy and under what protection is an engineering decision, not a
+      business one. These are intended
+      terms, not an implemented or tested publication flow.
+  retrieval:
+    type: client-claim
+    resolution: operator-fact
+    source: Operator statement in chat, 2026-09-18, after the coordinator reported that the
+      Brief rewrite had dropped the per-chat knowledge base.
+    scope: |
+      Documents the person uploads are split into chunks, vectorized and stored so the
+      service retrieves the relevant parts as context, a retrieval-augmented generation
+      design. There is no ceiling on the number of files: every uploaded document is
+      vectorized and can take part in answering, and the service selects the most relevant
+      parts for each question. There is no file limit at all, and that capacity counts
+      among the product's selling points, against general assistants that hold a
+      project's files in the low tens; product Research records the documented limit and
+      the confidence in it. Storage and vectorization for an unbounded corpus are a
+      variable service cost that the selected token terms do not price; the shared model
+      carries that consequence. Two things are not
+      settled and are not asserted here. How the capability is described to a customer is
+      undecided, since Brand keeps the mechanism out of the ordinary product flow. Whether a
+      larger corpus produces better answers for this customer is unresolved; the capacity
+      difference is documented, the benefit is not.
+  service_terms:
+    type: client-claim
+    resolution: operator-fact
+    source: Operator confirmed each term in chat, 2026-09-18, after the coordinator listed the terms that Brand, Product and Sales stated without a Brief source.
+    scope: AI Chat support requests processed within 24 hours as the initial service level, with help on the free framework code unchanged and best-effort; payments accepted in Russia through an online cash register, whose accepting party, payment details and receipt flow the operator configures in the product interface rather than recording them here; a free token allowance granted at registration; a first setup session of about one focused hour; email-and-password authentication with no social sign-in; Beget or Timeweb as example hosting providers for the deployment key; provider backups retained up to six months. These are operator decisions, not verified implementation or measured service levels.
+  funding:
+    type: client-claim
+    source: Operator business intake, 2026-08-14.
+    scope: The project owner's time and money fund framework development; AI Chat service revenue is separate from it.
+  framework_exchange:
+    type: client-claim
+    resolution: operator-fact
+    source: Operator stated the barter in chat, 2026-09-19, when rejecting a shared model between the two products.
+    scope: |
+      Code Framework is a product with its own price, and that price is not money.
+      The customer pays in social capital: a star, a fork, a recommendation, an
+      improvement contributed back, and the chance that they arrive at AI Chat as a
+      customer who already trusts the foundation. No invoice is issued and no licence
+      fee exists, which makes the exchange easy to mistake for an absence of
+      economics. Both products stand on their own in the catalog; the infrastructure,
+      codebase and owner time they share are the shape of one business, not a third
+      thing to describe. What a star or a fork is worth against a paid AI Chat
+      customer is unmeasured.
+  repository:
+    type: verified-fact
+    source: Repository Git history and libs/modules inspection, 2026-09-12.
+    scope: Earliest reachable HEAD commit is dated 2023-02-14; 3936 reachable commits; libs/modules contains 16 modules, 65 models and 91 relations. These are repository history observations, not counts of distinct developers or measured customer outcomes.
+  repository_metrics:
+    type: verified-fact
+    source: GitHub repository API, singlepagestartup/singlepagestartup, inspected 2026-09-12.
+    scope: Four stars and two forks are repository attention/activity counts, not a count of adopted projects.
+  license:
+    type: client-claim
+    source: Operator Brief review, 2026-09-12.
+    scope: MIT is the selected distribution license.
+    publication_verification: Confirmed on 2026-09-18. The operator directed the change and the repository LICENSE now carries the MIT text; the README states the same terms. Before that date both files carried proprietary terms while this record already said MIT.
+  identity:
+    type: client-claim
+    source: Operator identity intake, 2026-08-11; registered source SVG inspection.
+    scope: Use and modification rights supplied; pixel S is mandatory and wordmark type is replaceable. Two 200x200 marks, two 590x200 lockups, and the supplied accent sample are available.
+    asset_ids:
+      - singlepage-operator-logo-square-black
+      - singlepage-operator-logo-square-white
+      - singlepage-operator-logo-lockup-black
+      - singlepage-operator-logo-lockup-white
+      - singlepage-operator-accent-sample-bfef61
+  visual_preferences:
+    type: client-claim
+    source: Categorized operator-supplied references and existing identity requirements; operator requested fresh source analysis in chat, 2026-09-13.
+    scope: All five source sets and their files remain accepted inputs; the current Design confirms their visual direction, alongside unchanged identity, typography and accent requirements.
+  photography_reanalysis:
+    type: verified-fact
+    source: Coordinator visual inspection of all seven original photography files, 2026-09-13.
+    scope: Seven files represent six distinct compositions because foliage-closeup-narrow.png and foliage-closeup-wide.png crop the same portrait. Human presence, gesture and motion recur; natural light, film-like softness, warm and cool palettes, close details and wider figures vary across examples. Blur, foreground occlusion, backlight and light trails occur as distinct techniques. None of the seven files shows a phone or computer.
+    interpretation_status: confirmed
+  other_visual_reference_reanalysis:
+    type: verified-fact
+    source: Brand Designer visual inspection of the 35 original non-photography source files, 2026-09-13.
+    scope: Five identity files, 12 interface references, two typography examples, five illustrations and 11 marketing examples were reviewed directly. The proposed category descriptions summarize recurring visible traits and optional variations. Typography screenshots inform expressive serif/italic contrast; monospaced body type remains a separate accepted project requirement.
+    interpretation_status: confirmed
+  identity_inventory:
+    type: verified-fact
+    source: Current supplied identity files and Workspace intake inspection, 2026-09-12.
+    scope: Four logo SVGs and an accent sample are registered; no slogan is supplied in the current materials. This does not assert that no slogan exists elsewhere.
+  visual_method:
+    type: constraint
+    source: Operator clarification of reference-based style discovery, 2026-09-12; fresh visual-reference and composition correction in chat, 2026-09-13.
+    scope: Compare original examples and propose plain-language descriptions separately for photography, typography, UI, illustration/infographics and marketing/handout materials. Devices are optional in people-and-business scenes. Master prompts and tooltips do not prescribe fixed subject-position percentages, aspect ratios, or anatomy/device checklists. New photography input needs more than three distinct photographs, usually five.
+  experiment_context:
+    type: constraint
+    source: Operator experiment limits, 2026-08-10.
+    scope: Prior specific experiment only; not a continuing business capacity or support commitment.
+    values: Three weeks; six founder hours per week and 18 hours total; USD 0 paid media; AI Chat promotion at most USD 1 actual provider cost per user per day and USD 200 aggregate.
+visual_references:
+  interface-and-website-appearance:
+    source_directory: assets/singlepage/intake/interface
+    status: ready
+    interpretation_status: confirmed
+    asset_ids:
+      - singlepage-interface-reference-risk-balance-landing
+      - singlepage-interface-reference-conduit-pricing-landing
+      - singlepage-interface-reference-dashboard-theme-settings
+      - singlepage-interface-reference-dashboard-book-grid
+      - singlepage-interface-reference-agency-portfolio-landing
+      - singlepage-interface-reference-pricing-plan-cards
+      - singlepage-interface-reference-onboarding-role-form
+      - singlepage-interface-reference-mobile-invoice-bottom-sheet
+      - singlepage-interface-reference-subscription-access-card
+      - singlepage-interface-reference-license-download-card
+      - singlepage-interface-reference-license-add-to-cart-card
+      - singlepage-interface-reference-product-license-selection-card
+  typography:
+    source_directory: assets/singlepage/intake/typography
+    status: ready
+    interpretation_status: confirmed
+    asset_ids:
+      - singlepage-typography-reference-editorial-serif-italic-highlight
+      - singlepage-typography-reference-editorial-serif-italic-contrast
+  photography:
+    source_directory: assets/singlepage/intake/photography
+    status: ready
+    interpretation_status: confirmed
+    file_count: 7
+    distinct_compositions: 6
+    asset_ids:
+      - singlepage-photography-reference-motion-runner
+      - singlepage-photography-reference-foliage-closeup-narrow
+      - singlepage-photography-reference-foliage-closeup-wide
+      - singlepage-photography-reference-motion-portrait
+      - singlepage-photography-reference-hand-light-streaks
+      - singlepage-photography-reference-figure-light-streaks
+      - singlepage-photography-reference-low-angle-sunburst
+  illustration:
+    source_directory: assets/singlepage/intake/illustration
+    status: ready
+    interpretation_status: confirmed
+    asset_ids:
+      - singlepage-illustration-reference-isometric-building
+      - singlepage-illustration-reference-isometric-platform
+      - singlepage-illustration-reference-isometric-workflow
+      - singlepage-illustration-reference-isometric-ai-chip
+      - singlepage-illustration-reference-isometric-devices
+  marketing-creative:
+    source_directory: assets/singlepage/intake/marketing-creative
+    status: ready
+    interpretation_status: confirmed
+    asset_ids:
+      - singlepage-marketing-reference-body-signal
+      - singlepage-marketing-reference-longevity-journey
+      - singlepage-marketing-reference-low-energy
+      - singlepage-marketing-reference-signal-motion
+      - singlepage-marketing-reference-soft-guidance
+      - singlepage-marketing-reference-connected-data
+      - singlepage-marketing-reference-expression-story
+      - singlepage-marketing-reference-archive-type
+      - singlepage-marketing-reference-introspection
+      - singlepage-marketing-reference-health-tags
+      - singlepage-marketing-reference-low-angle-prompt
+---
+
+# Brief
+
+## Project and products
+
+SinglePageStartup is a project and brand with two related products:
+
+| Product                              | Role and availability                                                                                                                                           |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI Chat (`ai-chat`)                  | The intended primary hosted experience: a paid consumer service for business-specific AI conversations that demonstrates Code Framework.                        |
+| Code Framework (`singlepagestartup`) | An existing reusable software foundation distributed through GitHub, including for people who discover it through AI Chat and want to build their own products. |
+
+The project owner makes product decisions. Selling custom websites is outside the current offer.
+
+## Customers and value
+
+AI Chat is intended for people with a business idea or an early-stage project whose material sits in scattered notes, documents and half-made decisions. They upload what they already have, or answer guided questions instead. The service arranges that input into a project model they can read and correct, marks what is missing or contradictory, and keeps the accepted result available for later work. A first session is intended to take about an hour of concentration, and questions that have no answer yet stay open.
+
+The same accepted decisions assemble a landing page from SinglePageStartup blocks. It is edited in a private sandbox with an immediate preview and no public address.
+
+Every uploaded file is split into chunks and vectorized, and each question retrieves the parts that bear on it. The number of files is not capped, which is the difference the operator sells against: a general assistant holds a project's files in the low tens. How to say that to a customer is undecided, because Brand keeps vectors and retrieval out of the ordinary product flow, so the benefit has to be described without naming the mechanism.
+
+What the product is meant to be worth is a project model the person can use, answers that rest on their own material, and a first page that can reach real customers. Whether it answers better than a general chat without that context is a goal to test, not a claim.
+
+The second audience is novice AI-assisted makers, or vibe coders. They work mainly by talking to a coding agent in Claude Code or Codex Desktop. The agent changes the code; the person judges the result and the interface, for example in VS Code.
+
+Code Framework supplies common functions, among them registration, product carts and payments, already configured and tested against each other. Reusing them is intended to spend less build and test time and fewer AI tokens on the foundation, which leaves more of both for the product's own rules.
+
+## Current state
+
+A team has developed the codebase over several years and tested installation and the module integrations. The repository holds source code, documentation and 16 modules covering 65 models and 91 relations, among them identity and access, ecommerce and payments.
+
+## Business and resources
+
+| Item                 | Current model                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI Chat revenue      | Users continue as hosted-service consumers and buy tokens. The billable unit is the provider tokens a request consumes, with generation the larger share. The customer does not pick the model; the router selects one per request, and what the balance is charged follows the money that request cost, not the provider tokens it used. One token is charged when the input is sent; the balance is debited once the answer returns and its cost is known. One internal token is USD 0.001 of provider cost, resold at a 30% margin and converted at a fixed 100 roubles per dollar, so a token costs 0.13 roubles and no request costs less than that. Purchased tokens do not expire, purchases are normally final, and a refund is a case-by-case decision rather than a published entitlement. Package sizes are unselected. |
+| AI Chat access       | Email-and-password registration and login; Google and other social sign-in are not planned. Registration grants the currently available free token allowance.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Payments             | Accepted in Russia through an online cash register. The operator configures the payment-accepting party's legal name, payment details and receipt flow in the product's own interface, so they are not recorded here.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Path to building     | When the landing page is ready, the intended action **Publish on my server** authenticates the user with GitHub for the one repository it creates in their account, accepts a deployment key for Beget or Timeweb, and configures deployment from that repository through GitHub Actions, which also runs any redeployment. A domain the customer already owns is attached through the hosting provider's own API. This path needs no token purchase. A maker with another concrete software need reuses the same framework with a coding agent.                                                                                                                                                                                                                                                                                   |
+| Framework price      | No money changes hands, and the product is still paid for. The customer pays in social capital: a star, a fork, a recommendation, a contribution back to the code, and the chance of arriving at AI Chat already trusting the foundation. There is no checkout and no licence fee.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Distribution         | Worldwide through GitHub. Operator-selected license: MIT; users can modify the code for their own projects.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Funding              | The project owner's time and money fund framework development, and AI Chat revenue is what makes that affordable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Support              | AI Chat support requests are processed within 24 hours as the initial service level, without continuous live coverage or a resolution deadline. Help with the free framework code stays best-effort, as time permits.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Data retention       | Account deletion removes the active account and the project data the service controls. Infrastructure-provider backups may retain copies for up to six months under the provider's own process.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Core work            | Develop and maintain the shared foundation and its documentation, and make it easier for makers and agents to use.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Continuing resources | Allocated as the project develops. No ongoing budget or staffing figure is set.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+
+## Goals and success
+
+- Make AI Chat useful enough for people to keep using it and buy tokens.
+- Grow recognition and GitHub stars through a product experience that introduces people to the framework.
+- Help interested makers deploy locally, build their own products and keep using the framework as their foundation.
+- Attract community improvements that make the framework more useful and reliable.
+- Develop it into a tool that AI agents can select and use in software development.
+
+Success is read from useful business answers, continued paid chat use, projects that reach a server, makers who come back to the framework for a second product, outside contributions and agents that pick it up. The recorded baseline is 4 stars and 2 forks. No numerical growth target is set.
+
+## Visual reference intake
+
+The supplied identity and visual preferences follow, each with its files.
+
+| Element                          | Description and references                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Project name                     | SinglePageStartup. Preserve this exact spelling.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Logo                             | Pixel-grid S. The mark stays; the wordmark typeface may change. Four supplied SVG drafts are available for use and modification.<br /><br />**Files:** [operator-logo-square-black.svg](/workspace-assets/singlepage/intake/operator-logo-square-black.svg), [operator-logo-square-white.svg](/workspace-assets/singlepage/intake/operator-logo-square-white.svg), [operator-logo-lockup-black.svg](/workspace-assets/singlepage/intake/operator-logo-lockup-black.svg), [operator-logo-lockup-white.svg](/workspace-assets/singlepage/intake/operator-logo-lockup-white.svg)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Slogan                           | Not supplied.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Accent color                     | Supplied accent: #BFEF61.<br /><br />**Files:** [accent-sample-bfef61.png](/workspace-assets/singlepage/intake/identity/accent-sample-bfef61.png)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Interface and website appearance | Light neutral surfaces, generous spacing, clear hierarchy. Introductions carry large expressive headlines; work screens hold aligned grids, compact navigation, rounded cards, thin borders and restrained shadows. Dark primary actions and occasional green accents mark selection and progress.<br /><br />**Files:** [risk-balance-landing.png](/workspace-assets/singlepage/intake/interface/risk-balance-landing.png), [conduit-pricing-landing.jpg](/workspace-assets/singlepage/intake/interface/conduit-pricing-landing.jpg), [dashboard-theme-settings.png](/workspace-assets/singlepage/intake/interface/dashboard-theme-settings.png), [dashboard-book-grid.png](/workspace-assets/singlepage/intake/interface/dashboard-book-grid.png), [agency-portfolio-landing.png](/workspace-assets/singlepage/intake/interface/agency-portfolio-landing.png), [pricing-plan-cards.png](/workspace-assets/singlepage/intake/interface/pricing-plan-cards.png), [onboarding-role-form.png](/workspace-assets/singlepage/intake/interface/onboarding-role-form.png), [mobile-invoice-bottom-sheet.png](/workspace-assets/singlepage/intake/interface/mobile-invoice-bottom-sheet.png), [subscription-access-card.png](/workspace-assets/singlepage/intake/interface/subscription-access-card.png), [license-download-card.png](/workspace-assets/singlepage/intake/interface/license-download-card.png), [license-add-to-cart-card.png](/workspace-assets/singlepage/intake/interface/license-add-to-cart-card.png), [product-license-selection-card.png](/workspace-assets/singlepage/intake/interface/product-license-selection-card.png)                                         |
+| Typography                       | Two open-license Google Fonts families supporting Latin and Cyrillic: monospaced body text and decorative headings. The examples pair expressive upright serif headings with short italic emphasis; one uses a bright highlight, another contrasts plain sans-serif text with an italic serif word.<br /><br />**Files:** [editorial-serif-italic-highlight.png](/workspace-assets/singlepage/intake/typography/editorial-serif-italic-highlight.png), [editorial-serif-italic-contrast.png](/workspace-assets/singlepage/intake/typography/editorial-serif-italic-contrast.png)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Photography                      | People and business connected through candid presence, gesture and movement. Natural daylight or dusk, a tactile film-like softness, warm or cool palettes. Tight face or hand details, moving figures and wider scenes; blur, foreground occlusion, backlight and light trails are alternative techniques. Devices may be ordinary scene props.<br /><br />**Files:** [motion-runner-teal-orange.png](/workspace-assets/singlepage/intake/photography/motion-runner-teal-orange.png), [foliage-closeup-narrow.png](/workspace-assets/singlepage/intake/photography/foliage-closeup-narrow.png), [foliage-closeup-wide.png](/workspace-assets/singlepage/intake/photography/foliage-closeup-wide.png), [motion-portrait-neutral.png](/workspace-assets/singlepage/intake/photography/motion-portrait-neutral.png), [hand-light-streaks.png](/workspace-assets/singlepage/intake/photography/hand-light-streaks.png), [figure-light-streaks-dusk.png](/workspace-assets/singlepage/intake/photography/figure-light-streaks-dusk.png), [low-angle-sunburst-reference.png](/workspace-assets/singlepage/intake/photography/low-angle-sunburst-reference.png)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Illustration and infographics    | Airy isometric drawings with fine contours, pale secondary lines, dotted guides and restrained colored details. Recognizable objects explain connections with little fill or texture. Closer crops, more detail and short labels are optional variations. Use the project's colors.<br /><br />**Files:** [isometric-building-connection.png](/workspace-assets/singlepage/intake/illustration/isometric-building-connection.png), [isometric-circular-platform.png](/workspace-assets/singlepage/intake/illustration/isometric-circular-platform.png), [isometric-workflow-gears.png](/workspace-assets/singlepage/intake/illustration/isometric-workflow-gears.png), [isometric-ai-chip.png](/workspace-assets/singlepage/intake/illustration/isometric-ai-chip.png), [isometric-connected-devices.png](/workspace-assets/singlepage/intake/illustration/isometric-connected-devices.png)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Marketing and handout materials  | Expressive human photography, gestures, movement, close crops and varied viewpoints, with soft blur or sharp backlit detail. Short prominent text, thin diagrams, light labels and translucent overlays sit over the image; spare typographic compositions are also part of the set. Warm and cool scenes vary independently of the brand accent.<br /><br />**Files:** [body-signal-water-overlay.png](/workspace-assets/singlepage/intake/marketing-creative/body-signal-water-overlay.png), [longevity-journey-portrait.png](/workspace-assets/singlepage/intake/marketing-creative/longevity-journey-portrait.png), [low-energy-statement.png](/workspace-assets/singlepage/intake/marketing-creative/low-energy-statement.png), [signal-motion-labels.png](/workspace-assets/singlepage/intake/marketing-creative/signal-motion-labels.png), [soft-guidance-notifications.png](/workspace-assets/singlepage/intake/marketing-creative/soft-guidance-notifications.png), [connected-data-overlay.png](/workspace-assets/singlepage/intake/marketing-creative/connected-data-overlay.png), [expression-story-poster.png](/workspace-assets/singlepage/intake/marketing-creative/expression-story-poster.png), [archive-type-poster.png](/workspace-assets/singlepage/intake/marketing-creative/archive-type-poster.png), [introspection-blur-poster.png](/workspace-assets/singlepage/intake/marketing-creative/introspection-blur-poster.png), [health-tags-landscape.png](/workspace-assets/singlepage/intake/marketing-creative/health-tags-landscape.png), [low-angle-prompt-poster.png](/workspace-assets/singlepage/intake/marketing-creative/low-angle-prompt-poster.png) |

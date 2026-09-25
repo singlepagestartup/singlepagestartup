@@ -10,6 +10,15 @@ import { api as billingModulePaymentIntentApi } from "@sps/billing/models/paymen
 import { api as ecommerceModuleOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 
+export const ACTIVE_SUBSCRIPTION_ORDER_STATUSES = [
+  "paying",
+  "paid",
+  "approving",
+  "packaging",
+  "delivering",
+  "delivered",
+];
+
 export type IExecuteProps =
   | {
       id: string;
@@ -69,6 +78,7 @@ export class Service {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
+    const rbacSecretKey = RBAC_SECRET_KEY;
 
     const entity = await this.findById({
       id: props.id,
@@ -439,6 +449,48 @@ export class Service {
         interval?: string;
       };
     }[] = [];
+    const checkoutStartedOrderIds = new Set<string>();
+    const compensateFailedCheckout = async (error: unknown): Promise<never> => {
+      await Promise.allSettled(
+        billingModulePaymentIntents.map(({ billingModulePaymentIntent }) => {
+          return billingModulePaymentIntentApi.update({
+            id: billingModulePaymentIntent.id,
+            data: {
+              ...billingModulePaymentIntent,
+              status: "failed",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": rbacSecretKey,
+              },
+            },
+          });
+        }),
+      );
+
+      await Promise.allSettled(
+        ecommerceModuleOrders
+          .filter((order) => checkoutStartedOrderIds.has(order.id))
+          .map((order) => {
+            return ecommerceModuleOrderApi.update({
+              id: order.id,
+              data: {
+                ...order,
+                status: "canceled",
+                type: "history",
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": rbacSecretKey,
+                  "Cache-Control": "no-store",
+                },
+              },
+            });
+          }),
+      );
+
+      throw error;
+    };
 
     for (const order of ecommerceModuleOrders) {
       const checkoutOrderProductIds = new Set(
@@ -514,12 +566,9 @@ export class Service {
               }
 
               if (
-                [
-                  "requested_cancelation",
-                  "canceling",
-                  "completed",
-                  "canceled",
-                ].includes(ecommerceModuleOrder.status)
+                !ACTIVE_SUBSCRIPTION_ORDER_STATUSES.includes(
+                  ecommerceModuleOrder.status,
+                )
               ) {
                 continue;
               }
@@ -589,6 +638,7 @@ export class Service {
                 data: {
                   ...ecommerceModuleOrder,
                   status: "canceled",
+                  type: "history",
                 },
                 options: {
                   headers: {
@@ -598,10 +648,30 @@ export class Service {
                 },
               });
             }
-            throw new Error(error["message"]);
+            await compensateFailedCheckout(error);
           }
         }
+
+        await compensateFailedCheckout(error);
       }
+
+      await ecommerceModuleOrderApi
+        .update({
+          id: order["id"],
+          data: {
+            ...order,
+            status: "paying",
+            type: "history",
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": rbacSecretKey,
+              "Cache-Control": "no-store",
+            },
+          },
+        })
+        .catch(compensateFailedCheckout);
+      checkoutStartedOrderIds.add(order["id"]);
 
       const existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes =
         billingModulePaymentIntents.find(
@@ -618,22 +688,24 @@ export class Service {
         existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
       ) {
         const updatedBillingModulePaymentIntent =
-          await billingModulePaymentIntentApi.update({
-            id: existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
-              .billingModulePaymentIntent.id,
-            data: {
-              ...existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes.billingModulePaymentIntent,
-              amount:
-                amount +
-                existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
-                  .billingModulePaymentIntent.amount,
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          await billingModulePaymentIntentApi
+            .update({
+              id: existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
+                .billingModulePaymentIntent.id,
+              data: {
+                ...existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes.billingModulePaymentIntent,
+                amount:
+                  amount +
+                  existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
+                    .billingModulePaymentIntent.amount,
               },
-            },
-          });
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": rbacSecretKey,
+                },
+              },
+            })
+            .catch(compensateFailedCheckout);
 
         billingModulePaymentIntents.splice(
           billingModulePaymentIntents.indexOf(
@@ -651,23 +723,26 @@ export class Service {
           },
         });
 
-        await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.create({
-          data: {
-            orderId: order["id"],
-            billingModulePaymentIntentId: updatedBillingModulePaymentIntent.id,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        await ecommerceModuleOrdersToBillingModulePaymentIntentsApi
+          .create({
+            data: {
+              orderId: order["id"],
+              billingModulePaymentIntentId:
+                updatedBillingModulePaymentIntent.id,
             },
-          },
-        });
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": rbacSecretKey,
+              },
+            },
+          })
+          .catch(compensateFailedCheckout);
 
         continue;
       }
 
-      const billingModulePaymentIntent =
-        await billingModulePaymentIntentApi.create({
+      const billingModulePaymentIntent = await billingModulePaymentIntentApi
+        .create({
           data: {
             amount,
             interval,
@@ -675,22 +750,11 @@ export class Service {
           },
           options: {
             headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "X-RBAC-SECRET-KEY": rbacSecretKey,
             },
           },
-        });
-
-      await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.create({
-        data: {
-          orderId: order["id"],
-          billingModulePaymentIntentId: billingModulePaymentIntent.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+        })
+        .catch(compensateFailedCheckout);
 
       billingModulePaymentIntents.push({
         billingModulePaymentIntent,
@@ -700,46 +764,41 @@ export class Service {
           interval,
         },
       });
+
+      await ecommerceModuleOrdersToBillingModulePaymentIntentsApi
+        .create({
+          data: {
+            orderId: order["id"],
+            billingModulePaymentIntentId: billingModulePaymentIntent.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": rbacSecretKey,
+            },
+          },
+        })
+        .catch(compensateFailedCheckout);
     }
 
     for (const billingModulePaymentIntent of billingModulePaymentIntents) {
-      await billingModulePaymentIntentApi.provider({
-        id: billingModulePaymentIntent.billingModulePaymentIntent.id,
-        data: {
-          provider: props.provider,
-          metadata,
-          currencyId: billingModulePaymentIntent.billingModuleCurrencyId,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      await billingModulePaymentIntentApi
+        .provider({
+          id: billingModulePaymentIntent.billingModulePaymentIntent.id,
+          data: {
+            provider: props.provider,
+            metadata,
+            currencyId: billingModulePaymentIntent.billingModuleCurrencyId,
           },
-        },
-      });
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": rbacSecretKey,
+            },
+          },
+        })
+        .catch(compensateFailedCheckout);
     }
 
     for (const order of ecommerceModuleOrders) {
-      const orderToUpdate = await this.ecommerceModule.order.findById({
-        id: order["id"],
-      });
-
-      if (!orderToUpdate) {
-        throw new Error(
-          "Not Found error. No order found with id: " + order["id"],
-        );
-      }
-
-      await ecommerceModuleOrderApi.update({
-        id: order["id"],
-        data: {
-          ...orderToUpdate,
-          status: "paying",
-        },
-        options: {
-          headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-        },
-      });
-
       await broadcastModuleChannelApi.pushMessage({
         data: {
           slug: "observer",

@@ -198,6 +198,54 @@ paths:
                 required:
                   - data
 
+  /rbac/subjects/delete-anonymous:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Delete anonymous subjects
+      description: Delete one bounded batch of inactive anonymous subjects that own nothing
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Cleanup counts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      scanned:
+                        type: integer
+                      deleted:
+                        type: integer
+                      failed:
+                        type: integer
+                      retained:
+                        type: integer
+                      retainedByReason:
+                        type: object
+                        additionalProperties:
+                          type: integer
+                    required:
+                      - scanned
+                      - deleted
+                      - failed
+                      - retained
+                required:
+                  - data
+
   /rbac/subjects/{id}/check:
     post:
       tags:
@@ -564,7 +612,13 @@ paths:
       tags:
         - "rbac-subject"
       summary: OAuth callback
-      description: Provider callback endpoint; redirects to host callback page with exchange code or oauth error
+      description: >-
+        Provider callback endpoint. Redirects to a path on the host origin only.
+        On success the landing URL carries `oauthExchange=<provider>` and the
+        exchange code is set as the HttpOnly `rbac.oauth.exchange-code` cookie;
+        on failure it carries `oauthError=<code>`. The exchange code is also put
+        in the `code` query parameter while `RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY`
+        is on.
       parameters:
         - name: provider
           in: path
@@ -601,9 +655,14 @@ paths:
       tags:
         - "rbac-subject"
       summary: OAuth exchange
-      description: Exchange one-time OAuth code to JWT and refresh tokens
+      description: >-
+        Exchange a one-time OAuth code for JWT and refresh tokens. The code is
+        read from the HttpOnly `rbac.oauth.exchange-code` cookie set by the
+        callback; the request body is read only while
+        `RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY` is on. The code is single use: a
+        second redemption answers 401.
       requestBody:
-        required: true
+        required: false
         content:
           multipart/form-data:
             schema:
@@ -611,10 +670,10 @@ paths:
               properties:
                 data:
                   type: string
-                  description: JSON string
+                  description: >-
+                    JSON string. Only read while
+                    RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY is on.
                   example: '{"code":"00000000-0000-0000-0000-000000000000"}'
-              required:
-                - data
       responses:
         "200":
           description: Tokens

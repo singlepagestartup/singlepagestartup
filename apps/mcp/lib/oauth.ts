@@ -849,7 +849,7 @@ async function authenticateRbacSubject(email: string, password: string) {
     },
   ).catch((error) => {
     throw new Error(
-      `Unable to reach SPS API at ${apiUrl}. Is npm run api:dev running? ${getErrorMessage(error)}`,
+      `Unable to reach SinglePageStartup API at ${apiUrl}. Is npm run api:dev running? ${getErrorMessage(error)}`,
     );
   });
   const payload = (await response.json().catch(() => ({}))) as Record<

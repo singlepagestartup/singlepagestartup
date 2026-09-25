@@ -1,0 +1,133 @@
+schema: singlepagestartup.product-presentation.v1
+product_id: ai-chat
+content:
+  name: AI Chat
+  subtitle: From project files to a business model and landing page
+  slides:
+    - id: problem
+      label: The problem
+      title: The business exists across files, notes and unfinished decisions.
+      lead:
+        A founder may already have research, screenshots, presentations and ideas
+        but still lack one connected explanation of the customer, offer, sales,
+        operations and marketing.
+      points:
+        - Important knowledge remains scattered and difficult to reuse.
+        - General AI answers stay generic when the business must be explained
+          again each time.
+        - Missing decisions are hard to see before the offer reaches customers.
+    - id: result
+      label: The result
+      title: Upload the material and receive one editable business and marketing
+        model.
+      lead:
+        AI Chat accepts notes, documents, screenshots and images, then guides the
+        user through compact Request, Strategy, Brand, Design and Products
+        stages. The result shows what is defined, missing, proposed or
+        contradictory.
+      points:
+        - Business foundation, products, customers and value propositions.
+        - Operations, economics, sales and complete customer journeys.
+        - Strategy, brand, website, marketing materials and presentation.
+        - An exportable document that can also be used outside AI Chat.
+    - id: intake
+      label: Upload and questions
+      title: Bring the files as they are and review five compact stages.
+      lead:
+        Registration leads directly to material upload. AI Chat interprets the
+        files, proposes the relevant statements and asks one missing answer at a
+        time only when it changes the current result. The setup aims to create
+        useful context in about one focused hour without forcing unknown
+        answers.
+      points:
+        - Email-and-password registration and sign-in.
+        - Text, document, screenshot and image upload.
+        - Request, Strategy, Brand, Design and Products review.
+        - Visible token balance and saved progress.
+    - id: workspace
+      label: Business workspace
+      title: See the whole business, change its documents and ask relevant questions.
+      lead:
+        The workspace shows the connected model and its missing decisions. Chat
+        uses the same business sources, so the person can refine or challenge
+        the work without repeating it.
+      points:
+        - Show what is missing or contradictory.
+        - Ask for criticism, alternatives or a concrete material.
+        - Update the section that owns a decision.
+        - Export the current document for use elsewhere.
+    - id: landing-page
+      label: Page sandbox
+      title: Assemble and inspect the first landing page.
+      lead:
+        The landing-page workspace uses the selected customer, problem, offer,
+        proof and action from the business model. SinglePageStartup blocks
+        assemble a private preview whose data is saved with the project.
+      points:
+        - Edit the Text and Layout of the complete page.
+        - Save changes to the project and render them immediately in the
+          frontend preview.
+        - Keep the sandbox private while the page is being reviewed.
+        - Sign in with GitHub and create the project repository when the page is
+          ready.
+        - Connect the user's server and configure automatic deployment.
+    - id: tokens
+      label: Paid continuation
+      title: Buy tokens when the available balance is insufficient for the next task.
+      lead:
+        Token purchase can occur during file processing, document work or later
+        chat. The current task remains saved while the person chooses a package
+        and pays.
+      points:
+        - Show the current balance and configured packages.
+        - Show the complete price and purchase conditions before payment.
+        - Credit the balance and return to the interrupted action.
+        - Keep purchase and framework adoption as separate outcomes.
+    - id: account
+      label: Account and support
+      title: Registration, settings, purchases and help have explicit places.
+      lead:
+        The complete product journey includes account access, project settings,
+        purchase history, saved sandbox data and a support route processed by
+        the project owner.
+      points:
+        - Register or sign in with email and password.
+        - Manage project and account settings in one place.
+        - View token purchases and return to saved work.
+        - Send a support request with a 24-hour processing boundary.
+    - id: framework
+      label: Code Framework
+      title: When the business needs software, lead directly to the reusable
+        foundation.
+      lead:
+        An approved landing page can be written to a repository in the user's
+        GitHub account and deployed to the user's connected server. A chatbot or
+        another digital product can use the same Code Framework foundation.
+      points:
+        - Explain what will be created in GitHub and which repository access is
+          required.
+        - Connect the user's server or hosting provider with its deployment key.
+        - Show repository creation, deployment status and the public address.
+        - Use the same authorized repository for later approved updates.
+    - id: action
+      label: The next action
+      title: Organize the material already available.
+      lead:
+        The person does not need another abstract project start. The first useful
+        action is to upload existing files and receive an editable business
+        model with visible gaps and a path to customers.
+      points:
+        - Organize my materials.
+        - Review and improve the business model.
+        - Prepare the landing-page sandbox.
+        - Publish the page through the GitHub repository and connected server.
+confirmation:
+  confirmed: false
+review:
+  dependencies:
+    brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
+    design: 6f29bf4c2ea795a190382e7091a7085ee9270f892486aeccd6c2aca62f1179c8
+    product.ai-chat.presentation-renderer: 2874ea2ed3a7b265ec73c6b95040526463aa6111537ef2e31864d821379b2f6b
+    product.ai-chat.product: 128b557ac48280f0ad09eefbe05fdc4e54a8aaa4c8c972205ffa5f53cb6cbc9e
+    product.ai-chat.research: 6b9b404ced17a62287e65b1e631e3244c3258a5f4515483d60303bd4a9786a1b
+    product.ai-chat.sales: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400

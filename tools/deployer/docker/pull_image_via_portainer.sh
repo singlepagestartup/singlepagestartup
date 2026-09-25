@@ -195,6 +195,14 @@ for repository in "${unique_repositories[@]}"; do
       break
     fi
 
+    if grep -qiE \
+      '(/var/lib/containerd/|snapshotter\.v1\.overlayfs).*(no such file or directory)' \
+      "$response_file"; then
+      echo "Docker containerd image-store extraction failed." >&2
+      echo "Re-run server provisioning to configure the overlay2 storage driver before retrying this release." >&2
+      break
+    fi
+
     if grep -qi "no space left on device" "$response_file"; then
       if [ "$attempt" -eq 1 ]; then
         prune_docker_objects aged

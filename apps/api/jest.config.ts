@@ -1,5 +1,8 @@
 export default {
   displayName: "@sps/api",
   preset: "../../jest.server-preset.js",
-  testPathIgnorePatterns: ["\\.integration\\.spec\\.ts$"],
+  testPathIgnorePatterns: [
+    "\\.integration\\.spec\\.ts$",
+    "\\.scenario\\.spec\\.tsx?$",
+  ],
 };

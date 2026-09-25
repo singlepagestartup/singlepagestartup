@@ -1,0 +1,695 @@
+import {
+  documentConfirmation,
+  parseDocument,
+  type IDocumentConfirmation,
+} from "./document";
+import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { parse } from "yaml";
+
+import { mergeWorkspaceContent, type WorkspaceMergeStrategy } from "./merge";
+import { loadDocumentReviews } from "./review-loader";
+import { reviewId } from "./review";
+import {
+  resolveWorkspaceLayer,
+  type WorkspaceLayer,
+  type WorkspaceLayerSelection,
+} from "./repository-layer";
+
+export type {
+  WorkspaceLayer,
+  WorkspaceLayerSelection,
+} from "./repository-layer";
+export { resolveRepositoryIdentity } from "./repository-layer";
+export type WorkspaceProjection = "resolved" | "source";
+
+export interface IWorkspaceIndexEntry {
+  id: string;
+  kind: string;
+  path: string;
+  description: string;
+  extends?: string;
+  strategy?: WorkspaceMergeStrategy;
+  uses: string[];
+}
+
+export interface IWorkspaceIndex {
+  schema: string;
+  layer: WorkspaceLayer;
+  entries: IWorkspaceIndexEntry[];
+  exports: string[];
+  imports: string[];
+}
+
+export interface IResolvedWorkspaceEntry extends IWorkspaceIndexEntry {
+  absolutePath: string;
+  baseAbsolutePath?: string;
+  overlayAbsolutePath?: string;
+  inherited: boolean;
+  layer: WorkspaceLayer;
+  resolution: "local" | "inherited" | "merged";
+  sourceIds: string[];
+  sourcePaths: string[];
+}
+
+export interface ILoadedWorkspaceEntry extends IResolvedWorkspaceEntry {
+  content: string;
+  confirmation: IDocumentConfirmation;
+  reviewDependencies?: Record<string, string>;
+}
+
+export interface IWorkspaceGraph {
+  activeLayer: WorkspaceLayer;
+  workspaceRoot: string;
+  visibleEntries: IResolvedWorkspaceEntry[];
+  loadedEntries: ILoadedWorkspaceEntry[];
+  dependencyClosure: string[];
+  reverseDependencies: Record<string, string[]>;
+  imports: string[];
+  exports: string[];
+}
+
+export interface ILoadWorkspaceOptions {
+  activeLayer?: WorkspaceLayerSelection;
+  projection?: WorkspaceProjection;
+  repositoryIdentity?: string;
+  repositoryRoot?: string;
+  requestedIds?: string[];
+  workspaceRoot?: string;
+}
+
+const LAYERED_ENTRY_KINDS = [
+  "brief",
+  "strategy",
+  "asset-index",
+  "brand",
+  "design",
+  "products",
+  "discovery",
+  "acquisition",
+  "communication",
+] as const;
+
+const LAYERED_ENTRY_KIND_SET = new Set<string>(LAYERED_ENTRY_KINDS);
+const STUDIO_WORKSPACE_ROOT = "apps/studio/workspace";
+const AGENT_RESOURCE_ROOT = ".agents";
+const WORKSPACE_MERGE_STRATEGIES = new Set<WorkspaceMergeStrategy>([
+  "keyed",
+  "product-catalog",
+  "replace",
+  "sections",
+]);
+const EXPECTED_LAYERED_STRATEGIES: Record<string, WorkspaceMergeStrategy> = {
+  acquisition: "replace",
+  "asset-index": "keyed",
+  brand: "sections",
+  design: "sections",
+  brief: "sections",
+  communication: "replace",
+  discovery: "replace",
+  products: "product-catalog",
+  strategy: "sections",
+};
+
+export class WorkspaceValidationError extends Error {
+  readonly failures: string[];
+
+  constructor(failures: string[]) {
+    super(
+      `Workspace validation failed:\n${failures.map((failure) => `- ${failure}`).join("\n")}`,
+    );
+    this.name = "WorkspaceValidationError";
+    this.failures = failures;
+  }
+}
+
+function toPosix(value: string): string {
+  return value.split(path.sep).join("/");
+}
+
+function parseYaml(source: string, sourcePath: string): unknown {
+  try {
+    return parse(source);
+  } catch (error) {
+    throw new WorkspaceValidationError([
+      `${toPosix(sourcePath)}: invalid YAML (${error instanceof Error ? error.message : String(error)})`,
+    ]);
+  }
+}
+
+function stringList(
+  value: unknown,
+  field: string,
+  failures: string[],
+): string[] {
+  if (!Array.isArray(value)) {
+    failures.push(`${field} must be an array`);
+    return [];
+  }
+
+  const values = value.filter(
+    (item): item is string => typeof item === "string",
+  );
+  if (values.length !== value.length)
+    failures.push(`${field} must contain only strings`);
+  return values;
+}
+
+function parseIndex(
+  raw: unknown,
+  indexPath: string,
+  expectedLayer: WorkspaceLayer,
+): IWorkspaceIndex {
+  const failures: string[] = [];
+  const value =
+    raw && typeof raw === "object" && !Array.isArray(raw)
+      ? (raw as Record<string, unknown>)
+      : {};
+  const entriesRaw = Array.isArray(value.entries) ? value.entries : [];
+  if (!Array.isArray(value.entries))
+    failures.push(`${toPosix(indexPath)}: entries must be an array`);
+
+  const entries = entriesRaw.map((entryRaw, entryIndex) => {
+    const entry =
+      entryRaw && typeof entryRaw === "object" && !Array.isArray(entryRaw)
+        ? (entryRaw as Record<string, unknown>)
+        : {};
+    const prefix = `${toPosix(indexPath)}: entries[${entryIndex}]`;
+    for (const field of ["id", "kind", "path", "description"] as const) {
+      if (typeof entry[field] !== "string" || !entry[field]) {
+        failures.push(`${prefix}.${field} must be a non-empty string`);
+      }
+    }
+    const extendedId =
+      typeof entry.extends === "string" && entry.extends
+        ? entry.extends
+        : undefined;
+    if (entry.extends != null && !extendedId) {
+      failures.push(`${prefix}.extends must be a non-empty string`);
+    }
+    const strategy =
+      typeof entry.strategy === "string" &&
+      WORKSPACE_MERGE_STRATEGIES.has(entry.strategy as WorkspaceMergeStrategy)
+        ? (entry.strategy as WorkspaceMergeStrategy)
+        : undefined;
+    if (entry.strategy != null && !strategy) {
+      failures.push(
+        `${prefix}.strategy must be keyed, product-catalog, replace, or sections`,
+      );
+    }
+    return {
+      id: typeof entry.id === "string" ? entry.id : "",
+      kind: typeof entry.kind === "string" ? entry.kind : "",
+      path: typeof entry.path === "string" ? entry.path : "",
+      description:
+        typeof entry.description === "string" ? entry.description : "",
+      extends: extendedId,
+      strategy,
+      uses: stringList(entry.uses, `${prefix}.uses`, failures),
+    } satisfies IWorkspaceIndexEntry;
+  });
+
+  if (typeof value.schema !== "string" || !value.schema) {
+    failures.push(`${toPosix(indexPath)}: schema must be a non-empty string`);
+  }
+  if (value.layer !== expectedLayer) {
+    failures.push(`${toPosix(indexPath)}: layer must be ${expectedLayer}`);
+  }
+  const exports = stringList(
+    value.exports,
+    `${toPosix(indexPath)}: exports`,
+    failures,
+  );
+  const imports = stringList(
+    value.imports,
+    `${toPosix(indexPath)}: imports`,
+    failures,
+  );
+
+  if (failures.length) throw new WorkspaceValidationError(failures);
+  return {
+    schema: value.schema as string,
+    layer: expectedLayer,
+    entries,
+    exports,
+    imports,
+  };
+}
+
+async function readIndex(
+  workspaceRoot: string,
+  layer: WorkspaceLayer,
+): Promise<IWorkspaceIndex> {
+  const indexPath = path.join(workspaceRoot, "utils/index", `${layer}.yaml`);
+  if (!existsSync(indexPath)) {
+    throw new WorkspaceValidationError([
+      `${toPosix(indexPath)}: index file does not exist`,
+    ]);
+  }
+  return parseIndex(
+    parseYaml(await readFile(indexPath, "utf8"), indexPath),
+    indexPath,
+    layer,
+  );
+}
+
+function resolveEntryPath(
+  workspaceRoot: string,
+  entry: IWorkspaceIndexEntry,
+  failures: string[],
+  repositoryRoot: string,
+): string {
+  const normalizedPath = toPosix(entry.path);
+  const isAgentResourcePath = normalizedPath.startsWith(
+    `${AGENT_RESOURCE_ROOT}/`,
+  );
+  const mayUseAgentResourcePath =
+    isAgentResourcePath &&
+    (entry.kind === "knowledge" || entry.kind === "template");
+  const sourceRoot = mayUseAgentResourcePath
+    ? path.join(repositoryRoot, AGENT_RESOURCE_ROOT)
+    : workspaceRoot;
+  const absolutePath = mayUseAgentResourcePath
+    ? path.resolve(repositoryRoot, entry.path)
+    : path.resolve(workspaceRoot, entry.path);
+  const relativePath = path.relative(sourceRoot, absolutePath);
+  if (isAgentResourcePath && !mayUseAgentResourcePath) {
+    failures.push(
+      `${entry.id || "<unknown>"}: only shared knowledge and templates may use ${AGENT_RESOURCE_ROOT} (${entry.path})`,
+    );
+  }
+  if (
+    !entry.path ||
+    path.isAbsolute(entry.path) ||
+    relativePath.startsWith("..") ||
+    path.isAbsolute(relativePath)
+  ) {
+    failures.push(
+      `${entry.id || "<unknown>"}: path must stay inside its declared source root (${entry.path})`,
+    );
+  } else if (!existsSync(absolutePath)) {
+    failures.push(
+      `${entry.id}: declared file does not exist (${toPosix(absolutePath)})`,
+    );
+  }
+  return absolutePath;
+}
+
+function findCycles(entries: IResolvedWorkspaceEntry[]): string[] {
+  const edges = new Map(entries.map((entry) => [entry.id, entry.uses]));
+  const visited = new Set<string>();
+  const visiting = new Set<string>();
+  const stack: string[] = [];
+  const cycles = new Set<string>();
+
+  function visit(id: string) {
+    if (visiting.has(id)) {
+      const start = stack.indexOf(id);
+      cycles.add([...stack.slice(start), id].join(" -> "));
+      return;
+    }
+    if (visited.has(id)) return;
+    visiting.add(id);
+    stack.push(id);
+    for (const dependency of edges.get(id) ?? []) visit(dependency);
+    stack.pop();
+    visiting.delete(id);
+    visited.add(id);
+  }
+
+  for (const id of edges.keys()) visit(id);
+  return [...cycles].sort();
+}
+
+function computeClosure(
+  entries: Map<string, IResolvedWorkspaceEntry>,
+  requestedIds: string[],
+): string[] {
+  const closure = new Set<string>();
+  function add(id: string) {
+    if (closure.has(id)) return;
+    closure.add(id);
+    for (const dependency of entries.get(id)?.uses ?? []) add(dependency);
+  }
+  for (const id of requestedIds) add(id);
+  return [...closure].sort();
+}
+
+function computeReverseDependencies(
+  entries: IResolvedWorkspaceEntry[],
+): Record<string, string[]> {
+  const reverse = Object.fromEntries(
+    entries.map((entry) => [entry.id, [] as string[]]),
+  );
+  for (const entry of entries) {
+    for (const dependency of entry.uses) reverse[dependency]?.push(entry.id);
+  }
+  for (const values of Object.values(reverse)) values.sort();
+  return reverse;
+}
+
+async function loadEntryContent(
+  entry: IResolvedWorkspaceEntry,
+  sourceBase?: IResolvedWorkspaceEntry,
+): Promise<ILoadedWorkspaceEntry> {
+  if (entry.baseAbsolutePath && entry.overlayAbsolutePath) {
+    const [base, overlay] = await Promise.all([
+      readFile(entry.baseAbsolutePath, "utf8"),
+      readFile(entry.overlayAbsolutePath, "utf8"),
+    ]);
+    const merged = mergeWorkspaceContent({
+      base,
+      kind: entry.kind,
+      overlay,
+      sourcePath: entry.overlayAbsolutePath,
+      strategy: entry.strategy,
+    });
+    return {
+      ...entry,
+      absolutePath: merged.overlayContributes
+        ? entry.overlayAbsolutePath
+        : entry.baseAbsolutePath,
+      content: merged.content,
+      confirmation: documentConfirmation(
+        merged.content,
+        merged.confirmationLayer ??
+          (merged.overlayContributes ? "startup" : "singlepage"),
+        entry.absolutePath.endsWith(".yaml") ? "yaml" : "markdown",
+      ),
+      inherited: !merged.overlayContributes,
+      resolution: merged.overlayContributes ? "merged" : "inherited",
+    };
+  }
+  const content = await readFile(entry.absolutePath, "utf8");
+  const format = entry.absolutePath.endsWith(".yaml") ? "yaml" : "markdown";
+  const confirmationSource =
+    sourceBase &&
+    parseDocument(content, format).metadata.confirmation !== undefined
+      ? mergeWorkspaceContent({
+          base: await readFile(sourceBase.absolutePath, "utf8"),
+          overlay: content,
+          kind: entry.kind,
+          sourcePath: entry.absolutePath,
+          strategy: entry.strategy,
+        }).content
+      : content;
+  return {
+    ...entry,
+    content,
+    confirmation: documentConfirmation(confirmationSource, entry.layer, format),
+  };
+}
+
+export async function loadWorkspace(
+  options: ILoadWorkspaceOptions = {},
+): Promise<IWorkspaceGraph> {
+  const repositoryRoot = path.resolve(options.repositoryRoot ?? process.cwd());
+  const canonicalWorkspaceRoot = path.join(
+    repositoryRoot,
+    STUDIO_WORKSPACE_ROOT,
+  );
+  const workspaceRoot = path.resolve(
+    options.workspaceRoot ?? canonicalWorkspaceRoot,
+  );
+  const activeLayer = resolveWorkspaceLayer({
+    repositoryRoot,
+    requestedLayer: options.activeLayer,
+    repositoryIdentity: options.repositoryIdentity,
+  }).layer;
+  const projection = options.projection ?? "resolved";
+
+  const [singlepageIndex, startupIndex] = await Promise.all([
+    readIndex(workspaceRoot, "singlepage"),
+    readIndex(workspaceRoot, "startup"),
+  ]);
+  const failures: string[] = [];
+  const allIds = new Map<string, string>();
+
+  function resolveEntries(index: IWorkspaceIndex, inherited: boolean) {
+    return index.entries.map((entry) => {
+      const previous = allIds.get(entry.id);
+      if (previous)
+        failures.push(
+          `${entry.id}: duplicate ID in ${previous} and ${index.layer}`,
+        );
+      else allIds.set(entry.id, index.layer);
+      const absolutePath = resolveEntryPath(
+        workspaceRoot,
+        entry,
+        failures,
+        repositoryRoot,
+      );
+      return {
+        ...entry,
+        absolutePath,
+        inherited,
+        layer: index.layer,
+        resolution: inherited ? "inherited" : "local",
+        sourceIds: [entry.id],
+        sourcePaths: [absolutePath],
+      } satisfies IResolvedWorkspaceEntry;
+    });
+  }
+
+  const singlepageEntries = resolveEntries(
+    singlepageIndex,
+    activeLayer === "startup",
+  );
+  const startupEntries = resolveEntries(startupIndex, false);
+  const singlepageById = new Map(
+    singlepageEntries.map((entry) => [entry.id, entry]),
+  );
+  const startupById = new Map(startupEntries.map((entry) => [entry.id, entry]));
+  const exportSet = new Set(singlepageIndex.exports);
+  const importSet = new Set(startupIndex.imports);
+  const singlepageLayeredByKind = new Map<string, IResolvedWorkspaceEntry>();
+  const startupLayeredByKind = new Map<string, IResolvedWorkspaceEntry>();
+
+  function indexLayeredEntries(
+    entries: IResolvedWorkspaceEntry[],
+    target: Map<string, IResolvedWorkspaceEntry>,
+  ) {
+    for (const entry of entries) {
+      if (!LAYERED_ENTRY_KIND_SET.has(entry.kind)) continue;
+      const previous = target.get(entry.kind);
+      if (previous) {
+        failures.push(
+          `${entry.layer}: multiple ${entry.kind} layered entries (${previous.id}, ${entry.id})`,
+        );
+      } else target.set(entry.kind, entry);
+    }
+  }
+
+  indexLayeredEntries(singlepageEntries, singlepageLayeredByKind);
+  indexLayeredEntries(startupEntries, startupLayeredByKind);
+
+  for (const entry of singlepageEntries) {
+    if (entry.extends || entry.strategy) {
+      failures.push(
+        `${entry.id}: singlepage sources cannot declare extends or strategy`,
+      );
+    }
+  }
+  for (const entry of startupEntries) {
+    const isLayered = LAYERED_ENTRY_KIND_SET.has(entry.kind);
+    if (!isLayered && (entry.extends || entry.strategy)) {
+      failures.push(
+        `${entry.id}: only layered startup sources may declare extends or strategy`,
+      );
+      continue;
+    }
+    if (!isLayered) continue;
+    const base = entry.extends ? singlepageById.get(entry.extends) : undefined;
+    if (!entry.extends || !base) {
+      failures.push(
+        `${entry.id}: extends must reference its singlepage source`,
+      );
+    } else if (base.kind !== entry.kind) {
+      failures.push(
+        `${entry.id}: cannot extend ${base.id} with different kind ${base.kind}`,
+      );
+    }
+    const expectedStrategy = EXPECTED_LAYERED_STRATEGIES[entry.kind];
+    if (entry.strategy !== expectedStrategy) {
+      failures.push(
+        `${entry.id}: strategy must be ${expectedStrategy ?? "declared"}`,
+      );
+    }
+  }
+
+  for (const id of singlepageIndex.exports) {
+    if (!singlepageById.has(id))
+      failures.push(`singlepage export does not exist: ${id}`);
+  }
+  for (const id of startupIndex.imports) {
+    if (!exportSet.has(id))
+      failures.push(`startup import is not exported by singlepage: ${id}`);
+    if (!singlepageById.has(id))
+      failures.push(`startup import does not exist: ${id}`);
+  }
+  for (const entry of singlepageEntries) {
+    for (const dependency of entry.uses) {
+      if (!singlepageById.has(dependency))
+        failures.push(`${entry.id}: broken uses reference ${dependency}`);
+      if (exportSet.has(entry.id) && !exportSet.has(dependency)) {
+        failures.push(
+          `${entry.id}: exported entry depends on non-exported ${dependency}`,
+        );
+      }
+    }
+  }
+  for (const entry of startupEntries) {
+    for (const dependency of entry.uses) {
+      const layeredSinglepageDependency =
+        singlepageById.has(dependency) &&
+        LAYERED_ENTRY_KIND_SET.has(singlepageById.get(dependency)!.kind);
+      if (
+        !startupById.has(dependency) &&
+        !importSet.has(dependency) &&
+        !layeredSinglepageDependency
+      ) {
+        failures.push(
+          `${entry.id}: broken or non-imported uses reference ${dependency}`,
+        );
+      }
+    }
+  }
+
+  const effectiveAliases = new Map<string, string>();
+  let visibleEntries: IResolvedWorkspaceEntry[];
+  if (activeLayer === "singlepage") {
+    visibleEntries = singlepageEntries.map((entry) => ({
+      ...entry,
+      inherited: false,
+      resolution: "local",
+    }));
+  } else if (projection === "source") {
+    const importedSupportEntries = singlepageEntries
+      .filter(
+        (entry) =>
+          !LAYERED_ENTRY_KIND_SET.has(entry.kind) && importSet.has(entry.id),
+      )
+      .map((entry) => ({
+        ...entry,
+        inherited: true,
+        resolution: "inherited" as const,
+      }));
+    visibleEntries = [...startupEntries, ...importedSupportEntries];
+  } else {
+    const resolvedLayeredEntries: IResolvedWorkspaceEntry[] = [];
+    const layeredPairs: Array<{
+      base?: IResolvedWorkspaceEntry;
+      overlay?: IResolvedWorkspaceEntry;
+      resolved: IResolvedWorkspaceEntry;
+    }> = [];
+    for (const kind of LAYERED_ENTRY_KINDS) {
+      const base = singlepageLayeredByKind.get(kind);
+      const overlay = startupLayeredByKind.get(kind);
+      if (!base && !overlay) continue;
+      const selected = overlay ?? base!;
+      const resolved: IResolvedWorkspaceEntry = {
+        ...selected,
+        absolutePath: overlay?.absolutePath ?? base!.absolutePath,
+        baseAbsolutePath: base?.absolutePath,
+        overlayAbsolutePath: overlay?.absolutePath,
+        inherited: !overlay,
+        layer: overlay?.layer ?? base!.layer,
+        resolution: overlay ? (base ? "merged" : "local") : "inherited",
+        sourceIds: [base?.id, overlay?.id].filter((id): id is string =>
+          Boolean(id),
+        ),
+        sourcePaths: [base?.absolutePath, overlay?.absolutePath].filter(
+          (sourcePath): sourcePath is string => Boolean(sourcePath),
+        ),
+      };
+      if (base) effectiveAliases.set(base.id, resolved.id);
+      if (overlay) effectiveAliases.set(overlay.id, resolved.id);
+      layeredPairs.push({ base, overlay, resolved });
+    }
+    for (const pair of layeredPairs) {
+      pair.resolved.uses = [
+        ...new Set(
+          [...(pair.base?.uses ?? []), ...(pair.overlay?.uses ?? [])].map(
+            (dependency) => effectiveAliases.get(dependency) ?? dependency,
+          ),
+        ),
+      ];
+      resolvedLayeredEntries.push(pair.resolved);
+    }
+
+    const startupSupportEntries = startupEntries.filter(
+      (entry) => !LAYERED_ENTRY_KIND_SET.has(entry.kind),
+    );
+    const inheritedSupportEntries = singlepageEntries
+      .filter(
+        (entry) =>
+          !LAYERED_ENTRY_KIND_SET.has(entry.kind) && importSet.has(entry.id),
+      )
+      .map((entry) => ({
+        ...entry,
+        inherited: true,
+        resolution: "inherited" as const,
+      }));
+    visibleEntries = [
+      ...resolvedLayeredEntries,
+      ...startupSupportEntries,
+      ...inheritedSupportEntries,
+    ];
+  }
+  const visibleById = new Map(visibleEntries.map((entry) => [entry.id, entry]));
+  for (const cycle of findCycles(visibleEntries))
+    failures.push(`dependency cycle: ${cycle}`);
+
+  const requestedIds = options.requestedIds?.length
+    ? [
+        ...new Set(
+          options.requestedIds.map((id) => effectiveAliases.get(id) ?? id),
+        ),
+      ]
+    : visibleEntries.map((entry) => entry.id);
+  for (const id of requestedIds) {
+    if (!visibleById.has(id))
+      failures.push(`requested ID is not visible in ${activeLayer}: ${id}`);
+  }
+  if (failures.length)
+    throw new WorkspaceValidationError([...new Set(failures)].sort());
+
+  const dependencyClosure = computeClosure(visibleById, requestedIds);
+  const loadedEntries = await Promise.all(
+    dependencyClosure.map((id) => {
+      const entry = visibleById.get(id)!;
+      return loadEntryContent(
+        entry,
+        entry.extends ? singlepageById.get(entry.extends) : undefined,
+      );
+    }),
+  );
+
+  const reviews = await loadDocumentReviews(workspaceRoot, activeLayer);
+  for (const entry of loadedEntries) {
+    const review = reviews.get(reviewId(entry.extends ?? entry.id));
+    if (
+      !review ||
+      (projection === "source" &&
+        activeLayer === "startup" &&
+        !entry.content.trim())
+    )
+      continue;
+    entry.confirmation = review.confirmation;
+    entry.reviewDependencies = review.dependencies;
+  }
+
+  return {
+    activeLayer,
+    workspaceRoot,
+    visibleEntries: visibleEntries.sort((left, right) =>
+      left.id.localeCompare(right.id),
+    ),
+    loadedEntries,
+    dependencyClosure,
+    reverseDependencies: computeReverseDependencies(visibleEntries),
+    imports: [...startupIndex.imports].sort(),
+    exports: [...singlepageIndex.exports].sort(),
+  };
+}

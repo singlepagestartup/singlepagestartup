@@ -110,5 +110,24 @@ blob-report/
 
 # Claude local project config
 .claude/.env
+.agents/.env
+
+# Checkout-owned SinglePageStartup workspace selection
+apps/studio/workspace/utils/config.local.yaml
+
+# Derived HTML-first Studio presentation exports
+apps/studio/output/
+
+# Derived Storybook product navigation
+apps/studio/.storybook/.generated/
+
+# Agent-local scratch artifacts
+/.artifacts/
+
+# Local task output
+/output/
 
 **/*.tsbuildinfo
+
+# Claude Code worktrees
+.claude/worktrees/

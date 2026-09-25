@@ -42,18 +42,18 @@ validate_project_artifact_context() {
     fi
 
     if [ -n "$hinted_number" ] && [ -n "${GITHUB_PROJECT_NUMBER:-}" ] && [ "$hinted_number" != "$GITHUB_PROJECT_NUMBER" ]; then
-      echo "Error: Local artifact $file references GitHub Project #$hinted_number, but .claude/.env is configured for #$GITHUB_PROJECT_NUMBER." >&2
+      echo "Error: Local artifact $file references GitHub Project #$hinted_number, but ${SPS_AGENT_ENV_FILE:-.agents/.env} is configured for #$GITHUB_PROJECT_NUMBER." >&2
       echo "Refusing to use a mismatched Project for issue #$issue_number in $TARGET_REPO_FULL_NAME." >&2
       return 1
     fi
 
     if [ -n "$hinted_owner" ] && [ -n "${GITHUB_OWNER:-}" ] && [ "$hinted_owner" != "$GITHUB_OWNER" ]; then
-      echo "Error: Local artifact $file references GitHub Project owner '$hinted_owner', but .claude/.env resolves owner '$GITHUB_OWNER'." >&2
+      echo "Error: Local artifact $file references GitHub Project owner '$hinted_owner', but ${SPS_AGENT_ENV_FILE:-.agents/.env} resolves owner '$GITHUB_OWNER'." >&2
       return 1
     fi
 
     if [ -n "$hinted_type" ] && [ -n "${GITHUB_PROJECT_OWNER_TYPE:-}" ] && [ "$hinted_type" != "$GITHUB_PROJECT_OWNER_TYPE" ]; then
-      echo "Error: Local artifact $file references GitHub Project type '$hinted_type', but .claude/.env resolves '$GITHUB_PROJECT_OWNER_TYPE'." >&2
+      echo "Error: Local artifact $file references GitHub Project type '$hinted_type', but ${SPS_AGENT_ENV_FILE:-.agents/.env} resolves '$GITHUB_PROJECT_OWNER_TYPE'." >&2
       return 1
     fi
 

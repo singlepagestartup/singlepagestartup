@@ -2,10 +2,15 @@ import "reflect-metadata";
 import { injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/identity/backend/repository/database";
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  ADDRESS_VERIFYING_PROVIDERS,
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { api } from "@sps/rbac/models/identity/sdk/server";
 import bcrypt from "bcrypt";
 import { IModel } from "@sps/rbac/models/identity/sdk/model";
+import { assertCredentialColumnsAreHashed } from "@sps/backend-utils";
 
 export type IEmailAndPassword = {
   data: {
@@ -24,6 +29,23 @@ export type IChangePassword = {
 };
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  /**
+   * Rejects a credential column the generic update path would otherwise write
+   * verbatim (issue #270). The admin form posts the whole model back, so an
+   * edit that never touched the password field would still send one — empty
+   * once the output schema stopped returning it — and silently lock the account
+   * out. Registration, `changePassword`, reset-password and forgot-password all
+   * store bcrypt output, so they pass unchanged.
+   */
+  async update(props: {
+    id: string;
+    data: (typeof Table)["$inferSelect"];
+  }): Promise<(typeof Table)["$inferSelect"] | null> {
+    assertCredentialColumnsAreHashed(props.data);
+
+    return super.update(props);
+  }
+
   async emailAndPassowrd(props: IEmailAndPassword): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is required");
@@ -63,6 +85,49 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       if (identities?.length) {
         throw new Error("Not Found error. Identity already exists");
+      }
+
+      /**
+       * Interim guard for #280. Registration proves nothing about who controls
+       * the address, while the OAuth callback links accounts by one and trusts
+       * the provider's verification flag to do it, so whoever registers first
+       * can receive the owner's next provider sign-in.
+       *
+       * REPLACE THIS when #280 lands. Once registration confirms its own
+       * address with a mailed code, an address held elsewhere stops being a
+       * reason to refuse and becomes a reason to link, after both sides are
+       * proven; keeping this would then block a legitimate second identity.
+       */
+      const claimedElsewhere = await api.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "email",
+                method: "eq",
+                value: props.data.login.toLowerCase(),
+              },
+              {
+                column: "provider",
+                method: "inArray",
+                value: [...ADDRESS_VERIFYING_PROVIDERS],
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+      if (claimedElsewhere?.length) {
+        throw new Error(
+          "Validation error. This email is already used to sign in with " +
+            "another method. Sign in with that method instead.",
+        );
       }
 
       const salt = await bcrypt.genSalt(10);

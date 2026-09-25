@@ -26,6 +26,9 @@
     "strictPropertyInitialization": false,
     "types": ["node", "jest"],
     "paths": {
+      "@sps/shared-frontend-client-pdf": [
+        "libs/shared/frontend/client/pdf/src/index.ts"
+      ],
       "@sps/agent/*": ["libs/modules/agent/*"],
       "@sps/analytic/*": ["libs/modules/analytic/*"],
       "@sps/backend-utils": ["libs/shared/backend/utils/src/index.ts"],

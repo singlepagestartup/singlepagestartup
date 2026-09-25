@@ -1,0 +1,27 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "983:1777",
+  "variantName": "ecommerce-products",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.ecommerce-products",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/models/page/singlepage/ecommerce-products",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "ecommerce-products",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "ecommerce-products",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/models/page/singlepage/ecommerce-products/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/models/page/singlepage/ecommerce-products/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1777",
+    "sps.figma.storybookReferenceNodeId": "983:1926",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1926",
+  "storybookImageCount": 1
+}

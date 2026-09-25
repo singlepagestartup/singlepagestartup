@@ -1,8 +1,4 @@
-import {
-  HostGraphPreviewInputSchema,
-  IHostGraphLocalizedFieldUpdateInput,
-  IHostGraphPreviewInput,
-} from "./schemas";
+import { HostGraphPreviewInputSchema, IHostGraphPreviewInput } from "./schemas";
 import { getMcpSdkOptions } from "./auth";
 import { requireContentEntityDescriptor } from "./registry";
 import {
@@ -443,23 +439,4 @@ export async function resolveHostGraph(
     candidates: matchedCandidates,
     matchStatus: matchStatus(matchedCandidates.length),
   };
-}
-
-export function requireSingleHostGraphCandidate(props: {
-  result: IHostGraphResult;
-  input: Pick<IHostGraphLocalizedFieldUpdateInput, "candidateId" | "widgetId">;
-}) {
-  const candidates = filterHostGraphCandidates({
-    candidates: props.result.candidates,
-    candidateId: props.input.candidateId,
-    widgetId: props.input.widgetId,
-  });
-
-  if (candidates.length !== 1) {
-    throw new Error(
-      `Validation error. Expected exactly one host graph candidate, found ${candidates.length}`,
-    );
-  }
-
-  return candidates[0];
 }

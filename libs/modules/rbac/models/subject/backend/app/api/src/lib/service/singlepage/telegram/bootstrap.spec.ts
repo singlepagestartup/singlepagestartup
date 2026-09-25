@@ -12,6 +12,9 @@ const mockSocialModuleThreadCreate = jest.fn();
 const mockSocialModuleThreadUpdate = jest.fn();
 const mockOpenRouterGenerate = jest.fn();
 const mockSocialModuleProfilesToChatsCreate = jest.fn();
+const mockRbacSubjectCreate = jest.fn();
+const mockRbacSubjectDelete = jest.fn();
+const mockSubjectsToIdentitiesCreate = jest.fn();
 const originalFetch = global.fetch;
 
 jest.mock("@sps/shared-utils", () => ({
@@ -50,6 +53,19 @@ jest.mock("@sps/shared-third-parties", () => ({
   OpenRouter: jest.fn().mockImplementation(() => ({
     generate: (...args: unknown[]) => mockOpenRouterGenerate(...args),
   })),
+}));
+
+jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
+  api: {
+    create: (...args: unknown[]) => mockRbacSubjectCreate(...args),
+    delete: (...args: unknown[]) => mockRbacSubjectDelete(...args),
+  },
+}));
+
+jest.mock("@sps/rbac/relations/subjects-to-identities/sdk/server", () => ({
+  api: {
+    create: (...args: unknown[]) => mockSubjectsToIdentitiesCreate(...args),
+  },
 }));
 
 import { Service } from "./bootstrap";
@@ -644,5 +660,232 @@ describe("Given: Telegram automatic chat participants", () => {
       ownerRbacSubjectId: "owner-1",
       socialModuleProfileId: "global-ai-profile",
     });
+  });
+});
+
+/**
+ * BDD Suite: Telegram bootstrap concurrency recovery.
+ *
+ * Given: two Telegram updates bootstrap the same account at the same time.
+ * When: one request loses a natural key insert to the other.
+ * Then: the losing request replays bootstrap instead of failing the update.
+ */
+describe("Given: two Telegram updates race to bootstrap the same account", () => {
+  function buildService() {
+    return new Service({
+      findById: jest.fn(),
+      identity: {} as any,
+      subjectsToIdentities: {} as any,
+      subjectsToSocialModuleProfiles: {} as any,
+      socialModule: {} as any,
+    });
+  }
+
+  function buildConflictError() {
+    // The API answers a unique violation with a sanitized 409, so the losing
+    // request learns that it lost without learning which constraint it hit.
+    const payload = {
+      message: "Conflict error. Entity already exists",
+      status: 409,
+      cause: [{ message: "Conflict error. Entity already exists" }],
+    };
+
+    return Object.assign(new Error(JSON.stringify(payload)), {
+      status: 409,
+      cause: payload,
+    });
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("returns the winning records after losing the identity insert", async () => {
+    const service = buildService();
+    const bootstrapResult = { rbacModuleSubject: { id: "subject-1" } } as any;
+    const executeOnce = jest
+      .spyOn(service as any, "executeOnce")
+      .mockRejectedValueOnce(buildConflictError())
+      .mockResolvedValueOnce(bootstrapResult);
+    jest.spyOn(service as any, "getConflictRetryDelays").mockReturnValue([0]);
+
+    await expect(
+      service.execute({ fromId: "153077581", chatId: "153077581" }),
+    ).resolves.toBe(bootstrapResult);
+    expect(executeOnce).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns the winning records after losing the topic thread insert", async () => {
+    const service = buildService();
+    const bootstrapResult = { rbacModuleSubject: { id: "subject-1" } } as any;
+    const executeOnce = jest
+      .spyOn(service as any, "executeOnce")
+      .mockRejectedValueOnce(buildConflictError())
+      .mockResolvedValueOnce(bootstrapResult);
+    jest.spyOn(service as any, "getConflictRetryDelays").mockReturnValue([0]);
+
+    await expect(
+      service.execute({
+        fromId: "153077581",
+        chatId: "153077581",
+        messageThreadId: "114527",
+      }),
+    ).resolves.toBe(bootstrapResult);
+    expect(executeOnce).toHaveBeenCalledTimes(2);
+  });
+
+  it("rethrows a failure that is not a natural key conflict", async () => {
+    const service = buildService();
+    const failure = new Error("Validation error. 'fromId' is required");
+    const executeOnce = jest
+      .spyOn(service as any, "executeOnce")
+      .mockRejectedValue(failure);
+    jest.spyOn(service as any, "getConflictRetryDelays").mockReturnValue([0]);
+
+    await expect(
+      service.execute({ fromId: "153077581", chatId: "153077581" }),
+    ).rejects.toBe(failure);
+    expect(executeOnce).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * BDD Scenario: the default replay budget covers a live race.
+   *
+   * Given: one request lost identity, subject-identity link, profile and
+   *        profile-to-chat in sequence during a live concurrent
+   *        forum_topic_created and /start pair.
+   * When: the default conflict retry budget is read.
+   * Then: it leaves headroom over those four consecutive conflicts.
+   */
+  it("keeps more default replays than the consecutive conflicts a live race produced", () => {
+    const service = buildService();
+
+    expect((service as any).getConflictRetryDelays().length).toBeGreaterThan(4);
+  });
+
+  it("backs off further on every replay so a lock-stepped pair is pulled apart", () => {
+    const service = buildService();
+    const delays: number[] = (service as any).getConflictRetryDelays();
+
+    expect(delays).toEqual([...delays].sort((left, right) => left - right));
+    expect(new Set(delays).size).toBe(delays.length);
+    expect(Math.min(...delays)).toBeGreaterThan(0);
+  });
+
+  it("stops replaying once the configured conflict retries are exhausted", async () => {
+    const service = buildService();
+    const failure = buildConflictError();
+    const executeOnce = jest
+      .spyOn(service as any, "executeOnce")
+      .mockRejectedValue(failure);
+    jest
+      .spyOn(service as any, "getConflictRetryDelays")
+      .mockReturnValue([0, 0]);
+
+    await expect(
+      service.execute({ fromId: "153077581", chatId: "153077581" }),
+    ).rejects.toBe(failure);
+    expect(executeOnce).toHaveBeenCalledTimes(3);
+  });
+});
+
+/**
+ * BDD Suite: Telegram bootstrap subject ownership of an identity.
+ *
+ * Given: an identity may only be owned by a single rbac.subject.
+ * When: two requests try to claim the same identity at once.
+ * Then: the losing request leaves no orphaned subject behind.
+ */
+describe("Given: a telegram identity is claimed by two requests at once", () => {
+  const headers = { "X-RBAC-SECRET-KEY": "test-rbac-secret" };
+
+  function buildService() {
+    return new Service({
+      findById: jest.fn(),
+      identity: {} as any,
+      subjectsToIdentities: {} as any,
+      subjectsToSocialModuleProfiles: {} as any,
+      socialModule: {} as any,
+    });
+  }
+
+  function buildLinkConflict() {
+    const payload = {
+      message: "Conflict error. Entity already exists",
+      status: 409,
+    };
+
+    return Object.assign(new Error(JSON.stringify(payload)), {
+      status: 409,
+      cause: payload,
+    });
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRbacSubjectCreate.mockResolvedValue({ id: "subject-1" });
+    mockRbacSubjectDelete.mockResolvedValue(undefined);
+  });
+
+  it("links the new subject to the identity when it wins", async () => {
+    mockSubjectsToIdentitiesCreate.mockResolvedValue({ id: "link-1" });
+    const service = buildService();
+
+    const subject = await (service as any).createSubjectForIdentity({
+      identityId: "identity-1",
+      headers,
+    });
+
+    expect(subject).toEqual({ id: "subject-1" });
+    expect(mockSubjectsToIdentitiesCreate).toHaveBeenCalledWith({
+      data: { subjectId: "subject-1", identityId: "identity-1" },
+      options: { headers },
+    });
+    expect(mockRbacSubjectDelete).not.toHaveBeenCalled();
+  });
+
+  it("drops the subject it created and rethrows when it loses the link", async () => {
+    const conflict = buildLinkConflict();
+    mockSubjectsToIdentitiesCreate.mockRejectedValue(conflict);
+    const service = buildService();
+
+    await expect(
+      (service as any).createSubjectForIdentity({
+        identityId: "identity-1",
+        headers,
+      }),
+    ).rejects.toBe(conflict);
+    expect(mockRbacSubjectDelete).toHaveBeenCalledWith({
+      id: "subject-1",
+      options: { headers },
+    });
+  });
+
+  it("keeps the subject when the link fails for an unrelated reason", async () => {
+    const failure = new Error("Permission error. Not allowed");
+    mockSubjectsToIdentitiesCreate.mockRejectedValue(failure);
+    const service = buildService();
+
+    await expect(
+      (service as any).createSubjectForIdentity({
+        identityId: "identity-1",
+        headers,
+      }),
+    ).rejects.toBe(failure);
+    expect(mockRbacSubjectDelete).not.toHaveBeenCalled();
+  });
+
+  it("still rethrows the conflict when the orphan subject cannot be dropped", async () => {
+    const conflict = buildLinkConflict();
+    mockSubjectsToIdentitiesCreate.mockRejectedValue(conflict);
+    mockRbacSubjectDelete.mockRejectedValue(new Error("delete failed"));
+    const service = buildService();
+
+    await expect(
+      (service as any).createSubjectForIdentity({
+        identityId: "identity-1",
+        headers,
+      }),
+    ).rejects.toBe(conflict);
   });
 });

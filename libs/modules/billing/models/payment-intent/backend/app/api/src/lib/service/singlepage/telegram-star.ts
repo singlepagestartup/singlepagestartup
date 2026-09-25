@@ -62,16 +62,6 @@ export class Service {
         },
       });
 
-      const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
-      await bot.api.sendInvoice(
-        props.account,
-        "Invoice created",
-        "Pay invoice to get the target good",
-        invoice.id,
-        "XTR",
-        [{ label: "Star", amount: props.entity.amount }],
-      );
-
       await paymentIntentsToInvoicesApi.create({
         data: {
           paymentIntentId: props.entity.id,
@@ -83,6 +73,16 @@ export class Service {
           },
         },
       });
+
+      const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
+      await bot.api.sendInvoice(
+        props.account,
+        "Invoice created",
+        "Pay invoice to get the target good",
+        invoice.id,
+        "XTR",
+        [{ label: "Star", amount: props.entity.amount }],
+      );
 
       return invoice;
     } else {

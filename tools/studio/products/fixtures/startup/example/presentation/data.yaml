@@ -1,0 +1,12 @@
+schema: singlepagestartup.product-presentation.v1
+product_id: example
+confirmation:
+  confirmed: false
+content:
+  slides:
+    - id: intro
+      title: Learn your next skill
+      summary: Startup-owned introduction.
+    - id: offer
+      title: Choose your course
+      summary: Startup-owned next action.

@@ -1,0 +1,28 @@
+{
+  "componentName": "blog.widget",
+  "pageName": "blog",
+  "nodeId": "735:17",
+  "variantNodeId": "979:161",
+  "variantName": "tag-find-button",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "blog.widget.tag-find-button",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "blog/models/widget/singlepage/tag-find-button",
+    "singlepagestartup.studio.imports": "blog.tag.button-default",
+    "sps.figma.component": "blog.widget",
+    "sps.figma.variant": "tag-find-button",
+    "sps.source.module": "blog",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "tag-find-button",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/blog/models/widget/singlepage/tag-find-button/Component.tsx",
+    "sps.code.story": "apps/studio/modules/blog/models/widget/singlepage/tag-find-button/Component.stories.tsx",
+    "sps.figma.nodeId": "735:17",
+    "sps.figma.variantNodeId": "979:161",
+    "sps.figma.storybookReferenceNodeId": "979:364",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "979:364",
+  "storybookImageCount": 1
+}

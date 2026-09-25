@@ -1,0 +1,27 @@
+{
+  "componentName": "social.profile",
+  "pageName": "social",
+  "nodeId": "782:31",
+  "variantNodeId": "980:82",
+  "variantName": "find-row",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.profile.find-row",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/models/profile/singlepage/find-row",
+    "sps.figma.component": "social.profile",
+    "sps.figma.variant": "find-row",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "profile",
+    "sps.source.variant": "find-row",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/models/profile/singlepage/find-row/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/models/profile/singlepage/find-row/Component.stories.tsx",
+    "sps.figma.nodeId": "782:31",
+    "sps.figma.variantNodeId": "980:82",
+    "sps.figma.storybookReferenceNodeId": "980:226",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "980:226",
+  "storybookImageCount": 1
+}

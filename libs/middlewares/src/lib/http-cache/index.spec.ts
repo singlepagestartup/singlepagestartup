@@ -16,18 +16,38 @@ jest.mock("@sps/providers-kv", () => {
 
 jest.mock("@sps/backend-utils", () => {
   return {
-    logger: { error: jest.fn() },
+    logger: {
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+    },
     websocketManager: { broadcastMessage: jest.fn() },
+    // The comparison is driven per scenario here; what it does with a real
+    // RBAC_SECRET_KEY is pinned in the operator-secret middleware's suite and
+    // in the primitive's own suite.
+    readRbacSecret: (c: any) => c.req.header("X-RBAC-SECRET-KEY"),
+    rbacSecretMatches: jest.fn(),
   };
 });
 
-import { deriveTopicsFromPath } from "@sps/shared-utils";
+import { Hono } from "hono";
+import {
+  deriveTopicsFromPath,
+  HTTP_CACHE_MAX_ENTRY_BYTES,
+  KV_TTL,
+} from "@sps/shared-utils";
+import { rbacSecretMatches } from "@sps/backend-utils";
 import {
   Middleware,
   buildVersionedDataPrefix,
   getTopicVersionKey,
 } from "./index";
+import { createCacheGuard } from "./guard";
 import { Middleware as RevalidationMiddleware } from "../revalidation";
+
+const mockRbacSecretMatches = rbacSecretMatches as jest.Mock;
+const OPERATOR_SECRET = "configured-operator-secret";
 
 const SID = "303302a0-4eb7-4cef-af04-74d7e8e72442";
 const PID = "88862025-5c38-4ce8-bb4c-4c5c511b874c";
@@ -111,12 +131,15 @@ function createContext(args: {
 async function runMiddleware(
   middleware: Middleware,
   ctx: ReturnType<typeof createContext>,
+  next?: () => Promise<void>,
 ) {
   const handler = middleware.init();
-  await handler(ctx, async () => undefined);
+  const result = await handler(ctx, next ?? (async () => undefined));
   // The GET-write / error fire-and-forget IIFE is not awaited inside the
   // handler; let the microtask queue drain so its bumps (if any) are recorded.
   await new Promise((resolve) => setImmediate(resolve));
+
+  return result;
 }
 
 function versionsFor(
@@ -205,6 +228,155 @@ describe("getTopicVersionKey", () => {
    */
   it("namespaces topic keys", () => {
     expect(getTopicVersionKey("social.messages")).toBe("topic:social.messages");
+  });
+});
+
+/**
+ * BDD Suite: cache-clear route access.
+ *
+ * Given: the HTTP-cache middleware registers its clear route on a Hono app.
+ * When:  the route is called with, without and with a wrong RBAC secret.
+ * Then:  only the accepted credential reaches the flush, a refusal deletes
+ *        nothing, and the flush still touches only the two namespaces this
+ *        middleware owns.
+ */
+describe("HTTP-cache clear route access and namespace isolation", () => {
+  /**
+   * Registers the middleware's routes on a real Hono app, so a test reaches
+   * the flush the way a request does — through every handler composed into
+   * the route, not through a handler captured out of the registration.
+   */
+  function createClearRouteApp() {
+    const keys = new Set([
+      "http-cache:data:/api/pages:v0:t0:response-hash",
+      "http-cache:version:path-hash",
+      "mcp:oauth:client:mcp-client-id",
+      "mcp:oauth:refresh:refresh-token",
+      "rbac:subject:openrouter-model-favorites:subject-hash",
+    ]);
+    const deletedPrefixes: string[] = [];
+    const middleware = new Middleware();
+    middleware.storeProvider = {
+      async delByPrefix({ prefix }: { prefix: string }) {
+        deletedPrefixes.push(prefix);
+
+        for (const key of keys) {
+          if (key.startsWith(prefix)) {
+            keys.delete(key);
+          }
+        }
+      },
+    } as any;
+
+    const app = new Hono();
+    middleware.setRoutes(app);
+
+    return { app, keys, deletedPrefixes };
+  }
+
+  beforeEach(() => {
+    mockRbacSecretMatches.mockReset();
+  });
+
+  /**
+   * BDD Scenario: Clearing HTTP cache preserves unrelated Redis state.
+   * Given: HTTP-cache keys, an MCP OAuth client, and a user preference share
+   *        the same KV backend, and the caller holds the operator credential.
+   * When:  GET /api/http-cache/clear is handled.
+   * Then:  only the HTTP-cache data and version namespaces are deleted.
+   */
+  it("preserves MCP OAuth and user KV keys", async () => {
+    mockRbacSecretMatches.mockReturnValue(true);
+    const { app, keys, deletedPrefixes } = createClearRouteApp();
+
+    const response = await app.request("/api/http-cache/clear", {
+      headers: { "X-RBAC-SECRET-KEY": OPERATOR_SECRET },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      message: "Cache cleared",
+    });
+    expect(deletedPrefixes).toEqual(["http-cache:data", "http-cache:version"]);
+    expect(keys).not.toContain(
+      "http-cache:data:/api/pages:v0:t0:response-hash",
+    );
+    expect(keys).not.toContain("http-cache:version:path-hash");
+    expect(keys).toContain("mcp:oauth:client:mcp-client-id");
+    expect(keys).toContain("mcp:oauth:refresh:refresh-token");
+    expect(keys).toContain(
+      "rbac:subject:openrouter-model-favorites:subject-hash",
+    );
+  });
+
+  /**
+   * BDD Scenario: an anonymous caller reaches nothing.
+   *
+   * Given: the route registered on a Hono app and a request with no
+   *        credential.
+   * When:  GET /api/http-cache/clear is handled.
+   * Then:  it answers 401 and no prefix is deleted, so the two keyspace walks
+   *        never start.
+   */
+  it("refuses an anonymous request and deletes nothing", async () => {
+    mockRbacSecretMatches.mockReturnValue(false);
+    const { app, keys, deletedPrefixes } = createClearRouteApp();
+
+    const response = await app.request("/api/http-cache/clear");
+
+    expect(response.status).toBe(401);
+    expect(deletedPrefixes).toEqual([]);
+    expect(keys).toContain("http-cache:data:/api/pages:v0:t0:response-hash");
+  });
+
+  /**
+   * BDD Scenario: a wrong credential reaches nothing either.
+   *
+   * Given: a caller presenting a value the comparison rejects.
+   * When:  GET /api/http-cache/clear is handled.
+   * Then:  it answers 401, nothing is deleted, and the credential the caller
+   *        sent is what was compared.
+   */
+  it("refuses a wrong credential and deletes nothing", async () => {
+    mockRbacSecretMatches.mockReturnValue(false);
+    const { app, deletedPrefixes } = createClearRouteApp();
+
+    const response = await app.request("/api/http-cache/clear", {
+      headers: { "X-RBAC-SECRET-KEY": "not-the-operator-secret" },
+    });
+
+    expect(response.status).toBe(401);
+    expect(deletedPrefixes).toEqual([]);
+    expect(mockRbacSecretMatches).toHaveBeenCalledWith(
+      "not-the-operator-secret",
+    );
+  });
+
+  /**
+   * BDD Scenario: the guard is part of the route, not of the application.
+   *
+   * Given: the middleware registering its routes on an app that records the
+   *        handlers each path receives.
+   * When:  setRoutes is called.
+   * Then:  the clear path is registered with the guard ahead of the flush, so
+   *        the route carries its own refusal wherever it is mounted.
+   */
+  it("registers the guard before the flush handler on the clear path", () => {
+    const registeredHandlersByPath: Record<string, unknown[]> = {};
+    const middleware = new Middleware();
+    middleware.storeProvider = { async delByPrefix() {} } as any;
+
+    middleware.setRoutes({
+      get(path: string, ...handlers: unknown[]) {
+        registeredHandlersByPath[path] = handlers;
+      },
+    });
+
+    const clearRouteHandlers =
+      registeredHandlersByPath["/api/http-cache/clear"];
+
+    expect(clearRouteHandlers).toHaveLength(2);
+    expect(typeof clearRouteHandlers?.[0]).toBe("function");
   });
 });
 
@@ -371,6 +543,302 @@ describe("cache-bump / broadcast topic parity (issue #195 F2)", () => {
 
     expect([...recording.incrementedTopicKeys].sort()).toEqual(
       [...broadcastTopics].sort(),
+    );
+  });
+});
+
+/**
+ * BDD Suite: the response cache fails open (issue #233).
+ *
+ * Given: a KV store that hangs, rejects reads, rejects writes, or rejects
+ *        version bumps — the states the production Redis outage produced.
+ * When:  a request passes through the HTTP-cache middleware.
+ * Then:  the handler runs and its response is served unchanged; the cache
+ *        degrades to a miss or a skipped write and never to a failed or
+ *        stalled request.
+ */
+describe("KV failures degrade the cache, not the request", () => {
+  const collectionPath = "/api/ecommerce/orders";
+  const collectionUrl = `http://api:4000${collectionPath}`;
+
+  function createFailOpenMiddleware(store: unknown) {
+    const middleware = new Middleware();
+    middleware.storeProvider = store as any;
+    middleware.guard = createCacheGuard({
+      timeoutMs: 20,
+      logger: { info: jest.fn(), warn: jest.fn() },
+    });
+
+    return middleware;
+  }
+
+  /**
+   * BDD Scenario: A cache read that never answers.
+   * Given: a store whose `get` never settles (the post-restart hang).
+   * When:  a cacheable GET arrives.
+   * Then:  the handler still runs and no cached response is returned.
+   */
+  it("runs the handler when the cache read never answers", async () => {
+    const middleware = createFailOpenMiddleware({
+      async get() {
+        return new Promise(() => undefined);
+      },
+      async set() {
+        return undefined;
+      },
+      async incr() {
+        return 1;
+      },
+    });
+
+    let handlerRan = false;
+    const result = await runMiddleware(
+      middleware,
+      createContext({
+        method: "GET",
+        url: collectionUrl,
+        path: collectionPath,
+        body: { data: [] },
+      }),
+      async () => {
+        handlerRan = true;
+      },
+    );
+
+    expect(handlerRan).toBe(true);
+    expect(result).toBeUndefined();
+  });
+
+  /**
+   * BDD Scenario: A cache write that fails.
+   * Given: a store that reads but cannot write.
+   * When:  a cacheable GET is answered by the handler.
+   * Then:  the response is served and the failed write is swallowed.
+   */
+  it("serves the response when the cache write fails", async () => {
+    const middleware = createFailOpenMiddleware({
+      async get() {
+        return null;
+      },
+      async set() {
+        throw new Error("OOM command not allowed when used memory > maxmemory");
+      },
+      async incr() {
+        return 1;
+      },
+    });
+
+    let handlerRan = false;
+    const result = await runMiddleware(
+      middleware,
+      createContext({
+        method: "GET",
+        url: collectionUrl,
+        path: collectionPath,
+        body: { data: [] },
+      }),
+      async () => {
+        handlerRan = true;
+      },
+    );
+
+    expect(handlerRan).toBe(true);
+    expect(result).toBeUndefined();
+  });
+
+  /**
+   * BDD Scenario: A version bump that fails after a successful mutation.
+   * Given: a store whose `incr` rejects.
+   * When:  a mutation succeeds and the middleware tries to invalidate.
+   * Then:  the already-produced mutation response is returned unchanged.
+   */
+  it("leaves a mutation response unchanged when the version bump fails", async () => {
+    const middleware = createFailOpenMiddleware({
+      async get() {
+        return null;
+      },
+      async set() {
+        return undefined;
+      },
+      async incr() {
+        throw new Error("READONLY You can't write against a read only replica");
+      },
+    });
+
+    const context = createContext({
+      method: "POST",
+      url: collectionUrl,
+      path: collectionPath,
+      status: 201,
+    });
+
+    const result = await runMiddleware(middleware, context);
+
+    expect(result).toBeUndefined();
+    expect(context.res.status).toBe(201);
+  });
+
+  /**
+   * BDD Scenario: An unreadable generation vector is not guessed.
+   * Given: a store that cannot answer the version read.
+   * When:  a cacheable GET is answered by the handler.
+   * Then:  nothing is written back, because the generation the response
+   *        belongs to is unknown.
+   */
+  it("does not store a response whose generation could not be read", async () => {
+    const writes: string[] = [];
+    const middleware = createFailOpenMiddleware({
+      async get() {
+        throw new Error("connection refused");
+      },
+      async set({ prefix }: { prefix: string }) {
+        writes.push(prefix);
+        return undefined;
+      },
+      async incr() {
+        return 1;
+      },
+    });
+
+    await runMiddleware(
+      middleware,
+      createContext({
+        method: "GET",
+        url: collectionUrl,
+        path: collectionPath,
+        body: { data: [] },
+      }),
+    );
+
+    expect(writes).toEqual([]);
+  });
+});
+
+/**
+ * BDD Suite: cache retention is bounded (issue #233).
+ *
+ * Given: the version counters and the response bodies that a mutation and a
+ *        cacheable GET produce.
+ * When:  the middleware bumps a version or stores a response.
+ * Then:  the counter carries the same expiry as the data it addresses, and a
+ *        response above the admission cap is served but not stored.
+ */
+describe("bounded cache generations", () => {
+  const collectionPath = "/api/ecommerce/orders";
+  const collectionUrl = `http://api:4000${collectionPath}`;
+
+  function createTtlRecordingStore() {
+    const increments: Array<{ key: string; ttl?: number }> = [];
+    const writes: Array<{ prefix: string; bytes: number }> = [];
+
+    return {
+      increments,
+      writes,
+      store: {
+        async get() {
+          return null;
+        },
+        async set({ prefix, value }: { prefix: string; value: string }) {
+          writes.push({ prefix, bytes: value.length });
+          return undefined;
+        },
+        async incr({
+          key,
+          options,
+        }: {
+          prefix: string;
+          key: string;
+          options?: { ttl?: number };
+        }) {
+          increments.push({ key, ttl: options?.ttl });
+          return 1;
+        },
+      },
+    };
+  }
+
+  /**
+   * BDD Scenario: Version counters expire with their data.
+   * Given: a successful mutation.
+   * When:  the middleware bumps the path and topic counters.
+   * Then:  every bump carries KV_TTL, so an idle path's counters and bodies
+   *        expire together instead of accumulating forever.
+   */
+  it("gives every version bump the data TTL", async () => {
+    const recording = createTtlRecordingStore();
+    const middleware = new Middleware();
+    middleware.storeProvider = recording.store as any;
+
+    await runMiddleware(
+      middleware,
+      createContext({
+        method: "POST",
+        url: collectionUrl,
+        path: collectionPath,
+        status: 201,
+      }),
+    );
+
+    expect(recording.increments.length).toBeGreaterThan(0);
+    expect(recording.increments.every((entry) => entry.ttl === KV_TTL)).toBe(
+      true,
+    );
+  });
+
+  /**
+   * BDD Scenario: A response above the admission cap is not stored.
+   * Given: a collection response larger than HTTP_CACHE_MAX_ENTRY_BYTES.
+   * When:  a cacheable GET is answered with it.
+   * Then:  the response is served and no data key is written, so one large
+   *        collection cannot be multiplied across generations.
+   */
+  it("serves but does not store a response above the admission cap", async () => {
+    const recording = createTtlRecordingStore();
+    const middleware = new Middleware();
+    middleware.storeProvider = recording.store as any;
+
+    const oversized = {
+      data: "x".repeat(HTTP_CACHE_MAX_ENTRY_BYTES + 1024),
+    };
+
+    const result = await runMiddleware(
+      middleware,
+      createContext({
+        method: "GET",
+        url: collectionUrl,
+        path: collectionPath,
+        body: oversized,
+      }),
+    );
+
+    expect(result).toBeUndefined();
+    expect(recording.writes).toEqual([]);
+  });
+
+  /**
+   * BDD Scenario: A response below the cap is still cached.
+   * Given: an ordinary small collection response.
+   * When:  a cacheable GET is answered with it.
+   * Then:  it is written to the versioned data prefix as before.
+   */
+  it("stores a response below the admission cap", async () => {
+    const recording = createTtlRecordingStore();
+    const middleware = new Middleware();
+    middleware.storeProvider = recording.store as any;
+
+    await runMiddleware(
+      middleware,
+      createContext({
+        method: "GET",
+        url: collectionUrl,
+        path: collectionPath,
+        body: { data: [{ id: MID }] },
+      }),
+    );
+
+    expect(recording.writes.length).toBe(1);
+    expect(recording.writes[0].prefix).toContain(
+      `http-cache:data:${collectionUrl}`,
     );
   });
 });

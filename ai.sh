@@ -62,26 +62,26 @@ else
   echo "    Token scopes: ok"
 fi
 
-# ── 3. Claude .env setup ─────────────────────────────────────────────────────
+# ── 3. Project configuration ─────────────────────────────────────────────────────
 
-echo "--> Checking .claude/.env"
-if [ ! -f .claude/.env ]; then
-  cp .claude/.env.example .claude/.env
-  echo "    Created .claude/.env from .env.example"
+echo "--> Checking .agents/.env"
+if [ ! -f .agents/.env ]; then
+  cp .agents/.env.example .agents/.env
+  echo "    Created .agents/.env from .env.example"
 fi
 
-source .claude/.env
+source .agents/.env
 
 if [ -z "$GITHUB_PROJECT_NUMBER" ]; then
   echo ""
-  echo "    GITHUB_PROJECT_NUMBER is not set in .claude/.env"
+  echo "    GITHUB_PROJECT_NUMBER is not set in .agents/.env"
   echo "    Available projects:"
   echo ""
   gh project list --me 2>/dev/null || true
   echo ""
   read -rp "    Enter your GitHub Project number: " project_number
-  sed -i '' "s/GITHUB_PROJECT_NUMBER=/GITHUB_PROJECT_NUMBER=$project_number/" .claude/.env
-  source .claude/.env
+  sed -i '' "s/GITHUB_PROJECT_NUMBER=/GITHUB_PROJECT_NUMBER=$project_number/" .agents/.env
+  source .agents/.env
   echo "    Saved GITHUB_PROJECT_NUMBER=$project_number"
 fi
 
@@ -96,7 +96,7 @@ fi
 
 echo "--> Validating GitHub Project access"
 
-source .claude/.env
+source .agents/.env
 PROJECT_OWNER="${GITHUB_PROJECT_OWNER:-$(gh repo view --json owner -q '.owner.login' 2>/dev/null)}"
 PROJECT_OWNER_TYPE="${GITHUB_PROJECT_OWNER_TYPE:-user}"
 
@@ -114,7 +114,7 @@ fi
 
 if [ -z "$PROJECT_TITLE" ]; then
   echo "    ERROR: Cannot access project #$GITHUB_PROJECT_NUMBER for $PROJECT_OWNER"
-  echo "    Check GITHUB_PROJECT_NUMBER, GITHUB_PROJECT_OWNER, and GITHUB_PROJECT_OWNER_TYPE in .claude/.env"
+  echo "    Check GITHUB_PROJECT_NUMBER, GITHUB_PROJECT_OWNER, and GITHUB_PROJECT_OWNER_TYPE in .agents/.env"
   exit 1
 fi
 
@@ -127,7 +127,7 @@ echo "✅ AI agent environment ready"
 echo ""
 echo "   Project : $PROJECT_TITLE"
 echo "   URL     : $PROJECT_URL"
-echo "   Config  : .claude/.env"
+echo "   Config  : .agents/.env"
 echo ""
 echo "   Available commands:"
 echo "     /github             — manage issues"

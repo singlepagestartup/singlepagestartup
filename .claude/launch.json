@@ -5,8 +5,15 @@
       "name": "storybook",
       "autoPort": false,
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "drafts:storybook"],
+      "runtimeArgs": ["run", "studio:storybook"],
       "port": 4320
+    },
+    {
+      "name": "storybook-4321",
+      "autoPort": false,
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "studio:storybook", "--", "--port", "4321"],
+      "port": 4321
     },
     {
       "name": "runnable",
@@ -14,7 +21,7 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "--prefix",
-        "apps/drafts/runnable/startup/singlepagestartup",
+        "apps/studio/runnable/startup/singlepagestartup",
         "run",
         "dev",
         "--",

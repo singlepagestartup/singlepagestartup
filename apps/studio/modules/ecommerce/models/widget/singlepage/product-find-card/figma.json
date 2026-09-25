@@ -1,0 +1,30 @@
+{
+  "componentName": "ecommerce.widget",
+  "pageName": "ecommerce",
+  "nodeId": "743:3",
+  "variantNodeId": "818:79",
+  "variantName": "product-find-card",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.widget.product-find-card",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/models/widget/singlepage/product-find-card",
+    "sps.figma.component": "ecommerce.widget",
+    "sps.figma.variant": "product-find-card",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "product-find-card",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/models/widget/singlepage/product-find-card/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/models/widget/singlepage/product-find-card/Component.stories.tsx",
+    "sps.figma.nodeId": "743:3",
+    "sps.figma.variantNodeId": "818:79",
+    "sps.figma.storybookReferenceNodeId": "982:538",
+    "sps.storybook.imageCount": "1"
+  },
+  "imports": [
+    "ecommerce.product.card"
+  ],
+  "storybookReferenceNodeId": "982:538",
+  "storybookImageCount": 1
+}

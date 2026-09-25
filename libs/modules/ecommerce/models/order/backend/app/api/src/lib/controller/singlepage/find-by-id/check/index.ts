@@ -3,7 +3,11 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
+import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
+
+export const PAYMENT_INITIALIZATION_GRACE_PERIOD_MS = 5 * 60 * 1000;
+export const PAYMENT_EXPIRATION_PERIOD_MS = 7 * 24 * 60 * 60 * 1000;
 
 export class Handler {
   service: Service;
@@ -64,6 +68,7 @@ export class Handler {
       if (!RBAC_SECRET_KEY) {
         throw new Error("Configuration error. RBAC secret key not found");
       }
+      const rbacSecretKey = RBAC_SECRET_KEY;
 
       const uuid = c.req.param("uuid");
 
@@ -96,8 +101,10 @@ export class Handler {
 
       if (entity.status === "paying") {
         const updatedAt = new Date(entity.updatedAt).getTime();
+        const paymentInitializationExpired =
+          updatedAt < Date.now() - PAYMENT_INITIALIZATION_GRACE_PERIOD_MS;
         const expiredPayment =
-          updatedAt < new Date(Date.now() - 1000 * 60 * 24 * 7).getTime();
+          updatedAt < Date.now() - PAYMENT_EXPIRATION_PERIOD_MS;
 
         if (expiredPayment) {
           await api.update({
@@ -130,9 +137,27 @@ export class Handler {
             });
 
           if (!ordersToBillingModulePaymentIntents?.length) {
-            throw new Error(
-              "Not Found error. Orders to billing module payment intents not found",
-            );
+            if (paymentInitializationExpired) {
+              await api.update({
+                id: uuid,
+                data: {
+                  ...entity,
+                  status: "canceling",
+                  type: "history",
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
+            }
+
+            return c.json({
+              data: {
+                ok: true,
+              },
+            });
           }
 
           const paymentIntents = await this.findPaymentIntentsByIds(
@@ -142,7 +167,27 @@ export class Handler {
           );
 
           if (!paymentIntents?.length) {
-            throw new Error("Not Found error. Payment intents not found");
+            if (paymentInitializationExpired) {
+              await api.update({
+                id: uuid,
+                data: {
+                  ...entity,
+                  status: "canceling",
+                  type: "history",
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
+            }
+
+            return c.json({
+              data: {
+                ok: true,
+              },
+            });
           }
 
           const paymentIntentIsSucceeded = paymentIntents.find(
@@ -151,34 +196,112 @@ export class Handler {
             },
           );
 
-          if (!paymentIntentIsSucceeded) {
-            throw new Error("Not Found error. Payment intent is not succeeded");
-          }
-
-          if (!ordersToBillingModuleCurrencies?.length) {
-            throw new Error(
-              "Not Found error. Orders to billing module currencies not found",
-            );
-          }
-
-          const attributes =
-            await this.service.findByIdCheckoutAttributesByCurrency({
+          if (paymentIntentIsSucceeded) {
+            await api.update({
               id: uuid,
-              billingModuleCurrencyId:
-                ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
+              data: {
+                ...entity,
+                status: "paid",
+                type: "history",
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
             });
 
-          await api.update({
-            id: uuid,
-            data: {
-              ...entity,
-              status: "paid",
-              type: "history",
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            return c.json({
+              data: {
+                ok: true,
               },
+            });
+          }
+
+          const paymentIntentIsFailed = paymentIntents.every(
+            (paymentIntent) => {
+              return ["failed", "canceled"].includes(paymentIntent.status);
+            },
+          );
+
+          if (paymentIntentIsFailed) {
+            await api.update({
+              id: uuid,
+              data: {
+                ...entity,
+                status: "canceling",
+                type: "history",
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+
+            return c.json({
+              data: {
+                ok: true,
+              },
+            });
+          }
+
+          const paymentIntentsToInvoices =
+            await this.service.billingModule.paymentIntentsToInvoices.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "paymentIntentId",
+                      method: "inArray",
+                      value: paymentIntents.map(
+                        (paymentIntent) => paymentIntent.id,
+                      ),
+                    },
+                  ],
+                },
+              },
+            });
+
+          if (
+            paymentInitializationExpired &&
+            !paymentIntentsToInvoices?.length
+          ) {
+            await Promise.allSettled(
+              paymentIntents.map((paymentIntent) => {
+                return billingModulePaymentIntentApi.update({
+                  id: paymentIntent.id,
+                  data: {
+                    ...paymentIntent,
+                    status: "failed",
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": rbacSecretKey,
+                    },
+                  },
+                });
+              }),
+            );
+
+            await api.update({
+              id: uuid,
+              data: {
+                ...entity,
+                status: "canceling",
+                type: "history",
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+          }
+
+          return c.json({
+            data: {
+              ok: true,
             },
           });
         }

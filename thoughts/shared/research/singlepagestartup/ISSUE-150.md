@@ -165,16 +165,15 @@ Current testing architecture is lane-separated and script-driven:
 
 ## Historical Context (from thoughts/)
 
-- `thoughts/shared/research/singlepagestartup/2026-03-01-testing-framework-variant2-scoped.md` documents a scoped Variant 2 direction with `unit + integration + e2e` and shared-first leverage (`...:5`).
-- `thoughts/shared/plans/singlepagestartup/2026-03-01-testing-framework-variant2-scoped-plan.md` records the same execution model and includes `test:unit:scoped` in planned scripts (`...:5`, `...:66`).
+- The former `2026-03-01-testing-framework-variant2-scoped.md` research documented a scoped Variant 2 direction with `unit + integration + e2e` and shared-first leverage; it was superseded by #147 and deleted under #148 (recoverable from Git history).
+- The former `2026-03-01-testing-framework-variant2-scoped-plan.md` plan recorded the same execution model and planned the `test:unit:scoped` script; it was superseded by #147 and deleted under #149 (recoverable from Git history).
 - `thoughts/shared/plans/singlepagestartup/2026-03-02-integration-e2e-modular-rollout.md` records the modular rollout where all three lanes run in scoped mode and e2e is partitioned by `singlepage` / `startup` (`...:5`, `...:38`, `...:64`, `...:65`, `...:132`).
 - `thoughts/shared/research/singlepagestartup/ISSUE-146.md` records adjacent admin/e2e lifecycle context and existing e2e wiring at that point.
 - `thoughts/shared/tickets/singlepagestartup/ISSUE-147.md` and `ISSUE-150.md` capture the explicit directional change from modular Playwright E2E to unit+integration-only target direction.
 
 ## Related Research
 
-- `thoughts/shared/research/singlepagestartup/2026-03-01-testing-framework-variant2-scoped.md`
-- `thoughts/shared/plans/singlepagestartup/2026-03-01-testing-framework-variant2-scoped-plan.md`
+- Testing-framework Variant 2 research and plan (deleted under #148 and #149; superseded by #147)
 - `thoughts/shared/plans/singlepagestartup/2026-03-02-integration-e2e-modular-rollout.md`
 - `thoughts/shared/research/singlepagestartup/ISSUE-146.md`
 - `thoughts/shared/tickets/singlepagestartup/ISSUE-147.md`

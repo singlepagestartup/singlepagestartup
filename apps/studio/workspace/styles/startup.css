@@ -1,0 +1,6 @@
+@layer workspace-startup {
+  [data-workspace-projection="startup"],
+  [data-workspace-projection="default"] {
+    /* A downstream project defines only its brand overrides here. */
+  }
+}

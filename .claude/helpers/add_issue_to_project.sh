@@ -17,7 +17,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/load_config.sh"
 
 if [ -z "${GITHUB_PROJECT_NUMBER:-}" ]; then
-  echo "Error: GITHUB_PROJECT_NUMBER is not set in .claude/.env" >&2
+  echo "Error: GITHUB_PROJECT_NUMBER is not set in ${SPS_AGENT_ENV_FILE:-.agents/.env}" >&2
   exit 1
 fi
 

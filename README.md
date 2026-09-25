@@ -1,8 +1,26 @@
 # SinglePageStartup (SPS)
 
+## Start here
+
+New to this repository? [GETTING_STARTED.md](./GETTING_STARTED.md) walks the
+whole path in order: what the three parts of the repository are, how to install
+and run them, how `/singlepagestartup` turns a business idea into approved
+documents through five stages, and how `/core/next` turns those documents into
+working code. The rest of this README is the architecture reference.
+
 ## AI Entry Point
 
-Start with `AI_GUIDE.md` for AI-specific onboarding and workflows.
+Start with `AGENTS.md`, the universal provider-neutral entry point.
+`AI_GUIDE.md` remains a supplemental architecture and MCP guide.
+
+For work with a client before development, invoke `singlepagestartup` in Codex,
+`/singlepagestartup` in Claude, or ask in plain language to start, continue, or
+change the active project. The living business and design artifacts are under
+`apps/studio/workspace/<artifact>/**`: this framework repository edits the
+`singlepage` files and downstream projects edit the sibling `startup` files.
+Indexes, project-specific knowledge, and checkout configuration also live under
+`apps/studio/workspace/**`. Shared profession methods and client-document
+templates live beside the agents under `.agents/**`.
 
 ## Project Description
 
@@ -109,9 +127,11 @@ tools/
 
 `apps/mcp` exposes a compact content-management surface for AI agents that need to inspect or change SPS data through the existing SDK/API runtime path. Start with `module-list`; it returns modules with nested `models` and `relations` arrays. Then use explicit selectors such as `{ "module": "blog", "model": "article" }` or `{ "module": "blog", "relation": "categories-to-articles" }`.
 
+Connected AI clients receive concise project and safety instructions during MCP initialization. They can retrieve the full structured context through `project-guide`, `content-operations-guide`, `singlepagestartup://project-guide`, or `singlepagestartup://content-operations-guide` without filesystem access.
+
 For page content edits, use `page-preview` before writing. It resolves a page by URL, follows page/widget relations, and returns external widget candidates with ids. Mutations should use dry-run first. Creates and updates default to `dryRun: true`; set `dryRun: false` only when applying the write. Deletes are two-step: preview first, then apply with the returned `confirmationToken` and `confirm: true`.
 
-For client-specific connection steps, see `apps/mcp/README.md`.
+For the complete safe mutation protocol, including impact checks, same-connector enforcement, read-back, and `UNKNOWN` status handling, see `apps/mcp/USAGE.md`. For client-specific connection steps, see `apps/mcp/README.md`.
 
 ### Running MCP Content Management
 
@@ -142,7 +162,11 @@ Then inspect it interactively:
 npm run mcp:inspector:http
 ```
 
-In Inspector, choose `Streamable HTTP` and use `http://127.0.0.1:3001/mcp` as the URL. The compatibility endpoint `http://127.0.0.1:3001/sse` is also available for Inspector setups that already point at `/sse`.
+The command loads `apps/mcp/inspector.config.json`, so Inspector already lists
+the local `singlepagestartup` server at `http://127.0.0.1:3001/mcp`. Start
+`npm run mcp:http` separately before connecting. The compatibility endpoint
+`http://127.0.0.1:3001/sse` is also available for Inspector setups that already
+point at `/sse`.
 
 ### Connecting MCP clients
 
@@ -201,11 +225,14 @@ Required environment values are loaded from the app env files created by `./up.s
 
 Resources do not have per-call input fields, so resource reads must receive auth from the MCP transport headers, cookies, MCP auth info, or request metadata. A typical edit flow is:
 
-1. Call `module-list` or read `sps://modules`.
-2. Call `model-schema` or `relation-schema` for the selected module item.
-3. Use `model-record-find` / `relation-record-find` for filtered reads, or `page-preview` for URL-based page content.
-4. Use dry-run write tools first, such as `model-record-update` with `dryRun: true` or `page-localized-field-update` with `dryRun: true`.
-5. Apply the write only after the preview is unambiguous. For deletes, call `model-record-delete-preview` or `relation-record-delete-preview` first and pass its `confirmationToken` to the matching `*-delete-apply` tool.
+1. Call `project-guide` or read `singlepagestartup://project-guide`.
+2. Call `module-list` or read `singlepagestartup://modules`.
+3. Call `model-schema` or `relation-schema` for the selected module item.
+4. Use `model-record-find` / `relation-record-find` for filtered reads, or `page-preview` for URL-based page content.
+5. Inspect relations and shared-entity impact before mutating the selected record.
+6. Call `content-operations-guide`, then use `model-record-update` with `dryRun: true`. For localized page content, preserve the complete current locale object and change only the requested locale.
+7. Apply the write through the same connector and tool only after the preview is unambiguous. For deletes, call `model-record-delete-preview` or `relation-record-delete-preview` first and pass its `confirmationToken` to the matching `*-delete-apply` tool.
+8. Read the persisted state back through the same connector and compare it with the expected result. Treat an unverified or ambiguous result as `UNKNOWN`.
 
 ## Core Architecture
 
@@ -374,18 +401,18 @@ If you need to understand why data updates/refetches happen in UI (chat, cart, c
 
 ### Standard Operations
 
-| Operation                  | Description                                    |
-| -------------------------- | ---------------------------------------------- |
-| GET /model                 | Fetch a list of entities (FindHandler)         |
-| GET /model/:id             | Fetch an entity by ID (FindByIdHandler)        |
-| POST /model                | Create a new entity (CreateHandler)            |
-| PATCH /model/:id           | Update an entity by ID (UpdateHandler)         |
-| DELETE /model/:id          | Delete an entity by ID (DeleteHandler)         |
-| POST /model/dump           | Dump data of the model (DumpHandler)           |
-| POST /model/seed           | Seed data into the model (SeedHandler)         |
-| POST /model/find-or-create | Find or create an entity (FindOrCreateHandler) |
-| POST /model/bulk-create    | Bulk create entities (BulkCreateHandler)       |
-| PATCH /model/bulk-update   | Bulk update entities (BulkUpdateHandler)       |
+| Operation                  | Description                                                                 |
+| -------------------------- | --------------------------------------------------------------------------- |
+| GET /model                 | Fetch a list of entities (FindHandler)                                      |
+| GET /model/count           | Count entities (CountHandler)                                               |
+| GET /model/:id             | Fetch an entity by ID (FindByIdHandler)                                     |
+| POST /model                | Create a new entity (CreateHandler)                                         |
+| PATCH /model/:id           | Update an entity by ID (UpdateHandler)                                      |
+| DELETE /model/:id          | Delete an entity by ID (DeleteHandler)                                      |
+| GET /model/dump            | Dump data of the model (DumpHandler); requires the X-RBAC-SECRET-KEY header |
+| POST /model/find-or-create | Find or create an entity (FindOrCreateHandler)                              |
+| POST /model/bulk           | Bulk create entities (BulkCreateHandler)                                    |
+| PATCH /model/bulk          | Bulk update entities (BulkUpdateHandler)                                    |
 
 ### Middlewares
 
@@ -434,10 +461,17 @@ Here are the available categories and examples of keywords that trigger them:
 | **Authentication error** | 401 | unauthorized, invalid credentials, token required, no session |
 | **Permission error** | 403 | forbidden, permission denied, only order owner |
 | **Validation error** | 400 | invalid data, missing headers, no id provided, invalid url |
-| **Unprocessable Entity error** | 422 | expected string, invalid type, unprocessable entity |
+| **Unprocessable Entity error** | 422 | expected string, invalid body['data'], unprocessable entity |
 | **Payment error** | 400 | payment intent not found, stripe secret key not found, currency required |
 | **Not Found error** | 404 | not found, entity not found, form not found |
+| **Conflict error** | 409 | duplicate key value violates unique constraint, conflict error |
 | **Internal error** | 500 | internal server error, jwt secret not provided, configuration error |
+
+A message that opens with a category phrase keeps that category even when its details match another one: `Validation error. Expected string, got: object` stays a 400 Validation error, while a bare `Expected string, got: object` is a 422 Unprocessable Entity error.
+
+Two categories are not decided by keywords alone. A PostgreSQL unique violation is recognized by its SQLSTATE `23505`, including through a nested cause, and always answers with the fixed message `Conflict error. Entity already exists`, so no constraint name reaches the client. A JWT verification failure is redacted before it is classified, because the underlying library writes the token into its own message.
+
+A failed schema parse, which the shared repository rethrows as `{ "zodError": [...] }`, is answered with 422 and a message naming the field and the issue, such as `Unprocessable Entity error. slug: Expected string, received number`. The first few issues are listed and the rest are counted; the submitted value is left out, and the full issue list stays in the exception cause for server-side use.
 
 If no specific pattern is matched, the error will be classified as a generic Internal error with a 500 status code, ensuring that no error goes unhandled.
 
@@ -445,7 +479,7 @@ If no specific pattern is matched, the error will be classified as a generic Int
 
 ### Prerequisites
 
-- Node.js ^20.x
+- Node.js ^24.x
 - Bun ^1.2.3
 - Docker and Docker Compose
 
@@ -538,12 +572,44 @@ Scenario tests are namespaced by project and issue:
 
 ## Attaching Upstream
 
-After creating repository based on singlepagestartup template, call command:
+After creating a project from the template, configure the framework source:
 
 ```bash
 git remote add upstream https://github.com/singlepagestartup/singlepagestartup.git
-git pull upstream main
 ```
+
+Synchronize upstream with your existing Git process. For example, when the
+configured branch is `main` and merging is the project's chosen strategy:
+
+```bash
+git fetch upstream
+git merge upstream/main
+```
+
+Synchronization has no dependency on an AI agent or migration review. Fetching
+needs access to the remote; integrating already fetched commits remains a local
+Git operation.
+
+When you want to adapt project-owned code and documents afterward, run the
+separate agent command **`adapt-upstream`** in Codex or **`/adapt-upstream`** in
+Claude. Its [workflow](.agents/workflows/engineering/adapt-upstream.md) reads
+migration instructions from already integrated local commits, checks relevance,
+applies needed changes, and verifies the result. It does not fetch, merge, push,
+or download dependencies. It is not invoked by Git hooks or new agent tasks.
+
+To inspect the local adaptation queue without running an agent:
+
+```bash
+npm run adapt-upstream:check -- --ref refs/remotes/upstream/main --report /tmp/upstream-review.json
+```
+
+The helper reports pending commits (exit 2), including old commits without
+migration notes. That status belongs to the separate adaptation command and
+does not block synchronization. Completion is recorded after the agent reviews,
+commits, and verifies adaptations. Missing local history or tooling can be
+resolved later, then the command can be resumed. See the
+[downstream contract](.agents/contracts/engineering/downstream-migrations.md)
+for the message format, initial compatibility audit, and checkpoint behavior.
 
 After the downstream project has its own `origin`, update the project MCP name from the GitHub repository name:
 
@@ -557,39 +623,11 @@ Use the same helper without flags to print Claude and Codex MCP setup commands f
 tools/mcp/setup-project-mcp.sh
 ```
 
-When you get an error
-
-```
-remote: Enumerating objects: 308477, done.
-remote: Counting objects: 100% (6142/6142), done.
-remote: Compressing objects: 100% (3918/3918), done.
-remote: Total 308477 (delta 2275), reused 5196 (delta 1633), pack-reused 302335 (from 3)
-Receiving objects: 100% (308477/308477), 195.68 MiB | 3.53 MiB/s, done.
-Resolving deltas: 100% (140381/140381), done.
-From https://github.com/singlepagestartup/singlepagestartup
- * branch                  main       -> FETCH_HEAD
- * [new branch]            main       -> upstream/main
-hint: You have divergent branches and need to specify how to reconcile them.
-hint: You can do so by running one of the following commands sometime before
-hint: your next pull:
-hint:
-hint:   git config pull.rebase false  # merge
-hint:   git config pull.rebase true   # rebase
-hint:   git config pull.ff only       # fast-forward only
-hint:
-hint: You can replace "git config" with "git config --global" to set a default
-hint: preference for all repositories. You can also pass --rebase, --no-rebase,
-hint: or --ff-only on the command line to override the configured default per
-hint: invocation.
-fatal: Need to specify how to reconcile divergent branches.
-```
-
-Call:
-
-```bash
-git config pull.rebase false
-git pull upstream main --allow-unrelated-histories
-```
+If Git reports divergent branches, choose the integration strategy according to
+the project's history. Unrelated histories require explicit inspection before
+merging; do not enable `--allow-unrelated-histories` as a routine fallback. Keep
+the original source range for cherry-pick or squash imports, since ancestry alone
+cannot identify their migration instructions afterward.
 
 ## Documentation
 
@@ -612,6 +650,6 @@ Detailed documentation for each module can be found in their respective director
 
 ## License
 
-This software is proprietary and confidential. You may use this code as a foundation for your own projects, but selling, sublicensing, distributing, or providing it as a paid product, subscription, or any commercial offering to third parties is strictly prohibited without explicit written permission from the copyright holder.
+SinglePageStartup is released under the MIT License. You may use, copy, modify, merge, publish, distribute, sublicense and sell copies of the code, including in commercial products, provided the copyright notice and the permission notice travel with it. The software comes with no warranty.
 
 See full license terms in the [LICENSE](./LICENSE) file.

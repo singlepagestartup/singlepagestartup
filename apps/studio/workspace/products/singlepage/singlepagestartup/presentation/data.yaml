@@ -1,0 +1,195 @@
+schema: singlepagestartup.product-presentation.v1
+product_id: singlepagestartup
+confirmation:
+  confirmed: false
+review:
+  dependencies:
+    brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
+    design: 6f29bf4c2ea795a190382e7091a7085ee9270f892486aeccd6c2aca62f1179c8
+    product.singlepagestartup.presentation-renderer: 04a9988dfb9f9a8494ffac394b251bb07ec9ca5b6f8ad9b44c131eb896fb4565
+    product.singlepagestartup.product: 1bd3022ba57bd99882728e561cec47013e32d16dc2a138e8598efd17184e70e6
+    product.singlepagestartup.research: 629f3131efae5b5778d2bf8cb4a6bf7b98b5d223f4174d6583c93ad3a1bcf01e
+    product.singlepagestartup.sales: 5f4d91f14898077c62d3576a0dd298c4393d3aa788e05df4d42bf6d85b0cbf13
+# Reviewed against Sales on 2026-09-18: every slide follows the `makers`
+# journey, from describing a business change to reusing the foundation. The
+# `developer-agents` journey has no slides, because an agent adopts the
+# framework through documentation rather than a deck; whether that segment
+# needs its own material is an open decision for the project owner.
+content:
+  name: Code Framework
+  projection: singlepage
+  logo: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg
+  visual:
+    palette:
+      background: "#F7F6F2"
+      surface: "#FFFFFF"
+      foreground: "#111111"
+      accent: "#BFEF61"
+      line: "#CBC9C3"
+    displayType: '"Cormorant Garamond", serif'
+    bodyType: '"JetBrains Mono", monospace'
+  slides:
+    - id: cover
+      eyebrow: Code Framework by SinglePageStartup
+      title: Build your product on a foundation you can reuse.
+      summary:
+        Describe your business idea to a coding agent. Use a common foundation for registration,
+        carts and payments, then add the rules that make the product yours.
+      points:
+        - title: Your business logic comes next.
+          detail: Registration, carts and payments provide a starting point for your own product.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-business-conversation.png
+        alt: Illustrative photograph of people discussing work; not a customer case study.
+    - id: audience
+      eyebrow: Who builds with it
+      title: You describe the change. Your agent works on the code.
+      summary:
+        For novice makers who want a product of their own and work through Claude Code or Codex
+        Desktop.
+      points:
+        - title: You set the goal.
+          detail: Explain the business behavior and decide whether the result does what you need.
+        - title: The agent handles implementation.
+          detail:
+            It follows the project instructions and turns the agreed business requirements into the
+            product.
+        - title: You inspect the result.
+          detail:
+            Review whether the product serves your customer and expresses the business behavior you
+            want.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-moment-of-focus.png
+        alt: Illustrative photograph of a person focused on their work.
+    - id: product
+      eyebrow: Reusable foundations
+      title: Keep the basics. Add what makes your product yours.
+      summary:
+        A shared frontend and backend, source code, module documentation and instructions for
+        coding agents.
+      points:
+        - title: Accounts and access
+          detail: Reuse the existing registration and access functions.
+        - title: Commerce and payments
+          detail:
+            Start with catalogs, carts, orders and payment integrations, then configure your providers
+            and rules.
+        - title: Project guidance
+          detail: Give the agent structured context from business definition through product work.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-module-hierarchy-v2.png
+        alt: Conceptual isometric drawing of connected modules; not a runtime architecture screenshot.
+    - id: workflow
+      eyebrow: From request to result
+      title: Define the business. Create the product. Keep building.
+      summary:
+        The business model comes first. The framework and coding agent turn it into a product
+        people can use.
+      points:
+        - title: 01 · Describe the business
+          detail: Name your customer, their need, the offer and the way the business earns money.
+        - title: 02 · Choose the foundation
+          detail: Start with Code Framework when its common functions fit your product.
+        - title: 03 · Make it your product
+          detail: Direct the agent through conversation and add your own business rules.
+        - title: 04 · Grow and reuse
+          detail: Develop the product with customer needs and use the foundation again for your next idea.
+    - id: adaptation
+      eyebrow: An example request
+      title: “Use the existing cart. Add my order rule.”
+      summary:
+        A store maker can focus the agent on what their business needs instead of starting the cart
+        and payment flow again.
+      points:
+        - title: Start with a customer need.
+          detail: A store maker wants ordering rules that fit the way their business sells.
+        - title: Describe the desired behavior.
+          detail: “My store has a minimum order of six units. Add that rule to the existing cart.”
+        - title: Keep the shared foundation.
+          detail: The maker focuses on the business rule while the agent adapts the product.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-coordinated-agents-v2.png
+        alt: Conceptual illustration of coordinated work accompanying an example business requirement.
+    - id: chat-bridge
+      eyebrow: Two connected products
+      title: Use the chat. Build your own version when you want to.
+      summary:
+        AI Chat is the planned hosted service for answers grounded in supplied business facts. It
+        also introduces the foundation to people who want their own product.
+      points:
+        - title: Stay with the hosted service.
+          detail: Supply business knowledge, ask questions and buy tokens for continued use.
+        - title: Take the local-project route.
+          detail:
+            “Run the project on your machine” opens GitHub and introduces the framework for your own
+            product.
+        - title: Choose freely.
+          detail:
+            A chat-token purchase is not required to obtain the framework. Direct GitHub discovery also
+            works.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-framework-inheritance-v2.png
+        alt: Conceptual illustration of a shared foundation and a derived project.
+    - id: economics
+      eyebrow: Price and support
+      title: Free framework code. Your project has its own running costs.
+      summary:
+        Code Framework distributes source and instructions for 0. Hosted AI Chat is a separate
+        service with token revenue.
+      points:
+        - title: Included
+          detail: The reusable codebase, common functions, documentation and agent instructions.
+        - title: Your project expenses
+          detail: Coding-agent services, hosting and chosen provider accounts are separate from the free code.
+        - title: Funding
+          detail: The project owner's time and money maintain the common foundation.
+        - title: Help as time permits
+          detail:
+            Questions and contributions can use GitHub. No response or resolution schedule is
+            guaranteed.
+    - id: growth
+      eyebrow: Discovery and reuse
+      title: Useful results create the next starting point.
+      summary:
+        Demonstrations, short extracts, searchable guides and relevant community answers connect
+        people to the matching chat or maker journey.
+      points:
+        - title: Explain the business outcome.
+          detail: Connect a customer need to the offer and a clear next action.
+        - title: Help people begin.
+          detail: Give interested makers understandable guidance from their idea to a product of their own.
+        - title: Make reuse easier.
+          detail: Turn recurring questions and accepted contributions into better foundations and guidance.
+        - title: Measure what changed.
+          detail: Separate stars and visits from local activation, useful adaptation and next-product reuse.
+    - id: goals
+      eyebrow: Business goals
+      title: Turn recognition into useful products and repeat use.
+      summary:
+        The framework grows when more people choose it as a foundation and use it again. Its
+        free-code model supports broad distribution.
+      points:
+        - title: Recognition
+          detail: More relevant attention, recommendations and GitHub stars.
+        - title: Adoption
+          detail: More makers building their own products on SPS.
+        - title: Repeat use and community
+          detail: Further projects, shared examples and useful improvements.
+        - title: Agent adoption
+          detail: Develop SPS into a foundation coding agents can select and use in their work.
+    - id: start
+      eyebrow: Start your product
+      title: Tell your agent what you want to build.
+      summary:
+        Describe the customer, offer and business rules. Build on Code Framework with your coding
+        agent once that direction is clear.
+      points:
+        - title: Keep developing your business.
+          detail: Let the product evolve with your customers while reusing the common foundation.
+      action:
+        label: Start with Code Framework
+        href: https://github.com/singlepagestartup/singlepagestartup
+        detail: Opens GitHub. Local setup follows with your coding agent.
+      image:
+        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-work-in-motion.png
+        alt: Illustrative photograph of a person moving through their working day.

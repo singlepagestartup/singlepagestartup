@@ -7,6 +7,8 @@ description: "Legacy alias: delegates to core-10-research behavior."
 
 Thin compatibility alias.
 
+Canonical source: `.agents/workflows/engineering/ralph_research.md`.
+
 ## Behavior
 
 - Execute the same logic as `core-10-research`.
@@ -15,5 +17,12 @@ Thin compatibility alias.
 
 ## Source Compatibility
 
-- `.claude/commands/ralph_research.md`
-- `.claude/commands/core/10-research.md`
+- `.agents/workflows/engineering/ralph_research.md`
+- `.agents/workflows/engineering/core/10-research.md`
+
+## Final editorial pass
+
+When this skill writes or returns prose intended for a person, load the project
+`unslop` skill and apply `.agents/contracts/editorial-pass.md` after the
+canonical workflow is complete. Preserve exact facts, evidence, identifiers,
+paths, commands, required structure, and approval state.

@@ -1,0 +1,7 @@
+schema: singlepagestartup.pre-development-state.v1
+active_stage: 10-strategy
+status: blocked
+active_artifacts:
+  - strategy
+blockers:
+  - strategy/singlepage.md#confirmation

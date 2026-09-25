@@ -1,0 +1,53 @@
+confirmation:
+  confirmed: false
+schema: singlepagestartup.sales-process.v2
+product_id: replace-with-product-id
+readiness: blocked # Business completeness, not implementation readiness or user approval.
+owner: unknown
+seller: unknown
+pricing: Reference the owning model Revenue Streams row for this product.
+capacity: Reference shared model resources and process-specific limits.
+blockers:
+  - Customer segments and their commercial journey need client intake.
+segments: [] # Valid unknown intake. Never invent client facts to fill the template.
+# Each id matches Product frontmatter customer_segments and its Customer Segments section.
+# Studio supplies Overview and one sidebar page per segment; no layout file is needed.
+# - id: segment-id
+#   name: Customer segment name
+#   audience: Who this is, their situation and intended progress.
+#   roles: User, buyer/payer, beneficiary and decision-maker, including delegated choice.
+#   needs: [Needs and pains grounded in client inputs or attributed evidence]
+#   motivations: [Why this audience cares and wants the outcome]
+#   purchase_trigger: Circumstance that prompts purchase or free adoption.
+#   decision_criteria: [What matters when comparing alternatives]
+#   value_proposition: Benefit offered to this segment.
+#   objections:
+#     - concern: Reason to hesitate or choose another approach.
+#       response: Truthful sales argument addressing the concern.
+#       evidence: What to show; distinguish a proposed demonstration from existing proof.
+#   acquisition:
+#     - id: channel-id
+#       channel: Specific source of discovery.
+#       context: Customer situation, question or intent at this source.
+#       message: Relevant promise.
+#       cta: Next action.
+#       destination: Named page, experience or handoff.
+#   journey:
+#     - id: journey-step-id
+#       name: Customer Journey Map phase
+#       customer_goal: Result the customer wants here.
+#       customer_action: What they do.
+#       customer_question: Question before continuing, not a fabricated customer quote.
+#       experience: Desired experience; label inferred motives in source metadata.
+#       touchpoint: Where interaction happens.
+#       owner: Responsible person or role.
+#       entry_conditions: []
+#       required_fields: [] # Context needed, not mandatory forms.
+#       action: Business response and value delivered.
+#       exit_condition: Intended transition.
+#       failure: Commercial alternative, abandonment, help or optional continuation.
+#       metric: Relevant business measure without invented targets.
+# At 40-products, develop each segment from approved direction.
+# Preserve all material context, and support/retention without forcing everyone
+# through optional actions. No software bugs, tests or installation gates belong here.
+# Sources classify facts, proposals and unknowns; confirmation stays in metadata.

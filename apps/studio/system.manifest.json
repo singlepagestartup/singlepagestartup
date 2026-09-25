@@ -1,0 +1,24 @@
+{
+  "$schema": "./system.manifest.schema.json",
+  "id": "singlepagestartup-studio",
+  "title": "SinglePageStartup Studio",
+  "version": "0.1.0",
+  "state": "active",
+  "description": "Read-only presentation of SinglePageStartup components, client artifacts, design decisions, and Figma mirrors.",
+  "runtime": {
+    "css": "runtime/styles.css",
+    "js": "runtime/runtime.js"
+  },
+  "foundations": {
+    "tokens": "foundations/tokens.json",
+    "figmaVariables": "foundations/figma.variables.json"
+  },
+  "inventory": {
+    "modules": "inventory/modules.generated.json"
+  },
+  "storybook": {
+    "configDir": ".storybook"
+  },
+  "modulesRoot": "modules",
+  "pagesRoot": "modules/host/models/page"
+}

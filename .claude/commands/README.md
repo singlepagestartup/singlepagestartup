@@ -1,18 +1,26 @@
 # Claude Code Commands
 
-This directory contains commands for the SPS development workflow.
+This directory contains Claude-native discovery adapters for SinglePageStartup
+workflows.
 
-These command documents are provider-neutral: Codex executes them through `.codex/skills` wrappers, and any other agent can execute them directly (see root `AGENTS.md`, "Running the workflow from any provider").
+Canonical process definitions live in `.agents/workflows/**`. Every command file
+here preserves its public slash-command path while routing to exactly one
+canonical source.
 
 ## Workflow Contracts
 
-Every phase command relies on the shared contracts in `.claude/references/`:
+Every phase command relies on shared contracts in
+`.agents/contracts/engineering/`; `.claude/references/` contains compatibility
+adapters for older path references.
 
 | Contract                         | Purpose                                                                      |
 | -------------------------------- | ---------------------------------------------------------------------------- |
 | `repository-context-contract.md` | Resolving the target repo/Project and artifact namespace (upstream vs child) |
 | `process-artifact-contract.md`   | Persistent cross-phase process log: incidents, fixes, reusable learnings     |
-| `knowledge-first-contract.md`    | Lookup order and reuse-with-verification rules (token efficiency)            |
+| `knowledge-first-contract.md`    | Lookup order and reuse-with-verification rules                               |
+
+Pre-development is exposed as `/singlepagestartup` and routes to
+`.agents/workflows/pre-development.md`.
 
 ## Core Linear Cycle Commands
 
@@ -42,11 +50,12 @@ After PR merge: manually move the issue to "Done" in GitHub Project.
 
 Supporting commands used by the main workflow:
 
-| Command                          | Purpose                                                                            |
-| -------------------------------- | ---------------------------------------------------------------------------------- |
-| `utilities/commit.md`            | Create git commits (used by implement phase)                                       |
-| `utilities/describe_pr.md`       | Generate PR descriptions (used by implement phase)                                 |
-| `utilities/post_commit_retro.md` | Analyze workflow friction after a commit/session and propose reusable improvements |
+| Command                          | Purpose                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------------ |
+| `utilities/commit.md`            | Create git commits (used by implement phase)                                         |
+| `adapt-upstream.md`              | Explicitly adapt already integrated upstream changes using local commit instructions |
+| `utilities/describe_pr.md`       | Generate PR descriptions (used by implement phase)                                   |
+| `utilities/post_commit_retro.md` | Analyze workflow friction after a commit/session and propose reusable improvements   |
 
 ## Special Purpose Commands
 

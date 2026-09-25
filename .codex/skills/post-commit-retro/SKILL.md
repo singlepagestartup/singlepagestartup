@@ -5,11 +5,11 @@ description: "Analyzes recent commit or session context to find workflow problem
 
 # post-commit-retro
 
-Codex wrapper for `.claude/commands/utilities/post_commit_retro.md`.
+Canonical source: `.agents/workflows/engineering/utilities/post_commit_retro.md`.
 
 ## Execution Contract
 
-1. Read `.claude/commands/utilities/post_commit_retro.md` fully before executing.
+1. Read `.agents/workflows/engineering/utilities/post_commit_retro.md` fully before executing.
 2. Execute the same workflow semantics and output structure.
 3. Write retrospective artifacts under `thoughts/shared/retrospectives/*` exactly as the source command specifies.
 4. Prefer fixes that are portable across `.claude` and `.codex` unless the evidence points to a runtime-specific problem.
@@ -23,5 +23,12 @@ Codex wrapper for `.claude/commands/utilities/post_commit_retro.md`.
 
 ## Inputs
 
-- Accept the same inputs as `.claude/commands/utilities/post_commit_retro.md`.
+- Accept the same inputs as `.agents/workflows/engineering/utilities/post_commit_retro.md`.
 - If issue number or commit SHA is missing, infer it only when the local context makes the inference high confidence.
+
+## Final editorial pass
+
+When this skill writes or returns prose intended for a person, load the project
+`unslop` skill and apply `.agents/contracts/editorial-pass.md` after the
+canonical workflow is complete. Preserve exact facts, evidence, identifiers,
+paths, commands, required structure, and approval state.
