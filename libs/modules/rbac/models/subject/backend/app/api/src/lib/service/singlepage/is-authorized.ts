@@ -64,8 +64,9 @@ export class Service {
    * Resolves the subject of an access token. A refresh token, or a token
    * signed before its subject last logged out, is refused. A token whose
    * subject no longer exists still resolves to its id, which holds no role.
+   * Route billing resolves the subject it charges through this as well.
    */
-  protected async getSubjectId(authorization: string) {
+  async getSubjectId(authorization: string) {
     const tokenCacheKey = `jwt:subject:${authorization}`;
     let claims = cache.get<{ subjectId: string; issuedAt?: number }>(
       tokenCacheKey,

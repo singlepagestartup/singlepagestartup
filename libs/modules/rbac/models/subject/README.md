@@ -89,8 +89,8 @@ copied into a token; `me` reads it from the database.
 
 - An access token (`typ: "access"`, `RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS`)
   authorizes requests. The is-authorized check, `me`, `logout`, session reuse
-  in `init` and the source subject of the OAuth link flow accept only access
-  tokens.
+  in `init`, the source subject of the OAuth link flow and route billing accept
+  only access tokens.
 - A refresh token (`typ: "refresh"`,
   `RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS`, or
   `RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS` from `init`) is
