@@ -183,11 +183,11 @@ secrets end every session, so plan the window.
 
 Four copies survive a rotation unless they are handled as well:
 
-- **Docker images.** `.dockerignore` does not exclude `apps/api/.env`,
-  `apps/mcp/.env`, `apps/telegram/.env` or `tools/deployer/.env`, and the
-  Dockerfile copies the working tree, so any image built from a bootstrapped
-  checkout carries the old values. Rebuild and re-tag, and treat previously
-  pushed tags as carrying them.
+- **Docker images.** `.dockerignore` keeps env files, key material and
+  `tools/deployer` out of the build context. An image built from a
+  bootstrapped checkout with an ignore list that lacks those rules carries the
+  old values: rebuild and re-tag it, and treat tags pushed from such builds as
+  carrying them.
 - **GitHub Actions secrets.** Replace both the production and the `PREVIEW_`
   variants of the four RBAC values.
 - **`tools/deployer/.env`** on the operator's own machine.
@@ -353,6 +353,46 @@ pull. A failed pull is retried up to three times. When Docker reports
 day to all images not referenced by a container. Running containers, their
 images, networks, and volumes are not removed. The same lock, cleanup, and
 retry behavior is used by direct Ansible service deployments.
+
+## Container user
+
+The application image runs as the base image's `node` user, uid 1000 and gid
+1000, which owns `/usr/src/app`. Two server paths outlive the containers and
+must belong to the same uid:
+
+- `/home/code/api_data`, the API upload directory, mounted at
+  `apps/api/public/file-storage/dynamic`;
+- the `host_next_static` volume, which keeps the Next.js chunks of earlier
+  releases.
+
+On Ubuntu images uid 1000 is the first user account, `ubuntu` on Lightsail, so
+uploads show that owner on the host.
+
+`./api.sh up` creates `/home/code/api_data` with that owner, and `./host.sh up`
+hands an existing `host_next_static` volume to it before deploying the stack.
+Docker fills a new volume from the image, owner included.
+
+A server that already runs the stacks holds root-owned files in both paths.
+Releases arrive through Portainer webhooks without running the plays, so give
+both paths to uid 1000 once, before the first release that runs as `node`:
+
+```bash
+sudo chown -R 1000:1000 /home/code/api_data
+sudo chown -R 1000:1000 "$(docker volume inspect --format '{{ .Mountpoint }}' host_next_static)"
+```
+
+Running `./api.sh up` and `./host.sh up` has the same effect. A container that
+still runs as root keeps working after the change of owner. Without the first
+command, uploads and deletions fail with `EACCES` while the API keeps serving;
+without the second, the host container exits with `EACCES` during the static
+sync, before Next.js starts.
+
+The root `docker-compose.yaml` keeps its own `host_next_static` volume for local
+builds, prefixed with the Compose project name. A local volume with root-owned
+files needs the same `chown`, or removal.
+
+`docker exec` into an application container opens a shell as `node`; add
+`--user root` for administrative work inside the container.
 
 ## Next.js deployment skew protection
 
