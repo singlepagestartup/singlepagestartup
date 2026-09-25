@@ -8,6 +8,12 @@
         path: /home/code/postgres_data
         state: directory
 
+    - name: Copy PostgreSQL application role script
+      copy:
+        src: ../../../apps/db/create_application_role.sh
+        dest: /home/code/create_application_role.sh
+        mode: "0755"
+
     - name: Copy docker-compose file
       ansible.builtin.template:
         src: docker-compose.postgres.yaml.j2

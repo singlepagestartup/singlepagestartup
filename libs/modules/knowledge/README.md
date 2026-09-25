@@ -18,7 +18,7 @@ Sources connect to chunks through the `sources-to-chunks` SPS relation. Sources 
 ## Runtime Requirements
 
 - PostgreSQL must run from `pgvector/pgvector:pg17`.
-- The shared migration wrapper creates the `vector` extension before repository migrations run.
+- `apps/db/create_application_role.sh` creates the `vector` extension as the PostgreSQL superuser when the image initializes the data directory, because the extension is not trusted and the API's role is not a superuser. The shared migration wrapper repeats `CREATE EXTENSION IF NOT EXISTS vector`, which the API's role passes only when the extension already exists.
 - `apps/llm` serves the OpenAI-compatible local gateway for local embeddings, local models, HuggingFace presets, Claude, and OpenAI.
 - `apps/api` can alternatively call OpenRouter's OpenAI-compatible embeddings endpoint directly.
 - Knowledge owns RAG data and vector search; generation routing and the local model catalog live in `apps/llm`, while the embedding provider switch lives in `apps/api`.
@@ -217,6 +217,7 @@ Admin/global Knowledge frontend code should use the Knowledge SDK actions instea
 ## Troubleshooting
 
 - `extension "vector" is not available`: rebuild the DB container after changing `apps/db/Dockerfile` to `pgvector/pgvector:pg17`, then rerun migrations.
+- `permission denied to create extension "vector"`: the database was initialized without `apps/db/create_application_role.sh`. Run that script inside the database container, as described in `tools/deployer/README.md` under "Moving an existing installation to the application role", then rerun migrations.
 - `LLM embedding request failed`: start `apps/llm`, verify `GET http://localhost:8765/v1/models` responds, and confirm `local/default-embedding` maps to the expected `provider_model`.
 - `OPEN_ROUTER_API_KEY is required`: add the key to `apps/api/.env` or switch `KNOWLEDGE_EMBEDDING_PROVIDER` back to `llm`.
 - `ANTHROPIC_API_KEY is not set`: set the key in `apps/llm/.env` before using Claude models.
