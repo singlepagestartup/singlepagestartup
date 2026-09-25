@@ -32,11 +32,12 @@ export async function action(props: IProps): Promise<IResult> {
     credentials: "include",
     method: "POST",
     ...options,
-    next: {
-      ...options?.next,
-    },
     headers: {
       "Cache-Control": "no-store",
+      ...options?.headers,
+    },
+    next: {
+      ...options?.next,
     },
   };
 
