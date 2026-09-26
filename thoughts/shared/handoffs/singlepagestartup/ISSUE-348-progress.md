@@ -86,6 +86,10 @@ completed_date: 2026-09-26
 - `cb3d61ac94` fix(rbac): require the Admin role for count routes only the admin UI reads
 - `1973eea0b7` docs: add research, plan and process log for #348
 
+### Review addition
+
+- The identity, role and subject overview cards take the same client wrapper, at the lead's request in the approving review; an identity card spec follows the message card spec. `npx nx run @sps/rbac:jest:test`: 85 suites, 393 tests; `@sps/rbac` lint and `tsc --noEmit`: pass; the spec fails against the server-rendered wrapper.
+
 ### Pull Request
 
 - [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/351 (base `claude/issue-303-roleless-permissions`)
