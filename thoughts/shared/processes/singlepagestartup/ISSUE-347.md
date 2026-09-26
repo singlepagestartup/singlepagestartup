@@ -3,9 +3,9 @@ issue_number: 347
 issue_title: "Subject checkout routes: add the owner check"
 repository: singlepagestartup
 created_at: 2026-09-25T23:58:55Z
-last_updated: 2026-09-26T05:45:00Z
+last_updated: 2026-09-26T06:05:00Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-347 - Subject checkout routes: add the owner check
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: commit, push and open the pull request
+- Implement: completed
+- Current phase: complete
+- Next step: code review of PR #350 by the lead, then merge
 
 ## Phase Notes
 
@@ -46,7 +46,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: all three phases are in place. Unit lanes (`@sps/rbac` 83 suites / 390 tests, `@sps/agent` 17 / 89), lint, type checks and the placement check pass, and each new scenario fails with its guard or header removed. On a copy of the development database the API answers 400 without a credential, 401 to another subject's token, and 200 to the subject's own token, the operator secret and an agent-shaped token; the Telegram free-subscription chain completes through the guarded product checkout.
-- Outputs: code and specs under `libs/modules/rbac/models/subject/**` and `libs/modules/agent/models/agent/**`; `thoughts/shared/handoffs/singlepagestartup/ISSUE-347-progress.md`.
+- Outputs: commit `12324dec28`; PR #350 (https://github.com/singlepagestartup/singlepagestartup/pull/350) with the description in `thoughts/shared/prs/350_description.md`; `thoughts/shared/handoffs/singlepagestartup/ISSUE-347-progress.md`.
 - Notes: the renewal and the agent callback were verified by unit scenarios and by requests carrying the same credentials, not end to end.
 
 ## Incident Log

@@ -3,7 +3,8 @@ issue_number: 347
 issue_title: "Subject checkout routes: add the owner check"
 start_date: 2026-09-26T00:30:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-347.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-347 - Subject checkout routes: add the owner check
@@ -88,15 +89,16 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/350
+- [x] PR number: 350
+- Commit: `12324dec28` (`fix(rbac): add the owner check to the subject checkout routes`); description saved as `thoughts/shared/prs/350_description.md`.
 
 ### Final Status
 
-- [ ] All phases completed
-- [ ] All automated verification passed
-- [ ] Issue marked as Done
+- [x] All phases completed
+- [x] All automated verification passed
+- [ ] Issue marked as Done (after review and merge)
 
 ---
 
-**Last updated**: 2026-09-26T05:40:00Z
+**Last updated**: 2026-09-26T06:05:00Z
