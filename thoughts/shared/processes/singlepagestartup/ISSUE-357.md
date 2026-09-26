@@ -3,9 +3,9 @@ issue_number: 357
 issue_title: "Order fulfilment: confirm the payment before granting products"
 repository: singlepagestartup
 created_at: 2026-09-26T20:25:29Z
-last_updated: 2026-09-26T20:43:42Z
+last_updated: 2026-09-26T20:45:16Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-357 - Order fulfilment: confirm the payment before granting products
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: commit, push and open the pull request
+- Implement: completed
+- Current phase: complete
+- Next step: code review of PR #362 by the lead, then merge
 
 ## Phase Notes
 
@@ -46,7 +46,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: fulfilment grants for an order in `paid` or `delivering` only when a linked payment intent is `succeeded` and carries a `paid` invoice; an order without them keeps its status and is logged once per process and status. The rbac unit lane (82 suites / 393 tests), lint, types and the placement check pass, and each part of the rule fails a scenario when removed. Over HTTP, the dummy-provider purchase, the Telegram free subscription and both offline-payment procedures are fulfilled, and orders set to `paid` or `delivering` without records are not.
-- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-357-progress.md`.
+- Outputs: commit `7e3fa72a62`; PR #362 (https://github.com/singlepagestartup/singlepagestartup/pull/362) with the description in `thoughts/shared/prs/362_description.md`; `thoughts/shared/handoffs/singlepagestartup/ISSUE-357-progress.md`.
 - Notes: in the HTTP run the order check answers 500 when receipt generation cannot reach the host application, after it has written `paid`; the host URL pointed at a closed port by design.
 
 ## Incident Log

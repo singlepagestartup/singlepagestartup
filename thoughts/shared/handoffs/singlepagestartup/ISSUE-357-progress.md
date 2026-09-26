@@ -3,7 +3,8 @@ issue_number: 357
 issue_title: "Order fulfilment: confirm the payment before granting products"
 start_date: 2026-09-26T20:40:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-357.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-357 - Order fulfilment: confirm the payment before granting products
@@ -64,15 +65,16 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/362
+- [x] PR number: 362
+- Commit: `7e3fa72a62` (`fix(rbac): confirm the payment before order fulfilment grants products`); description saved as `thoughts/shared/prs/362_description.md`.
 
 ### Final Status
 
-- [ ] All phases completed
-- [ ] All automated verification passed
-- [ ] Issue marked as Done
+- [x] All phases completed
+- [x] All automated verification passed
+- [ ] Issue marked as Done (after review and merge)
 
 ---
 
-**Last updated**: 2026-09-26T20:43:24Z
+**Last updated**: 2026-09-26T20:45:16Z
