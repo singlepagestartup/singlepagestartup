@@ -32,6 +32,18 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `PATCH /api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]`
 - `DELETE /api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]`
 
+### Ecommerce Order Line Route
+
+The cart reads the lines of the subject's orders through
+`GET /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/orders-to-products`,
+which has a role-less permission row and `RequestSubjectIdOwner` as its guard.
+Each line carries its totals per currency (an empty list when its price cannot
+be computed), and a caller's `filters.and` narrows the lines within the orders
+linked to the subject. The module-level
+`orders-to-products` reads require the Admin role, so the ecommerce variants
+`cart-default` and `orders-to-products-quantity-default` render the lines their
+RBAC caller hands them.
+
 ## Authentication API
 
 - `GET /rbac/subjects/authentication/init`: initialize anonymous/authenticated session tokens.
@@ -204,6 +216,7 @@ delete action is called.
 - `ecommerce-module-order-delete-default`: delete order action.
 - `ecommerce-module-order-checkout-default`: order checkout flow.
 - `ecommerce-module-order-list-default`: list orders for subject.
+- `ecommerce-module-order-list-orders-to-products-default`: list the lines of the subject's orders with their totals.
 - `ecommerce-module-order-list-checkout-default`: list orders in checkout context.
 - `ecommerce-module-order-list-quantity-default`: list order quantities.
 - `ecommerce-module-order-list-total-default`: list order totals.

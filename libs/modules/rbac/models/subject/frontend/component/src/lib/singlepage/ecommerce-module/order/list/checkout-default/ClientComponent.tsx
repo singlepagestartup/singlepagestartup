@@ -11,6 +11,7 @@ import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/f
 import { Component as DeleteDefault } from "../../delete-default/Component";
 import { Component as UpdateDefault } from "../../update-default/Component";
 import { Component as EcommerceModuleOrderListDefault } from "../default";
+import { Component as EcommerceModuleOrderListOrdersToProductsDefault } from "../orders-to-products-default";
 import { Component as TotalDefault } from "../total-default";
 import { useState } from "react";
 import Link from "next/link";
@@ -102,38 +103,63 @@ export function Component(props: IComponentPropsExtended) {
               <div className="flex flex-col gap-1">
                 {ecommerceModuleOrders?.map((ecommerceModuleOrder, index) => {
                   return (
-                    <EcommerceModuleOrder
+                    <EcommerceModuleOrderListOrdersToProductsDefault
                       key={ecommerceModuleOrder.id}
                       isServer={false}
-                      variant="cart-default"
-                      data={ecommerceModuleOrder}
+                      variant="ecommerce-module-order-list-orders-to-products-default"
+                      data={props.data}
                       language={props.language}
+                      apiProps={{
+                        params: {
+                          filters: {
+                            and: [
+                              {
+                                column: "orderId",
+                                method: "eq",
+                                value: ecommerceModuleOrder.id,
+                              },
+                            ],
+                          },
+                        },
+                      }}
                     >
-                      <>
-                        <EcommerceModuleOrder
-                          isServer={false}
-                          variant="form-field-default"
-                          data={ecommerceModuleOrder}
-                          formFieldName={`ecommerceModule.orders.${index}.id`}
-                          entityFieldName="id"
-                          form={form}
-                        />
-                        <UpdateDefault
-                          isServer={false}
-                          variant="ecommerce-module-order-update-default"
-                          data={props.data}
-                          language={props.language}
-                          order={ecommerceModuleOrder}
-                        />
-                        <DeleteDefault
-                          isServer={false}
-                          variant="ecommerce-module-order-delete-default"
-                          data={props.data}
-                          language={props.language}
-                          order={ecommerceModuleOrder}
-                        />
-                      </>
-                    </EcommerceModuleOrder>
+                      {({ data: ecommerceModuleOrdersToProducts }) => {
+                        return (
+                          <EcommerceModuleOrder
+                            isServer={false}
+                            variant="cart-default"
+                            data={ecommerceModuleOrder}
+                            ordersToProducts={ecommerceModuleOrdersToProducts}
+                            language={props.language}
+                          >
+                            <>
+                              <EcommerceModuleOrder
+                                isServer={false}
+                                variant="form-field-default"
+                                data={ecommerceModuleOrder}
+                                formFieldName={`ecommerceModule.orders.${index}.id`}
+                                entityFieldName="id"
+                                form={form}
+                              />
+                              <UpdateDefault
+                                isServer={false}
+                                variant="ecommerce-module-order-update-default"
+                                data={props.data}
+                                language={props.language}
+                                order={ecommerceModuleOrder}
+                              />
+                              <DeleteDefault
+                                isServer={false}
+                                variant="ecommerce-module-order-delete-default"
+                                data={props.data}
+                                language={props.language}
+                                order={ecommerceModuleOrder}
+                              />
+                            </>
+                          </EcommerceModuleOrder>
+                        );
+                      }}
+                    </EcommerceModuleOrderListOrdersToProductsDefault>
                   );
                 })}
               </div>

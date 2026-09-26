@@ -458,6 +458,37 @@ describe("Given: the framework permission seed", () => {
 
   /**
    * BDD Scenario
+   * Given: a seed in which the order line reads lost their Admin attachments.
+   * When: the seed is inventoried.
+   * Then: the check names the four order line reads, which would otherwise
+   * answer every caller.
+   */
+  it("When: the order line reads carry no role Then: the check names them", async () => {
+    const orderLineReadIds = permissions
+      .filter((permission) => {
+        return (
+          permission.method === "GET" &&
+          permission.path.startsWith("/api/ecommerce/orders-to-products")
+        );
+      })
+      .map((permission) => permission.id);
+    const service = createService({
+      permissions,
+      rolesToPermissions: rolesToPermissions.filter((roleToPermission) => {
+        return !orderLineReadIds.includes(roleToPermission.permissionId);
+      }),
+    });
+
+    await expect(service.findUnlistedRolelessPermissions()).resolves.toEqual([
+      "GET /api/ecommerce/orders-to-products",
+      "GET /api/ecommerce/orders-to-products/[ecommerce.orders-to-products.id]",
+      "GET /api/ecommerce/orders-to-products/[ecommerce.orders-to-products.id]/total",
+      "GET /api/ecommerce/orders-to-products/count",
+    ]);
+  });
+
+  /**
+   * BDD Scenario
    * Given: a live table with one listed and one unlisted role-less row.
    * When: the boot report runs.
    * Then: it warns about the unlisted row only.

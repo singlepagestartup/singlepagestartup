@@ -191,12 +191,6 @@ export const rolelessPermissions: string[] = [
   "GET /api/website-builder/widgets-to-sliders/count",
   "GET /api/website-builder/widgets/count",
 
-  // Order lines and their totals, which the cart reads by order id.
-  "GET /api/ecommerce/orders-to-products",
-  "GET /api/ecommerce/orders-to-products/[ecommerce.orders-to-products.id]",
-  "GET /api/ecommerce/orders-to-products/[ecommerce.orders-to-products.id]/total",
-  "GET /api/ecommerce/orders-to-products/count",
-
   // Anonymous writes: CRM form submissions and payment provider webhooks.
   "POST /api/billing/payment-intents/0xprocessing/webhook",
   "POST /api/billing/payment-intents/cloudpayments/webhook",
@@ -218,6 +212,7 @@ export const rolelessPermissions: string[] = [
   "GET /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/[ecommerce.orders.id]/quantity",
   "GET /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/[ecommerce.orders.id]/total",
   "POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/checkout",
+  "GET /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/orders-to-products",
   "GET /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/quantity",
   "GET /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/total",
   "POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/products/[ecommerce.products.id]/checkout",

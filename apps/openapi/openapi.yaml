@@ -192,6 +192,8 @@ paths:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1total"
   /rbac/subjects/{id}/ecommerce-module/orders/quantity:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1quantity"
+  /rbac/subjects/{id}/ecommerce-module/orders/orders-to-products:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1orders-to-products"
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}"
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/checkout:
