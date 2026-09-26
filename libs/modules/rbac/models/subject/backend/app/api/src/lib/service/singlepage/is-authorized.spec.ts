@@ -361,7 +361,8 @@ describe("Given: a role-less permission on a sensitive route", () => {
  * Given: the framework permission and roles-to-permissions seed.
  * When: the is-authorized service inventories the rows that carry no role.
  * Then: every role-less seed row is on the reviewed list, a role-less row
- * missing from it is named, and the boot report names only such rows.
+ * missing from it is named, including an order read or a count route that
+ * lost its Admin attachment, and the boot report names only such rows.
  */
 describe("Given: the framework permission seed", () => {
   function readSeed<T>(directory: string): T[] {
@@ -453,6 +454,32 @@ describe("Given: the framework permission seed", () => {
 
     await expect(service.findUnlistedRolelessPermissions()).resolves.toEqual([
       "GET /api/ecommerce/orders",
+    ]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a seed in which the social message count lost its Admin attachment.
+   * When: the seed is inventoried.
+   * Then: the check names the count route, which only the admin UI and MCP
+   * use.
+   */
+  it("When: the social message count carries no role Then: the check names it", async () => {
+    const messageCount = permissions.find((permission) => {
+      return (
+        permission.method === "GET" &&
+        permission.path === "/api/social/messages/count"
+      );
+    });
+    const service = createService({
+      permissions,
+      rolesToPermissions: rolesToPermissions.filter((roleToPermission) => {
+        return roleToPermission.permissionId !== messageCount?.id;
+      }),
+    });
+
+    await expect(service.findUnlistedRolelessPermissions()).resolves.toEqual([
+      "GET /api/social/messages/count",
     ]);
   });
 
