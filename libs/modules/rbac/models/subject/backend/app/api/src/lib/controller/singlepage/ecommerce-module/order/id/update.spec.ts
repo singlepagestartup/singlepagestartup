@@ -35,6 +35,7 @@ jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
 }));
 
 import { Handler } from "./update";
+import { quantityBounds } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 
 function createContext(
   params: Record<string, string | undefined>,
@@ -87,6 +88,39 @@ describe("Given: ecommerce order update handler", () => {
     await expect(handler.execute(context, jest.fn())).rejects.toBeTruthy();
     expect(orderUpdateMock).not.toHaveBeenCalled();
   });
+
+  /**
+   * BDD Scenario
+   * Given: an order line with a quantity of 0, a negative number, a fraction
+   * or a value above the maximum.
+   * When: the subject submits the cart update.
+   * Then: the update is refused with a validation error and the order update
+   * API is not called.
+   */
+  it.each([0, -1, 1.5, quantityBounds.max + 1])(
+    "When: a line quantity is %p Then: the update is refused before the order update",
+    async (quantity) => {
+      const handler = new Handler(createService());
+      const context = createContext(
+        { id: "subject-1", orderId: "order-1" },
+        {
+          data: JSON.stringify({
+            ordersToProducts: [
+              { id: "otp-1", quantity: 2 },
+              { id: "otp-2", quantity },
+            ],
+          }),
+        },
+      );
+
+      await expect(handler.execute(context, jest.fn())).rejects.toMatchObject({
+        message: expect.stringContaining(
+          "Validation error. ordersToProducts[].quantity must be a whole number",
+        ),
+      });
+      expect(orderUpdateMock).not.toHaveBeenCalled();
+    },
+  );
 
   it("When: request is valid Then: order update API is called and subject is returned", async () => {
     const handler = new Handler(createService());

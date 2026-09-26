@@ -5,6 +5,7 @@ import * as jwt from "hono/jwt";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../../../service";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
+import { quantityBounds } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 
 export class Handler {
   service: Service;
@@ -77,6 +78,21 @@ export class Handler {
 
       if (order.status !== "new") {
         throw new Error("Not Found error. Order is not in 'new' status");
+      }
+
+      if (
+        !Array.isArray(data.ordersToProducts) ||
+        !data.ordersToProducts.every((orderToProduct: { quantity: number }) => {
+          return (
+            Number.isInteger(orderToProduct?.quantity) &&
+            orderToProduct.quantity >= quantityBounds.min &&
+            orderToProduct.quantity <= quantityBounds.max
+          );
+        })
+      ) {
+        throw new Error(
+          `Validation error. ordersToProducts[].quantity must be a whole number from ${quantityBounds.min} to ${quantityBounds.max}`,
+        );
       }
 
       await ecommerceOrderApi.update({

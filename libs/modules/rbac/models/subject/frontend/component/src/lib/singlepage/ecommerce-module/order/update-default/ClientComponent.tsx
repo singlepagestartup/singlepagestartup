@@ -3,6 +3,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { Component as EcommerceOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/frontend/component";
+import { quantityBounds } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { Button, Form } from "@sps/shared-ui-shadcn";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -14,7 +15,11 @@ const formSchema = z.object({
   ordersToProducts: z.array(
     z.object({
       id: z.string(),
-      quantity: z.number(),
+      quantity: z
+        .number()
+        .int()
+        .min(quantityBounds.min)
+        .max(quantityBounds.max),
     }),
   ),
 });
