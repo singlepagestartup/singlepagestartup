@@ -127,6 +127,7 @@ export class Service {
   subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
   subjectsToIdentities: SubjectsToIdentitiesService;
   protected processingOrderIds = new Set<string>();
+  protected reportedUnconfirmedPaymentOrders = new Set<string>();
 
   constructor(
     @inject(DI.IRepository) repository: IRepository,
@@ -331,6 +332,15 @@ export class Service {
               productsRolesIds,
             });
           } else if (order.status === "delivering") {
+            if (!this.isPaymentConfirmed({ extendedOrder })) {
+              this.reportUnconfirmedPayment({
+                order,
+                subjectId: subjectToEcommerceModuleOrder.subjectId,
+              });
+
+              continue;
+            }
+
             const newRolesIds = productsRolesIds?.filter(
               (productRoleId) =>
                 productRoleId && !existingRolesIds?.includes(productRoleId),
@@ -596,6 +606,62 @@ export class Service {
     return topupCurrencies;
   }
 
+  /**
+   * An order is paid for when one of its payment intents succeeded and carries
+   * a paid invoice. Every payment path writes both before the order check moves
+   * the order to `paid`; a status written by hand leaves neither.
+   */
+  protected isPaymentConfirmed(props: {
+    extendedOrder: IExtendedEcommerceModuleOrder;
+  }) {
+    return (
+      props.extendedOrder.ordersToBillingModulePaymentIntents?.some(
+        (orderToBillingModulePaymentIntent) => {
+          const billingModulePaymentIntent =
+            orderToBillingModulePaymentIntent.billingModulePaymentIntent;
+
+          return (
+            billingModulePaymentIntent?.status === "succeeded" &&
+            Boolean(
+              billingModulePaymentIntent.paymentIntentsToInvoices?.some(
+                (paymentIntentToInvoice) => {
+                  return paymentIntentToInvoice.invoice?.status === "paid";
+                },
+              ),
+            )
+          );
+        },
+      ) ?? false
+    );
+  }
+
+  /**
+   * Reports an order that fulfilment skipped for want of a confirmed payment,
+   * once per order and status for the life of the process, so the recurring
+   * check does not repeat the report every run.
+   */
+  protected reportUnconfirmedPayment(props: {
+    order: IEcommerceModuleOrder;
+    subjectId: string;
+  }) {
+    const reportKey = `${props.order.id}:${props.order.status}`;
+
+    if (this.reportedUnconfirmedPaymentOrders.has(reportKey)) {
+      return;
+    }
+
+    this.reportedUnconfirmedPaymentOrders.add(reportKey);
+
+    logger.error(
+      "RBAC ecommerce order proceed skipped an order without a confirmed payment",
+      {
+        orderId: props.order.id,
+        orderStatus: props.order.status,
+        subjectId: props.subjectId,
+      },
+    );
+  }
+
   async fromPaidStatus(props: {
     order: IEcommerceModuleOrder;
     extendedOrder: IExtendedEcommerceModuleOrder;
@@ -608,6 +674,15 @@ export class Service {
   }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+    }
+
+    if (!this.isPaymentConfirmed({ extendedOrder: props.extendedOrder })) {
+      this.reportUnconfirmedPayment({
+        order: props.order,
+        subjectId: props.subjectToEcommerceModuleOrder.subjectId,
+      });
+
+      return;
     }
 
     const newRolesIds = props.productsRolesIds?.filter(

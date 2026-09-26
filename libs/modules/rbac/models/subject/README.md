@@ -114,6 +114,20 @@ subject service.
 1. `?oauthExchange=<provider>` on success, with the code in the HttpOnly `rbac.oauth.exchange-code` cookie. `?code=<oauth-exchange-action-id>` is added as well while `RBAC_OAUTH_EXCHANGE_CODE_IN_QUERY` is on.
 2. `?oauthError=<error-code>` on failure.
 
+## Ecommerce Order Fulfilment
+
+`POST /api/rbac/subjects/check` and `POST /api/rbac/subjects/[rbac.subjects.id]/check`, run every minute by the `rbac-module-subjects-check` agent, grant what an order's products carry: roles through `roles-to-ecommerce-module-products` and balances through `topup` attributes. An order in `paid` receives both and moves to `approving`, or to `delivering` for a subscription; an order in `delivering` receives the product roles its subject lacks.
+
+Both grants require a confirmed payment: a payment intent linked to the order through `orders-to-billing-module-payment-intents` in `succeeded`, carrying an invoice in `paid` through `payment-intents-to-invoices`. Every payment provider, Telegram Stars and the zero-amount invoices of free products write both records. An order without them is not granted and keeps its status; the API logs it once per process and status with its id, status and subject id.
+
+### Recording an offline payment
+
+An offline payment is recorded in billing so the order is fulfilled:
+
+1. In the admin panel, set the order's invoice to `paid` and its payment intent to `succeeded`; the order form lists the payment intent under `orders-to-billing-module-payment-intents`.
+2. If the order has no payment intent, create one for the order amount in `succeeded` and an invoice for the same amount in `paid`, then link the invoice to the payment intent (`payment-intents-to-invoices`) and the payment intent to the order (`orders-to-billing-module-payment-intents`).
+3. An order in `paying` moves to `paid` at the next order check; set an order in any other status to `paid`. The next fulfilment run grants the order's products.
+
 ## Fields
 
 - `id`: unique identifier (UUID).
