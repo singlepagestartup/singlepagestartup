@@ -13,7 +13,8 @@ export const rolelessPermissions: string[] = [
   // Content the host renders for anonymous visitors: the blog, the ecommerce
   // catalog, CRM forms, currencies, social profiles with their links, widgets,
   // and the host, website-builder and file-storage reads the is-authorized
-  // allow-list serves.
+  // allow-list serves. Its count routes stay without a role: they count
+  // published content and page widgets (issue #348).
   "GET /api/agent/widgets/count",
   "GET /api/analytic/widgets/count",
   "GET /api/billing/currencies",
@@ -255,59 +256,13 @@ export const rolelessPermissions: string[] = [
   "GET /api/rbac/subjects/[rbac.subjects.id]",
   "GET /api/rbac/subjects/count",
 
-  // Counts and reads with no anonymous caller in the framework, kept without a
-  // role until they are reviewed.
-  "GET /api/agent/agents/count",
-  "GET /api/analytic/metrics/count",
-  "GET /api/broadcast/channels-to-messages/count",
-  "GET /api/broadcast/channels/count",
-  "GET /api/broadcast/messages/count",
-  "GET /api/crm/forms-to-requests/count",
-  "GET /api/crm/requests/count",
-  "GET /api/ecommerce/orders-to-billing-module-currencies/count",
-  "GET /api/ecommerce/orders-to-file-storage-module-files/count",
-  "GET /api/ecommerce/stores-to-orders/count",
+  // Notification template reads with no anonymous caller in the framework,
+  // kept without a role until they are reviewed. Their count routes carry the
+  // Admin role (issue #348).
   "GET /api/notification/notifications-to-templates",
   "GET /api/notification/notifications-to-templates/[notification.notifications-to-templates.id]",
-  "GET /api/notification/notifications-to-templates/count",
-  "GET /api/notification/notifications/count",
   "GET /api/notification/templates",
   "GET /api/notification/templates/[notification.templates.id]",
-  "GET /api/notification/templates/count",
-  "GET /api/notification/topics-to-notifications/count",
-  "GET /api/notification/topics/count",
-  "GET /api/rbac/actions/count",
-  "GET /api/rbac/permissions-to-billing-module-currencies/count",
-  "GET /api/rbac/permissions/count",
-  "GET /api/rbac/roles-to-ecommerce-module-products/count",
-  "GET /api/rbac/roles-to-permissions/count",
-  "GET /api/rbac/subjects-to-actions/count",
-  "GET /api/rbac/subjects-to-billing-module-currencies/count",
-  "GET /api/rbac/subjects-to-blog-module-articles/count",
-  "GET /api/rbac/subjects-to-ecommerce-module-products/count",
-  "GET /api/rbac/subjects-to-notification-module-topics/count",
-  "GET /api/social/actions/count",
-  "GET /api/social/attribute-keys-to-attributes/count",
-  "GET /api/social/attribute-keys/count",
-  "GET /api/social/attributes/count",
-  "GET /api/social/chats-to-actions/count",
-  "GET /api/social/chats-to-messages/count",
-  "GET /api/social/chats-to-threads/count",
-  "GET /api/social/chats/count",
-  "GET /api/social/messages-to-file-storage-module-files/count",
-  "GET /api/social/messages/count",
-  "GET /api/social/profiles-to-actions/count",
-  "GET /api/social/profiles-to-attributes/count",
-  "GET /api/social/profiles-to-chats/count",
-  "GET /api/social/profiles-to-file-storage-module-files/count",
-  "GET /api/social/skills/count",
-  "GET /api/social/threads-to-actions/count",
-  "GET /api/social/threads-to-ecommerce-module-products/count",
-  "GET /api/social/threads-to-messages/count",
-  "GET /api/social/threads/count",
-  "GET /api/telegram/pages-to-widgets/count",
-  "GET /api/telegram/pages/count",
-  "GET /api/telegram/widgets-to-external-widgets/count",
 
   // Rows that match no route.
   "GET /api/ecommerce/categories-to-file-storage-module-widgets",
