@@ -14,6 +14,7 @@ The four module-level order line reads, `GET /api/ecommerce/orders-to-products` 
 - **Ecommerce variants.** `cart-default` and `orders-to-products-quantity-default` take the order's lines as `ordersToProducts`; the quantity variant also renders the order it is handed, as `cart-default` does since #346. The relation variants `form-field-default` (fetching halves removed, no `apiProps`) and `amount` use the line they are given instead of reading it by id.
 - **Seed.** A role-less permission row for the new route, listed among the routes below a subject, and four `roles-to-permissions` rows that attach the Admin role to the order line reads, which leave the reviewed list. They were created through the API on a copy of the development database the snapshots come from and written by `npx nx run api:db:dump`; `migrate.sh seed` inserts them on existing deployments at the next start.
 - READMEs of the subject model, the order model and the relation.
+- **Studio inventory.** `apps/studio/inventory/modules.generated.json` regenerated with `npm run studio:inventory`: it gains the entry of `ecommerce-module-order-list-orders-to-products-default` and the variant count, and nothing else.
 
 ## Verification
 
