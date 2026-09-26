@@ -3,7 +3,8 @@ issue_number: 352
 issue_title: "Per-order subject routes: check the order belongs to the subject"
 start_date: 2026-09-26T03:28:57Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-352.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-352 - Per-order subject routes: check the order belongs to the subject
@@ -97,15 +98,16 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/353
+- [x] PR number: 353
+- Commit: `72a22c9365` (`fix(rbac): check the order belongs to the subject on per-order routes`); description saved as `thoughts/shared/prs/353_description.md`.
 
 ### Final Status
 
-- [ ] All phases completed
-- [ ] All automated verification passed
-- [ ] Issue marked as Done
+- [x] All phases completed
+- [x] All automated verification passed
+- [ ] Issue marked as Done (after review and merge)
 
 ---
 
-**Last updated**: 2026-09-26T03:37:17Z
+**Last updated**: 2026-09-26T03:39:10Z

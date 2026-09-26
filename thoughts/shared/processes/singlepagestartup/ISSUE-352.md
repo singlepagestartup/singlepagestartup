@@ -3,9 +3,9 @@ issue_number: 352
 issue_title: "Per-order subject routes: check the order belongs to the subject"
 repository: singlepagestartup
 created_at: 2026-09-26T03:23:21Z
-last_updated: 2026-09-26T03:37:32Z
+last_updated: 2026-09-26T03:39:10Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-352 - Per-order subject routes: check the order belongs to the subject
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: commit, push and open the pull request
+- Implement: completed
+- Current phase: complete
+- Next step: code review of PR #353 by the lead, then merge
 
 ## Phase Notes
 
@@ -46,7 +46,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: all three phases are in place. The rbac unit lane (84 suites / 404 tests), lint, types and the placement check pass; each guard's scenarios fail with that guard removed. Over HTTP, an order not linked to the subject in the path now answers 401 on all four routes, another subject's token 401 and a request without a credential 400; the subject's own order and the operator secret reach the handlers, which answer as before, and the cart flow works.
-- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-352-progress.md`.
+- Outputs: commit `72a22c9365`; PR #353 (https://github.com/singlepagestartup/singlepagestartup/pull/353) with the description in `thoughts/shared/prs/353_description.md`; `thoughts/shared/handoffs/singlepagestartup/ISSUE-352-progress.md`.
 - Notes: route middlewares are registered per path whatever the method, so the DELETE route also runs the pair declared on PATCH, as the chat thread routes do.
 
 ## Incident Log
