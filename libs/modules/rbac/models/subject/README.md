@@ -32,6 +32,16 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `PATCH /api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]`
 - `DELETE /api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]`
 
+### Ecommerce Checkout Routes
+
+`POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/checkout` and `POST /api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/products/[ecommerce.products.id]/checkout` carry `RequestSubjectIdOwner`, so every caller presents a token of the subject in the path or the operator secret:
+
+- the browser sends the signed-in subject's token through the client SDK;
+- server code acting for a subject signs a token for that subject, as the agent module's Telegram checkout callback does;
+- operator processes, such as subscription renewal and Telegram free-subscription provisioning, send `X-RBAC-SECRET-KEY`.
+
+The order checkout acts only on orders linked to the subject through `subjects-to-ecommerce-module-orders`; any other id in `data.ecommerceModule.orders` is ignored, as the id of a deleted order is.
+
 ## Authentication API
 
 - `GET /rbac/subjects/authentication/init`: initialize anonymous/authenticated session tokens.
