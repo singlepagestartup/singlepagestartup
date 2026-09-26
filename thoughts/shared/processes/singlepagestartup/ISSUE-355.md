@@ -3,9 +3,9 @@ issue_number: 355
 issue_title: "Subject order update: forward only the order lines"
 repository: singlepagestartup
 created_at: 2026-09-26T03:52:43Z
-last_updated: 2026-09-26T03:59:57Z
+last_updated: 2026-09-26T04:01:53Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-355 - Subject order update: forward only the order lines
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: commit, push and open the pull request
+- Implement: completed
+- Current phase: complete
+- Next step: code review of PR #356 by the lead, then merge
 
 ## Phase Notes
 
@@ -46,7 +46,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: the subject order update sends the module-level update only `{ ordersToProducts: [{ id, quantity }] }`. The rbac unit lane (82 suites / 383 tests), lint, types and the placement check pass, and the new scenarios fail against the `main` handler. Over HTTP a cart quantity change still works, extra order fields in `data` leave the order unchanged, and the admin-token module-level update still writes every field.
-- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-355-progress.md`.
+- Outputs: commit `0d9cb7b456`; PR #356 (https://github.com/singlepagestartup/singlepagestartup/pull/356) with the description in `thoughts/shared/prs/356_description.md`; `thoughts/shared/handoffs/singlepagestartup/ISSUE-355-progress.md`.
 - Notes: the sibling cart handlers were checked and need no change.
 
 ## Incident Log

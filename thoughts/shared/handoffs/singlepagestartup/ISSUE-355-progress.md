@@ -3,7 +3,8 @@ issue_number: 355
 issue_title: "Subject order update: forward only the order lines"
 start_date: 2026-09-26T03:57:03Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-355.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-355 - Subject order update: forward only the order lines
@@ -50,15 +51,16 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/356
+- [x] PR number: 356
+- Commit: `0d9cb7b456` (`fix(rbac): forward only the order lines from the subject order update`); description saved as `thoughts/shared/prs/356_description.md`.
 
 ### Final Status
 
-- [ ] All phases completed
-- [ ] All automated verification passed
-- [ ] Issue marked as Done
+- [x] All phases completed
+- [x] All automated verification passed
+- [ ] Issue marked as Done (after review and merge)
 
 ---
 
-**Last updated**: 2026-09-26T03:59:57Z
+**Last updated**: 2026-09-26T04:01:53Z
