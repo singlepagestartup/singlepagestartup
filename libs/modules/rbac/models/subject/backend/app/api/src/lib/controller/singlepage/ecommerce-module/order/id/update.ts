@@ -55,9 +55,18 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      if (!data.ordersToProducts) {
+      if (!Array.isArray(data.ordersToProducts)) {
         throw new Error("Validation error. No ordersToProducts provided");
       }
+
+      const ordersToProducts = data.ordersToProducts.map(
+        (orderToProduct: { id: string; quantity: number }) => {
+          return {
+            id: orderToProduct.id,
+            quantity: orderToProduct.quantity,
+          };
+        },
+      );
 
       const entity = await this.service.findById({
         id,
@@ -81,7 +90,9 @@ export class Handler {
 
       await ecommerceOrderApi.update({
         id: orderId,
-        data,
+        data: {
+          ordersToProducts,
+        },
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
