@@ -3,7 +3,8 @@ issue_number: 348
 issue_title: "Attach the Admin role to count routes without an anonymous caller"
 start_date: 2026-09-26T00:50:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-348.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-348 - Attach the Admin role to count routes without an anonymous caller
@@ -83,16 +84,17 @@ status: in_progress
 ### Commits
 
 - `cb3d61ac94` fix(rbac): require the Admin role for count routes only the admin UI reads
+- `1973eea0b7` docs: add research, plan and process log for #348
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/351 (base `claude/issue-303-roleless-permissions`)
+- [x] PR number: 351
 
 ### Final Status
 
-- [ ] All phases completed
-- [ ] All automated verification passed
+- [x] All phases completed
+- [x] All automated verification passed
 - [ ] Issue marked as Done
 
 ---
