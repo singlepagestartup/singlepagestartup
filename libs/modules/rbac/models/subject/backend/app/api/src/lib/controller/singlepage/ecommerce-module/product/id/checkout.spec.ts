@@ -3,7 +3,8 @@
  *
  * Given: product checkout handler dependencies are mocked for deterministic order creation.
  * When: subject checks out directly from product page.
- * Then: handler creates order graph and delegates payment checkout with provider-specific deanonymization.
+ * Then: handler creates order graph and delegates payment checkout with provider-specific deanonymization,
+ * and refuses a quantity outside the order line bounds before anything is written.
  */
 
 const orderCreateMock = jest.fn();
@@ -61,6 +62,7 @@ jest.mock(
   }),
 );
 
+import { quantityBounds } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { Handler } from "./checkout";
 
 function createContext(
@@ -185,4 +187,43 @@ describe("Given: ecommerce product checkout handler", () => {
     expect(service.deanonymize).not.toHaveBeenCalled();
     expect(service.ecommerceOrderCheckout).toHaveBeenCalledTimes(1);
   });
+
+  /**
+   * BDD Scenario
+   * Given: a quantity of 0, a negative number, a fraction or a value above the
+   * maximum.
+   * When: the subject checks out the product.
+   * Then: the request is refused with a validation error and no order,
+   * relation or checkout is created.
+   */
+  it.each([0, -1, 1.5, quantityBounds.max + 1])(
+    "When: the quantity is %p Then: the checkout is refused before anything is written",
+    async (quantity) => {
+      const service = createService();
+      const handler = new Handler(service);
+
+      const context = createContext(
+        { id: "subject-1", productId: "product-1" },
+        {
+          data: JSON.stringify({
+            provider: "stripe",
+            email: "user@example.test",
+            quantity,
+            storeId: "store-1",
+            billingModule: { currency: { id: "currency-1" } },
+          }),
+        },
+      );
+
+      await expect(handler.execute(context, jest.fn())).rejects.toMatchObject({
+        message: expect.stringContaining(
+          "Validation error. data.quantity must be a whole number",
+        ),
+      });
+      expect(orderCreateMock).not.toHaveBeenCalled();
+      expect(subjectsToOrdersCreateMock).not.toHaveBeenCalled();
+      expect(ordersToProductsCreateMock).not.toHaveBeenCalled();
+      expect(service.ecommerceOrderCheckout).not.toHaveBeenCalled();
+    },
+  );
 });
