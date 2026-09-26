@@ -3,7 +3,8 @@ issue_number: 358
 issue_title: "Subject order routes: bound line quantities"
 start_date: 2026-09-26T05:40:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-358.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-358 - Subject order routes: bound line quantities
@@ -53,10 +54,15 @@ status: in_progress
 - Bounds in the cart update form.
 - Relation model and input descriptions, README.
 
+### Commits
+
+- `9dcbff8ee8` fix(rbac): bound order line quantities on the subject cart routes
+- `9bbc47c4ec` docs: add research, plan and process log for #358
+
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/361
+- [x] PR number: 361
 
 ### Final Status
 

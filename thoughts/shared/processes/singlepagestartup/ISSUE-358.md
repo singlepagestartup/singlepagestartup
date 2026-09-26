@@ -5,7 +5,7 @@ repository: singlepagestartup
 created_at: 2026-09-26T05:30:00Z
 last_updated: 2026-09-26T06:35:00Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-358 - Subject order routes: bound line quantities
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: complete implementation and open the pull request
+- Implement: completed
+- Current phase: complete
+- Next step: code review of PR #361 by the lead, then merge
 
 ## Phase Notes
 
@@ -46,7 +46,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: done in one phase; the unit lanes, lint, type checks, placement check, mutation checks and the HTTP run on a copy of the development database passed.
-- Outputs: progress file `thoughts/shared/handoffs/singlepagestartup/ISSUE-358-progress.md`.
+- Outputs: progress file `thoughts/shared/handoffs/singlepagestartup/ISSUE-358-progress.md`; PR https://github.com/singlepagestartup/singlepagestartup/pull/361 with description `thoughts/shared/prs/361_description.md`.
 - Notes: the error body of the API carries the message under `error`; the HTTP script's first run read `message` and printed empty text, which a second run fixed (no code change).
 
 ## Incident Log
