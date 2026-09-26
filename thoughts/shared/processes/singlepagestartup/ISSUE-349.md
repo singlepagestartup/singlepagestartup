@@ -3,9 +3,9 @@ issue_number: 349
 issue_title: "Read cart lines through the subject owner route"
 repository: singlepagestartup
 created_at: 2026-09-26T00:05:00Z
-last_updated: 2026-09-26T03:55:00Z
+last_updated: 2026-09-26T04:10:00Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-349 - Read cart lines through the subject owner route
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: complete implementation and open the pull request
+- Implement: completed
+- Current phase: complete
+- Next step: code review of PR #354 by the lead, then merge after #346 (retarget to `main`)
 
 ## Phase Notes
 
@@ -46,7 +46,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: all four phases done. The seed rows were created through the API on `sps-lite-issue-349` (a copy of the development database) and dumped; the HTTP run covered add to cart, the line route, filters, refusals, the four relation reads for a customer and an admin, a quantity change, a removal and a checkout. Unit lanes, lint, type checks and the placement check passed.
-- Outputs: progress file `thoughts/shared/handoffs/singlepagestartup/ISSUE-349-progress.md`.
+- Outputs: progress file `thoughts/shared/handoffs/singlepagestartup/ISSUE-349-progress.md`; PR https://github.com/singlepagestartup/singlepagestartup/pull/354 with description `thoughts/shared/prs/354_description.md`.
 - Notes: the run paused about three hours (usage limit) between research and implementation; the seed timestamps reflect the real time. The throwaway database was dropped and the worktree env copy restored after the HTTP run.
 
 ## Incident Log

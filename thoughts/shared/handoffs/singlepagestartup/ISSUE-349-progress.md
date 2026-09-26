@@ -3,7 +3,8 @@ issue_number: 349
 issue_title: "Read cart lines through the subject owner route"
 start_date: 2026-09-26T00:50:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-349.md
-status: in_progress
+status: complete
+completed_date: 2026-09-26
 ---
 
 # Implementation Progress: ISSUE-349 - Read cart lines through the subject owner route
@@ -116,10 +117,15 @@ status: in_progress
 - Seed: one role-less permission row for the route, four Admin attachments for the order line reads; reviewed list updated.
 - READMEs of the subject model, the order model and the relation.
 
+### Commits
+
+- `69e41092d8` fix(rbac): read cart lines through the subject owner route
+- `89d0a7c1cc` docs: add research, plan and process log for #349
+
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/354 (base `claude/issue-303-roleless-permissions`, PR #346)
+- [x] PR number: 354
 
 ### Final Status
 
@@ -129,4 +135,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-09-26T06:50:00+0300
+**Last updated**: 2026-09-26T07:10:00+0300
