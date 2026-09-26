@@ -3,6 +3,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { Component as EcommerceOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/frontend/component";
+import { Component as EcommerceModuleOrderListOrdersToProductsDefault } from "../list/orders-to-products-default";
 import { Button, Form } from "@sps/shared-ui-shadcn";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -46,9 +47,11 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <Form {...form}>
       <div className="flex flex-row gap-1">
-        <EcommerceOrdersToProducts
+        <EcommerceModuleOrderListOrdersToProductsDefault
           isServer={false}
-          variant="find"
+          variant="ecommerce-module-order-list-orders-to-products-default"
+          data={props.data}
+          language={props.language}
           apiProps={{
             params: {
               filters: {
@@ -89,7 +92,7 @@ export function Component(props: IComponentPropsExtended) {
               );
             });
           }}
-        </EcommerceOrdersToProducts>
+        </EcommerceModuleOrderListOrdersToProductsDefault>
         <Button
           onClick={form.handleSubmit(onSubmit)}
           variant="secondary"

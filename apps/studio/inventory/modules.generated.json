@@ -4,7 +4,7 @@
   "totals": {
     "modules": 16,
     "entities": 156,
-    "variants": 1836,
+    "variants": 1837,
     "coveredVariants": 24
   },
   "modules": [
@@ -7442,6 +7442,12 @@
             },
             {
               "variant": "ecommerce-module-order-list-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "ecommerce-module-order-list-orders-to-products-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []

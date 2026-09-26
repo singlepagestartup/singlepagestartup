@@ -83,6 +83,11 @@ import {
   type IProps as IEcommerceModuleOrderListProps,
   type IResult as IEcommerceModuleOrderListResult,
 } from "./ecommerce-module/order/list";
+import {
+  action as ecommerceModuleOrderOrdersToProducts,
+  type IProps as IEcommerceModuleOrderOrdersToProductsProps,
+  type IResult as IEcommerceModuleOrderOrdersToProductsResult,
+} from "./ecommerce-module/order/orders-to-products";
 
 import {
   action as identityFind,
@@ -428,6 +433,7 @@ export type IProps = {
   IEcommerceModuleOrderQuantityProps: IEcommerceModuleOrderQuantityProps;
   IEcommerceModuleOrderIdCheckoutProps: IEcommerceModuleOrderIdCheckoutProps;
   IEcommerceModuleOrderListProps: IEcommerceModuleOrderListProps;
+  IEcommerceModuleOrderOrdersToProductsProps: IEcommerceModuleOrderOrdersToProductsProps;
 
   IIdentityFindProps: IIdentityFindProps;
   IIdentityUpdateProps: IIdentityUpdateProps;
@@ -516,6 +522,7 @@ export type IResult = {
   IEcommerceModuleOrderQuantityResult: IEcommerceModuleOrderQuantityResult;
   IEcommerceModuleOrderIdCheckoutResult: IEcommerceModuleOrderIdCheckoutResult;
   IEcommerceModuleOrderListResult: IEcommerceModuleOrderListResult;
+  IEcommerceModuleOrderOrdersToProductsResult: IEcommerceModuleOrderOrdersToProductsResult;
 
   IIdentityFindResult: IIdentityFindResult;
   IIdentityUpdateResult: IIdentityUpdateResult;
@@ -611,6 +618,7 @@ export const api = {
   ecommerceModuleOrderQuantity,
   ecommerceModuleOrderIdCheckout,
   ecommerceModuleOrderList,
+  ecommerceModuleOrderOrdersToProducts,
 
   identityFind,
   identityUpdate,

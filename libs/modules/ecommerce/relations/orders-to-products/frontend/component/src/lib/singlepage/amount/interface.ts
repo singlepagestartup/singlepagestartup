@@ -9,7 +9,10 @@ import { Dispatch, SetStateAction } from "react";
 export const variant = "amount" as const;
 
 export interface IComponentProps
-  extends Omit<IParentComponentProps<IModel, typeof variant>, "children"> {
+  extends Omit<
+    IParentComponentProps<IModel, typeof variant>,
+    "children" | "apiProps"
+  > {
   set?: Dispatch<SetStateAction<string | undefined>>;
   children?: ({ data }: { data: string | undefined }) => any;
 }
