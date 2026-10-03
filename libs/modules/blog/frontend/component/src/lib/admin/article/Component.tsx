@@ -1,5 +1,6 @@
 "use client";
 
+import { Component as ProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component";
 import { Component as ParentComponent } from "@sps/blog/models/article/frontend/component";
 import { Component as CategoriesToArticles } from "@sps/blog/relations/categories-to-articles/frontend/component";
 import { Component as ArticlesToFileStorageModuleWidgets } from "@sps/blog/relations/articles-to-file-storage-module-files/frontend/component";
@@ -20,6 +21,31 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
+            profilesToBlogModuleArticles={({ data }) => {
+              if (!data) {
+                return null;
+              }
+              return (
+                <ProfilesToBlogModuleArticles
+                  isServer={false}
+                  variant="admin-table"
+                  defaultBlogModuleArticleId={data.id}
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "blogModuleArticleId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
             widgetsToArticles={({ data, isServer }) => {
               if (!data) {
                 return;

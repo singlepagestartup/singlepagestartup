@@ -34,9 +34,24 @@ connection parameters for additional servers.
 
 - `default`: profile card with title.
 - `overview-default`: profile hero section with description and widgets.
+- `articles-default`: responsive grid of linked Blog article cards, ordered by the relation's `orderIndex` ascending.
 - `button-default`: compact button for profile.
 - `find`: data-fetch wrapper for querying profiles.
 - `admin-form`: admin create/edit form for localized fields and metadata.
 - `admin-select-input`: admin select input for choosing a profile.
 - `admin-table`: admin table listing profiles.
 - `admin-table-row`: admin row showing profile fields.
+
+## Blog articles
+
+[profiles-to-blog-module-articles](../../relations/profiles-to-blog-module-articles/README.md)
+links profiles to articles. Both admin generations expose an Articles relation
+section for attaching, editing and removing links. The separate
+`articles-default` frontend variant leaves `overview-default` and persisted
+profile types unchanged.
+
+```tsx
+<Profile isServer={true} variant="articles-default" data={profile} language="ru" />
+```
+
+The caller needs RBAC access to the relation and linked Blog articles.

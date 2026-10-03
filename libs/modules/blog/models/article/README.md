@@ -27,3 +27,15 @@ Articles are the primary content entries in the blog, storing localized text and
 - `admin-select-input`: admin select input for choosing an article.
 - `admin-table`: admin table listing articles.
 - `admin-table-row`: admin row showing article fields.
+
+## Social profiles
+
+The Social-owned
+[profiles-to-blog-module-articles](../../../social/relations/profiles-to-blog-module-articles/README.md)
+relation connects an article to one or more profiles. Both article admin forms
+expose a Profiles section scoped to the current article. Admin-v2 relation rows
+can open the linked profile or article editor.
+
+Profile lists render the existing article `default` card through the profile's
+`articles-default` variant. Reading links and articles uses existing RBAC
+permissions. Deleting a link preserves the article and profile.

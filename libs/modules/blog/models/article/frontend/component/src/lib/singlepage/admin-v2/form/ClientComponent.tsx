@@ -57,6 +57,11 @@ export function Component(props: IComponentPropsExtended) {
   const relationSections = useMemo(() => {
     return [
       {
+        id: "profiles-to-blog-module-articles",
+        title: "Profiles",
+        render: props.profilesToBlogModuleArticles,
+      },
+      {
         id: "categories-to-articles",
         title: "Categories",
         render: props.categoriesToArticles,
@@ -91,6 +96,7 @@ export function Component(props: IComponentPropsExtended) {
       } => Boolean(section.render),
     );
   }, [
+    props.profilesToBlogModuleArticles,
     props.categoriesToArticles,
     props.articlesToFileStorageModuleWidgets,
     props.articlesToWebsiteBuilderModuleWidgets,

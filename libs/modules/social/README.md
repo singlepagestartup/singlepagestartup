@@ -11,6 +11,7 @@ The Social module manages profiles, chats, messages, and related social interact
 - Stores reusable AI skills for transcript-to-content workflows.
 - Attaches files and widgets to social entities.
 - Links social content to ecommerce products.
+- Links profiles to Blog articles for profile-scoped article lists.
 
 ### Typical use cases:
 
@@ -59,6 +60,7 @@ Users can send `/learn` in the existing chat UI to add the current message text 
 | [profiles-to-attributes](./relations/profiles-to-attributes/README.md)                                         | Link profiles to attributes       |
 | [profiles-to-chats](./relations/profiles-to-chats/README.md)                                                   | Link profiles to chats            |
 | [profiles-to-ecommerce-module-products](./relations/profiles-to-ecommerce-module-products/README.md)           | Link profiles to products         |
+| [profiles-to-blog-module-articles](./relations/profiles-to-blog-module-articles/README.md)                     | Link profiles to Blog articles    |
 | [profiles-to-file-storage-module-files](./relations/profiles-to-file-storage-module-files/README.md)           | Attach files to profiles          |
 | [profiles-to-knowledge-module-documents](./relations/profiles-to-knowledge-module-documents/README.md)         | Link profiles to knowledge docs   |
 | [profiles-to-messages](./relations/profiles-to-messages/README.md)                                             | Link profiles to messages         |

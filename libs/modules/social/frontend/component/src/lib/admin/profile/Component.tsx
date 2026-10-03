@@ -1,5 +1,6 @@
 "use client";
 
+import { Component as ProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component";
 import { Component as ParentComponent } from "@sps/social/models/profile/frontend/component";
 import { Component as ProfilesToWebsiteBuilderModuleWidgets } from "@sps/social/relations/profiles-to-website-builder-module-widgets/frontend/component";
 import { Component as ProfilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component";
@@ -21,6 +22,27 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
+            profilesToBlogModuleArticles={({ data }) => {
+              if (!data) {
+                return null;
+              }
+              return (
+                <ProfilesToBlogModuleArticles
+                  isServer={false}
+                  variant="admin-table"
+                  defaultProfileId={data.id}
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          { column: "profileId", method: "eq", value: data.id },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
             profilesToSkills={({ data, isServer }) => {
               if (!data) {
                 return;

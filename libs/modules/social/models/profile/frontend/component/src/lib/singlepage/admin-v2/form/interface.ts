@@ -10,6 +10,10 @@ import {
 export const variant = "admin-v2-form" as const;
 
 export type IComponentProps = IParentComponentProps<IModel, typeof variant> & {
+  profilesToBlogModuleArticles?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
+
   profilesToFileStorageModuleFiles?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;

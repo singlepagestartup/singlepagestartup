@@ -1,5 +1,10 @@
 "use client";
 
+import { useCallback } from "react";
+import { IComponentProps as IRelationTableProps } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/admin-v2/table/interface";
+import { Component as ProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component";
+import { Component as SocialProfile } from "@sps/social/frontend/component/src/lib/admin-v2/overview/profile";
+
 import { Component as Article } from "@sps/blog/models/article/frontend/component";
 import { Component as Category } from "@sps/blog/models/category/frontend/component";
 import { Component as Widget } from "@sps/blog/models/widget/frontend/component";
@@ -14,11 +19,66 @@ import { Component as ArticlesToWebsiteBuilderModuleWidgets } from "@sps/blog/re
 import { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
+  const renderSocialProfileForm = useCallback<
+    NonNullable<IRelationTableProps["leftModelAdminForm"]>
+  >(
+    ({ data }) =>
+      data ? (
+        <SocialProfile
+          isServer={false}
+          variant="admin-v2-form"
+          data={{ id: data.profileId } as any}
+        />
+      ) : null,
+    [],
+  );
+  const renderArticleForm = useCallback<
+    NonNullable<IRelationTableProps["rightModelAdminForm"]>
+  >(
+    ({ data }) =>
+      data ? (
+        <Article
+          isServer={false}
+          variant="admin-v2-form"
+          data={{ id: data.blogModuleArticleId } as any}
+        />
+      ) : null,
+    [],
+  );
   return (
     <Article
       isServer={false}
       data={props.data}
       variant="admin-v2-form"
+      profilesToBlogModuleArticles={({ data }) => {
+        if (!data) {
+          return null;
+        }
+        return (
+          <ProfilesToBlogModuleArticles
+            isServer={false}
+            variant="admin-v2-table"
+            defaultBlogModuleArticleId={data.id}
+            leftModelAdminFormLabel="Profile"
+            rightModelAdminFormLabel="Article"
+            leftModelAdminForm={renderSocialProfileForm}
+            rightModelAdminForm={renderArticleForm}
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "blogModuleArticleId",
+                      method: "eq",
+                      value: data.id,
+                    },
+                  ],
+                },
+              },
+            }}
+          />
+        );
+      }}
       categoriesToArticles={({ data }) => {
         if (!data) {
           return;

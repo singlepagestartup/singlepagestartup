@@ -1,3 +1,4 @@
+import { app as profilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/backend/app/api";
 import { app as profilesToSkills } from "@sps/social/relations/profiles-to-skills/backend/app/api";
 import { app as skill } from "@sps/social/models/skill/backend/app/api";
 import { app as profilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/backend/app/api";
@@ -35,6 +36,11 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/profiles-to-blog-module-articles",
+      app: profilesToBlogModuleArticles,
+    });
     this.apps.push({
       type: "relation",
       route: "/profiles-to-skills",

@@ -78,7 +78,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "cwd": "apps/api",
+        "cwd": ".",
         "commands": [
           {
             "command": "npx nx run @sps/file-storage:repository-migrate"
@@ -108,10 +108,10 @@
             "command": "npx nx run @sps/rbac:repository-natural-key-repair-apply"
           },
           {
-            "command": "npx nx run @sps/social:repository-migrate"
+            "command": "npx nx run @sps/blog:repository-migrate"
           },
           {
-            "command": "npx nx run @sps/blog:repository-migrate"
+            "command": "npx nx run @sps/social:repository-migrate"
           },
           {
             "command": "npx nx run @sps/startup:repository-migrate"

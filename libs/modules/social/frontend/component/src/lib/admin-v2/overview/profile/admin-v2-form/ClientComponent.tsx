@@ -1,5 +1,10 @@
 "use client";
 
+import { useCallback } from "react";
+import { IComponentProps as IRelationTableProps } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/admin-v2/table/interface";
+import { Component as ProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component";
+import { Component as BlogArticle } from "@sps/blog/models/article/frontend/component";
+
 import { Component as ParentComponent } from "@sps/social/models/profile/frontend/component";
 import { Component as ProfilesToActions } from "@sps/social/relations/profiles-to-actions/frontend/component";
 import { Component as ProfilesToAttributes } from "@sps/social/relations/profiles-to-attributes/frontend/component";
@@ -23,11 +28,60 @@ import { Component as Profile } from "../";
 import { Component as Skill } from "../../skill";
 
 export function Component(props: IComponentProps) {
+  const renderProfileForm = useCallback<
+    NonNullable<IRelationTableProps["leftModelAdminForm"]>
+  >(
+    ({ data }) =>
+      data ? (
+        <Profile
+          isServer={false}
+          variant="admin-v2-form"
+          data={{ id: data.profileId } as any}
+        />
+      ) : null,
+    [],
+  );
+  const renderBlogArticleForm = useCallback<
+    NonNullable<IRelationTableProps["rightModelAdminForm"]>
+  >(
+    ({ data }) =>
+      data ? (
+        <BlogArticle
+          isServer={false}
+          variant="admin-v2-form"
+          data={{ id: data.blogModuleArticleId } as any}
+        />
+      ) : null,
+    [],
+  );
   return (
     <ParentComponent
       isServer={false}
       data={props.data}
       variant="admin-v2-form"
+      profilesToBlogModuleArticles={({ data }) => {
+        if (!data) {
+          return null;
+        }
+        return (
+          <ProfilesToBlogModuleArticles
+            isServer={false}
+            variant="admin-v2-table"
+            defaultProfileId={data.id}
+            leftModelAdminFormLabel="Profile"
+            rightModelAdminFormLabel="Article"
+            leftModelAdminForm={renderProfileForm}
+            rightModelAdminForm={renderBlogArticleForm}
+            apiProps={{
+              params: {
+                filters: {
+                  and: [{ column: "profileId", method: "eq", value: data.id }],
+                },
+              },
+            }}
+          />
+        );
+      }}
       profilesToKnowledgeModuleDocuments={({ data }) => {
         if (!data) {
           return;

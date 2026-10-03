@@ -59,6 +59,10 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        {props.profilesToBlogModuleArticles?.({
+          data: props.data,
+          isServer: false,
+        })}
         <FormField
           ui="shadcn"
           type="text"
