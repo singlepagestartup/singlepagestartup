@@ -296,6 +296,43 @@ The server playbook adds `ANSIBLE_USER` to the `docker` group. An SSH session
 that was already open before provisioning must be closed and opened again
 before commands such as `docker ps` work without `sudo`.
 
+## File storage
+
+The API stores uploads with the provider named by `FILE_STORAGE_PROVIDER`.
+`api.sh` does not forward that variable, so a server deployment runs the `local`
+provider: uploads are written to `/home/code/api_data` on the server, mounted at
+`apps/api/public/file-storage/dynamic` in the API container, and served from the
+API origin under `/public`. Every file response carries
+`X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox`, so a
+file opened in a tab cannot run script as the API origin
+(`libs/modules/file-storage/README.md`).
+
+Production deployments should store uploads with the `aws-s3` or `vercel-blob`
+provider, which serves files from an origin outside the application. Switching
+a server deployment requires forwarding more variables through `api.sh` and
+`api/api.env.j2`:
+
+- `vercel-blob`: `FILE_STORAGE_PROVIDER`; `BLOB_READ_WRITE_TOKEN` is already
+  forwarded.
+- `aws-s3`: `FILE_STORAGE_PROVIDER`, `AWS_S3_BUCKET_NAME` (the template renders
+  `AWS_S3_BUCKET`, which the provider does not read), and `AWS_ACCESS_KEY_ID`
+  and `AWS_SECRET_ACCESS_KEY`, which the template renders but `api.sh` does not
+  pass; `AWS_REGION` is already forwarded.
+
+Until then the `FILE_STORAGE_PROVIDER=vercel-blob` line in `.env.example` has
+no effect on the API. Check its token before forwarding the variable, because
+a placeholder token would break uploads on the next deploy.
+
+`FILE_STORAGE_MAX_UPLOAD_BYTES` bounds a single upload and defaults to 50 MiB:
+
+```dotenv
+FILE_STORAGE_MAX_UPLOAD_BYTES=52428800
+```
+
+`api.sh` writes it into the server API environment. Bun refuses request bodies
+above 128 MiB, so a larger value also needs `maxRequestBodySize` raised in
+`apps/api/server.ts`.
+
 ## Let's Encrypt certificates
 
 The non-Cloudflare deployment serves HTTP-01 challenge files through the
