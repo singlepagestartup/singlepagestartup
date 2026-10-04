@@ -1,4 +1,9 @@
-import { ArrowLeft, CheckCircle2, Mail } from "lucide-react";
+import { Button } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Mail,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export interface IdentityPasswordResetDefaultProps {
   title: string;
@@ -22,7 +27,7 @@ export const defaultIdentityPasswordResetDefaultProps: IdentityPasswordResetDefa
     emailLabel: "Email address",
     emailPlaceholder: "you@example.com",
     submitLabel: "Send Reset Link",
-    backLabel: "Back to Sign In",
+    backLabel: "Back to Sign in",
     backHref: "/rbac/subject/authentication/select-method",
     sent: false,
     sentTitle: "Check your inbox",
@@ -61,42 +66,46 @@ export function IdentityPasswordResetDefault(
 
   return (
     <section
-      className="w-full py-12"
+      className="w-full bg-[var(--workspace-brand-background)] py-12 sm:py-16"
       data-ds-block="rbac.identity.password-reset-default"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-md px-4 sm:px-6 lg:px-0">
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 px-8 pb-6 pt-8 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white">
+      <div className="mx-auto w-full max-w-lg px-4 sm:px-6 lg:px-0">
+        <div className="overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] shadow-sm">
+          <div className="px-6 pb-2 pt-8 sm:px-8">
+            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-on-accent)]">
               <Mail className="h-5 w-5" />
             </div>
-            <h1 className="text-xl font-medium tracking-tight text-slate-900">
+            <h1 className="text-3xl font-semibold tracking-tight text-[var(--workspace-brand-foreground)]">
               {title}
             </h1>
-            <p className="mt-1.5 text-sm text-slate-500">{description}</p>
+            <p className="mt-1.5 text-sm text-[var(--workspace-brand-muted)]">
+              {description}
+            </p>
           </div>
 
-          <div className="px-8 py-6">
+          <div className="px-6 py-6 sm:px-8">
             {sent ? (
               <div className="space-y-5 text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
-                  <CheckCircle2 className="h-7 w-7 text-green-500" />
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--workspace-brand-background)]">
+                  <CheckCircle2 className="h-11 w-11 text-[var(--workspace-brand-foreground)]" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">
+                  <p className="text-sm font-medium text-[var(--workspace-brand-foreground)]">
                     {sentTitle}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-[var(--workspace-brand-muted)]">
                     {sentDescription}{" "}
-                    <strong className="text-slate-700">{sentEmail}</strong>
+                    <strong className="text-[var(--workspace-brand-foreground)]">
+                      {sentEmail}
+                    </strong>
                   </p>
                 </div>
                 <a
-                  className="inline-flex items-center gap-1.5 text-sm text-slate-700 transition hover:text-slate-900"
+                  className="inline-flex items-center gap-1.5 text-sm text-[var(--workspace-brand-foreground)] transition hover:text-[var(--workspace-brand-foreground)]"
                   {...getStoryLinkProps(backHref, backStoryHref)}
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <ArrowLeft className="h-5 w-5" />
                   {backLabel}
                 </a>
               </div>
@@ -104,15 +113,15 @@ export function IdentityPasswordResetDefault(
               <div className="space-y-5">
                 <div>
                   <label
-                    className="mb-1.5 block text-xs font-medium text-slate-500"
+                    className="mb-1.5 block text-sm font-medium text-[var(--workspace-brand-muted)]"
                     htmlFor="rbac-password-reset-email"
                   >
                     {emailLabel}
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--workspace-brand-muted)]" />
                     <input
-                      className="w-full rounded-md border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
+                      className="w-full rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] min-h-12 py-3 pl-12 pr-4 text-base text-[var(--workspace-brand-foreground)] outline-none transition placeholder:text-[var(--workspace-brand-muted)] focus:border-[var(--workspace-brand-line)] focus:ring-1 focus:ring-[var(--workspace-brand-focus)] focus-visible:border-[var(--workspace-brand-focus)] focus-visible:ring-2 focus-visible:ring-[var(--workspace-brand-focus)]"
                       id="rbac-password-reset-email"
                       placeholder={emailPlaceholder}
                       readOnly
@@ -121,23 +130,20 @@ export function IdentityPasswordResetDefault(
                   </div>
                 </div>
 
-                <button
-                  className="flex w-full items-center justify-center rounded-md border border-slate-400 bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
-                  type="button"
-                >
+                <Button className="w-full" type="button">
                   {submitLabel}
-                </button>
+                </Button>
               </div>
             )}
           </div>
 
           {!sent ? (
-            <div className="border-t border-slate-100 px-8 py-4 text-center">
+            <div className="border-t border-[var(--workspace-brand-line)] px-6 py-5 text-center sm:px-8">
               <a
-                className="inline-flex items-center gap-1.5 text-xs text-slate-500 transition hover:text-slate-700"
+                className="inline-flex items-center gap-1.5 text-xs text-[var(--workspace-brand-muted)] transition hover:text-[var(--workspace-brand-foreground)]"
                 {...getStoryLinkProps(backHref, backStoryHref)}
               >
-                <ArrowLeft className="h-3 w-3" />
+                <ArrowLeft className="h-5 w-5" />
                 {backLabel}
               </a>
             </div>

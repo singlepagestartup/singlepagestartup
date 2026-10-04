@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
 import "../../../../styles/singlepage.css";
+import {
+  Icon,
+  kit,
+} from "../../../../design/singlepage/interface-kit/primitives";
 
 import sourceText from "./page.md?raw";
 import { parseAIChatWebsite } from "./content";
@@ -9,7 +13,7 @@ interface IAIChatLandingProps {
 }
 
 const display =
-  "[font-family:var(--workspace-brand-font-display)] font-semibold tracking-tight";
+  "[font-family:var(--workspace-brand-font-display)] font-semibold tracking-normal";
 const muted = "text-[var(--workspace-brand-muted)]";
 const focus =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--workspace-brand-foreground)]";
@@ -18,7 +22,9 @@ const logo =
 
 function SectionHeading({ children }: { children: ReactNode }) {
   return (
-    <h2 className={`max-w-4xl text-[40px] leading-[42px] ${display}`}>
+    <h2
+      className={`max-w-4xl text-[32px] leading-[1.1] @3xl:text-[40px] ${display}`}
+    >
       {children}
     </h2>
   );
@@ -73,74 +79,94 @@ export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
       </header>
 
       <main id="ai-chat-main" tabIndex={-1} className="outline-none">
-        <section className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:px-8 @5xl:grid-cols-[1.05fr_0.95fr] @5xl:py-24">
-          <div>
-            <p className="inline-block rounded-md bg-[var(--workspace-brand-accent)] px-3 py-2 text-xs uppercase tracking-widest">
-              {content.hero.paragraphs[0]}
-            </p>
-            <h1
-              className={`mt-6 max-w-4xl text-[48px] leading-[48px] @4xl:text-[72px] @4xl:leading-[70px] ${display}`}
-            >
-              {content.hero.title}
-            </h1>
-            <p className={`mt-6 max-w-2xl text-lg leading-8 ${muted}`}>
-              {content.hero.paragraphs[1]}
-            </p>
-            <a
-              className={`mt-8 inline-flex min-h-12 items-center rounded-xl bg-[var(--workspace-brand-accent)] px-6 py-3 text-sm font-semibold text-[var(--workspace-brand-foreground)] hover:brightness-95 ${focus}`}
-              href={content.hero.links[0].href}
-            >
-              {content.hero.links[0].text}
-            </a>
-            {content.hero.links[1] ? (
-              <a
-                className={`ml-4 inline-flex min-h-12 items-center px-2 py-3 text-sm font-semibold underline underline-offset-4 ${focus}`}
-                href={content.hero.links[1].href}
+        <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 @4xl:py-12">
+          <div className="grid overflow-hidden rounded-3xl @5xl:grid-cols-2">
+            <div className="flex flex-col justify-center bg-[var(--workspace-brand-foreground)] p-6 text-white @3xl:p-10">
+              <p className="text-sm font-medium text-[var(--workspace-brand-muted-on-primary)]">
+                {content.hero.paragraphs[0]}
+              </p>
+              <h1
+                className={`mt-5 max-w-4xl text-[40px] leading-[1.05] @4xl:text-[60px] ${display}`}
               >
-                {content.hero.links[1].text}
-              </a>
-            ) : null}
-            <p className={`mt-4 max-w-xl text-sm leading-6 ${muted}`}>
-              {content.hero.paragraphs[2]}
-            </p>
-          </div>
-          <div className="rounded-[32px] border border-[var(--workspace-brand-line)] bg-white p-4 shadow-xl sm:p-6">
-            <div className="flex items-center justify-between border-b border-[var(--workspace-brand-line)] pb-4 text-xs uppercase tracking-widest text-[var(--workspace-brand-muted)]">
-              <span>Project page</span>
-              <span className="rounded-full bg-[var(--workspace-brand-accent)] px-3 py-1 text-[var(--workspace-brand-foreground)]">
-                Current
-              </span>
-            </div>
-            <div className="mt-6 space-y-3">
-              {content.foundation.items.map((item, index) => (
-                <article
-                  className="grid grid-cols-[42px_1fr] gap-4 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-4"
-                  key={item.title}
+                {content.hero.title}
+              </h1>
+              <p className="mt-6 max-w-2xl text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
+                {content.hero.paragraphs[1]}
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  className={`${kit.button} focus-visible:outline-[var(--workspace-brand-focus-inverse)]`}
+                  href={content.hero.links[0].href}
                 >
-                  <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-xs font-semibold">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <h2 className="text-base font-semibold">{item.title}</h2>
-                    <p className={`mt-1 text-sm leading-6 ${muted}`}>
-                      {item.text}
-                    </p>
-                  </div>
-                </article>
-              ))}
+                  {content.hero.links[0].text}
+                  <Icon name="arrow-right" />
+                </a>
+                {content.hero.links[1] ? (
+                  <a
+                    className={`inline-flex min-h-11 items-center px-2 text-sm font-semibold text-white underline underline-offset-4 ${focus} focus-visible:outline-[var(--workspace-brand-focus-inverse)]`}
+                    href={content.hero.links[1].href}
+                  >
+                    {content.hero.links[1].text}
+                  </a>
+                ) : null}
+              </div>
+              <p className="mt-4 max-w-xl text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)]">
+                {content.hero.paragraphs[2]}
+              </p>
             </div>
+            <figure className="relative min-w-0 @5xl:min-h-full">
+              <img
+                src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png"
+                data-asset-id="singlepage-generated-living-focus-photography-business-conversation-square"
+                alt="Editorial image of two people exchanging ideas at a worktable."
+                width={1254}
+                height={1254}
+                className="block aspect-square h-full w-full object-cover @5xl:absolute @5xl:inset-0 @5xl:aspect-auto"
+              />
+            </figure>
           </div>
         </section>
 
         <section
           id="project-page"
-          className="border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]"
+          className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 @4xl:py-20"
         >
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-            <SectionHeading>{content.foundation.title}</SectionHeading>
-            <p className={`mt-5 max-w-2xl text-base leading-7 ${muted}`}>
-              {content.foundation.paragraphs[0]}
-            </p>
+          <div className="grid gap-8 @4xl:grid-cols-[1fr_1.1fr] @4xl:gap-12">
+            <div>
+              <SectionHeading>{content.foundation.title}</SectionHeading>
+              <p className={`mt-5 max-w-2xl text-base leading-7 ${muted}`}>
+                {content.foundation.paragraphs[0]}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--workspace-brand-line)] pb-4 text-sm text-[var(--workspace-brand-muted)]">
+                <span>Project page</span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] px-3 py-1 text-sm text-[var(--workspace-brand-foreground)]">
+                  <span className="grid size-5 place-items-center rounded-full bg-[var(--workspace-brand-accent)]">
+                    <Icon name="check" className="h-3.5 w-3.5" />
+                  </span>
+                  Current
+                </span>
+              </div>
+              <div className="divide-y divide-[var(--workspace-brand-line)]">
+                {content.foundation.items.map((item, index) => (
+                  <article
+                    className="grid grid-cols-[40px_minmax(0,1fr)] items-start gap-4 py-5"
+                    key={item.title}
+                  >
+                    <span className="grid size-10 place-items-center rounded-xl bg-[var(--workspace-brand-background)] text-sm font-semibold">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <h3 className="text-base font-semibold">{item.title}</h3>
+                      <p className={`mt-2 text-base leading-7 ${muted}`}>
+                        {item.text}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -152,14 +178,16 @@ export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
           <ol className="mt-10 grid gap-5 @3xl:grid-cols-2 @5xl:grid-cols-4">
             {content.workflow.items.map((item, index) => (
               <li
-                className="border-t border-[var(--workspace-brand-foreground)] pt-5"
+                className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-6"
                 key={item.title}
               >
-                <span className={`text-xs ${muted}`}>
+                <span className="grid size-10 place-items-center rounded-xl bg-[var(--workspace-brand-background)] text-sm font-semibold">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <h3 className="mt-4 text-lg font-semibold">{item.title}</h3>
-                <p className={`mt-3 text-sm leading-6 ${muted}`}>{item.text}</p>
+                <p className={`mt-3 text-base leading-7 ${muted}`}>
+                  {item.text}
+                </p>
               </li>
             ))}
           </ol>
@@ -178,7 +206,11 @@ export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
               <div className="mt-6 flex flex-wrap gap-3">
                 {content.publish.links.map((link, index) => (
                   <a
-                    className={`inline-flex rounded-full border border-[var(--workspace-brand-foreground)] px-4 py-2 text-sm font-semibold transition-colors hover:bg-[var(--workspace-brand-foreground)] hover:text-white ${focus} ${index === content.publish.links.length - 1 ? "bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-foreground)]" : "bg-white text-[var(--workspace-brand-foreground)]"}`}
+                    className={
+                      index === content.publish.links.length - 1
+                        ? kit.button
+                        : kit.secondary
+                    }
                     href={link.href}
                     key={link.href}
                   >
@@ -186,7 +218,7 @@ export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
                   </a>
                 ))}
               </div>
-              <p className={`mt-4 text-sm leading-6 ${muted}`}>
+              <p className={`mt-4 text-base leading-7 ${muted}`}>
                 {content.publish.paragraphs[1]}
               </p>
             </div>
@@ -194,15 +226,15 @@ export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="rounded-[32px] bg-[var(--workspace-brand-foreground)] p-8 text-white sm:p-12">
+          <div className="rounded-3xl bg-[var(--workspace-brand-foreground)] p-8 text-white sm:p-12">
             <SectionHeading>{content.continue.title}</SectionHeading>
-            <p className="mt-5 max-w-3xl text-base leading-7 text-white/70">
+            <p className="mt-5 max-w-3xl text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
               {content.continue.paragraphs[0]}
             </p>
             <div className="mt-7 flex flex-wrap gap-5">
               {content.continue.links.map((link) => (
                 <a
-                  className="text-sm font-semibold text-white underline underline-offset-4"
+                  className="inline-flex min-h-11 items-center text-sm font-semibold text-white underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   href={link.href}
                   key={link.href}
                 >
@@ -216,7 +248,7 @@ export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
 
       <footer className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 border-t border-[var(--workspace-brand-line)] px-4 py-8 sm:px-6 lg:px-8">
         <p className="text-sm font-semibold">{content.footer.title}</p>
-        <nav className="flex flex-wrap gap-5 text-xs" aria-label="Footer">
+        <nav className="flex flex-wrap gap-5 text-sm" aria-label="Footer">
           {content.footer.links.map((link) => (
             <a
               className={`underline underline-offset-4 ${focus}`}

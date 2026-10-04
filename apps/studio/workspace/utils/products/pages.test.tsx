@@ -192,7 +192,7 @@ describe("product pages", () => {
       expect(html).not.toContain('data-layout="true"');
       expect(html.match(/Needs confirmation/g)).toHaveLength(1);
       expect(html.split("<article")[1]).not.toContain("Needs confirmation");
-      expect(html).toContain("bg-slate-50");
+      expect(html).toContain("bg-[var(--workspace-brand-background)]");
       expect(html).toContain("<hr");
       expect(html.indexOf("data-document-toolbar")).toBeLessThan(
         html.indexOf("data-export-document"),
@@ -478,7 +478,7 @@ describe("product pages", () => {
       expect(html).toContain(">Overview</button>");
       expect(html).toContain(">Content</button>");
       expect(html).not.toContain("Defines this product&#x27;s customer");
-      expect(html).toContain("bg-slate-50");
+      expect(html).toContain("bg-[var(--workspace-brand-background)]");
     } finally {
       if (descriptor) Object.defineProperty(globalThis, "window", descriptor);
       else Reflect.deleteProperty(globalThis, "window");

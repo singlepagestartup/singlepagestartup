@@ -43,12 +43,8 @@
     "variantName": "overview-default",
     "nodeId": "785:18",
     "variantNodeId": "979:105",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "blog",
-    "article",
-    "overview-default"
-  ]
+  "tags": ["blog", "article", "overview-default"]
 }

@@ -7,7 +7,7 @@ export type ProductTierItem = ProductTierProps;
 
 export const defaultProductFindTiersProps = {
   eyebrow: "Pricing",
-  title: "Simple, Transparent Plans",
+  title: "Simple, transparent plans",
   description: "Start free, scale when you're ready. No hidden fees.",
   products: [
     {
@@ -22,7 +22,7 @@ export const defaultProductFindTiersProps = {
         "1 GB storage",
         "Basic analytics",
       ],
-      cta: "Get Started",
+      cta: "Get started",
       variant: "default",
     },
     {
@@ -39,9 +39,9 @@ export const defaultProductFindTiersProps = {
         "Custom domain",
         "API access",
       ],
-      cta: "Start Free Trial",
+      cta: "Start free trial",
       variant: "featured",
-      badge: "Most Popular",
+      badge: "Most popular",
     },
     {
       name: "Enterprise",
@@ -58,7 +58,7 @@ export const defaultProductFindTiersProps = {
         "Custom integrations",
         "SLA guarantee",
       ],
-      cta: "Contact Sales",
+      cta: "Contact sales",
       variant: "default",
     },
   ] as ProductTierItem[],
@@ -76,15 +76,17 @@ function SectionHeader({
   description?: string;
 }) {
   return (
-    <div className="mx-auto mb-12 max-w-2xl text-center">
-      <p className="mb-2 text-xs uppercase tracking-widest text-slate-500">
+    <div className="mb-8 max-w-2xl">
+      <p className="mb-2 text-xs text-[var(--workspace-brand-muted)]">
         {eyebrow}
       </p>
-      <h2 className="text-3xl font-medium leading-9 tracking-tight text-slate-900">
+      <h2 className="text-3xl font-semibold leading-tight sm:text-4xl text-[var(--workspace-brand-foreground)]">
         {title}
       </h2>
       {description ? (
-        <p className="mt-3 text-base leading-6 text-slate-600">{description}</p>
+        <p className="mt-3 text-base leading-6 text-[var(--workspace-brand-muted)]">
+          {description}
+        </p>
       ) : null}
     </div>
   );
@@ -99,18 +101,18 @@ export function ProductFindTiers(props?: Partial<ProductFindTiersProps>) {
   return (
     <div
       id="pricing"
-      className="w-full py-20"
+      className="w-full py-12 sm:py-16"
       data-ds-block="ecommerce.widget.product-find-tiers"
       data-ds-imports="ecommerce.product.tier"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader
           eyebrow={eyebrow}
           title={title}
           description={description}
         />
-        <div className="grid items-start gap-4 md:grid-cols-3">
+        <div className="grid items-stretch gap-6 lg:grid-cols-3">
           {products.map((product) => (
             <ProductTier
               key={product.name}

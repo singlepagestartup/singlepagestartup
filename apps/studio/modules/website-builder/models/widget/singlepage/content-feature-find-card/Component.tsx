@@ -7,14 +7,14 @@ import {
   Lock,
   MessageSquare,
   ShoppingCart,
-  type LucideIcon,
-} from "lucide-react";
+  type ModuleIcon,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 import { FeatureCard } from "../../../feature/singlepage/card/Component";
 
 interface FeatureItem {
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: ModuleIcon;
 }
 
 function SectionHeader({
@@ -27,23 +27,25 @@ function SectionHeader({
   description?: string;
 }) {
   return (
-    <div className="mx-auto mb-12 max-w-2xl text-center">
-      <p className="mb-2 text-xs uppercase tracking-widest text-slate-500">
+    <div className="mb-8 max-w-2xl sm:mb-10">
+      <p className="mb-2 text-sm font-semibold tracking-normal text-[var(--workspace-brand-muted)]">
         {eyebrow}
       </p>
-      <h2 className="text-3xl font-medium leading-9 tracking-tight text-slate-900">
+      <h2 className="text-[2rem] font-semibold leading-tight tracking-normal sm:text-[2.5rem] text-[var(--workspace-brand-foreground)]">
         {title}
       </h2>
       {description ? (
-        <p className="text-base leading-6 text-slate-600 mt-3">{description}</p>
+        <p className="text-base leading-7 text-[var(--workspace-brand-muted)] mt-3">
+          {description}
+        </p>
       ) : null}
     </div>
   );
 }
 
 export const defaultContentFeatureFindCardProps = {
-  eyebrow: "Core Capabilities",
-  title: "Everything You Need, Modular by Design",
+  eyebrow: "Core capabilities",
+  title: "Everything you need, modular by design",
   description:
     "Each module works independently and connects seamlessly through a unified relation system.",
   features: [
@@ -112,17 +114,20 @@ export function ContentFeatureFindCard(
   return (
     <div
       id="features"
-      className="w-full py-20"
+      className="w-full bg-[var(--workspace-brand-background)] py-12 sm:py-16"
       data-ds-block="website-builder.widget.content-feature-find-card"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-6xl px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader
           eyebrow={eyebrow}
           title={title}
           description={description}
         />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          data-ds-imports="website-builder.feature.card"
+        >
           {features.map((feature) => (
             <FeatureCard
               key={feature.title}

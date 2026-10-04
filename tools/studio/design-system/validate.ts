@@ -1,7 +1,11 @@
 import { access, readdir, readFile, stat } from "node:fs/promises";
 import * as path from "node:path";
 
-import { collectModuleInventory, readBlockManifests } from "./inventory";
+import {
+  collectModuleInventory,
+  missingModuleDirectories,
+  readBlockManifests,
+} from "./inventory";
 
 const ROOT = process.cwd();
 const DESIGN_SYSTEM_ROOT = path.join(ROOT, "apps", "studio");
@@ -381,6 +385,14 @@ async function validateBlocks(failures: ValidationFailure[]): Promise<void> {
 
   const inventory = await collectModuleInventory();
   const variantKeys = new Set<string>();
+
+  for (const directory of await missingModuleDirectories(inventory)) {
+    addError(
+      failures,
+      path.join(ROOT, directory),
+      "module layer directory is missing; run npm run studio:inventory",
+    );
+  }
 
   for (const moduleRecord of inventory.modules) {
     for (const entity of moduleRecord.entities) {

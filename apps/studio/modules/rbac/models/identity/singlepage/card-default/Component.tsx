@@ -1,4 +1,11 @@
-import { CheckCircle2, type LucideIcon } from "lucide-react";
+import { Button } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import { ConfirmationDialog } from "../../../../../../workspace/design/singlepage/interface-kit/Confirmation";
+import { memo, useState } from "react";
+import {
+  Check,
+  ChevronDown,
+  type ModuleIcon,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 import {
   formatRbacDateTime,
@@ -15,6 +22,7 @@ export interface IdentityCardDefaultProps {
   relation?: RbacSubjectToIdentity;
   lastOperationLabel?: string;
   onAction?: (identity: RbacIdentity, action: IdentityAction) => void;
+  embedded?: boolean;
 }
 
 export const defaultIdentityCardDefaultProps: IdentityCardDefaultProps = {
@@ -36,107 +44,174 @@ export const defaultIdentityCardDefaultProps: IdentityCardDefaultProps = {
   },
 };
 
-function ProviderIcon({ icon: Icon }: { icon: LucideIcon }) {
+function ProviderIcon({ icon: Icon }: { icon: ModuleIcon }) {
   return (
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500">
-      <Icon className="h-5 w-5" />
+    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)]">
+      <Icon className="h-6 w-6" />
     </span>
   );
 }
 
-export function IdentityCardDefault(props?: Partial<IdentityCardDefaultProps>) {
-  const { identity, relation, lastOperationLabel, onAction } = {
+interface IIdentityDetailProps {
+  label: string;
+  value: string | number | undefined;
+}
+
+function IdentityDetail({ label, value }: IIdentityDetailProps) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-xs font-medium text-[var(--workspace-brand-muted)]">
+        {label}
+      </dt>
+      <dd className="mt-1 break-all text-sm leading-6 text-[var(--workspace-brand-foreground)]">
+        {value === undefined || value === "" ? "—" : value}
+      </dd>
+    </div>
+  );
+}
+
+export const IdentityCardDefault = memo(function IdentityCardDefault(
+  props: Partial<IdentityCardDefaultProps>,
+) {
+  const {
+    identity,
+    relation,
+    lastOperationLabel,
+    onAction,
+    embedded = false,
+  } = {
     ...defaultIdentityCardDefaultProps,
     ...props,
   };
   const providerMeta = getIdentityProviderMeta(identity.provider);
   const actions = getIdentityActions(identity);
+  const [pendingAction, setPendingAction] = useState<{
+    identity: RbacIdentity;
+    action: IdentityAction;
+  } | null>(null);
+  const [localResult, setLocalResult] = useState<string>();
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
+    null,
+  );
+  const operationLabel = lastOperationLabel ?? localResult;
 
   return (
     <article
-      className="rounded-xl border border-slate-200 bg-white p-4"
+      ref={setPortalContainer}
+      className={
+        embedded
+          ? "min-w-0 py-6 first:pt-0 last:pb-0"
+          : "min-w-0 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-6"
+      }
       data-ds-block="rbac.identity.card-default"
       data-ds-layer="singlepage"
     >
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex min-w-0 gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-5">
+        <div className="flex min-w-0 flex-[1_1_18rem] items-start gap-3">
           <ProviderIcon icon={providerMeta.icon} />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-base font-medium text-slate-900">
+              <h3 className="text-lg font-semibold text-[var(--workspace-brand-foreground)]">
                 {providerMeta.title}
               </h3>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-500">
+              <span className="rounded-full border border-[var(--workspace-brand-line)] px-2.5 py-1 text-xs text-[var(--workspace-brand-muted)]">
                 {providerMeta.kindLabel}
               </span>
             </div>
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
-              {providerMeta.description}
+            <p className="mt-1 break-all text-base leading-6 text-[var(--workspace-brand-muted)]">
+              {getIdentityPrimaryLogin(identity)}
             </p>
           </div>
         </div>
-
-        {lastOperationLabel ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-700">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            {lastOperationLabel}
-          </span>
-        ) : null}
-      </div>
-
-      <div className="mt-4 grid gap-3 text-sm md:grid-cols-2 xl:grid-cols-5">
-        <div className="min-w-0">
-          <span className="block text-slate-500">Identity ID</span>
-          <code className="mt-1 block truncate rounded border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-900">
-            {identity.id}
-          </code>
-        </div>
-        <div className="min-w-0">
-          <span className="block text-slate-500">Login</span>
-          <p className="mt-1 break-all text-slate-900">
-            {getIdentityPrimaryLogin(identity)}
-          </p>
-        </div>
-        <div className="min-w-0">
-          <span className="block text-slate-500">Provider Key</span>
-          <p className="mt-1 font-mono text-xs text-slate-900">
-            {identity.provider}
-          </p>
-        </div>
-        <div className="min-w-0">
-          <span className="block text-slate-500">Relation ID</span>
-          <code className="mt-1 block truncate rounded border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-900">
-            {relation?.id ?? "-"}
-          </code>
-        </div>
-        <div>
-          <span className="block text-slate-500">Updated</span>
-          <p className="mt-1 text-slate-900">
-            {formatRbacDateTime(identity.updatedAt)}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {actions.map((action) => {
-          const isDanger = action.tone === "danger";
-
-          return (
-            <button
-              className={
-                isDanger
-                  ? "inline-flex items-center rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 transition hover:bg-red-100"
-                  : "inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
-              }
+        <div className="flex max-w-full flex-wrap gap-2 lg:max-w-lg lg:justify-end">
+          {actions.map((action) => (
+            <Button
+              variant={action.tone === "danger" ? "danger" : "secondary"}
               key={action.key}
-              onClick={() => onAction?.(identity, action)}
+              onClick={() => {
+                if (action.tone === "danger") {
+                  setPendingAction({ identity, action });
+                  return;
+                }
+                onAction?.(identity, action);
+              }}
               type="button"
             >
               {action.label}
-            </button>
-          );
-        })}
+            </Button>
+          ))}
+        </div>
       </div>
+      {operationLabel ? (
+        <p
+          role="status"
+          className="mt-4 flex items-center gap-2 text-sm text-[var(--workspace-brand-foreground)]"
+        >
+          <Check className="h-5 w-5 shrink-0 text-[var(--workspace-brand-foreground)]" />
+          {operationLabel}
+        </p>
+      ) : null}
+      <details className="group mt-4 rounded-2xl p-1 open:bg-[var(--workspace-brand-background)]">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 text-sm font-medium text-[var(--workspace-brand-muted)] transition hover:bg-[var(--workspace-brand-background)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] [&::-webkit-details-marker]:hidden">
+          <span>Account details</span>
+          <ChevronDown className="h-5 w-5 shrink-0 transition group-open:rotate-180 motion-reduce:transition-none" />
+        </summary>
+        <div className="mx-3 mt-2 border-t border-[var(--workspace-brand-line)] pb-3 pt-4">
+          <dl className="grid min-w-0 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+            <IdentityDetail label="Identity ID" value={identity.id} />
+            <IdentityDetail label="Provider key" value={identity.provider} />
+            <IdentityDetail label="Email" value={identity.email} />
+            <IdentityDetail label="Account" value={identity.account} />
+            <IdentityDetail label="Variant" value={identity.variant} />
+            <IdentityDetail
+              label="Created"
+              value={formatRbacDateTime(identity.createdAt)}
+            />
+            <IdentityDetail
+              label="Updated"
+              value={formatRbacDateTime(identity.updatedAt)}
+            />
+          </dl>
+          {relation ? (
+            <div className="mt-5 border-t border-[var(--workspace-brand-line)] pt-5">
+              <h4 className="mb-3 text-sm font-semibold text-[var(--workspace-brand-foreground)]">
+                Account link
+              </h4>
+              <dl className="grid min-w-0 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+                <IdentityDetail label="Relation ID" value={relation.id} />
+                <IdentityDetail label="Subject ID" value={relation.subjectId} />
+                <IdentityDetail
+                  label="Identity ID"
+                  value={relation.identityId}
+                />
+                <IdentityDetail label="Order" value={relation.orderIndex} />
+                <IdentityDetail label="Variant" value={relation.variant} />
+              </dl>
+            </div>
+          ) : null}
+        </div>
+      </details>
+      <ConfirmationDialog
+        open={pendingAction !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingAction(null);
+        }}
+        title="Remove identity?"
+        description={
+          pendingAction
+            ? `Remove ${getIdentityProviderMeta(pendingAction.identity.provider).title} — ${getIdentityPrimaryLogin(pendingAction.identity)} from this account? Confirmation records a local removal request in this preview; no server data is deleted.`
+            : "Confirm removal of this sign-in method."
+        }
+        confirmLabel={pendingAction?.action.label ?? "Remove identity"}
+        onConfirm={() => {
+          if (!pendingAction) return;
+          onAction?.(pendingAction.identity, pendingAction.action);
+          if (!onAction)
+            setLocalResult("Identity removal requested in this preview.");
+          setPendingAction(null);
+        }}
+        portalContainer={portalContainer}
+      />
     </article>
   );
-}
+});

@@ -1,6 +1,8 @@
 export const defaultArticleCoverProps = {
-  coverImage:
-    "https://images.unsplash.com/photo-1723987251277-18fc0a1effd0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXRhJTIwYW5hbHl0aWNzJTIwY2hhcnQlMjBzY3JlZW58ZW58MXx8fHwxNzcxNjg3NTEzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+  coverImage: new URL(
+    "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
+    import.meta.url,
+  ).href,
   title: "How to Choose the Right Plan for Your Business",
 };
 
@@ -8,10 +10,9 @@ export type ArticleCoverProps = typeof defaultArticleCoverProps;
 
 export function ArticleCover(props?: Partial<ArticleCoverProps>) {
   const { coverImage, title } = { ...defaultArticleCoverProps, ...props };
-
   return (
-    <div
-      className="relative aspect-[3/1] w-full overflow-hidden border-b border-slate-200 bg-slate-100"
+    <figure
+      className="m-0 aspect-square min-w-0 overflow-hidden rounded-3xl bg-[var(--workspace-brand-surface)]"
       data-ds-block="blog.article.cover"
       data-ds-layer="singlepage"
     >
@@ -20,7 +21,6 @@ export function ArticleCover(props?: Partial<ArticleCoverProps>) {
         alt={title}
         className="h-full w-full object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-    </div>
+    </figure>
   );
 }

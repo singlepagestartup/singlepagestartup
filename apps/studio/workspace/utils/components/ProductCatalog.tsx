@@ -184,9 +184,12 @@ export function ProductCatalog({
 
   if (!view.products.length) {
     return (
-      <main className="grid min-h-screen place-items-center bg-slate-100 p-5 text-slate-950 md:p-10">
-        <section className="w-full rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm md:p-12">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <main
+        data-workspace-projection="default"
+        className="grid min-h-screen font-[family-name:var(--workspace-brand-font-body)] place-items-center bg-[var(--workspace-brand-background)] p-5 text-[var(--workspace-brand-foreground)] md:p-10"
+      >
+        <section className="w-full rounded-3xl border border-dashed border-[var(--workspace-brand-line)] bg-white p-8 text-center  md:p-12">
+          <p className="text-xs font-semibold tracking-normal text-[var(--workspace-brand-muted)]">
             40 Products · {view.label}
           </p>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight">
@@ -194,7 +197,7 @@ export function ProductCatalog({
               ? "Product absent from this catalog"
               : `No ${view.id} products`}
           </h1>
-          <p className="mx-auto mt-4 max-w-xl leading-7 text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl leading-7 text-[var(--workspace-brand-muted)]">
             {productId
               ? "This product is not defined in the selected source. Choose another product or source in the sidebar."
               : "This is the expected initial state."}{" "}
@@ -202,7 +205,7 @@ export function ProductCatalog({
             startup defines its first product. After that, startup replaces the
             entire catalog instead of mixing niches.
           </p>
-          <code className="mt-6 inline-block rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-700">
+          <code className="mt-6 inline-block rounded-lg bg-[var(--workspace-brand-background)] px-3 py-2 text-xs text-[var(--workspace-brand-muted)]">
             {view.sourcePaths[view.sourcePaths.length - 1]}
           </code>
         </section>
@@ -293,15 +296,18 @@ export function ProductCatalog({
   };
 
   return (
-    <main className="min-h-screen bg-slate-100 p-5 text-slate-950 md:p-10">
-      <header className="mb-8 w-full rounded-3xl bg-slate-950 p-7 text-white shadow-xl md:p-10">
+    <main
+      data-workspace-projection="default"
+      className="min-h-screen font-[family-name:var(--workspace-brand-font-body)] bg-[var(--workspace-brand-background)] p-5 text-[var(--workspace-brand-foreground)] md:p-10"
+    >
+      <header className="mb-8 w-full rounded-3xl bg-[var(--workspace-brand-primary)] p-7 text-white  md:p-10">
         <h1
           id="product-title"
           className="text-3xl font-semibold tracking-tight md:text-5xl"
         >
           {productId ? product.name : "Products"}
         </h1>
-        <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
+        <p className="mt-4 max-w-3xl text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)] md:text-base">
           {productId
             ? product.summary
             : "Connects each product's offer, operating model, customer process, promotion, observed results, and research in one reviewable workspace."}
@@ -344,10 +350,10 @@ export function ProductCatalog({
               <button
                 aria-controls="product-panel"
                 aria-selected={candidate.id === product.id}
-                className={`shrink-0 whitespace-nowrap rounded-t-xl border px-5 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-teal-600 ${
+                className={`shrink-0 whitespace-nowrap rounded-t-xl border px-5 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-[var(--workspace-brand-focus)] ${
                   candidate.id === product.id
-                    ? "border-slate-200 border-b-white bg-white text-slate-950"
-                    : "border-transparent bg-slate-200/60 text-slate-600 hover:bg-slate-200 hover:text-slate-950"
+                    ? "border-[var(--workspace-brand-line)] border-b-white bg-white text-[var(--workspace-brand-foreground)]"
+                    : "border-transparent bg-[var(--workspace-brand-line)]/60 text-[var(--workspace-brand-muted)] hover:bg-[var(--workspace-brand-line)] hover:text-[var(--workspace-brand-foreground)]"
                 }`}
                 id={`product-tab-${candidate.id}`}
                 key={candidate.id}
@@ -370,13 +376,13 @@ export function ProductCatalog({
           aria-labelledby={
             productId ? "product-title" : `product-tab-${product.id}`
           }
-          className="min-w-0 overflow-hidden rounded-b-3xl rounded-tr-3xl border border-slate-200 bg-white shadow-sm"
+          className="min-w-0 overflow-hidden rounded-b-3xl rounded-tr-3xl border border-[var(--workspace-brand-line)] bg-white "
           id="product-panel"
           role={productId ? undefined : "tabpanel"}
         >
-          <div className="border-b border-slate-200 px-5 pt-6 md:px-8">
+          <div className="border-b border-[var(--workspace-brand-line)] px-5 pt-6 md:px-8">
             {!productId && (
-              <p className="w-full text-sm leading-6 text-slate-600">
+              <p className="w-full text-sm leading-6 text-[var(--workspace-brand-muted)]">
                 {product.summary}
               </p>
             )}
@@ -388,8 +394,8 @@ export function ProductCatalog({
                 <button
                   className={`whitespace-nowrap rounded-t-lg border-b-2 px-3 py-3 text-sm font-semibold transition ${
                     selectedSection === section.id
-                      ? "border-slate-950 bg-slate-950 text-white"
-                      : "border-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                      ? "border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-primary)] text-white"
+                      : "border-transparent text-[var(--workspace-brand-muted)] hover:bg-[var(--workspace-brand-background)] hover:text-[var(--workspace-brand-foreground)]"
                   }`}
                   key={section.id}
                   onClick={() => {
@@ -405,7 +411,7 @@ export function ProductCatalog({
               ))}
             </nav>
             {surfaceOptions.length > 0 ? (
-              <div className="-mx-5 border-t border-slate-900 bg-slate-950 px-5 py-4 md:-mx-8 md:px-8">
+              <div className="-mx-5 border-t border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-primary)] px-5 py-4 md:-mx-8 md:px-8">
                 <div
                   aria-label={
                     selectedSection === "product"
@@ -422,8 +428,8 @@ export function ProductCatalog({
                       aria-selected={activeSection === surface.id}
                       className={`rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                         activeSection === surface.id
-                          ? "border-white bg-white text-slate-950 shadow-sm"
-                          : "border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+                          ? "border-white bg-white text-[var(--workspace-brand-foreground)] "
+                          : "border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-primary)] text-[var(--workspace-brand-muted-on-primary)] hover:border-[var(--workspace-brand-line)] hover:bg-[var(--workspace-brand-primary)] hover:text-white"
                       }`}
                       key={surface.id}
                       onClick={() => setSelectedSurface(surface.id)}
@@ -512,11 +518,11 @@ export function ProductCatalog({
                 <div ref={documentExportRef} data-export-document>
                   <article className="px-5 py-7 md:px-10 md:py-10">
                     <header className="mb-6">
-                      <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
+                      <h2 className="text-2xl font-semibold tracking-tight text-[var(--workspace-brand-foreground)]">
                         {document.label.replace(/^\d+ /, "")}
                       </h2>
                       {document.kind === "model" && product.model && (
-                        <p className="mt-3 text-sm text-slate-600">
+                        <p className="mt-3 text-sm text-[var(--workspace-brand-muted)]">
                           {product.model.name} · Shared by:{" "}
                           {product.model.products.join(", ")}
                         </p>
@@ -532,8 +538,8 @@ export function ProductCatalog({
                     >
                       {document.content}
                     </MarkdownDocument>
-                    <div className="mt-8 border-t border-slate-200 pt-4 text-xs text-slate-500">
-                      <span className="block font-semibold uppercase tracking-wide text-slate-900">
+                    <div className="mt-8 border-t border-[var(--workspace-brand-line)] pt-4 text-xs text-[var(--workspace-brand-muted)]">
+                      <span className="block font-semibold tracking-normal text-[var(--workspace-brand-foreground)]">
                         Source
                       </span>
                       <code className="mt-1 block break-all">

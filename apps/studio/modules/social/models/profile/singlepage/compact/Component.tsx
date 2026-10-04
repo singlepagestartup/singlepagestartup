@@ -7,6 +7,7 @@
  */
 
 export const defaultProfileCompactProps = {
+  inverse: false,
   name: "Sarah Kim",
   role: "Head of Product",
   avatar:
@@ -18,7 +19,7 @@ export const defaultProfileCompactProps = {
 export type ProfileCompactProps = typeof defaultProfileCompactProps;
 
 export function ProfileCompact(props?: Partial<ProfileCompactProps>) {
-  const { name, role, avatar, href, target } = {
+  const { name, role, avatar, href, target, inverse } = {
     ...defaultProfileCompactProps,
     ...props,
   };
@@ -28,13 +29,19 @@ export function ProfileCompact(props?: Partial<ProfileCompactProps>) {
       <img
         src={avatar}
         alt={name}
-        className="h-10 w-10 rounded-full border border-slate-200 object-cover transition group-hover:opacity-80"
+        className="h-10 w-10 rounded-full border border-[var(--workspace-brand-line)] object-cover transition group-hover:opacity-80"
       />
       <div>
-        <p className="text-sm text-slate-900 transition group-hover:text-slate-600">
+        <p
+          className={`text-sm font-semibold transition ${inverse ? "text-[var(--workspace-brand-on-primary)]" : "text-[var(--workspace-brand-foreground)]"}`}
+        >
           {name}
         </p>
-        <p className="text-xs text-slate-500">{role}</p>
+        <p
+          className={`text-xs ${inverse ? "text-[var(--workspace-brand-muted-on-primary)]" : "text-[var(--workspace-brand-muted)]"}`}
+        >
+          {role}
+        </p>
       </div>
     </>
   );
@@ -45,7 +52,7 @@ export function ProfileCompact(props?: Partial<ProfileCompactProps>) {
         href={href}
         target={target}
         rel={target === "_blank" ? "noreferrer" : undefined}
-        className="group flex items-center gap-4"
+        className="group flex min-h-11 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
         data-ds-block="social.profile.compact"
         data-ds-layer="singlepage"
       >
@@ -56,7 +63,7 @@ export function ProfileCompact(props?: Partial<ProfileCompactProps>) {
 
   return (
     <div
-      className="group flex items-center gap-4"
+      className="group flex min-h-11 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
       data-ds-block="social.profile.compact"
       data-ds-layer="singlepage"
     >

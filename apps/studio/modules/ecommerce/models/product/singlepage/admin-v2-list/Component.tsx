@@ -1,106 +1,251 @@
-import { Edit, Eye, Plus, Search, Trash2 } from "lucide-react";
-
-const products = [
+import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  Icon,
+  kit,
+} from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import { EcommerceProductAdminV2Form } from "../admin-v2-form/Component";
+import { studioProducts, type IStudioProduct } from "../../shared";
+import { studioAttributes } from "../../../attribute/shared";
+import {
+  EcommerceProductsToAttributesAdminV2Manager,
+  initialProductAttributeRelations,
+} from "../../../../relations/products-to-attributes/singlepage/admin-v2-manager/Component";
+import {
+  Records,
+  RecordEditor,
+  type IRecordField,
+} from "../../../../../../workspace/design/singlepage/interface-kit/Records";
+const fields: IRecordField<IStudioProduct>[] = [
   {
-    id: "product_website",
-    title: "Website development",
-    slug: "website-development",
-    price: "$4,800",
-    variant: "service",
-    status: "published",
+    key: "adminTitle",
+    label: "Admin title",
+    value: (record) => record.adminTitle,
   },
   {
-    id: "product_design",
-    title: "Design system sprint",
-    slug: "design-system-sprint",
-    price: "$2,400",
-    variant: "package",
-    status: "draft",
+    key: "title",
+    label: "Title",
+    value: (record) => Object.values(record.title).join(" "),
+    displayValue: (record) =>
+      record.title.en ?? Object.values(record.title)[0] ?? "",
   },
-  {
-    id: "product_support",
-    title: "Support retainer",
-    slug: "support-retainer",
-    price: "$900/mo",
-    variant: "subscription",
-    status: "published",
-  },
+  { key: "slug", label: "Slug", value: (record) => record.slug },
+  { key: "id", label: "ID", value: (record) => record.id },
+  { key: "type", label: "Type", value: (record) => record.type },
+  { key: "variant", label: "Variant", value: (record) => record.variant },
 ];
-
-export function EcommerceProductAdminV2List() {
+export interface IProductAdminListProps {
+  initialProduct?: IStudioProduct;
+}
+export function EcommerceProductAdminV2List({
+  initialProduct,
+}: IProductAdminListProps = {}) {
+  const [products, setProducts] = useState(studioProducts);
+  const [attributes, setAttributes] = useState(studioAttributes);
+  const [relations, setRelations] = useState(initialProductAttributeRelations);
+  const [editing, setEditing] = useState<IStudioProduct | null>(
+    initialProduct ?? null,
+  );
+  const [preview, setPreview] = useState<IStudioProduct | null>(null);
+  const [status, setStatus] = useState("");
+  const changeProducts = useCallback(
+    (next: IStudioProduct[]) => setProducts(next),
+    [],
+  );
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const edit = useCallback((product: IStudioProduct) => {
+    returnFocus.current = document.activeElement as HTMLElement;
+    setEditing({ ...product });
+  }, []);
+  const show = useCallback((product: IStudioProduct) => {
+    returnFocus.current = document.activeElement as HTMLElement;
+    setPreview(product);
+  }, []);
+  const remove = useCallback((ids: string[]) => {
+    setProducts((current) => current.filter((item) => !ids.includes(item.id)));
+    setStatus("Selected records removed locally.");
+  }, []);
+  const actions = useMemo(
+    () => [
+      { label: "Preview", icon: "eye" as const, onAction: show },
+      { label: "Edit", icon: "pencil-simple" as const, onAction: edit },
+    ],
+    [show, edit],
+  );
   return (
     <section
-      className="rounded-2xl border border-slate-200 bg-white shadow-sm"
+      className="min-w-0"
       data-ds-block="ecommerce.product.admin-v2-list"
       data-ds-layer="singlepage"
     >
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-            ecommerce.product
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-950">
-            Products
-          </h2>
-        </div>
-        <button
-          className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm text-white"
-          type="button"
-        >
-          <Plus className="h-4 w-4" />
-          Add product
-        </button>
-      </header>
-      <div className="border-b border-slate-200 p-4">
-        <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500">
-          <Search className="h-4 w-4" />
-          Search products, slugs, variants
-        </label>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
-            <tr>
-              <th className="px-5 py-3">Product</th>
-              <th className="px-5 py-3">Slug</th>
-              <th className="px-5 py-3">Variant</th>
-              <th className="px-5 py-3">Price</th>
-              <th className="px-5 py-3">Status</th>
-              <th className="px-5 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {products.map((product) => (
-              <tr className="text-slate-700" key={product.id}>
-                <td className="px-5 py-4 font-medium text-slate-950">
-                  {product.title}
-                </td>
-                <td className="px-5 py-4 font-mono text-xs">{product.slug}</td>
-                <td className="px-5 py-4">{product.variant}</td>
-                <td className="px-5 py-4">{product.price}</td>
-                <td className="px-5 py-4">
-                  <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">
-                    {product.status}
-                  </span>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="flex justify-end gap-2">
-                    {[Eye, Edit, Trash2].map((Icon) => (
-                      <button
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50"
-                        key={Icon.displayName ?? Icon.name}
-                        type="button"
-                      >
-                        <Icon className="h-4 w-4" />
-                      </button>
-                    ))}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Records
+        title="Products"
+        scope="ecommerce / product"
+        records={products}
+        fields={fields}
+        actions={actions}
+        createLabel="Add product"
+        onRemove={remove}
+        onCreate={() => {
+          returnFocus.current = document.activeElement as HTMLElement;
+          setEditing({
+            id: "",
+            adminTitle: "",
+            title: {},
+            shortDescription: {},
+            description: {},
+            slug: "",
+            type: "one_off",
+            variant: "default",
+          });
+        }}
+      />
+      <p role="status" className={`px-5 pb-5 text-sm ${kit.muted}`}>
+        {status}
+      </p>
+      <RecordEditor
+        open={Boolean(editing || preview)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditing(null);
+            setPreview(null);
+          }
+        }}
+        title={
+          editing
+            ? editing.id
+              ? "Edit product"
+              : "New product"
+            : "Product preview"
+        }
+        description="Example data stays in this preview and resets when it reloads."
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          returnFocus.current?.focus();
+        }}
+      >
+        {editing ? (
+          <EcommerceProductAdminV2Form
+            key={editing.id || "new"}
+            product={editing}
+            embedded
+            relationSections={[
+              {
+                id: "products-to-attributes",
+                title: "Attributes",
+                render: () => (
+                  <EcommerceProductsToAttributesAdminV2Manager
+                    embedded
+                    productId={editing.id}
+                    products={products}
+                    attributes={attributes}
+                    relations={relations}
+                    onProductsChange={changeProducts}
+                    onAttributesChange={setAttributes}
+                    onRelationsChange={setRelations}
+                  />
+                ),
+              },
+              ...[
+                {
+                  id: "orders-to-products",
+                  title: "Orders",
+                  endpoint: "Order",
+                  fields: "Quantity · Order index · Variant · Class name",
+                },
+                {
+                  id: "categories-to-products",
+                  title: "Categories",
+                  endpoint: "Category",
+                  fields: "Order index · Variant · Class name",
+                },
+                {
+                  id: "stores-to-products",
+                  title: "Stores",
+                  endpoint: "Store",
+                  fields: "Order index · Variant · Class name",
+                },
+                {
+                  id: "widgets-to-products",
+                  title: "Widgets",
+                  endpoint: "Ecommerce widget",
+                  fields: "Order index · Variant · Class name",
+                },
+                {
+                  id: "products-to-file-storage-module-files",
+                  title: "Files",
+                  endpoint: "File",
+                  fields: "Order index · Variant · Class name",
+                },
+                {
+                  id: "products-to-website-builder-module-widgets",
+                  title: "Website widgets",
+                  endpoint: "Website widget",
+                  fields: "Order index · Variant · Class name",
+                },
+              ].map((group) => ({
+                id: group.id,
+                title: group.title,
+                render: () => (
+                  <section
+                    className={`${kit.card} grid min-w-0 gap-5 p-5 sm:p-6`}
+                    data-ds-relation={group.id}
+                  >
+                    <header>
+                      <h3 className="text-xl font-semibold">{group.title}</h3>
+                      <p className={`mt-2 break-words text-xs ${kit.muted}`}>
+                        ecommerce / {group.id}
+                      </p>
+                    </header>
+                    <div className="grid justify-items-center gap-3 rounded-2xl bg-[var(--workspace-brand-background)] p-6 text-center">
+                      <Icon name="link" />
+                      <p className="font-semibold">
+                        No {group.title.toLowerCase()} links supplied
+                      </p>
+                      <p className={`max-w-md text-sm ${kit.muted}`}>
+                        This local preview has no example links for this group.
+                        Attributes contains editable example links.
+                      </p>
+                    </div>
+                    <dl className="grid min-w-0 gap-4 text-sm sm:grid-cols-2">
+                      <div>
+                        <dt className={kit.muted}>Linked records</dt>
+                        <dd className="mt-1">Product · {group.endpoint}</dd>
+                      </div>
+                      <div>
+                        <dt className={kit.muted}>Relation fields</dt>
+                        <dd className="mt-1">{group.fields}</dd>
+                      </div>
+                    </dl>
+                  </section>
+                ),
+              })),
+            ]}
+            onSave={(product) => {
+              const saved = {
+                ...product,
+                id: product.id || `product_${crypto.randomUUID()}`,
+              };
+              setProducts((current) =>
+                product.id
+                  ? current.map((item) =>
+                      item.id === product.id ? saved : item,
+                    )
+                  : [saved, ...current],
+              );
+              setEditing(null);
+              setStatus("Product saved locally.");
+            }}
+          />
+        ) : preview ? (
+          <div className="p-5 sm:p-6">
+            <h3 className="text-xl font-semibold">{preview.title.en}</h3>
+            <p className={`mt-3 ${kit.muted}`}>{preview.description.en}</p>
+            <p className={`mt-4 break-all text-xs ${kit.muted}`}>
+              {preview.id} · {preview.slug}
+            </p>
+          </div>
+        ) : null}
+      </RecordEditor>
     </section>
   );
 }

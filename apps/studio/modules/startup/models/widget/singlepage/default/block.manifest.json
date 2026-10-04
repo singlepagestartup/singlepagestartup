@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "startup.widget.default",
+  "title": "Startup Widget / Default",
+  "description": "A content section for developing Startup Widget layouts in Studio.",
+  "layer": "singlepage",
+  "state": "scaffold",
+  "source": {
+    "module": "startup",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    { "name": "title", "type": "text", "required": true },
+    { "name": "subtitle", "type": "text" },
+    { "name": "description", "type": "text" }
+  ],
+  "figma": {
+    "componentName": "startup.widget",
+    "pageName": "startup",
+    "variantName": "default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["startup", "widget", "content"]
+}

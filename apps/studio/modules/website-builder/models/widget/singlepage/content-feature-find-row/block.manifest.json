@@ -43,13 +43,8 @@
     "variantName": "content-feature-find-row",
     "nodeId": "700:24",
     "variantNodeId": "984:86",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "content",
-    "website-builder",
-    "widget",
-    "content-feature-find-row"
-  ]
+  "tags": ["content", "website-builder", "widget", "content-feature-find-row"]
 }

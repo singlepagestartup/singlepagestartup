@@ -1,4 +1,5 @@
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
+import { SectionStack } from "../../../../../../workspace/design/singlepage/interface-kit/SectionStack";
 import { FooterCompact } from "../../../../../website-builder/models/widget/singlepage/footer-compact/Component";
 import { ContentPageHeader } from "../../../../../website-builder/models/widget/singlepage/content-page-header/Component";
 import { ProductFindCard } from "../../../../../ecommerce/models/widget/singlepage/product-find-card/Component";
@@ -6,13 +7,15 @@ import { ProductFindCard } from "../../../../../ecommerce/models/widget/singlepa
 export function EcommerceProductFindCard() {
   return (
     <main
-      className="min-h-screen bg-[#eaf0f7] text-slate-900 antialiased"
+      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
       data-ds-page="host.page.ecommerce-products"
       data-ds-route="/ecommerce/products"
     >
       <HostNavbarDefault activeHref="/ecommerce/products" />
-      <ContentPageHeader />
-      <ProductFindCard />
+      <SectionStack>
+        <ContentPageHeader />
+        <ProductFindCard />
+      </SectionStack>
       <FooterCompact />
     </main>
   );

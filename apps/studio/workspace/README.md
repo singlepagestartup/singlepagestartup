@@ -13,7 +13,7 @@ Product materials change more often and affect only their own offer.
 
 | Stage               | Review these documents                                                                              | Typical change rate | If it is wrong                                                                                           |
 | ------------------- | --------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
-| `00 Client Request` | Brief, then initial Product/models and Sales intake                                                 | Rare after approval | Every later decision may be based on the wrong direction, sales process, audience, facts, or constraints |
+| `00 Client Request` | Brief, then initial Product and Sales intake                                                        | Rare after approval | Every later decision may be based on the wrong direction, sales process, audience, facts, or constraints |
 | `10 Strategy`       | Product Research, then Strategy                                                                     | Occasional          | Brand, design, and product priorities may target the wrong opportunity                                   |
 | `20 Brand`          | Brand                                                                                               | Rare                | Every product may communicate the wrong meaning, promise, voice, or proof boundary                       |
 | `30 Design`         | Design, Assets                                                                                      | Occasional          | Every product may use an inconsistent or unsuitable visual system                                        |
@@ -52,7 +52,7 @@ This boundary applies to inherited and project-owned startup layouts. Scope
 project styles to the visual canvas so a new identity does not restyle the
 Workspace header. Keep process metadata out of the mockup itself.
 
-For example, a capacity change in a shared model makes Strategy stale even while its
+For example, a capacity change in a product's resources makes Strategy stale even while its
 text stays unchanged; Brand and product materials can become stale through that
 same dependency chain. The agent reviews the actual impact. If the decision is
 unaffected, it updates only the input snapshot and preserves the prior approval.
@@ -104,7 +104,6 @@ apps/studio/workspace/
   assets/<layer>/{fonts,intake,generated}/
   styles/{singlepage,startup,default}.css
   products/{singlepage,startup}/catalog.yaml
-  products/<layer>/models/<model-id>/model.md
   products/<layer>/<product-id>/
     product.md
     research.md                 # research overview
@@ -132,7 +131,9 @@ apps/studio/workspace/
 
 The [Products directory guide](products/README.md) explains the distinction
 between shared business models and product folders, naming and startup reuse.
-`models` contains Operations & Economics sources, not application/backend modules.
+Product documents own Operations & Economics. The optional legacy `models`
+namespace holds business sources, separately from application/backend models in
+`libs/modules`.
 A primary `.md` beside a same-named folder is its overview; the folder owns detail
 and authored layouts. Generated Sales pages are not duplicated as Markdown files.
 
@@ -186,8 +187,9 @@ maps, the product catalog is replaced as a whole under the rules below.
   `No products` state. There is no visible default branch and no per-product layer list.
   The computed default catalog retains its inheritance/replacement semantics.
   Opening a product starts with Product; its page contains only document navigation.
-  Shared-model context is plain text inside Operations & Economics, without a
-  second menu of canvas blocks. A missing source view never falls back to another product.
+  Operations & Economics reads the economic sections of that product's document;
+  an explicitly selected legacy model remains supported. A missing source view
+  never falls back to another product.
 - Storybook derives its product stories into `.storybook/.generated/products/`
   on startup/build and updates them when a catalog changes. These ignored files
   contain references only; edit names/order/membership in the owning catalog.
@@ -202,13 +204,8 @@ Example downstream catalog:
 
 ```yaml
 schema: singlepagestartup.product-catalog.v2
-models:
-  - id: reletting-service
-    name: Reletting service model
-    source: models/reletting-service/model.md
 products:
   - id: commercial-property-reletting
-    model: reletting-service
     name: Commercial property reletting
     summary: Find a more profitable replacement tenant and manage the change.
     research: commercial-property-reletting/research.md
@@ -223,9 +220,11 @@ products:
     # content: commercial-property-reletting/content/Content.tsx
 ```
 
-The product folder links its model and applies approved Strategy, Brand, and Design.
-It may narrow those decisions for one offer, but it must not silently redefine
-them.
+The product document owns Revenue Streams, Key Activities, Key Resources, Key
+Partnerships, Cost Structure, Funding and its assumptions. Shared resources appear
+in each consuming product with their allocation basis. Optional `models` and
+`model` fields remain parser compatibility; the framework catalog uses neither.
+The product applies approved Strategy, Brand and Design within its offer scope.
 
 ### Additional product pages
 
@@ -462,10 +461,30 @@ section changes; record unresolved impact with `review.stale` in the affected
 document. Hiding a section does not resolve an outstanding design requirement;
 select the required visual families from the client brief and record scope there.
 
+### Module design previews
+
+Workspace Design supplies the visual rules for Modules; the existing Module previews live in `apps/studio/modules/`, outside the business-document tree. Their paths retain the runtime responsibility:
+
+```text
+apps/studio/modules/<module>/<models|relations>/<entity>/<singlepage|startup>/<variant>/
+  Component.tsx
+  Component.stories.tsx
+  block.manifest.json          # model or relation variant
+  page.manifest.json           # Host Page composition, when applicable
+```
+
+Match each preview to `libs/modules/<module>/<models|relations>/<entity>/frontend/component/src/lib/<layer>/` and its variant. Runtime names may be nested; a flattened Studio folder still keeps that mapping. Preserve manifest IDs, source identity, declared slots and page `blocks` paths. Model components own record views; relation components own connections and relation fields; Host Page imports those components to assemble the route. Shared visual helpers do not take ownership of an entity or its behavior.
+
+The framework's module previews apply [the singlepage Design rules](design/singlepage.md#modules-hierarchy-and-composition), semantic `--workspace-brand-*` roles and the Interface kit recipes. A singlepage visual change remains in the framework-owned preview sources. Downstream work owns startup variants and startup styles; it retains the framework paths and behavior contract without copying or editing inherited singlepage files. Module variant resolution follows its own manifest/runtime structure, independently of the atomic business Product catalog.
+
+Admin previews retain model fields, record IDs, filters and contextual editing. Relation management retains both endpoint IDs, relation ID, ordering and any schema-defined fields. Endpoint selectors and endpoint forms stay model-owned. Link/unlink acts on the relation, while model deletion is a separate action. The Product edit composition and Products to Attributes manager are examples of this boundary.
+
+Preview interactions use local fixtures and describe their simulated effects. Production reads and mutations remain with SDK providers and the existing model/relation owners; relation queries keep `variant="find"` and `apiProps.params.filters.and`. Review each changed variant and the Host Page compositions that import it. A working Studio preview establishes neither API persistence nor user confirmation of the complete Design.
+
 ### 40 Products
 
-Each client-confirmed product owns Product, Operations & Economics in its
-shared model, Sales, Promotion (Website, Marketing Creative and Presentation,
+Each client-confirmed product owns Product, its Operations & Economics sections,
+Sales, Promotion (Website, Marketing Creative and Presentation,
 each with its own source and export), optional Product Content, and Analytics
 with Research beside it. The catalog retains every confirmed product regardless
 of marketing priority; the page ownership table in
@@ -493,8 +512,8 @@ engineering workflow under `thoughts/shared/**`.
 
 ### Source ownership and semantic review
 
-Product owns customer, value and offer decisions; Operations & Economics owns
-model resources, per-product prices, costs and funding; Sales owns the whole
+Product owns customer, value, offer, revenue, resources, costs and funding.
+Operations & Economics displays that product's economic sections; Sales owns the whole
 customer process; Analytics owns observed values and their source windows;
 Research owns interpretation. Website, Marketing Creative and Presentation apply
 these facts in their own materials and never become a competing source for

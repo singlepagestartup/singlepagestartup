@@ -65,21 +65,21 @@ export function CrmStepDefault(props?: Partial<CrmStepDefaultProps>) {
 
   return (
     <fieldset
-      className="rounded-xl border border-slate-200 bg-white p-5"
+      className="min-w-0 rounded-2xl bg-[var(--workspace-brand-background)] p-5 sm:p-6"
       data-ds-block="crm.step.default"
       data-ds-layer="singlepage"
     >
-      <legend className="px-1 text-base font-semibold text-slate-950">
+      <legend className="sr-only">{step.title}</legend>
+      <h2 className="mb-5 text-lg font-semibold text-[var(--workspace-brand-foreground)]">
         {step.title}
-      </legend>
-      <p className="mb-4 mt-1 text-sm leading-6 text-slate-500">
-        {step.description}
-      </p>
-      <div className="grid gap-4 sm:grid-cols-2">
+      </h2>
+      <div className="grid min-w-0 gap-5 sm:grid-cols-2">
         {step.inputs.map((input) => (
           <div
             className={
-              input.variant === "textarea-default" ? "sm:col-span-2" : ""
+              input.variant === "textarea-default"
+                ? "min-w-0 sm:col-span-2"
+                : "min-w-0"
             }
             key={input.id}
           >

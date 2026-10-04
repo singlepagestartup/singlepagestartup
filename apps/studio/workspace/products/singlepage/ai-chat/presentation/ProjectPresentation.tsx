@@ -37,15 +37,15 @@ function Slide({
           src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-primary-lockup.svg"
           alt="SinglePageStartup"
         />
-        <span className="text-sm uppercase tracking-widest text-[var(--workspace-brand-muted)]">
+        <span className="text-sm text-[var(--workspace-brand-muted)]">
           {data.name} · {String(index + 1).padStart(2, "0")} /{" "}
           {data.slides.length}
         </span>
       </header>
       <div className="min-h-0 flex-1 py-10" data-slide-content="true">
-        <p className="inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-widest">
+        <p className="inline-flex items-center gap-3 text-sm font-semibold">
           <span
-            className="h-3 w-3 bg-[var(--workspace-brand-accent,#BFEF61)]"
+            className="h-2 w-8 rounded-full bg-[var(--workspace-brand-accent,#BFEF61)]"
             aria-hidden="true"
           />
           {slide.label}
@@ -59,10 +59,10 @@ function Slide({
         <div className="mt-8 grid grid-cols-2 gap-5">
           {slide.points.map((point, pointIndex) => (
             <article
-              className="border-l-2 border-[var(--workspace-brand-accent,#BFEF61)] pl-5"
+              className="rounded-2xl bg-[var(--workspace-brand-background)] p-5"
               key={point}
             >
-              <p className="text-xs uppercase tracking-widest text-[var(--workspace-brand-muted)]">
+              <p className="text-xs text-[var(--workspace-brand-muted)]">
                 {String(pointIndex + 1).padStart(2, "0")}
               </p>
               <p className="mt-2 text-xl leading-relaxed text-[var(--workspace-brand-muted)]">

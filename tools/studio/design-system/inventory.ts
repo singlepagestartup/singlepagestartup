@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import * as path from "node:path";
 
 export interface ModuleVariantRecord {
@@ -56,6 +56,76 @@ const OUTPUT_PATH = path.join(
   "modules.generated.json",
 );
 const SKIP_DIRS = new Set(["node_modules", ".git", ".nx", "dist"]);
+
+export function moduleDirectoryPaths(
+  inventory: GeneratedModuleInventory,
+): string[] {
+  return inventory.modules.flatMap((moduleRecord) =>
+    moduleRecord.entities.flatMap((entity) =>
+      ["singlepage", "startup"].map((layer) =>
+        path.join(
+          inventory.studioRoot,
+          "modules",
+          entity.module,
+          entity.entityType === "model" ? "models" : "relations",
+          entity.entity,
+          layer,
+        ),
+      ),
+    ),
+  );
+}
+
+export async function scaffoldModuleDirectories(
+  inventory: GeneratedModuleInventory,
+  repositoryRoot = ROOT,
+): Promise<string[]> {
+  const created: string[] = [];
+
+  for (const directory of moduleDirectoryPaths(inventory)) {
+    const absoluteDirectory = path.join(repositoryRoot, directory);
+    await mkdir(absoluteDirectory, { recursive: true });
+
+    if ((await readdir(absoluteDirectory)).length > 0) {
+      continue;
+    }
+
+    try {
+      await writeFile(path.join(absoluteDirectory, ".gitkeep"), "", {
+        flag: "wx",
+      });
+      created.push(toPosixPath(directory));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+        throw error;
+      }
+    }
+  }
+
+  return created;
+}
+
+export async function missingModuleDirectories(
+  inventory: GeneratedModuleInventory,
+  repositoryRoot = ROOT,
+): Promise<string[]> {
+  const missing: string[] = [];
+
+  for (const directory of moduleDirectoryPaths(inventory)) {
+    try {
+      if ((await stat(path.join(repositoryRoot, directory))).isDirectory()) {
+        continue;
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+        throw error;
+      }
+    }
+    missing.push(toPosixPath(directory));
+  }
+
+  return missing;
+}
 
 function toPosixPath(value: string): string {
   return value.split(path.sep).join("/");
@@ -337,6 +407,7 @@ async function main(): Promise<void> {
     );
   }
 
+  const scaffoldedDirectories = await scaffoldModuleDirectories(inventory);
   const serializedInventory = `${JSON.stringify(inventory, null, 2)}\n`;
   let currentInventory: string | null = null;
 
@@ -361,6 +432,7 @@ async function main(): Promise<void> {
       `entities=${inventory.totals.entities}`,
       `variants=${inventory.totals.variants}`,
       `covered=${inventory.totals.coveredVariants}`,
+      `scaffolded=${scaffoldedDirectories.length}`,
     ].join(" "),
   );
 }

@@ -1,4 +1,10 @@
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { memo } from "react";
+import { Button } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import {
+  Minus,
+  Plus,
+  Trash2,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 import { formatCartMoney } from "../../../cart/shared";
 
@@ -27,8 +33,10 @@ export const defaultProductCartDefaultItem: ProductCartDefaultItem = {
   id: "srv-consulting",
   slug: "technical-consulting",
   title: "Technical Consulting",
-  image:
-    "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMGNvbnN1bHRpbmclMjBtZWV0aW5nfGVufDF8fHx8MTc3MTcxNjY1MHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+  image: new URL(
+    "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus-square.png",
+    import.meta.url,
+  ).href,
   priceLabel: "$250/hr",
   price: 250,
   quantity: 1,
@@ -40,7 +48,9 @@ export const defaultProductCartDefaultProps: ProductCartDefaultProps = {
   showRemove: true,
 };
 
-export function ProductCartDefault(props?: Partial<ProductCartDefaultProps>) {
+export const ProductCartDefault = memo(function ProductCartDefault(
+  props: Partial<ProductCartDefaultProps>,
+) {
   const {
     item,
     compact,
@@ -58,20 +68,18 @@ export function ProductCartDefault(props?: Partial<ProductCartDefaultProps>) {
 
   return (
     <div
-      className="flex gap-4"
+      className="flex min-w-0 gap-3 sm:gap-4"
       data-ds-block="ecommerce.product.cart-default"
       data-ds-layer="singlepage"
     >
       <a
-        className="shrink-0 overflow-hidden rounded-lg border border-slate-200"
+        className="block h-20 w-20 shrink-0 self-start overflow-hidden rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
         href={productHref}
         target={target}
       >
         <img
           alt={item.title}
-          className={
-            compact ? "h-14 w-14 object-cover" : "h-20 w-20 object-cover"
-          }
+          className="block h-full w-full object-cover"
           src={item.image}
         />
       </a>
@@ -80,59 +88,68 @@ export function ProductCartDefault(props?: Partial<ProductCartDefaultProps>) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <a
-              className="block truncate text-sm text-slate-900 no-underline transition hover:text-slate-600"
+              className="block break-words text-sm font-semibold text-[var(--workspace-brand-foreground)] no-underline transition hover:text-[var(--workspace-brand-muted)]"
               href={productHref}
               target={target}
             >
               {item.title}
             </a>
-            <span className="mt-0.5 block text-xs text-slate-500">
+            <span className="mt-0.5 block text-xs text-[var(--workspace-brand-muted)]">
               {item.priceLabel}
             </span>
           </div>
           {showRemove ? (
-            <button
+            <Button
+              variant="plain"
               aria-label={`Remove ${item.title}`}
-              className="shrink-0 rounded-md p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
+              className="h-11 w-11 shrink-0 px-0 hover:bg-[var(--workspace-brand-danger-surface)] hover:text-[var(--workspace-brand-danger)]"
               onClick={() => onRemove?.(item)}
-              type="button"
             >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+              <Trash2 className="h-5 w-5" />
+            </Button>
           ) : null}
         </div>
 
-        <div className="mt-auto flex items-center justify-between pt-2">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-3">
           {compact ? (
-            <span className="text-xs text-slate-500">Qty: {item.quantity}</span>
+            <span className="text-xs text-[var(--workspace-brand-muted)]">
+              Qty: {item.quantity}
+            </span>
           ) : (
-            <div className="flex items-center">
-              <button
+            <div
+              role="group"
+              aria-label={`${item.title} quantity`}
+              className="flex items-center gap-1 rounded-xl bg-[var(--workspace-brand-background)] p-1"
+            >
+              <Button
+                variant="plain"
                 aria-label={`Decrease ${item.title} quantity`}
-                className="flex h-7 w-7 items-center justify-center rounded-l-md border border-slate-300 bg-white text-slate-600 transition hover:bg-slate-50"
+                className="h-11 w-11 px-0"
                 onClick={() => onDecrease?.(item)}
-                type="button"
               >
-                <Minus className="h-3 w-3" />
-              </button>
-              <div className="flex h-7 w-8 items-center justify-center border-y border-slate-300 bg-white text-xs text-slate-900">
+                <Minus className="h-5 w-5" />
+              </Button>
+              <output
+                className="min-w-6 text-center text-sm font-semibold"
+                aria-live="polite"
+              >
                 {item.quantity}
-              </div>
-              <button
+              </output>
+              <Button
+                variant="plain"
                 aria-label={`Increase ${item.title} quantity`}
-                className="flex h-7 w-7 items-center justify-center rounded-r-md border border-slate-300 bg-white text-slate-600 transition hover:bg-slate-50"
+                className="h-11 w-11 px-0"
                 onClick={() => onIncrease?.(item)}
-                type="button"
               >
-                <Plus className="h-3 w-3" />
-              </button>
+                <Plus className="h-5 w-5" />
+              </Button>
             </div>
           )}
-          <span className="text-sm text-slate-900">
+          <span className="text-sm font-semibold text-[var(--workspace-brand-foreground)]">
             {formatCartMoney(item.price * item.quantity)}
           </span>
         </div>
       </div>
     </div>
   );
-}
+});

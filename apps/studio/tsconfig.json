@@ -15,7 +15,9 @@
     "raw-imports.d.ts",
     "workspace/**/*.ts",
     "workspace/**/*.tsx",
-    "workspace/**/*.jsx"
+    "workspace/**/*.jsx",
+    "modules/**/*.ts",
+    "modules/**/*.tsx"
   ],
   "exclude": ["node_modules", "runnable/**"]
 }

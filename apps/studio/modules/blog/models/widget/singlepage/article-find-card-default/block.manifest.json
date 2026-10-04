@@ -33,12 +33,8 @@
     "variantName": "article-find-card-default",
     "nodeId": "735:17",
     "variantNodeId": "979:137",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "blog",
-    "widget",
-    "article-find-card-default"
-  ]
+  "tags": ["blog", "widget", "article-find-card-default"]
 }

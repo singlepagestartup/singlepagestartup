@@ -1,14 +1,14 @@
 const defaultMediaSrc = new URL(
-  "./assets/content-default-media.png",
+  "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
   import.meta.url,
 ).href;
 
+import { kit } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+
 const containerClass =
-  "mx-auto grid w-full max-w-7xl items-center gap-10 px-6 py-5 lg:grid-cols-2 lg:px-0";
-const buttonBaseClass =
-  "inline-flex min-h-11 items-center justify-center rounded-md border px-4 py-3 text-sm font-semibold leading-none no-underline transition hover:-translate-y-px";
-const buttonPrimaryClass = `${buttonBaseClass} border-slate-950 bg-slate-950 text-white hover:bg-slate-800`;
-const buttonSecondaryClass = `${buttonBaseClass} border-slate-300 bg-white text-slate-700 hover:bg-slate-50`;
+  "mx-auto grid w-full max-w-7xl gap-0 px-4 sm:px-6 lg:grid-cols-2 lg:px-8";
+const buttonPrimaryClass = `${kit.button} no-underline hover:brightness-95 focus-visible:outline-[var(--workspace-brand-focus-inverse)]`;
+const buttonSecondaryClass = `${kit.secondary} no-underline hover:bg-[var(--workspace-brand-background)] focus-visible:outline-[var(--workspace-brand-focus-inverse)]`;
 
 export interface ContentDefaultProps {
   counterLabel?: string;
@@ -44,9 +44,9 @@ export const defaultContentProps: ContentDefaultProps = {
     label: "View blocks",
     href: "#sections",
   },
-  mediaLabel: "Prototype snapshot",
+  mediaLabel: "Business conversation",
   mediaSrc: defaultMediaSrc,
-  mediaAlt: "Prototype snapshot",
+  mediaAlt: "Two people discussing their work in a studio",
 };
 
 export function ContentDefault({
@@ -71,15 +71,15 @@ export function ContentDefault({
 
   return (
     <div
-      className="flex min-h-[32.625rem] w-full items-center overflow-hidden bg-[#e2e2e2] py-16 lg:py-24"
+      className="w-full bg-[var(--workspace-brand-background)] py-8 sm:py-12"
       data-ds-block="website-builder.widget.content-default"
       data-ds-layer="singlepage"
     >
-      <div className={`${containerClass} min-h-[32.625rem] bg-white`}>
-        <div className="flex flex-col gap-5">
+      <div className={containerClass}>
+        <div className="flex min-w-0 flex-col justify-center gap-6 rounded-t-3xl bg-[var(--workspace-brand-primary)] p-6 sm:p-10 lg:rounded-l-3xl lg:rounded-tr-none lg:p-12">
           {counterLabel || hasCounterValue ? (
             <p
-              className="m-0 inline-flex items-center gap-1 text-sm leading-5 text-[#040404]"
+              className="m-0 inline-flex items-center gap-1 text-sm leading-5 text-[var(--workspace-brand-muted-on-primary)]"
               aria-label={counterText}
             >
               {counterLabel ? (
@@ -89,15 +89,15 @@ export function ContentDefault({
             </p>
           ) : null}
           {eyebrow ? (
-            <p className="m-0 text-base font-semibold leading-6 tracking-normal text-[#0b55f4]">
+            <p className="m-0 text-sm font-semibold leading-6 tracking-normal text-[var(--workspace-brand-muted-on-primary)]">
               {eyebrow}
             </p>
           ) : null}
-          <h1 className="m-0 max-w-[11ch] text-5xl font-semibold leading-none tracking-normal text-[#060611] lg:text-7xl">
+          <h1 className="m-0 max-w-[16ch] text-[2.5rem] font-semibold leading-[1.08] tracking-normal text-white sm:text-5xl xl:text-[4rem]">
             {title}
           </h1>
           {description ? (
-            <p className="m-0 max-w-[38rem] text-base leading-7 text-[#404040]">
+            <p className="m-0 max-w-lg text-base leading-7 text-[var(--workspace-brand-muted-on-primary)] sm:text-lg sm:leading-8">
               {description}
             </p>
           ) : null}
@@ -116,18 +116,18 @@ export function ContentDefault({
         </div>
 
         <div
-          className="flex aspect-[356/335] min-h-72 w-full items-center justify-center overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-blue-600 via-teal-500 to-amber-500"
+          className="min-h-72 w-full overflow-hidden rounded-b-3xl bg-[var(--workspace-brand-surface)] lg:relative lg:rounded-r-3xl lg:rounded-bl-none"
           aria-label={mediaLabel}
         >
           {mediaSrc ? (
             <img
-              className="h-full w-full object-cover"
+              className="aspect-square h-full w-full object-cover lg:absolute lg:inset-0"
               src={mediaSrc}
               alt={mediaAlt ?? ""}
             />
           ) : (
             <div
-              className="h-full w-full bg-gradient-to-br from-blue-600 via-teal-500 to-amber-500"
+              className="aspect-square h-full w-full bg-[var(--workspace-brand-line)]"
               aria-hidden="true"
             />
           )}

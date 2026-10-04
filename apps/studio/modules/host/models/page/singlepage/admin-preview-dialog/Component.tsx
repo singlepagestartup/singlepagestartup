@@ -7,11 +7,11 @@ export function AdminPreviewDialog() {
       <AdminV2PageShell
         activePath="/admin/website-builder/widget"
         eyebrow="host.page"
-        title="Admin preview dialog"
-        description="Host page recipe for runnable PreviewDialog and TipTapEditor review states."
+        title="Content preview"
+        description="Edit page content and review it at desktop or mobile width."
       >
-        <div className="rounded-3xl border border-slate-300 bg-slate-200 p-5">
-          <div className="mx-auto max-w-5xl rounded-2xl bg-white p-4 shadow-xl">
+        <div className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-5">
+          <div className="mx-auto max-w-5xl rounded-2xl bg-[var(--workspace-brand-surface)] p-4 ">
             <WebsiteBuilderAdminV2RichEditor />
           </div>
         </div>

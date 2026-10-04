@@ -1,4 +1,8 @@
-import { ArrowUpRight, ChevronRight } from "lucide-react";
+import { kit } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import {
+  ArrowUpRight,
+  ChevronRight,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 interface BlogPostItem {
   image: string;
@@ -15,8 +19,10 @@ export const defaultArticleFindDefaultProps = {
   viewAllAction: { label: "View all posts", href: "/blog" },
   posts: [
     {
-      image:
-        "https://images.unsplash.com/photo-1723987251277-18fc0a1effd0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXRhJTIwYW5hbHl0aWNzJTIwY2hhcnQlMjBzY3JlZW58ZW58MXx8fHwxNzcxNjg3NTEzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      image: new URL(
+        "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
+        import.meta.url,
+      ).href,
       tag: "Analytics",
       title: "How to Build Data-Driven Dashboards",
       excerpt:
@@ -25,8 +31,10 @@ export const defaultArticleFindDefaultProps = {
       readTime: "5 min read",
     },
     {
-      image:
-        "https://images.unsplash.com/photo-1718630732291-3bc8de36b030?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxjbG91ZCUyMGluZnJhc3RydWN0dXJlJTIwc2VydmVyJTIwYWJzdHJhY3R8ZW58MXx8fHwxNzcxNzE1MzcwfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      image: new URL(
+        "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus-square.png",
+        import.meta.url,
+      ).href,
       tag: "Infrastructure",
       title: "Scaling Your Platform Architecture",
       excerpt:
@@ -35,8 +43,10 @@ export const defaultArticleFindDefaultProps = {
       readTime: "8 min read",
     },
     {
-      image:
-        "https://images.unsplash.com/photo-1692106979244-a2ac98253f6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxkZXZlbG9wZXIlMjBjb2RpbmclMjBzY3JlZW4lMjBkYXJrfGVufDF8fHx8MTc3MTcxNTM3MXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      image: new URL(
+        "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
+        import.meta.url,
+      ).href,
       tag: "Development",
       title: "API Integration Step-by-Step",
       excerpt:
@@ -54,70 +64,72 @@ export function ArticleFindDefault(props?: Partial<ArticleFindDefaultProps>) {
     ...defaultArticleFindDefaultProps,
     ...props,
   };
-
+  const articleHref =
+    "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
   return (
-    <div
+    <section
       id="blog"
-      className="w-full py-20"
+      className="w-full py-16 lg:py-24"
       data-ds-block="blog.widget.article-find-default"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-6xl px-6">
-        <div className="mb-12 flex items-end justify-between">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="mb-2 text-xs uppercase tracking-widest text-slate-500">
+            <p className="mb-3 text-sm font-medium text-[var(--workspace-brand-muted)]">
               {eyebrow}
             </p>
-            <h2 className="text-3xl font-medium leading-9 tracking-tight text-slate-900">
+            <h2 className="text-4xl font-semibold tracking-tight md:text-5xl">
               {title}
             </h2>
           </div>
-          <a
-            className="hidden items-center gap-1 text-sm text-slate-600 no-underline transition hover:text-slate-900 md:inline-flex"
-            href={viewAllAction.href}
-          >
+          <a className={kit.secondary} href={viewAllAction.href}>
             {viewAllAction.label}
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="size-5" />
           </a>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid items-stretch gap-6 md:grid-cols-3">
           {posts.map((post) => (
-            <article
-              className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md"
+            <a
+              href={articleHref}
+              target="_top"
+              className={`group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] transition hover:border-[var(--workspace-brand-foreground)] motion-reduce:transition-none ${kit.focus}`}
               key={post.title}
             >
-              <div className="aspect-[16/9] overflow-hidden">
+              <div className="aspect-square overflow-hidden">
                 <img
-                  className="h-full w-full object-cover transition group-hover:scale-105"
+                  className="h-full w-full object-cover"
                   src={post.image}
                   alt={post.title}
                 />
               </div>
-              <div className="p-5">
-                <p className="mb-3 flex items-center gap-2">
-                  <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] uppercase text-slate-600">
+              <div className="flex flex-1 flex-col p-5 sm:p-6">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--workspace-brand-muted)]">
+                  <span className="rounded-full bg-[var(--workspace-brand-background)] px-3 py-1.5">
                     {post.tag}
                   </span>
-                  <small className="text-xs text-slate-400">{post.date}</small>
-                </p>
-                <h3 className="text-sm font-medium text-slate-900 group-hover:text-slate-700">
+                  <span>{post.date}</span>
+                </div>
+                <h3 className="text-2xl font-semibold leading-7 tracking-tight">
                   {post.title}
                 </h3>
-                <p className="mt-1.5 text-sm text-slate-500">{post.excerpt}</p>
-                <footer className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-                  <small className="text-xs text-slate-400">
+                <p className="mt-3 line-clamp-2 flex-1 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+                  {post.excerpt}
+                </p>
+                <div className="mt-6 flex items-center justify-between border-t border-[var(--workspace-brand-line)] pt-4 text-sm">
+                  <span className="text-[var(--workspace-brand-muted)]">
                     {post.readTime}
-                  </small>
-                  <span className="inline-flex items-center gap-1 text-xs text-slate-600 transition group-hover:text-slate-900">
-                    Read more
-                    <ArrowUpRight className="h-3 w-3" />
                   </span>
-                </footer>
+                  <span className="inline-flex items-center gap-2 font-medium">
+                    Read article
+                    <ArrowUpRight className="size-5" />
+                  </span>
+                </div>
               </div>
-            </article>
+            </a>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

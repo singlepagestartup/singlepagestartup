@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { IdentityCardDefault } from "../../../identity/singlepage/card-default/Component";
 import {
@@ -20,10 +20,9 @@ export interface SubjectMeIdentityFindInformationProps {
 
 export const defaultSubjectMeIdentityFindInformationProps: SubjectMeIdentityFindInformationProps =
   {
-    title: "Identities",
-    description:
-      "Each identity is an independent login method. Actions differ by provider type.",
-    emptyLabel: "No identities linked to this subject.",
+    title: "Sign-in methods",
+    description: "Manage each connected account and the ways you sign in.",
+    emptyLabel: "No sign-in methods connected to this account.",
     identities: defaultRbacIdentities,
     relations: defaultRbacSubjectToIdentities,
   };
@@ -45,32 +44,47 @@ export function SubjectMeIdentityFindInformation(
     [relations],
   );
 
-  const handleAction = (identity: RbacIdentity, action: IdentityAction) => {
-    setLastOperation({
-      identityId: identity.id,
-      label: getIdentityOperationLabel(action.key),
-    });
-  };
+  const handleAction = useCallback(
+    (identity: RbacIdentity, action: IdentityAction) => {
+      setLastOperation({
+        identityId: identity.id,
+        label: getIdentityOperationLabel(action.key),
+      });
+    },
+    [],
+  );
 
   return (
     <article
-      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+      className="min-w-0 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6"
       data-ds-block="rbac.subject.me-identity-find-information"
       data-ds-imports="rbac.identity.card-default"
       data-ds-layer="singlepage"
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-medium text-slate-900">{title}</h2>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+          <h2 className="text-xl font-semibold text-[var(--workspace-brand-foreground)]">
+            {title}
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-[var(--workspace-brand-muted)]">
             {description}
           </p>
         </div>
+        <span className="inline-flex min-h-7 shrink-0 items-center rounded-full border border-[var(--workspace-brand-line)] px-3 text-xs font-medium text-[var(--workspace-brand-muted)]">
+          {
+            sortedRelations.filter((relation) =>
+              identities.some(
+                (identity) => identity.id === relation.identityId,
+              ),
+            ).length
+          }{" "}
+          connected
+        </span>
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-6 divide-y divide-[var(--workspace-brand-line)]">
         {sortedRelations.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+          <div className="rounded-xl border border-dashed border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-6 text-center text-sm text-[var(--workspace-brand-muted)]">
             {emptyLabel}
           </div>
         ) : (
@@ -83,6 +97,7 @@ export function SubjectMeIdentityFindInformation(
 
             return (
               <IdentityCardDefault
+                embedded
                 identity={identity}
                 key={relation.id}
                 lastOperationLabel={

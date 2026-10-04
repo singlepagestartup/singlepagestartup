@@ -33,12 +33,8 @@
     "variantName": "button-default",
     "nodeId": "791:19",
     "variantNodeId": "791:17",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "blog",
-    "tag",
-    "button-default"
-  ]
+  "tags": ["blog", "tag", "button-default"]
 }

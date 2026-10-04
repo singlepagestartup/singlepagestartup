@@ -28,15 +28,8 @@
     "variantName": "me-social-module-profile-find-information",
     "nodeId": "859:27",
     "variantNodeId": "981:129",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "rbac",
-    "subject",
-    "social",
-    "profile",
-    "find",
-    "information"
-  ]
+  "tags": ["rbac", "subject", "social", "profile", "find", "information"]
 }

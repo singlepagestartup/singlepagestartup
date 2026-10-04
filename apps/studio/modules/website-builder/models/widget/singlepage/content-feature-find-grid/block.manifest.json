@@ -2,7 +2,7 @@
   "$schema": "../../../../../../block.schema.json",
   "id": "website-builder.widget.content-feature-find-grid",
   "title": "Website Builder Widget / Content / Feature Find Grid",
-  "description": "Singlepage draft block for a 4-column feature card grid with icon, title, and description.",
+  "description": "Singlepage feature grid composed from website-builder.feature.card.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
@@ -38,7 +38,7 @@
     "variantName": "content-feature-find-grid",
     "nodeId": "700:24",
     "variantNodeId": "866:2",
-    "syncStatus": "created",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

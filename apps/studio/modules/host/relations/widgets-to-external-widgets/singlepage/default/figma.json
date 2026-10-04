@@ -1,0 +1,21 @@
+{
+  "componentName": "host.widgets-to-external-widgets",
+  "pageName": "host",
+  "variantName": "default",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.widgets-to-external-widgets.default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/relations/widgets-to-external-widgets/singlepage/default",
+    "sps.source.module": "host",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "widgets-to-external-widgets",
+    "sps.source.variant": "default",
+    "sps.code.component": "apps/studio/modules/host/relations/widgets-to-external-widgets/singlepage/default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/relations/widgets-to-external-widgets/singlepage/default/Component.stories.tsx",
+    "sps.figma.component": "host.widgets-to-external-widgets",
+    "sps.figma.variant": "default",
+    "sps.contractVersion": "0.1.0"
+  }
+}

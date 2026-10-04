@@ -73,12 +73,8 @@
     "variantName": "featured",
     "nodeId": "785:18",
     "variantNodeId": "785:2",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "blog",
-    "article",
-    "featured"
-  ]
+  "tags": ["blog", "article", "featured"]
 }

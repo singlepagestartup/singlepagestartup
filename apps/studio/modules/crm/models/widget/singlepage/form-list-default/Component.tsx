@@ -10,42 +10,41 @@ export interface CrmWidgetFormListDefaultProps {
   description: string;
   form: CrmFormRecord;
   subjectName?: string;
+  embedded?: boolean;
 }
 
 export const defaultCrmWidgetFormListDefaultProps: CrmWidgetFormListDefaultProps =
   {
-    eyebrow: "CRM Module",
-    title: "Create request",
-    description:
-      "Subject-owned CRM composition that renders a CRM form, its steps, and its inputs.",
+    eyebrow: "Requests",
+    title: defaultCrmForm.title,
+    description: "Tell us what you need and how we can contact you.",
     form: defaultCrmForm,
-    subjectName: "Current subject",
+    subjectName: "Your account",
   };
 
 export function CrmWidgetFormListDefault(
   props?: Partial<CrmWidgetFormListDefaultProps>,
 ) {
-  const { eyebrow, title, description, form, subjectName } = {
+  const { form, subjectName, embedded } = {
     ...defaultCrmWidgetFormListDefaultProps,
     ...props,
   };
 
   return (
     <section
-      className="space-y-5"
+      className="space-y-8"
       data-ds-block="crm.widget.form-list-default"
       data-ds-layer="singlepage"
     >
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-          {eyebrow}
-        </p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-950">{title}</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-          {description}
-        </p>
-      </div>
-      <CrmFormDefault form={form} subjectName={subjectName} />
+      <CrmFormDefault
+        form={{
+          ...form,
+          title: props?.title ?? form.title,
+          description: props?.description ?? form.description,
+        }}
+        subjectName={subjectName}
+        embedded={embedded}
+      />
     </section>
   );
 }

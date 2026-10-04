@@ -14,8 +14,16 @@
       "path": "../../../../../website-builder/models/widget/singlepage/navbar-default"
     },
     {
-      "id": "ecommerce.product.overview-default",
-      "path": "../../../../../ecommerce/models/product/singlepage/overview-default"
+      "id": "host.widget.default",
+      "path": "../../../widget/singlepage/default"
+    },
+    {
+      "id": "host.widgets-to-external-widgets.default",
+      "path": "../../../../relations/widgets-to-external-widgets/singlepage/default"
+    },
+    {
+      "id": "ecommerce.widget.product-overview-default",
+      "path": "../../../../../ecommerce/models/widget/singlepage/product-overview-default"
     },
     {
       "id": "ecommerce.product.overview-purchase",
@@ -40,7 +48,7 @@
     "variantName": "ecommerce-products-ecommerce-products-slug",
     "nodeId": "716:300",
     "variantNodeId": "983:1771",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

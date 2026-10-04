@@ -48,12 +48,8 @@
     "variantName": "subject-me-account-settings",
     "nodeId": "981:142",
     "variantNodeId": "981:135",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "rbac",
-    "widget",
-    "subject-me-account-settings"
-  ]
+  "tags": ["rbac", "widget", "subject-me-account-settings"]
 }

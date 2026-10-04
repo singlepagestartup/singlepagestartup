@@ -25,7 +25,7 @@ export function SalesSegment({ segment, baseUrl }: ISalesSegmentProps) {
       <section aria-labelledby={`cjm-${segment.id}`}>
         <h3
           id={`cjm-${segment.id}`}
-          className="mb-4 text-xl font-semibold text-slate-950"
+          className="mb-4 text-xl font-semibold text-[var(--workspace-brand-foreground)]"
         >
           Customer Journey Map (CJM)
         </h3>
@@ -36,16 +36,18 @@ export function SalesSegment({ segment, baseUrl }: ISalesSegmentProps) {
                 <details
                   key={step.id}
                   open={index === 0}
-                  className="rounded-xl border border-slate-200 p-4"
+                  className="rounded-xl border border-[var(--workspace-brand-line)] p-4"
                 >
-                  <summary className="cursor-pointer font-semibold text-teal-950">
+                  <summary className="cursor-pointer font-semibold text-[var(--workspace-brand-foreground)]">
                     {String(index + 1).padStart(2, "0")} · {step.name}
                   </summary>
                   <dl className="mt-4 space-y-4 text-sm leading-6">
                     {journeyRows.map(({ label, key }) => (
                       <div key={key}>
-                        <dt className="font-medium text-slate-900">{label}</dt>
-                        <dd className="mt-1 text-slate-700">
+                        <dt className="font-medium text-[var(--workspace-brand-foreground)]">
+                          {label}
+                        </dt>
+                        <dd className="mt-1 text-[var(--workspace-brand-muted)]">
                           {String(step[key])}
                         </dd>
                       </div>
@@ -54,14 +56,14 @@ export function SalesSegment({ segment, baseUrl }: ISalesSegmentProps) {
                 </details>
               ))}
             </div>
-            <p className="mb-3 hidden text-sm text-slate-500 md:block">
+            <p className="mb-3 hidden text-sm text-[var(--workspace-brand-muted)] md:block">
               Scroll horizontally to compare the full journey.
             </p>
             <div
               role="region"
               aria-label={`${segment.name} customer journey map`}
               tabIndex={0}
-              className="hidden max-w-full overflow-x-auto rounded-xl border border-slate-200 focus-visible:outline-2 focus-visible:outline-teal-600 md:block"
+              className="hidden max-w-full overflow-x-auto rounded-xl border border-[var(--workspace-brand-line)] focus-visible:outline-2 focus-visible:outline-[var(--workspace-brand-focus)] md:block"
             >
               <table className="w-full border-separate border-spacing-0 text-left text-sm leading-6">
                 <caption className="sr-only">
@@ -72,7 +74,7 @@ export function SalesSegment({ segment, baseUrl }: ISalesSegmentProps) {
                   <tr>
                     <th
                       scope="col"
-                      className="sticky left-0 z-10 min-w-40 border-b border-r border-slate-200 bg-slate-100 p-4"
+                      className="sticky left-0 z-10 min-w-40 border-b border-r border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4"
                     >
                       Customer perspective
                     </th>
@@ -80,9 +82,9 @@ export function SalesSegment({ segment, baseUrl }: ISalesSegmentProps) {
                       <th
                         key={step.id}
                         scope="col"
-                        className="min-w-64 border-b border-r border-slate-200 bg-teal-50 p-4 align-top font-semibold text-teal-950"
+                        className="min-w-64 border-b border-r border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4 align-top font-semibold text-[var(--workspace-brand-foreground)]"
                       >
-                        <span className="mb-2 block text-xs text-teal-700">
+                        <span className="mb-2 block text-xs text-[var(--workspace-brand-muted)]">
                           {String(index + 1).padStart(2, "0")}
                         </span>
                         {step.name}
@@ -95,14 +97,14 @@ export function SalesSegment({ segment, baseUrl }: ISalesSegmentProps) {
                     <tr key={key}>
                       <th
                         scope="row"
-                        className="sticky left-0 border-b border-r border-slate-200 bg-slate-50 p-4 align-top font-medium text-slate-800"
+                        className="sticky left-0 border-b border-r border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4 align-top font-medium text-[var(--workspace-brand-foreground)]"
                       >
                         {label}
                       </th>
                       {segment.journey.map((step) => (
                         <td
                           key={step.id}
-                          className="border-b border-r border-slate-200 p-4 align-top text-slate-700"
+                          className="border-b border-r border-[var(--workspace-brand-line)] p-4 align-top text-[var(--workspace-brand-muted)]"
                         >
                           {String(step[key])}
                         </td>
@@ -114,14 +116,14 @@ export function SalesSegment({ segment, baseUrl }: ISalesSegmentProps) {
             </div>
           </>
         ) : (
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-[var(--workspace-brand-muted)]">
             The customer journey has not been defined.
           </p>
         )}
       </section>
       {segment.journey.length > 0 && (
-        <details className="rounded-xl border border-slate-200 p-4">
-          <summary className="cursor-pointer font-semibold text-slate-900">
+        <details className="rounded-xl border border-[var(--workspace-brand-line)] p-4">
+          <summary className="cursor-pointer font-semibold text-[var(--workspace-brand-foreground)]">
             Responsibilities and handoffs
           </summary>
           <MarkdownDocument>

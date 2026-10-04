@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "../../../../../../workspace/utils/components/ModuleIcons";
 /**
  * ecommerce.product.card-related
  *
@@ -19,8 +20,10 @@ export interface ProductCardRelatedProps {
 
 export const defaultProductCardRelatedProps: ProductCardRelatedProps = {
   slug: "ui-ux-design",
-  image:
-    "https://images.unsplash.com/photo-1761122827167-159d1d272313?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxVWCUyMGRlc2lnbiUyMHdpcmVmcmFtZSUyMHNrZXRjaHxlbnwxfHx8fDE3NzE3MTY2NTN8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+  image: new URL(
+    "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
+    import.meta.url,
+  ).href,
   category: "design",
   priceLabel: "from $3,499",
   title: "UI/UX Design",
@@ -28,7 +31,7 @@ export const defaultProductCardRelatedProps: ProductCardRelatedProps = {
 };
 
 export function ProductCardRelated(props?: Partial<ProductCardRelatedProps>) {
-  const { slug, image, category, priceLabel, title, subtitle, href, target } = {
+  const { slug, image, priceLabel, title, subtitle, href, target } = {
     ...defaultProductCardRelatedProps,
     ...props,
   };
@@ -39,28 +42,33 @@ export function ProductCardRelated(props?: Partial<ProductCardRelatedProps>) {
       href={productHref}
       target={target}
       rel={target === "_blank" ? "noreferrer" : undefined}
-      className="group overflow-hidden rounded-xl border border-slate-200 bg-[#eaf0f7] transition hover:border-slate-400"
+      aria-label={`View ${title}`}
+      className="group flex h-full min-w-0 cursor-pointer items-start gap-4 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 transition motion-reduce:transition-none hover:border-[var(--workspace-brand-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
       data-ds-block="ecommerce.product.card-related"
       data-ds-layer="singlepage"
     >
-      <div className="aspect-[16/9] overflow-hidden">
-        <img
-          src={image}
-          alt={title}
-          className="h-full w-full object-cover transition group-hover:scale-105"
-        />
-      </div>
-      <div className="p-5">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-600 uppercase">
-            {category}
-          </span>
-          <span className="text-sm text-slate-900">{priceLabel}</span>
-        </div>
-        <h3 className="text-sm text-slate-900 group-hover:text-slate-700">
+      <img
+        src={image}
+        alt=""
+        className="block h-20 w-20 shrink-0 self-start rounded-xl object-cover"
+      />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <h3 className="text-lg font-semibold leading-6 text-[var(--workspace-brand-foreground)]">
           {title}
         </h3>
-        <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
+        {subtitle ? (
+          <p className="mt-2 text-sm leading-6 text-[var(--workspace-brand-muted)]">
+            {subtitle}
+          </p>
+        ) : null}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <span className="text-sm font-semibold text-[var(--workspace-brand-foreground)]">
+            {priceLabel}
+          </span>
+          <span className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--workspace-brand-foreground)]">
+            View <ArrowUpRight className="h-5 w-5" />
+          </span>
+        </div>
       </div>
     </a>
   );

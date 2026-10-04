@@ -2,7 +2,7 @@
   "$schema": "../../../../../../block.schema.json",
   "id": "website-builder.widget.content-testimonials",
   "title": "Website Builder Widget / Content / Testimonials",
-  "description": "Singlepage draft block for a static 2-column testimonial grid with 5-star ratings.",
+  "description": "Singlepage testimonial collection composed from website-builder.feature.testimotional.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
@@ -38,7 +38,7 @@
     "variantName": "content-testimonials",
     "nodeId": "700:24",
     "variantNodeId": "984:116",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

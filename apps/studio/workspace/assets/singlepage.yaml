@@ -3063,3 +3063,2313 @@ assets:
     usage_limits:
       Conceptual generated illustration of software structure and agent coordination. Not
       proof of actual product operation, customer work or measured outcomes.
+
+  - id: singlepage-phosphor-regular-arrow-left
+    design_role: icon
+    design_key: arrow-left
+    path: assets/singlepage/icons/phosphor/arrow-left.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular arrow-left icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 3c2001cf957d182fc54927e4b286cc8cf66dd97830f441ca2650d42a63a9006a
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/arrow-left.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-arrow-square-out
+    design_role: icon
+    design_key: arrow-square-out
+    path: assets/singlepage/icons/phosphor/arrow-square-out.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular arrow-square-out icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 8610e8f5c7d4952ae1ada34ef56fa7cbab1780bc85f25a5c9482b74144790fc8
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/arrow-square-out.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-bank
+    design_role: icon
+    design_key: bank
+    path: assets/singlepage/icons/phosphor/bank.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular bank icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: d52f812b44373ca15c1a8050ba27b35b8f4e014f1fcfe5fbaf9ee84d736b0c43
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/bank.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-bell
+    design_role: icon
+    design_key: bell
+    path: assets/singlepage/icons/phosphor/bell.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular bell icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 439b02c746ff59945b6175c6d327113ca3f7a729a43d5bcafb278a0f11ee34b5
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/bell.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-book-open
+    design_role: icon
+    design_key: book-open
+    path: assets/singlepage/icons/phosphor/book-open.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular book-open icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: b38cdb3a15dcf00cfa4811e318b021e25c6a87b47acbb11888e16d107a5642da
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/book-open.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-bookmark-simple
+    design_role: icon
+    design_key: bookmark-simple
+    path: assets/singlepage/icons/phosphor/bookmark-simple.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular bookmark-simple icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 493a836009ab98f8d4ca84f088cc03f2785cdee86daa1643e003865ff3168b41
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/bookmark-simple.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-calendar-blank
+    design_role: icon
+    design_key: calendar-blank
+    path: assets/singlepage/icons/phosphor/calendar-blank.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular calendar-blank icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 6268583ae0ea04e93fd24f1e70d47a8e8d79c88fc304af397b95b318980215d6
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/calendar-blank.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-caret-left
+    design_role: icon
+    design_key: caret-left
+    path: assets/singlepage/icons/phosphor/caret-left.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular caret-left icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 623bf248fe21a8170344e168aaac2e174119cea5d7c5d0fb0dc84f581009475f
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/caret-left.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-caret-right
+    design_role: icon
+    design_key: caret-right
+    path: assets/singlepage/icons/phosphor/caret-right.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular caret-right icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: e6dec01e074807965b7f3146b976a9b5e82c31d9c2c88aeb52e77cc2ab16c1d7
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/caret-right.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-chart-bar
+    design_role: icon
+    design_key: chart-bar
+    path: assets/singlepage/icons/phosphor/chart-bar.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular chart-bar icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: d161e503af4f5386a370ffd742d19d85e98625fd6d6eadbabbdb36d58dcca22c
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/chart-bar.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-chat
+    design_role: icon
+    design_key: chat
+    path: assets/singlepage/icons/phosphor/chat.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular chat icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 1b8e07e27bf357e6497a5db06dd4ea17bcac4577a63756ac38b4149b507a3f44
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/chat.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-check-circle
+    design_role: icon
+    design_key: check-circle
+    path: assets/singlepage/icons/phosphor/check-circle.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular check-circle icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: e02a080c3d1a758de5c5fd41abd913dec4cffbc70fe1e9637dbf7ce35f377055
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/check-circle.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-clock
+    design_role: icon
+    design_key: clock
+    path: assets/singlepage/icons/phosphor/clock.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular clock icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: b8c6c2899d2b9af48a55ba02ba6d7faf89b757915772dd24f5397f7b0d02aa5c
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/clock.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-code
+    design_role: icon
+    design_key: code
+    path: assets/singlepage/icons/phosphor/code.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular code icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 882462ff89cc7b864cb2af1a3a2660bd796f01bdac35b6d4cff7c131fb74e3dc
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/code.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-confetti
+    design_role: icon
+    design_key: confetti
+    path: assets/singlepage/icons/phosphor/confetti.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular confetti icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 10d993e5f81f36eb7c1f5caf7ba109e990ad43ef6b6a117e422eede41cfd7b49
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/confetti.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-credit-card
+    design_role: icon
+    design_key: credit-card
+    path: assets/singlepage/icons/phosphor/credit-card.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular credit-card icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 15aa383eedde1f3d95df3749b30ad1ba986f0522ef8784a68f9039f18efdc5eb
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/credit-card.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-cube
+    design_role: icon
+    design_key: cube
+    path: assets/singlepage/icons/phosphor/cube.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular cube icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 7c0f13cb492d0dd212e48ab259dabec4627df32d71aa00ce31b3228c0f35112b
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/cube.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-currency-circle-dollar
+    design_role: icon
+    design_key: currency-circle-dollar
+    path: assets/singlepage/icons/phosphor/currency-circle-dollar.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular currency-circle-dollar icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 141a655b6e67fb160c04cf2115fdfe1d2ee2296ad903030262c53dc70edfb95d
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/currency-circle-dollar.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-database
+    design_role: icon
+    design_key: database
+    path: assets/singlepage/icons/phosphor/database.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular database icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: da7d3598430cbe3b334c308c03ca41e8c4c7bbbfa7891e914d7aa8e87d847423
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/database.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-envelope
+    design_role: icon
+    design_key: envelope
+    path: assets/singlepage/icons/phosphor/envelope.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular envelope icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 1cacf2964607ad27bcb6c55117e5c7275cfb3c206f799b720f095b63965efdc4
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/envelope.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-eye-slash
+    design_role: icon
+    design_key: eye-slash
+    path: assets/singlepage/icons/phosphor/eye-slash.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular eye-slash icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 070b0296a7df89ebf4cec12436e323b5531d458aa9aed3608924085889e1fd17
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/eye-slash.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-floppy-disk
+    design_role: icon
+    design_key: floppy-disk
+    path: assets/singlepage/icons/phosphor/floppy-disk.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular floppy-disk icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 067b385ee62469be500d2d5bcd10e2aedd7529cd615ed180fa8414aaef0e40ab
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/floppy-disk.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-github-logo
+    design_role: icon
+    design_key: github-logo
+    path: assets/singlepage/icons/phosphor/github-logo.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular github-logo icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: eec5e2120017580de1e12f638488a0231478c02f1f404cfee8b4ff9e6bcce7ac
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/github-logo.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-google-chrome-logo
+    design_role: icon
+    design_key: google-chrome-logo
+    path: assets/singlepage/icons/phosphor/google-chrome-logo.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular google-chrome-logo icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 60bb2e8405bfe3c6a815f0cf867c46760baf8e5d43b22807ce245d568166de24
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/google-chrome-logo.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-hash
+    design_role: icon
+    design_key: hash
+    path: assets/singlepage/icons/phosphor/hash.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular hash icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: d4bbccddbcd96657fdc42f1c2e4fe50d5fd6a6ab7fdc4321a95b577060b7c745
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/hash.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-house
+    design_role: icon
+    design_key: house
+    path: assets/singlepage/icons/phosphor/house.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular house icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 180e9259e99e23da197b59b19394d006d6a5d33e384cc2b9c8381cb0214a5716
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/house.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-image
+    design_role: icon
+    design_key: image
+    path: assets/singlepage/icons/phosphor/image.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular image icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 642a0575f7b5a7ea2f5fefa6f27a5dc57683911845b85213a7e33652c2a3179d
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/image.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-key
+    design_role: icon
+    design_key: key
+    path: assets/singlepage/icons/phosphor/key.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular key icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 61694102f24a2eb4ce68f337fb6bf81090aef219328cb10dc2bd3f3c9e2ea266
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/key.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-lightning
+    design_role: icon
+    design_key: lightning
+    path: assets/singlepage/icons/phosphor/lightning.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular lightning icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 3a50c776266b21812f8ec5b5a841a81f54aa942569a31eb03a36fb0a5bfbe66e
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/lightning.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-link
+    design_role: icon
+    design_key: link
+    path: assets/singlepage/icons/phosphor/link.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular link icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 526d89480e3064c614b7d46a93888c187696d7776f684527d48eb94e2d7cd5d4
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/link.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-link-break
+    design_role: icon
+    design_key: link-break
+    path: assets/singlepage/icons/phosphor/link-break.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular link-break icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 54ac64cf997d33c5db295bd389c8a5679d0aff8c7d25df9178ff185da482d68e
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/link-break.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-linkedin-logo
+    design_role: icon
+    design_key: linkedin-logo
+    path: assets/singlepage/icons/phosphor/linkedin-logo.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular linkedin-logo icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: e8f573d6b822de2befad63e797e06cd2676b13674052bba2f95c81b748ee0ad0
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/linkedin-logo.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-list
+    design_role: icon
+    design_key: list
+    path: assets/singlepage/icons/phosphor/list.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular list icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: fb1851842c74b40a3f42ce3d6ae0e67ede556b624218e79c0f4ead7d9ceec51f
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/list.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-lock-key
+    design_role: icon
+    design_key: lock-key
+    path: assets/singlepage/icons/phosphor/lock-key.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular lock-key icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: a8177687fb7b376afa1cf3bc0b16599c91b96a323687e2145f772b93ed0f2c95
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/lock-key.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-magnifying-glass
+    design_role: icon
+    design_key: magnifying-glass
+    path: assets/singlepage/icons/phosphor/magnifying-glass.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular magnifying-glass icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: f9fa2561978a9a3291e8ae0ebfcb651104f5069fade8f84871627bca68889cde
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/magnifying-glass.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-map-pin
+    design_role: icon
+    design_key: map-pin
+    path: assets/singlepage/icons/phosphor/map-pin.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular map-pin icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 523f024fa467fc285d95c1db4ed6c32b640513c79780d14310bebf342b6f94fb
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/map-pin.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-megaphone
+    design_role: icon
+    design_key: megaphone
+    path: assets/singlepage/icons/phosphor/megaphone.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular megaphone icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 6bb3638fd7d8988bc449638293566ac2d978307357675d46c37f6a04a814006e
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/megaphone.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-minus
+    design_role: icon
+    design_key: minus
+    path: assets/singlepage/icons/phosphor/minus.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular minus icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 5a068d1cfd707fde5ddb0ce0623958123b6a5afba98401318983aeb0fdad6382
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/minus.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-monitor
+    design_role: icon
+    design_key: monitor
+    path: assets/singlepage/icons/phosphor/monitor.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular monitor icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: ac9005f7dd981b06b7c029b3625bf908ded63e0dc52e781ad550ae2ef621f86a
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/monitor.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-newspaper
+    design_role: icon
+    design_key: newspaper
+    path: assets/singlepage/icons/phosphor/newspaper.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular newspaper icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: edd422b8baf7fcbe2e4ee511b7926f1b92d40e344115fd1ae816d3ff37edab5b
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/newspaper.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-package
+    design_role: icon
+    design_key: package
+    path: assets/singlepage/icons/phosphor/package.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular package icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: b190e7e8f5c6e68be08e9fca1310d0f2c341aa7f1384aa99457206fab755e1f6
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/package.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-palette
+    design_role: icon
+    design_key: palette
+    path: assets/singlepage/icons/phosphor/palette.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular palette icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: f16925171ff434d8e8768da0d06867d77cd50d9e78932ab12af65bccac7a1375
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/palette.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-paper-plane-tilt
+    design_role: icon
+    design_key: paper-plane-tilt
+    path: assets/singlepage/icons/phosphor/paper-plane-tilt.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular paper-plane-tilt icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 0dbff2ada31c963dfd95bfe2ab2cb39a90fe7100eb7c1724577444a1d8a7c26d
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/paper-plane-tilt.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-paperclip
+    design_role: icon
+    design_key: paperclip
+    path: assets/singlepage/icons/phosphor/paperclip.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular paperclip icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: b60210f558fb4693a083ed563af191709a7cafcbc8fb0d1d083db9ef9c2412ac
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/paperclip.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-phone
+    design_role: icon
+    design_key: phone
+    path: assets/singlepage/icons/phosphor/phone.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular phone icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: a6eaa18b76ebeff885aad0eff89dc286a659f263bea801359a6fe2d15cde24f8
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/phone.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-play
+    design_role: icon
+    design_key: play
+    path: assets/singlepage/icons/phosphor/play.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular play icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 885b3ed2095889c4ff063dac35dc424cb9f6c00273ab44e2f90dc9dadbee661a
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/play.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-push-pin
+    design_role: icon
+    design_key: push-pin
+    path: assets/singlepage/icons/phosphor/push-pin.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular push-pin icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 64c2dc8e17ac0dc1107990c1843654804f7960c35c49acdb5df5c45286910de1
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/push-pin.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-robot
+    design_role: icon
+    design_key: robot
+    path: assets/singlepage/icons/phosphor/robot.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular robot icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: defac7635fe4235e3b6c8a1edabca345ac9dc2e8a2ec79ec82088845562a8128
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/robot.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-share-network
+    design_role: icon
+    design_key: share-network
+    path: assets/singlepage/icons/phosphor/share-network.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular share-network icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: e6923db3591f797c89c36671aad3e20effd7b06e6eb400b2a7ffb6daaed0474a
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/share-network.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-shield
+    design_role: icon
+    design_key: shield
+    path: assets/singlepage/icons/phosphor/shield.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular shield icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: ac5af74bb9729d9ba0e3a8796e300e016e2f07997f2d4b67071defce18503f1f
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/shield.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-shield-check
+    design_role: icon
+    design_key: shield-check
+    path: assets/singlepage/icons/phosphor/shield-check.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular shield-check icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: bb04d552c0baaaabd90f7eb60760cb0c7ddb7e9f47e4b76e9599ddd7dfd8eaa7
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/shield-check.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-shopping-cart
+    design_role: icon
+    design_key: shopping-cart
+    path: assets/singlepage/icons/phosphor/shopping-cart.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular shopping-cart icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: c972c761af11dcf0308abedac84543d235062d073d11b2119d0da870465ad474
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/shopping-cart.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-sign-in
+    design_role: icon
+    design_key: sign-in
+    path: assets/singlepage/icons/phosphor/sign-in.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular sign-in icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 4f9ac62582c9319778af5aef0865ba15b777378d222f4475be72ba1115bba076
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/sign-in.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-sign-out
+    design_role: icon
+    design_key: sign-out
+    path: assets/singlepage/icons/phosphor/sign-out.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular sign-out icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 511fe7958ef31f8904185631fd7045c11f35c8034a2a64ccb3bdcc4dfa81df77
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/sign-out.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-smiley
+    design_role: icon
+    design_key: smiley
+    path: assets/singlepage/icons/phosphor/smiley.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular smiley icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 9486a397f921e6a6472ae4655002a468b9d4475d1ff44dc639aa95fd830b7d60
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/smiley.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-squares-four
+    design_role: icon
+    design_key: squares-four
+    path: assets/singlepage/icons/phosphor/squares-four.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular squares-four icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: f70d6b20e08e028ab5b1714077681910a2431092cf7a23b82366ddaec554ab87
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/squares-four.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-star
+    design_role: icon
+    design_key: star
+    path: assets/singlepage/icons/phosphor/star.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular star icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 165cd96e51d60442fb9c7aa89592fa6ef28f22d18368c85771be302c2e977101
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/star.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-fill-star
+    design_role: icon
+    design_key: star-fill
+    path: assets/singlepage/icons/phosphor/star-fill.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Fill star for filled values in five-star ratings.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Pair Fill stars for scored values with Regular stars for remaining values in a rating.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not replace the native path with an improvised drawing.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 42451b34121b695bdaab88fdcf3eacec9cda9ac36d222349609426dcb9f04b48
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/fill/star-fill.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-05. Native geometry is retained; the consuming rating supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-tag
+    design_role: icon
+    design_key: tag
+    path: assets/singlepage/icons/phosphor/tag.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular tag icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 56633631b2e56436c33010c432f5da46533d2cfcae9773e694ee90ad43d96d69
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/tag.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-text-b
+    design_role: icon
+    design_key: text-b
+    path: assets/singlepage/icons/phosphor/text-b.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular text-b icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 39dc3c7bafeb11d9d6dc982201d60b52e84ffdbf35833d4b1dfaa298c68518b6
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/text-b.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-text-italic
+    design_role: icon
+    design_key: text-italic
+    path: assets/singlepage/icons/phosphor/text-italic.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular text-italic icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 189d5093097bb07a2894efb0221ffe5054617163c97eb5f73b79cbee375161c3
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/text-italic.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-thumbs-up
+    design_role: icon
+    design_key: thumbs-up
+    path: assets/singlepage/icons/phosphor/thumbs-up.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular thumbs-up icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 6894fd629b39ad47220d5e8e847e497aa7a889501e1f0dd0ffd8a82af4f06cc0
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/thumbs-up.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-trend-up
+    design_role: icon
+    design_key: trend-up
+    path: assets/singlepage/icons/phosphor/trend-up.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular trend-up icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: d99a74c39fecc099ed7e774f6306fc8137ff63011edea27e06e17c9582454ffb
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/trend-up.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-twitter-logo
+    design_role: icon
+    design_key: twitter-logo
+    path: assets/singlepage/icons/phosphor/twitter-logo.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular twitter-logo icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 86c9283a32bb06a3659dbd930d5c91901dcd7964c1b7fa724bd369741952432e
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/twitter-logo.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-user
+    design_role: icon
+    design_key: user
+    path: assets/singlepage/icons/phosphor/user.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular user icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 787434f7fef95f20e137d309d3c6b8b471548c55c9dfc137ae10625d70959d11
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/user.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-user-circle
+    design_role: icon
+    design_key: user-circle
+    path: assets/singlepage/icons/phosphor/user-circle.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular user-circle icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 5aee25838c1915058940900df322afc36b76f4ea7e48499c33603cf121258b2a
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/user-circle.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-user-plus
+    design_role: icon
+    design_key: user-plus
+    path: assets/singlepage/icons/phosphor/user-plus.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular user-plus icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 02197487a2b9ba649efc90baa79e2868bed55c1050a7f7130d348f1a4e2c8678
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/user-plus.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-users
+    design_role: icon
+    design_key: users
+    path: assets/singlepage/icons/phosphor/users.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular users icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: b3385e4c6aa03f7e16d1b03887c2cdff9900f5a7edbd5ea5176055938ccfb908
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/users.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-wallet
+    design_role: icon
+    design_key: wallet
+    path: assets/singlepage/icons/phosphor/wallet.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular wallet icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 9ae5c252608e1bda6dfe75f23599b1881a9476f8cc2069cd9083136fafe664f0
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/wallet.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.
+
+  - id: singlepage-phosphor-regular-warning
+    design_role: icon
+    design_key: warning
+    path: assets/singlepage/icons/phosphor/warning.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Official Phosphor Regular warning icon for Living Focus module and page previews.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 047c8edbdfddb9f1692bbf56acc85b7e4649b567c60eb39470e98e4f9ddc6a2e
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/warning.svg;
+      @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
+      downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
+      accessible label.

@@ -1,4 +1,7 @@
-import { Lock, ShieldCheck } from "lucide-react";
+import {
+  Lock,
+  ShieldCheck,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 import {
   formatCartMoney,
@@ -35,18 +38,26 @@ export function OrderSummaryDefault(props?: Partial<OrderSummaryDefaultProps>) {
 
   return (
     <aside
-      className="overflow-hidden rounded-2xl border border-slate-200 bg-white"
+      className="min-w-0 overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]"
       data-ds-block="ecommerce.order.summary-default"
+      data-ds-imports="ecommerce.product.cart-default"
       data-ds-layer="singlepage"
     >
-      <div className="border-b border-slate-100 px-6 py-5">
-        <h3 className="text-xl font-medium text-slate-900">Order Summary</h3>
-        <p className="mt-1 text-base text-slate-500">
+      <div className="border-b border-[var(--workspace-brand-line)] px-6 py-5">
+        <h3 className="text-xl font-semibold text-[var(--workspace-brand-foreground)]">
+          Order summary
+        </h3>
+        <p className="mt-1 text-sm text-[var(--workspace-brand-muted)]">
           {totals.itemCount} {totals.itemCount === 1 ? "item" : "items"}
         </p>
       </div>
 
-      <ul className="divide-y divide-slate-100 px-6">
+      {items.length === 0 ? (
+        <p className="px-6 py-8 text-sm text-[var(--workspace-brand-muted)]">
+          Your order has no items.
+        </p>
+      ) : null}
+      <ul className="divide-y divide-[var(--workspace-brand-line)] px-6">
         {items.map((item) => (
           <li key={item.id} className="py-5">
             <ProductCartDefault
@@ -63,39 +74,41 @@ export function OrderSummaryDefault(props?: Partial<OrderSummaryDefaultProps>) {
         ))}
       </ul>
 
-      <div className="space-y-3 border-t border-slate-100 px-6 py-5">
-        <div className="flex justify-between text-base text-slate-500">
+      <div className="space-y-3 border-t border-[var(--workspace-brand-line)] px-6 py-5">
+        <div className="flex justify-between text-sm text-[var(--workspace-brand-muted)]">
           <span>Subtotal</span>
           <span>{formatCartMoney(totals.subtotal)}</span>
         </div>
-        <div className="flex justify-between text-base text-slate-500">
+        <div className="flex justify-between text-sm text-[var(--workspace-brand-muted)]">
           <span>Consultation discount</span>
-          <span className="text-emerald-600">
+          <span className="text-[var(--workspace-brand-foreground)]">
             -{formatCartMoney(totals.discount)}
           </span>
         </div>
-        <div className="flex justify-between text-base text-slate-500">
+        <div className="flex justify-between text-sm text-[var(--workspace-brand-muted)]">
           <span>Tax</span>
           <span>$0</span>
         </div>
-        <div className="border-t border-slate-100 pt-4">
+        <div className="rounded-2xl bg-[var(--workspace-brand-background)] p-4">
           <div className="flex items-center justify-between">
-            <span className="text-lg text-slate-900">Total</span>
-            <span className="text-3xl text-slate-900">
+            <span className="text-lg text-[var(--workspace-brand-foreground)]">
+              Total
+            </span>
+            <span className="text-3xl font-semibold text-[var(--workspace-brand-foreground)]">
               {formatCartMoney(totals.total)}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="border-t border-slate-100 px-6 py-5">
-        <div className="flex flex-wrap items-center gap-5 text-base text-slate-400">
+      <div className="border-t border-[var(--workspace-brand-line)] px-6 py-5">
+        <div className="flex flex-wrap items-center gap-5 text-sm text-[var(--workspace-brand-muted)]">
           <span className="inline-flex items-center gap-2">
-            <Lock className="h-4 w-4" />
+            <Lock className="h-5 w-5" />
             SSL Secured
           </span>
           <span className="inline-flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4" />
+            <ShieldCheck className="h-5 w-5" />
             Money-Back Guarantee
           </span>
         </div>

@@ -22,7 +22,7 @@ export default function OnePageCover({ text }: { text?: string } = {}) {
             src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-primary-lockup.svg"
           />
           <div className="mt-auto">
-            <p className="mb-6 inline-block bg-[var(--workspace-brand-accent)] px-4 py-2 text-sm font-semibold uppercase tracking-widest">
+            <p className="mb-6 inline-block rounded-full bg-[var(--workspace-brand-surface)] px-4 py-2 text-sm font-semibold">
               {creativeAction(source)}
             </p>
             <h1 className="max-w-3xl text-[56px] leading-[1.06] tracking-tight font-semibold [font-family:var(--workspace-brand-font-display)]">
@@ -33,8 +33,8 @@ export default function OnePageCover({ text }: { text?: string } = {}) {
             </p>
           </div>
         </div>
-        <div className="relative m-10 overflow-hidden rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-7 shadow-lg">
-          <div className="flex items-center justify-between border-b border-[var(--workspace-brand-line)] pb-5 text-sm uppercase tracking-widest text-[var(--workspace-brand-muted)]">
+        <div className="relative m-10 overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-7">
+          <div className="flex items-center justify-between border-b border-[var(--workspace-brand-line)] pb-5 text-sm text-[var(--workspace-brand-muted)]">
             <span>Business model</span>
             <span className="rounded-full bg-[var(--workspace-brand-accent)] px-3 py-1 text-[var(--workspace-brand-foreground)]">
               Current

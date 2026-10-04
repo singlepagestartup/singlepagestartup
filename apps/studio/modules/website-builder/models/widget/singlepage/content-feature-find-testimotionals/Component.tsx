@@ -22,15 +22,17 @@ function SectionHeader({
   description?: string;
 }) {
   return (
-    <div className="mx-auto mb-12 max-w-2xl text-center">
-      <p className="mb-2 text-xs uppercase tracking-widest text-slate-500">
+    <div className="mb-8 max-w-2xl sm:mb-10">
+      <p className="mb-2 text-sm font-semibold tracking-normal text-[var(--workspace-brand-muted)]">
         {eyebrow}
       </p>
-      <h2 className="text-3xl font-medium leading-9 tracking-tight text-slate-900">
+      <h2 className="text-[2rem] font-semibold leading-tight tracking-normal sm:text-[2.5rem] text-[var(--workspace-brand-foreground)]">
         {title}
       </h2>
       {description ? (
-        <p className="text-base leading-6 text-slate-600 mt-3">{description}</p>
+        <p className="text-base leading-7 text-[var(--workspace-brand-muted)] mt-3">
+          {description}
+        </p>
       ) : null}
     </div>
   );
@@ -38,7 +40,7 @@ function SectionHeader({
 
 export const defaultContentFeatureFindTestimotionalsProps = {
   eyebrow: "Testimonials",
-  title: "Trusted by Teams Worldwide",
+  title: "Trusted by teams worldwide",
   testimonials: [
     {
       avatar: avatar1Url,
@@ -52,7 +54,7 @@ export const defaultContentFeatureFindTestimotionalsProps = {
       name: "Sarah Kim",
       role: "Product Lead, NovaBridge",
       text: "Having 15 modules out of the box means we focus on business logic, not infrastructure. The RBAC system alone replaced our custom auth layer.",
-      rating: 5,
+      rating: 4,
     },
     {
       avatar: avatar3Url,
@@ -77,14 +79,14 @@ export function ContentFeatureFindTestimotionals(
 
   return (
     <div
-      className="w-full py-20 border-y border-slate-200 bg-white"
+      className="w-full bg-[var(--workspace-brand-background)] py-12 sm:py-16"
       data-ds-block="website-builder.widget.content-feature-find-testimotionals"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-6xl px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader eyebrow={eyebrow} title={title} />
         <div
-          className="grid gap-4 md:grid-cols-3"
+          className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
           data-ds-imports="website-builder.feature.testimotional"
         >
           {testimonials.map((testimonial) => (

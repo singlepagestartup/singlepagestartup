@@ -1,5 +1,9 @@
 import { useState } from "react";
 import "../../../../styles/singlepage.css";
+import {
+  Icon,
+  kit,
+} from "../../../../design/singlepage/interface-kit/primitives";
 
 const sections = [
   {
@@ -154,26 +158,36 @@ export default function WorkspaceMap() {
   return (
     <div
       data-workspace-projection="singlepage"
-      className="min-h-[820px] bg-[var(--workspace-brand-foreground)] p-3 text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)] sm:p-6"
+      className="min-h-[820px] bg-[var(--workspace-brand-background)] p-3 text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)] sm:p-6"
     >
-      <div className="mx-auto max-w-[1440px] overflow-hidden rounded-[28px] border border-[#35444C] bg-[var(--workspace-brand-background)] shadow-2xl">
+      <div className="mx-auto max-w-[1440px] overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)]">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--workspace-brand-line)] bg-white px-5 py-4 sm:px-7">
           <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-lg bg-[var(--workspace-brand-foreground)] text-sm font-bold text-[var(--workspace-brand-accent)]">
-              S
+            <div className="grid size-10 place-items-center rounded-xl bg-[var(--workspace-brand-foreground)] text-[var(--workspace-brand-accent)]">
+              <img
+                src="/workspace-assets/singlepage/intake/operator-logo-square-white.svg"
+                data-asset-id="singlepage-operator-logo-square-white"
+                alt=""
+                width={24}
+                height={24}
+                className="size-6"
+              />
             </div>
             <div>
               <p className="text-sm font-semibold">Sample project</p>
-              <p className="text-xs text-[var(--workspace-brand-muted)]">
+              <p className="text-sm text-[var(--workspace-brand-muted)]">
                 Project model · Saved now
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded-full border border-[var(--workspace-brand-line)] px-3 py-2 text-xs font-semibold">
+            <span className="rounded-full border border-[var(--workspace-brand-line)] px-3 py-2 text-sm font-semibold">
               2 unknowns
             </span>
-            <span className="rounded-full bg-[#dff5b5] px-3 py-2 text-xs font-semibold">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-medium">
+              <span className="grid size-5 place-items-center rounded-full bg-[var(--workspace-brand-accent)]">
+                <Icon name="check" className="h-3.5 w-3.5" />
+              </span>
               Ready for chat
             </span>
           </div>
@@ -185,7 +199,7 @@ export default function WorkspaceMap() {
         >
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--workspace-brand-muted)]">
+              <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
                 How the business work moves
               </p>
               <h2
@@ -195,7 +209,7 @@ export default function WorkspaceMap() {
                 Draft, test and decide
               </h2>
             </div>
-            <p className="max-w-xl text-xs leading-5 text-[var(--workspace-brand-muted)]">
+            <p className="max-w-xl text-base leading-7 text-[var(--workspace-brand-muted)]">
               Draft the complete model first. Test the assumptions that can
               change it before committing to materials and implementation.
             </p>
@@ -203,20 +217,16 @@ export default function WorkspaceMap() {
 
           <div
             aria-label="Product development loop"
-            className="mt-5 flex flex-col gap-2 md:flex-row md:items-stretch md:overflow-x-auto md:pb-2"
+            className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
             role="list"
           >
             {hypothesisFlow.map((step, index) => (
-              <div
-                className="flex min-w-0 flex-col md:shrink-0 md:flex-row md:items-center"
-                key={step.number}
-                role="listitem"
-              >
+              <div className="flex min-w-0" key={step.number} role="listitem">
                 <article
-                  className={`min-h-40 flex-1 rounded-2xl border p-4 md:w-48 md:flex-none ${index === 0 ? "border-[var(--workspace-brand-foreground)] bg-[var(--workspace-brand-foreground)] text-white" : index === hypothesisFlow.length - 1 ? "border-[#9fc94f] bg-[#e7f7c8]" : "border-[var(--workspace-brand-line)] bg-white"}`}
+                  className={`min-h-48 flex-1 rounded-2xl border p-5 ${index === 0 ? "border-[var(--workspace-brand-foreground)] bg-[var(--workspace-brand-foreground)] text-white" : index === hypothesisFlow.length - 1 ? "border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]" : "border-[var(--workspace-brand-line)] bg-white"}`}
                 >
                   <p
-                    className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${index === 0 ? "text-[var(--workspace-brand-accent)]" : "text-[var(--workspace-brand-muted)]"}`}
+                    className={`text-sm font-semibold ${index === 0 ? "text-[var(--workspace-brand-accent)]" : "text-[var(--workspace-brand-muted)]"}`}
                   >
                     {step.number}
                   </p>
@@ -224,67 +234,36 @@ export default function WorkspaceMap() {
                     {step.title}
                   </h3>
                   <p
-                    className={`mt-2 text-[10px] font-semibold ${index === 0 ? "text-[var(--workspace-brand-line)]" : "text-[var(--workspace-brand-muted)]"}`}
+                    className={`mt-2 text-sm font-semibold ${index === 0 ? "text-[var(--workspace-brand-muted-on-primary)]" : "text-[var(--workspace-brand-muted)]"}`}
                   >
                     {step.pages}
                   </p>
                   <p
-                    className={`mt-3 text-xs leading-5 ${index === 0 ? "text-[var(--workspace-brand-background)]" : "text-[#35444C]"}`}
+                    className={`mt-3 text-base leading-7 ${index === 0 ? "text-[var(--workspace-brand-background)]" : "text-[var(--workspace-brand-foreground)]"}`}
                   >
                     {step.result}
                   </p>
                 </article>
-                {index < hypothesisFlow.length - 1 ? (
-                  <span
-                    aria-hidden="true"
-                    className="py-1 text-center text-xl font-semibold text-[var(--workspace-brand-muted)] md:px-2 md:py-0"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      data-icon-family="phosphor"
-                      data-icon-name="arrow-down"
-                      data-icon-weight="regular"
-                      viewBox="0 0 256 256"
-                      fill="currentColor"
-                      className="mx-auto size-5 shrink-0 md:hidden"
-                    >
-                      <path d="M205.66,149.66l-72,72a8,8,0,0,1-11.32,0l-72-72a8,8,0,0,1,11.32-11.32L120,196.69V40a8,8,0,0,1,16,0V196.69l58.34-58.35a8,8,0,0,1,11.32,11.32Z" />
-                    </svg>
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      data-icon-family="phosphor"
-                      data-icon-name="arrow-right"
-                      data-icon-weight="regular"
-                      viewBox="0 0 256 256"
-                      fill="currentColor"
-                      className="hidden size-5 shrink-0 md:block"
-                    >
-                      <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
-                    </svg>
-                  </span>
-                ) : null}
               </div>
             ))}
           </div>
 
-          <div className="mt-3 rounded-2xl border border-[var(--workspace-brand-foreground)] bg-white p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--workspace-brand-muted)]">
+          <div className="mt-6 rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-6">
+            <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
               What did the evidence show?
             </p>
             <div className="mt-3 grid gap-3 lg:grid-cols-2">
-              <div className="rounded-xl border border-[#9fc94f] bg-[#dff5b5] p-4">
-                <p className="text-xs font-semibold">Supports the decisions</p>
-                <p className="mt-2 text-xs leading-5">
+              <div className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
+                <p className="text-sm font-semibold">Supports the decisions</p>
+                <p className="mt-2 text-base leading-7">
                   Refine and confirm the decisions, then develop Product
                   Content, Website, Marketing Creative, Presentation and the
                   product itself.
                 </p>
               </div>
               <div className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
-                <p className="text-xs font-semibold">Disproves an assumption</p>
-                <p className="mt-2 text-xs leading-5">
+                <p className="text-sm font-semibold">Disproves an assumption</p>
+                <p className="mt-2 text-base leading-7">
                   Change Product, Operations &amp; Economics or Sales, identify
                   the next critical assumption and test again.
                 </p>
@@ -296,13 +275,13 @@ export default function WorkspaceMap() {
         <div className="grid lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)_320px]">
           <aside className="border-b border-[var(--workspace-brand-line)] bg-white p-4 lg:border-r lg:border-b-0">
             <div className="rounded-2xl bg-[var(--workspace-brand-foreground)] p-4 text-white">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--workspace-brand-accent)]">
+              <p className="text-sm font-semibold text-[var(--workspace-brand-accent)]">
                 Single page
               </p>
               <p className="mt-2 text-xl font-semibold [font-family:var(--workspace-brand-font-display)]">
                 Project model
               </p>
-              <p className="mt-2 text-xs leading-5 text-[var(--workspace-brand-line)]">
+              <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
                 Five compact sections. Add a deeper document when the work needs
                 it.
               </p>
@@ -311,19 +290,19 @@ export default function WorkspaceMap() {
               {sections.map((item, index) => (
                 <button
                   aria-current={active === index ? "page" : undefined}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition ${active === index ? "bg-[var(--workspace-brand-accent)]" : "hover:bg-[var(--workspace-brand-background)]"}`}
+                  className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition ${kit.focus} ${active === index ? "bg-[var(--workspace-brand-foreground)] text-white [&_span]:text-white" : "hover:bg-[var(--workspace-brand-background)]"}`}
                   key={item.id}
                   onClick={() => setActive(index)}
                   type="button"
                 >
-                  <span className="text-[10px] font-semibold text-[var(--workspace-brand-muted)]">
+                  <span className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
                     {item.number}
                   </span>
                   <span className="min-w-0">
                     <span className="block text-sm font-semibold">
                       {item.title}
                     </span>
-                    <span className="mt-0.5 block truncate text-[10px] text-[var(--workspace-brand-muted)]">
+                    <span className="mt-0.5 block truncate text-sm text-[var(--workspace-brand-muted)]">
                       Accepted
                     </span>
                   </span>
@@ -331,10 +310,11 @@ export default function WorkspaceMap() {
               ))}
             </nav>
             <button
-              className="mt-5 w-full rounded-xl border border-[var(--workspace-brand-line)] px-4 py-3 text-left text-xs font-semibold hover:bg-[var(--workspace-brand-background)]"
+              className={`${kit.secondary} mt-5 w-full justify-start`}
               type="button"
             >
-              + Add deeper document
+              <Icon name="plus" />
+              Add deeper document
             </button>
           </aside>
 
@@ -342,20 +322,17 @@ export default function WorkspaceMap() {
             <div className="mx-auto max-w-3xl">
               <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--workspace-brand-line)] pb-6">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--workspace-brand-muted)]">
+                  <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
                     {section.number} · Accepted
                   </p>
-                  <h1 className="mt-2 text-5xl font-semibold leading-none [font-family:var(--workspace-brand-font-display)] sm:text-6xl">
+                  <h1 className="mt-2 text-[40px] font-semibold leading-[1.1] [font-family:var(--workspace-brand-font-display)] sm:text-[56px]">
                     {section.title}
                   </h1>
-                  <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--workspace-brand-muted)]">
+                  <p className="mt-3 max-w-xl text-base leading-7 text-[var(--workspace-brand-muted)]">
                     {section.summary}
                   </p>
                 </div>
-                <button
-                  className="rounded-xl border border-[var(--workspace-brand-foreground)] bg-white px-4 py-2 text-xs font-semibold hover:bg-[var(--workspace-brand-background)]"
-                  type="button"
-                >
+                <button className={kit.secondary} type="button">
                   Edit section
                 </button>
               </div>
@@ -363,20 +340,20 @@ export default function WorkspaceMap() {
               <div className="mt-6 space-y-3">
                 {section.details.map(([label, value]) => (
                   <article
-                    className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5 shadow-sm"
+                    className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5"
                     key={label}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--workspace-brand-muted)]">
+                      <h2 className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
                         {label}
                       </h2>
-                      <span className="rounded-full bg-[#dff5b5] px-2 py-1 text-[9px] font-semibold uppercase tracking-wide">
+                      <span className="rounded-full bg-[var(--workspace-brand-background)] px-2 py-1 text-sm font-semibold">
                         Accepted
                       </span>
                     </div>
-                    <p className="mt-3 text-sm leading-7">{value}</p>
+                    <p className="mt-3 text-base leading-7">{value}</p>
                     <button
-                      className="mt-3 text-[10px] font-semibold text-[var(--workspace-brand-muted)] underline underline-offset-4"
+                      className={`${kit.plain} mt-3 px-0 underline underline-offset-4`}
                       type="button"
                     >
                       View source
@@ -386,22 +363,17 @@ export default function WorkspaceMap() {
               </div>
 
               {section.id === "products" ? (
-                <section className="mt-4 rounded-2xl border border-dashed border-[#98A6AF] bg-[var(--workspace-brand-background)] p-5">
+                <section className="mt-4 rounded-2xl border border-dashed border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold">
-                        Shared model · framework-service
-                      </p>
-                      <p className="mt-1 text-xs text-[var(--workspace-brand-muted)]">
-                        Used by AI Chat and Code Framework; common costs are
-                        recorded once.
+                      <p className="text-sm font-semibold">Product economics</p>
+                      <p className="mt-1 text-sm text-[var(--workspace-brand-muted)]">
+                        Each Product owns its revenue, resources and costs, with
+                        a stated share of shared resources.
                       </p>
                     </div>
-                    <button
-                      className="rounded-lg bg-white px-3 py-2 text-xs font-semibold shadow-sm"
-                      type="button"
-                    >
-                      Open model
+                    <button className={kit.secondary} type="button">
+                      Open Product
                     </button>
                   </div>
                 </section>
@@ -410,46 +382,32 @@ export default function WorkspaceMap() {
           </main>
 
           <aside className="border-t border-[var(--workspace-brand-line)] bg-white p-5 xl:border-t-0 xl:border-l">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--workspace-brand-muted)]">
+            <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
               Work with this project
             </p>
-            <div className="mt-4 rounded-2xl bg-[var(--workspace-brand-foreground)] p-4 text-white">
+            <div className="mt-4 rounded-3xl bg-[var(--workspace-brand-foreground)] p-6 text-white">
               <p className="text-base font-semibold [font-family:var(--workspace-brand-font-display)]">
                 Ask in ordinary language
               </p>
-              <p className="mt-2 text-xs leading-5 text-[var(--workspace-brand-line)]">
+              <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
                 AI Chat adds the relevant accepted decisions to each request.
               </p>
               <label className="mt-4 block" htmlFor="project-question">
                 <span className="sr-only">Ask about this project</span>
                 <textarea
-                  className="min-h-24 w-full resize-none rounded-xl border border-[#465A66] bg-[#283942] p-3 text-xs leading-5 text-white outline-none placeholder:text-[#999] focus:border-[var(--workspace-brand-accent)]"
+                  className={`${kit.field} min-h-32 resize-y focus-visible:ring-[var(--workspace-brand-accent)]`}
                   defaultValue="Improve the offer on my landing page"
                   id="project-question"
                 />
               </label>
-              <button
-                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--workspace-brand-accent)] px-4 py-3 text-sm font-semibold text-[var(--workspace-brand-foreground)]"
-                type="button"
-              >
+              <button className={`${kit.button} mt-4 w-full`} type="button">
                 Ask AI Chat
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  data-icon-family="phosphor"
-                  data-icon-name="arrow-right"
-                  data-icon-weight="regular"
-                  viewBox="0 0 256 256"
-                  fill="currentColor"
-                  className="size-5 shrink-0"
-                >
-                  <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
-                </svg>
+                <Icon name="arrow-right" className="size-5 shrink-0" />
               </button>
             </div>
 
             <div className="mt-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--workspace-brand-muted)]">
+              <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
                 Useful next actions
               </p>
               <div className="mt-3 space-y-2">
@@ -460,31 +418,20 @@ export default function WorkspaceMap() {
                   "Add another product",
                 ].map((action) => (
                   <button
-                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-[var(--workspace-brand-line)] px-3 py-3 text-left text-xs font-semibold hover:border-[var(--workspace-brand-foreground)]"
+                    className={`${kit.secondary} w-full justify-between text-left`}
                     key={action}
                     type="button"
                   >
                     <span>{action}</span>
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      data-icon-family="phosphor"
-                      data-icon-name="arrow-right"
-                      data-icon-weight="regular"
-                      viewBox="0 0 256 256"
-                      fill="currentColor"
-                      className="size-5 shrink-0"
-                    >
-                      <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
-                    </svg>
+                    <Icon name="arrow-right" className="size-5 shrink-0" />
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="mt-5 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
-              <p className="text-xs font-semibold">Two unknowns remain</p>
-              <p className="mt-1 text-[11px] leading-5 text-[var(--workspace-brand-muted)]">
+              <p className="text-sm font-semibold">Two unknowns remain</p>
+              <p className="mt-1 text-sm leading-5 text-[var(--workspace-brand-muted)]">
                 Token package price and the initial acquisition budget are not
                 supplied. They affect only related decisions.
               </p>

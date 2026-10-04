@@ -32,7 +32,7 @@
     "variantName": "ecommerce-products",
     "nodeId": "716:300",
     "variantNodeId": "983:1777",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

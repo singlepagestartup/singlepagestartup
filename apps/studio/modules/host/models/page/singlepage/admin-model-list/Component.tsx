@@ -7,8 +7,8 @@ export function AdminModelList() {
       <AdminV2PageShell
         activePath="/admin/ecommerce/product"
         eyebrow="host.page"
-        title="Admin model list"
-        description="Host page recipe for runnable /admin/:moduleSlug/:modelSlug."
+        title="Products"
+        description="Search product records, create a product or open one for editing."
       >
         <EcommerceProductAdminV2List />
       </AdminV2PageShell>

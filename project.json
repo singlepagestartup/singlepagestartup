@@ -30,6 +30,7 @@
           "tsc -p apps/studio/tsconfig.json --noEmit",
           "bun tools/studio/validate-manifests.ts",
           "bun tools/studio/design-system/validate.ts",
+          "bun test tools/studio/design-system/inventory.test.ts",
           "bun tools/studio/workspace/validate.ts --active-layer singlepage --self-check",
           "bun tools/studio/workspace/validate.ts --active-layer startup",
           "npm run agents:editorial:test",

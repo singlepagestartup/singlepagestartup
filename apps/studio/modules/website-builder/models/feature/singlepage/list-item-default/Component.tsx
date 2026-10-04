@@ -1,7 +1,10 @@
-import { Layers, type LucideIcon } from "lucide-react";
+import {
+  Layers,
+  type ModuleIcon,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export const defaultFeatureListItemDefaultProps = {
-  icon: Layers as LucideIcon,
+  icon: Layers as ModuleIcon,
   label: "Modular architecture",
   className: "",
 };
@@ -22,7 +25,7 @@ export function FeatureListItemDefault(
   };
 
   const rootClassName = [
-    "flex items-center gap-2 text-sm text-slate-700",
+    "flex min-w-0 items-start gap-3 text-base leading-7 text-[var(--workspace-brand-foreground)]",
     className,
   ]
     .filter(Boolean)
@@ -34,7 +37,7 @@ export function FeatureListItemDefault(
       data-ds-block="website-builder.feature.list-item-default"
       data-ds-layer="singlepage"
     >
-      <Icon className="h-4 w-4 shrink-0 text-slate-400" />
+      <Icon className="mt-1 h-5 w-5 shrink-0 text-[var(--workspace-brand-muted)]" />
       <span>{label}</span>
     </span>
   );

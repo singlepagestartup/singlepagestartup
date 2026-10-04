@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "../../../../../../workspace/utils/components/ModuleIcons";
 import { ButtonsArrayDefault } from "../../../buttons-array/singlepage/default/Component";
 import { FeatureDropdown } from "../../../feature/singlepage/dropdown/Component";
 
@@ -9,7 +9,7 @@ export interface ContentFaqItem {
 
 export const defaultContentFaqProps = {
   eyebrow: "FAQ",
-  title: "Frequently Asked Questions",
+  title: "Frequently asked questions",
   description:
     "Can't find the answer you're looking for? Reach out to our team and we'll get back to you within 24 hours.",
   contactHref: "/#contact",
@@ -43,18 +43,22 @@ export function ContentFaq(props?: Partial<ContentFaqProps>) {
 
   return (
     <section
-      className="w-full py-16"
+      className="w-full bg-[var(--workspace-brand-background)] py-12 sm:py-16"
       data-ds-block="website-builder.widget.content-faq"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-6xl px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[1fr_1fr]">
           <div>
-            <p className="mb-2 text-xs uppercase tracking-widest text-slate-500">
+            <p className="mb-2 text-sm font-semibold tracking-normal text-[var(--workspace-brand-muted)]">
               {eyebrow}
             </p>
-            <h2 className="text-2xl tracking-tight text-slate-900">{title}</h2>
-            <p className="mt-3 text-sm text-slate-600">{description}</p>
+            <h2 className="text-[2rem] font-semibold leading-tight tracking-normal sm:text-[2.5rem] text-[var(--workspace-brand-foreground)]">
+              {title}
+            </h2>
+            <p className="mt-4 max-w-md text-base leading-7 text-[var(--workspace-brand-muted)]">
+              {description}
+            </p>
             <div className="mt-5">
               <ButtonsArrayDefault
                 ariaLabel="FAQ contact actions"
@@ -62,17 +66,20 @@ export function ContentFaq(props?: Partial<ContentFaqProps>) {
                   {
                     href: contactHref,
                     icon: ArrowRight,
-                    label: "Contact Us",
+                    label: "Contact us",
                     variant: "secondary",
                   },
                 ]}
               />
             </div>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-1">
+          <div
+            className="min-w-0 self-start rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-2"
+            data-ds-imports="website-builder.feature.dropdown"
+          >
             {faq.map((item, idx) => (
               <FeatureDropdown
-                key={idx}
+                key={item.q}
                 question={item.q}
                 answer={item.a}
                 open={idx === 0}

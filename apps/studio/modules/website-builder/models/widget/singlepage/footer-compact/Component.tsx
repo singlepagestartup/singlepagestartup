@@ -2,26 +2,11 @@ import {
   ButtonsArrayDefault,
   type ButtonsArrayItem,
 } from "../../../buttons-array/singlepage/default/Component";
-
-const brandMarkSrc = new URL("./assets/singlepagestartup.svg", import.meta.url)
-  .href;
+import { BrandMark } from "../../../../../../workspace/utils/components/BrandMark";
 
 interface StudioLink {
   label: string;
   href: string;
-}
-
-function BrandMark({ size = "md" }: { size?: "sm" | "md" }) {
-  const sizeClass = size === "sm" ? "h-6 w-6 rounded" : "h-8 w-8 rounded-lg";
-
-  return (
-    <span
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden bg-slate-900 ${sizeClass}`}
-      aria-hidden="true"
-    >
-      <img className="h-full w-full object-contain" src={brandMarkSrc} alt="" />
-    </span>
-  );
 }
 
 export const defaultFooterCompactProps = {
@@ -50,12 +35,12 @@ export function FooterCompact(props?: Partial<FooterCompactProps>) {
 
   return (
     <div
-      className="w-full border-t border-slate-200 bg-white"
+      className="w-full border-t border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]"
       data-ds-block="website-builder.widget.footer-compact"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-6xl px-6 flex flex-col items-center justify-between gap-4 py-8 sm:flex-row">
-        <div className="flex items-center gap-3 text-sm text-slate-500">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col items-start justify-between gap-4 py-8 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 items-center gap-3 text-sm leading-6 text-[var(--workspace-brand-muted)]">
           <BrandMark size="sm" />
           <span>{copyright}</span>
         </div>

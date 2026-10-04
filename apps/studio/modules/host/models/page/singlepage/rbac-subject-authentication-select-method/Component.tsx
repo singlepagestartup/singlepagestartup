@@ -8,7 +8,7 @@ const authorProfileStoryHref =
 export function RbacSubjectAuthenticationSelectMethod() {
   return (
     <main
-      className="min-h-screen bg-slate-50 text-slate-900 antialiased"
+      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
       data-ds-page="host.page.rbac-subject-authentication-select-method"
       data-ds-route="/rbac/subject/authentication/select-method"
     >

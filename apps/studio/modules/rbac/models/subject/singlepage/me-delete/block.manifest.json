@@ -38,12 +38,8 @@
     "variantName": "me-delete",
     "nodeId": "859:27",
     "variantNodeId": "981:105",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "rbac",
-    "subject",
-    "me-delete"
-  ]
+  "tags": ["rbac", "subject", "me-delete"]
 }

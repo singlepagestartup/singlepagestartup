@@ -29,8 +29,12 @@ export function ArticleOverviewDefault(
       data-ds-imports="blog.article.cover blog.article.detail blog.tag.button-default"
       data-ds-layer="singlepage"
     >
-      <ArticleCover coverImage={article.coverImage} title={article.title} />
-      <ArticleDetail {...article} />
+      <ArticleDetail
+        {...article}
+        cover={
+          <ArticleCover coverImage={article.coverImage} title={article.title} />
+        }
+      />
     </article>
   );
 }

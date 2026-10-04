@@ -9,8 +9,8 @@ export function AdminDashboard() {
       <AdminV2PageShell
         activePath="/admin"
         eyebrow="host.page"
-        title="Admin dashboard"
-        description="Host-owned page recipe for the runnable /admin route. It composes module-owned admin-v2 blocks instead of preserving the runnable router shell."
+        title="Workspace overview"
+        description="Browse product and article records, then review your account settings."
       >
         <div className="grid gap-5 xl:grid-cols-2">
           <EcommerceProductAdminV2List />

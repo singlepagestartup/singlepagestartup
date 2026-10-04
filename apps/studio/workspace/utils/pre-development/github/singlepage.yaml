@@ -563,3 +563,35 @@ reconciliations:
       The merge publishes the identity credential wire-type correction without adding
       an authentication capability, security claim or visual decision.
     affected_artifacts: []
+  - commit: fd065269db5b6846c8ded20a2335bd1fb787f5c0
+    outcome: material
+    summary:
+      Product-owned economics is integrated in the current checkout. Removed
+      references to the retired shared framework-service model from Product,
+      Analytics, Research, Sales, Workspace navigation and product templates. Each
+      Product now owns its revenue and cost inputs; figures, evidence limits and
+      confirmation metadata remain unchanged. Existing document reviews stay pending.
+    affected_artifacts:
+      - singlepage.products
+  - commit: b800980ef73823186cdbf867151c1c78c91b8d53
+    outcome: material
+    summary: PR 256 publishes the inspected product-owned economics migration.
+      The same bounded reference repairs reconcile its current artifacts; the
+      merge introduces no additional commercial decision or approval.
+    affected_artifacts:
+      - singlepage.products
+  - commit: 26a95afc3269eee17bc6513ad4ce83ab9e5c1bb8
+    outcome: material
+    summary: This merge carries the same economics ownership change, reconciled
+      by the Product and template reference repairs above. Inspected runtime
+      secret, error-mapping, schema and filter changes do not change the selected
+      visual direction or establish runtime, integration or security proof.
+      Modules previews preserve model and relation ownership while adopting the
+      existing Living Focus design contract. Document approvals remain pending.
+    affected_artifacts:
+      - singlepage.products
+  - commit: 199b62537d2416694c74763bced51e28a9c219ea
+    outcome: no-material-effect
+    summary: Package changes expand Studio test discovery. They introduce no
+      business, product, economics, visual or approval decision.
+    affected_artifacts: []

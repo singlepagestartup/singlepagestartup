@@ -1,5 +1,9 @@
 import { useState } from "react";
 import "../../../../styles/singlepage.css";
+import {
+  Icon,
+  kit,
+} from "../../../../design/singlepage/interface-kit/primitives";
 
 const stages = [
   {
@@ -110,38 +114,45 @@ export default function GuidedCards() {
   return (
     <div
       data-workspace-projection="singlepage"
-      className="min-h-[820px] bg-[var(--workspace-brand-foreground)] p-3 text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)] sm:p-6"
+      className="min-h-[820px] bg-[var(--workspace-brand-background)] p-3 text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)] sm:p-6"
     >
-      <div className="mx-auto max-w-[1440px] overflow-hidden rounded-[28px] border border-[#35444C] bg-[var(--workspace-brand-background)] shadow-2xl">
+      <div className="mx-auto max-w-[1440px] overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)]">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--workspace-brand-line)] bg-white px-5 py-4 sm:px-7">
           <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-lg bg-[var(--workspace-brand-foreground)] text-sm font-bold text-[var(--workspace-brand-accent)]">
-              S
+            <div className="grid size-10 place-items-center rounded-xl bg-[var(--workspace-brand-foreground)] text-[var(--workspace-brand-accent)]">
+              <img
+                src="/workspace-assets/singlepage/intake/operator-logo-square-white.svg"
+                data-asset-id="singlepage-operator-logo-square-white"
+                alt=""
+                width={24}
+                height={24}
+                className="size-6"
+              />
             </div>
             <div>
               <p className="text-sm font-semibold">SinglePageStartup</p>
-              <p className="text-xs text-[var(--workspace-brand-muted)]">
+              <p className="text-sm text-[var(--workspace-brand-muted)]">
                 New project setup
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-3 py-2 text-xs font-semibold">
+            <span className="rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-3 py-2 text-sm font-semibold">
               {accepted.size} of 5 reviewed
             </span>
-            <span className="rounded-full bg-[var(--workspace-brand-accent)] px-3 py-2 text-xs font-semibold">
+            <span className="rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-medium">
               About one hour
             </span>
           </div>
         </header>
 
-        <div className="grid lg:grid-cols-[210px_minmax(0,1fr)] xl:grid-cols-[210px_minmax(0,1fr)_310px]">
+        <div className="grid lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)_320px]">
           <aside className="border-b border-[var(--workspace-brand-line)] bg-white p-4 lg:border-r lg:border-b-0">
-            <p className="px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--workspace-brand-muted)]">
+            <p className="px-2 text-sm font-semibold text-[var(--workspace-brand-muted)]">
               Five stages
             </p>
             <nav
-              className="mt-3 grid gap-1 sm:grid-cols-5 lg:grid-cols-1"
+              className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1"
               aria-label="Setup stages"
             >
               {stages.map((item, index) => {
@@ -155,7 +166,7 @@ export default function GuidedCards() {
                 return (
                   <button
                     aria-current={active === index ? "step" : undefined}
-                    className={`flex min-w-0 items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
+                    className={`flex min-h-11 min-w-0 items-center gap-3 rounded-xl px-3 py-3 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-accent)] ${
                       active === index
                         ? "bg-[var(--workspace-brand-foreground)] text-white"
                         : "hover:bg-[var(--workspace-brand-background)]"
@@ -165,7 +176,7 @@ export default function GuidedCards() {
                     type="button"
                   >
                     <span
-                      className={`grid size-7 shrink-0 place-items-center rounded-full border text-xs font-semibold ${
+                      className={`grid size-7 shrink-0 place-items-center rounded-full border text-sm font-semibold ${
                         state === "accepted"
                           ? "border-[var(--workspace-brand-accent)] bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-foreground)]"
                           : active === index
@@ -174,28 +185,17 @@ export default function GuidedCards() {
                       }`}
                     >
                       {state === "accepted" ? (
-                        <svg
-                          aria-hidden="true"
-                          focusable="false"
-                          data-icon-family="phosphor"
-                          data-icon-name="check"
-                          data-icon-weight="regular"
-                          viewBox="0 0 256 256"
-                          fill="currentColor"
-                          className="size-5 shrink-0"
-                        >
-                          <path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z" />
-                        </svg>
+                        <Icon name="check" className="h-4 w-4" />
                       ) : (
                         index + 1
                       )}
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate text-xs font-semibold sm:text-sm">
+                      <span className="block truncate text-sm font-semibold sm:text-sm">
                         {item.label}
                       </span>
                       <span
-                        className={`block text-[10px] ${active === index ? "text-[#98A6AF]" : "text-[var(--workspace-brand-muted)]"}`}
+                        className={`block text-sm ${active === index ? "text-[var(--workspace-brand-muted-on-primary)]" : "text-[var(--workspace-brand-muted)]"}`}
                       >
                         {state === "unknown" ? "Unknown saved" : item.time}
                       </span>
@@ -206,15 +206,15 @@ export default function GuidedCards() {
             </nav>
 
             <div className="mt-5 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--workspace-brand-muted)]">
+              <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
                 Material bundle
               </p>
               <p className="mt-2 text-sm font-semibold">7 files processed</p>
-              <p className="mt-1 text-xs leading-5 text-[var(--workspace-brand-muted)]">
+              <p className="mt-1 text-base leading-7 text-[var(--workspace-brand-muted)]">
                 Notes, pitch deck, price table, screenshots
               </p>
               <button
-                className="mt-3 text-xs font-semibold underline underline-offset-4"
+                className={`${kit.plain} mt-3 px-0 underline underline-offset-4`}
                 type="button"
               >
                 Add more
@@ -226,25 +226,25 @@ export default function GuidedCards() {
             <div className="mx-auto max-w-3xl">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--workspace-brand-muted)]">
+                  <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
                     Stage {active + 1} · {stage.time} suggested
                   </p>
-                  <h1 className="mt-2 text-4xl font-semibold leading-none [font-family:var(--workspace-brand-font-display)] sm:text-5xl">
+                  <h1 className="mt-2 text-[40px] font-semibold leading-[1.1] [font-family:var(--workspace-brand-font-display)] sm:text-5xl">
                     {stage.label}
                   </h1>
                 </div>
-                <span className="rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em]">
+                <span className="rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-semibold">
                   One decision in focus
                 </span>
               </div>
 
-              <section className="mt-7 rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5 shadow-sm sm:p-6">
+              <section className="mt-7 rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5 sm:p-6">
                 <div className="flex items-center justify-between gap-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--workspace-brand-muted)]">
+                  <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
                     Found in your material
                   </p>
                   <button
-                    className="text-xs font-semibold underline underline-offset-4"
+                    className={`${kit.plain} px-0 underline underline-offset-4`}
                     type="button"
                   >
                     See sources
@@ -252,45 +252,23 @@ export default function GuidedCards() {
                 </div>
                 <ul className="mt-4 space-y-3">
                   {stage.found.map((item, index) => (
-                    <li className="flex gap-3 text-sm leading-6" key={item}>
+                    <li className="flex gap-3 text-base leading-7" key={item}>
                       <span
-                        className={`mt-1 grid size-5 shrink-0 place-items-center rounded-full text-[10px] font-bold ${
+                        className={`mt-1 grid size-6 shrink-0 place-items-center rounded-full text-sm font-bold ${
                           index === stage.found.length - 1 &&
                           item.includes("unknown")
                             ? "bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)]"
-                            : "bg-[#dff5b5]"
+                            : "bg-[var(--workspace-brand-background)]"
                         }`}
                       >
                         {index === stage.found.length - 1 &&
                         item.includes("unknown") ? (
                           <>
                             <span className="sr-only">Unknown</span>
-                            <svg
-                              aria-hidden="true"
-                              focusable="false"
-                              data-icon-family="phosphor"
-                              data-icon-name="question"
-                              data-icon-weight="regular"
-                              viewBox="0 0 256 256"
-                              fill="currentColor"
-                              className="size-5 shrink-0"
-                            >
-                              <path d="M140,180a12,12,0,1,1-12-12A12,12,0,0,1,140,180ZM128,72c-22.06,0-40,16.15-40,36v4a8,8,0,0,0,16,0v-4c0-11,10.77-20,24-20s24,9,24,20-10.77,20-24,20a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v-.72c18.24-3.35,32-17.9,32-35.28C168,88.15,150.06,72,128,72Zm104,56A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z" />
-                            </svg>
+                            <Icon name="question" className="size-5 shrink-0" />
                           </>
                         ) : (
-                          <svg
-                            aria-hidden="true"
-                            focusable="false"
-                            data-icon-family="phosphor"
-                            data-icon-name="check"
-                            data-icon-weight="regular"
-                            viewBox="0 0 256 256"
-                            fill="currentColor"
-                            className="size-5 shrink-0"
-                          >
-                            <path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z" />
-                          </svg>
+                          <Icon name="check" className="h-4 w-4" />
                         )}
                       </span>
                       <span>{item}</span>
@@ -299,17 +277,15 @@ export default function GuidedCards() {
                 </ul>
               </section>
 
-              <section className="mt-4 rounded-2xl border-2 border-[var(--workspace-brand-foreground)] bg-[var(--workspace-brand-accent)] p-5 sm:p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em]">
-                  Current question
-                </p>
+              <section className="mt-6 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-8">
+                <p className="text-sm font-semibold">Current question</p>
                 <h2 className="mt-3 text-2xl font-semibold leading-tight [font-family:var(--workspace-brand-font-display)] sm:text-3xl">
                   {stage.question}
                 </h2>
                 <label className="mt-5 block" htmlFor={`answer-${stage.id}`}>
                   <span className="sr-only">Your answer</span>
                   <textarea
-                    className="min-h-28 w-full resize-y rounded-xl border border-[#8ead50] bg-white p-4 text-sm leading-6 outline-none focus:border-[var(--workspace-brand-foreground)] focus:ring-2 focus:ring-[var(--workspace-brand-foreground)]/15"
+                    className={`${kit.field} min-h-40 resize-y`}
                     id={`answer-${stage.id}`}
                     onChange={(event) =>
                       setAnswers((previous) => ({
@@ -322,14 +298,14 @@ export default function GuidedCards() {
                 </label>
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                   <button
-                    className="rounded-xl px-3 py-2 text-xs font-semibold hover:bg-black/5"
+                    className={kit.plain}
                     onClick={() => advance("unknown")}
                     type="button"
                   >
                     I don't know yet
                   </button>
                   <button
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--workspace-brand-foreground)] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#283942]"
+                    className={kit.button}
                     onClick={() => advance("accepted")}
                     type="button"
                   >
@@ -337,18 +313,7 @@ export default function GuidedCards() {
                       ? "Finish review"
                       : "Accept and continue"}
                     {active < stages.length - 1 ? (
-                      <svg
-                        aria-hidden="true"
-                        focusable="false"
-                        data-icon-family="phosphor"
-                        data-icon-name="arrow-right"
-                        data-icon-weight="regular"
-                        viewBox="0 0 256 256"
-                        fill="currentColor"
-                        className="size-5 shrink-0"
-                      >
-                        <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
-                      </svg>
+                      <Icon name="arrow-right" className="size-5 shrink-0" />
                     ) : null}
                   </button>
                 </div>
@@ -369,15 +334,15 @@ export default function GuidedCards() {
 
           <aside className="border-t border-[var(--workspace-brand-line)] bg-white p-5 xl:border-t-0 xl:border-l">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--workspace-brand-muted)]">
+              <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
                 Live project page
               </p>
               <span
-                className="size-2 rounded-full bg-[#6a9c08]"
+                className="size-2 rounded-full bg-[var(--workspace-brand-accent)]"
                 aria-label="Saved"
               />
             </div>
-            <p className="mt-2 text-xs leading-5 text-[var(--workspace-brand-muted)]">
+            <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted)]">
               Updates as each decision is reviewed.
             </p>
 
@@ -396,9 +361,9 @@ export default function GuidedCards() {
                   <span className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold">{item.label}</span>
                     <span
-                      className={`rounded-full px-2 py-1 text-[9px] font-semibold uppercase tracking-wide ${
+                      className={`rounded-full px-2 py-1 text-sm font-semibold ${
                         accepted.has(index)
-                          ? "bg-[#dff5b5]"
+                          ? "bg-[var(--workspace-brand-background)]"
                           : unknown.has(index)
                             ? "bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] ring-1 ring-inset ring-[var(--workspace-brand-line)]"
                             : "bg-[var(--workspace-brand-background)]"
@@ -411,18 +376,18 @@ export default function GuidedCards() {
                           : "Draft"}
                     </span>
                   </span>
-                  <span className="mt-2 block text-xs leading-5 text-[var(--workspace-brand-muted)]">
+                  <span className="mt-2 block text-base leading-7 text-[var(--workspace-brand-muted)]">
                     {item.result}
                   </span>
                 </button>
               ))}
             </div>
 
-            <div className="mt-5 rounded-2xl bg-[var(--workspace-brand-foreground)] p-4 text-white">
-              <p className="text-xs font-semibold text-[var(--workspace-brand-accent)]">
+            <div className="mt-6 rounded-3xl bg-[var(--workspace-brand-foreground)] p-6 text-white">
+              <p className="text-sm font-semibold text-[var(--workspace-brand-accent)]">
                 Useful context, then depth
               </p>
-              <p className="mt-2 text-xs leading-5 text-[var(--workspace-brand-line)]">
+              <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
                 Finish the five-stage review to use this model in chat. Detailed
                 Studio documents can be added later without repeating intake.
               </p>

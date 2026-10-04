@@ -1,4 +1,7 @@
-import { CheckCircle2, ChevronRight } from "lucide-react";
+import {
+  Check,
+  ChevronRight,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 import { checkoutSteps, type CheckoutStep } from "../../shared";
 
@@ -26,71 +29,63 @@ export function OrderCheckoutStepperDefault(
 
   return (
     <section
-      className="w-full border-b border-slate-200 bg-white py-8"
+      className="w-full py-8 sm:py-12"
       data-ds-block="ecommerce.order.checkout-stepper-default"
       data-ds-layer="singlepage"
     >
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         {showBreadcrumb ? (
-          <nav className="mb-5 flex items-center gap-2 text-base text-slate-400">
+          <nav
+            aria-label="Breadcrumb"
+            className="mb-6 flex flex-wrap items-center gap-2 text-sm text-[var(--workspace-brand-muted)]"
+          >
             <a
-              className="no-underline transition hover:text-slate-600"
+              className="rounded hover:text-[var(--workspace-brand-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
               href="/"
             >
               Home
             </a>
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-5 w-5" />
             <a
-              className="no-underline transition hover:text-slate-600"
+              className="rounded hover:text-[var(--workspace-brand-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
               href="/ecommerce/products"
             >
               Services
             </a>
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-slate-600">Checkout</span>
+            <ChevronRight className="h-5 w-5" />
+            <span aria-current="page">Checkout</span>
           </nav>
         ) : null}
-
-        <h1 className="text-4xl tracking-tight text-slate-900">Checkout</h1>
-
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          {checkoutSteps.map((step, index) => {
-            const done = index < currentIndex;
-            const active = step.key === currentStep;
-
-            return (
-              <div className="flex items-center gap-3" key={step.key}>
-                {index > 0 ? (
-                  <div
-                    className={`hidden h-px w-12 sm:block ${
-                      done ? "bg-slate-400" : "bg-slate-200"
-                    }`}
-                  />
-                ) : null}
-                <div className="flex items-center gap-3">
+        <h1 className="text-4xl font-semibold leading-tight text-[var(--workspace-brand-foreground)] sm:text-5xl">
+          Checkout
+        </h1>
+        <nav aria-label="Checkout progress" className="mt-8">
+          <ol className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-[var(--workspace-brand-line)]/50 p-2">
+            {checkoutSteps.map((step, index) => {
+              const done = index < currentIndex;
+              const active = step.key === currentStep;
+              return (
+                <li
+                  key={step.key}
+                  aria-current={active ? "step" : undefined}
+                  className={`flex min-w-0 flex-col items-center gap-2 rounded-xl p-3 sm:flex-row sm:gap-3 ${active ? "bg-[var(--workspace-brand-surface)]" : ""}`}
+                >
                   <span
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-base ${
-                      done
-                        ? "bg-slate-900 text-white"
-                        : active
-                          ? "border border-slate-400 bg-white text-slate-900"
-                          : "border border-slate-200 bg-slate-50 text-slate-400"
-                    }`}
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${done ? "bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-on-accent)]" : active ? "bg-[var(--workspace-brand-primary)] text-[var(--workspace-brand-on-primary)]" : "bg-[var(--workspace-brand-surface)] text-[var(--workspace-brand-muted)]"}`}
                   >
-                    {done ? <CheckCircle2 className="h-5 w-5" /> : step.number}
+                    {done ? <Check className="h-5 w-5" /> : step.number}
                   </span>
                   <span
-                    className={`text-lg ${
-                      active ? "text-slate-900" : "text-slate-500"
-                    }`}
+                    className={`text-center text-xs sm:text-sm ${active ? "font-semibold text-[var(--workspace-brand-foreground)]" : "text-[var(--workspace-brand-muted)]"}`}
                   >
                     {step.label}
                   </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                  {done ? <span className="sr-only">Completed</span> : null}
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
       </div>
     </section>
   );

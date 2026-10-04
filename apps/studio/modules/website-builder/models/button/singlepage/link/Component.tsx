@@ -20,12 +20,12 @@ export function ButtonLink(props?: Partial<ButtonLinkProps>) {
   const sizeClass = size === "xs" ? "text-xs" : "text-sm";
   const toneClass =
     tone === "muted"
-      ? "text-slate-400 hover:text-slate-600"
-      : "text-slate-600 hover:text-slate-950";
+      ? "text-[var(--workspace-brand-muted)] hover:text-[var(--workspace-brand-foreground)]"
+      : "text-[var(--workspace-brand-muted)] hover:text-[var(--workspace-brand-foreground)]";
 
   return (
     <a
-      className={`inline-flex items-center justify-center no-underline transition ${sizeClass} ${toneClass}`}
+      className={`inline-flex min-h-11 min-w-11 max-w-full items-center justify-center rounded-xl no-underline underline-offset-4 transition hover:underline motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] ${sizeClass} ${toneClass}`}
       data-ds-block="website-builder.button.link"
       data-ds-layer="singlepage"
       href={href}

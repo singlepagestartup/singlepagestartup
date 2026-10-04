@@ -5,7 +5,8 @@
  * Used by ecommerce.widget.product-find-tiers to render a list of products.
  */
 
-import { CheckCircle2 } from "lucide-react";
+import { Button } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import { CheckCircle2 } from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export type ProductTierVariant = "default" | "featured";
 
@@ -34,7 +35,7 @@ export const defaultProductTierProps: ProductTierProps = {
     "1 GB storage",
     "Basic analytics",
   ],
-  cta: "Get Started",
+  cta: "Get started",
   variant: "default",
 };
 
@@ -52,9 +53,9 @@ export const featuredProductTierProps: ProductTierProps = {
     "Custom domain",
     "API access",
   ],
-  cta: "Start Free Trial",
+  cta: "Start free trial",
   variant: "featured",
-  badge: "Most Popular",
+  badge: "Most popular",
 };
 
 export function ProductTier(props?: Partial<ProductTierProps>) {
@@ -75,20 +76,17 @@ export function ProductTier(props?: Partial<ProductTierProps>) {
   };
   const isFeatured = variant === "featured" || featured === true;
   const cardClassName = [
-    "w-full rounded-xl border p-6 transition",
+    "flex h-full min-w-0 flex-col rounded-3xl border p-6 sm:p-8",
     isFeatured
-      ? "border-slate-400 bg-white shadow-lg ring-1 ring-slate-200"
-      : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white hover:shadow-sm",
+      ? "border-[var(--workspace-brand-primary)] bg-[var(--workspace-brand-primary)] text-[var(--workspace-brand-on-primary)]"
+      : "border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] text-[var(--workspace-brand-foreground)]",
     className,
   ]
     .filter(Boolean)
     .join(" ");
-  const buttonClassName = [
-    "mt-6 w-full rounded-md border px-4 py-2.5 text-sm transition",
-    isFeatured
-      ? "border-slate-400 bg-slate-900 text-white hover:bg-slate-800"
-      : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50",
-  ].join(" ");
+  const mutedClassName = isFeatured
+    ? "text-[var(--workspace-brand-muted-on-primary)]"
+    : "text-[var(--workspace-brand-muted)]";
 
   return (
     <article
@@ -97,30 +95,39 @@ export function ProductTier(props?: Partial<ProductTierProps>) {
       data-ds-display-variant={isFeatured ? "featured" : "default"}
       data-ds-layer="singlepage"
     >
-      {isFeatured ? (
-        <span className="mb-4 inline-block rounded-full border border-slate-300 bg-slate-900 px-3 py-0.5 text-xs text-white">
-          {badge ?? "Most Popular"}
-        </span>
-      ) : null}
-      <h3 className="text-sm font-medium text-slate-900">{name}</h3>
-      <p className="mt-2 flex items-baseline gap-1">
-        <strong className="text-4xl font-medium leading-none text-slate-900">
-          {price}
-        </strong>
-        <span className="text-sm text-slate-500">{period}</span>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <h3 className="text-xl font-semibold">{name}</h3>
+        {isFeatured ? (
+          <span className="rounded-full bg-[var(--workspace-brand-accent)] px-3 py-1 text-xs font-semibold text-[var(--workspace-brand-on-accent)]">
+            {badge ?? "Most popular"}
+          </span>
+        ) : null}
+      </div>
+      <p className="mt-8 flex flex-wrap items-baseline gap-2">
+        <strong className="text-5xl font-semibold leading-none">{price}</strong>
+        <span className={`text-sm ${mutedClassName}`}>{period}</span>
       </p>
-      <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
-      <button className={buttonClassName} type="button">
+      <p className={`mt-5 min-h-12 text-base leading-6 ${mutedClassName}`}>
+        {description}
+      </p>
+      <Button
+        variant={isFeatured ? "primary" : "secondary"}
+        className={`mt-7 w-full ${isFeatured ? "focus-visible:outline-[var(--workspace-brand-focus-inverse)]" : ""}`}
+      >
         {cta}
-      </button>
-      <ul className="mt-6 space-y-2.5 border-t border-slate-200 pt-5">
+      </Button>
+      <ul
+        className={`mt-8 flex-1 space-y-4 border-t pt-6 ${isFeatured ? "border-[var(--workspace-brand-muted-on-primary)]/30" : "border-[var(--workspace-brand-line)]"}`}
+      >
         {features.map((feature) => (
           <li
-            className="flex items-start gap-2 text-sm text-slate-600"
             key={feature}
+            className={`flex items-start gap-3 text-sm leading-6 ${mutedClassName}`}
           >
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-            {feature}
+            <CheckCircle2
+              className={`mt-0.5 h-5 w-5 shrink-0 ${isFeatured ? "text-[var(--workspace-brand-accent)]" : "text-[var(--workspace-brand-foreground)]"}`}
+            />
+            <span>{feature}</span>
           </li>
         ))}
       </ul>

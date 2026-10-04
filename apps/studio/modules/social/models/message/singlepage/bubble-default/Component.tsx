@@ -1,4 +1,8 @@
-import { FileText, Smile } from "lucide-react";
+import {
+  SocialMessageAttachments,
+  type SocialMessageAttachment,
+} from "./Attachments";
+import { Smile } from "../../../../../../workspace/utils/components/ModuleIcons";
 import { useState } from "react";
 
 const reactionEmojiByToken: Record<string, string> = {
@@ -50,10 +54,8 @@ export interface SocialMessageBubbleDefaultProps {
   time: string;
   side: "incoming" | "outgoing";
   display?: "bubble" | "timeline";
-  attachments?: Array<{
-    name: string;
-    size: string;
-  }>;
+  attachments?: SocialMessageAttachment[];
+  onPreviewAttachment?: (attachment: SocialMessageAttachment) => void;
   reactions?: string[];
   reactionOptions?: string[];
 }
@@ -129,12 +131,12 @@ export function SocialMessageBubbleDefault(
 
   return (
     <article
-      className={`group flex gap-3 ${isOutgoing ? "flex-row-reverse" : ""}`}
+      className={`group flex min-w-0 gap-3 ${isOutgoing ? "flex-row-reverse" : ""}`}
       data-ds-block="social.message.bubble-default"
       data-ds-layer="singlepage"
     >
       {!isOutgoing ? (
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--workspace-brand-line)] text-sm font-semibold text-[var(--workspace-brand-foreground)]">
           {author
             .split(" ")
             .map((part) => part[0])
@@ -142,49 +144,47 @@ export function SocialMessageBubbleDefault(
             .slice(0, 2)}
         </div>
       ) : null}
-      <div className={`max-w-3xl ${isOutgoing ? "items-end" : "items-start"}`}>
+      <div
+        className={`min-w-0 max-w-3xl ${isOutgoing ? "items-end" : "items-start"}`}
+      >
         <div
-          className={`mb-1 flex items-center gap-2 text-xs ${
-            isOutgoing ? "justify-end text-slate-500" : "text-slate-500"
+          className={`mb-2 flex flex-wrap items-center gap-2 text-xs ${
+            isOutgoing
+              ? "justify-end text-[var(--workspace-brand-muted)]"
+              : "text-[var(--workspace-brand-muted)]"
           }`}
         >
           {!isOutgoing ? (
             <>
-              <span className="font-medium text-slate-700">{author}</span>
+              <span className="min-w-0 break-all font-medium text-[var(--workspace-brand-foreground)]">
+                {author}
+              </span>
               <span>{role}</span>
             </>
           ) : null}
           <span>{time}</span>
         </div>
         {isTimeline && !isOutgoing ? (
-          <p className="whitespace-pre-line text-sm leading-6 text-slate-700">
+          <p className="whitespace-pre-line text-base leading-7 text-[var(--workspace-brand-foreground)]">
             {body}
           </p>
         ) : (
           <div
-            className={`rounded-2xl border px-4 py-3 text-sm leading-6 shadow-sm ${
+            className={`rounded-2xl border px-5 py-4 text-base leading-7 ${
               isOutgoing
-                ? "border-slate-900 bg-slate-900 text-white"
-                : "border-slate-200 bg-white text-slate-700"
+                ? "border-[var(--workspace-brand-focus)] bg-[var(--workspace-brand-primary)] text-white"
+                : "border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] text-[var(--workspace-brand-foreground)]"
             }`}
           >
             <p className="whitespace-pre-line">{body}</p>
           </div>
         )}
         {attachments.length > 0 ? (
-          <div className="mt-2 grid gap-2">
-            {attachments.map((attachment) => (
-              <div
-                className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600"
-                key={attachment.name}
-              >
-                <FileText className="h-4 w-4 text-slate-400" />
-                <span className="font-medium text-slate-700">
-                  {attachment.name}
-                </span>
-                <span>{attachment.size}</span>
-              </div>
-            ))}
+          <div className="mt-2">
+            <SocialMessageAttachments
+              attachments={attachments}
+              onPreview={props?.onPreviewAttachment}
+            />
           </div>
         ) : null}
         {hasReactions || isReactionPickerOpen ? (
@@ -195,14 +195,14 @@ export function SocialMessageBubbleDefault(
           >
             {isReactionPickerOpen ? (
               <div
-                className={`absolute bottom-9 z-10 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-lg shadow-lg ${
+                className={`absolute bottom-12 z-10 grid w-[min(16rem,calc(100vw-6rem))] grid-cols-4 gap-1 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-4 py-3 text-lg shadow-lg ${
                   isOutgoing ? "right-0" : "left-0"
                 }`}
               >
                 {normalizedReactionOptions.map((emoji) => (
                   <button
                     aria-label={`React with ${emoji}`}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-xl transition hover:bg-slate-100"
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-xl transition hover:bg-[var(--workspace-brand-background)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] min-h-11"
                     key={emoji}
                     onClick={() => handleReactionSelect(emoji)}
                     type="button"
@@ -215,7 +215,7 @@ export function SocialMessageBubbleDefault(
             <button
               aria-expanded={isReactionPickerOpen}
               aria-label="Choose reaction"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] text-[var(--workspace-brand-muted)] shadow-sm transition hover:border-[var(--workspace-brand-line)] hover:bg-[var(--workspace-brand-background)] hover:text-[var(--workspace-brand-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] min-h-11"
               onClick={() =>
                 setIsReactionPickerOpen(
                   (currentIsReactionPickerOpen) => !currentIsReactionPickerOpen,
@@ -223,14 +223,14 @@ export function SocialMessageBubbleDefault(
               }
               type="button"
             >
-              <Smile className="h-4 w-4" />
+              <Smile className="h-5 w-5" />
             </button>
             {messageReactions.map((reaction) => (
               <button
                 aria-label={`${reaction.label} reaction${
                   reaction.count ? `, ${reaction.count}` : ""
                 }`}
-                className="inline-flex h-7 items-center gap-1 rounded-full border border-slate-200 bg-white px-2 text-xs text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
+                className="inline-flex min-h-11 items-center gap-1 rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-2 text-xs text-[var(--workspace-brand-muted)] transition hover:border-[var(--workspace-brand-line)] hover:bg-[var(--workspace-brand-background)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
                 key={`${reaction.emoji}-${reaction.label}`}
                 type="button"
               >

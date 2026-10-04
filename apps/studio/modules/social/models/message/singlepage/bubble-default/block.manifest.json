@@ -21,12 +21,8 @@
     "variantName": "bubble-default",
     "nodeId": "980:57",
     "variantNodeId": "980:50",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "social",
-    "message",
-    "chat"
-  ]
+  "tags": ["social", "message", "chat"]
 }

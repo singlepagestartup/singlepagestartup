@@ -1,4 +1,5 @@
-import { ArrowRight } from "lucide-react";
+import { kit } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import { ArrowRight } from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export interface OrderCheckoutDetailsField {
   id: string;
@@ -21,13 +22,13 @@ export const defaultOrderCheckoutDetailsDefaultProps: OrderCheckoutDetailsDefaul
     contactFields: [
       {
         id: "first-name",
-        label: "First Name",
+        label: "First name",
         placeholder: "John",
         required: true,
       },
       {
         id: "last-name",
-        label: "Last Name",
+        label: "Last name",
         placeholder: "Doe",
         required: true,
       },
@@ -51,7 +52,7 @@ export const defaultOrderCheckoutDetailsDefaultProps: OrderCheckoutDetailsDefaul
     billingFields: [
       {
         id: "street-address",
-        label: "Street Address",
+        label: "Street address",
         placeholder: "123 Main St",
       },
       {
@@ -75,9 +76,9 @@ export const defaultOrderCheckoutDetailsDefaultProps: OrderCheckoutDetailsDefaul
         placeholder: "United States",
       },
     ],
-    notesLabel: "Additional Notes",
+    notesLabel: "Additional notes",
     notesPlaceholder: "Anything we should know about your project...",
-    actionLabel: "Continue to Payment",
+    actionLabel: "Continue to payment",
     actionDisabled: true,
   };
 
@@ -91,18 +92,23 @@ function CheckoutInput({ field }: { field: OrderCheckoutDetailsField }) {
       }
     >
       <label
-        className="mb-2 block text-base font-medium text-slate-500"
+        className="mb-2 block text-sm font-semibold text-[var(--workspace-brand-foreground)]"
         htmlFor={field.id}
       >
         {field.label}
-        {field.required ? <span className="ml-1 text-red-400">*</span> : null}
+        {field.required ? (
+          <span className="ml-1 text-[var(--workspace-brand-danger)]">*</span>
+        ) : null}
       </label>
       <input
-        className="h-14 w-full rounded-xl border border-slate-300 bg-white px-5 text-xl text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
+        className={kit.field}
         id={field.id}
         placeholder={field.placeholder}
         readOnly
-        type="text"
+        aria-required={field.required}
+        type={
+          field.id === "email" ? "email" : field.id === "phone" ? "tel" : "text"
+        }
       />
     </div>
   );
@@ -125,13 +131,13 @@ export function OrderCheckoutDetailsDefault(
 
   return (
     <div
-      className="space-y-8"
+      className="w-full min-w-0 space-y-6 lg:space-y-8"
       data-ds-block="ecommerce.order.checkout-details-default"
       data-ds-layer="singlepage"
     >
-      <section className="rounded-2xl border border-slate-200 bg-white p-8">
-        <h2 className="mb-6 text-2xl font-medium text-slate-900">
-          Contact Information
+      <section className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-8">
+        <h2 className="mb-6 text-2xl font-semibold text-[var(--workspace-brand-foreground)]">
+          Contact information
         </h2>
         <div className="grid gap-6 md:grid-cols-2">
           {contactFields.map((field) => (
@@ -140,9 +146,9 @@ export function OrderCheckoutDetailsDefault(
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-8">
-        <h2 className="mb-6 text-2xl font-medium text-slate-900">
-          Billing Address
+      <section className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-8">
+        <h2 className="mb-6 text-2xl font-semibold text-[var(--workspace-brand-foreground)]">
+          Billing address
         </h2>
         <div className="grid gap-6 md:grid-cols-2">
           {billingFields.map((field) => (
@@ -151,19 +157,20 @@ export function OrderCheckoutDetailsDefault(
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-8">
-        <h2 className="mb-6 text-2xl font-medium text-slate-900">
+      <section className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-8">
+        <h2 className="mb-6 text-2xl font-semibold text-[var(--workspace-brand-foreground)]">
           {notesLabel}
         </h2>
         <textarea
-          className="min-h-28 w-full rounded-xl border border-slate-300 bg-white px-5 py-4 text-xl text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
+          className={`${kit.field} min-h-32 resize-y`}
+          aria-label={notesLabel}
           placeholder={notesPlaceholder}
           readOnly
         />
       </section>
 
       <button
-        className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-400 bg-slate-900 px-6 py-5 text-xl text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+        className={kit.button + " w-full"}
         disabled={actionDisabled}
         type="button"
       >

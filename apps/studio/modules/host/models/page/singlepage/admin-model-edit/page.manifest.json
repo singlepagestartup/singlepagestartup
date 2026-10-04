@@ -20,6 +20,14 @@
     {
       "id": "ecommerce.relation.products-to-attributes.admin-v2-manager",
       "path": "../../../../../ecommerce/relations/products-to-attributes/singlepage/admin-v2-manager"
+    },
+    {
+      "id": "ecommerce.product.admin-v2-list",
+      "path": "../../../../../ecommerce/models/product/singlepage/admin-v2-list"
+    },
+    {
+      "id": "ecommerce.attribute.admin-v2-form",
+      "path": "../../../../../ecommerce/models/attribute/singlepage/admin-v2-form"
     }
   ],
   "figma": {
@@ -28,7 +36,7 @@
     "variantName": "admin-model-edit",
     "nodeId": "716:300",
     "variantNodeId": "983:1717",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

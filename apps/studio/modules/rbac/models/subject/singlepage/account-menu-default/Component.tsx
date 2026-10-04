@@ -1,4 +1,7 @@
-import { ChevronDown, LogIn } from "lucide-react";
+import {
+  ChevronDown,
+  LogIn,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 import {
   defaultAccountMenuActions,
@@ -33,25 +36,25 @@ export function SubjectAccountMenuDefault(
   if (!signedIn) {
     return (
       <a
-        className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-4 text-sm text-[var(--workspace-brand-foreground)] no-underline transition hover:bg-[var(--workspace-brand-background)]"
         data-ds-block="rbac.subject.account-menu-default"
         data-ds-layer="singlepage"
         href={loginHref}
       >
-        <LogIn className="h-4 w-4" />
-        Sign In
+        <LogIn className="h-5 w-5" />
+        Sign in
       </a>
     );
   }
 
   return (
     <div
-      className="w-full max-w-xs rounded-xl border border-slate-200 bg-white p-2 shadow-sm"
+      className="w-full max-w-xs rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-2 shadow-sm"
       data-ds-block="rbac.subject.account-menu-default"
       data-ds-layer="singlepage"
     >
       <button
-        className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition hover:bg-slate-50"
+        className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-[var(--workspace-brand-background)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] min-h-11"
         type="button"
       >
         <img
@@ -60,17 +63,17 @@ export function SubjectAccountMenuDefault(
           src={user.avatar}
         />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-slate-900">
+          <span className="block truncate text-sm font-medium text-[var(--workspace-brand-foreground)]">
             {user.name}
           </span>
-          <span className="block truncate text-xs text-slate-500">
+          <span className="block truncate text-xs text-[var(--workspace-brand-muted)]">
             {user.email}
           </span>
         </span>
-        <ChevronDown className="h-4 w-4 text-slate-400" />
+        <ChevronDown className="h-5 w-5 text-[var(--workspace-brand-muted)]" />
       </button>
 
-      <div className="mt-2 border-t border-slate-100 pt-2">
+      <div className="mt-2 border-t border-[var(--workspace-brand-line)] pt-2">
         {actions.map((action) => {
           const Icon = action.icon;
           const isDanger = action.tone === "danger";
@@ -79,13 +82,13 @@ export function SubjectAccountMenuDefault(
             <a
               className={
                 isDanger
-                  ? "flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 no-underline transition hover:bg-red-50"
-                  : "flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+                  ? "flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm text-[var(--workspace-brand-danger)] no-underline transition hover:bg-[var(--workspace-brand-danger-surface)]"
+                  : "flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm text-[var(--workspace-brand-foreground)] no-underline transition hover:bg-[var(--workspace-brand-background)]"
               }
               href={action.href}
               key={action.key}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-5 w-5" />
               {action.label}
             </a>
           );

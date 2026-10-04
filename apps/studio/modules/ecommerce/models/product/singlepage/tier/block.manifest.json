@@ -68,12 +68,8 @@
     "variantName": "tier",
     "nodeId": "795:10",
     "variantNodeId": "982:213",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "ecommerce",
-    "product",
-    "tier"
-  ]
+  "tags": ["ecommerce", "product", "tier"]
 }

@@ -1,7 +1,11 @@
-import { CheckCircle2, type LucideIcon } from "lucide-react";
+import { twMerge } from "tailwind-merge";
+import {
+  Check,
+  type ModuleIcon,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export const defaultFeatureStatusDefaultProps = {
-  icon: CheckCircle2 as LucideIcon,
+  icon: Check as ModuleIcon,
   label: "Status",
   value: "All systems operational",
   className: "",
@@ -22,12 +26,10 @@ export function FeatureStatusDefault(
     ...props,
   };
 
-  const rootClassName = [
-    "rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-md",
+  const rootClassName = twMerge(
+    "min-w-0 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5",
     className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  );
 
   return (
     <div
@@ -36,12 +38,14 @@ export function FeatureStatusDefault(
       data-ds-layer="singlepage"
     >
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-on-accent)]">
           <Icon className="h-5 w-5" />
         </span>
-        <span>
-          <small className="block text-xs text-slate-500">{label}</small>
-          <strong className="block text-sm font-medium text-slate-900">
+        <span className="min-w-0">
+          <small className="block text-xs text-[var(--workspace-brand-muted)]">
+            {label}
+          </small>
+          <strong className="block text-sm font-semibold leading-6 text-[var(--workspace-brand-foreground)]">
             {value}
           </strong>
         </span>

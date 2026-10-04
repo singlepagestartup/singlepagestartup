@@ -1,12 +1,15 @@
+import { useState, type ReactNode } from "react";
+import {
+  Button,
+  kit,
+} from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
 import {
   ArrowLeft,
   Bookmark,
   ChevronRight,
-  Clock,
   MessageSquare,
   Share2,
-  ShoppingCart,
-} from "lucide-react";
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 import { ProfileCompact } from "../../../../../social/models/profile/singlepage/compact/Component";
 import { ContentRich } from "../../../../../website-builder/models/widget/singlepage/content-rich/Component";
@@ -33,7 +36,7 @@ const blogIndexStoryHref =
 const sarahAvatar =
   "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHdvbWFuJTIwZGV2ZWxvcGVyJTIwaGVhZHNob3R8ZW58MXx8fHwxNzcxNzE1ODgyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
-interface BlogCommentData {
+export interface BlogCommentData {
   id: string;
   author: string;
   avatar: string;
@@ -43,7 +46,7 @@ interface BlogCommentData {
   replies?: BlogCommentData[];
 }
 
-interface RelatedArticle {
+export interface RelatedArticle {
   id: string;
   slug: string;
   title: string;
@@ -52,7 +55,7 @@ interface RelatedArticle {
   readTime: string;
 }
 
-interface PinnedProduct {
+export interface PinnedProduct {
   id: string;
   slug: string;
   title: string;
@@ -179,7 +182,9 @@ export const defaultArticleDetailProps = {
   ] as RelatedArticle[],
 };
 
-export type ArticleDetailProps = typeof defaultArticleDetailProps;
+export type ArticleDetailProps = typeof defaultArticleDetailProps & {
+  cover?: ReactNode;
+};
 
 export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
   const {
@@ -188,7 +193,6 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
     tags,
     title,
     authorName,
-    authorSlug,
     authorRole,
     authorAvatar,
     date,
@@ -198,120 +202,136 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
     pinnedProducts,
     comments,
     relatedArticles,
+    cover,
   } = { ...defaultArticleDetailProps, ...props };
-
+  const [saved, setSaved] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("");
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(
+        new URL(`/blog/articles/${slug}`, window.location.origin).href,
+      );
+      setCopyStatus("Article link copied.");
+    } catch {
+      setCopyStatus("Copy is unavailable in this preview.");
+    }
+  }
   return (
     <div
-      className="w-full"
+      className="w-full min-w-0"
       data-ds-block="blog.article.detail"
       data-ds-imports="blog.tag.button-default blog.article.related-default social.profile.article-find-by-id-comment-form-default social.widget.profile-article-find-by-id-comment-find-default"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-6xl px-6">
-        <div className="grid gap-8 py-10 lg:grid-cols-[1fr_320px]">
-          {/* Left column */}
-          <div>
-            {/* Breadcrumb */}
-            <nav className="mb-6 flex items-center gap-1.5 text-xs text-slate-400">
-              <a href="/blog" className="transition hover:text-slate-600">
-                Blog
-              </a>
-              <ChevronRight className="h-3 w-3" />
-              <span className="capitalize text-slate-600">{category}</span>
-            </nav>
-
-            {/* Meta */}
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-600 uppercase">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <nav
+          aria-label="Article breadcrumb"
+          className="mb-6 flex flex-wrap items-center gap-2 text-sm text-[var(--workspace-brand-muted)]"
+        >
+          <a
+            href={blogIndexStoryHref}
+            target="_top"
+            className={`inline-flex min-h-11 items-center gap-2 rounded-xl hover:text-[var(--workspace-brand-foreground)] ${kit.focus}`}
+          >
+            <ArrowLeft className="size-5" />
+            All articles
+          </a>
+          <ChevronRight className="size-5" />
+          <span>{category}</span>
+        </nav>
+        <header
+          className={`grid min-w-0 gap-4 ${cover ? "lg:grid-cols-2" : ""}`}
+        >
+          <div className="flex min-w-0 flex-col justify-between gap-8 rounded-3xl bg-[var(--workspace-brand-primary)] p-6 text-[var(--workspace-brand-on-primary)] sm:p-8 lg:p-10">
+            <div>
+              <span className="inline-flex rounded-full bg-[var(--workspace-brand-accent)] px-3 py-1.5 text-xs font-medium text-[var(--workspace-brand-on-accent)]">
                 {category}
               </span>
-              {tags.map((tag) => (
-                <TagButtonDefault
-                  key={tag}
-                  label={tag}
-                  href={`/blog/tags/${tag}`}
-                />
-              ))}
+              <h1 className="mt-6 break-words text-4xl font-semibold leading-[1.08] tracking-tight md:text-5xl">
+                {title}
+              </h1>
             </div>
-
-            {/* Title */}
-            <h1 className="text-3xl tracking-tight text-slate-900 lg:text-4xl">
-              {title}
-            </h1>
-
-            {/* Author line — social.profile.compact */}
-            <div className="mt-5 flex items-center gap-4 border-b border-slate-200 pb-6">
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-white/20 pt-5">
               <ProfileCompact
+                inverse
                 name={authorName}
                 role={authorRole}
                 avatar={authorAvatar}
                 href={authorOverviewStoryHref}
                 target="_top"
               />
-              <div className="ml-auto flex items-center gap-3 text-xs text-slate-400">
-                <span>{date}</span>
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {readTime}
-                </span>
+              <div className="text-right text-xs leading-5 text-[var(--workspace-brand-muted-on-primary)]">
+                <p>{date}</p>
+                <p>{readTime}</p>
               </div>
             </div>
-
-            {/* Content — website-builder.widget.content-rich */}
-            <div className="mt-8">
+          </div>
+          {cover && <div className="min-w-0">{cover}</div>}
+        </header>
+        <div className="grid min-w-0 items-start gap-6 pt-6 sm:pt-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8">
+          <div className="min-w-0 space-y-8">
+            <div className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-8 lg:p-10">
+              <div className="mb-8 flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <TagButtonDefault
+                    key={tag}
+                    label={tag}
+                    href={`/blog/tags/${tag}`}
+                  />
+                ))}
+              </div>
               <ContentRich content={content} />
-            </div>
-
-            {/* Share bar */}
-            <div className="mt-10 flex items-center justify-between border-t border-slate-200 pt-5">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400">Share:</span>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:bg-slate-50"
-                >
-                  <Share2 className="h-3 w-3" />
+              <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--workspace-brand-line)] pt-6">
+                <Button variant="secondary" onClick={copyLink}>
+                  <Share2 className="size-5" />
                   Copy link
-                </button>
+                </Button>
+                <Button
+                  variant="secondary"
+                  aria-pressed={saved}
+                  onClick={() => setSaved((value) => !value)}
+                >
+                  <Bookmark className="size-5" />
+                  {saved ? "Saved in preview" : "Save article"}
+                </Button>
               </div>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:bg-slate-50"
+              <p
+                aria-live="polite"
+                className="mt-3 text-xs text-[var(--workspace-brand-muted)]"
               >
-                <Bookmark className="h-3 w-3" />
-                Save
-              </button>
+                {copyStatus ||
+                  (saved ? "Saved locally for this preview session." : "")}
+              </p>
             </div>
-
-            {/* Comments */}
-            <section className="mt-10">
-              <div className="mb-6 flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-slate-500" />
-                <h2 className="text-sm text-slate-900">
-                  Comments ({totalComments})
-                </h2>
-              </div>
-
-              {/* Comment form — social.profile.article-find-by-id-comment-form-default */}
+            <section
+              aria-label="Article comments"
+              className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-8"
+            >
+              <h2 className="mb-6 flex items-center gap-3 text-2xl font-semibold tracking-tight">
+                <MessageSquare className="size-6" />
+                Comments{" "}
+                <span className="text-base font-normal text-[var(--workspace-brand-muted)]">
+                  {totalComments}
+                </span>
+              </h2>
               <div className="mb-8">
                 <ProfileArticleFindByIdCommentFormDefault />
               </div>
-
-              {/* Comments list — social.widget.profile-article-find-by-id-comment-find-default */}
               <ProfileArticleFindByIdCommentFindDefault comments={comments} />
             </section>
           </div>
-
-          {/* Right sidebar */}
-          <aside className="space-y-6 lg:mt-0">
-            {/* Pinned Products */}
+          <aside aria-label="Related resources" className="min-w-0 space-y-6">
+            <ProfileCard
+              name={authorName}
+              role={authorRole}
+              avatar={authorAvatar}
+              href={authorOverviewStoryHref}
+              target="_top"
+            />
             {pinnedProducts.length > 0 && (
-              <div className="rounded-xl border border-slate-200 bg-[#eaf0f7] p-5">
-                <div className="mb-4 flex items-center gap-2">
-                  <ShoppingCart className="h-4 w-4 text-slate-500" />
-                  <h3 className="text-sm text-slate-900">Related Products</h3>
-                </div>
-                <div className="space-y-3">
+              <section className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5">
+                <h2 className="mb-4 text-lg font-semibold">Related products</h2>
+                <div className="space-y-4">
                   {pinnedProducts.map((product) => (
                     <ProductPinned
                       key={product.id}
@@ -325,27 +345,12 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
                     />
                   ))}
                 </div>
-              </div>
+              </section>
             )}
-
-            {/* Author card — social.profile.card */}
-            <ProfileCard
-              name={authorName}
-              role={authorRole}
-              avatar={authorAvatar}
-              href={authorOverviewStoryHref}
-              target="_top"
-            />
-
-            {/* Tags — blog.widget.article-find-by-id-tag-find-default */}
             <ArticleFindByIdTagFind tags={tags} />
-
-            {/* Related articles */}
             {relatedArticles.length > 0 && (
-              <div className="rounded-xl border border-slate-200 bg-white p-5">
-                <p className="mb-3 text-xs tracking-widest text-slate-400 uppercase">
-                  Related Articles
-                </p>
+              <section className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5">
+                <h2 className="mb-4 text-lg font-semibold">Keep reading</h2>
                 <div className="space-y-3">
                   {relatedArticles.map((rel) => (
                     <ArticleRelatedDefault
@@ -360,16 +365,14 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
                     />
                   ))}
                 </div>
-              </div>
+              </section>
             )}
-
-            {/* Back to blog */}
             <a
               href={blogIndexStoryHref}
               target="_top"
-              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+              className={`${kit.secondary} w-full`}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="size-5" />
               Back to all articles
             </a>
           </aside>

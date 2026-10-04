@@ -1,3 +1,4 @@
+import { Select } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
 import type { CrmInputRecord } from "../../../../shared/demo-crm";
 import { defaultCrmForm } from "../../../../shared/demo-crm";
 
@@ -29,27 +30,24 @@ export function CrmInputSelectOptionDefault(
       data-ds-block="crm.input.select-option-default"
       data-ds-layer="singlepage"
     >
-      <span className="mb-1 block text-sm font-medium text-slate-700">
+      <span className="mb-1 block text-sm font-medium text-[var(--workspace-brand-foreground)]">
         {input.label}
-        {input.required ? <span className="ml-1 text-red-500">*</span> : null}
+        {input.required ? (
+          <span className="ml-1 text-[var(--workspace-brand-danger)]">*</span>
+        ) : null}
       </span>
-      <select
-        className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:bg-slate-100"
-        defaultValue=""
+      <Select
+        className="min-h-12 text-base"
+        placeholder={input.placeholder}
         disabled={disabled}
         id={inputId}
         name={inputId}
         required={input.required}
-      >
-        <option disabled value="">
-          {input.placeholder}
-        </option>
-        {(input.options ?? []).map((option) => (
-          <option key={option.id} value={option.value}>
-            {option.title}
-          </option>
-        ))}
-      </select>
+        options={(input.options ?? []).map((option) => ({
+          value: option.value,
+          label: option.title,
+        }))}
+      />
     </label>
   );
 }

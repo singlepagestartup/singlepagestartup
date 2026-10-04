@@ -28,7 +28,7 @@
     "variantName": "rbac-subject-authentication-select-method",
     "nodeId": "716:300",
     "variantNodeId": "983:1795",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

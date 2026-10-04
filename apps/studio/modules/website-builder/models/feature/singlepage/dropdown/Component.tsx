@@ -6,7 +6,7 @@
  * content-faq compose a list of these instead of re-implementing the markup.
  * Presentation-only — uses the native <details>/<summary> toggle, no JS.
  */
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export const defaultFeatureDropdownProps = {
   question: "What tech stack do you use?",
@@ -25,16 +25,18 @@ export function FeatureDropdown(props?: Partial<FeatureDropdownProps>) {
 
   return (
     <details
-      className="group border-b border-slate-100 last:border-0"
+      className="group min-w-0 border-b border-[var(--workspace-brand-line)] last:border-0"
       open={open}
       data-ds-block="website-builder.feature.dropdown"
       data-ds-layer="singlepage"
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm text-slate-900 hover:bg-slate-50">
-        {question}
-        <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
+      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-5 py-5 text-base font-semibold leading-6 text-[var(--workspace-brand-foreground)] transition hover:bg-[var(--workspace-brand-background)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] [&::-webkit-details-marker]:hidden">
+        <span>{question}</span>
+        <ChevronDown className="h-5 w-5 shrink-0 text-[var(--workspace-brand-muted)] transition-transform duration-200 motion-reduce:transition-none group-open:rotate-180" />
       </summary>
-      <p className="px-4 pb-4 text-sm text-slate-600">{answer}</p>
+      <p className="px-5 pb-6 pr-12 text-base leading-7 text-[var(--workspace-brand-muted)]">
+        {answer}
+      </p>
     </details>
   );
 }

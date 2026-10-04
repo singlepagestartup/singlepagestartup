@@ -28,13 +28,8 @@
     "variantName": "select-option-default",
     "nodeId": "978:77",
     "variantNodeId": "978:59",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "crm",
-    "input",
-    "select",
-    "option"
-  ]
+  "tags": ["crm", "input", "select", "option"]
 }

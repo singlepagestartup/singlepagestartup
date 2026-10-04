@@ -17,13 +17,15 @@ export function CrmOptionDefault(props?: Partial<CrmOptionDefaultProps>) {
 
   return (
     <div
-      className="flex w-full flex-col gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left"
+      className="flex w-full flex-col gap-2 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 text-left"
       data-ds-block="crm.option.default"
       data-ds-layer="singlepage"
     >
-      <span className="text-sm font-medium text-slate-950">{option.title}</span>
+      <span className="text-sm font-medium text-[var(--workspace-brand-foreground)]">
+        {option.title}
+      </span>
       {option.description ? (
-        <span className="text-xs leading-5 text-slate-500">
+        <span className="text-xs leading-5 text-[var(--workspace-brand-muted)]">
           {option.description}
         </span>
       ) : null}

@@ -1,9 +1,14 @@
-import { Search } from "lucide-react";
-import { ArticleCard } from "../../../article/singlepage/card/Component";
+import { useCallback, useState } from "react";
 import {
-  CategoryButtonDefault,
-  type CategoryButtonDefaultProps,
-} from "../../../category/singlepage/button-default/Component";
+  Button,
+  kit,
+} from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import {
+  CollectionToolbar,
+  CollectionPagination,
+} from "../../../../../../workspace/design/singlepage/interface-kit/Collections";
+import { ArticleCard } from "../../../article/singlepage/card/Component";
+import { type CategoryButtonDefaultProps } from "../../../category/singlepage/button-default/Component";
 
 const articleOverviewStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
@@ -20,7 +25,7 @@ type BlogCategoryTab = Pick<
   "slug" | "label" | "count"
 >;
 
-interface ArticleFindCardDefaultArticle {
+export interface ArticleFindCardDefaultArticle {
   href?: string;
   id: string;
   slug: string;
@@ -51,8 +56,10 @@ export const defaultArticleFindCardDefaultProps = {
       title: "How to Choose the Right Plan for Your Business",
       excerpt:
         "A comprehensive guide to evaluating subscription tiers, comparing features, and making the right decision for your team size and growth trajectory.",
-      coverImage:
-        "https://images.unsplash.com/photo-1723987251277-18fc0a1effd0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXRhJTIwYW5hbHl0aWNzJTIwY2hhcnQlMjBzY3JlZW58ZW58MXx8fHwxNzcxNjg3NTEzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      coverImage: new URL(
+        "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
+        import.meta.url,
+      ).href,
       category: "guides",
       date: "Feb 18, 2026",
       readTime: "7 min read",
@@ -67,8 +74,10 @@ export const defaultArticleFindCardDefaultProps = {
       title: "New Features in 2026: Everything You Need to Know",
       excerpt:
         "A rundown of the most exciting features shipped in the latest release — from the AI Agent module to the redesigned admin panel.",
-      coverImage:
-        "https://images.unsplash.com/photo-1759884247160-27b8465544b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdGFydHVwJTIwb2ZmaWNlJTIwd2hpdGVib2FyZCUyMHBsYW5uaW5nfGVufDF8fHx8MTc3MTcxNTg4MXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      coverImage: new URL(
+        "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus-square.png",
+        import.meta.url,
+      ).href,
       category: "product",
       date: "Feb 14, 2026",
       readTime: "6 min read",
@@ -83,8 +92,10 @@ export const defaultArticleFindCardDefaultProps = {
       title: "How NovaBridge Scaled to 100K Users in 6 Months",
       excerpt:
         "A deep dive into how NovaBridge used our modular platform to go from prototype to 100,000 active users in half a year.",
-      coverImage:
-        "https://images.unsplash.com/photo-1582005450386-52b25f82d9bb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWNobm9sb2d5JTIwc3RhcnR1cCUyMHRlYW0lMjBtZWV0aW5nfGVufDF8fHx8MTc3MTcxNTM2OXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      coverImage: new URL(
+        "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
+        import.meta.url,
+      ).href,
       category: "case-study",
       date: "Feb 8, 2026",
       readTime: "9 min read",
@@ -99,8 +110,10 @@ export const defaultArticleFindCardDefaultProps = {
       title: "Getting Started: From Zero to Your First Module",
       excerpt:
         "Step-by-step guide to setting up your first project, configuring a module, and creating your first entity records in under 10 minutes.",
-      coverImage:
-        "https://images.unsplash.com/photo-1618410325698-018bb3eb2318?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjB3b3Jrc3BhY2UlMjBsYXB0b3AlMjBkYXNoYm9hcmR8ZW58MXx8fHwxNzcxNzE1MzY4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      coverImage: new URL(
+        "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
+        import.meta.url,
+      ).href,
       category: "guides",
       date: "Feb 3, 2026",
       readTime: "5 min read",
@@ -115,8 +128,10 @@ export const defaultArticleFindCardDefaultProps = {
       title: "Enterprise Security: How We Protect Your Data",
       excerpt:
         "A deep dive into our enterprise-grade security features, from RBAC and SSO to encryption at rest and audit logging.",
-      coverImage:
-        "https://images.unsplash.com/photo-1639503547276-90230c4a4198?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzZWN1cml0eSUyMHNoaWVsZCUyMGRpZ2l0YWwlMjBwcm90ZWN0aW9ufGVufDF8fHx8MTc3MTcxNTg4MXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      coverImage: new URL(
+        "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus-square.png",
+        import.meta.url,
+      ).href,
       category: "engineering",
       date: "Jan 28, 2026",
       readTime: "10 min read",
@@ -131,8 +146,10 @@ export const defaultArticleFindCardDefaultProps = {
       title: "API Integration Tutorial: Connecting External Services",
       excerpt:
         "Step-by-step guide to integrating with our REST API, setting up webhooks, and building custom automation workflows.",
-      coverImage:
-        "https://images.unsplash.com/photo-1561347981-969c80cf4463?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxSRVNUJTIwQVBJJTIwY29kZSUyMHByb2dyYW1taW5nfGVufDF8fHx8MTc3MTcxNTg4Mnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      coverImage: new URL(
+        "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
+        import.meta.url,
+      ).href,
       category: "engineering",
       date: "Jan 22, 2026",
       readTime: "11 min read",
@@ -154,59 +171,100 @@ export function ArticleFindCardDefault(
     ...defaultArticleFindCardDefaultProps,
     ...props,
   };
-
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("all");
+  const [page, setPage] = useState(1);
+  const pageSize = 3;
+  const chooseCategory = useCallback((slug: string) => {
+    setCategory(slug);
+    setPage(1);
+  }, []);
+  const search = useCallback((value: string) => {
+    setQuery(value);
+    setPage(1);
+  }, []);
+  const filtered = articles.filter(
+    (article) =>
+      (category === "all" || article.category === category) &&
+      `${article.title} ${article.excerpt} ${article.authorName}`
+        .toLowerCase()
+        .includes(query.trim().toLowerCase()),
+  );
+  const activePage = Math.min(
+    page,
+    Math.max(1, Math.ceil(filtered.length / pageSize)),
+  );
+  const visible = filtered.slice(
+    (activePage - 1) * pageSize,
+    activePage * pageSize,
+  );
   return (
-    <div
-      className="mx-auto max-w-6xl px-6 pb-4"
+    <section
+      aria-label="Article collection"
+      className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8"
       data-ds-block="blog.widget.article-find-card-default"
       data-ds-imports="blog.category.button-default blog.article.card"
       data-ds-layer="singlepage"
     >
-      {/* Toolbar */}
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-wrap items-center gap-1.5">
-          {categories.map((category, index) => (
-            <CategoryButtonDefault
-              key={category.slug}
-              slug={category.slug}
-              label={category.label}
-              count={category.count}
-              isActive={index === 0}
+      <h2 className="mb-6 text-3xl font-semibold tracking-tight">
+        All articles
+      </h2>
+      <CollectionToolbar
+        categories={categories}
+        category={category}
+        onCategoryChange={chooseCategory}
+        query={query}
+        onQueryChange={search}
+        searchLabel="Search articles"
+      />
+      <p className={`mb-6 text-sm ${kit.muted}`} aria-live="polite">
+        {filtered.length} articles
+      </p>
+      {filtered.length > 0 ? (
+        <div className="grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {visible.map((article) => (
+            <ArticleCard
+              key={article.id}
+              href={article.href ?? articleOverviewStoryHref}
+              slug={article.slug}
+              coverImage={article.coverImage}
+              category={article.category}
+              date={article.date}
+              title={article.title}
+              excerpt={article.excerpt}
+              authorName={article.authorName}
+              authorAvatar={article.authorAvatar}
+              authorSlug={article.authorSlug}
+              commentCount={article.commentCount}
+              readTime={article.readTime}
+              target="_top"
             />
           ))}
         </div>
-        <div className="relative w-full md:w-64">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search articles..."
-            readOnly
-            className="w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
-          />
+      ) : (
+        <div className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-8 text-center">
+          <h3 className="text-2xl font-semibold">No matching articles</h3>
+          <p className="mt-3 text-sm text-[var(--workspace-brand-muted)]">
+            Try another search or choose a different category.
+          </p>
+          <Button
+            className="mt-5"
+            variant="secondary"
+            onClick={() => {
+              setQuery("");
+              setCategory("all");
+            }}
+          >
+            Clear filters
+          </Button>
         </div>
-      </div>
-
-      {/* Articles Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {articles.map((article) => (
-          <ArticleCard
-            key={article.id}
-            href={article.href ?? articleOverviewStoryHref}
-            slug={article.slug}
-            coverImage={article.coverImage}
-            category={article.category}
-            date={article.date}
-            title={article.title}
-            excerpt={article.excerpt}
-            authorName={article.authorName}
-            authorAvatar={article.authorAvatar}
-            authorSlug={article.authorSlug}
-            commentCount={article.commentCount}
-            readTime={article.readTime}
-            target="_top"
-          />
-        ))}
-      </div>
-    </div>
+      )}
+      <CollectionPagination
+        page={activePage}
+        pageSize={pageSize}
+        total={filtered.length}
+        onPageChange={setPage}
+      />
+    </section>
   );
 }

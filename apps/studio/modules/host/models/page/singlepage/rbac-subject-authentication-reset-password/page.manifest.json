@@ -28,7 +28,7 @@
     "variantName": "rbac-subject-authentication-reset-password",
     "nodeId": "716:300",
     "variantNodeId": "983:1789",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

@@ -2,7 +2,7 @@
   "$schema": "../../../../../../block.schema.json",
   "id": "ecommerce.product.card-related",
   "title": "Ecommerce Product / Card Related",
-  "description": "Simpler related product card with image, category badge, price, title, and subtitle.",
+  "description": "Compact horizontal related product link with square media, title, short description and price.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
@@ -53,7 +53,7 @@
     "variantName": "card-related",
     "nodeId": "795:10",
     "variantNodeId": "798:9",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

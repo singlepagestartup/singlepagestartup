@@ -1,4 +1,4 @@
-import { Shield } from "lucide-react";
+import { Shield } from "../../../../../../workspace/utils/components/ModuleIcons";
 
 import { FooterCompact } from "../../../../../website-builder/models/widget/singlepage/footer-compact/Component";
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
@@ -244,7 +244,7 @@ const privacySections: LegalSection[] = [
 export function PrivacyPage() {
   return (
     <main
-      className="min-h-screen bg-[#eaf0f7] text-slate-900 antialiased"
+      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
       data-ds-page="host.page.privacy"
     >
       <HostNavbarDefault />

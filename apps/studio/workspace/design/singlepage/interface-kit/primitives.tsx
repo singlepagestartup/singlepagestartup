@@ -9,11 +9,99 @@ import {
 } from "react";
 import { twMerge } from "tailwind-merge";
 import * as SelectPrimitive from "@radix-ui/react-select";
+import arrowDownSvg from "../../../assets/singlepage/icons/phosphor/arrow-down.svg?raw";
+import arrowLeftSvg from "../../../assets/singlepage/icons/phosphor/arrow-left.svg?raw";
+import arrowRightSvg from "../../../assets/singlepage/icons/phosphor/arrow-right.svg?raw";
+import arrowSquareOutSvg from "../../../assets/singlepage/icons/phosphor/arrow-square-out.svg?raw";
+import arrowUpRightSvg from "../../../assets/singlepage/icons/phosphor/arrow-up-right.svg?raw";
+import bankSvg from "../../../assets/singlepage/icons/phosphor/bank.svg?raw";
+import bellSvg from "../../../assets/singlepage/icons/phosphor/bell.svg?raw";
+import bookOpenSvg from "../../../assets/singlepage/icons/phosphor/book-open.svg?raw";
+import bookmarkSimpleSvg from "../../../assets/singlepage/icons/phosphor/bookmark-simple.svg?raw";
+import calendarBlankSvg from "../../../assets/singlepage/icons/phosphor/calendar-blank.svg?raw";
+import caretDownSvg from "../../../assets/singlepage/icons/phosphor/caret-down.svg?raw";
+import caretLeftSvg from "../../../assets/singlepage/icons/phosphor/caret-left.svg?raw";
+import caretRightSvg from "../../../assets/singlepage/icons/phosphor/caret-right.svg?raw";
+import chartBarSvg from "../../../assets/singlepage/icons/phosphor/chart-bar.svg?raw";
+import chatSvg from "../../../assets/singlepage/icons/phosphor/chat.svg?raw";
+import chatCircleSvg from "../../../assets/singlepage/icons/phosphor/chat-circle.svg?raw";
+import checkSvg from "../../../assets/singlepage/icons/phosphor/check.svg?raw";
+import checkCircleSvg from "../../../assets/singlepage/icons/phosphor/check-circle.svg?raw";
+import clockSvg from "../../../assets/singlepage/icons/phosphor/clock.svg?raw";
+import codeSvg from "../../../assets/singlepage/icons/phosphor/code.svg?raw";
+import confettiSvg from "../../../assets/singlepage/icons/phosphor/confetti.svg?raw";
+import creditCardSvg from "../../../assets/singlepage/icons/phosphor/credit-card.svg?raw";
+import cubeSvg from "../../../assets/singlepage/icons/phosphor/cube.svg?raw";
+import currencyCircleDollarSvg from "../../../assets/singlepage/icons/phosphor/currency-circle-dollar.svg?raw";
+import databaseSvg from "../../../assets/singlepage/icons/phosphor/database.svg?raw";
+import envelopeSvg from "../../../assets/singlepage/icons/phosphor/envelope.svg?raw";
+import eyeSvg from "../../../assets/singlepage/icons/phosphor/eye.svg?raw";
+import eyeSlashSvg from "../../../assets/singlepage/icons/phosphor/eye-slash.svg?raw";
+import fileTextSvg from "../../../assets/singlepage/icons/phosphor/file-text.svg?raw";
+import floppyDiskSvg from "../../../assets/singlepage/icons/phosphor/floppy-disk.svg?raw";
+import folderOpenSvg from "../../../assets/singlepage/icons/phosphor/folder-open.svg?raw";
+import gearSixSvg from "../../../assets/singlepage/icons/phosphor/gear-six.svg?raw";
+import githubLogoSvg from "../../../assets/singlepage/icons/phosphor/github-logo.svg?raw";
+import globeSvg from "../../../assets/singlepage/icons/phosphor/globe.svg?raw";
+import googleChromeLogoSvg from "../../../assets/singlepage/icons/phosphor/google-chrome-logo.svg?raw";
+import hashSvg from "../../../assets/singlepage/icons/phosphor/hash.svg?raw";
+import houseSvg from "../../../assets/singlepage/icons/phosphor/house.svg?raw";
+import imageSvg from "../../../assets/singlepage/icons/phosphor/image.svg?raw";
+import keySvg from "../../../assets/singlepage/icons/phosphor/key.svg?raw";
+import lightningSvg from "../../../assets/singlepage/icons/phosphor/lightning.svg?raw";
+import linkSvg from "../../../assets/singlepage/icons/phosphor/link.svg?raw";
+import linkBreakSvg from "../../../assets/singlepage/icons/phosphor/link-break.svg?raw";
+import linkedinLogoSvg from "../../../assets/singlepage/icons/phosphor/linkedin-logo.svg?raw";
+import listSvg from "../../../assets/singlepage/icons/phosphor/list.svg?raw";
+import lockKeySvg from "../../../assets/singlepage/icons/phosphor/lock-key.svg?raw";
+import magnifyingGlassSvg from "../../../assets/singlepage/icons/phosphor/magnifying-glass.svg?raw";
+import mapPinSvg from "../../../assets/singlepage/icons/phosphor/map-pin.svg?raw";
+import megaphoneSvg from "../../../assets/singlepage/icons/phosphor/megaphone.svg?raw";
+import minusSvg from "../../../assets/singlepage/icons/phosphor/minus.svg?raw";
+import monitorSvg from "../../../assets/singlepage/icons/phosphor/monitor.svg?raw";
+import newspaperSvg from "../../../assets/singlepage/icons/phosphor/newspaper.svg?raw";
+import packageSvg from "../../../assets/singlepage/icons/phosphor/package.svg?raw";
+import paletteSvg from "../../../assets/singlepage/icons/phosphor/palette.svg?raw";
+import paperPlaneTiltSvg from "../../../assets/singlepage/icons/phosphor/paper-plane-tilt.svg?raw";
+import paperclipSvg from "../../../assets/singlepage/icons/phosphor/paperclip.svg?raw";
+import pencilSimpleSvg from "../../../assets/singlepage/icons/phosphor/pencil-simple.svg?raw";
+import phoneSvg from "../../../assets/singlepage/icons/phosphor/phone.svg?raw";
+import playSvg from "../../../assets/singlepage/icons/phosphor/play.svg?raw";
+import plusSvg from "../../../assets/singlepage/icons/phosphor/plus.svg?raw";
+import pushPinSvg from "../../../assets/singlepage/icons/phosphor/push-pin.svg?raw";
+import questionSvg from "../../../assets/singlepage/icons/phosphor/question.svg?raw";
+import robotSvg from "../../../assets/singlepage/icons/phosphor/robot.svg?raw";
+import shareNetworkSvg from "../../../assets/singlepage/icons/phosphor/share-network.svg?raw";
+import shieldSvg from "../../../assets/singlepage/icons/phosphor/shield.svg?raw";
+import shieldCheckSvg from "../../../assets/singlepage/icons/phosphor/shield-check.svg?raw";
+import shoppingCartSvg from "../../../assets/singlepage/icons/phosphor/shopping-cart.svg?raw";
+import signInSvg from "../../../assets/singlepage/icons/phosphor/sign-in.svg?raw";
+import signOutSvg from "../../../assets/singlepage/icons/phosphor/sign-out.svg?raw";
+import smileySvg from "../../../assets/singlepage/icons/phosphor/smiley.svg?raw";
+import squaresFourSvg from "../../../assets/singlepage/icons/phosphor/squares-four.svg?raw";
+import stackSvg from "../../../assets/singlepage/icons/phosphor/stack.svg?raw";
+import starSvg from "../../../assets/singlepage/icons/phosphor/star.svg?raw";
+import tagSvg from "../../../assets/singlepage/icons/phosphor/tag.svg?raw";
+import textBSvg from "../../../assets/singlepage/icons/phosphor/text-b.svg?raw";
+import textItalicSvg from "../../../assets/singlepage/icons/phosphor/text-italic.svg?raw";
+import thumbsUpSvg from "../../../assets/singlepage/icons/phosphor/thumbs-up.svg?raw";
+import trashSvg from "../../../assets/singlepage/icons/phosphor/trash.svg?raw";
+import trendUpSvg from "../../../assets/singlepage/icons/phosphor/trend-up.svg?raw";
+import twitterLogoSvg from "../../../assets/singlepage/icons/phosphor/twitter-logo.svg?raw";
+import uploadSimpleSvg from "../../../assets/singlepage/icons/phosphor/upload-simple.svg?raw";
+import userSvg from "../../../assets/singlepage/icons/phosphor/user.svg?raw";
+import userCircleSvg from "../../../assets/singlepage/icons/phosphor/user-circle.svg?raw";
+import userPlusSvg from "../../../assets/singlepage/icons/phosphor/user-plus.svg?raw";
+import usersSvg from "../../../assets/singlepage/icons/phosphor/users.svg?raw";
+import walletSvg from "../../../assets/singlepage/icons/phosphor/wallet.svg?raw";
+import warningSvg from "../../../assets/singlepage/icons/phosphor/warning.svg?raw";
+import xSvg from "../../../assets/singlepage/icons/phosphor/x.svg?raw";
 
 export interface IIconProps {
   name: IconName;
   size?: 20 | 24;
   className?: string;
+  svgProps?: React.SVGProps<SVGSVGElement>;
 }
 
 export interface IButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -49,29 +137,98 @@ export interface ISpecimenProps {
 }
 
 export type IconName =
-  | "arrow-right"
   | "arrow-down"
-  | "caret-down"
+  | "arrow-left"
+  | "arrow-right"
+  | "arrow-square-out"
   | "arrow-up-right"
-  | "file-text"
-  | "folder-open"
-  | "check"
-  | "x"
-  | "stack"
-  | "globe"
+  | "bank"
+  | "bell"
+  | "book-open"
+  | "bookmark-simple"
+  | "calendar-blank"
+  | "caret-down"
+  | "caret-left"
+  | "caret-right"
+  | "chart-bar"
+  | "chat"
   | "chat-circle"
-  | "plus"
-  | "pencil-simple"
+  | "check"
+  | "check-circle"
+  | "clock"
+  | "code"
+  | "confetti"
+  | "credit-card"
+  | "cube"
+  | "currency-circle-dollar"
+  | "database"
+  | "envelope"
   | "eye"
-  | "upload-simple"
+  | "eye-slash"
+  | "file-text"
+  | "floppy-disk"
+  | "folder-open"
   | "gear-six"
+  | "github-logo"
+  | "globe"
+  | "google-chrome-logo"
+  | "hash"
+  | "house"
+  | "image"
+  | "key"
+  | "lightning"
+  | "link"
+  | "link-break"
+  | "linkedin-logo"
+  | "list"
+  | "lock-key"
+  | "magnifying-glass"
+  | "map-pin"
+  | "megaphone"
+  | "minus"
+  | "monitor"
+  | "newspaper"
+  | "package"
+  | "palette"
+  | "paper-plane-tilt"
+  | "paperclip"
+  | "pencil-simple"
+  | "phone"
+  | "play"
+  | "plus"
+  | "push-pin"
+  | "question"
+  | "robot"
+  | "share-network"
+  | "shield"
+  | "shield-check"
+  | "shopping-cart"
+  | "sign-in"
+  | "sign-out"
+  | "smiley"
+  | "squares-four"
+  | "stack"
+  | "star"
+  | "tag"
+  | "text-b"
+  | "text-italic"
+  | "thumbs-up"
   | "trash"
-  | "question";
+  | "trend-up"
+  | "twitter-logo"
+  | "upload-simple"
+  | "user"
+  | "user-circle"
+  | "user-plus"
+  | "users"
+  | "wallet"
+  | "warning"
+  | "x";
 
 const focus =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]";
 const buttonBase =
-  "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 
 export const kit = {
   button: `${buttonBase} bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-on-accent)] enabled:hover:brightness-95 ${focus}`,
@@ -98,14 +255,98 @@ export const picker = {
 
 // Official Phosphor Regular 2.1.1 files; their paths are retained unchanged.
 // Source and MIT license live beside the curated SVG assets.
-const iconSources = import.meta.glob<string>(
-  "../../../assets/singlepage/icons/phosphor/*.svg",
-  { eager: true, import: "default", query: "?raw" },
-);
+const iconSources: Record<IconName, string> = {
+  "arrow-down": arrowDownSvg,
+  "arrow-left": arrowLeftSvg,
+  "arrow-right": arrowRightSvg,
+  "arrow-square-out": arrowSquareOutSvg,
+  "arrow-up-right": arrowUpRightSvg,
+  bank: bankSvg,
+  bell: bellSvg,
+  "book-open": bookOpenSvg,
+  "bookmark-simple": bookmarkSimpleSvg,
+  "calendar-blank": calendarBlankSvg,
+  "caret-down": caretDownSvg,
+  "caret-left": caretLeftSvg,
+  "caret-right": caretRightSvg,
+  "chart-bar": chartBarSvg,
+  chat: chatSvg,
+  "chat-circle": chatCircleSvg,
+  check: checkSvg,
+  "check-circle": checkCircleSvg,
+  clock: clockSvg,
+  code: codeSvg,
+  confetti: confettiSvg,
+  "credit-card": creditCardSvg,
+  cube: cubeSvg,
+  "currency-circle-dollar": currencyCircleDollarSvg,
+  database: databaseSvg,
+  envelope: envelopeSvg,
+  eye: eyeSvg,
+  "eye-slash": eyeSlashSvg,
+  "file-text": fileTextSvg,
+  "floppy-disk": floppyDiskSvg,
+  "folder-open": folderOpenSvg,
+  "gear-six": gearSixSvg,
+  "github-logo": githubLogoSvg,
+  globe: globeSvg,
+  "google-chrome-logo": googleChromeLogoSvg,
+  hash: hashSvg,
+  house: houseSvg,
+  image: imageSvg,
+  key: keySvg,
+  lightning: lightningSvg,
+  link: linkSvg,
+  "link-break": linkBreakSvg,
+  "linkedin-logo": linkedinLogoSvg,
+  list: listSvg,
+  "lock-key": lockKeySvg,
+  "magnifying-glass": magnifyingGlassSvg,
+  "map-pin": mapPinSvg,
+  megaphone: megaphoneSvg,
+  minus: minusSvg,
+  monitor: monitorSvg,
+  newspaper: newspaperSvg,
+  package: packageSvg,
+  palette: paletteSvg,
+  "paper-plane-tilt": paperPlaneTiltSvg,
+  paperclip: paperclipSvg,
+  "pencil-simple": pencilSimpleSvg,
+  phone: phoneSvg,
+  play: playSvg,
+  plus: plusSvg,
+  "push-pin": pushPinSvg,
+  question: questionSvg,
+  robot: robotSvg,
+  "share-network": shareNetworkSvg,
+  shield: shieldSvg,
+  "shield-check": shieldCheckSvg,
+  "shopping-cart": shoppingCartSvg,
+  "sign-in": signInSvg,
+  "sign-out": signOutSvg,
+  smiley: smileySvg,
+  "squares-four": squaresFourSvg,
+  stack: stackSvg,
+  star: starSvg,
+  tag: tagSvg,
+  "text-b": textBSvg,
+  "text-italic": textItalicSvg,
+  "thumbs-up": thumbsUpSvg,
+  trash: trashSvg,
+  "trend-up": trendUpSvg,
+  "twitter-logo": twitterLogoSvg,
+  "upload-simple": uploadSimpleSvg,
+  user: userSvg,
+  "user-circle": userCircleSvg,
+  "user-plus": userPlusSvg,
+  users: usersSvg,
+  wallet: walletSvg,
+  warning: warningSvg,
+  x: xSvg,
+};
 
-export function Icon({ name, size = 20, className }: IIconProps) {
-  const source =
-    iconSources[`../../../assets/singlepage/icons/phosphor/${name}.svg`];
+export function Icon({ name, size = 20, className, svgProps }: IIconProps) {
+  const source = iconSources[name];
   const geometry = source
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
@@ -127,6 +368,7 @@ export function Icon({ name, size = 20, className }: IIconProps) {
       data-icon-weight="regular"
       aria-hidden="true"
       focusable="false"
+      {...svgProps}
       dangerouslySetInnerHTML={{ __html: geometry }}
     />
   );

@@ -21,13 +21,8 @@
     "variantName": "admin-v2-list",
     "nodeId": "795:10",
     "variantNodeId": "982:177",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "ecommerce",
-    "product",
-    "admin-v2",
-    "list"
-  ]
+  "tags": ["ecommerce", "product", "admin-v2", "list"]
 }

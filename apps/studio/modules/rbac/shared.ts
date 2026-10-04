@@ -6,8 +6,8 @@ import {
   Send,
   Shield,
   User,
-  type LucideIcon,
-} from "lucide-react";
+  type ModuleIcon,
+} from "../../workspace/utils/components/ModuleIcons";
 
 export interface RbacSubject {
   id: string;
@@ -39,8 +39,16 @@ export interface RbacAccountProfile {
   id: string;
   title: string;
   subtitle: string;
+  description?: string;
   slug: string;
   relationId: string;
+  avatar?: string;
+  avatarRelation?: {
+    id: string;
+    profileId: string;
+    fileStorageModuleFileId: string;
+    orderIndex: number;
+  };
 }
 
 export interface RbacAccountUser {
@@ -68,14 +76,14 @@ export interface IdentityProviderMeta {
   kind: "credentials" | "oauth" | "external";
   kindLabel: string;
   description: string;
-  icon: LucideIcon;
+  icon: ModuleIcon;
 }
 
 export interface AccountMenuAction {
   key: string;
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: ModuleIcon;
   tone?: "neutral" | "danger";
 }
 
@@ -244,12 +252,31 @@ export const defaultRbacSubjectToIdentities: RbacSubjectToIdentity[] = [
 export const defaultRbacProfiles: RbacAccountProfile[] = [
   {
     id: "2f6f62e1-5c1a-4fa3-983e-08469b11fa89",
-    title: "Rogwild",
-    subtitle: "Founder @ SinglePageStartup",
-    slug: "rogwild-profile",
+    title: "Sarah Kim",
+    subtitle: "Head of Product",
+    description:
+      "Sarah leads product strategy for SPS, turning reusable modules into fast startup prototypes.",
+    slug: "sarah-kim",
+    avatar: defaultRbacUser.avatar,
     relationId: "9f1c43fd-cbd8-4f59-b55f-3637804f5f32",
   },
 ];
+
+export const defaultSettingsSubject: RbacSubject = {
+  ...defaultRbacSubject,
+  slug: "sarah-kim",
+};
+
+export const defaultSettingsIdentities: RbacIdentity[] =
+  defaultRbacIdentities.map((identity) => ({
+    ...identity,
+    email: identity.email ? "sarah@sps.dev" : "",
+    account: identity.account
+      ? identity.provider === "telegram"
+        ? "@sarah-kim"
+        : "sarah@sps.dev"
+      : "",
+  }));
 
 export const defaultAccountMenuActions: AccountMenuAction[] = [
   {

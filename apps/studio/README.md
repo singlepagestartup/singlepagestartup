@@ -72,8 +72,11 @@ preserves example state, and the HTML download includes every category. See
 restyling rules.
 
 `studio:inventory` regenerates `inventory/modules.generated.json` from
-production module variant contracts and Studio manifests. Workspace documents
-are not copied into generated JSON.
+production module variant contracts and Studio manifests. It also creates missing
+`singlepage` and `startup` directories for every discovered model and relation,
+keeping empty directories in Git with `.gitkeep`. Existing components and project
+overrides are preserved. Both Storybook commands run this preparation before
+starting or building. Workspace documents are not copied into generated JSON.
 
 `studio:presentation:export` builds the resolved semantic React/HTML presentation,
 resolves `singlepage` or `startup` from repository identity, and writes a
@@ -150,6 +153,16 @@ apps/studio/modules/<module>/<models|relations>/<entity>/<layer>/<variant>/
 Host pages remain under
 `apps/studio/modules/host/models/page/<layer>/<page-variant>/`. Existing stable
 component/page IDs are preserved across the Studio rename.
+
+The Startup module has a Widget scaffold at
+`apps/studio/modules/startup/models/widget/singlepage/default/`, visible in
+Storybook as `Modules/Startup/Models/Widget/Singlepage/default`. A downstream
+project adds its own variants under
+`apps/studio/modules/startup/models/widget/startup/<variant>/`, with a component,
+story, block manifest, and Figma metadata as shown above. The first `startup` in
+this path names the business module; the second names the project-owned layer.
+Run `npm run studio:inventory` after adding a production model or relation to
+prepare its Studio folders. `studio:validate` reports missing layer directories.
 
 ## Workspace presentation
 

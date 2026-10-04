@@ -161,7 +161,7 @@ export function ProductPages({
                 tabIndex={-1}
                 aria-label={`${expanded.has(node.id) ? "Collapse" : "Expand"} ${node.title}`}
                 onClick={() => toggle(node.id)}
-                className="shrink-0 rounded px-2 py-2 text-slate-500 hover:bg-slate-100"
+                className="shrink-0 rounded px-2 py-2 text-[var(--workspace-brand-muted)] hover:bg-[var(--workspace-brand-background)]"
               >
                 <span aria-hidden="true">
                   {expanded.has(node.id) ? "▾" : "▸"}
@@ -170,7 +170,7 @@ export function ProductPages({
             ) : (
               <span
                 aria-hidden="true"
-                className="w-7 shrink-0 text-center text-slate-400"
+                className="w-7 shrink-0 text-center text-[var(--workspace-brand-muted)]"
               >
                 ·
               </span>
@@ -188,18 +188,18 @@ export function ProductPages({
               onFocus={() => setFocused(node.id)}
               onKeyDown={(event) => keyDown(event, node, parent)}
               onClick={() => activate(node)}
-              className={`min-w-0 flex-1 rounded-lg px-2 py-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-teal-600 ${selected === node.id ? "bg-teal-50 font-semibold text-teal-900" : "text-slate-600 hover:bg-slate-100"}`}
+              className={`min-w-0 flex-1 rounded-lg px-2 py-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-[var(--workspace-brand-focus)] ${selected === node.id ? "bg-[var(--workspace-brand-surface)] font-semibold text-[var(--workspace-brand-foreground)]" : "text-[var(--workspace-brand-muted)] hover:bg-[var(--workspace-brand-background)]"}`}
             >
               <span className="block break-words">{node.title}</span>
               {node.route ? (
-                <span className="block truncate text-xs font-normal text-slate-500">
+                <span className="block truncate text-xs font-normal text-[var(--workspace-brand-muted)]">
                   {node.route}
                 </span>
               ) : null}
             </button>
           </div>
           {node.children.length && expanded.has(node.id) ? (
-            <div className="ml-3 border-l border-slate-200 pl-1">
+            <div className="ml-3 border-l border-[var(--workspace-brand-line)] pl-1">
               {tree(node.children, level + 1, node.id)}
             </div>
           ) : null}
@@ -258,14 +258,14 @@ export function ProductPages({
     >
       <nav
         aria-label="Section pages"
-        className="border-b border-slate-200 p-3 md:border-b-0 md:border-r"
+        className="border-b border-[var(--workspace-brand-line)] p-3 md:border-b-0 md:border-r"
       >
         {overview ? (
           <button
             type="button"
             aria-current={selected === "overview" ? "page" : undefined}
             onClick={() => setSelected("overview")}
-            className={`mb-4 w-full rounded-lg px-3 py-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-teal-600 ${selected === "overview" ? "bg-teal-50 font-semibold text-teal-900" : "text-slate-600 hover:bg-slate-100"}`}
+            className={`mb-4 w-full rounded-lg px-3 py-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-[var(--workspace-brand-focus)] ${selected === "overview" ? "bg-[var(--workspace-brand-surface)] font-semibold text-[var(--workspace-brand-foreground)]" : "text-[var(--workspace-brand-muted)] hover:bg-[var(--workspace-brand-background)]"}`}
           >
             Overview
           </button>
@@ -307,7 +307,7 @@ export function ProductPages({
                     <div
                       role="group"
                       aria-label="Page representation"
-                      className="inline-flex rounded-lg bg-slate-100 p-1"
+                      className="inline-flex rounded-lg bg-[var(--workspace-brand-background)] p-1"
                     >
                       {(["text", "preview"] as const).map((value) => (
                         <button
@@ -319,7 +319,7 @@ export function ProductPages({
                             !page.representations?.preview
                           }
                           onClick={() => setRepresentation(value)}
-                          className={`rounded-md px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-teal-600 disabled:cursor-not-allowed disabled:text-slate-400 ${mode === value ? "bg-white font-semibold text-slate-900 shadow-sm" : "text-slate-600"}`}
+                          className={`rounded-md px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-[var(--workspace-brand-focus)] disabled:cursor-not-allowed disabled:text-[var(--workspace-brand-muted)] ${mode === value ? "bg-white font-semibold text-[var(--workspace-brand-foreground)] " : "text-[var(--workspace-brand-muted)]"}`}
                         >
                           {value === "text" ? "Text" : "Layout"}
                         </button>
@@ -330,7 +330,7 @@ export function ProductPages({
               }
             />
             <div ref={exportRef} data-export-document>
-              <h2 className="px-6 pt-7 text-2xl font-semibold tracking-tight text-slate-950 md:px-10 md:pt-10">
+              <h2 className="px-6 pt-7 text-2xl font-semibold tracking-tight text-[var(--workspace-brand-foreground)] md:px-10 md:pt-10">
                 {pageTitle}
               </h2>
               <WorkspacePage
@@ -339,7 +339,7 @@ export function ProductPages({
                 hideConfirmation
                 hideTitle={displayed.kind === "markdown"}
               />
-              <p className="break-all border-t border-slate-200 px-6 py-4 text-xs text-slate-500">
+              <p className="break-all border-t border-[var(--workspace-brand-line)] px-6 py-4 text-xs text-[var(--workspace-brand-muted)]">
                 Source: {displayed.sourcePath}
               </p>
             </div>

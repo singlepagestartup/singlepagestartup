@@ -5,7 +5,7 @@ import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 export function RbacIdentityResetPasswordDefault() {
   return (
     <main
-      className="min-h-screen bg-slate-50 text-slate-900 antialiased"
+      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
       data-ds-page="host.page.rbac-subject-authentication-reset-password"
     >
       <HostNavbarDefault activeHref="/reset-password" />

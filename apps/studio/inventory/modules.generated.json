@@ -3,9 +3,9 @@
   "studioRoot": "apps/studio",
   "totals": {
     "modules": 16,
-    "entities": 156,
-    "variants": 1836,
-    "coveredVariants": 24
+    "entities": 157,
+    "variants": 1847,
+    "coveredVariants": 34
   },
   "modules": [
     {
@@ -2889,13 +2889,17 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "ecommerce.attribute.admin-v2-form"
+              ]
             },
             {
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "ecommerce.attribute.admin-v2-select-input"
+              ]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -3259,7 +3263,9 @@
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "ecommerce.product.admin-v2-select-input"
+              ]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -3514,7 +3520,9 @@
               "variant": "product-overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "ecommerce.widget.product-overview-default"
+              ]
             },
             {
               "variant": "store-list-default",
@@ -5424,7 +5432,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.widget.default"
+              ]
             },
             {
               "variant": "find",
@@ -5764,7 +5774,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.widgets-to-external-widgets.default"
+              ]
             },
             {
               "variant": "find",
@@ -5806,7 +5818,9 @@
               "variant": "default",
               "scope": "singlepage/default/ecommerce/order/singlepage",
               "variantsFile": "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/ecommerce/order/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.widgets-to-external-widgets.default"
+              ]
             },
             {
               "variant": "cart-default",
@@ -5824,7 +5838,9 @@
               "variant": "default",
               "scope": "singlepage/default/ecommerce/product/singlepage",
               "variantsFile": "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/ecommerce/product/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.widgets-to-external-widgets.default"
+              ]
             },
             {
               "variant": "overview-default",
@@ -5986,7 +6002,9 @@
               "variant": "default",
               "scope": "singlepage/default/startup/widget/singlepage",
               "variantsFile": "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/startup/widget/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.widgets-to-external-widgets.default"
+              ]
             },
             {
               "variant": "navbar-default",
@@ -9028,6 +9046,12 @@
               "coveredBy": []
             },
             {
+              "variant": "articles-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "button-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
@@ -9838,6 +9862,74 @@
         {
           "module": "social",
           "entityType": "relation",
+          "entity": "profiles-to-blog-module-articles",
+          "componentRoot": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component",
+          "variants": [
+            {
+              "variant": "admin-form",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "admin-select-input",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "admin-table",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "admin-table-row",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "admin-v2-form",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "admin-v2-select-input",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "admin-v2-table",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "admin-v2-table-row",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "find",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            }
+          ]
+        },
+        {
+          "module": "social",
+          "entityType": "relation",
           "entity": "profiles-to-chats",
           "componentRoot": "libs/modules/social/relations/profiles-to-chats/frontend/component",
           "variants": [
@@ -10590,7 +10682,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/startup/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "startup.widget.default"
+              ]
             },
             {
               "variant": "find",

@@ -69,21 +69,20 @@ export const defaultCrmOptions: CrmOptionRecord[] = [
 
 export const defaultCrmForm: CrmFormRecord = {
   id: "crm-form-project-request",
-  title: "Project Request",
-  description:
-    "Collect contact details, project scope, and timeline before creating a CRM request.",
+  title: "Project request",
+  description: "Tell us what you need and how we can contact you.",
   submitLabel: "Send request",
-  successLabel: "Request captured in CRM",
+  successLabel: "Request saved in this preview.",
   steps: [
     {
       id: "crm-step-contact",
       title: "Contact",
-      description: "Identify the subject and primary contact channel.",
+      description: "How can we reach you?",
       inputs: [
         {
           id: "crm-input-first-name",
           slug: "firstName",
-          label: "First Name",
+          label: "First name",
           placeholder: "John",
           required: true,
           variant: "text-default",
@@ -91,7 +90,7 @@ export const defaultCrmForm: CrmFormRecord = {
         {
           id: "crm-input-last-name",
           slug: "lastName",
-          label: "Last Name",
+          label: "Last name",
           placeholder: "Doe",
           required: true,
           variant: "text-default",
@@ -110,7 +109,7 @@ export const defaultCrmForm: CrmFormRecord = {
     {
       id: "crm-step-project",
       title: "Project",
-      description: "Capture the CRM form inputs that belong to the request.",
+      description: "Describe the help you need.",
       inputs: [
         {
           id: "crm-input-company",
@@ -144,9 +143,8 @@ export const defaultCrmForm: CrmFormRecord = {
 export const defaultCrmRequest: CrmRequestRecord = {
   id: "crm-request-demo",
   formTitle: defaultCrmForm.title,
-  subjectName: "Current subject",
+  subjectName: "Your account",
   status: "Studio",
   createdAt: "Feb 20, 2026",
-  summary:
-    "A project request created from the subject-owned CRM form composition.",
+  summary: "Contact details and project requirements saved in this preview.",
 };

@@ -5,7 +5,7 @@ import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 export function SocialProfileFindByIdOverviewAuthor() {
   return (
     <main
-      className="min-h-screen bg-[#eaf0f7] text-slate-900 antialiased"
+      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
       data-ds-page="host.page.blog-authors-social-profiles-slug"
     >
       <HostNavbarDefault />

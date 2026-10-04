@@ -1,4 +1,4 @@
-import { FileText } from "lucide-react";
+import { FileText } from "../../../../../../workspace/utils/components/ModuleIcons";
 
 import { FooterCompact } from "../../../../../website-builder/models/widget/singlepage/footer-compact/Component";
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
@@ -204,7 +204,7 @@ const termsSections: LegalSection[] = [
 export function TermsPage() {
   return (
     <main
-      className="min-h-screen bg-[#eaf0f7] text-slate-900 antialiased"
+      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
       data-ds-page="host.page.terms"
     >
       <HostNavbarDefault />

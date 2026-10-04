@@ -21,13 +21,8 @@
     "variantName": "admin-v2-form",
     "nodeId": "795:10",
     "variantNodeId": "982:171",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "ecommerce",
-    "product",
-    "admin-v2",
-    "form"
-  ]
+  "tags": ["ecommerce", "product", "admin-v2", "form"]
 }

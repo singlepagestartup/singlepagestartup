@@ -99,7 +99,11 @@ export function WorkspacePage({
     );
   return (
     <div className="p-6">
-      <a className="text-teal-700 underline" href={page.url} download>
+      <a
+        className="text-[var(--workspace-brand-muted)] underline"
+        href={page.url}
+        download
+      >
         {page.title} — Download file
       </a>
     </div>

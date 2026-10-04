@@ -1,7 +1,7 @@
 /**
  * social.profile.card
  *
- * Sidebar "Author" card: rounded-xl border bg-white, uppercase label,
+ * Sidebar "Author" card: rounded-xl border bg-[var(--workspace-brand-surface)], label,
  * h-12 avatar + name + role, root element is an anchor. Owned by the social
  * module (model: profile). Display components such as the blog article detail
  * sidebar compose this via import instead of re-implementing the markup.
@@ -34,22 +34,24 @@ export function ProfileCard(props?: Partial<ProfileCardProps>) {
       href={href}
       target={target}
       rel={target === "_blank" ? "noreferrer" : undefined}
-      className="block rounded-xl border border-slate-200 bg-white p-5 transition hover:border-slate-300 hover:shadow-sm"
+      className="block rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 transition hover:border-[var(--workspace-brand-line)] hover:shadow-sm"
       data-ds-block="social.profile.card"
       data-ds-layer="singlepage"
     >
-      <p className="mb-3 text-xs tracking-widest text-slate-400 uppercase">
+      <p className="mb-3 text-xs st text-[var(--workspace-brand-muted)]">
         {label}
       </p>
       <div className="flex items-center gap-3">
         <img
           src={avatar}
           alt={name}
-          className="h-12 w-12 rounded-full border border-slate-200 object-cover"
+          className="h-12 w-12 rounded-full border border-[var(--workspace-brand-line)] object-cover"
         />
         <div>
-          <p className="text-sm text-slate-900">{name}</p>
-          <p className="text-xs text-slate-500">{role}</p>
+          <p className="text-base font-semibold text-[var(--workspace-brand-foreground)]">
+            {name}
+          </p>
+          <p className="text-xs text-[var(--workspace-brand-muted)]">{role}</p>
         </div>
       </div>
     </a>

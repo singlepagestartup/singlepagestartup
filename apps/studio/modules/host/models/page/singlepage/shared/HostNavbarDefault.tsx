@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { CartButtonDefault } from "../../../../../ecommerce/models/cart/singlepage/button-default/Component";
 import { CartDrawerDefault } from "../../../../../ecommerce/models/cart/singlepage/drawer-default/Component";
 import {
   defaultCartItems,
   getCartTotals,
+  type CartItem,
 } from "../../../../../ecommerce/models/cart/shared";
 import {
   clearRbacStudioAuthUser,
@@ -21,10 +22,39 @@ const authorProfileStoryHref =
 
 export function HostNavbarDefault(props?: Partial<NavbarDefaultProps>) {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [items, setItems] = useState<CartItem[]>(() =>
+    defaultCartItems.map((item) => ({ ...item })),
+  );
   const [authUser, setAuthUser] = useState(() => readRbacStudioAuthUser());
-  const cartCount =
-    props?.cartCount ?? getCartTotals(defaultCartItems).itemCount;
+  const cartCount = props?.cartCount ?? getCartTotals(items).itemCount;
   const isAuthenticated = props?.isAuthenticated ?? Boolean(authUser);
+  const handleIncrease = useCallback((item: CartItem) => {
+    setItems((currentItems) =>
+      currentItems.map((currentItem) =>
+        currentItem.id === item.id
+          ? { ...currentItem, quantity: currentItem.quantity + 1 }
+          : currentItem,
+      ),
+    );
+  }, []);
+  const handleDecrease = useCallback((item: CartItem) => {
+    setItems((currentItems) =>
+      currentItems
+        .map((currentItem) =>
+          currentItem.id === item.id
+            ? { ...currentItem, quantity: currentItem.quantity - 1 }
+            : currentItem,
+        )
+        .filter((currentItem) => currentItem.quantity > 0),
+    );
+  }, []);
+  const handleRemove = useCallback((item: CartItem) => {
+    setItems((currentItems) =>
+      currentItems.filter((currentItem) => currentItem.id !== item.id),
+    );
+  }, []);
+  const handleClear = useCallback(() => setItems([]), []);
+  const handleClose = useCallback(() => setIsCartOpen(false), []);
 
   useEffect(() => {
     function syncAuthUser() {
@@ -77,9 +107,13 @@ export function HostNavbarDefault(props?: Partial<NavbarDefaultProps>) {
         onLogout={handleLogout}
       />
       <CartDrawerDefault
-        items={defaultCartItems}
+        items={items}
         isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
+        onClose={handleClose}
+        onIncrease={handleIncrease}
+        onDecrease={handleDecrease}
+        onRemove={handleRemove}
+        onClear={handleClear}
       />
     </>
   );

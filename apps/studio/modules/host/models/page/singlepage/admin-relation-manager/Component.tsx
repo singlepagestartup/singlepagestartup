@@ -7,8 +7,8 @@ export function AdminRelationManager() {
       <AdminV2PageShell
         activePath="/admin/ecommerce/product"
         eyebrow="host.page"
-        title="Admin relation manager"
-        description="Host page recipe for runnable RelationManager, with relation-owned reusable UI."
+        title="Product connections"
+        description="Link products to attributes and control the order of each connection."
       >
         <EcommerceProductsToAttributesAdminV2Manager />
       </AdminV2PageShell>

@@ -1,67 +1,207 @@
-import { Bold, Image, Italic, Link, List, Monitor, Save } from "lucide-react";
+import { useState } from "react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import LinkExtension from "@tiptap/extension-link";
+import {
+  Bold,
+  Italic,
+  Link,
+  List,
+  Monitor,
+  Save,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
+import {
+  Button,
+  kit,
+} from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
 
 export function WebsiteBuilderAdminV2RichEditor() {
+  const [preview, setPreview] = useState("desktop");
+  const [status, setStatus] = useState("");
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkError, setLinkError] = useState("");
+  const [, refreshToolbar] = useState(0);
+  const editor = useEditor({
+    extensions: [StarterKit, LinkExtension.configure({ openOnClick: false })],
+    content:
+      "<h2>Your next chapter starts here.</h2><p>Bring your notes, documents and ideas together. Give your project a clear direction, one useful decision at a time.</p><ul><li>Keep your own words.</li><li>Add the details that matter.</li><li>Review before sharing.</li></ul>",
+    editorProps: {
+      attributes: {
+        class: "min-h-80 outline-none",
+        role: "textbox",
+        "aria-label": "Rich text content",
+        "aria-multiline": "true",
+      },
+    },
+    onUpdate: () => setStatus("Unsaved changes"),
+    onSelectionUpdate: () => refreshToolbar((value) => value + 1),
+    onTransaction: () => refreshToolbar((value) => value + 1),
+  });
+  const commands = [
+    {
+      label: "Bold",
+      icon: Bold,
+      active: editor?.isActive("bold"),
+      run: () => editor?.chain().focus().toggleBold().run(),
+    },
+    {
+      label: "Italic",
+      icon: Italic,
+      active: editor?.isActive("italic"),
+      run: () => editor?.chain().focus().toggleItalic().run(),
+    },
+    {
+      label: "Bullet list",
+      icon: List,
+      active: editor?.isActive("bulletList"),
+      run: () => editor?.chain().focus().toggleBulletList().run(),
+    },
+    {
+      label: "Add link",
+      icon: Link,
+      active: editor?.isActive("link"),
+      run: () => {
+        setLinkUrl(editor?.getAttributes("link").href ?? "");
+        setLinkError("");
+        setLinkOpen((open) => !open);
+      },
+    },
+  ];
   return (
     <section
-      className="rounded-2xl border border-slate-200 bg-white shadow-sm"
+      className={`${kit.card} overflow-hidden`}
       data-ds-block="website-builder.widget.admin-v2-rich-editor"
       data-ds-layer="singlepage"
     >
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--workspace-brand-line)] p-5 sm:p-6">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-            website-builder.widget
-          </p>
-          <h2 className="mt-1 text-lg font-semibold text-slate-950">
-            Content editor
-          </h2>
+          <p className={`text-sm ${kit.muted}`}>Page content</p>
+          <h2 className="mt-1 text-2xl font-semibold">Content editor</h2>
         </div>
-        <div className="flex items-center gap-2">
-          {[Bold, Italic, Link, List, Image].map((Icon) => (
-            <button
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50"
-              key={Icon.displayName ?? Icon.name}
-              type="button"
-            >
-              <Icon className="h-4 w-4" />
-            </button>
-          ))}
-          <button
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm text-white"
-            type="button"
-          >
-            <Save className="h-4 w-4" />
-            Save
-          </button>
-        </div>
+        <Button
+          disabled={!editor}
+          onClick={() =>
+            setStatus("Saved in this preview. Changes reset on reload.")
+          }
+        >
+          <Save className="size-5" />
+          Save changes
+        </Button>
       </header>
-      <div className="grid gap-4 p-5 lg:grid-cols-[1fr_320px]">
-        <div className="min-h-[360px] rounded-xl border border-slate-200 bg-slate-50 p-5">
-          <p className="text-sm font-semibold text-slate-900">
-            Reusable Storybook block content
-          </p>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-            This editor surface represents the runnable TipTap editor as a
-            static admin-v2 state. Concrete article or widget editing remains
-            owned by the model being edited.
-          </p>
-          <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-4 text-sm leading-6 text-slate-600">
-            Content blocks, rich text, file references, and localized fields are
-            previewed here without importing the runnable editor runtime.
+      <div className="grid gap-6 p-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_240px]">
+        <div className="min-w-0">
+          <div
+            className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl bg-[var(--workspace-brand-background)] p-2"
+            role="toolbar"
+            aria-label="Formatting"
+          >
+            {commands.map(({ label, icon: Icon, active, run }) => (
+              <button
+                key={label}
+                type="button"
+                aria-label={label}
+                title={label}
+                aria-pressed={Boolean(active)}
+                disabled={!editor}
+                className={`grid size-11 place-items-center rounded-xl transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] ${active ? "bg-[var(--workspace-brand-surface)] text-[var(--workspace-brand-foreground)]" : "text-[var(--workspace-brand-muted)] hover:bg-[var(--workspace-brand-surface)]"}`}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={run}
+              >
+                <Icon className="size-5" />
+              </button>
+            ))}
+          </div>
+          {linkOpen && (
+            <form
+              className="mb-4 grid gap-3 rounded-2xl bg-[var(--workspace-brand-background)] p-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!/^https?:\/\//i.test(linkUrl)) {
+                  setLinkError(
+                    "Enter a URL beginning with https:// or http://.",
+                  );
+                  return;
+                }
+                editor
+                  ?.chain()
+                  .focus()
+                  .extendMarkRange("link")
+                  .setLink({ href: linkUrl })
+                  .run();
+                setLinkOpen(false);
+              }}
+            >
+              <label className="grid gap-2 text-sm font-semibold">
+                Link URL
+                <input
+                  className={kit.field}
+                  value={linkUrl}
+                  onChange={(event) => setLinkUrl(event.target.value)}
+                  aria-invalid={Boolean(linkError)}
+                />
+              </label>
+              {linkError && (
+                <p
+                  role="alert"
+                  className="text-sm text-[var(--workspace-brand-danger)]"
+                >
+                  {linkError}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <Button type="submit">Apply link</Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    editor?.chain().focus().unsetLink().run();
+                    setLinkOpen(false);
+                  }}
+                >
+                  Remove link
+                </Button>
+                <Button variant="plain" onClick={() => setLinkOpen(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          )}
+          <div
+            className={`mx-auto min-w-0 rounded-2xl border border-[var(--workspace-brand-line)] p-5 transition-[max-width] sm:p-6 ${preview === "mobile" ? "max-w-sm" : "max-w-none"} [&_.ProseMirror]:text-base [&_.ProseMirror]:leading-7 [&_.ProseMirror_h2]:mb-4 [&_.ProseMirror_h2]:text-3xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_p]:my-4 [&_.ProseMirror_ul]:ml-5 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_a]:underline [&_.ProseMirror_a]:underline-offset-4 [&_.ProseMirror_blockquote]:rounded-xl [&_.ProseMirror_blockquote]:bg-[var(--workspace-brand-background)] [&_.ProseMirror_blockquote]:p-4`}
+          >
+            <EditorContent editor={editor} />
           </div>
         </div>
-        <aside className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-slate-900">
-            <Monitor className="h-4 w-4" />
-            Preview states
-          </div>
-          <div className="mt-4 grid gap-2 text-sm text-slate-600">
-            <span className="rounded-lg bg-white px-3 py-2">Desktop</span>
-            <span className="rounded-lg bg-white px-3 py-2">Mobile</span>
-            <span className="rounded-lg bg-white px-3 py-2">
-              Localized text
-            </span>
-          </div>
+        <aside className="self-start rounded-2xl bg-[var(--workspace-brand-background)] p-5">
+          <h3 className="flex items-center gap-2 text-base font-semibold">
+            <Monitor className="size-5" />
+            Preview width
+          </h3>
+          <fieldset className="mt-4 grid gap-2">
+            <legend className="sr-only">Preview width</legend>
+            {["desktop", "mobile"].map((value) => (
+              <label
+                key={value}
+                className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl p-3 text-sm ${preview === value ? "bg-[var(--workspace-brand-surface)] font-semibold" : kit.muted}`}
+              >
+                <input
+                  type="radio"
+                  name="editor-preview-width"
+                  value={value}
+                  checked={preview === value}
+                  onChange={() => setPreview(value)}
+                  className="size-4 accent-[var(--workspace-brand-foreground)]"
+                />
+                {value === "desktop" ? "Desktop" : "Mobile"}
+              </label>
+            ))}
+          </fieldset>
+          <p className={`mt-5 text-sm leading-6 ${kit.muted}`}>
+            Edit text and formatting here. Your changes stay in this preview.
+          </p>
+          <p className="mt-4 text-sm font-medium" role="status">
+            {status || "Ready to edit"}
+          </p>
         </aside>
       </div>
     </section>

@@ -33,13 +33,8 @@
     "variantName": "account-menu-default",
     "nodeId": "859:27",
     "variantNodeId": "981:87",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "rbac",
-    "subject",
-    "account",
-    "menu"
-  ]
+  "tags": ["rbac", "subject", "account", "menu"]
 }

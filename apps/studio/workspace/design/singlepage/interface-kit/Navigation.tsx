@@ -1,5 +1,10 @@
 import { Fragment, useId, useRef, useState } from "react";
-import * as Tabs from "@radix-ui/react-tabs";
+import {
+  SectionTabsRoot,
+  SectionTabsList,
+  SectionTabsTrigger,
+  SectionTabsContent,
+} from "./Tabs";
 import { Button, Icon, kit, Specimen } from "./primitives";
 
 interface IPaginationControlsProps {
@@ -271,8 +276,8 @@ export function NavigationSpecimens() {
         usage="Arrow keys, Home and End move across enabled tabs. Tab enters the active panel. Automatic activation suits these immediately available local panels."
         recipe="rounded-lg px-4 py-3 text-sm font-medium; data-[state=active]:bg-[var(--workspace-brand-surface)] data-[state=active]:shadow-sm; disabled:opacity-50; kit.focus"
       >
-        <Tabs.Root defaultValue="overview">
-          <Tabs.List
+        <SectionTabsRoot defaultValue="overview">
+          <SectionTabsList
             aria-label="Material views"
             className="flex flex-wrap gap-1 rounded-xl bg-[var(--workspace-brand-background)] p-1"
           >
@@ -281,17 +286,16 @@ export function NavigationSpecimens() {
               { value: "activity", title: "Activity" },
               { value: "history", title: "History", disabled: true },
             ].map((tab) => (
-              <Tabs.Trigger
+              <SectionTabsTrigger
                 key={tab.value}
                 value={tab.value}
                 disabled={tab.disabled}
-                className={`rounded-lg px-4 py-3 text-sm font-medium text-[var(--workspace-brand-muted)] data-[state=active]:bg-[var(--workspace-brand-surface)] data-[state=active]:text-[var(--workspace-brand-foreground)] data-[state=active]:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 ${kit.focus}`}
               >
                 {tab.title}
-              </Tabs.Trigger>
+              </SectionTabsTrigger>
             ))}
-          </Tabs.List>
-          <Tabs.Content
+          </SectionTabsList>
+          <SectionTabsContent
             value="overview"
             className={`mt-3 rounded-xl border border-[var(--workspace-brand-line)] p-5 text-sm leading-6 ${kit.focus}`}
           >
@@ -299,8 +303,8 @@ export function NavigationSpecimens() {
             <p className={`mt-2 ${kit.muted}`}>
               A place for the decisions and materials you are reviewing.
             </p>
-          </Tabs.Content>
-          <Tabs.Content
+          </SectionTabsContent>
+          <SectionTabsContent
             value="activity"
             className={`mt-3 rounded-xl border border-[var(--workspace-brand-line)] p-5 text-sm leading-6 ${kit.focus}`}
           >
@@ -308,8 +312,8 @@ export function NavigationSpecimens() {
             <p className={`mt-2 ${kit.muted}`}>
               Project notes added. A review is waiting for your input.
             </p>
-          </Tabs.Content>
-        </Tabs.Root>
+          </SectionTabsContent>
+        </SectionTabsRoot>
       </Specimen>
 
       <Specimen

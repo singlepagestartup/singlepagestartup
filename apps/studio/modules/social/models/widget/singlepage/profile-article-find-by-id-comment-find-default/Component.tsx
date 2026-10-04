@@ -5,7 +5,7 @@
  * module (model: widget). Display components compose this via import. Static /
  * presentation-only — like and reply controls render in their default state.
  */
-import { ThumbsUp } from "lucide-react";
+import { ThumbsUp } from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export interface ArticleComment {
   id: string;
@@ -31,36 +31,48 @@ function CommentItem({
     .toUpperCase();
 
   return (
-    <div className={depth > 0 ? "ml-8 border-l-2 border-slate-100 pl-5" : ""}>
+    <div
+      className={
+        depth > 0
+          ? "ml-2 border-l-2 border-[var(--workspace-brand-line)] pl-3 sm:ml-6 sm:pl-5"
+          : "rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-6"
+      }
+    >
       <div className="flex gap-3">
         {comment.avatar ? (
           <img
             src={comment.avatar}
             alt={comment.author}
-            className="h-9 w-9 shrink-0 rounded-full border border-slate-200 object-cover"
+            className="h-9 w-9 shrink-0 rounded-full border border-[var(--workspace-brand-line)] object-cover"
           />
         ) : (
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-xs text-slate-600">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] text-xs text-[var(--workspace-brand-muted)]">
             {initials}
           </div>
         )}
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-900">{comment.author}</span>
-            <span className="text-xs text-slate-400">{comment.date}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-[var(--workspace-brand-foreground)]">
+              {comment.author}
+            </span>
+            <span className="text-xs text-[var(--workspace-brand-muted)]">
+              {comment.date}
+            </span>
           </div>
-          <p className="mt-1 text-sm text-slate-600">{comment.text}</p>
+          <p className="mt-3 text-base leading-7 text-[var(--workspace-brand-foreground)]">
+            {comment.text}
+          </p>
           <div className="mt-2 flex items-center gap-3">
             <button
               type="button"
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+              className="inline-flex items-center gap-1 rounded-xl px-2 py-1 text-xs text-[var(--workspace-brand-muted)] hover:bg-[var(--workspace-brand-background)] hover:text-[var(--workspace-brand-muted)] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] min-h-11"
             >
-              <ThumbsUp className="h-3 w-3" />
+              <ThumbsUp className="h-5 w-5" />
               {comment.likes}
             </button>
             <button
               type="button"
-              className="text-xs text-slate-400 transition hover:text-slate-600"
+              className="text-xs text-[var(--workspace-brand-muted)] transition hover:text-[var(--workspace-brand-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] min-h-11"
             >
               Reply
             </button>

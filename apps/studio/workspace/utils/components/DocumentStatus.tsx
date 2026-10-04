@@ -55,11 +55,11 @@ export function DocumentHeader({
   purpose,
 }: IDocumentHeaderProps) {
   return (
-    <header className="mb-8 w-full rounded-3xl bg-slate-950 p-7 text-white shadow-xl md:p-10">
+    <header className="mb-8 w-full rounded-3xl bg-[var(--workspace-brand-primary)] p-7 text-white  md:p-10">
       <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:flex-wrap">
         <div className="min-w-0 w-full flex-1 sm:w-auto">
           {confirmation ? (
-            <div className="mb-5 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em]">
+            <div className="mb-5 flex flex-wrap items-center gap-2 text-xs font-semibold tracking-normal">
               <ConfirmationBadge confirmation={confirmation} />
             </div>
           ) : null}
@@ -67,7 +67,7 @@ export function DocumentHeader({
             {title}
           </h1>
           {purpose ? (
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)] md:text-base">
               {purpose}
             </p>
           ) : null}
@@ -93,8 +93,8 @@ export function ConfirmationBadge({
     <span
       className={`rounded-full border px-3 py-1 text-xs font-semibold ${
         confirmation.confirmed
-          ? "border-emerald-300 bg-emerald-100 text-emerald-950"
-          : "border-amber-300 bg-amber-100 text-amber-950"
+          ? "border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-on-accent)]"
+          : "border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] text-[var(--workspace-brand-foreground)]"
       }`}
       title={
         confirmation.state === "stale"
@@ -122,7 +122,10 @@ export function DocumentReviewToolbar({
 }) {
   return (
     <>
-      <div className="bg-slate-50 px-5 py-4 md:px-10" data-document-toolbar>
+      <div
+        className="bg-[var(--workspace-brand-background)] px-5 py-4 md:px-10"
+        data-document-toolbar
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             {confirmation ? (
@@ -134,10 +137,12 @@ export function DocumentReviewToolbar({
           ) : null}
         </div>
         {note ? (
-          <div className="mt-3 text-sm text-slate-500">{note}</div>
+          <div className="mt-3 text-sm text-[var(--workspace-brand-muted)]">
+            {note}
+          </div>
         ) : null}
       </div>
-      <hr className="border-0 border-t border-slate-200" />
+      <hr className="border-0 border-t border-[var(--workspace-brand-line)]" />
     </>
   );
 }

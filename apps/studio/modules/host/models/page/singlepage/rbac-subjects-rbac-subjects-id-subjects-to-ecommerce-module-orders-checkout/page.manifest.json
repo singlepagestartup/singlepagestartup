@@ -36,7 +36,7 @@
     "variantName": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout",
     "nodeId": "716:300",
     "variantNodeId": "983:1819",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

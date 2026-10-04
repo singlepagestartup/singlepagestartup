@@ -22,16 +22,18 @@ export function CrmInputTextDefault(props?: Partial<CrmInputTextDefaultProps>) {
 
   return (
     <label
-      className="block"
+      className="block min-w-0"
       data-ds-block="crm.input.text-default"
       data-ds-layer="singlepage"
     >
-      <span className="mb-1 block text-sm font-medium text-slate-700">
+      <span className="mb-1 block text-sm font-medium text-[var(--workspace-brand-foreground)]">
         {input.label}
-        {input.required ? <span className="ml-1 text-red-500">*</span> : null}
+        {input.required ? (
+          <span className="ml-1 text-[var(--workspace-brand-danger)]">*</span>
+        ) : null}
       </span>
       <input
-        className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:bg-slate-100"
+        className="min-h-12 w-full min-w-0 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] px-4 text-base text-[var(--workspace-brand-foreground)] outline-none transition placeholder:text-[var(--workspace-brand-muted)] focus:border-[var(--workspace-brand-focus)] focus:ring-2 focus:ring-[var(--workspace-brand-focus)] disabled:bg-[var(--workspace-brand-background)] focus-visible:border-[var(--workspace-brand-focus)] focus-visible:ring-2 focus-visible:ring-[var(--workspace-brand-focus)]"
         disabled={disabled}
         id={inputId}
         name={inputId}

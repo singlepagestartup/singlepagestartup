@@ -21,12 +21,8 @@
     "variantName": "list-default",
     "nodeId": "980:95",
     "variantNodeId": "980:88",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "social",
-    "thread",
-    "chat"
-  ]
+  "tags": ["social", "thread", "chat"]
 }

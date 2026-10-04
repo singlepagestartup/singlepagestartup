@@ -3,7 +3,7 @@ import {
   type DesignBuiltinSection,
 } from "../design/layout";
 import type { IDocumentConfirmation } from "../../../../../tools/studio/workspace/document";
-import { Info } from "lucide-react";
+import { CircleHelp as Info } from "./ModuleIcons";
 import type { CSSProperties, ReactNode } from "react";
 
 export interface IProjectDesignAsset {
@@ -172,7 +172,7 @@ function Eyebrow({
 }) {
   return (
     <p
-      className="text-xs font-semibold uppercase tracking-[0.2em]"
+      className="text-xs font-semibold tracking-normal"
       style={{ color: paletteValue(data, "muted") }}
     >
       {children}
@@ -434,7 +434,7 @@ function Typography({ data }: { data: IProjectDesignData }) {
                   : paletteValue(data, "surface"),
             }}
           >
-            <p className="text-xs uppercase tracking-[0.18em] opacity-65">
+            <p className="text-xs tracking-normal opacity-65">
               {specimen.role} · {specimen.family} · {specimen.weights}
             </p>
             <p
@@ -481,7 +481,7 @@ function MasterPrompt({
       }}
     >
       <div className="relative flex items-center gap-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-65">
+        <p className="text-xs font-semibold tracking-normal opacity-65">
           Style master prompt
         </p>
         <PromptUsageTooltip data={data} id={id} items={guidance} />
@@ -512,7 +512,7 @@ function PromptUsageTooltip({
         className="grid h-6 w-6 place-items-center rounded-full border border-current/40 opacity-70 transition hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         type="button"
       >
-        <Info aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={2} />
+        <Info aria-hidden="true" className="h-5 w-5" />
       </button>
       <div
         className="invisible absolute left-0 top-full z-20 mt-3 w-80 max-w-full rounded-2xl border p-5 text-left opacity-0 shadow-xl transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 sm:left-1/2 sm:max-w-[calc(100vw-4rem)] sm:-translate-x-1/2"
@@ -598,7 +598,7 @@ function PromptCard({
           {item.title}
         </h3>
         <p
-          className="mt-4 text-xs font-semibold uppercase leading-5 tracking-[0.12em]"
+          className="mt-4 text-xs font-semibold leading-5 tracking-normal"
           style={{ color: paletteValue(data, "muted") }}
         >
           {item.use}
@@ -658,9 +658,7 @@ function SurfacePatternCard({
           className="mt-4 text-[11px] leading-5 [overflow-wrap:anywhere]"
           style={{ color: paletteValue(data, "muted") }}
         >
-          <span className="font-semibold uppercase tracking-[0.12em]">
-            Observed in
-          </span>{" "}
+          <span className="font-semibold tracking-normal">Observed in</span>{" "}
           {pattern.references.join(", ")}
         </p>
       ) : null}

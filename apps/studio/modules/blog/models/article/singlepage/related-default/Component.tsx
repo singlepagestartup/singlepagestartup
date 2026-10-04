@@ -1,18 +1,8 @@
+import { kit } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
 /**
- * blog.article.related-default
- *
- * Compact related-article item: anchor with border card styling, category chip,
- * title, date + read time (Clock icon). Root element is an anchor linking to
- * /blog/articles/<slug>.
- *
- * Owned by the blog module (model: article). Display components such as the
- * ArticleDetail sidebar compose this via import instead of re-implementing
- * the markup.
- *
- * Source: BlogSections ArticleDetail sidebar related-articles items.
+ * Model-owned compact article link for related-content collections.
+ * Category and reading time share a row above the title and publication date.
  */
-
-import { Clock } from "lucide-react";
 
 type ArticleRelatedDefaultTarget = "_blank" | "_parent" | "_self" | "_top";
 
@@ -36,30 +26,25 @@ export function ArticleRelatedDefault(
     ...defaultArticleRelatedDefaultProps,
     ...props,
   };
-  const articleHref = href ?? `/blog/articles/${slug}`;
-
   return (
     <a
-      href={articleHref}
+      href={href ?? `/blog/articles/${slug}`}
       target={target}
       rel={target === "_blank" ? "noreferrer" : undefined}
-      className="group block rounded-lg border border-slate-100 p-3 transition hover:border-slate-200 hover:bg-slate-50"
+      className={`group block min-w-0 rounded-xl px-3 py-3 transition hover:bg-[var(--workspace-brand-background)] motion-reduce:transition-none ${kit.focus}`}
       data-ds-block="blog.article.related-default"
       data-ds-layer="singlepage"
     >
-      <span className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] text-slate-500 uppercase">
-        {category}
-      </span>
-      <h4 className="mt-1.5 text-sm text-slate-900 group-hover:text-slate-700">
+      <div className="mb-2 flex items-center justify-between gap-3 text-xs text-[var(--workspace-brand-muted)]">
+        <span className="rounded-md bg-[var(--workspace-brand-primary)] px-2.5 py-1 font-medium text-[var(--workspace-brand-on-primary)]">
+          {category}
+        </span>
+        <span className="shrink-0">{readTime}</span>
+      </div>
+      <h4 className="text-sm font-semibold leading-[22px] text-[var(--workspace-brand-foreground)]">
         {title}
       </h4>
-      <div className="mt-1.5 flex items-center gap-2 text-xs text-slate-400">
-        <span>{date}</span>
-        <span className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          {readTime}
-        </span>
-      </div>
+      <p className="mt-2 text-xs text-[var(--workspace-brand-muted)]">{date}</p>
     </a>
   );
 }

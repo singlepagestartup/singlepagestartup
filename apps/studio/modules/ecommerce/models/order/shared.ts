@@ -3,8 +3,8 @@ import {
   CreditCard,
   Landmark,
   Wallet,
-  type LucideIcon,
-} from "lucide-react";
+  type ModuleIcon,
+} from "../../../../workspace/utils/components/ModuleIcons";
 
 import { defaultCartItems, type CartItem } from "../cart/shared";
 
@@ -20,7 +20,7 @@ export interface CheckoutStepItem {
 export interface PaymentMethodItem {
   key: PaymentMethod;
   label: string;
-  icon: LucideIcon;
+  icon: ModuleIcon;
 }
 
 export const checkoutSteps: CheckoutStepItem[] = [

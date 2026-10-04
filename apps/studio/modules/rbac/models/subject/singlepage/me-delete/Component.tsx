@@ -1,45 +1,88 @@
-import { Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Button } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import { ConfirmationDialog } from "../../../../../../workspace/design/singlepage/interface-kit/Confirmation";
+import { Trash2 } from "../../../../../../workspace/utils/components/ModuleIcons";
+import { defaultRbacSubject, type RbacSubject } from "../../../../shared";
 
 export interface SubjectMeDeleteProps {
   title: string;
   description: string;
   actionLabel: string;
+  subject: RbacSubject;
 }
 
 export const defaultSubjectMeDeleteProps: SubjectMeDeleteProps = {
   title: "Danger Zone",
   description:
-    "Account removal is represented as a draft action only. Real RBAC checks and destructive effects are handled outside this prototype layer.",
+    "This preview shows the account removal action. It does not delete your account.",
   actionLabel: "Delete account",
+  subject: defaultRbacSubject,
 };
 
 export function SubjectMeDelete(props?: Partial<SubjectMeDeleteProps>) {
-  const { title, description, actionLabel } = {
+  const { title, description, actionLabel, subject } = {
     ...defaultSubjectMeDeleteProps,
     ...props,
   };
+  const [pendingSubject, setPendingSubject] = useState<RbacSubject | null>(
+    null,
+  );
+  const [result, setResult] = useState("");
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
+    null,
+  );
 
   return (
     <article
-      className="rounded-xl border border-red-200 bg-red-50 p-5"
+      ref={setPortalContainer}
+      className="rounded-2xl border border-[var(--workspace-brand-danger-line)] bg-[var(--workspace-brand-danger-surface)] p-6"
       data-ds-block="rbac.subject.me-delete"
       data-ds-layer="singlepage"
+      data-subject-id={subject.id}
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-medium text-red-950">{title}</h2>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-red-700">
+          <h2 className="text-xl font-semibold text-[var(--workspace-brand-danger)]">
+            {title}
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-[var(--workspace-brand-danger)]">
             {description}
           </p>
         </div>
-        <button
-          className="inline-flex items-center gap-2 rounded-lg border border-red-300 bg-white px-4 py-2 text-sm text-red-700 transition hover:bg-red-100"
+        <Button
+          variant="danger"
+          onClick={() => setPendingSubject(subject)}
           type="button"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-5 w-5" />
           {actionLabel}
-        </button>
+        </Button>
       </div>
+      {result ? (
+        <p
+          role="status"
+          className="mt-4 text-sm leading-6 text-[var(--workspace-brand-danger)]"
+        >
+          {result}
+        </p>
+      ) : null}
+      <ConfirmationDialog
+        open={pendingSubject !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingSubject(null);
+        }}
+        title="Delete account?"
+        description={`Confirm deletion of the current account (${pendingSubject?.slug ?? subject.slug}). This preview records the request without deleting any server data.`}
+        confirmLabel={actionLabel}
+        onConfirm={() => {
+          if (!pendingSubject) return;
+          setResult(
+            `Account deletion requested for ${pendingSubject.slug} in this preview. No server data was changed.`,
+          );
+          setPendingSubject(null);
+        }}
+        portalContainer={portalContainer}
+      />
     </article>
   );
 }

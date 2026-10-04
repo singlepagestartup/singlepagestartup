@@ -47,7 +47,7 @@ function Slide({
           src={data.logo}
           alt="SinglePageStartup"
         />
-        <span className="text-sm uppercase tracking-widest text-[var(--workspace-brand-muted)]">
+        <span className="text-sm text-[var(--workspace-brand-muted)]">
           {data.name} · {String(index + 1).padStart(2, "0")} /{" "}
           {data.slides.length}
         </span>
@@ -57,9 +57,9 @@ function Slide({
         data-slide-content="true"
       >
         <div>
-          <p className="inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-widest">
+          <p className="inline-flex items-center gap-3 text-sm font-semibold">
             <span
-              className="h-3 w-3 bg-[var(--workspace-brand-accent,#BFEF61)]"
+              className="h-2 w-8 rounded-full bg-[var(--workspace-brand-accent,#BFEF61)]"
               aria-hidden="true"
             />
             {slide.eyebrow}
@@ -78,7 +78,7 @@ function Slide({
           >
             {slide.points.map((point) => (
               <article
-                className="border-l-2 border-[var(--workspace-brand-accent,#BFEF61)] pl-5"
+                className="rounded-2xl bg-[var(--workspace-brand-background)] p-5"
                 key={point.title}
               >
                 <h2 className="text-xl font-semibold">{point.title}</h2>

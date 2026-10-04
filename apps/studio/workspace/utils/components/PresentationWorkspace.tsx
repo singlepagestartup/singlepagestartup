@@ -114,21 +114,21 @@ export function PresentationWorkspace({
   return (
     <PresentationContext.Provider value={context}>
       <section aria-label={`${name} presentation workspace`}>
-        <header className="space-y-3 border-b border-slate-200 px-5 py-7 md:px-8">
+        <header className="space-y-3 border-b border-[var(--workspace-brand-line)] px-5 py-7 md:px-8">
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-2xl font-semibold tracking-tight">
               Presentation
             </h2>
             <ConfirmationBadge confirmation={confirmation} />
           </div>
-          <p className="text-sm leading-6 text-slate-600">
+          <p className="text-sm leading-6 text-[var(--workspace-brand-muted)]">
             Review the presentation and download the complete deck as PDF.
           </p>
         </header>
         <PresentationPdfDownload fileName={`${fileName}.pdf`} title={name}>
           {children}
         </PresentationPdfDownload>
-        <p className="break-all border-t border-slate-200 px-5 py-5 text-xs text-slate-500 md:px-8">
+        <p className="break-all border-t border-[var(--workspace-brand-line)] px-5 py-5 text-xs text-[var(--workspace-brand-muted)] md:px-8">
           Source: {dataSourcePath}
         </p>
       </section>
@@ -176,7 +176,11 @@ export function PresentationReview({
   if (!workspace)
     throw new Error("PresentationReview requires PresentationWorkspace.");
   if (!selected)
-    return <p className="p-8 text-slate-600">No slides have been added.</p>;
+    return (
+      <p className="p-8 text-[var(--workspace-brand-muted)]">
+        No slides have been added.
+      </p>
+    );
   const text = resolvePresentationSlideText(
     selected,
     index,
@@ -189,9 +193,9 @@ export function PresentationReview({
       <div className="grid min-w-0 md:grid-cols-[220px_minmax(0,1fr)]">
         <nav
           aria-label="Presentation slides"
-          className="border-b border-slate-200 p-4 md:border-b-0 md:border-r"
+          className="border-b border-[var(--workspace-brand-line)] p-4 md:border-b-0 md:border-r"
         >
-          <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p className="mb-3 px-3 text-xs font-semibold tracking-normal text-[var(--workspace-brand-muted)]">
             Slides
           </p>
           <ol className="space-y-1">
@@ -201,7 +205,7 @@ export function PresentationReview({
                   type="button"
                   aria-current={slide.id === selected.id ? "page" : undefined}
                   onClick={() => setSelectedId(slide.id)}
-                  className={`w-full rounded-lg px-3 py-3 text-left text-sm leading-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-600 ${slide.id === selected.id ? "bg-teal-50 font-semibold text-teal-900" : "text-slate-600 hover:bg-slate-100"}`}
+                  className={`w-full rounded-lg px-3 py-3 text-left text-sm leading-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--workspace-brand-focus)] ${slide.id === selected.id ? "bg-[var(--workspace-brand-surface)] font-semibold text-[var(--workspace-brand-foreground)]" : "text-[var(--workspace-brand-muted)] hover:bg-[var(--workspace-brand-background)]"}`}
                 >
                   <span className="mr-2 text-xs tabular-nums">
                     {String(slideIndex + 1).padStart(2, "0")}
@@ -216,12 +220,12 @@ export function PresentationReview({
           aria-label={`Slide ${index + 1}: ${selected.label}`}
           className="min-w-0"
         >
-          <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-5 py-4 md:px-8">
+          <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--workspace-brand-line)] px-5 py-4 md:px-8">
             <h3 className="text-lg font-semibold">
               {String(index + 1).padStart(2, "0")} · {selected.label}
             </h3>
             <div
-              className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1"
+              className="inline-flex rounded-lg border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-1"
               aria-label="Slide representation"
             >
               {(
@@ -235,7 +239,7 @@ export function PresentationReview({
                   type="button"
                   aria-pressed={mode === item.id}
                   onClick={() => setMode(item.id)}
-                  className={`rounded-md px-4 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-600 ${mode === item.id ? "bg-white text-slate-950 shadow-sm" : "text-slate-600"}`}
+                  className={`rounded-md px-4 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--workspace-brand-focus)] ${mode === item.id ? "bg-white text-[var(--workspace-brand-foreground)] " : "text-[var(--workspace-brand-muted)]"}`}
                 >
                   {item.label}
                 </button>
@@ -247,7 +251,7 @@ export function PresentationReview({
               {text !== undefined ? (
                 <MarkdownDocument>{text}</MarkdownDocument>
               ) : (
-                <p className="text-sm leading-6 text-slate-600">
+                <p className="text-sm leading-6 text-[var(--workspace-brand-muted)]">
                   Text is not provided for this slide. Add text from the
                   presentation source through the slide's text formatter.
                 </p>

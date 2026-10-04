@@ -8,8 +8,8 @@ export function AdminModuleDashboard() {
       <AdminV2PageShell
         activePath="/admin/ecommerce/product"
         eyebrow="host.page"
-        title="Admin module dashboard"
-        description="Host page recipe for runnable /admin/:moduleSlug. Inner lists remain module-owned."
+        title="Module records"
+        description="Explore the models in this module and open a record to edit its fields."
       >
         <div className="grid gap-5 xl:grid-cols-2">
           <EcommerceProductAdminV2List />

@@ -1,4 +1,8 @@
-import { ArrowRight, Play, type LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  Play,
+  type ModuleIcon,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 import { ButtonLink } from "../../../button/singlepage/link/Component";
 import { ButtonPrimary } from "../../../button/singlepage/primary/Component";
@@ -8,7 +12,7 @@ export interface ButtonsArrayItem {
   label: string;
   href: string;
   variant: "link" | "primary" | "secondary";
-  icon?: LucideIcon;
+  icon?: ModuleIcon;
   size?: "sm" | "xs";
   tone?: "default" | "muted";
 }
@@ -23,13 +27,13 @@ export interface ButtonsArrayDefaultProps {
 export const defaultButtonsArrayProps: ButtonsArrayDefaultProps = {
   buttons: [
     {
-      label: "Open Admin Panel",
+      label: "Open admin panel",
       href: "/admin",
       variant: "primary",
       icon: ArrowRight,
     },
     {
-      label: "Learn More",
+      label: "Learn more",
       href: "#features",
       variant: "secondary",
       icon: Play,
@@ -44,8 +48,8 @@ export function ButtonsArrayDefault(props?: Partial<ButtonsArrayDefaultProps>) {
   };
   const layoutClass =
     orientation === "vertical"
-      ? "flex flex-col items-start gap-2"
-      : "flex flex-wrap items-center gap-3";
+      ? `flex min-w-0 flex-col items-start ${title ? "gap-0" : "gap-3"}`
+      : "flex min-w-0 flex-wrap items-center gap-3";
 
   return (
     <div
@@ -56,7 +60,7 @@ export function ButtonsArrayDefault(props?: Partial<ButtonsArrayDefaultProps>) {
       role={ariaLabel ? "navigation" : undefined}
     >
       {title ? (
-        <h3 className="mb-1 text-xs uppercase tracking-widest text-slate-400">
+        <h3 className="mb-6 w-full text-base font-semibold leading-6 tracking-normal text-[var(--workspace-brand-foreground)]">
           {title}
         </h3>
       ) : null}

@@ -2,34 +2,15 @@ import {
   ButtonsArrayDefault,
   type ButtonsArrayItem,
 } from "../../../buttons-array/singlepage/default/Component";
-
-const brandLockupSrc = new URL(
-  "./assets/singlepagestartup-logo.svg",
-  import.meta.url,
-).href;
+import { BrandMark } from "../../../../../../workspace/utils/components/BrandMark";
 
 interface FooterColumn {
   title: string;
   links: string[];
 }
 
-function BrandLockup() {
-  return (
-    <span
-      className="inline-flex h-8 w-32 items-center overflow-hidden"
-      aria-hidden="true"
-    >
-      <img
-        className="h-full w-auto object-contain"
-        src={brandLockupSrc}
-        alt=""
-      />
-    </span>
-  );
-}
-
 export const defaultFooterDefaultProps = {
-  brand: "SPS",
+  brand: "SinglePageStartup",
   description: "Modular platform for building digital ecosystems.",
   copyright: "© 2026 SinglePageStartup. All rights reserved.",
   columns: [
@@ -84,21 +65,26 @@ export function FooterDefault(props?: Partial<FooterDefaultProps>) {
 
   return (
     <div
-      className="w-full border-t border-slate-200 bg-white"
+      className="w-full border-t border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]"
       data-ds-block="website-builder.widget.footer-default"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-6xl px-6 py-12">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
-          <div>
+      <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="min-w-0 sm:col-span-2 lg:col-span-1">
             <a
-              className="inline-flex items-center no-underline"
+              className="inline-flex min-h-11 max-w-full items-center gap-3 rounded-xl no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
               href="/"
               aria-label={brand}
             >
-              <BrandLockup />
+              <BrandMark />
+              <span className="text-sm font-semibold text-[var(--workspace-brand-foreground)]">
+                {brand}
+              </span>
             </a>
-            <p className="mt-3 text-sm text-slate-500">{description}</p>
+            <p className="mt-5 max-w-xs text-sm leading-6 text-[var(--workspace-brand-muted)]">
+              {description}
+            </p>
           </div>
           {columnGroups.map((column) => (
             <ButtonsArrayDefault
@@ -110,8 +96,10 @@ export function FooterDefault(props?: Partial<FooterDefaultProps>) {
             />
           ))}
         </div>
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 sm:flex-row">
-          <p className="text-xs text-slate-400">{copyright}</p>
+        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-[var(--workspace-brand-line)] pt-6 sm:flex-row sm:items-center">
+          <p className="text-xs leading-5 text-[var(--workspace-brand-muted)]">
+            {copyright}
+          </p>
           <ButtonsArrayDefault ariaLabel="Legal" buttons={legalButtons} />
         </div>
       </div>

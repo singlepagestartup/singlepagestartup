@@ -1,11 +1,23 @@
+import { ConfirmationDialog } from "../interface-kit/Confirmation";
 import { StatusBadge } from "../interface-kit/DataDisplay";
 import { useState } from "react";
 import { Button, Icon, kit, Surface } from "../interface-kit/primitives";
 
 export default function Conversion() {
   const [notice, setNotice] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
   return (
     <div className="grid gap-4">
+      <ConfirmationDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete this project?"
+        description="This local demonstration shows the project removal request. No saved project is deleted."
+        confirmLabel="Delete project"
+        onConfirm={() =>
+          setNotice("Project removal requested in this preview.")
+        }
+      />
       <p className="text-sm leading-6 text-[var(--workspace-brand-muted)]">
         Composition previews combine the Interface kit with project content.
         Actions below demonstrate the component; product routes and workflows
@@ -180,11 +192,7 @@ export default function Conversion() {
               <Button
                 variant="danger"
                 className="w-full"
-                onClick={() =>
-                  setNotice(
-                    "Composition preview: destructive actions require the Confirmation dialog.",
-                  )
-                }
+                onClick={() => setDeleteOpen(true)}
               >
                 <Icon name="trash" />
                 Delete project

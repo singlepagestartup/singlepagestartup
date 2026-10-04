@@ -7,7 +7,10 @@
  * Source: BlogSections PinnedProductCard (lines 532-561).
  */
 
-import { ArrowUpRight, Package } from "lucide-react";
+import {
+  ArrowUpRight,
+  Package,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export interface ProductPinnedProps {
   slug: string;
@@ -41,31 +44,29 @@ export function ProductPinned(props?: Partial<ProductPinnedProps>) {
       href={productHref}
       target={target}
       rel={target === "_blank" ? "noreferrer" : undefined}
-      className="flex items-start gap-4 rounded-lg border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm"
+      className="group flex min-w-0 flex-col rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 transition hover:border-[var(--workspace-brand-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
       data-ds-block="ecommerce.product.pinned"
       data-ds-layer="singlepage"
     >
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
-        <Package className="h-5 w-5 text-slate-500" />
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--workspace-brand-background)]">
+          <Package className="h-5 w-5" />
+        </span>
+        <span className="rounded-full bg-[var(--workspace-brand-background)] px-3 py-1 text-xs text-[var(--workspace-brand-muted)]">
+          {category}
+        </span>
       </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h4 className="text-sm text-slate-900">{title}</h4>
-            <p className="mt-0.5 text-xs text-slate-500">{shortDescription}</p>
-          </div>
-          <span className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-700">
-            {priceLabel}
-          </span>
-        </div>
-        <div className="mt-2 flex items-center gap-2">
-          <span className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] text-slate-500 uppercase">
-            {category}
-          </span>
-          <span className="flex items-center gap-0.5 text-[10px] text-slate-400">
-            View service <ArrowUpRight className="h-2.5 w-2.5" />
-          </span>
-        </div>
+      <h4 className="mt-5 text-lg font-semibold leading-6 text-[var(--workspace-brand-foreground)]">
+        {title}
+      </h4>
+      <p className="mt-2 text-sm leading-6 text-[var(--workspace-brand-muted)]">
+        {shortDescription}
+      </p>
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--workspace-brand-line)] pt-4">
+        <span className="text-base font-semibold">{priceLabel}</span>
+        <span className="inline-flex items-center gap-2 text-sm font-semibold">
+          View service <ArrowUpRight className="h-5 w-5" />
+        </span>
       </div>
     </a>
   );

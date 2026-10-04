@@ -5,10 +5,13 @@
  * module (model: feature). Feature-grid widgets compose a list of these instead
  * of re-implementing the card markup.
  */
-import { Globe, type LucideIcon } from "lucide-react";
+import {
+  Globe,
+  type ModuleIcon,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export const defaultFeatureCardProps = {
-  icon: Globe as LucideIcon,
+  icon: Globe as ModuleIcon,
   title: "Website Builder",
   description:
     "Build pages visually with widgets, sliders, buttons, and logotypes managed from the admin panel.",
@@ -27,13 +30,17 @@ export function FeatureCard(props?: Partial<FeatureCardProps>) {
     <article
       data-ds-block="website-builder.feature.card"
       data-ds-layer="singlepage"
-      className="group rounded-xl border border-slate-200 bg-white p-5 transition hover:border-slate-300 hover:shadow-md"
+      className="flex h-full min-w-0 flex-col rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 sm:p-8"
     >
-      <span className="mb-4 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 transition group-hover:border-slate-300 group-hover:bg-slate-100">
-        <Icon className="h-5 w-5" />
+      <span className="mb-6 inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)]">
+        <Icon className="h-6 w-6" />
       </span>
-      <h3 className="text-sm font-medium text-slate-900">{title}</h3>
-      <p className="mt-1.5 text-sm text-slate-500">{description}</p>
+      <h3 className="text-xl font-semibold leading-7 tracking-normal text-[var(--workspace-brand-foreground)]">
+        {title}
+      </h3>
+      <p className="mt-3 text-base leading-7 text-[var(--workspace-brand-muted)]">
+        {description}
+      </p>
     </article>
   );
 }

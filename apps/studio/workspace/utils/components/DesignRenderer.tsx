@@ -299,7 +299,7 @@ export function DesignRenderer({
   return (
     <div
       ref={exportRef}
-      className="min-h-screen bg-slate-100 p-5 text-slate-950 md:p-10"
+      className="min-h-screen font-[family-name:var(--workspace-brand-font-body)] bg-[var(--workspace-brand-background)] p-5 text-[var(--workspace-brand-foreground)] md:p-10"
     >
       <DocumentHeader
         actions={
@@ -315,7 +315,7 @@ export function DesignRenderer({
         title="Design"
         {...documentPurpose("design")}
       />
-      <div className="overflow-clip rounded-3xl border border-slate-200 shadow-sm">
+      <div className="overflow-clip rounded-3xl border border-[var(--workspace-brand-line)] ">
         {Template ? (
           <Template {...props}>{sections}</Template>
         ) : (

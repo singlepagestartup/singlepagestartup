@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "host.widget.default",
+  "title": "Host Widget / Default",
+  "description": "Scopes and orders local external widget relations by their host widget ID.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.widget",
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json",
+    "pageName": "host",
+    "variantName": "default",
+    "nodeId": null,
+    "variantNodeId": null
+  },
+  "tags": [
+    "host",
+    "widget",
+    "default"
+  ]
+}

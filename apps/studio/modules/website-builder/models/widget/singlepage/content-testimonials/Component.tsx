@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { FeatureTestimotional } from "../../../feature/singlepage/testimotional/Component";
 
 export interface ContentTestimonialItem {
   avatar: string;
@@ -15,8 +15,8 @@ const IMG = {
 };
 
 export const defaultContentTestimonialsProps = {
-  eyebrow: "Client Feedback",
-  title: "What Clients Say",
+  eyebrow: "Client feedback",
+  title: "What clients say",
   testimonials: [
     {
       avatar: IMG.avatar1,
@@ -43,46 +43,27 @@ export function ContentTestimonials(props?: Partial<ContentTestimonialsProps>) {
 
   return (
     <section
-      className="w-full py-16 border-y border-slate-200 bg-white"
+      className="w-full bg-[var(--workspace-brand-background)] py-12 sm:py-16"
       data-ds-block="website-builder.widget.content-testimonials"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-6xl px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-end justify-between">
           <div>
-            <p className="mb-2 text-xs uppercase tracking-widest text-slate-500">
+            <p className="mb-2 text-sm font-semibold tracking-normal text-[var(--workspace-brand-muted)]">
               {eyebrow}
             </p>
-            <h2 className="text-2xl tracking-tight text-slate-900">{title}</h2>
+            <h2 className="text-[2rem] font-semibold leading-tight tracking-normal sm:text-[2.5rem] text-[var(--workspace-brand-foreground)]">
+              {title}
+            </h2>
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div
+          className="grid gap-4 md:grid-cols-2"
+          data-ds-imports="website-builder.feature.testimotional"
+        >
           {testimonials.map((t) => (
-            <div
-              key={t.name}
-              className="h-full rounded-xl border border-slate-200 bg-[#eaf0f7] p-6"
-            >
-              <div className="mb-3 flex gap-0.5" aria-label="5 stars">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-4 w-4 fill-amber-400 text-amber-400"
-                  />
-                ))}
-              </div>
-              <p className="text-sm leading-6 text-slate-600">"{t.text}"</p>
-              <div className="mt-5 flex items-center gap-3 border-t border-slate-200 pt-4">
-                <img
-                  src={t.avatar}
-                  alt={t.name}
-                  className="h-10 w-10 rounded-full border border-slate-200 object-cover"
-                />
-                <div>
-                  <p className="text-sm text-slate-900">{t.name}</p>
-                  <p className="text-xs text-slate-500">{t.role}</p>
-                </div>
-              </div>
-            </div>
+            <FeatureTestimotional key={t.name} {...t} rating={5} />
           ))}
         </div>
       </div>

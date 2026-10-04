@@ -28,12 +28,8 @@
     "variantName": "form-list-default",
     "nodeId": "978:109",
     "variantNodeId": "978:102",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "crm",
-    "widget",
-    "form"
-  ]
+  "tags": ["crm", "widget", "form"]
 }

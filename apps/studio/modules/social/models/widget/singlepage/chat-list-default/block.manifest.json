@@ -21,13 +21,8 @@
     "variantName": "chat-list-default",
     "nodeId": "855:1498",
     "variantNodeId": "980:96",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "social",
-    "widget",
-    "chat",
-    "list"
-  ]
+  "tags": ["social", "widget", "chat", "list"]
 }

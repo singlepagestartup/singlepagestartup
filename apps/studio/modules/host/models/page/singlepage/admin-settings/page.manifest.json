@@ -24,7 +24,7 @@
     "variantName": "admin-settings",
     "nodeId": "716:300",
     "variantNodeId": "983:1747",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

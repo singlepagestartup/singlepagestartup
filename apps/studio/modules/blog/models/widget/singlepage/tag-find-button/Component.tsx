@@ -1,4 +1,4 @@
-import { Tag } from "lucide-react";
+import { Tag } from "../../../../../../workspace/utils/components/ModuleIcons";
 
 import { TagButtonDefault } from "../../../tag/singlepage/button-default/Component";
 
@@ -13,7 +13,7 @@ export interface TagFindButtonProps {
 }
 
 export const defaultTagFindButtonProps: TagFindButtonProps = {
-  title: "Popular Tags",
+  title: "Popular tags",
   tags: [
     { label: "pricing", href: "/blog/tags/pricing" },
     { label: "plans", href: "/blog/tags/plans" },
@@ -39,16 +39,18 @@ export function TagFindButton(props?: Partial<TagFindButtonProps>) {
 
   return (
     <div
-      className="w-full pb-10"
+      className="w-full pb-16"
       data-ds-block="blog.widget.tag-find-button"
       data-ds-imports="blog.tag.button-default"
       data-ds-layer="singlepage"
     >
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6">
           <div className="mb-3 flex items-center gap-2">
-            <Tag className="h-4 w-4 text-slate-400" />
-            <span className="text-sm text-slate-700">{title}</span>
+            <Tag className="size-5 text-[var(--workspace-brand-muted)]" />
+            <span className="text-lg font-semibold text-[var(--workspace-brand-foreground)]">
+              {title}
+            </span>
           </div>
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (

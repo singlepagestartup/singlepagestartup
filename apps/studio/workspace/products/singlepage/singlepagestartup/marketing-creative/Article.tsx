@@ -12,14 +12,14 @@ export default function Article({ text }: ICreativeTextProps = {}) {
       data-workspace-projection="singlepage"
       className={`bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] ${creativeTypography.body}`}
     >
-      <header className="border-b border-[var(--workspace-brand-line)] px-6 py-6 sm:px-12">
+      <header className="mx-auto max-w-7xl border-b border-[var(--workspace-brand-line)] px-4 py-6 sm:px-6 lg:px-8">
         <img
           src={creativeAssets.logo}
           alt="SinglePageStartup"
           className="w-48"
         />
       </header>
-      <article className="mx-auto max-w-4xl px-6 py-10 sm:px-12 sm:py-16 [&_h1]:text-5xl [&_h1]:font-semibold [&_h1]:leading-none [&_h1]:text-[var(--workspace-brand-foreground)] [&_h1]:[font-family:var(--workspace-brand-font-display)] sm:[&_h1]:text-7xl [&_h2]:text-3xl [&_h2]:text-[var(--workspace-brand-foreground)] [&_h2]:[font-family:var(--workspace-brand-font-display)] [&_img]:aspect-square [&_img]:h-auto [&_img]:w-full [&_img]:object-contain [&_p]:text-[var(--workspace-brand-foreground)] [&_table]:text-sm">
+      <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8 md:py-16 [&_h1]:text-4xl [&_h1]:font-semibold [&_h1]:leading-10 [&_h1]:tracking-tight md:[&_h1]:text-6xl md:[&_h1]:leading-none [&_h1]:text-[var(--workspace-brand-foreground)] [&_h1]:[font-family:var(--workspace-brand-font-display)] [&_h2]:mt-10 [&_h2]:text-3xl [&_h2]:font-semibold [&_h2]:leading-9 [&_h2]:text-[var(--workspace-brand-foreground)] [&_h2]:[font-family:var(--workspace-brand-font-display)] [&_img]:aspect-square [&_img]:w-full [&_img]:rounded-3xl [&_img]:object-cover [&_p]:text-base [&_p]:leading-[26px] [&_p]:text-[var(--workspace-brand-muted)] [&_table]:text-sm">
         <MarkdownDocument baseUrl="/workspace-products/singlepage/singlepagestartup/marketing-creative/article.md">
           {text ?? sourceText}
         </MarkdownDocument>

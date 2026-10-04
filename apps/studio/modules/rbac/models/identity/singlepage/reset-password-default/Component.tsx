@@ -1,4 +1,11 @@
-import { ArrowLeft, Eye, EyeOff, KeyRound, Lock } from "lucide-react";
+import { Button } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  KeyRound,
+  Lock,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 import { useState } from "react";
 
 export interface IdentityResetPasswordDefaultProps {
@@ -23,7 +30,7 @@ export const defaultIdentityResetPasswordDefaultProps: IdentityResetPasswordDefa
     confirmPasswordLabel: "Confirm password",
     confirmPasswordPlaceholder: "Repeat your new password",
     submitLabel: "Update Password",
-    backLabel: "Back to Sign In",
+    backLabel: "Back to Sign in",
     backHref: "/rbac/subject/authentication/select-method",
   };
 
@@ -58,34 +65,36 @@ export function IdentityResetPasswordDefault(
 
   return (
     <section
-      className="w-full py-12"
+      className="w-full bg-[var(--workspace-brand-background)] py-12 sm:py-16"
       data-ds-block="rbac.identity.reset-password-default"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-md px-4 sm:px-6 lg:px-0">
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 px-8 pb-6 pt-8 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white">
+      <div className="mx-auto w-full max-w-lg px-4 sm:px-6 lg:px-0">
+        <div className="overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] shadow-sm">
+          <div className="px-6 pb-2 pt-8 sm:px-8">
+            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-on-accent)]">
               <KeyRound className="h-5 w-5" />
             </div>
-            <h1 className="text-xl font-medium tracking-tight text-slate-900">
+            <h1 className="text-3xl font-semibold tracking-tight text-[var(--workspace-brand-foreground)]">
               {title}
             </h1>
-            <p className="mt-1.5 text-sm text-slate-500">{description}</p>
+            <p className="mt-1.5 text-sm text-[var(--workspace-brand-muted)]">
+              {description}
+            </p>
           </div>
 
-          <div className="space-y-5 px-8 py-6">
+          <div className="space-y-6 px-6 py-6 sm:px-8">
             <div>
               <label
-                className="mb-1.5 block text-xs font-medium text-slate-500"
+                className="mb-1.5 block text-sm font-medium text-[var(--workspace-brand-muted)]"
                 htmlFor="rbac-reset-password"
               >
                 {passwordLabel}
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--workspace-brand-muted)]" />
                 <input
-                  className="w-full rounded-md border border-slate-300 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
+                  className="w-full rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] min-h-12 py-3 pl-12 pr-14 text-base text-[var(--workspace-brand-foreground)] outline-none transition placeholder:text-[var(--workspace-brand-muted)] focus:border-[var(--workspace-brand-line)] focus:ring-1 focus:ring-[var(--workspace-brand-focus)] focus-visible:border-[var(--workspace-brand-focus)] focus-visible:ring-2 focus-visible:ring-[var(--workspace-brand-focus)]"
                   id="rbac-reset-password"
                   placeholder={passwordPlaceholder}
                   readOnly
@@ -93,14 +102,14 @@ export function IdentityResetPasswordDefault(
                 />
                 <button
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--workspace-brand-muted)] transition hover:text-[var(--workspace-brand-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] min-h-11"
                   onClick={() => setShowPassword((value) => !value)}
                   type="button"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                    <EyeOff className="h-5 w-5" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-5 w-5" />
                   )}
                 </button>
               </div>
@@ -108,15 +117,15 @@ export function IdentityResetPasswordDefault(
 
             <div>
               <label
-                className="mb-1.5 block text-xs font-medium text-slate-500"
+                className="mb-1.5 block text-sm font-medium text-[var(--workspace-brand-muted)]"
                 htmlFor="rbac-reset-password-confirm"
               >
                 {confirmPasswordLabel}
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--workspace-brand-muted)]" />
                 <input
-                  className="w-full rounded-md border border-slate-300 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
+                  className="w-full rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] min-h-12 py-3 pl-12 pr-14 text-base text-[var(--workspace-brand-foreground)] outline-none transition placeholder:text-[var(--workspace-brand-muted)] focus:border-[var(--workspace-brand-line)] focus:ring-1 focus:ring-[var(--workspace-brand-focus)] focus-visible:border-[var(--workspace-brand-focus)] focus-visible:ring-2 focus-visible:ring-[var(--workspace-brand-focus)]"
                   id="rbac-reset-password-confirm"
                   placeholder={confirmPasswordPlaceholder}
                   readOnly
@@ -128,33 +137,30 @@ export function IdentityResetPasswordDefault(
                       ? "Hide confirm password"
                       : "Show confirm password"
                   }
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--workspace-brand-muted)] transition hover:text-[var(--workspace-brand-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] min-h-11"
                   onClick={() => setShowConfirmPassword((value) => !value)}
                   type="button"
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                    <EyeOff className="h-5 w-5" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-5 w-5" />
                   )}
                 </button>
               </div>
             </div>
 
-            <button
-              className="flex w-full items-center justify-center rounded-md border border-slate-400 bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
-              type="button"
-            >
+            <Button className="w-full" type="button">
               {submitLabel}
-            </button>
+            </Button>
           </div>
 
-          <div className="border-t border-slate-100 px-8 py-4 text-center">
+          <div className="border-t border-[var(--workspace-brand-line)] px-6 py-5 text-center sm:px-8">
             <a
-              className="inline-flex items-center gap-1.5 text-xs text-slate-500 transition hover:text-slate-700"
+              className="inline-flex items-center gap-1.5 text-xs text-[var(--workspace-brand-muted)] transition hover:text-[var(--workspace-brand-foreground)]"
               {...getStoryLinkProps(backHref, backStoryHref)}
             >
-              <ArrowLeft className="h-3 w-3" />
+              <ArrowLeft className="h-5 w-5" />
               {backLabel}
             </a>
           </div>

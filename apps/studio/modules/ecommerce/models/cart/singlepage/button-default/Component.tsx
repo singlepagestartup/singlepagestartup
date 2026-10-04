@@ -1,4 +1,4 @@
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export interface CartButtonDefaultProps {
   count: number;
@@ -20,15 +20,15 @@ export function CartButtonDefault(props?: Partial<CartButtonDefaultProps>) {
   return (
     <button
       aria-label={label}
-      className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+      className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] text-[var(--workspace-brand-muted)] transition hover:bg-[var(--workspace-brand-background)] hover:text-[var(--workspace-brand-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
       data-ds-block="ecommerce.cart.button-default"
       data-ds-layer="singlepage"
       onClick={onClick}
       type="button"
     >
-      <ShoppingCart className="h-4 w-4" />
+      <ShoppingCart className="h-5 w-5" />
       {count > 0 ? (
-        <span className="absolute -right-1.5 -top-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-slate-900 px-1 text-[10px] text-white">
+        <span className="absolute -right-1.5 -top-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--workspace-brand-accent)] px-1 text-xs font-semibold text-[var(--workspace-brand-on-accent)]">
           {count}
         </span>
       ) : null}

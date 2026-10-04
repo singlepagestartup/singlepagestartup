@@ -3,3 +3,9 @@
 @source "../modules/**/*.{js,ts,jsx,tsx,html}";
 @source "../workspace/**/*.{js,ts,jsx,tsx,html}";
 @source "../.storybook/**/*.{js,ts,jsx,tsx}";
+
+@layer base {
+  button {
+    @apply enabled:cursor-pointer disabled:cursor-not-allowed;
+  }
+}

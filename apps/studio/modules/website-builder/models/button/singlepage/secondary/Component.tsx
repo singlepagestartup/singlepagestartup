@@ -1,13 +1,17 @@
-import { Play, type LucideIcon } from "lucide-react";
+import { kit } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import {
+  Play,
+  type ModuleIcon,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export interface ButtonSecondaryProps {
   label: string;
   href: string;
-  icon?: LucideIcon;
+  icon?: ModuleIcon;
 }
 
 export const defaultButtonSecondaryProps: ButtonSecondaryProps = {
-  label: "Learn More",
+  label: "Learn more",
   href: "#features",
   icon: Play,
 };
@@ -19,12 +23,12 @@ export function ButtonSecondary(props?: Partial<ButtonSecondaryProps>) {
 
   return (
     <a
-      className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-5 py-2.5 text-sm text-slate-700 no-underline shadow-sm transition hover:bg-slate-50"
+      className={`${kit.secondary} no-underline hover:bg-[var(--workspace-brand-background)]`}
       data-ds-block="website-builder.button.secondary"
       data-ds-layer="singlepage"
       href={href}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-5 w-5 shrink-0" />
       {label}
     </a>
   );

@@ -1,5 +1,5 @@
-import { EcommerceProductAdminV2Form } from "../../../../../ecommerce/models/product/singlepage/admin-v2-form/Component";
-import { EcommerceProductsToAttributesAdminV2Manager } from "../../../../../ecommerce/relations/products-to-attributes/singlepage/admin-v2-manager/Component";
+import { EcommerceProductAdminV2List } from "../../../../../ecommerce/models/product/singlepage/admin-v2-list/Component";
+import { studioProducts } from "../../../../../ecommerce/models/product/shared";
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
 export function AdminModelEdit() {
@@ -8,11 +8,10 @@ export function AdminModelEdit() {
       <AdminV2PageShell
         activePath="/admin/ecommerce/product"
         eyebrow="host.page"
-        title="Admin model edit"
-        description="Host page recipe for runnable /admin/:moduleSlug/:modelSlug/:id."
+        title="Products"
+        description="Open product fields and linked records in stacked editing panels."
       >
-        <EcommerceProductAdminV2Form />
-        <EcommerceProductsToAttributesAdminV2Manager />
+        <EcommerceProductAdminV2List initialProduct={studioProducts[0]} />
       </AdminV2PageShell>
     </div>
   );

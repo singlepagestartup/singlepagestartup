@@ -73,12 +73,8 @@
     "variantName": "author",
     "nodeId": "782:31",
     "variantNodeId": "782:3",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "social",
-    "profile",
-    "author"
-  ]
+  "tags": ["social", "profile", "author"]
 }

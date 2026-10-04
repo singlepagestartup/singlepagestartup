@@ -1,16 +1,15 @@
-import { ArrowRight } from "lucide-react";
+import { kit } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
+import { ArrowRight } from "../../../../../../workspace/utils/components/ModuleIcons";
 
-const buttonBaseClass =
-  "inline-flex items-center justify-center gap-2 rounded-md border px-5 py-2.5 text-sm no-underline transition";
-const buttonInvertedClass = `${buttonBaseClass} border-slate-600 bg-white text-slate-900 hover:bg-slate-100`;
-const buttonGhostDarkClass = `${buttonBaseClass} border-slate-600 bg-transparent text-slate-300 hover:bg-slate-800 hover:text-white`;
+const buttonInvertedClass = `${kit.button} no-underline hover:brightness-95 focus-visible:outline-[var(--workspace-brand-focus-inverse)]`;
+const buttonGhostDarkClass = `${kit.secondary} no-underline hover:bg-[var(--workspace-brand-background)] focus-visible:outline-[var(--workspace-brand-focus-inverse)]`;
 
 export const defaultContentCtaProps = {
   title: "Ready to take control?",
   description:
     "Explore the admin panel, manage your modules, and see how every entity connects through a unified relation system.",
-  primaryAction: { label: "Open Admin Panel", href: "/admin" },
-  secondaryAction: { label: "Explore Features", href: "#features" },
+  primaryAction: { label: "Open admin panel", href: "/admin" },
+  secondaryAction: { label: "Explore features", href: "#features" },
 };
 
 export type ContentCtaProps = typeof defaultContentCtaProps;
@@ -23,25 +22,29 @@ export function ContentCta(props?: Partial<ContentCtaProps>) {
 
   return (
     <div
-      className="w-full border-y border-slate-200 bg-slate-900 py-16"
+      className="w-full bg-[var(--workspace-brand-background)] py-12 sm:py-16"
       data-ds-block="website-builder.widget.content-cta"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-6xl px-6 text-center">
-        <h2 className="text-3xl font-medium leading-9 tracking-tight text-white">
-          {title}
-        </h2>
-        <p className="mx-auto mt-3 max-w-md text-sm text-slate-400">
-          {description}
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <a className={buttonInvertedClass} href={primaryAction.href}>
-            {primaryAction.label}
-            <ArrowRight className="h-4 w-4" />
-          </a>
-          <a className={buttonGhostDarkClass} href={secondaryAction.href}>
-            {secondaryAction.label}
-          </a>
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-8 rounded-3xl bg-[var(--workspace-brand-primary)] p-6 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end lg:p-12">
+          <div>
+            <h2 className="max-w-2xl text-[2rem] font-semibold leading-tight tracking-normal text-white sm:text-[2.5rem]">
+              {title}
+            </h2>
+            <p className="mt-5 max-w-xl text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
+              {description}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <a className={buttonInvertedClass} href={primaryAction.href}>
+              {primaryAction.label}
+              <ArrowRight className="h-5 w-5 shrink-0" />
+            </a>
+            <a className={buttonGhostDarkClass} href={secondaryAction.href}>
+              {secondaryAction.label}
+            </a>
+          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,8 @@
-import { Star } from "lucide-react";
+import { twMerge } from "tailwind-merge";
+import {
+  Star,
+  StarFilled,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 const avatarUrl =
   "https://images.unsplash.com/photo-1629507208649-70919ca33793?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxidXNpbmVzcyUyMG1hbiUyMHBvcnRyYWl0JTIwcHJvZmVzc2lvbmFsfGVufDF8fHx8MTc3MTY2ODA0OXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
@@ -21,12 +25,13 @@ export function FeatureTestimotional(
     ...defaultFeatureTestimotionalProps,
     ...props,
   };
-  const rootClassName = [
-    "rounded-xl border border-slate-200 bg-[#eaf0f7] p-6",
+  const rootClassName = twMerge(
+    "flex h-full min-w-0 flex-col rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 sm:p-8",
     className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  );
+  const visibleRating = Number.isNaN(rating)
+    ? 0
+    : Math.max(0, Math.min(5, Math.floor(rating)));
 
   return (
     <article
@@ -34,23 +39,37 @@ export function FeatureTestimotional(
       data-ds-block="website-builder.feature.testimotional"
       data-ds-layer="singlepage"
     >
-      <div className="mb-3 flex gap-0.5" aria-label={`${rating} stars`}>
-        {Array.from({ length: rating }).map((_, index) => (
-          <Star className="h-4 w-4 fill-amber-400 text-amber-400" key={index} />
-        ))}
+      <div
+        className="mb-6 flex gap-1"
+        role="img"
+        aria-label={`${visibleRating} out of 5 stars`}
+      >
+        {Array.from({ length: 5 }).map((_, index) => {
+          const RatingStar = index < visibleRating ? StarFilled : Star;
+          return (
+            <RatingStar
+              className={`h-5 w-5 ${index < visibleRating ? "text-[var(--workspace-brand-accent)]" : "text-[var(--workspace-brand-muted)]"}`}
+              key={index}
+            />
+          );
+        })}
       </div>
-      <p className="text-sm text-slate-700">"{text}"</p>
-      <footer className="mt-5 flex items-center gap-3 border-t border-slate-200 pt-4">
+      <blockquote className="flex-1 text-lg leading-8 text-[var(--workspace-brand-foreground)]">
+        "{text}"
+      </blockquote>
+      <footer className="mt-8 flex min-w-0 items-center gap-3 border-t border-[var(--workspace-brand-line)] pt-5">
         <img
-          className="h-10 w-10 rounded-full border border-slate-200 object-cover"
+          className="h-12 w-12 shrink-0 rounded-full border border-[var(--workspace-brand-line)] object-cover"
           src={avatar}
           alt={name}
         />
-        <span>
-          <strong className="block text-sm font-medium text-slate-900">
+        <span className="min-w-0">
+          <strong className="block text-sm font-semibold leading-6 text-[var(--workspace-brand-foreground)]">
             {name}
           </strong>
-          <small className="block text-xs text-slate-500">{role}</small>
+          <small className="block text-sm leading-6 text-[var(--workspace-brand-muted)]">
+            {role}
+          </small>
         </span>
       </footer>
     </article>

@@ -4,7 +4,10 @@ import * as React from "react";
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
 } from "embla-carousel-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
@@ -207,7 +210,7 @@ const CarouselPrevious = React.forwardRef<
       ref={ref}
       aria-label="Previous slide"
       className={cn(
-        "absolute z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-sm backdrop-blur-sm transition hover:bg-white disabled:pointer-events-none disabled:opacity-40",
+        "absolute z-10 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]/90 text-[var(--workspace-brand-foreground)] transition hover:bg-[var(--workspace-brand-surface)] disabled:pointer-events-none disabled:opacity-40",
         orientation === "horizontal"
           ? "top-1/2 -left-4 -translate-y-1/2"
           : "-top-4 left-1/2 -translate-x-1/2 rotate-90",
@@ -218,7 +221,7 @@ const CarouselPrevious = React.forwardRef<
       type="button"
       {...props}
     >
-      <ChevronLeft className="h-4 w-4" />
+      <ChevronLeft className="h-5 w-5" />
     </button>
   );
 });
@@ -235,7 +238,7 @@ const CarouselNext = React.forwardRef<
       ref={ref}
       aria-label="Next slide"
       className={cn(
-        "absolute z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-sm backdrop-blur-sm transition hover:bg-white disabled:pointer-events-none disabled:opacity-40",
+        "absolute z-10 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]/90 text-[var(--workspace-brand-foreground)] transition hover:bg-[var(--workspace-brand-surface)] disabled:pointer-events-none disabled:opacity-40",
         orientation === "horizontal"
           ? "top-1/2 -right-4 -translate-y-1/2"
           : "-bottom-4 left-1/2 -translate-x-1/2 rotate-90",
@@ -246,7 +249,7 @@ const CarouselNext = React.forwardRef<
       type="button"
       {...props}
     >
-      <ChevronRight className="h-4 w-4" />
+      <ChevronRight className="h-5 w-5" />
     </button>
   );
 });

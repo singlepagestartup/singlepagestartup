@@ -1,4 +1,5 @@
-import { EcommerceProductAdminV2Form } from "../../../../../ecommerce/models/product/singlepage/admin-v2-form/Component";
+import { EcommerceProductAdminV2List } from "../../../../../ecommerce/models/product/singlepage/admin-v2-list/Component";
+import { studioProducts } from "../../../../../ecommerce/models/product/shared";
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
 export function AdminEntityDrawer() {
@@ -7,14 +8,10 @@ export function AdminEntityDrawer() {
       <AdminV2PageShell
         activePath="/admin/ecommerce/product"
         eyebrow="host.page"
-        title="Admin entity drawer"
-        description="Host page recipe for the runnable EntityDrawer state with model-owned form content."
+        title="Products"
+        description="Open product fields and linked records in stacked editing panels."
       >
-        <div className="rounded-3xl border border-slate-300 bg-slate-200 p-4">
-          <div className="ml-auto max-w-4xl rounded-2xl bg-white p-4 shadow-xl">
-            <EcommerceProductAdminV2Form />
-          </div>
-        </div>
+        <EcommerceProductAdminV2List initialProduct={studioProducts[0]} />
       </AdminV2PageShell>
     </div>
   );

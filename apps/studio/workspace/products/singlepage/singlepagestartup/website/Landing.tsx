@@ -1,5 +1,9 @@
 import { useState, type ReactNode } from "react";
 import "../../../../styles/singlepage.css";
+import {
+  Icon,
+  kit,
+} from "../../../../design/singlepage/interface-kit/primitives";
 
 import sourceText from "./page.md?raw";
 import {
@@ -24,14 +28,16 @@ interface ISectionHeadingProps {
 const focus =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--workspace-brand-foreground)]";
 const display =
-  "[font-family:var(--workspace-brand-font-display)] font-semibold tracking-tight";
+  "[font-family:var(--workspace-brand-font-display)] font-semibold tracking-normal";
 const muted = "text-[var(--workspace-brand-muted)]";
 
 function SectionHeading({ eyebrow, children }: ISectionHeadingProps) {
   return (
     <div>
-      <p className={`text-xs uppercase tracking-widest ${muted}`}>{eyebrow}</p>
-      <h2 className={`mt-4 text-[40px] leading-[42px] ${display}`}>
+      <p className={`text-sm ${muted}`}>{eyebrow}</p>
+      <h2
+        className={`mt-4 text-[32px] leading-[1.1] @3xl:text-[40px] ${display}`}
+      >
         {children}
       </h2>
     </div>
@@ -44,9 +50,10 @@ function RepositoryAction({ content }: IWebsiteCopyProps) {
       href={content.hero.links[0].href}
       target="_blank"
       rel="noreferrer"
-      className={`inline-flex min-h-12 w-full items-center justify-center whitespace-normal rounded-xl bg-[var(--workspace-brand-accent)] px-6 py-4 text-center text-sm font-semibold leading-6 text-[var(--workspace-brand-foreground)] hover:brightness-95 sm:w-auto ${focus}`}
+      className={`${kit.button} w-full whitespace-normal text-center leading-6 sm:w-auto focus-visible:outline-[var(--workspace-brand-accent)]`}
     >
       <span lang="ru">{content.hero.links[0].text}</span>
+      <Icon name="arrow-up-right" />
       <span className="sr-only">{content.labels["github-hint"]}</span>
     </a>
   );
@@ -62,11 +69,11 @@ function ChatPreviewAction({
         type="button"
         disabled
         aria-describedby={descriptionId}
-        className="inline-flex min-h-12 w-auto cursor-not-allowed items-center justify-center rounded-xl border border-[var(--workspace-brand-line)] bg-white px-6 py-3 text-sm font-medium text-[var(--workspace-brand-muted)] disabled:opacity-100"
+        className={`${kit.secondary} disabled:opacity-60`}
       >
         {content.chat.paragraphs[3]}
       </button>
-      <p id={descriptionId} className={`mt-2 text-xs leading-5 ${muted}`}>
+      <p id={descriptionId} className={`mt-2 text-sm leading-5 ${muted}`}>
         {content.chat.paragraphs[4]}
       </p>
     </div>
@@ -88,10 +95,8 @@ function CopySetupRequest({ content }: IWebsiteCopyProps) {
   };
 
   return (
-    <div className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 sm:p-8">
-      <p className={`text-xs uppercase tracking-widest ${muted}`}>
-        {content.request.title}
-      </p>
+    <div className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 sm:p-8">
+      <p className={`text-sm ${muted}`}>{content.request.title}</p>
       <blockquote className="mt-5 select-text text-base leading-7">
         {content.request.quote}
       </blockquote>
@@ -99,14 +104,14 @@ function CopySetupRequest({ content }: IWebsiteCopyProps) {
         type="button"
         onClick={copy}
         disabled={status === "pending"}
-        className={`mt-6 inline-flex min-h-12 w-auto items-center justify-center rounded-xl border border-[var(--workspace-brand-foreground)] bg-white px-5 py-2 text-sm font-medium text-[var(--workspace-brand-foreground)] hover:bg-[var(--workspace-brand-background)] disabled:cursor-wait disabled:opacity-50 ${focus}`}
+        className={`${kit.secondary} mt-6 disabled:cursor-wait`}
       >
         {status === "pending"
           ? content.labels["copy-pending"]
           : content.labels["copy-action"]}
       </button>
       <p
-        className={`mt-3 min-h-10 text-sm leading-5 ${muted}`}
+        className={`mt-3 min-h-10 text-sm leading-6 ${status === "error" ? "text-[var(--workspace-brand-danger)]" : muted}`}
         role="status"
         aria-live="polite"
       >
@@ -178,38 +183,38 @@ export default function CodeFrameworkLanding({
 
       <main id="cf-main" tabIndex={-1} className="outline-none">
         <section
-          className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 @4xl:py-24"
+          className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 @4xl:py-12"
           aria-labelledby="cf-title"
         >
-          <div className="grid items-center gap-8 @5xl:grid-cols-2">
-            <div>
-              <p className="inline-block rounded-md bg-[var(--workspace-brand-accent)] px-3 py-2 text-xs uppercase tracking-widest text-[var(--workspace-brand-foreground)]">
+          <div className="grid overflow-hidden rounded-3xl @5xl:grid-cols-2">
+            <div className="flex flex-col justify-center bg-[var(--workspace-brand-foreground)] p-6 text-white @3xl:p-10">
+              <p className="text-sm font-medium text-[var(--workspace-brand-muted-on-primary)]">
                 {content.hero.paragraphs[0]}
               </p>
               <h1
                 id="cf-title"
-                className={`mt-6 max-w-3xl text-[40px] leading-[42px] @3xl:text-[64px] @3xl:leading-[64px] ${display}`}
+                className={`mt-5 max-w-3xl text-[40px] leading-[1.05] @4xl:text-[60px] ${display}`}
               >
                 {content.hero.title}
               </h1>
-              <p className={`mt-6 max-w-2xl text-base leading-7 ${muted}`}>
+              <p className="mt-6 max-w-2xl text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
                 {content.hero.paragraphs[1]}
               </p>
               <div className="mt-8">
                 <RepositoryAction content={content} />
               </div>
-              <p className={`mt-3 max-w-lg text-sm leading-6 ${muted}`}>
+              <p className="mt-4 max-w-lg text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)]">
                 {content.hero.paragraphs[2]}
               </p>
             </div>
-            <figure>
+            <figure className="relative min-w-0 @5xl:min-h-full">
               <img
                 src={assets.photograph.src}
                 alt={assets.photograph.alt}
                 data-asset-id={assets.photograph.id}
                 width={1254}
                 height={1254}
-                className="block aspect-square h-auto w-full rounded-3xl object-cover"
+                className="block aspect-square h-full w-full object-cover @5xl:absolute @5xl:inset-0 @5xl:aspect-auto"
               />
             </figure>
           </div>
@@ -232,7 +237,7 @@ export default function CodeFrameworkLanding({
                 {content.foundation.items.map((item) => (
                   <div key={item.title} className="py-5">
                     <dt className="text-base font-semibold">{item.title}</dt>
-                    <dd className={`mt-2 text-sm leading-6 ${muted}`}>
+                    <dd className={`mt-2 text-base leading-7 ${muted}`}>
                       {item.text}
                     </dd>
                   </div>
@@ -256,7 +261,7 @@ export default function CodeFrameworkLanding({
                 width={1254}
                 height={1254}
                 loading="lazy"
-                className="block h-auto w-full rounded-3xl"
+                className="block aspect-square h-auto w-full rounded-2xl object-cover"
               />
             </figure>
           </div>
@@ -274,11 +279,15 @@ export default function CodeFrameworkLanding({
             {content.journey.items.map((item, index) => (
               <li
                 key={item.title}
-                className="border-t border-[var(--workspace-brand-foreground)] pt-5"
+                className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-6"
               >
-                <span className={`text-xs ${muted}`}>0{index + 1}</span>
+                <span className="grid size-10 place-items-center rounded-xl bg-[var(--workspace-brand-background)] text-sm font-semibold">
+                  0{index + 1}
+                </span>
                 <h3 className="mt-4 text-base font-semibold">{item.title}</h3>
-                <p className={`mt-3 text-sm leading-6 ${muted}`}>{item.text}</p>
+                <p className={`mt-3 text-base leading-7 ${muted}`}>
+                  {item.text}
+                </p>
               </li>
             ))}
           </ol>
@@ -295,20 +304,22 @@ export default function CodeFrameworkLanding({
                 width={1254}
                 height={1254}
                 loading="lazy"
-                className="block h-auto w-full rounded-3xl"
+                className="block aspect-square h-auto w-full rounded-2xl object-cover"
               />
             </figure>
             <div>
-              <h3 className={`text-[40px] leading-[42px] ${display}`}>
+              <h3
+                className={`text-[32px] leading-[1.1] @3xl:text-[40px] ${display}`}
+              >
                 {content.change.title}
               </h3>
-              <p className={`mt-5 text-sm leading-6 ${muted}`}>
+              <p className={`mt-5 text-base leading-7 ${muted}`}>
                 {content.change.paragraphs[0]}
               </p>
               <blockquote className="mt-3 border-l-2 border-[var(--workspace-brand-foreground)] pl-5 text-base leading-7">
                 {content.change.quote}
               </blockquote>
-              <p className={`mt-5 text-sm leading-6 ${muted}`}>
+              <p className={`mt-5 text-base leading-7 ${muted}`}>
                 {content.change.paragraphs[1]}
               </p>
             </div>
@@ -346,17 +357,17 @@ export default function CodeFrameworkLanding({
           aria-label="Cost and common questions"
         >
           <div className="grid items-start gap-8 @4xl:grid-cols-2">
-            <div className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 sm:p-8">
-              <p className={`text-xs uppercase tracking-widest ${muted}`}>
+            <div className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 sm:p-8">
+              <p className={`text-sm ${muted}`}>
                 {content.price.paragraphs[0]}
               </p>
-              <p className={`mt-5 text-[64px] leading-none ${display}`}>
+              <p className={`mt-5 text-[56px] leading-[1.1] ${display}`}>
                 {content.price.title}
               </p>
               <p className="mt-5 text-base leading-7">
                 {content.price.paragraphs[1]}
               </p>
-              <p className={`mt-4 text-sm leading-6 ${muted}`}>
+              <p className={`mt-4 text-base leading-7 ${muted}`}>
                 {content.price.paragraphs[2]}
               </p>
               <div className="mt-6">
@@ -364,7 +375,9 @@ export default function CodeFrameworkLanding({
               </div>
             </div>
             <div>
-              <h2 className={`text-[40px] leading-[42px] ${display}`}>
+              <h2
+                className={`text-[32px] leading-[1.1] @3xl:text-[40px] ${display}`}
+              >
                 {content.questions.title}
               </h2>
               <div className="mt-6 divide-y divide-[var(--workspace-brand-line)]">
@@ -375,7 +388,7 @@ export default function CodeFrameworkLanding({
                     >
                       {item.title}
                     </summary>
-                    <p className={`mt-4 text-sm leading-6 ${muted}`}>
+                    <p className={`mt-4 text-base leading-7 ${muted}`}>
                       {item.text}
                     </p>
                   </details>
@@ -390,7 +403,7 @@ export default function CodeFrameworkLanding({
         <p className="text-sm">{content.footer.title}</p>
         <nav
           aria-label="Repository resources"
-          className="flex flex-wrap gap-6 text-xs"
+          className="flex flex-wrap gap-6 text-sm"
         >
           {content.footer.links.map(({ text: label, href }) => (
             <a

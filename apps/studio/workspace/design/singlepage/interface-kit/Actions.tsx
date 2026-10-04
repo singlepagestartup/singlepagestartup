@@ -1,8 +1,10 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Button, Icon, Specimen, kit } from "./primitives";
+import { ConfirmationDialog } from "./Confirmation";
 
 export default function Actions() {
   const groupId = useId();
+  const [resetOpen, setResetOpen] = useState(false);
   const [notes, setNotes] = useState(0);
   const [preview, setPreview] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -142,16 +144,24 @@ export default function Actions() {
         <div className="mt-6 border-t border-[var(--workspace-brand-line)] pt-5">
           <Button
             variant="danger"
-            onClick={() => {
-              setNotes(0);
-              setPreview(false);
-            }}
+            onClick={() => setResetOpen(true)}
             disabled={notes === 0 && !preview}
           >
             <Icon name="trash" />
             Reset notes
           </Button>
         </div>
+        <ConfirmationDialog
+          open={resetOpen}
+          onOpenChange={setResetOpen}
+          title="Reset notes?"
+          description="Remove all notes from this local demonstration and close their preview."
+          confirmLabel="Reset notes"
+          onConfirm={() => {
+            setNotes(0);
+            setPreview(false);
+          }}
+        />
       </Specimen>
     </div>
   );

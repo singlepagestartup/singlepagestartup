@@ -8,29 +8,30 @@ import { ContentFeatureFindRow } from "../../../../../website-builder/models/wid
 import { ContentFeatureFindDefault } from "../../../../../website-builder/models/widget/singlepage/content-feature-find-default/Component";
 import { ContentFilesFindDefault } from "../../../../../website-builder/models/widget/singlepage/content-files-find-default/Component";
 import { ContentHero } from "../../../../../website-builder/models/widget/singlepage/content-hero/Component";
-import { FooterCompact } from "../../../../../website-builder/models/widget/singlepage/footer-compact/Component";
 import { FooterDefault } from "../../../../../website-builder/models/widget/singlepage/footer-default/Component";
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
+import { SectionStack } from "../../../../../../workspace/design/singlepage/interface-kit/SectionStack";
 
 export function HomeDefault() {
   return (
     <main
-      className="min-h-screen bg-[#eaf0f7] text-slate-900 antialiased"
+      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
       data-ds-page="host.page.root"
     >
       <HostNavbarDefault />
-      <ContentHero />
-      <ContentFeatureFindDefault />
-      <ContentFeatureFindCard />
-      <ContentFilesFindDefault />
-      <ContentButtonsArrayFindDefault />
-      <ProductFindTiers />
-      <ContentFeatureFindTestimotionals />
-      <ArticleFindDefault />
-      <ContentCta />
-      <ContentFeatureFindRow />
+      <SectionStack>
+        <ContentHero />
+        <ContentFeatureFindDefault />
+        <ContentFeatureFindCard />
+        <ContentFilesFindDefault />
+        <ContentButtonsArrayFindDefault />
+        <ProductFindTiers />
+        <ContentFeatureFindTestimotionals />
+        <ArticleFindDefault />
+        <ContentCta />
+        <ContentFeatureFindRow />
+      </SectionStack>
       <FooterDefault />
-      <FooterCompact />
     </main>
   );
 }

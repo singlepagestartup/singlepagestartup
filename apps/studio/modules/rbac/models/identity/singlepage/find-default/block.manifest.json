@@ -43,13 +43,8 @@
     "variantName": "find-default",
     "nodeId": "981:86",
     "variantNodeId": "981:56",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "rbac",
-    "identity",
-    "find",
-    "auth"
-  ]
+  "tags": ["rbac", "identity", "find", "auth"]
 }

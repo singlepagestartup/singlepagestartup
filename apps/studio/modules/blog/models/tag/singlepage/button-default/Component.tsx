@@ -23,7 +23,7 @@ export function TagButtonDefault(props?: Partial<TagButtonDefaultProps>) {
       href={href}
       data-ds-block="blog.tag.button-default"
       data-ds-layer="singlepage"
-      className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 no-underline transition hover:border-slate-300 hover:bg-white hover:text-slate-900"
+      className="inline-flex min-h-11 items-center rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-3 py-2 text-xs font-medium text-[var(--workspace-brand-muted)] no-underline transition hover:border-[var(--workspace-brand-line)] hover:bg-[var(--workspace-brand-surface)] hover:text-[var(--workspace-brand-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
     >
       #{label}
     </a>

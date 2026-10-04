@@ -1,16 +1,20 @@
-import { KeyRound, ShieldCheck, UserRound } from "lucide-react";
+import {
+  KeyRound,
+  ShieldCheck,
+  UserRound,
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 export function RbacSubjectAdminV2Settings() {
   return (
     <section
-      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+      className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6"
       data-ds-block="rbac.subject.admin-v2-settings"
       data-ds-layer="singlepage"
     >
-      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+      <p className="text-xs text-[var(--workspace-brand-muted)]">
         rbac.subject
       </p>
-      <h2 className="mt-1 text-xl font-semibold text-slate-950">
+      <h2 className="mt-1 text-xl font-semibold text-[var(--workspace-brand-foreground)]">
         Admin account settings
       </h2>
       <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -35,12 +39,14 @@ export function RbacSubjectAdminV2Settings() {
 
           return (
             <article
-              className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+              className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4"
               key={item.title}
             >
-              <Icon className="h-5 w-5 text-slate-700" />
-              <h3 className="mt-3 font-medium text-slate-950">{item.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              <Icon className="h-5 w-5 text-[var(--workspace-brand-foreground)]" />
+              <h3 className="mt-3 font-semibold text-[var(--workspace-brand-foreground)]">
+                {item.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-[var(--workspace-brand-muted)]">
                 {item.copy}
               </p>
             </article>

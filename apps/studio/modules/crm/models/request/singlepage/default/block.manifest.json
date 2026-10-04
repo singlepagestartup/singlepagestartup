@@ -28,11 +28,8 @@
     "variantName": "default",
     "nodeId": "978:93",
     "variantNodeId": "978:86",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "crm",
-    "request"
-  ]
+  "tags": ["crm", "request"]
 }

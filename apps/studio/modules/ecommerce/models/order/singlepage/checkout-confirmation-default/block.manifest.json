@@ -38,7 +38,7 @@
     "variantName": "checkout-confirmation-default",
     "nodeId": "982:170",
     "variantNodeId": "982:140",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

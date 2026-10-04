@@ -20,17 +20,21 @@ export const defaultArticleFindFeaturedProps = {
   ] as ArticleFindFeaturedItem[],
 };
 
-export type ArticleFindFeaturedProps = typeof defaultArticleFindFeaturedProps;
+export type ArticleFindFeaturedProps =
+  typeof defaultArticleFindFeaturedProps & {
+    /** Removes introduction spacing when composed immediately after a header. */
+    compact?: boolean;
+  };
 
 export function ArticleFindFeatured(props?: Partial<ArticleFindFeaturedProps>) {
-  const { articles } = {
+  const { articles, compact = false } = {
     ...defaultArticleFindFeaturedProps,
     ...props,
   };
 
   return (
     <section
-      className="w-full pt-10"
+      className={`w-full ${compact ? "" : "pt-8"}`}
       data-ds-block="blog.widget.article-find-featured"
       data-ds-imports="blog.article.featured"
       data-ds-layer="singlepage"

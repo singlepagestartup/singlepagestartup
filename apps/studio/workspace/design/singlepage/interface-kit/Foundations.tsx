@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
 import { Button, Icon, Specimen, kit, type IconName } from "./primitives";
+import { StarFilled } from "../../../utils/components/ModuleIcons";
 
 const icons: { name: IconName; label: string }[] = [
   { name: "arrow-right", label: "Forward" },
@@ -20,6 +21,7 @@ const icons: { name: IconName; label: string }[] = [
   { name: "gear-six", label: "Settings" },
   { name: "trash", label: "Delete" },
   { name: "question", label: "Help" },
+  { name: "star", label: "Rating · regular" },
 ];
 const iconGrid = "grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6";
 const darkSurface =
@@ -35,7 +37,7 @@ export default function Foundations() {
       <Specimen
         id="icons"
         title="Icons"
-        description="Phosphor Regular 2.1.1. Official 256-unit geometry, 16-unit weight: 1.5px at 24px."
+        description="Phosphor 2.1.1. Regular controls use official 256-unit geometry and 16-unit weight; filled stars represent rating values."
         states={[
           "20px control",
           "24px card",
@@ -78,6 +80,14 @@ export default function Foundations() {
               <p className={`mt-1 text-xs ${kit.muted}`}>20 / 24 px</p>
             </div>
           ))}
+          <div className="rounded-xl bg-[var(--workspace-brand-background)] px-4 py-4">
+            <div className="flex h-6 items-center gap-3">
+              <StarFilled />
+              <StarFilled size={24} className="h-6 w-6" />
+            </div>
+            <p className="mt-3 text-xs font-medium">Rating · fill</p>
+            <p className={`mt-1 text-xs ${kit.muted}`}>20 / 24 px</p>
+          </div>
         </div>
       </Specimen>
 

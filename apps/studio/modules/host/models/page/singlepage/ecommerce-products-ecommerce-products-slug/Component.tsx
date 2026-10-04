@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { CartButtonDefault } from "../../../../../ecommerce/models/cart/singlepage/button-default/Component";
 import { CartDrawerDefault } from "../../../../../ecommerce/models/cart/singlepage/drawer-default/Component";
@@ -6,10 +6,9 @@ import {
   type CartItem,
   websiteDevelopmentCartItem,
 } from "../../../../../ecommerce/models/cart/shared";
-import {
-  defaultProductOverviewDefaultProps,
-  ProductOverviewDefault,
-} from "../../../../../ecommerce/models/product/singlepage/overview-default/Component";
+import { defaultProductOverviewDefaultProps } from "../../../../../ecommerce/models/product/singlepage/overview-default/Component";
+import { HostWidgetDefault } from "../../../widget/singlepage/default/Component";
+import { defaultHostExternalProductLink } from "../../../../relations/widgets-to-external-widgets/singlepage/default/Component";
 import { FooterCompact } from "../../../../../website-builder/models/widget/singlepage/footer-compact/Component";
 import { NavbarDefault } from "../../../../../website-builder/models/widget/singlepage/navbar-default/Component";
 
@@ -60,12 +59,15 @@ export function EcommerceCartFlowDefault() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const cartCount = getItemCount(items);
 
-  function handleAddToCart(item: Omit<CartItem, "quantity">, quantity: number) {
-    setItems((currentItems) => upsertCartItem(currentItems, item, quantity));
-    setIsCartOpen(true);
-  }
+  const handleAddToCart = useCallback(
+    (item: Omit<CartItem, "quantity">, quantity: number) => {
+      setItems((currentItems) => upsertCartItem(currentItems, item, quantity));
+      setIsCartOpen(true);
+    },
+    [],
+  );
 
-  function handleIncrease(item: CartItem) {
+  const handleIncrease = useCallback((item: CartItem) => {
     setItems((currentItems) =>
       currentItems.map((cartItem) =>
         cartItem.id === item.id
@@ -73,21 +75,21 @@ export function EcommerceCartFlowDefault() {
           : cartItem,
       ),
     );
-  }
+  }, []);
 
-  function handleDecrease(item: CartItem) {
+  const handleDecrease = useCallback((item: CartItem) => {
     setItems((currentItems) => decreaseCartItem(currentItems, item));
-  }
+  }, []);
 
-  function handleRemove(item: CartItem) {
+  const handleRemove = useCallback((item: CartItem) => {
     setItems((currentItems) =>
       currentItems.filter((cartItem) => cartItem.id !== item.id),
     );
-  }
+  }, []);
 
   return (
     <main
-      className="min-h-screen bg-[#eaf0f7] text-slate-900 antialiased"
+      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
       data-ds-page="host.page.ecommerce-products-ecommerce-products-slug"
     >
       <NavbarDefault
@@ -101,16 +103,20 @@ export function EcommerceCartFlowDefault() {
         cartCount={cartCount}
         onCartClick={() => setIsCartOpen(true)}
       />
-      <ProductOverviewDefault
-        related={productOverviewRelatedProducts}
-        purchase={{
-          id: websiteDevelopmentCartItem.id,
-          slug: websiteDevelopmentCartItem.slug,
-          image: websiteDevelopmentCartItem.image,
-          title: websiteDevelopmentCartItem.title,
-          priceLabel: websiteDevelopmentCartItem.priceLabel,
-          price: websiteDevelopmentCartItem.price,
-          onAddToCart: handleAddToCart,
+      <HostWidgetDefault
+        id={defaultHostExternalProductLink.widgetId}
+        links={[defaultHostExternalProductLink]}
+        productProps={{
+          related: productOverviewRelatedProducts,
+          purchase: {
+            id: websiteDevelopmentCartItem.id,
+            slug: websiteDevelopmentCartItem.slug,
+            image: websiteDevelopmentCartItem.image,
+            title: websiteDevelopmentCartItem.title,
+            priceLabel: websiteDevelopmentCartItem.priceLabel,
+            price: websiteDevelopmentCartItem.price,
+            onAddToCart: handleAddToCart,
+          },
         }}
       />
       <FooterCompact />

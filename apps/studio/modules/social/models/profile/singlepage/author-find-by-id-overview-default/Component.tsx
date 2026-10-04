@@ -5,7 +5,7 @@ import {
   Newspaper,
   ThumbsUp,
   User,
-} from "lucide-react";
+} from "../../../../../../workspace/utils/components/ModuleIcons";
 
 import { ArticleRow } from "../../../../../blog/models/article/singlepage/row/Component";
 import {
@@ -29,7 +29,7 @@ const jamesAvatar =
 const marcusAvatar =
   "https://images.unsplash.com/photo-1632670535530-aaf6e90042ca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjcmVhdGl2ZSUyMGRpcmVjdG9yJTIwbWFuJTIwaGVhZHNob3R8ZW58MXx8fHwxNzcxNzE1ODgyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
-interface AuthorArticleItem {
+export interface AuthorArticleItem {
   id: string;
   slug: string;
   title: string;
@@ -42,7 +42,7 @@ interface AuthorArticleItem {
   commentCount: number;
 }
 
-interface OtherAuthor {
+export interface OtherAuthor {
   slug: string;
   name: string;
   role: string;
@@ -50,7 +50,7 @@ interface OtherAuthor {
   articleCount: number;
 }
 
-interface CategoryBreakdown {
+export interface CategoryBreakdown {
   category: string;
   count: number;
   widthClassName: string;
@@ -144,7 +144,6 @@ export function ProfileAuthorFindByIdOverviewDefault(
   } = {
     ...defaultProfileAuthorFindByIdOverviewDefaultProps,
     ...props,
-    profile,
   };
 
   return (
@@ -156,47 +155,63 @@ export function ProfileAuthorFindByIdOverviewDefault(
     >
       <ProfileAuthor {...profile} />
 
-      <div className="w-full bg-[#eaf0f7]">
-        <div className="mx-auto w-full max-w-6xl px-6">
-          <div className="grid gap-8 py-8 lg:grid-cols-[1fr_320px]">
+      <div className="w-full bg-[var(--workspace-brand-background)]">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+          <div className="grid gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_300px]">
             {/* Left column */}
-            <div className="space-y-8">
+            <div className="min-w-0 space-y-8">
               {/* Stats row */}
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
-                    <Newspaper className="h-4 w-4 text-slate-500" />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="flex items-center gap-3 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)]">
+                    <Newspaper className="h-5 w-5 text-[var(--workspace-brand-muted)]" />
                   </div>
                   <div>
-                    <p className="text-lg text-slate-900">{statArticles}</p>
-                    <p className="text-xs text-slate-500">Articles</p>
+                    <p className="text-2xl font-semibold text-[var(--workspace-brand-foreground)]">
+                      {statArticles}
+                    </p>
+                    <p className="text-xs text-[var(--workspace-brand-muted)]">
+                      Articles
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
-                    <MessageSquare className="h-4 w-4 text-slate-500" />
+                <div className="flex items-center gap-3 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)]">
+                    <MessageSquare className="h-5 w-5 text-[var(--workspace-brand-muted)]" />
                   </div>
                   <div>
-                    <p className="text-lg text-slate-900">{statComments}</p>
-                    <p className="text-xs text-slate-500">Comments</p>
+                    <p className="text-2xl font-semibold text-[var(--workspace-brand-foreground)]">
+                      {statComments}
+                    </p>
+                    <p className="text-xs text-[var(--workspace-brand-muted)]">
+                      Comments
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
-                    <ThumbsUp className="h-4 w-4 text-slate-500" />
+                <div className="flex items-center gap-3 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)]">
+                    <ThumbsUp className="h-5 w-5 text-[var(--workspace-brand-muted)]" />
                   </div>
                   <div>
-                    <p className="text-lg text-slate-900">{statLikes}</p>
-                    <p className="text-xs text-slate-500">Likes</p>
+                    <p className="text-2xl font-semibold text-[var(--workspace-brand-foreground)]">
+                      {statLikes}
+                    </p>
+                    <p className="text-xs text-[var(--workspace-brand-muted)]">
+                      Likes
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
-                    <Clock className="h-4 w-4 text-slate-500" />
+                <div className="flex items-center gap-3 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)]">
+                    <Clock className="h-5 w-5 text-[var(--workspace-brand-muted)]" />
                   </div>
                   <div>
-                    <p className="text-lg text-slate-900">{statReadTime}</p>
-                    <p className="text-xs text-slate-500">Read Time</p>
+                    <p className="text-2xl font-semibold text-[var(--workspace-brand-foreground)]">
+                      {statReadTime}
+                    </p>
+                    <p className="text-xs text-[var(--workspace-brand-muted)]">
+                      Read Time
+                    </p>
                   </div>
                 </div>
               </div>
@@ -204,14 +219,14 @@ export function ProfileAuthorFindByIdOverviewDefault(
               {/* Articles list */}
               <section>
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-sm text-slate-900">
+                  <h2 className="text-lg font-semibold text-[var(--workspace-brand-foreground)]">
                     Articles by {profile.name}
                   </h2>
-                  <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-500">
+                  <span className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-2 py-0.5 text-xs text-[var(--workspace-brand-muted)]">
                     {articles.length} {articles.length === 1 ? "post" : "posts"}
                   </span>
                 </div>
-                <div className="space-y-4">
+                <div className="grid gap-4">
                   {articles.map((article) => (
                     <ArticleRow
                       key={article.id}
@@ -233,26 +248,30 @@ export function ProfileAuthorFindByIdOverviewDefault(
             </div>
 
             {/* Right sidebar */}
-            <aside className="space-y-6">
+            <aside className="min-w-0 space-y-6">
               {/* Bio */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <div className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6">
                 <div className="mb-3 flex items-center gap-2">
-                  <User className="h-4 w-4 text-slate-400" />
-                  <h3 className="text-sm text-slate-900">About</h3>
+                  <User className="h-5 w-5 text-[var(--workspace-brand-muted)]" />
+                  <h3 className="text-lg font-semibold text-[var(--workspace-brand-foreground)]">
+                    About
+                  </h3>
                 </div>
-                <p className="text-sm text-slate-600">{bio}</p>
+                <p className="text-sm text-[var(--workspace-brand-muted)]">
+                  {bio}
+                </p>
               </div>
 
               {/* Skills */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5">
-                <h3 className="mb-3 text-sm text-slate-900">
+              <div className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6">
+                <h3 className="mb-3 text-lg font-semibold text-[var(--workspace-brand-foreground)]">
                   Skills & Expertise
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
                   {skills.map((skill) => (
                     <span
                       key={skill}
-                      className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600"
+                      className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-2.5 py-1 text-xs text-[var(--workspace-brand-muted)]"
                     >
                       {skill}
                     </span>
@@ -261,8 +280,10 @@ export function ProfileAuthorFindByIdOverviewDefault(
               </div>
 
               {/* Category breakdown */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5">
-                <h3 className="mb-3 text-sm text-slate-900">Categories</h3>
+              <div className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6">
+                <h3 className="mb-3 text-lg font-semibold text-[var(--workspace-brand-foreground)]">
+                  Categories
+                </h3>
                 <div className="space-y-2">
                   {categoryBreakdown.map(
                     ({ category, count, widthClassName }) => (
@@ -270,16 +291,16 @@ export function ProfileAuthorFindByIdOverviewDefault(
                         key={category}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-xs capitalize text-slate-600">
+                        <span className="text-xs capitalize text-[var(--workspace-brand-muted)]">
                           {category}
                         </span>
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
+                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[var(--workspace-brand-background)]">
                             <div
-                              className={`h-full rounded-full bg-slate-400 ${widthClassName}`}
+                              className={`h-full rounded-full bg-[var(--workspace-brand-line)] ${widthClassName}`}
                             />
                           </div>
-                          <span className="text-[10px] text-slate-400">
+                          <span className="text-xs text-[var(--workspace-brand-muted)]">
                             {count}
                           </span>
                         </div>
@@ -291,8 +312,8 @@ export function ProfileAuthorFindByIdOverviewDefault(
 
               {/* Other authors */}
               {otherAuthors.length > 0 && (
-                <div className="rounded-xl border border-slate-200 bg-white p-5">
-                  <p className="mb-3 text-xs tracking-widest text-slate-400 uppercase">
+                <div className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6">
+                  <p className="mb-3 text-xs st text-[var(--workspace-brand-muted)]">
                     Other Authors
                   </p>
                   <div className="space-y-2">
@@ -315,9 +336,9 @@ export function ProfileAuthorFindByIdOverviewDefault(
               <a
                 href={blogIndexStoryHref}
                 target="_top"
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+                className="flex items-center gap-2 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 text-sm text-[var(--workspace-brand-muted)] transition hover:border-[var(--workspace-brand-line)] hover:bg-[var(--workspace-brand-background)]"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-5 w-5" />
                 Back to all articles
               </a>
             </aside>

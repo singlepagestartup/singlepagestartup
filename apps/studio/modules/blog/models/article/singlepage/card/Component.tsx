@@ -1,18 +1,10 @@
+import { kit } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
 /**
- * blog.article.card
- *
- * Vertical blog card: cover image, category + date, title, truncated excerpt,
- * footer with author byline (social.profile.byline) + comment count + read time.
- * Root element is an anchor linking to /blog/articles/<slug>.
- *
- * Owned by the blog module (model: article). Display components such as
- * ArticleFindCardDefault composes this via import instead of re-implementing the
- * markup.
- *
- * Source: BlogListPage.tsx grid card (lines 146-206).
+ * Model-owned article link. Balanced, editorial and compact are presentation
+ * choices over the same article props; widgets compose this component.
+ * The footer separates the Social profile byline from reading metadata.
  */
 
-import { Clock, MessageSquare } from "lucide-react";
 import { ProfileByline } from "../../../../../social/models/profile/singlepage/byline/Component";
 
 type ArticleCardTarget = "_blank" | "_parent" | "_self" | "_top";
@@ -23,8 +15,10 @@ const sarahAvatar =
 export const defaultArticleCardProps = {
   href: undefined as string | undefined,
   slug: "how-to-choose",
-  coverImage:
-    "https://images.unsplash.com/photo-1723987251277-18fc0a1effd0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXRhJTIwYW5hbHl0aWNzJTIwY2hhcnQlMjBzY3JlZW58ZW58MXx8fHwxNzcxNjg3NTEzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+  coverImage: new URL(
+    "../../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
+    import.meta.url,
+  ).href,
   category: "guides",
   date: "Feb 18, 2026",
   title: "How to Choose the Right Plan for Your Business",
@@ -38,7 +32,10 @@ export const defaultArticleCardProps = {
   target: undefined as ArticleCardTarget | undefined,
 };
 
-export type ArticleCardProps = typeof defaultArticleCardProps;
+export type ArticleCardProps = typeof defaultArticleCardProps & {
+  /** Presentation choice only; the article record contract stays unchanged. */
+  layout?: "balanced" | "editorial" | "compact";
+};
 
 export function ArticleCard(props?: Partial<ArticleCardProps>) {
   const {
@@ -51,60 +48,76 @@ export function ArticleCard(props?: Partial<ArticleCardProps>) {
     excerpt,
     authorName,
     authorAvatar,
-    commentCount,
     readTime,
     target,
+    layout = "balanced",
   } = { ...defaultArticleCardProps, ...props };
-  const articleHref = href ?? `/blog/articles/${slug}`;
-
-  return (
-    <a
-      href={articleHref}
-      target={target}
-      rel={target === "_blank" ? "noreferrer" : undefined}
-      className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md"
-      data-ds-block="blog.article.card"
-      data-ds-layer="singlepage"
-    >
-      <div className="aspect-[16/9] overflow-hidden">
-        <img
-          src={coverImage}
-          alt={title}
-          className="h-full w-full object-cover transition group-hover:scale-105"
+  const compact = layout === "compact";
+  const editorial = layout === "editorial";
+  const metadata = (
+    <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-[var(--workspace-brand-line)] pt-4">
+      <div className="min-w-0">
+        <ProfileByline
+          name={authorName}
+          avatar={authorAvatar}
+          href={null}
+          size="xs"
         />
       </div>
-      <div className="flex flex-1 flex-col p-5">
-        <div className="mb-2.5 flex items-center gap-2">
-          <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-600 uppercase">
-            {category}
-          </span>
-          <span className="text-xs text-slate-400">{date}</span>
-        </div>
-        <h3 className="text-sm text-slate-900 group-hover:text-slate-700">
-          {title}
-        </h3>
-        <p className="mt-1.5 flex-1 text-sm text-slate-500">
-          {excerpt.length > 120 ? excerpt.slice(0, 120) + "..." : excerpt}
-        </p>
-        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-          <ProfileByline
-            name={authorName}
-            avatar={authorAvatar}
-            href={null}
-            size="xs"
-          />
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 text-xs text-slate-400">
-              <MessageSquare className="h-3 w-3" />
-              {commentCount}
-            </span>
-            <span className="flex items-center gap-1 text-xs text-slate-400">
-              <Clock className="h-3 w-3" />
-              {readTime}
-            </span>
-          </div>
-        </div>
+      <div className="ml-auto shrink-0 text-right text-xs leading-5 text-[var(--workspace-brand-muted)]">
+        <p>{readTime}</p>
       </div>
+    </div>
+  );
+  return (
+    <a
+      href={href ?? `/blog/articles/${slug}`}
+      target={target}
+      rel={target === "_blank" ? "noreferrer" : undefined}
+      className={`group grid h-full min-w-0 overflow-hidden rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] transition hover:border-[var(--workspace-brand-foreground)] motion-reduce:transition-none ${compact ? "grid-cols-[96px_minmax(0,1fr)] items-start gap-4 p-4" : "grid-rows-[auto_1fr]"} ${kit.focus}`}
+      data-ds-block="blog.article.card"
+      data-ds-imports="social.profile.byline"
+      data-ds-layer="singlepage"
+      data-card-layout={layout}
+    >
+      {editorial && (
+        <div className="px-5 pb-5 pt-6 sm:px-6">
+          <div className="mb-3 flex items-center justify-between gap-3 text-xs text-[var(--workspace-brand-muted)]">
+            <span>{category}</span>
+            <span>{date}</span>
+          </div>
+          <h3 className="text-2xl font-semibold leading-7 tracking-tight">
+            {title}
+          </h3>
+        </div>
+      )}
+      <div
+        className={`aspect-square overflow-hidden ${compact ? "rounded-xl" : ""}`}
+      >
+        <img src={coverImage} alt="" className="h-full w-full object-cover" />
+      </div>
+      <div className={`flex min-w-0 flex-col ${compact ? "" : "p-5 sm:p-6"}`}>
+        {!editorial && (
+          <>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--workspace-brand-muted)]">
+              <span className="font-medium">{category}</span>
+              <span>{date}</span>
+            </div>
+            <h3
+              className={`${compact ? "text-lg leading-6" : "text-2xl leading-7"} font-semibold tracking-tight text-[var(--workspace-brand-foreground)]`}
+            >
+              {title}
+            </h3>
+          </>
+        )}
+        {!compact && (
+          <p className="mb-5 mt-3 line-clamp-2 text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
+            {excerpt}
+          </p>
+        )}
+        {!compact && <div className="mt-auto">{metadata}</div>}
+      </div>
+      {compact && <div className="col-span-2">{metadata}</div>}
     </a>
   );
 }

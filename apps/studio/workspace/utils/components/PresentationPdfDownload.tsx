@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
-import { Download } from "lucide-react";
+import { ArrowDown as Download } from "./ModuleIcons";
 import {
   useElementPdfDownload,
   type ICreatePdfFromElementsOptions,
@@ -82,32 +82,32 @@ export function PresentationPdfDownload({
 
   return (
     <section data-pdf-export-state={status} aria-label="Presentation export">
-      <div className="flex flex-col gap-4 border-b border-slate-200 bg-slate-50 px-5 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">
+      <div className="flex flex-col gap-4 border-b border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">
         <div>
-          <h2 className="text-base font-semibold text-slate-950">
+          <h2 className="text-base font-semibold text-[var(--workspace-brand-foreground)]">
             Presentation PDF
           </h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-[var(--workspace-brand-muted)]">
             Prepare the current slides when you need a download.
           </p>
         </div>
         {url ? (
           <a
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--workspace-brand-primary)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--workspace-brand-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
             href={url}
             download={fileName}
           >
-            <Download aria-hidden="true" size={18} />
+            <Download aria-hidden="true" size={20} />
             Download PDF
           </a>
         ) : (
           <button
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--workspace-brand-primary)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--workspace-brand-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] disabled:cursor-wait disabled:opacity-60"
             disabled={status === "loading"}
             onClick={() => void prepare()}
             type="button"
           >
-            <Download aria-hidden="true" size={18} />
+            <Download aria-hidden="true" size={20} />
             {status === "loading"
               ? "Preparing PDF…"
               : status === "error"

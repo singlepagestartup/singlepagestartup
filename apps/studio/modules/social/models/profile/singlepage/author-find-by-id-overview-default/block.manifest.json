@@ -48,14 +48,8 @@
     "variantName": "author-find-by-id-overview-default",
     "nodeId": "782:31",
     "variantNodeId": "980:58",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "social",
-    "profile",
-    "author",
-    "find-by-id",
-    "overview-default"
-  ]
+  "tags": ["social", "profile", "author", "find-by-id", "overview-default"]
 }

@@ -32,7 +32,7 @@
     "variantName": "admin-dashboard",
     "nodeId": "716:300",
     "variantNodeId": "983:1705",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }

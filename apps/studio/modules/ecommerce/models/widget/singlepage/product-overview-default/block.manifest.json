@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.widget.product-overview-default",
+  "title": "Ecommerce Widget / Product Overview Default",
+  "description": "Routes the product overview through its Ecommerce widget.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "product-overview-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "ecommerce.widget",
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json",
+    "pageName": "ecommerce",
+    "variantName": "product-overview-default",
+    "nodeId": null,
+    "variantNodeId": null
+  },
+  "tags": [
+    "ecommerce",
+    "widget",
+    "product-overview-default"
+  ]
+}

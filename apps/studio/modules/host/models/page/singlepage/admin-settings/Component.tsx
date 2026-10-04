@@ -7,8 +7,8 @@ export function AdminSettings() {
       <AdminV2PageShell
         activePath="/admin/settings"
         eyebrow="host.page"
-        title="Admin settings"
-        description="Host-owned page recipe for the runnable /admin/settings route."
+        title="Workspace settings"
+        description="Manage the account and preferences for this workspace."
       >
         <RbacSubjectAdminV2Settings />
       </AdminV2PageShell>

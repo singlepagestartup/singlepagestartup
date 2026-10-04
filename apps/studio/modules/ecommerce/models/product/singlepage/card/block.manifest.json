@@ -2,7 +2,7 @@
   "$schema": "../../../../../../block.schema.json",
   "id": "ecommerce.product.card",
   "title": "Ecommerce Product / Card",
-  "description": "Full catalog service card with image, badge, category, price, title, subtitle, truncated description, tech stack tags, and Details link.",
+  "description": "Catalog card with square media, title, one description, price and a labelled detail action.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
@@ -68,7 +68,7 @@
     "variantName": "card",
     "nodeId": "795:10",
     "variantNodeId": "982:183",
-    "syncStatus": "verified",
+    "syncStatus": "needs-update",
     "metadataFile": "figma.json"
   }
 }
