@@ -13,14 +13,8 @@ products: []
 # replaces the complete singlepage catalog in default; products never merge by
 # ID across layers.
 #
-# models:
-#   - id: replace-with-model-id
-#     name: Model name
-#     source: models/replace-with-model-id/model.md
-#     uses: [] # optional IDs of other models owning shared resources; no cycles
 # products:
 #   - id: replace-with-kebab-case-id
-#     model: replace-with-model-id
 #     name: Replace with product name
 #     summary: Replace with one-sentence product summary.
 #     research: replace-with-id/research.md
@@ -57,7 +51,9 @@ products: []
 #     #             source: replace-with-id/content/course/Deck.tsx
 #     #             export: pdf
 
-# Every v2 product needs a model from this same catalog. Reuse one model ID for
-# shared models; distinct models get distinct IDs. All model sources live under
-# models/<model-id>/ in this layer. Empty startup inherits models AND products.
+# Every product owns its economic sections in product.md. Shared resources appear
+# in each Product with its share and allocation basis; do not create a shared
+# economics document. Empty startup inherits the complete singlepage catalog.
+# The parser accepts optional models and product.model fields for legacy catalogs
+# only. A declared legacy pointer must resolve within the same catalog and layer.
 # Never create Business/Portfolio or a mandatory duplicate canvas overview.

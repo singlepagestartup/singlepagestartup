@@ -16,7 +16,7 @@ review:
 
 ## Decision and scope
 
-For `ai-chat`, assess the proposed project-structuring workspace, its `business-users` Sales segment, alternatives, acquisition routes and reasons for continued use. The intended value begins with organizing supplied material for approval and continues through project-aware discussion and criticism; the compact page is a resulting surface. Model `framework-service` owns service economics, shared resources and the bridge to Code Framework; the project owner decides the commercial offer.
+For `ai-chat`, assess the proposed project-structuring workspace, its `business-users` Sales segment, alternatives, acquisition routes and reasons for continued use. The intended value begins with organizing supplied material for approval and continues through project-aware discussion and criticism; the compact page is a resulting surface. [Product](product.md#revenue-streams) owns service economics, its share of shared resources and the bridge to Code Framework; the project owner decides the commercial offer.
 
 This purposive desk review combines confirmed project direction with official product and platform documentation accessed 2026-09-13. It establishes documented capabilities and channel mechanics, not representative demand, successful customer outcomes or willingness to pay. The [segment audit](research/business-users.md) checks all proposed Sales dimensions, routes and Customer Journey Map steps. [Competitors and alternatives](research/competitors.md) preserves the offer-level comparison.
 

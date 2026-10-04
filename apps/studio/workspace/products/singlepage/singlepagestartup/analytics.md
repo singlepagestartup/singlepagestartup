@@ -11,7 +11,7 @@ review:
 
 ## Measurement scope
 
-This page is the single product-owned place for current Code Framework observations. It covers the `makers` and `developer-agents` Sales journeys from discovery through evaluation, adoption, delivered business value, support and reuse. Sales owns the journey stages and metric definitions; [Product](product.md) owns business goals; [Operations & Economics](../models/framework-service/model.md) owns revenue, funding, resource and cost terms.
+This page is the single product-owned place for current Code Framework observations. It covers the `makers` and `developer-agents` Sales journeys from discovery through evaluation, adoption, delivered business value, support and reuse. Sales owns the journey stages and metric definitions; [Product](product.md) owns business goals; the economic sections of [Product](product.md#revenue-streams) own revenue, funding, resource and cost terms.
 
 As of 17 September 2026, no repository analytics, attributable referral data, adoption study, support dataset or product revenue dataset has been supplied for this review. The current state is **not measured**, rather than zero. Existing code and documentation show availability, not adoption or customer value.
 
@@ -30,8 +30,8 @@ Repository visits, qualified starts, completed server deployments, adopted modul
 
 ## Revenue and cost observations
 
-The framework remains a free offer in the current model, and no product-attributable customer revenue has been supplied. Owner funding is financing rather than revenue. No observed support cost, acquisition cost or shared development-cost allocation has been provided; shared costs must follow the model's allocation rule before attribution.
+The framework remains a free offer in the current model, and no product-attributable customer revenue has been supplied. Owner funding is financing rather than revenue. No observed support cost, acquisition cost or shared development-cost allocation has been provided; shared costs must follow the allocation basis in Product's Key Resources and Cost Structure before attribution.
 
 ## Sources and limitations
 
-The current entry uses the Product, intended Sales process and shared model only to define what should later be measured. It contains no inferred traction. A future update should name the inspected repository, referral, deployment, support or interview source; record the period, cohort and attribution rule; and state what the source cannot establish. [Research](research.md) should interpret these observations for demand, adoption, channel and reuse decisions without duplicating the measurement record.
+The current entry uses the Product, including its economic sections, and intended Sales process only to define what should later be measured. It contains no inferred traction. A future update should name the inspected repository, referral, deployment, support or interview source; record the period, cohort and attribution rule; and state what the source cannot establish. [Research](research.md) should interpret these observations for demand, adoption, channel and reuse decisions without duplicating the measurement record.

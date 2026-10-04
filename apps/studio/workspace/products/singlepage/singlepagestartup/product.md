@@ -144,7 +144,7 @@ Other starters also offer authentication and payments. SPS positions the complet
 
 The offer includes source code, documentation and agent instructions; account and access functions; catalogs, carts and orders; payment integrations; and the shared application foundation. Business-specific rules and presentation are developed for each project.
 
-The selected distribution model is free code under MIT through GitHub. [Revenue Streams](../models/framework-service/model.md#revenue-streams) owns the money terms. Coding-agent subscriptions, infrastructure and hosted AI Chat usage are separate. Help and maintenance are provided as time permits; custom implementation and managed hosting are outside the offer.
+The selected distribution model is free code under MIT through GitHub. [Revenue Streams](#revenue-streams) owns the money terms. Coding-agent subscriptions, infrastructure and hosted AI Chat usage are separate. Help and maintenance are provided as time permits; custom implementation and managed hosting are outside the offer.
 
 In the intended experience, a person discovers SPS through AI Chat, a demonstration, task guidance or a relevant community answer. Publishing a page from AI Chat creates the customer's repository on this foundation; a maker with another concrete software need instead follows **Run the project on your machine** to GitHub and asks a coding agent to deploy and adapt the project. Buying chat tokens is not required. The maker describes changes, reviews the interface and develops the product; the same foundation can support the next idea.
 

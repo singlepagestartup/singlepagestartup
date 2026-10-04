@@ -7,8 +7,8 @@ seller: The SinglePageStartup project creator operates AI Chat. Payments are
   accepted in Russia through an online cash register. The operator configures the
   payment-accepting party's legal name, payment details and receipt flow in the
   product's own interface, so they are not a pre-development decision here.
-pricing: The framework-service model records token purchases as the revenue
-  model for AI Chat. The billable unit is the provider tokens a request consumes,
+pricing: The AI Chat Product records token purchases in Revenue Streams. The
+  billable unit is the provider tokens a request consumes,
   with generation the larger share. The customer does not pick the model. The
   router selects one per request from the models the product offers, and because
   their prices differ by about an order of magnitude the balance is charged on

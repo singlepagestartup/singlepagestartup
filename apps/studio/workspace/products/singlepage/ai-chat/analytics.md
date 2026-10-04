@@ -11,7 +11,7 @@ review:
 
 ## Measurement scope
 
-This page is the single product-owned place for current AI Chat observations. It follows the `business-users` customer journey from acquisition through material intake, project structuring and approval, later idea work, landing-page sandbox preparation, token purchase, GitHub repository creation and deployment to the user's server. The intended stages and metric definitions remain in [Sales](sales.yaml); goals remain in [Product](product.md); revenue and cost terms remain in [Operations & Economics](../models/framework-service/model.md).
+This page is the single product-owned place for current AI Chat observations. It follows the `business-users` customer journey from acquisition through material intake, project structuring and approval, later idea work, landing-page sandbox preparation, token purchase, GitHub repository creation and deployment to the user's server. The intended stages and metric definitions remain in [Sales](sales.yaml); goals remain in [Product](product.md); revenue and cost terms remain in [Product economics](product.md#revenue-streams).
 
 As of 17 September 2026, no production analytics, CRM, payment or support dataset has been supplied for this review. The current state is **not measured**, rather than zero. Planned events are not reported as observations.
 
@@ -32,8 +32,8 @@ Activation, supplied-material processing, completion and correction of each comp
 
 ## Revenue and cost observations
 
-No customer revenue, token-sales volume, refunds or attributable service-cost observations have been supplied. Owner funding described in the shared model is financing, not customer revenue. Shared costs must use the allocation basis recorded by Operations & Economics before they are attributed to AI Chat.
+No customer revenue, token-sales volume, refunds or attributable service-cost observations have been supplied. Owner funding described in Product is financing, not customer revenue. Shared costs must use the allocation basis recorded in Product’s Key Resources and Cost Structure before they are attributed to AI Chat.
 
 ## Sources and limitations
 
-The current entry was prepared from the confirmed Product, the intended Sales process and the shared model only to define the measurement boundary. Those planning documents are not evidence of actual behavior. A future update should name the inspected analytics, CRM, payment, support or research source; record its reporting window and coverage; and preserve unknowns where attribution is unavailable. [Research](research.md) should cite these observations when interpreting demand, channel, offer or retention questions instead of copying the table.
+The current entry was prepared from the Product, including its economic sections, and the intended Sales process only to define the measurement boundary. Those planning documents are not evidence of actual behavior. A future update should name the inspected analytics, CRM, payment, support or research source; record its reporting window and coverage; and preserve unknowns where attribution is unavailable. [Research](research.md) should cite these observations when interpreting demand, channel, offer or retention questions instead of copying the table.

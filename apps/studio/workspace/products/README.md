@@ -1,38 +1,38 @@
 # Product directory guide
 
-Each source layer has one catalog and two kinds of owned content:
+Each source layer has one catalog and its product-owned content:
 
 ```text
 products/
   README.md
   singlepage/                       # framework project's business materials
     catalog.yaml
-    models/
-      <model-id>/model.md            # shared Operations & Economics
     <product-id>/                    # one product's business and authored materials
   startup/                          # downstream project's owned materials
     catalog.yaml
-    models/<model-id>/model.md       # created when the project defines its model
     <product-id>/                   # created when the project defines its product
 ```
 
-## Models and products
+## Products and economics
 
-`models` is the reserved namespace for business economics, not application code.
-A model owns revenue, financing, resources and costs; several products may share
-it. The catalog's `models[].id/source` and each product's `model` establish the
-relationship. Do not copy a common model into each product or mix it with backend
-models under `libs/modules`.
+Each product owns its offer, customers and economics in `product.md`: Revenue
+Streams, Key Activities, Key Resources, Key Partnerships and Cost Structure,
+with Funding kept separate from revenue. A resource shared by products appears
+in each Product with its share and allocation basis, so costs are not counted
+twice.
 
-In the framework catalog, `framework-service/model.md` links Code Framework and
-AI Chat because they share funding and resources. It appears in each product's
-Operations & Economics tab from the same source. `framework-service` is its
-stable catalog ID, not a third product or a running service. The product directory
-`singlepagestartup` is Code Framework's stable ID; its display name is independent.
+The framework catalog contains Code Framework (`singlepagestartup`) and AI Chat
+(`ai-chat`). Each has its own economic sections. The product directory ID is
+stable; its display name is independent.
+
+The parser accepts an optional `models` collection and a product's optional
+`model` pointer for legacy catalogs. These entries do not belong in a new
+catalog. A declared legacy model must resolve within the same catalog and source
+layer; it is unrelated to application models under `libs/modules`.
 
 ## Inside one product
 
-- `product.md`: offer and customer segments.
+- `product.md`: offer, customer segments and economics.
 - `sales.yaml`: segment profiles, acquisition and Customer Journey Maps. The
   shared renderer creates segment pages and Markdown exports from this source.
 - `research.md` + `research/`: summary, segment evidence and competitor details.
@@ -45,8 +45,8 @@ stable catalog ID, not a third product or a running service. The product directo
   and its slide compositions. Product-specific types may live beside those slides.
 - `content/`: optional delivered material such as guides or a proposed README.
 
-Studio keeps the working sequence compact: Product → Operations & Economics →
-Sales → Promotion → Analytics. Compact badge tabs expose Product Overview and
+Studio keeps the working sequence compact: Product → Sales → Promotion →
+Analytics. Compact badge tabs expose Product Overview and
 optional Product Content inside Product, Website/Marketing Creative/Presentation
 inside Promotion, and current observations/Research inside Analytics. These are
 navigation groups; their underlying sources, confirmation, nested pages and
