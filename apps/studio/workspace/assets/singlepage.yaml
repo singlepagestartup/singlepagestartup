@@ -1055,7 +1055,7 @@ assets:
     path: assets/singlepage/intake/typography/editorial-serif-italic-highlight.png
     source_type: public-reference
     intake_category: typography
-    preference_signal: "Confirmed Typography preference: exactly two Google Fonts families; monospaced default text plus decorative primary headings with upright serif and short italic emphasis. Both families require open licenses and Latin plus Cyrillic. Reference family, wording, and layout are excluded."
+    preference_signal: "Reference-only examples of hierarchy and emphasis. The selected Living Focus direction uses Onest throughout; these screenshots do not require their depicted typefaces, mono text, serif styling, wording or composition."
     lifecycle: null
     proposal_id: null
     evidence: false
@@ -1087,7 +1087,7 @@ assets:
     path: assets/singlepage/intake/typography/editorial-serif-italic-contrast.png
     source_type: public-reference
     intake_category: typography
-    preference_signal: "Confirmed Typography preference: exactly two Google Fonts families; monospaced default text plus decorative primary headings with upright serif and short italic emphasis. Both families require open licenses and Latin plus Cyrillic. Reference family, wording, and layout are excluded."
+    preference_signal: "Reference-only examples of hierarchy and emphasis. The selected Living Focus direction uses Onest throughout; these screenshots do not require their depicted typefaces, mono text, serif styling, wording or composition."
     lifecycle: null
     proposal_id: null
     evidence: false
@@ -1114,15 +1114,15 @@ assets:
     source_or_tool: "Exact copy of operator-supplied 688 by 150 PNG screenshot named Снимок экрана — 2026-08-14 в 00.12.08.png on 2026-08-14; SHA-256 68b3576a2f9493a2fee9bbd2d444891387a319512047f8080b0c9151b2c50f5f; original public source not supplied."
 
   - id: singlepage-font-jetbrains-mono-variable
-    design_role: font
-    design_key: base
+    design_role: null
+    design_key: null
     path: assets/singlepage/fonts/jetbrains-mono/JetBrainsMono-wght.ttf
     source_type: stock
-    lifecycle: approved
-    proposal_id: measured-space
+    lifecycle: null
+    proposal_id: null
     evidence: false
     rights_status: "JetBrains Mono variable font distributed under the SIL Open Font License 1.1; the exact license text is preserved at assets/singlepage/fonts/jetbrains-mono/OFL.txt."
-    purpose: Approved base typeface source for body text, controls, labels, and code in the SinglePageStartup visual system.
+    purpose: Reference-only font input retained with its original license; current Living Focus typography uses Onest exclusively.
     related_artifacts: [singlepage.design, singlepage.products]
     allowed_use:
       - Use and embed according to the adjacent SIL Open Font License 1.1 and the approved Design typography roles.
@@ -1134,15 +1134,15 @@ assets:
     source_or_tool: "Previously stored with the SinglePageStartup Design source and moved into Assets without modification; SHA-256 48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda."
 
   - id: singlepage-font-cormorant-garamond-variable
-    design_role: font
-    design_key: primary
+    design_role: null
+    design_key: null
     path: assets/singlepage/fonts/cormorant-garamond/CormorantGaramond[wght].ttf
     source_type: stock
-    lifecycle: approved
-    proposal_id: measured-space
+    lifecycle: null
+    proposal_id: null
     evidence: false
     rights_status: "Cormorant Garamond upright and italic variable fonts distributed by Google Fonts under the SIL Open Font License 1.1; the exact license text is preserved at assets/singlepage/fonts/cormorant-garamond/OFL.txt."
-    purpose: Approved primary typeface source for headings and short italic emphasis in the SinglePageStartup visual system.
+    purpose: Reference-only font input retained with its original license; current Living Focus typography uses Onest exclusively.
     related_artifacts: [singlepage.design, singlepage.products]
     allowed_use:
       - Use and embed according to the adjacent SIL Open Font License 1.1 and the approved Design typography roles.
@@ -1153,105 +1153,177 @@ assets:
     prompt: null
     source_or_tool: "Official Google Fonts repository, commit 6d210fd3550b7358ca62d6ba3e354ec1ec940813; CormorantGaramond[wght].ttf SHA-256 b20b7d9626dd956b2c5e558692ad328b1f19e3275e2782db4fa07670d83f35e0; CormorantGaramond-Italic[wght].ttf SHA-256 0f48ea6abb2084537854f7174c470991a463b13036309e3b50a81511611c530d; OFL.txt SHA-256 60700d351cac4650c51f3f9db318d2a420f8b45052dba2715eb5fec41f0f6956. Google Fonts metadata declares OFL, weights 300–700, Latin/Latin Extended, Cyrillic/Cyrillic Extended, and normal plus italic styles; local fc-scan confirms Russian language support."
 
-  - id: singlepage-generated-measured-space-primary-lockup
-    design_role: logo
-    design_key: primary
-    path: assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg
-    source_type: generated
-    lifecycle: proposed
-    proposal_id: measured-space
-    evidence: false
-    rights_status: "Proposed derivative of the operator-created mark under the use-and-modification rights stated by the operator for the supplied source mark on 2026-08-11. The outlined Cormorant Garamond Bold wordmark uses the registered Google Fonts source and adjacent SIL Open Font License 1.1. Trademark clearance and operator approval of this regenerated derivative remain unverified."
-    purpose: Proposed 1120 by 240 primary lockup preserving the supplied mark and applying the confirmed Cormorant Garamond primary typeface for operator visual review.
-    related_artifacts: [singlepage.design, singlepage.products]
-    allowed_use:
-      - Downstream design use, comparison with the operator intake, accessibility inspection, and deterministic raster QA.
-      - Publication only after applicable communication, claim, license, and launch gates pass.
-    prohibited_use:
-      - Do not publish, deploy, or redistribute before the applicable communication, claim, license, and launch gates pass.
-      - Do not use as evidence or proof of integration, production readiness, current MIT licensing, compatibility, speed, adoption, or support.
-      - Do not alter the SinglePageStartup spelling, recolor or rearrange mark cells, or derive the lockup from a public-reference composition.
-    prompt: "Compose a deterministic 1120 by 240 SVG primary lockup for the refined Measured Space proposal. Preserve the operator-created pixel-grid S geometry exactly in canonical #111111 and white; set the exact one-line name SinglePageStartup as Cormorant Garamond Bold 700 outlines with the entire wordmark inside the viewBox and at least 160 pixels of right safe margin; use no acronym, Lime recoloring, gradients, reference composition, product proof, or unsupported claim."
-    source_or_tool: "Hand-composed repo-native SVG; exact mark geometry preserved from assets/singlepage/intake/operator-logo-square-black.svg under Assets: source SVG inspection, 2026-08-11; exact wordmark shaped and converted to outlines from assets/singlepage/fonts/cormorant-garamond/CormorantGaramond[wght].ttf at weight 700 with HarfBuzz hb-view; the hb-view canvas background rectangle was removed during deterministic composition so the transparent wordmark cannot cover the mark; SVG SHA-256 70d787606e439d5133d1916a5456a2df61d0631cbfe7d70c593a13a721510fb4; generated on 2026-08-14."
-
-  - id: singlepage-generated-measured-space-avatar
-    design_role: logo
-    design_key: avatar
-    path: assets/singlepage/generated/measured-space/singlepagestartup-avatar.svg
-    source_type: generated
-    lifecycle: proposed
-    proposal_id: measured-space
-    evidence: false
-    rights_status: "Proposed size adaptation of the operator-created mark under the use-and-modification rights stated by the operator for the supplied source mark on 2026-08-11; Brand approval does not establish separate approval of an asset adaptation. Trademark clearance is unverified."
-    purpose: Proposed 512 by 512 square avatar and app-tile asset retaining the recognizable operator mark.
-    related_artifacts: [singlepage.design, singlepage.products]
-    allowed_use:
-      - Downstream design use, geometry comparison, accessibility inspection, and deterministic raster QA.
-      - Publication only after applicable communication, claim, license, and launch gates pass.
-    prohibited_use:
-      - Do not publish, deploy, or redistribute before the applicable communication, claim, license, and launch gates pass.
-      - Do not use as evidence, a module map, an integration diagram, or proof of product completeness.
-      - Do not recolor or rearrange mark cells or derive variants from a public-reference composition.
-    prompt: "Compose a deterministic 512 by 512 SVG avatar for the Measured Space proposal. Preserve the operator-created rounded-square pixel-grid S geometry exactly in canonical #111111 and white, retain clear space, and add no text, accent, gradient, reference motif, or proof implication."
-    source_or_tool: "Hand-composed repo-native SVG adapted from assets/singlepage/intake/operator-logo-square-black.svg under Assets: source SVG inspection, 2026-08-11; visually inspected at 512 and 32 pixels on 2026-08-11."
-
-  - id: singlepage-generated-measured-space-favicon
-    design_role: logo
-    design_key: favicon
-    path: assets/singlepage/generated/measured-space/singlepagestartup-favicon.svg
-    source_type: generated
+  - id: singlepage-font-onest-variable
+    design_role: font
+    design_key: null
+    path: assets/singlepage/fonts/onest/Onest-wght.ttf
+    source_type: stock
     lifecycle: approved
-    proposal_id: measured-space
+    proposal_id: living-focus
     evidence: false
-    rights_status: "Approved small-size adaptation of the operator-created mark under the use-and-modification rights stated by the operator for the supplied source mark on 2026-08-11; Brand approval does not establish separate approval of an asset adaptation. Trademark clearance is unverified."
-    purpose: Approved 64 by 64 scalable browser icon retaining the recognizable operator mark at small sizes.
-    related_artifacts: [singlepage.design, singlepage.products]
-    allowed_use:
-      - Downstream design use, small-size legibility inspection, accessibility inspection, and deterministic raster QA.
-      - Publication only after applicable communication, claim, license, and launch gates pass.
-    prohibited_use:
-      - Do not publish, deploy, or redistribute before the applicable communication, claim, license, and launch gates pass.
-      - Do not use as evidence, a completeness signal, or proof of product behavior.
-      - Do not add initials, recolor or rearrange mark cells, or derive variants from a public-reference icon.
-    prompt: "Compose a deterministic 64 by 64 SVG favicon for the Measured Space proposal. Preserve the operator-created rounded-square pixel-grid S geometry in canonical #111111 and white, optimize only by proportional scaling and clear space, and add no text, accent, gradient, or unsupported implication."
-    source_or_tool: "Hand-composed repo-native SVG adapted from assets/singlepage/intake/operator-logo-square-black.svg under Assets: source SVG inspection, 2026-08-11; visually inspected at 64 and 16 pixels on 2026-08-11."
-
-  - id: singlepage-generated-measured-space-og
-    path: assets/singlepage/generated/measured-space/singlepagestartup-og-1200x630.svg
-    source_type: generated
-    lifecycle: proposed
-    proposal_id: measured-space
-    evidence: false
-    rights_status: "Proposed derivative of the operator-created mark under the use-and-modification rights stated by the operator for the supplied source mark on 2026-08-11. Outlined Cormorant Garamond SemiBold and JetBrains Mono typography uses registered sources under the SIL Open Font License 1.1. Trademark clearance and operator approval of this regenerated derivative remain unverified."
-    purpose: Proposed 1200 by 630 Open Graph graphic applying the confirmed typography system for operator visual review; it is not approved for publication.
-    related_artifacts: [singlepage.products]
-    allowed_use:
-      - Downstream design use, crop inspection, accessibility inspection, and deterministic raster QA.
-      - Publication only after applicable evidence, communication, claim, license, and launch gates pass.
-    prohibited_use:
-      - Do not publish, deploy, or redistribute before the applicable evidence, communication, claim, license, and launch gates pass.
-      - Do not use as evidence or imply current MIT licensing, integration, production readiness, compatibility, speed, adoption, customer proof, or support.
-      - Do not alter the exact SinglePageStartup name or registered copy, add unverified results, or derive the composition from a public reference.
-    prompt: "Compose a deterministic 1200 by 630 SVG Open Graph graphic for the Measured Space proposal using Paper #F7F6F2, Ink #111111, thin measurement rules, and one exact Accent #BFEF61 locator with an Ink boundary. Preserve the operator mark. Set the exact display copy in Cormorant Garamond SemiBold 600 outlines and the exact base copy in JetBrains Mono outlines: 'SinglePageStartup'; 'Evaluate the recurring foundations'; 'your product needs.'; 'One pinned version · one named product'; 'Rights, evidence, and limits stated'. Put no white content on Accent. Add no current MIT claim, product proof, performance claim, platform logo, reference composition, or generated interface."
-    source_or_tool: "Hand-composed repo-native SVG; exact mark geometry preserved from assets/singlepage/intake/operator-logo-square-black.svg under Assets: source SVG inspection, 2026-08-11; typography outlined from registered font assets; Accent updated from operator sample client accent sample, 2026-08-14; SVG SHA-256 b3b02261c5b6dd6644a3a3a0974bc12ff4ec77374fd1e27de79ef8039a5fc138; regenerated on 2026-08-14."
-
-  - id: singlepage-generated-measured-space-illustration-module-hierarchy
-    design_role: motif
-    design_key: clear-module-hierarchy
-    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-module-hierarchy-v2.png
-    source_type: generated
-    lifecycle: proposed
-    proposal_id: measured-space
-    evidence: false
-    rights_status: AI-generated conceptual illustration using operator-supplied style references.
-    purpose: Show reusable software modules joined to a common code foundation, using simple component blocks. Make the shared base and the modules’ relationship clear.
+    rights_status: SIL Open Font License 1.1. Exact license preserved at assets/singlepage/fonts/onest/OFL.txt.
+    purpose:
+      Selected single type family for every visible Living Focus role, with Latin and Cyrillic
+      coverage and variable weights 100–900.
     related_artifacts:
       - singlepage.design
       - singlepage.products
     allowed_use:
-      - Internal design review and preparation of project materials.
+      - Embed and redistribute under the adjacent SIL Open Font License 1.1; preserve its notices.
+    prohibited_use:
+      - Do not claim authorship, exclusivity or rights beyond the font license; do not treat the
+        typeface as product evidence.
+    prompt: null
+    content_sha256: 966c5c29b4755da84b6854d5c21dd4eaa2420225d0e9874de602de176d4a9f31
+    source_or_tool: "Official Google Fonts:
+      https://raw.githubusercontent.com/google/fonts/main/ofl/onest/Onest%5Bwght%5D.ttf and
+      https://raw.githubusercontent.com/google/fonts/main/ofl/onest/OFL.txt, downloaded 2026-10-03.
+      Metadata declares Latin/Cyrillic and weights 100–900. HarfBuzz shaping confirmed the full
+      Russian alphabet and SinglePageStartup without missing glyphs. OFL.txt SHA-256
+      071195d8806e226faeee60259c28ca67b458227af5195a73f5cfcab06e3003bc."
+
+  - id: singlepage-generated-living-focus-primary-lockup
+    design_role: logo
+    design_key: primary
+    path: assets/singlepage/generated/living-focus/singlepagestartup-primary-lockup.svg
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      Derivative of the operator-supplied pixel-grid S under the supplied
+      use-and-modification rights; Onest outlines use the registered SIL OFL font. Asset-specific
+      approval and trademark clearance are not established.
+    purpose:
+      Proposed 1040 by 240 primary lockup with the unchanged pixel-grid S and an outlined Onest
+      650 wordmark.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Downstream design use, comparison with the operator intake, accessibility inspection, and
+        deterministic raster QA.
+      - Publication only after applicable communication, claim, license, and launch gates pass.
+    prohibited_use:
+      - Do not publish, deploy, or redistribute before the applicable communication, claim, license,
+        and launch gates pass.
+      - Do not use as evidence or proof of integration, production readiness, current MIT licensing,
+        compatibility, speed, adoption, or support.
+      - Do not alter the SinglePageStartup spelling, recolor or rearrange mark cells, or derive the
+        lockup from a public-reference composition.
+    prompt:
+      "Compose a native 1040 by 240 transparent SVG lockup. Preserve every path and rectangle of
+      the supplied 200 by 200 pixel-grid S without recoloring; scale the mark proportionally to 160 by
+      160 at x24 y40. Shape the exact text SinglePageStartup in Onest weight 650 at 82px, convert the
+      glyphs to outlines and place the resulting wordmark at x228 y68 in graphite #18232A. Keep the
+      complete name inside the viewBox; add no tagline, decorative motif or product claim."
+    source_or_tool:
+      Native SVG assembled from the exact operator-logo-square-black.svg child geometry
+      and HarfBuzz hb-view outlines of the registered Onest file; generated 2026-10-03. The
+      transparent 1040 by 240 SVG was rasterized with Sharp and visually inspected at source size. No
+      external reference logo geometry was used.
+    content_sha256: 1895fa32a7a174aef0ff4be9a758ec4710c237e75343290ea7759ea08a476b3d
+    dimensions:
+      width: 1040
+      height: 240
+
+  - id: singlepage-generated-living-focus-avatar
+    design_role: logo
+    design_key: avatar
+    path: assets/singlepage/generated/living-focus/singlepagestartup-avatar.svg
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      Proposed size adaptation of the operator-created mark under the use-and-modification
+      rights stated by the operator for the supplied source mark on 2026-08-11; Brand approval does
+      not establish separate approval of an asset adaptation. Trademark clearance is unverified.
+    purpose: Proposed 512 by 512 square avatar and app-tile asset retaining the recognizable operator mark.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Downstream design use, geometry comparison, accessibility inspection, and deterministic raster
+        QA.
+      - Publication only after applicable communication, claim, license, and launch gates pass.
+    prohibited_use:
+      - Do not publish, deploy, or redistribute before the applicable communication, claim, license,
+        and launch gates pass.
+      - Do not use as evidence, a module map, an integration diagram, or proof of product completeness.
+      - Do not recolor or rearrange mark cells or derive variants from a public-reference composition.
+    prompt:
+      "Compose a deterministic 512 by 512 SVG avatar for the Measured Space proposal. Preserve the
+      operator-created rounded-square pixel-grid S geometry exactly in canonical #111111 and white,
+      retain clear space, and add no text, accent, gradient, reference motif, or proof implication."
+    source_or_tool: "Hand-composed repo-native SVG adapted from
+      assets/singlepage/intake/operator-logo-square-black.svg under Assets: source SVG inspection,
+      2026-08-11; visually inspected at 512 and 32 pixels on 2026-08-11. Bytes reused unchanged in
+      Living Focus on 2026-10-03; the recorded original prompt and, for illustration, tested style
+      master are preserved exactly. This reuse does not establish a new asset approval."
+    content_sha256: 86322373d4496adccbff006d36fe3670538a4dab01ed64c8ededa0a46e395502
+
+  - id: singlepage-generated-living-focus-favicon
+    design_role: logo
+    design_key: favicon
+    path: assets/singlepage/generated/living-focus/singlepagestartup-favicon.svg
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      Unchanged previously approved small-size adaptation of the operator-supplied mark;
+      current proposal registration remains proposed pending complete Design review. Trademark
+      clearance is unverified.
+    purpose: Preserved 64 by 64 browser icon with the original pixel-grid S.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Downstream design use, small-size legibility inspection, accessibility inspection, and
+        deterministic raster QA.
+      - Publication only after applicable communication, claim, license, and launch gates pass.
+    prohibited_use:
+      - Do not publish, deploy, or redistribute before the applicable communication, claim, license,
+        and launch gates pass.
+      - Do not use as evidence, a completeness signal, or proof of product behavior.
+      - Do not add initials, recolor or rearrange mark cells, or derive variants from a
+        public-reference icon.
+    prompt:
+      "Compose a deterministic 64 by 64 SVG favicon for the Measured Space proposal. Preserve the
+      operator-created rounded-square pixel-grid S geometry in canonical #111111 and white, optimize
+      only by proportional scaling and clear space, and add no text, accent, gradient, or unsupported
+      implication."
+    source_or_tool: "Hand-composed repo-native SVG adapted from
+      assets/singlepage/intake/operator-logo-square-black.svg under Assets: source SVG inspection,
+      2026-08-11; visually inspected at 64 and 16 pixels on 2026-08-11. Bytes reused unchanged in
+      Living Focus on 2026-10-03; the recorded original prompt and, for illustration, tested style
+      master are preserved exactly. This reuse does not establish a new asset approval."
+    content_sha256: 0cb7966908efa0dad3e7547dc15f77ce7ab40c9182e2b809ed9edc4c3a72119d
+
+  - id: singlepage-generated-living-focus-illustration-module-hierarchy
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/singlepagestartup-illustration-module-hierarchy-v2.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual illustration using operator-supplied style references.
+    purpose:
+      Preserved source composition for the current white-background derivative. Show reusable
+      software modules joined to a common code foundation, using simple component blocks. Make the
+      shared base and the modules’ relationship clear.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Retain unchanged for edit provenance, composition comparison and production of the registered
+        cool derivative.
     prohibited_use:
       - Do not present the conceptual diagram as verified implementation or product functionality.
+      - Do not use this warm-background master in active Design or product delivery; use its
+        registered cool-square derivative.
     reference_asset_ids:
       - singlepage-illustration-reference-isometric-building
       - singlepage-illustration-reference-isometric-platform
@@ -1263,31 +1335,52 @@ assets:
       height: 1254
     content_sha256: 8dc4acd063be7b202844871024d99d12109401892e2fed169046646872557770
     style_master_sha256: be315e2fd67911a88bfd9380748fd7fa843399951b68d9b3a91c32f2d0265ae7
-    prompt: |-
-      Create airy isometric line art on warm off-white, using fine black contours, light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Borrow line treatment and spatial lightness from the references; derive the objects from the content brief.
+    prompt: >-
+      Create airy isometric line art on warm off-white, using fine black contours, light-gray
+      secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded
+      and open, with generous breathing room and only meaningful connections. Borrow line treatment
+      and spatial lightness from the references; derive the objects from the content brief.
 
-      Content brief: Show reusable software modules joined to a common code foundation, using simple component blocks. Make the shared base and the modules’ relationship clear.
-      Use: a conceptual illustration for the SinglePageStartup Design examples. Square image, without text or logos.
+
+      Content brief: Show reusable software modules joined to a common code foundation, using simple
+      component blocks. Make the shared base and the modules’ relationship clear.
+
+      Use: a conceptual illustration for the SinglePageStartup Design examples. Square image, without
+      text or logos.
+
       Images 1–5 are original style references.
-    source_or_tool: Built-in image_gen.imagegen with five original style references; generated on 2026-09-13 and visually compared with the selected reference style and previous examples. Original 1254 by 1254 PNG copied unchanged; model and seed unavailable.
+    source_or_tool:
+      Built-in image_gen.imagegen with five original style references; generated on
+      2026-09-13 and visually compared with the selected reference style and previous examples.
+      Original 1254 by 1254 PNG copied unchanged; model and seed unavailable. Bytes reused unchanged
+      in Living Focus on 2026-10-03; the recorded original prompt and, for illustration, tested style
+      master are preserved exactly. This reuse does not establish a new asset approval.
+    production_stage: original-master
+    display_derivative_asset_id: singlepage-generated-living-focus-illustration-module-hierarchy-cool-square
 
-  - id: singlepage-generated-measured-space-illustration-framework-inheritance
-    design_role: motif
-    design_key: framework-inheritance
-    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-framework-inheritance-v2.png
+  - id: singlepage-generated-living-focus-illustration-framework-inheritance
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/singlepagestartup-illustration-framework-inheritance-v2.png
     source_type: generated
     lifecycle: proposed
-    proposal_id: measured-space
+    proposal_id: living-focus
     evidence: false
     rights_status: AI-generated conceptual illustration using operator-supplied style references.
-    purpose: Show a software framework reused by a new product, with a visibly changed module and a preserved common foundation. Use simple software blocks and connections.
+    purpose:
+      Preserved source composition for the current white-background derivative. Show a software
+      framework reused by a new product, with a visibly changed module and a preserved common
+      foundation. Use simple software blocks and connections.
     related_artifacts:
       - singlepage.design
       - singlepage.products
     allowed_use:
-      - Internal design review and preparation of project materials.
+      - Retain unchanged for edit provenance, composition comparison and production of the registered
+        cool derivative.
     prohibited_use:
       - Do not present the conceptual diagram as verified implementation or product functionality.
+      - Do not use this warm-background master in active Design or product delivery; use its
+        registered cool-square derivative.
     reference_asset_ids:
       - singlepage-illustration-reference-isometric-building
       - singlepage-illustration-reference-isometric-platform
@@ -1299,31 +1392,52 @@ assets:
       height: 1254
     content_sha256: 56d89060e1e37e7105462a66b38815087065633d0fdca750a4aae2bb0ada72c8
     style_master_sha256: be315e2fd67911a88bfd9380748fd7fa843399951b68d9b3a91c32f2d0265ae7
-    prompt: |-
-      Create airy isometric line art on warm off-white, using fine black contours, light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Borrow line treatment and spatial lightness from the references; derive the objects from the content brief.
+    prompt: >-
+      Create airy isometric line art on warm off-white, using fine black contours, light-gray
+      secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded
+      and open, with generous breathing room and only meaningful connections. Borrow line treatment
+      and spatial lightness from the references; derive the objects from the content brief.
 
-      Content brief: Show a software framework reused by a new product, with a visibly changed module and a preserved common foundation. Use simple software blocks and connections.
-      Use: a conceptual illustration for the SinglePageStartup Design examples. Square image, without text or logos.
+
+      Content brief: Show a software framework reused by a new product, with a visibly changed module
+      and a preserved common foundation. Use simple software blocks and connections.
+
+      Use: a conceptual illustration for the SinglePageStartup Design examples. Square image, without
+      text or logos.
+
       Images 1–5 are original style references.
-    source_or_tool: Built-in image_gen.imagegen with five original style references; generated on 2026-09-13 and visually compared with the selected reference style and previous examples. Original 1254 by 1254 PNG copied unchanged; model and seed unavailable.
+    source_or_tool:
+      Built-in image_gen.imagegen with five original style references; generated on
+      2026-09-13 and visually compared with the selected reference style and previous examples.
+      Original 1254 by 1254 PNG copied unchanged; model and seed unavailable. Bytes reused unchanged
+      in Living Focus on 2026-10-03; the recorded original prompt and, for illustration, tested style
+      master are preserved exactly. This reuse does not establish a new asset approval.
+    production_stage: original-master
+    display_derivative_asset_id: singlepage-generated-living-focus-illustration-framework-inheritance-cool-square
 
-  - id: singlepage-generated-measured-space-illustration-coordinated-agents
-    design_role: motif
-    design_key: coordinated-ai-agents
-    path: assets/singlepage/generated/measured-space/singlepagestartup-illustration-coordinated-agents-v2.png
+  - id: singlepage-generated-living-focus-illustration-coordinated-agents
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/singlepagestartup-illustration-coordinated-agents-v2.png
     source_type: generated
     lifecycle: proposed
-    proposal_id: measured-space
+    proposal_id: living-focus
     evidence: false
     rights_status: AI-generated conceptual illustration using operator-supplied style references.
-    purpose: Show a person directing AI coding assistants toward a shared software task. Represent assistants as software panels and tool symbols, with the person clearly guiding their contributions.
+    purpose:
+      Preserved source composition for the current white-background derivative. Show a person
+      directing AI coding assistants toward a shared software task. Represent assistants as software
+      panels and tool symbols, with the person clearly guiding their contributions.
     related_artifacts:
       - singlepage.design
       - singlepage.products
     allowed_use:
-      - Internal design review and preparation of project materials.
+      - Retain unchanged for edit provenance, composition comparison and production of the registered
+        cool derivative.
     prohibited_use:
       - Do not present the conceptual diagram as verified implementation or product functionality.
+      - Do not use this warm-background master in active Design or product delivery; use its
+        registered cool-square derivative.
     reference_asset_ids:
       - singlepage-illustration-reference-isometric-building
       - singlepage-illustration-reference-isometric-platform
@@ -1335,108 +1449,1617 @@ assets:
       height: 1254
     content_sha256: 81b201498eb1901c92e51e5ea7b57e12bc90103f8a7e5e2e4fcb56348774b6de
     style_master_sha256: be315e2fd67911a88bfd9380748fd7fa843399951b68d9b3a91c32f2d0265ae7
-    prompt: |-
-      Create airy isometric line art on warm off-white, using fine black contours, light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Borrow line treatment and spatial lightness from the references; derive the objects from the content brief.
+    prompt: >-
+      Create airy isometric line art on warm off-white, using fine black contours, light-gray
+      secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded
+      and open, with generous breathing room and only meaningful connections. Borrow line treatment
+      and spatial lightness from the references; derive the objects from the content brief.
 
-      Content brief: Show a person directing AI coding assistants toward a shared software task. Represent assistants as software panels and tool symbols, with the person clearly guiding their contributions.
-      Use: a conceptual illustration for the SinglePageStartup Design examples. Square image, without text or logos.
+
+      Content brief: Show a person directing AI coding assistants toward a shared software task.
+      Represent assistants as software panels and tool symbols, with the person clearly guiding their
+      contributions.
+
+      Use: a conceptual illustration for the SinglePageStartup Design examples. Square image, without
+      text or logos.
+
       Images 1–5 are original style references.
-    source_or_tool: Built-in image_gen.imagegen with five original style references; generated on 2026-09-13 and visually compared with the selected reference style and previous examples. Original 1254 by 1254 PNG copied unchanged; model and seed unavailable.
+    source_or_tool:
+      Built-in image_gen.imagegen with five original style references; generated on
+      2026-09-13 and visually compared with the selected reference style and previous examples.
+      Original 1254 by 1254 PNG copied unchanged; model and seed unavailable. Bytes reused unchanged
+      in Living Focus on 2026-10-03; the recorded original prompt and, for illustration, tested style
+      master are preserved exactly. This reuse does not establish a new asset approval.
+    production_stage: original-master
+    display_derivative_asset_id: singlepage-generated-living-focus-illustration-coordinated-agents-cool-square
 
-  - id: singlepage-generated-measured-space-photography-business-conversation
-    design_role: photography
-    design_key: business-conversation
-    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-business-conversation.png
+  - id: singlepage-generated-living-focus-photography-business-conversation
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation.png
     source_type: generated
     lifecycle: proposed
-    proposal_id: measured-space
+    proposal_id: living-focus
     evidence: false
-    rights_status: AI-generated fictional scene using operator-supplied images as style references. No real customer identity or endorsement is asserted.
-    purpose: Expressive editorial photograph of two business partners exchanging an idea, with a moving gesture and warm light.
+    rights_status:
+      AI-generated original editorial photograph; supplied references inform visual
+      treatment only. It does not depict the actual client, team, customer or workplace.
+    purpose: Preserved production master. Two business partners exchange an idea in cool window daylight.
     related_artifacts:
       - singlepage.design
       - singlepage.products
     allowed_use:
-      - Internal design review and preparation of project materials.
+      - Inspect and retain as the immutable production source for the separately registered square
+        display derivative.
     prohibited_use:
-      - Do not present the fictional scene as a customer testimonial or observed product outcome.
+      - Do not present the image as an actual team, office, customer, portfolio project, documented
+        result or other product evidence.
+      - Use the registered square derivative for Design and product display; do not substitute an
+        automatic crop of this production master.
     reference_asset_ids:
+      - singlepage-generated-living-focus-direction-reference
+      - singlepage-photography-reference-motion-portrait
       - singlepage-photography-reference-motion-runner
-      - singlepage-photography-reference-motion-portrait
-      - singlepage-photography-reference-figure-light-streaks
-    dimensions:
-      width: 1536
-      height: 1024
-    content_sha256: b6bd84d2c747d23eb2f251eae38bbfd5f93a55065cf49effff3cb17a10eade1c
-    prompt: |-
-      Expressive editorial photography of people, with natural light, tactile color and a film-like feel. Capture presence, gesture and movement rather than posed perfection. Let framing and focus vary; blur, foreground softness, backlight or light trails can add energy when they suit the moment.
-
-      Generate a new photorealistic editorial photograph for SinglePageStartup. Scene: two small-business partners exchange an idea at a shared worktable in their independent creative studio, one mid-gesture and the other listening. A few unbranded work samples and paper notes quietly establish real business work. Capture the conversation as a lively passing moment, with expressive motion and warm late-afternoon light against cooler surroundings. Let movement soften parts of the frame while the human exchange remains legible. Landscape 3:2. No added text or logos.
-
-      Attached images are style references only: learn their photographic treatment, light, motion and proximity. Create different people and a new business scene; do not reproduce their subjects, exact compositions, typography or marks.
-    source_or_tool: Built-in image_gen.imagegen; original photography references attached; generated and visually inspected on 2026-09-13. Original 1536 by 1024 PNG copied unchanged; model and seed unavailable.
-
-  - id: singlepage-generated-measured-space-photography-moment-of-focus
-    design_role: photography
-    design_key: moment-of-focus
-    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-moment-of-focus.png
-    source_type: generated
-    lifecycle: proposed
-    proposal_id: measured-space
-    evidence: false
-    rights_status: AI-generated fictional scene using operator-supplied images as style references. No real customer identity or endorsement is asserted.
-    purpose: Intimate editorial portrait of a business owner pausing to consider an idea, seen through soft foreground reflections.
-    related_artifacts:
-      - singlepage.design
-      - singlepage.products
-    allowed_use:
-      - Internal design review and preparation of project materials.
-    prohibited_use:
-      - Do not present the fictional scene as a customer testimonial or observed product outcome.
-    reference_asset_ids:
-      - singlepage-photography-reference-foliage-closeup-wide
-      - singlepage-photography-reference-motion-portrait
       - singlepage-photography-reference-hand-light-streaks
     dimensions:
-      width: 1122
-      height: 1402
-    content_sha256: 5c1e2904db42228e8c3b7706a30b5db6d990e49deb6ecd5994aecb9b96d27d92
-    prompt: |-
-      Expressive editorial photography of people, with natural light, tactile color and a film-like feel. Capture presence, gesture and movement rather than posed perfection. Let framing and focus vary; blur, foreground softness, backlight or light trails can add energy when they suit the moment.
+      width: 1086
+      height: 1448
+    content_sha256: 46912ee9250e5e4d1fc98fc3e68b46b5906fcb1b1b32458970e35f0e38bf1fcc
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    prompt: >-
+      Use case: photorealistic-natural.
 
-      Generate a new photorealistic editorial photograph for SinglePageStartup. Scene: a small-business owner pauses during a workday, considering an idea beside the window of a modest working studio. An intimate portrait caught as they turn toward a colleague just outside the frame. Soft foreground reflections and layered daylight give the personal, thoughtful feeling of the references; the space remains a quiet context. Human expression is the subject. Portrait 4:5. No added text or logos.
+      Asset type: original editorial photograph for the Living Focus visual system.
 
-      Attached images are style references only: learn their photographic treatment, light, motion and proximity. Create different people and a new business scene; do not reproduce their subjects, exact compositions, typography or marks.
-    source_or_tool: Built-in image_gen.imagegen; original photography references attached; generated and visually inspected on 2026-09-13. Original 1122 by 1402 PNG copied unchanged; model and seed unavailable.
+      Style master: Candid editorial photography of people at work, with cool blue or teal daylight
+      balanced by warm natural skin tones. Use close human framing, a present gesture and a clear
+      point of attention. Keep the image photographic and contemporary, with soft foreground or
+      background depth; allow natural motion blur when the action calls for it.
 
-  - id: singlepage-generated-measured-space-photography-work-in-motion
-    design_role: photography
-    design_key: work-in-motion
-    path: assets/singlepage/generated/measured-space/singlepagestartup-photography-work-in-motion.png
+      Scene brief: Two adult business partners exchange an idea at a table in a small bright modern
+      workplace. The nearer partner is a woman with short curly dark hair in her late thirties
+      speaking with an animated open hand gesture, warm skin, attentive expression; the other partner
+      is softly out of focus in the foreground. Convey an ordinary productive human conversation,
+      viewed candidly from close by, not a posed corporate meeting. The face and intent are clear,
+      while the moving hand may be naturally softer. Cool window daylight, blue-grey setting, warm
+      faces, tactile fabric, gentle optical depth.
+
+      Composition: one full-bleed portrait photograph, approximately 3:4, strong close crop with
+      enough context to read a conversation. No border or surrounding interface.
+
+      Reference roles: Image 1 is the selected visual direction board; use ONLY the photographic
+      treatment of its large conversation picture, never its UI, words or logos. Images 2-4 are
+      supplied photographic technique references for natural texture, warm/cool balance and
+      gesture/movement. Create different original people and a new scene; do not duplicate any
+      reference person's likeness, clothing or exact composition.
+
+      Constraints: No text, logos, watermarks, UI, diagrams or graphic overlays. This is conceptual
+      brand imagery, not a photograph of the actual client team or a documented customer.
+    source_or_tool:
+      Built-in imagegen; separate generation call with the selected Living Focus direction
+      board and the named original photographic references, 2026-10-03. Original PNG retained
+      unchanged. Generation agent and coordinator inspected cool daylight, warm skin, gesture,
+      anatomy, scene plausibility and absence of text, UI or logos. Model and seed unavailable.
+    production_stage: original-master
+    display_derivative_asset_id: singlepage-generated-living-focus-photography-business-conversation-square
+
+  - id: singlepage-generated-living-focus-photography-moment-of-focus
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus.png
     source_type: generated
     lifecycle: proposed
-    proposal_id: measured-space
+    proposal_id: living-focus
     evidence: false
-    rights_status: AI-generated fictional scene using operator-supplied images as style references. No real customer identity or endorsement is asserted.
-    purpose: Close, low-viewpoint editorial photograph of a small-business owner handing over a prepared order in bright daylight.
+    rights_status:
+      AI-generated original editorial photograph; supplied references inform visual
+      treatment only. It does not depict the actual client, team, customer or workplace.
+    purpose:
+      Preserved production master. A business owner pauses to consider an idea through soft
+      foreground reflections.
     related_artifacts:
       - singlepage.design
       - singlepage.products
     allowed_use:
-      - Internal design review and preparation of project materials.
+      - Inspect and retain as the immutable production source for the separately registered square
+        display derivative.
     prohibited_use:
-      - Do not present the fictional scene as a customer testimonial or observed product outcome.
+      - Do not present the image as an actual team, office, customer, portfolio project, documented
+        result or other product evidence.
+      - Use the registered square derivative for Design and product display; do not substitute an
+        automatic crop of this production master.
     reference_asset_ids:
-      - singlepage-photography-reference-low-angle-sunburst
+      - singlepage-generated-living-focus-direction-reference
+      - singlepage-photography-reference-foliage-closeup-wide
+      - singlepage-photography-reference-motion-portrait
       - singlepage-photography-reference-motion-runner
     dimensions:
       width: 1254
       height: 1254
-    content_sha256: 275d897de928031f4ee6b9a4ec992bf5e19310539fa3d24b53c9e6dc0081de0c
-    prompt: |-
-      Expressive editorial photography of people, with natural light, tactile color and a film-like feel. Capture presence, gesture and movement rather than posed perfection. Let framing and focus vary; blur, foreground softness, backlight or light trails can add energy when they suit the moment.
+    content_sha256: 714001f9e221a170dc39d327e444519254a98d65b02f668e666e05c9f9731483
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    prompt: >-
+      Use case: photorealistic-natural.
 
-      Generate a new photorealistic editorial photograph for SinglePageStartup. Scene: a small-business owner finishes packing an order and slides the parcel across a shared worktable to a colleague in a sunlit independent studio. Use the close, energetic low viewpoint and warm living color of the references; catch hands, expression and the movement of the exchange as a spontaneous moment of real work. Bright daylight, tactile cardboard and fabric, a sense of progress. Square frame, a different composition from a static seated office scene. No added text or logos.
+      Asset type: original editorial photograph for the Living Focus visual system.
 
-      Attached images are style references only: learn their photographic treatment, light, motion and proximity. Create different people and a new business scene; do not reproduce their subjects, exact compositions, typography or marks.
-    source_or_tool: Built-in image_gen.imagegen; original photography references attached; generated and visually inspected on 2026-09-13. Original 1254 by 1254 PNG copied unchanged; model and seed unavailable.
+      Style master: Candid editorial photography of people at work, with cool blue or teal daylight
+      balanced by warm natural skin tones. Use close human framing, a present gesture and a clear
+      point of attention. Keep the image photographic and contemporary, with soft foreground or
+      background depth; allow natural motion blur when the action calls for it.
+
+      Scene brief: A male small-business owner in his forties, dark skin, close-cropped hair and a
+      deep blue work shirt, pauses beside a large workshop window to consider an idea. One relaxed
+      hand touches his chin; his gaze is directed thoughtfully beyond the camera. Photograph him
+      through softly reflected translucent blue-green glass in the near foreground, with his eyes and
+      expression visible and sharp. Suggest an ordinary small creative business through a few softly
+      blurred workshop materials, without needing screens or a staged office. Warm natural skin sits
+      against cool daylight and quiet blue-grey surroundings. This is a moment of attention and
+      thought, not sadness or a posed professional headshot.
+
+      Composition: one full-bleed square photograph, close head-and-shoulders framing, layered optical
+      depth, contemporary documentary feeling.
+
+      Reference roles: Image 1 supplies the selected board's photographic light and color treatment
+      only; never include any UI, words or logos. Image 2 supplies the technique of a clear face seen
+      through soft foreground occlusion; do not copy its person, foliage setting or composition.
+      Images 3-4 supply natural texture and warm/cool photographic balance. Create a new original
+      person and setting.
+
+      Constraints: No text, logos, watermarks, UI, diagrams or graphic overlays. This is conceptual
+      brand imagery, not a photograph of the actual client team or a documented customer.
+    source_or_tool:
+      Built-in imagegen; separate generation call with the selected Living Focus direction
+      board and the named original photographic references, 2026-10-03. Original PNG retained
+      unchanged. Generation agent and coordinator inspected cool daylight, warm skin, gesture,
+      anatomy, scene plausibility and absence of text, UI or logos. Model and seed unavailable.
+    production_stage: original-master
+    display_derivative_asset_id: singlepage-generated-living-focus-photography-moment-of-focus-square
+
+  - id: singlepage-generated-living-focus-photography-work-in-motion
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      AI-generated original editorial photograph; supplied references inform visual
+      treatment only. It does not depict the actual client, team, customer or workplace.
+    purpose: Preserved production master. A ceramics-shop owner hands a prepared order to a customer.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Inspect and retain as the immutable production source for the separately registered square
+        display derivative.
+    prohibited_use:
+      - Do not present the image as an actual team, office, customer, portfolio project, documented
+        result or other product evidence.
+      - Use the registered square derivative for Design and product display; do not substitute an
+        automatic crop of this production master.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-direction-reference
+      - singlepage-photography-reference-low-angle-sunburst
+      - singlepage-photography-reference-motion-runner
+      - singlepage-photography-reference-hand-light-streaks
+    dimensions:
+      width: 1536
+      height: 1024
+    content_sha256: dd18eb17b964c4b20a4e451b1cc47b31f0510a8718e5bf099217b89968de565f
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    prompt: >-
+      Use case: photorealistic-natural.
+
+      Asset type: original editorial photograph for the Living Focus visual system.
+
+      Style master: Candid editorial photography of people at work, with cool blue or teal daylight
+      balanced by warm natural skin tones. Use close human framing, a present gesture and a clear
+      point of attention. Keep the image photographic and contemporary, with soft foreground or
+      background depth; allow natural motion blur when the action calls for it.
+
+      Scene brief: An adult East Asian woman who runs a small independent ceramics shop passes a
+      prepared unbranded cardboard order box across her worktable to a customer, whose receiving hands
+      are visible at the near edge. Her face is attentive, naturally engaged in the handover, and her
+      sleeves are casually rolled. A few finished ceramic bowls sit far behind her, softly out of
+      focus. Show the physical exchange and forward movement, with a subtle natural motion softness in
+      the receiving hand while the business owner's face and the package remain clear. Cool window
+      daylight with a modest bright rim, blue-grey shop surroundings, warm skin and realistic
+      cardboard.
+
+      Composition: one full-bleed landscape photograph, approximately 3:2, camera close at worktable
+      height with a slight upward angle. Foreground depth gives the gesture immediacy without
+      exaggerated distortion.
+
+      Reference roles: Image 1 supplies the selected board's photographic light and color treatment
+      only; never include its UI, words or logos. Image 2 supplies the low viewpoint and daylight
+      around a near gesture, not its person, clothing, outdoor scene, lettering or exact composition.
+      Images 3-4 supply natural movement and warm/cool photographic balance. Create a different
+      original person and scene.
+
+      Constraints: No text, logos, watermarks, UI, diagrams or graphic overlays. This is conceptual
+      brand imagery, not a photograph of the actual client team or a documented customer.
+    source_or_tool:
+      Built-in imagegen; separate generation call with the selected Living Focus direction
+      board and the named original photographic references, 2026-10-03. Original PNG retained
+      unchanged. Generation agent and coordinator inspected cool daylight, warm skin, gesture,
+      anatomy, scene plausibility and absence of text, UI or logos. Model and seed unavailable.
+    production_stage: original-master
+    display_derivative_asset_id: singlepage-generated-living-focus-photography-work-in-motion-square
+
+  - id: singlepage-generated-living-focus-direction-reference
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/living-focus-direction-reference.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      AI-generated concept board from supplied identity and private visual references;
+      selected as a direction only. Its illustrative UI, copy and approximated marks are not
+      production assets or product evidence.
+    purpose:
+      Preserve the selected Living Focus photographic and compositional direction as a reference
+      input for the three new editorial photographs.
+    related_artifacts:
+      - singlepage.design
+    allowed_use:
+      - Internal direction comparison and photographic treatment input.
+    prohibited_use:
+      - Do not publish the board as a working application, product evidence, final logo or final
+        typography specification.
+      - Do not carry its JetBrains label into the current system; the subsequent operator selection
+        requires Onest for all visible text.
+    reference_asset_ids:
+      - singlepage-operator-logo-square-black
+      - singlepage-photography-reference-low-angle-sunburst
+    dimensions:
+      width: 1487
+      height: 1058
+    content_sha256: b1e7f1caaff72ac9f34bdff90849a01fad778c9b7eb6d347f53766855d56dfc6
+    prompt: >-
+      Use case: ui-mockup. Create a realistic, production-quality VISUAL SYSTEM concept board for
+      SinglePageStartup, a brand with AI Chat for organizing existing business material into an
+      editable project, and Code Framework for building software. This is a proposed reusable visual
+      identity shown in Workspace Design, not a shipped application, pricing page or new marketing
+      strategy. Exactly one cohesive direction in this image, not multiple options.
+
+      Target dimensions: 1440 x 1024 desktop canvas, natural ratio. Clear hierarchy, strong
+      typography, intentional imagery, purposeful whitespace. Show one primary brand statement, one
+      compact original product-surface specimen, and a restrained type/color/media sampling. No dense
+      feature inventory, pricing, testimonials, invented metrics, or unsupported claims.
+
+      The operator rejects the CURRENT screenshot's warm paper surface, bookish thin serif headings
+      and typewritten-manuscript mood, and perceived Anthropic resemblance. The current screenshot is
+      attached ONLY as the design being replaced. Do not reproduce Storybook chrome, navy review-shell
+      header, old warm background, the "Measured Space" name or old layout.
+
+      Preserve the supplied pixel-grid S mark from its own reference, and exact SinglePageStartup
+      name. Preserve #BFEF61 green accent. Use near-black text with good contrast. Typography must
+      support Latin and Cyrillic. At most 2 font families.
+
+      All external reference screenshots/photos are private mood/technique references only. Abstract
+      their hierarchy, spacing, motion, light, and form; do not copy their layouts, text, marks,
+      icons, people, scene or watermark. Create an original people-and-business photograph if used. No
+      stock office cliches. Photography may have warm skin, cool surrounding light, gesture and blur;
+      it does not mean the UI is warm or textured.
+
+      Layout: use whitespace, alignment and hierarchy first, subtle dividers second; restrained
+      surface fills when useful, minimal borders and shadows. Do not enclose the whole design in a
+      floating card. No nested cards, gratuitous badges, gradients, fake telemetry, sparkle icons,
+      decorative hand-drawn marks or paper effects.
+
+      Use readable small type at 14–16px, comfortable lines under 65 characters. No clipped content.
+      Do not stretch visual assets. Use original concise sample copy: "Make sense of what you already
+      have." and one primary control "Organize my materials". A compact surface may show a sample
+      "Coffee roastery" project with Notes / Business model / Discussion, clearly visual example
+      content. Keep broad functionality off-screen.
+
+      Date anchor: 2026-10-03; avoid dates in visible mock data. Show English design labels consistent
+      with the current project. Polished art direction, not a UI kit exploded into dozens of tiles.
+
+      Direction name: Living Focus.
+
+      Explore a distinctly more human, vivid and image-led visual identity. This is explicitly a
+      PROPOSAL to replace the old monospaced body with Onest, a modern proportional Cyrillic-capable
+      sans; use JetBrains Mono only for tiny technical labels. Two families maximum. Crisp readable
+      text, no serif or italic anywhere.
+
+      The composition must differ strongly from the clean side-by-side dashboard direction. Use a
+      large, beautifully art-directed original photograph of a small business owner turning toward a
+      collaborator during a working conversation; cool blue/teal natural light, warm skin and one
+      expressive moving gesture with subtle motion blur, inspired by the photographic techniques in
+      references. The photography occupies one big asymmetric field, not many thumbnails. Avoid
+      copying any person, outfit or scene from references.
+
+      A clear, calm white working surface is anchored partly against that image with ample open space,
+      focused on reviewing organized project material and a single green "Organize my materials"
+      action. Make the relation between human and organized thought visible through composition, not
+      decorative network graphics. Include only one short original overlay label on the photograph,
+      not fake medical telemetry or floating badges.
+
+      The board has a refined white upper band with exact supplied logo and name, strong medium-weight
+      large type, and a dark cool graphite (#18232A) supporting block containing the concise statement
+      "Make sense of what you already have." Smaller typography/color examples can sit quietly along
+      the bottom edge; show white, cool graphite, light gray and exact #BFEF61. Green is a lively
+      primary action, not text highlight marker.
+
+      Keep UI minimum body 15px and modest 16px corners. White on the dark block; near-black on lime.
+      Sufficient calm white area for an everyday product to breathe. It should feel approachable,
+      current and photographic, with a unique brand rhythm, never a paper journal, generic AI-chat
+      clone, dark developer dashboard or fitness ad.
+
+      Input images: 1=current screenshot to replace; 2=exact required logo; 3=the six-tile source
+      reference sheet covering all five source categories (abstraction only); 4=photographic
+      perspective/light technique (never its copied person, visible words or watermark); 5=spare
+      marketing typography reference (tone and spacing only).
+    source_or_tool:
+      Built-in imagegen, generation item exec-4ca5f894-a482-49ce-9383-e41d9124277f,
+      2026-10-03. Exact revised prompt recovered from the task generation item. Inputs were the
+      current Design screenshot, a raster of the required pixel S, a six-tile source reference sheet,
+      the low-angle-sunburst original and a spare marketing typography reference. Exact helper-file
+      paths and the final marketing-reference filename were not recovered, so no guessed asset ID is
+      recorded. The subsequent operator selection excludes the proposed JetBrains label; the prompt
+      remains immutable. The source PNG is copied unchanged.
+
+  - id: singlepage-generated-living-focus-photography-business-conversation-square
+    design_role: photography
+    design_key: business-conversation
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      AI-generated original editorial photograph; supplied references inform visual
+      treatment only. It does not depict the actual client, team, customer or workplace.
+    purpose:
+      Prepared square display derivative. Two business partners exchange an idea in cool window
+      daylight.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use as conceptual editorial imagery in Design examples and product compositions after visual
+        review.
+    prohibited_use:
+      - Do not present the image as an actual team, office, customer, portfolio project, documented
+        result or other product evidence.
+      - Do not stretch the square or automatically crop away its reviewed composition.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation
+    source_master_asset_id: singlepage-generated-living-focus-photography-business-conversation
+    source_master_sha256: 46912ee9250e5e4d1fc98fc3e68b46b5906fcb1b1b32458970e35f0e38bf1fcc
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 669fa985bf9e6774bb277205912ca90ff8f7e86cb9cc3329f2827a4f21f137a3
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    prompt:
+      "Use case: identity-preserve. Edit target: the supplied original business-conversation
+      photograph. Create a square 1:1 delivery derivative, ideally exactly 1254 × 1254 pixels. Change
+      only framing to fit the square; this is the same photograph, people, conversation and moment.
+      Keep the woman's face, short curly hair, black knitted sweater, expression and gaze; preserve
+      the man in the softly blurred near foreground, glasses and posture; preserve the woman's entire
+      expressive hand gesture. Keep the cool window daylight, warm natural skin, optical depth, subtle
+      hand-motion softness, natural texture and original color balance unchanged. Reframe by reducing
+      incidental empty background/table space and extending the quiet surroundings where necessary; do
+      not cut through the woman's face or active hand or lose the visible relationship between the two
+      people. Do not change the camera viewpoint, pose, identities or clothing. Do not invent a new
+      scene, add objects, sharpen away motion, smooth the skin or stylize the photograph. Full-bleed
+      square photograph with no border, labels, text, logos or watermark. Preserve high detail and
+      photographic quality."
+    adaptation:
+      operation: imagegen-identity-preserve-square-reframing
+      tool: image_gen.imagegen
+      postprocessing: none
+      instruction:
+        "Use case: identity-preserve. Edit target: the supplied original business-conversation
+        photograph. Create a square 1:1 delivery derivative, ideally exactly 1254 × 1254 pixels.
+        Change only framing to fit the square; this is the same photograph, people, conversation and
+        moment. Keep the woman's face, short curly hair, black knitted sweater, expression and gaze;
+        preserve the man in the softly blurred near foreground, glasses and posture; preserve the
+        woman's entire expressive hand gesture. Keep the cool window daylight, warm natural skin,
+        optical depth, subtle hand-motion softness, natural texture and original color balance
+        unchanged. Reframe by reducing incidental empty background/table space and extending the quiet
+        surroundings where necessary; do not cut through the woman's face or active hand or lose the
+        visible relationship between the two people. Do not change the camera viewpoint, pose,
+        identities or clothing. Do not invent a new scene, add objects, sharpen away motion, smooth
+        the skin or stylize the photograph. Full-bleed square photograph with no border, labels, text,
+        logos or watermark. Preserve high detail and photographic quality."
+      original_generated_output: /Users/rogwild/.codex/generated_images/01a1037a-33f2-74c3-a4ed-6613af5ced60/exec-57dbf5ac-8bd9-4e6b-9c2f-5277a7a27c77.png
+    visual_review:
+      status: visually-verified
+      source: Production-agent source comparison and coordinator source and browser review, 2026-10-04.
+      findings:
+        Square framing preserves both people, the woman's face and complete expressive hand, cool
+        window light, warm skin, optical depth and natural motion softness. Surroundings are reframed;
+        no border or text.
+      scope:
+        Compared with its unchanged original at source and display sizes. The three derivatives were
+        reviewed together in the default Design projection, including small Photo cards at 320px and
+        414px viewport widths, and affected product compositions. Agent QA only; lifecycle remains
+        proposed.
+      display_checks:
+        Natural size 1254 by 1254; Photography examples approximately 445px square and Photo
+        cards approximately 269px square. No stretch, unintended crop or unequal card height in the
+        inspected layouts.
+    source_or_tool:
+      Built-in image_gen.imagegen editing the registered source master with the exact
+      prompt shown; original output retained without postprocessing. Prepared 2026-10-04. The
+      original-generation master and source file remain unchanged. Conceptual generated brand
+      photography only. Not evidence of actual team, customers, delivered work or customer outcomes.
+
+  - id: singlepage-generated-living-focus-photography-moment-of-focus-square
+    design_role: photography
+    design_key: moment-of-focus
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      AI-generated original editorial photograph; supplied references inform visual
+      treatment only. It does not depict the actual client, team, customer or workplace.
+    purpose:
+      Prepared square display derivative. A business owner pauses to consider an idea through
+      soft foreground reflections.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use as conceptual editorial imagery in Design examples and product compositions after visual
+        review.
+    prohibited_use:
+      - Do not present the image as an actual team, office, customer, portfolio project, documented
+        result or other product evidence.
+      - Do not stretch the square or automatically crop away its reviewed composition.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-moment-of-focus
+    source_master_asset_id: singlepage-generated-living-focus-photography-moment-of-focus
+    source_master_sha256: 714001f9e221a170dc39d327e444519254a98d65b02f668e666e05c9f9731483
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 714001f9e221a170dc39d327e444519254a98d65b02f668e666e05c9f9731483
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    prompt: null
+    adaptation:
+      operation: byte-identical-copy
+      tool: filesystem cp
+      postprocessing: none
+      instruction:
+        Copy the already-square 1254 by 1254 source master byte-for-byte; no generation, crop
+        or resampling.
+      original_generated_output: null
+    visual_review:
+      status: visually-verified
+      source: Production-agent source comparison and coordinator source and browser review, 2026-10-04.
+      findings:
+        Already-square original is reused byte-for-byte at 1254 × 1254; no regeneration, crop or
+        resampling.
+      scope:
+        Compared with its unchanged original at source and display sizes. The three derivatives were
+        reviewed together in the default Design projection, including small Photo cards at 320px and
+        414px viewport widths, and affected product compositions. Agent QA only; lifecycle remains
+        proposed.
+      display_checks:
+        Natural size 1254 by 1254; Photography examples approximately 445px square and Photo
+        cards approximately 269px square. No stretch, unintended crop or unequal card height in the
+        inspected layouts.
+    source_or_tool:
+      Deterministic filesystem copy of the already-square source master, preserving every
+      byte; no image-generation call. Prepared 2026-10-04. The original-generation master and source
+      file remain unchanged. Conceptual generated brand photography only. Not evidence of actual team,
+      customers, delivered work or customer outcomes.
+
+  - id: singlepage-generated-living-focus-photography-work-in-motion-square
+    design_role: photography
+    design_key: work-in-motion
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      AI-generated original editorial photograph; supplied references inform visual
+      treatment only. It does not depict the actual client, team, customer or workplace.
+    purpose: Prepared square display derivative. A ceramics-shop owner hands a prepared order to a customer.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use as conceptual editorial imagery in Design examples and product compositions after visual
+        review.
+    prohibited_use:
+      - Do not present the image as an actual team, office, customer, portfolio project, documented
+        result or other product evidence.
+      - Do not stretch the square or automatically crop away its reviewed composition.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-work-in-motion
+    source_master_asset_id: singlepage-generated-living-focus-photography-work-in-motion
+    source_master_sha256: dd18eb17b964c4b20a4e451b1cc47b31f0510a8718e5bf099217b89968de565f
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 2f7cc383bbd3345a5ef3e62b7e19fb69f4d30456e8ad6a134a197e9959579dd5
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    prompt:
+      "Use case: identity-preserve. Edit target: the supplied original work-in-motion photograph.
+      Create a square 1:1 delivery derivative, ideally exactly 1254 × 1254 pixels. Change only framing
+      to fit the square; this is the same photograph, woman, ceramics shop, customer and order
+      handover. Keep the woman's face, dark hair tied up, expression and gaze, black sweater and
+      apron; preserve her two hands holding the same cardboard order box and the customer's receiving
+      hands in the foreground. Keep the whole box and the meaningful handover visible. Preserve the
+      cool window daylight, warm natural skin, bright hair rim, optical depth, natural motion softness
+      in the near hands, realistic cardboard and original color balance. Use modest reframing and
+      extend the quiet shop surroundings vertically where needed, instead of cropping away the box or
+      either person's meaningful hands. Do not change the camera viewpoint, pose, identities or
+      clothing. Do not invent a new scene or objects, sharpen away motion, smooth the skin or stylize
+      the photograph. Full-bleed square photograph with no border, labels, text, logos or watermark.
+      Preserve high detail and photographic quality."
+    adaptation:
+      operation: imagegen-identity-preserve-square-reframing
+      tool: image_gen.imagegen
+      postprocessing: none
+      instruction:
+        "Use case: identity-preserve. Edit target: the supplied original work-in-motion
+        photograph. Create a square 1:1 delivery derivative, ideally exactly 1254 × 1254 pixels.
+        Change only framing to fit the square; this is the same photograph, woman, ceramics shop,
+        customer and order handover. Keep the woman's face, dark hair tied up, expression and gaze,
+        black sweater and apron; preserve her two hands holding the same cardboard order box and the
+        customer's receiving hands in the foreground. Keep the whole box and the meaningful handover
+        visible. Preserve the cool window daylight, warm natural skin, bright hair rim, optical depth,
+        natural motion softness in the near hands, realistic cardboard and original color balance. Use
+        modest reframing and extend the quiet shop surroundings vertically where needed, instead of
+        cropping away the box or either person's meaningful hands. Do not change the camera viewpoint,
+        pose, identities or clothing. Do not invent a new scene or objects, sharpen away motion,
+        smooth the skin or stylize the photograph. Full-bleed square photograph with no border,
+        labels, text, logos or watermark. Preserve high detail and photographic quality."
+      original_generated_output: /Users/rogwild/.codex/generated_images/01a1037a-33f2-74c3-a4ed-6613af5ced60/exec-c0148e49-b973-464a-b0e6-5d4b1bca01e1.png
+    visual_review:
+      status: visually-verified
+      source: Production-agent source comparison and coordinator source and browser review, 2026-10-04.
+      findings:
+        Square framing preserves the woman's face, both hands holding the complete order box and
+        both receiving hands; cool window daylight, skin color and hand-motion softness remain.
+        Surroundings extend above and below. No border or text.
+      scope:
+        Compared with its unchanged original at source and display sizes. The three derivatives were
+        reviewed together in the default Design projection, including small Photo cards at 320px and
+        414px viewport widths, and affected product compositions. Agent QA only; lifecycle remains
+        proposed.
+      display_checks:
+        Natural size 1254 by 1254; Photography examples approximately 445px square and Photo
+        cards approximately 269px square. No stretch, unintended crop or unequal card height in the
+        inspected layouts.
+    source_or_tool:
+      Built-in image_gen.imagegen editing the registered source master with the exact
+      prompt shown; original output retained without postprocessing. Prepared 2026-10-04. The
+      original-generation master and source file remain unchanged. Conceptual generated brand
+      photography only. Not evidence of actual team, customers, delivered work or customer outcomes.
+
+  - id: singlepage-phosphor-icons-mit-license
+    design_role: null
+    design_key: null
+    path: assets/singlepage/icons/phosphor/LICENSE
+    source_type: stock
+    lifecycle: null
+    proposal_id: null
+    evidence: false
+    rights_status: MIT License; Copyright (c) 2023 Phosphor Icons.
+    purpose: Required license and copyright notice for the registered official Phosphor Icons SVGs.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Preserve this complete notice with copies or substantial portions of the icons under the MIT
+        License.
+    prohibited_use:
+      - Do not remove the required copyright or permission notice from redistributed icon sources.
+    prompt: null
+    content_sha256: b5b1f1da112d18ea2147decfd48ddc1bf2b5aeb6c265381579340e95b15a2bb2
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/LICENSE;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      unchanged 2026-10-04.
+
+  - id: singlepage-phosphor-regular-arrow-right
+    design_role: icon
+    design_key: arrow-right
+    path: assets/singlepage/icons/phosphor/arrow-right.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular arrow-right icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: e45bc4a12592b8723110db42c6deffdf177e4fe7704cf50324963fa0a59b2d74
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/arrow-right.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-arrow-down
+    design_role: icon
+    design_key: arrow-down
+    path: assets/singlepage/icons/phosphor/arrow-down.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular arrow-down icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: cc6416ae83e20660f14b11f5525c6d05ee679c3f26cee41b696cb37aa905d4f5
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/arrow-down.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-caret-down
+    design_role: icon
+    design_key: caret-down
+    path: assets/singlepage/icons/phosphor/caret-down.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular caret-down icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 53f0cf2d0b144ac3cb07e353e0cd0853ffb3ed432d741460ce288edfcb0924b1
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/caret-down.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-arrow-up-right
+    design_role: icon
+    design_key: arrow-up-right
+    path: assets/singlepage/icons/phosphor/arrow-up-right.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular arrow-up-right icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 44db5257b360ec04863eb6daaa41f220c8b714d23fb81403517d0a30acfda9f4
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/arrow-up-right.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-file-text
+    design_role: icon
+    design_key: file-text
+    path: assets/singlepage/icons/phosphor/file-text.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular file-text icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 9a580a038cce9f6dd223597864abe1b5c5c03bf8176d2f7171574598468b16f7
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/file-text.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-folder-open
+    design_role: icon
+    design_key: folder-open
+    path: assets/singlepage/icons/phosphor/folder-open.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular folder-open icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 9157518d00547242d3986c4fdaaf44a62ef056caf3ecee0c88137529947170ea
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/folder-open.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-check
+    design_role: icon
+    design_key: check
+    path: assets/singlepage/icons/phosphor/check.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular check icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: cbb89a8c42f283d4f846eb935e05d88c1be04462f16480e068c0f82b9ce40b12
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/check.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-x
+    design_role: icon
+    design_key: x
+    path: assets/singlepage/icons/phosphor/x.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular x icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 7397b15e1fa66eaf6ff9b59fe91d483cb5c3bcf75b2fe052097ab6f0593b513a
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/x.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-stack
+    design_role: icon
+    design_key: stack
+    path: assets/singlepage/icons/phosphor/stack.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular stack icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: ee9eaaeb345e8a28c9662cf8a59147cb86080bd922e41f143444189e0116ea7e
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/stack.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-globe
+    design_role: icon
+    design_key: globe
+    path: assets/singlepage/icons/phosphor/globe.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular globe icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 3b53d207c09fc72de699c8b2149892e065b570b3ae144412ae53244b0a0f7977
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/globe.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-chat-circle
+    design_role: icon
+    design_key: chat-circle
+    path: assets/singlepage/icons/phosphor/chat-circle.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular chat-circle icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 09e36aa820a39bbc8cffe705ad84c836d1e5733f83dc1d2212a965fdacdf4a67
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/chat-circle.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-plus
+    design_role: icon
+    design_key: plus
+    path: assets/singlepage/icons/phosphor/plus.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular plus icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: d688feb9dd2e41c1721d6906a05a2a42e18cd774762fe706d72b2bdfd91cddc4
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/plus.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-pencil-simple
+    design_role: icon
+    design_key: pencil-simple
+    path: assets/singlepage/icons/phosphor/pencil-simple.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular pencil-simple icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 999530da442f44d8cf0054364373d16150f3e082c2ac294a4988a9c3a4295c28
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/pencil-simple.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-eye
+    design_role: icon
+    design_key: eye
+    path: assets/singlepage/icons/phosphor/eye.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular eye icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 91d39f20bf95e0f36c07bd79b83a85fe6ff4ca20e2759c4afee7419ef80403fe
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/eye.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-upload-simple
+    design_role: icon
+    design_key: upload-simple
+    path: assets/singlepage/icons/phosphor/upload-simple.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular upload-simple icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: d2b22b75affd718a4a24d71ee71586b277cf48ddb7d52b7d7d0a85b47f8b12d1
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/upload-simple.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-gear-six
+    design_role: icon
+    design_key: gear-six
+    path: assets/singlepage/icons/phosphor/gear-six.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular gear-six icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: 2bb05ec80cc37505a3f21c74989dbb297ab8442a668f5ffbd6a8f7c1d5794c7b
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/gear-six.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-trash
+    design_role: icon
+    design_key: trash
+    path: assets/singlepage/icons/phosphor/trash.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular trash icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: e6a830c0409f9e101e3695c981eef98427d39fd01f502b9cbd6900930b01f19c
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/trash.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-phosphor-regular-question
+    design_role: icon
+    design_key: question
+    path: assets/singlepage/icons/phosphor/question.svg
+    source_type: stock
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status:
+      MIT License; Copyright (c) 2023 Phosphor Icons. Notice registered as
+      singlepage-phosphor-icons-mit-license.
+    purpose: Proposed Phosphor Regular question icon for consistent Living Focus interface use.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Use, copy, modify and redistribute under the MIT License, retaining its notice.
+      - Scale native SVG geometry uniformly to 20px or 24px; apply semantic currentColor and
+        accessible labeling in the consuming interface.
+    prohibited_use:
+      - Do not remove required license notices or present the icon as product evidence.
+      - Do not mix visual weights or replace the native path with an improvised drawing in the
+        proposed set.
+    reference_asset_ids:
+      - singlepage-phosphor-icons-mit-license
+    prompt: null
+    content_sha256: fd9a87cfce2abaa9113058be90e5281da58f665e2185974b80c7425d5c7fe2d6
+    source_or_tool:
+      https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/regular/question.svg;
+      @phosphor-icons/core 2.1.1, commit 2b75f3ad12b420c9504ef05df8d2564a28f8500e, downloaded
+      2026-10-04. none; official source bytes. Inline use adds size, class and accessibility
+      attributes without changing geometry.
+
+  - id: singlepage-generated-living-focus-illustration-module-hierarchy-cool-square
+    design_role: motif
+    design_key: clear-module-hierarchy
+    path: assets/singlepage/generated/living-focus/singlepagestartup-illustration-module-hierarchy-cool-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual illustration using operator-supplied style references.
+    purpose:
+      Show reusable software modules joined to a common code foundation, using simple component
+      blocks. Make the shared base and the modules’ relationship clear.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Internal design review and preparation of project materials using the current white-background
+        illustration treatment.
+    prohibited_use:
+      - Do not present the conceptual diagram as verified implementation or product functionality.
+      - Do not replace the reviewed square with the warm source master or crop, stretch or remove
+        defining line detail.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-illustration-module-hierarchy
+    source_master_asset_id: singlepage-generated-living-focus-illustration-module-hierarchy
+    source_master_sha256: 8dc4acd063be7b202844871024d99d12109401892e2fed169046646872557770
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: ee79d6d7137e84ee998eaf16f9698a9fec1ca8472d53d1ad5ffe392b7229d398
+    style_master_sha256: a9c8132263edfe1282919ba2260326fe4c08eb6048fd662cc3acd5610172e7b2
+    prompt: >-
+      Use case: precise-object-edit.
+
+      Style master: Create airy isometric line art on a flat pure white background, using fine
+      graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61
+      details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful
+      connections. Derive the objects from the content brief.
+
+      Shared edit instruction: Edit the supplied illustration only to apply this color/background
+      treatment. Retain its exact square canvas, arrangement, scale, camera angle, isometric geometry,
+      objects, icons, line hierarchy and all dotted connections. Do not crop, reframe, add or remove
+      objects. Replace every warm ivory, cream, yellowed paper and beige area with uniform pure white
+      #FFFFFF, including the entire backdrop AND the faces of all objects. No paper texture, grain,
+      vignette, shading or gradients. Keep the thin dark contours crisp graphite, secondary lines cool
+      light gray, and small accent details #BFEF61; no other yellow or warm tint. Preserve the fine
+      original linework and all secondary detail. Full opaque white square PNG, exactly 1254 × 1254
+      pixels if supported, with no border or text labels.
+
+      Scene preservation brief: Preserve the central rounded code platform bearing the </> icon and
+      the five surrounding module cubes on their individual platforms: gear, user, analytics bars,
+      database and small cube. Keep the existing five dotted lime paths from these modules to the
+      center and their circular connection points in the same locations.
+    scene_brief:
+      "Preserve the central rounded code platform bearing the </> icon and the five
+      surrounding module cubes on their individual platforms: gear, user, analytics bars, database and
+      small cube. Keep the existing five dotted lime paths from these modules to the center and their
+      circular connection points in the same locations."
+    adaptation:
+      operation: precise-object-edit
+      tool: image_gen.imagegen
+      native_generated_output: /Users/rogwild/.codex/generated_images/01a1037a-33f2-74c3-a4ed-6613af5ced60/exec-e82e348e-2877-4780-8fcd-00333114211a.png
+      postprocessing: none
+      transparent_background: false
+    visual_review:
+      status: visually-verified
+      source: Production-agent and coordinator inspection of all three edited originals, 2026-10-04.
+      findings:
+        Square canvas, scene geometry, object counts, icons, graphite contours, cool gray
+        secondary linework, dotted connections and lime accents are retained. The backdrop and object
+        faces appear white; the warm paper cast is removed. No cropping, added labels or border.
+      background_limit:
+        "The design target is #FFFFFF. Native image output is visually white with sampled
+        background channels between 253 and 255; uniform RGB 255,255,255 is not guaranteed. No pixel
+        normalization was applied."
+      sampled_background_pixels:
+        - x: 0
+          y: 0
+          rgb:
+            - 253
+            - 255
+            - 254
+        - x: 50
+          y: 50
+          rgb:
+            - 254
+            - 254
+            - 254
+        - x: 1200
+          y: 50
+          rgb:
+            - 255
+            - 254
+            - 255
+        - x: 50
+          y: 1200
+          rgb:
+            - 254
+            - 254
+            - 254
+        - x: 1200
+          y: 1200
+          rgb:
+            - 254
+            - 254
+            - 254
+        - x: 600
+          y: 50
+          rgb:
+            - 255
+            - 255
+            - 255
+      browser_review: visually-verified
+      scope:
+        Source and rendered Design review of composition, linework, cool treatment and full framing.
+        Product placements are outside this recorded browser review; lifecycle remains proposed.
+      browser_source: Coordinator browser inspection of the complete default Design projection, 2026-10-04.
+      browser_checks:
+        All three cool-square examples load at native 1254 by 1254 and render at
+        approximately 590.5px square in the desktop catalogue. Illustration and text and repeated-item
+        cards were visually reviewed for white backgrounds and legible detail. The 320px Design
+        projection has no horizontal overflow, with repeated-grid images approximately 208.66px
+        square.
+    source_or_tool:
+      Built-in image_gen.imagegen, one separate raster-edit call using the registered
+      source master on 2026-10-04. The full prompt includes the exact current style master, shared
+      color correction instruction and scene-preservation brief. Native output copied unchanged; no
+      crop, resampling or pixel normalization after generation. Model and seed unavailable.
+    usage_limits:
+      Conceptual generated illustration of software structure and agent coordination. Not
+      proof of actual product operation, customer work or measured outcomes.
+
+  - id: singlepage-generated-living-focus-illustration-framework-inheritance-cool-square
+    design_role: motif
+    design_key: framework-inheritance
+    path: assets/singlepage/generated/living-focus/singlepagestartup-illustration-framework-inheritance-cool-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual illustration using operator-supplied style references.
+    purpose:
+      Show a software framework reused by a new product, with a visibly changed module and a
+      preserved common foundation. Use simple software blocks and connections.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Internal design review and preparation of project materials using the current white-background
+        illustration treatment.
+    prohibited_use:
+      - Do not present the conceptual diagram as verified implementation or product functionality.
+      - Do not replace the reviewed square with the warm source master or crop, stretch or remove
+        defining line detail.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-illustration-framework-inheritance
+    source_master_asset_id: singlepage-generated-living-focus-illustration-framework-inheritance
+    source_master_sha256: 56d89060e1e37e7105462a66b38815087065633d0fdca750a4aae2bb0ada72c8
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 468924348a1a356d82eb243a8be2adece38a74416eed6f16587b960fb6bc5ac5
+    style_master_sha256: a9c8132263edfe1282919ba2260326fe4c08eb6048fd662cc3acd5610172e7b2
+    prompt: >-
+      Use case: precise-object-edit.
+
+      Style master: Create airy isometric line art on a flat pure white background, using fine
+      graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61
+      details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful
+      connections. Derive the objects from the content brief.
+
+      Shared edit instruction: Edit the supplied illustration only to apply this color/background
+      treatment. Retain its exact square canvas, arrangement, scale, camera angle, isometric geometry,
+      objects, icons, line hierarchy and all dotted connections. Do not crop, reframe, add or remove
+      objects. Replace every warm ivory, cream, yellowed paper and beige area with uniform pure white
+      #FFFFFF, including the entire backdrop AND the faces of all objects. No paper texture, grain,
+      vignette, shading or gradients. Keep the thin dark contours crisp graphite, secondary lines cool
+      light gray, and small accent details #BFEF61; no other yellow or warm tint. Preserve the fine
+      original linework and all secondary detail. Full opaque white square PNG, exactly 1254 × 1254
+      pixels if supported, with no border or text labels.
+
+      Scene preservation brief: Preserve the two stacks of three isometric blocks in the upper half
+      and the shared rounded foundation platform with four small tiles in the lower half. Keep the
+      browser-window, gear and cube icons on the stacks, the database/grid/hexagon/connections icons
+      on the base, and the two dotted lime connections. Keep the right-hand middle block's lime
+      outline and small lime emphasis marks in their existing positions. Preserve all proportions and
+      spacing.
+    scene_brief:
+      Preserve the two stacks of three isometric blocks in the upper half and the shared
+      rounded foundation platform with four small tiles in the lower half. Keep the browser-window,
+      gear and cube icons on the stacks, the database/grid/hexagon/connections icons on the base, and
+      the two dotted lime connections. Keep the right-hand middle block's lime outline and small lime
+      emphasis marks in their existing positions. Preserve all proportions and spacing.
+    adaptation:
+      operation: precise-object-edit
+      tool: image_gen.imagegen
+      native_generated_output: /Users/rogwild/.codex/generated_images/01a1037a-33f2-74c3-a4ed-6613af5ced60/exec-0a0a6dbc-4ff1-4b78-bfde-4344b895f43d.png
+      postprocessing: none
+      transparent_background: false
+    visual_review:
+      status: visually-verified
+      source: Production-agent and coordinator inspection of all three edited originals, 2026-10-04.
+      findings:
+        Square canvas, scene geometry, object counts, icons, graphite contours, cool gray
+        secondary linework, dotted connections and lime accents are retained. The backdrop and object
+        faces appear white; the warm paper cast is removed. No cropping, added labels or border.
+      background_limit:
+        "The design target is #FFFFFF. Native image output is visually white with sampled
+        background channels between 253 and 255; uniform RGB 255,255,255 is not guaranteed. No pixel
+        normalization was applied."
+      sampled_background_pixels:
+        - x: 0
+          y: 0
+          rgb:
+            - 253
+            - 255
+            - 254
+        - x: 50
+          y: 50
+          rgb:
+            - 254
+            - 254
+            - 254
+        - x: 1200
+          y: 50
+          rgb:
+            - 255
+            - 254
+            - 255
+        - x: 50
+          y: 1200
+          rgb:
+            - 254
+            - 254
+            - 254
+        - x: 1200
+          y: 1200
+          rgb:
+            - 254
+            - 254
+            - 254
+        - x: 600
+          y: 50
+          rgb:
+            - 255
+            - 254
+            - 255
+      browser_review: visually-verified
+      scope:
+        Source and rendered Design review of composition, linework, cool treatment and full framing.
+        Product placements are outside this recorded browser review; lifecycle remains proposed.
+      browser_source: Coordinator browser inspection of the complete default Design projection, 2026-10-04.
+      browser_checks:
+        All three cool-square examples load at native 1254 by 1254 and render at
+        approximately 590.5px square in the desktop catalogue. Illustration and text and repeated-item
+        cards were visually reviewed for white backgrounds and legible detail. The 320px Design
+        projection has no horizontal overflow, with repeated-grid images approximately 208.66px
+        square.
+    source_or_tool:
+      Built-in image_gen.imagegen, one separate raster-edit call using the registered
+      source master on 2026-10-04. The full prompt includes the exact current style master, shared
+      color correction instruction and scene-preservation brief. Native output copied unchanged; no
+      crop, resampling or pixel normalization after generation. Model and seed unavailable.
+    usage_limits:
+      Conceptual generated illustration of software structure and agent coordination. Not
+      proof of actual product operation, customer work or measured outcomes.
+
+  - id: singlepage-generated-living-focus-illustration-coordinated-agents-cool-square
+    design_role: motif
+    design_key: coordinated-ai-agents
+    path: assets/singlepage/generated/living-focus/singlepagestartup-illustration-coordinated-agents-cool-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual illustration using operator-supplied style references.
+    purpose:
+      Show a person directing AI coding assistants toward a shared software task. Represent
+      assistants as software panels and tool symbols, with the person clearly guiding their
+      contributions.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+    allowed_use:
+      - Internal design review and preparation of project materials using the current white-background
+        illustration treatment.
+    prohibited_use:
+      - Do not present the conceptual diagram as verified implementation or product functionality.
+      - Do not replace the reviewed square with the warm source master or crop, stretch or remove
+        defining line detail.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-illustration-coordinated-agents
+    source_master_asset_id: singlepage-generated-living-focus-illustration-coordinated-agents
+    source_master_sha256: 81b201498eb1901c92e51e5ea7b57e12bc90103f8a7e5e2e4fcb56348774b6de
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 0bc5637e18ccb7be26cf5f3f5e203ac7d07c943776418d1f15c3dccf24825fee
+    style_master_sha256: a9c8132263edfe1282919ba2260326fe4c08eb6048fd662cc3acd5610172e7b2
+    prompt: >-
+      Use case: precise-object-edit.
+
+      Style master: Create airy isometric line art on a flat pure white background, using fine
+      graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61
+      details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful
+      connections. Derive the objects from the content brief.
+
+      Shared edit instruction: Edit the supplied illustration only to apply this color/background
+      treatment. Retain its exact square canvas, arrangement, scale, camera angle, isometric geometry,
+      objects, icons, line hierarchy and all dotted connections. Do not crop, reframe, add or remove
+      objects. Replace every warm ivory, cream, yellowed paper and beige area with uniform pure white
+      #FFFFFF, including the entire backdrop AND the faces of all objects. No paper texture, grain,
+      vignette, shading or gradients. Keep the thin dark contours crisp graphite, secondary lines cool
+      light gray, and small accent details #BFEF61; no other yellow or warm tint. Preserve the fine
+      original linework and all secondary detail. Full opaque white square PNG, exactly 1254 × 1254
+      pixels if supported, with no border or text labels.
+
+      Scene preservation brief: Preserve the person standing on a low rounded platform near the bottom
+      center, holding a tablet and pointing toward the central code window. Preserve that central code
+      window and the four surrounding windows with their robot, brain, sparkle and robot icons. Keep
+      the terminal, gear, wrench and stacked-block small symbols in their existing locations, and
+      preserve every dotted lime connection, gray guide line and small connection circle. Keep all
+      proportions, pointing gesture and spacing unchanged.
+    scene_brief:
+      Preserve the person standing on a low rounded platform near the bottom center, holding
+      a tablet and pointing toward the central code window. Preserve that central code window and the
+      four surrounding windows with their robot, brain, sparkle and robot icons. Keep the terminal,
+      gear, wrench and stacked-block small symbols in their existing locations, and preserve every
+      dotted lime connection, gray guide line and small connection circle. Keep all proportions,
+      pointing gesture and spacing unchanged.
+    adaptation:
+      operation: precise-object-edit
+      tool: image_gen.imagegen
+      native_generated_output: /Users/rogwild/.codex/generated_images/01a1037a-33f2-74c3-a4ed-6613af5ced60/exec-85a8157c-1c5a-471a-8842-5ffcf86a5daf.png
+      postprocessing: none
+      transparent_background: false
+    visual_review:
+      status: visually-verified
+      source: Production-agent and coordinator inspection of all three edited originals, 2026-10-04.
+      findings:
+        Square canvas, scene geometry, object counts, icons, graphite contours, cool gray
+        secondary linework, dotted connections and lime accents are retained. The backdrop and object
+        faces appear white; the warm paper cast is removed. No cropping, added labels or border.
+      background_limit:
+        "The design target is #FFFFFF. Native image output is visually white with sampled
+        background channels between 253 and 255; uniform RGB 255,255,255 is not guaranteed. No pixel
+        normalization was applied."
+      sampled_background_pixels:
+        - x: 0
+          y: 0
+          rgb:
+            - 253
+            - 255
+            - 254
+        - x: 50
+          y: 50
+          rgb:
+            - 254
+            - 254
+            - 254
+        - x: 1200
+          y: 50
+          rgb:
+            - 255
+            - 254
+            - 255
+        - x: 50
+          y: 1200
+          rgb:
+            - 254
+            - 254
+            - 254
+        - x: 1200
+          y: 1200
+          rgb:
+            - 254
+            - 254
+            - 254
+        - x: 600
+          y: 50
+          rgb:
+            - 255
+            - 255
+            - 255
+      browser_review: visually-verified
+      scope:
+        Source and rendered Design review of composition, linework, cool treatment and full framing.
+        Product placements are outside this recorded browser review; lifecycle remains proposed.
+      browser_source: Coordinator browser inspection of the complete default Design projection, 2026-10-04.
+      browser_checks:
+        All three cool-square examples load at native 1254 by 1254 and render at
+        approximately 590.5px square in the desktop catalogue. Illustration and text and repeated-item
+        cards were visually reviewed for white backgrounds and legible detail. The 320px Design
+        projection has no horizontal overflow, with repeated-grid images approximately 208.66px
+        square.
+    source_or_tool:
+      Built-in image_gen.imagegen, one separate raster-edit call using the registered
+      source master on 2026-10-04. The full prompt includes the exact current style master, shared
+      color correction instruction and scene-preservation brief. Native output copied unchanged; no
+      crop, resampling or pixel normalization after generation. Model and seed unavailable.
+    usage_limits:
+      Conceptual generated illustration of software structure and agent coordination. Not
+      proof of actual product operation, customer work or measured outcomes.

@@ -21,15 +21,15 @@ export interface IStoryboardContent {
   closing: string;
 }
 export const creativeAssets = {
-  logo: "/workspace-assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg",
+  logo: "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-primary-lockup.svg",
   conversation:
-    "/workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-business-conversation.png",
+    "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
   modules:
-    "/workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-module-hierarchy-v2.png",
+    "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-illustration-module-hierarchy-cool-square.png",
   agents:
-    "/workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-coordinated-agents-v2.png",
+    "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-illustration-coordinated-agents-cool-square.png",
   motion:
-    "/workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-work-in-motion.png",
+    "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
 };
 export const creativeTypography = {
   body: "[font-family:var(--workspace-brand-font-body)]",

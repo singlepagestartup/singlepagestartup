@@ -84,6 +84,31 @@ describe("required Design specimens", () => {
   });
 
   /**
+   * BDD Scenario: Icon cards do not replace the icon system
+   * Given the interface kit renders icon cards but no dedicated Icons block
+   * When the workspace is validated
+   * Then the missing icon system is reported even though icons appear in cards
+   */
+  test("requires the Icons block separately from icon cards", async () => {
+    const root = await workspace({
+      "design/singlepage.md": design(lightOnly),
+      "design/singlepage/layout.yaml": layout,
+      "design/singlepage/kit.html": kit(
+        Object.keys(requiredSpecimens).filter((id) => id !== "icons"),
+      ),
+      "design/startup.md": "",
+      "design/startup/layout.yaml": "{}",
+    });
+
+    expect(
+      (await findMissingSpecimens(root)).map(({ requirement }) => requirement),
+    ).toEqual(["Design declares a `icons` specimen"]);
+    await expect(validateRequiredSpecimens(root)).rejects.toThrow(
+      'data-specimen="icons"',
+    );
+  });
+
+  /**
    * BDD Scenario: Catch an interface language with no proof
    * Given Design documents interface rules but renders no specimen
    * When the workspace is validated
@@ -326,5 +351,91 @@ describe("specimen catalogue", () => {
     });
 
     expect(await findSpecimenDeviations(root)).toEqual([]);
+  });
+});
+
+/** Source inspection must distinguish rendered declarations from quoted examples. */
+describe("grouped interactive catalogue", () => {
+  test("reads nested TSX declarations and ignores comments and strings", async () => {
+    const root = await workspace({
+      "design/singlepage.md": design(lightOnly),
+      "design/singlepage/layout.yaml": `sections:\n  - id: interface-kit\n    title: Interface kit\n    children:\n      - { id: kit-inputs, title: Inputs, source: kit/Inputs.tsx }\n`,
+      "design/singlepage/kit/Inputs.tsx": `
+// <Specimen id="actions" title="Actions" />
+const quoted = '<article data-specimen="icons"><h3>Icons</h3></article>';
+export default function Inputs() { return <Specimen id="fields" title="Fields and data rows"><input /></Specimen>; }
+`,
+    });
+    const missing = (await findMissingSpecimens(root)).map(
+      (item) => item.requirement,
+    );
+    expect(missing).not.toContain("Design declares a `fields` specimen");
+    expect(missing).toContain("Design declares a `actions` specimen");
+    expect(missing).toContain("Design declares a `icons` specimen");
+    expect(await findSpecimenDeviations(root)).toEqual([]);
+  });
+
+  test("does not count an unselected file or inherited base after a layer replacement", async () => {
+    const root = await workspace({
+      "design/singlepage.md": design(lightOnly),
+      "design/singlepage/layout.yaml": layout,
+      "design/singlepage/kit.html": kit(everySpecimen),
+      "design/startup/layout.yaml": `sections:\n  - id: interface-kit\n    title: Interface kit\n    children:\n      - { id: kit-inputs, title: Inputs, source: kit/Inputs.tsx }\n`,
+      "design/startup/kit/Inputs.tsx": `export default () => <Specimen id="fields" title="Fields and data rows"><input /></Specimen>;`,
+      "design/startup/Unselected.tsx": `export default () => <Specimen id="actions" title="Actions"><button>Go</button></Specimen>;`,
+    });
+    const missing = (await findMissingSpecimens(root)).map(
+      (item) => item.requirement,
+    );
+    expect(missing).toContain("Design declares a `actions` specimen");
+    expect(missing).not.toContain("Design declares a `fields` specimen");
+  });
+
+  test("validates canonical names in nested JSX on the framework itself", async () => {
+    const root = await workspace({
+      "design/singlepage/layout.yaml": `sections:\n  - id: interface-kit\n    title: Interface kit\n    children:\n      - { id: kit-actions, title: Actions, source: Actions.tsx }\n`,
+      "design/singlepage/Actions.tsx": `export default () => <><Specimen id="actions" title="Other name" /><Specimen id="made-up" title="Unknown" /></>;`,
+    });
+    const findings = await findSpecimenDeviations(root);
+    expect(findings).toHaveLength(2);
+    expect(findings.some((item) => item.detail.includes("Other name"))).toBe(
+      true,
+    );
+    expect(findings.some((item) => item.detail.includes("made-up"))).toBe(true);
+  });
+});
+
+describe("composition dependencies", () => {
+  test("requires content blocks to name their Interface kit components", async () => {
+    const files = {
+      "design/singlepage/layout.yaml": `sections:\n  - { id: content-blocks, title: Content blocks, source: Cards.tsx }\n`,
+      "design/singlepage/Cards.tsx": `export default () => <article data-specimen="item-grid"><h3>Repeated item grid</h3></article>;`,
+    };
+    const missing = await workspace(files);
+    expect((await findSpecimenDeviations(missing))[0].requirement).toContain(
+      "declares its components",
+    );
+    const unknown = await workspace({
+      ...files,
+      "design/singlepage/Cards.tsx": files[
+        "design/singlepage/Cards.tsx"
+      ].replace(
+        'data-specimen="item-grid"',
+        'data-specimen="item-grid" data-composes="invented"',
+      ),
+    });
+    expect((await findSpecimenDeviations(unknown))[0].requirement).toContain(
+      "uses catalogued components",
+    );
+    const valid = await workspace({
+      ...files,
+      "design/singlepage/Cards.tsx": files[
+        "design/singlepage/Cards.tsx"
+      ].replace(
+        'data-specimen="item-grid"',
+        'data-specimen="item-grid" data-composes="actions status icons"',
+      ),
+    });
+    expect(await findSpecimenDeviations(valid)).toEqual([]);
   });
 });

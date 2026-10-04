@@ -166,6 +166,8 @@ stages:
       - The Client visual preference profile was confirmed by the operator before any visual territory, token, prompt or generated asset was selected.
       - Photography and illustration examples were reviewed together at source size, intended size and small preview; a changed master prompt was retested on three briefs.
       - Typography roles name an exact CSS family, weights and a registered font asset, and the loaded font was verified in a browser.
+      - A dedicated Icons block names the library or custom drawing method, source and license, defines geometry and usage, and shows reviewed action, navigation and status glyphs at their intended sizes.
+      - Photographic and illustrative masters use free aspect ratios. Square deliveries preserve the full source composition through canvas expansion with an image-editing tool, use the common delivery resolution, and retain source files and exact editing provenance; already-square masters may be reused unchanged.
   - id: 40-products
     title: Products
     owners:

@@ -62,8 +62,14 @@ own cursor reaches `30-design`, it also requires that project to own its
 brandbook: a written and separately confirmed `design/startup.md` plus at least
 one registered asset in `assets/startup.yaml`. Independently, any layer that
 documents an `Interface and product surfaces` section must render the required
-specimens; each declares `data-specimen="<id>"` and an omission needs an
-attributed reason in `interface_review.omitted_specimens`.
+specimens. A selected HTML/TSX section declares `data-specimen="<id>"` and its
+canonical heading, or literal `Specimen` id/title props. An omission needs an
+attributed reason in `interface_review.omitted_specimens`. Design layouts support
+nested category groups: Interface kit contains reusable elements and states;
+Content blocks contains compositions of those elements. Shared navigation
+preserves example state, and the HTML download includes every category. See
+[Design layouts and authoring](workspace/README.md) for layer ownership and
+restyling rules.
 
 `studio:inventory` regenerates `inventory/modules.generated.json` from
 production module variant contracts and Studio manifests. Workspace documents

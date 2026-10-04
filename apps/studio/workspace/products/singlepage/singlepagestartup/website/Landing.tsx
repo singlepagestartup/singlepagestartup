@@ -22,7 +22,7 @@ interface ISectionHeadingProps {
 }
 
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#111111]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--workspace-brand-foreground)]";
 const display =
   "[font-family:var(--workspace-brand-font-display)] font-semibold tracking-tight";
 const muted = "text-[var(--workspace-brand-muted)]";
@@ -44,7 +44,7 @@ function RepositoryAction({ content }: IWebsiteCopyProps) {
       href={content.hero.links[0].href}
       target="_blank"
       rel="noreferrer"
-      className={`inline-flex min-h-12 w-full items-center justify-center whitespace-normal rounded-xl bg-[var(--workspace-brand-foreground)] px-6 py-4 text-center text-sm font-medium leading-6 text-white hover:bg-[#303030] sm:w-auto ${focus}`}
+      className={`inline-flex min-h-12 w-full items-center justify-center whitespace-normal rounded-xl bg-[var(--workspace-brand-accent)] px-6 py-4 text-center text-sm font-semibold leading-6 text-[var(--workspace-brand-foreground)] hover:brightness-95 sm:w-auto ${focus}`}
     >
       <span lang="ru">{content.hero.links[0].text}</span>
       <span className="sr-only">{content.labels["github-hint"]}</span>
@@ -62,7 +62,7 @@ function ChatPreviewAction({
         type="button"
         disabled
         aria-describedby={descriptionId}
-        className="inline-flex min-h-12 w-auto cursor-not-allowed items-center justify-center rounded-xl border border-[var(--workspace-brand-line)] bg-white px-6 py-3 text-sm font-medium text-[#565656] disabled:opacity-100"
+        className="inline-flex min-h-12 w-auto cursor-not-allowed items-center justify-center rounded-xl border border-[var(--workspace-brand-line)] bg-white px-6 py-3 text-sm font-medium text-[var(--workspace-brand-muted)] disabled:opacity-100"
       >
         {content.chat.paragraphs[3]}
       </button>
@@ -99,7 +99,7 @@ function CopySetupRequest({ content }: IWebsiteCopyProps) {
         type="button"
         onClick={copy}
         disabled={status === "pending"}
-        className={`mt-6 inline-flex min-h-12 w-auto items-center justify-center rounded-xl border border-[#111111] bg-white px-5 py-2 text-sm font-medium text-[#111111] hover:bg-[var(--workspace-brand-background)] disabled:cursor-wait disabled:opacity-50 ${focus}`}
+        className={`mt-6 inline-flex min-h-12 w-auto items-center justify-center rounded-xl border border-[var(--workspace-brand-foreground)] bg-white px-5 py-2 text-sm font-medium text-[var(--workspace-brand-foreground)] hover:bg-[var(--workspace-brand-background)] disabled:cursor-wait disabled:opacity-50 ${focus}`}
       >
         {status === "pending"
           ? content.labels["copy-pending"]
@@ -183,7 +183,7 @@ export default function CodeFrameworkLanding({
         >
           <div className="grid items-center gap-8 @5xl:grid-cols-2">
             <div>
-              <p className="inline-block rounded-md bg-[var(--workspace-brand-accent)] px-3 py-2 text-xs uppercase tracking-widest text-[#111111]">
+              <p className="inline-block rounded-md bg-[var(--workspace-brand-accent)] px-3 py-2 text-xs uppercase tracking-widest text-[var(--workspace-brand-foreground)]">
                 {content.hero.paragraphs[0]}
               </p>
               <h1
@@ -207,9 +207,9 @@ export default function CodeFrameworkLanding({
                 src={assets.photograph.src}
                 alt={assets.photograph.alt}
                 data-asset-id={assets.photograph.id}
-                width={1536}
-                height={1024}
-                className="block h-auto w-full rounded-3xl"
+                width={1254}
+                height={1254}
+                className="block aspect-square h-auto w-full rounded-3xl object-cover"
               />
             </figure>
           </div>
@@ -272,7 +272,10 @@ export default function CodeFrameworkLanding({
           </SectionHeading>
           <ol className="mt-8 grid gap-6 @3xl:grid-cols-3">
             {content.journey.items.map((item, index) => (
-              <li key={item.title} className="border-t border-[#111111] pt-5">
+              <li
+                key={item.title}
+                className="border-t border-[var(--workspace-brand-foreground)] pt-5"
+              >
                 <span className={`text-xs ${muted}`}>0{index + 1}</span>
                 <h3 className="mt-4 text-base font-semibold">{item.title}</h3>
                 <p className={`mt-3 text-sm leading-6 ${muted}`}>{item.text}</p>
@@ -302,7 +305,7 @@ export default function CodeFrameworkLanding({
               <p className={`mt-5 text-sm leading-6 ${muted}`}>
                 {content.change.paragraphs[0]}
               </p>
-              <blockquote className="mt-3 border-l-2 border-[#111111] pl-5 text-base leading-7">
+              <blockquote className="mt-3 border-l-2 border-[var(--workspace-brand-foreground)] pl-5 text-base leading-7">
                 {content.change.quote}
               </blockquote>
               <p className={`mt-5 text-sm leading-6 ${muted}`}>

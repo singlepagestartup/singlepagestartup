@@ -74,7 +74,7 @@ const sections = [
       ],
       [
         "Identity",
-        "Editorial serif headings, monospace working text, warm white, black and acid green.",
+        "Onest headings and working text, cool gray, white, graphite and lime actions.",
       ],
       [
         "Principle",
@@ -152,22 +152,25 @@ export default function WorkspaceMap() {
   const section = sections[active];
 
   return (
-    <div className="min-h-[820px] bg-[#111111] p-3 text-[#111111] [font-family:var(--workspace-brand-font-body)] sm:p-6">
-      <div className="mx-auto max-w-[1440px] overflow-hidden rounded-[28px] border border-[#343434] bg-[#f7f6f2] shadow-2xl">
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#cbc9c3] bg-white px-5 py-4 sm:px-7">
+    <div
+      data-workspace-projection="singlepage"
+      className="min-h-[820px] bg-[var(--workspace-brand-foreground)] p-3 text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)] sm:p-6"
+    >
+      <div className="mx-auto max-w-[1440px] overflow-hidden rounded-[28px] border border-[#35444C] bg-[var(--workspace-brand-background)] shadow-2xl">
+        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--workspace-brand-line)] bg-white px-5 py-4 sm:px-7">
           <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-lg bg-[#111111] text-sm font-bold text-[#bfef61]">
+            <div className="grid size-9 place-items-center rounded-lg bg-[var(--workspace-brand-foreground)] text-sm font-bold text-[var(--workspace-brand-accent)]">
               S
             </div>
             <div>
               <p className="text-sm font-semibold">Sample project</p>
-              <p className="text-xs text-[#6b6b66]">
+              <p className="text-xs text-[var(--workspace-brand-muted)]">
                 Project model · Saved now
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded-full border border-[#cbc9c3] px-3 py-2 text-xs font-semibold">
+            <span className="rounded-full border border-[var(--workspace-brand-line)] px-3 py-2 text-xs font-semibold">
               2 unknowns
             </span>
             <span className="rounded-full bg-[#dff5b5] px-3 py-2 text-xs font-semibold">
@@ -178,11 +181,11 @@ export default function WorkspaceMap() {
 
         <section
           aria-labelledby="product-cycle-title"
-          className="border-b border-[#cbc9c3] bg-[#efeee9] px-5 py-6 sm:px-7"
+          className="border-b border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-5 py-6 sm:px-7"
         >
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b6b66]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--workspace-brand-muted)]">
                 How the business work moves
               </p>
               <h2
@@ -192,7 +195,7 @@ export default function WorkspaceMap() {
                 Draft, test and decide
               </h2>
             </div>
-            <p className="max-w-xl text-xs leading-5 text-[#5f5f5a]">
+            <p className="max-w-xl text-xs leading-5 text-[var(--workspace-brand-muted)]">
               Draft the complete model first. Test the assumptions that can
               change it before committing to materials and implementation.
             </p>
@@ -210,10 +213,10 @@ export default function WorkspaceMap() {
                 role="listitem"
               >
                 <article
-                  className={`min-h-40 flex-1 rounded-2xl border p-4 md:w-48 md:flex-none ${index === 0 ? "border-[#111111] bg-[#111111] text-white" : index === hypothesisFlow.length - 1 ? "border-[#9fc94f] bg-[#e7f7c8]" : "border-[#cbc9c3] bg-white"}`}
+                  className={`min-h-40 flex-1 rounded-2xl border p-4 md:w-48 md:flex-none ${index === 0 ? "border-[var(--workspace-brand-foreground)] bg-[var(--workspace-brand-foreground)] text-white" : index === hypothesisFlow.length - 1 ? "border-[#9fc94f] bg-[#e7f7c8]" : "border-[var(--workspace-brand-line)] bg-white"}`}
                 >
                   <p
-                    className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${index === 0 ? "text-[#bfef61]" : "text-[#6b6b66]"}`}
+                    className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${index === 0 ? "text-[var(--workspace-brand-accent)]" : "text-[var(--workspace-brand-muted)]"}`}
                   >
                     {step.number}
                   </p>
@@ -221,12 +224,12 @@ export default function WorkspaceMap() {
                     {step.title}
                   </h3>
                   <p
-                    className={`mt-2 text-[10px] font-semibold ${index === 0 ? "text-[#d9d9d3]" : "text-[#666661]"}`}
+                    className={`mt-2 text-[10px] font-semibold ${index === 0 ? "text-[var(--workspace-brand-line)]" : "text-[var(--workspace-brand-muted)]"}`}
                   >
                     {step.pages}
                   </p>
                   <p
-                    className={`mt-3 text-xs leading-5 ${index === 0 ? "text-[#f2f2ed]" : "text-[#33332f]"}`}
+                    className={`mt-3 text-xs leading-5 ${index === 0 ? "text-[var(--workspace-brand-background)]" : "text-[#35444C]"}`}
                   >
                     {step.result}
                   </p>
@@ -234,18 +237,40 @@ export default function WorkspaceMap() {
                 {index < hypothesisFlow.length - 1 ? (
                   <span
                     aria-hidden="true"
-                    className="py-1 text-center text-xl font-semibold text-[#777772] md:px-2 md:py-0"
+                    className="py-1 text-center text-xl font-semibold text-[var(--workspace-brand-muted)] md:px-2 md:py-0"
                   >
-                    <span className="md:hidden">↓</span>
-                    <span className="hidden md:inline">→</span>
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      data-icon-family="phosphor"
+                      data-icon-name="arrow-down"
+                      data-icon-weight="regular"
+                      viewBox="0 0 256 256"
+                      fill="currentColor"
+                      className="mx-auto size-5 shrink-0 md:hidden"
+                    >
+                      <path d="M205.66,149.66l-72,72a8,8,0,0,1-11.32,0l-72-72a8,8,0,0,1,11.32-11.32L120,196.69V40a8,8,0,0,1,16,0V196.69l58.34-58.35a8,8,0,0,1,11.32,11.32Z" />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      data-icon-family="phosphor"
+                      data-icon-name="arrow-right"
+                      data-icon-weight="regular"
+                      viewBox="0 0 256 256"
+                      fill="currentColor"
+                      className="hidden size-5 shrink-0 md:block"
+                    >
+                      <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
+                    </svg>
                   </span>
                 ) : null}
               </div>
             ))}
           </div>
 
-          <div className="mt-3 rounded-2xl border border-[#111111] bg-white p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b6b66]">
+          <div className="mt-3 rounded-2xl border border-[var(--workspace-brand-foreground)] bg-white p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--workspace-brand-muted)]">
               What did the evidence show?
             </p>
             <div className="mt-3 grid gap-3 lg:grid-cols-2">
@@ -257,7 +282,7 @@ export default function WorkspaceMap() {
                   product itself.
                 </p>
               </div>
-              <div className="rounded-xl border border-[#cbc9c3] bg-[#efeee9] p-4">
+              <div className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
                 <p className="text-xs font-semibold">Disproves an assumption</p>
                 <p className="mt-2 text-xs leading-5">
                   Change Product, Operations &amp; Economics or Sales, identify
@@ -269,15 +294,15 @@ export default function WorkspaceMap() {
         </section>
 
         <div className="grid lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)_320px]">
-          <aside className="border-b border-[#cbc9c3] bg-white p-4 lg:border-r lg:border-b-0">
-            <div className="rounded-2xl bg-[#111111] p-4 text-white">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#bfef61]">
+          <aside className="border-b border-[var(--workspace-brand-line)] bg-white p-4 lg:border-r lg:border-b-0">
+            <div className="rounded-2xl bg-[var(--workspace-brand-foreground)] p-4 text-white">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--workspace-brand-accent)]">
                 Single page
               </p>
               <p className="mt-2 text-xl font-semibold [font-family:var(--workspace-brand-font-display)]">
                 Project model
               </p>
-              <p className="mt-2 text-xs leading-5 text-[#c7c7c2]">
+              <p className="mt-2 text-xs leading-5 text-[var(--workspace-brand-line)]">
                 Five compact sections. Add a deeper document when the work needs
                 it.
               </p>
@@ -286,19 +311,19 @@ export default function WorkspaceMap() {
               {sections.map((item, index) => (
                 <button
                   aria-current={active === index ? "page" : undefined}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition ${active === index ? "bg-[#bfef61]" : "hover:bg-[#f2f1ec]"}`}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition ${active === index ? "bg-[var(--workspace-brand-accent)]" : "hover:bg-[var(--workspace-brand-background)]"}`}
                   key={item.id}
                   onClick={() => setActive(index)}
                   type="button"
                 >
-                  <span className="text-[10px] font-semibold text-[#777772]">
+                  <span className="text-[10px] font-semibold text-[var(--workspace-brand-muted)]">
                     {item.number}
                   </span>
                   <span className="min-w-0">
                     <span className="block text-sm font-semibold">
                       {item.title}
                     </span>
-                    <span className="mt-0.5 block truncate text-[10px] text-[#666661]">
+                    <span className="mt-0.5 block truncate text-[10px] text-[var(--workspace-brand-muted)]">
                       Accepted
                     </span>
                   </span>
@@ -306,7 +331,7 @@ export default function WorkspaceMap() {
               ))}
             </nav>
             <button
-              className="mt-5 w-full rounded-xl border border-[#cbc9c3] px-4 py-3 text-left text-xs font-semibold hover:bg-[#f2f1ec]"
+              className="mt-5 w-full rounded-xl border border-[var(--workspace-brand-line)] px-4 py-3 text-left text-xs font-semibold hover:bg-[var(--workspace-brand-background)]"
               type="button"
             >
               + Add deeper document
@@ -315,20 +340,20 @@ export default function WorkspaceMap() {
 
           <main className="min-w-0 p-5 sm:p-8">
             <div className="mx-auto max-w-3xl">
-              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#cbc9c3] pb-6">
+              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--workspace-brand-line)] pb-6">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b6b66]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--workspace-brand-muted)]">
                     {section.number} · Accepted
                   </p>
                   <h1 className="mt-2 text-5xl font-semibold leading-none [font-family:var(--workspace-brand-font-display)] sm:text-6xl">
                     {section.title}
                   </h1>
-                  <p className="mt-3 max-w-xl text-sm leading-6 text-[#5f5f5a]">
+                  <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--workspace-brand-muted)]">
                     {section.summary}
                   </p>
                 </div>
                 <button
-                  className="rounded-xl border border-[#111111] bg-white px-4 py-2 text-xs font-semibold hover:bg-[#f2f1ec]"
+                  className="rounded-xl border border-[var(--workspace-brand-foreground)] bg-white px-4 py-2 text-xs font-semibold hover:bg-[var(--workspace-brand-background)]"
                   type="button"
                 >
                   Edit section
@@ -338,11 +363,11 @@ export default function WorkspaceMap() {
               <div className="mt-6 space-y-3">
                 {section.details.map(([label, value]) => (
                   <article
-                    className="rounded-2xl border border-[#cbc9c3] bg-white p-5 shadow-sm"
+                    className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5 shadow-sm"
                     key={label}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6b6b66]">
+                      <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--workspace-brand-muted)]">
                         {label}
                       </h2>
                       <span className="rounded-full bg-[#dff5b5] px-2 py-1 text-[9px] font-semibold uppercase tracking-wide">
@@ -351,7 +376,7 @@ export default function WorkspaceMap() {
                     </div>
                     <p className="mt-3 text-sm leading-7">{value}</p>
                     <button
-                      className="mt-3 text-[10px] font-semibold text-[#666661] underline underline-offset-4"
+                      className="mt-3 text-[10px] font-semibold text-[var(--workspace-brand-muted)] underline underline-offset-4"
                       type="button"
                     >
                       View source
@@ -361,13 +386,13 @@ export default function WorkspaceMap() {
               </div>
 
               {section.id === "products" ? (
-                <section className="mt-4 rounded-2xl border border-dashed border-[#a9a7a0] bg-[#efeee9] p-5">
+                <section className="mt-4 rounded-2xl border border-dashed border-[#98A6AF] bg-[var(--workspace-brand-background)] p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold">
                         Shared model · framework-service
                       </p>
-                      <p className="mt-1 text-xs text-[#666661]">
+                      <p className="mt-1 text-xs text-[var(--workspace-brand-muted)]">
                         Used by AI Chat and Code Framework; common costs are
                         recorded once.
                       </p>
@@ -384,35 +409,47 @@ export default function WorkspaceMap() {
             </div>
           </main>
 
-          <aside className="border-t border-[#cbc9c3] bg-white p-5 xl:border-t-0 xl:border-l">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b6b66]">
+          <aside className="border-t border-[var(--workspace-brand-line)] bg-white p-5 xl:border-t-0 xl:border-l">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--workspace-brand-muted)]">
               Work with this project
             </p>
-            <div className="mt-4 rounded-2xl bg-[#111111] p-4 text-white">
+            <div className="mt-4 rounded-2xl bg-[var(--workspace-brand-foreground)] p-4 text-white">
               <p className="text-base font-semibold [font-family:var(--workspace-brand-font-display)]">
                 Ask in ordinary language
               </p>
-              <p className="mt-2 text-xs leading-5 text-[#c9c9c3]">
+              <p className="mt-2 text-xs leading-5 text-[var(--workspace-brand-line)]">
                 AI Chat adds the relevant accepted decisions to each request.
               </p>
               <label className="mt-4 block" htmlFor="project-question">
                 <span className="sr-only">Ask about this project</span>
                 <textarea
-                  className="min-h-24 w-full resize-none rounded-xl border border-[#454545] bg-[#242424] p-3 text-xs leading-5 text-white outline-none placeholder:text-[#999] focus:border-[#bfef61]"
+                  className="min-h-24 w-full resize-none rounded-xl border border-[#465A66] bg-[#283942] p-3 text-xs leading-5 text-white outline-none placeholder:text-[#999] focus:border-[var(--workspace-brand-accent)]"
                   defaultValue="Improve the offer on my landing page"
                   id="project-question"
                 />
               </label>
               <button
-                className="mt-3 w-full rounded-xl bg-[#bfef61] px-4 py-3 text-sm font-semibold text-[#111111]"
+                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--workspace-brand-accent)] px-4 py-3 text-sm font-semibold text-[var(--workspace-brand-foreground)]"
                 type="button"
               >
-                Ask AI Chat →
+                Ask AI Chat
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  data-icon-family="phosphor"
+                  data-icon-name="arrow-right"
+                  data-icon-weight="regular"
+                  viewBox="0 0 256 256"
+                  fill="currentColor"
+                  className="size-5 shrink-0"
+                >
+                  <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
+                </svg>
               </button>
             </div>
 
             <div className="mt-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b6b66]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--workspace-brand-muted)]">
                 Useful next actions
               </p>
               <div className="mt-3 space-y-2">
@@ -423,19 +460,31 @@ export default function WorkspaceMap() {
                   "Add another product",
                 ].map((action) => (
                   <button
-                    className="w-full rounded-xl border border-[#deddd8] px-3 py-3 text-left text-xs font-semibold hover:border-[#111111]"
+                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-[var(--workspace-brand-line)] px-3 py-3 text-left text-xs font-semibold hover:border-[var(--workspace-brand-foreground)]"
                     key={action}
                     type="button"
                   >
-                    {action} <span aria-hidden="true">→</span>
+                    <span>{action}</span>
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      data-icon-family="phosphor"
+                      data-icon-name="arrow-right"
+                      data-icon-weight="regular"
+                      viewBox="0 0 256 256"
+                      fill="currentColor"
+                      className="size-5 shrink-0"
+                    >
+                      <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
+                    </svg>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="mt-5 rounded-xl border border-[#e0c763] bg-[#fff5ca] p-4">
+            <div className="mt-5 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
               <p className="text-xs font-semibold">Two unknowns remain</p>
-              <p className="mt-1 text-[11px] leading-5 text-[#655b36]">
+              <p className="mt-1 text-[11px] leading-5 text-[var(--workspace-brand-muted)]">
                 Token package price and the initial acquisition budget are not
                 supplied. They affect only related decisions.
               </p>

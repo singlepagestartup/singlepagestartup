@@ -34,6 +34,7 @@ Each module contains:
 ## Key rules (short)
 
 - TailwindCSS only, no ad-hoc CSS.
+- Design includes a dedicated Icons block naming its library or custom drawing method and showing the glyphs. Generate photographic and illustrative masters with unconstrained aspect ratios, then prepare square delivery images by expanding the canvas with an image-editing tool; preserve the originals. Follow `.agents/templates/design.md` and `.agents/roles/brand-designer.md`.
 - Always use SDK providers for data access from `libs/modules/<module>/models/<model|relation>/sdk/<client|server>`.
 - Use relation components with `variant="find"` and filter via `apiProps.params.filters.and`.
 - Backend only hosted in `apps/api/app.ts`.

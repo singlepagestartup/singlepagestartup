@@ -1,7 +1,8 @@
-import { readFile, stat } from "node:fs/promises";
+import { readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import {
   parseDesignLayout,
+  flattenDesignSections,
   type IDesignLayout,
 } from "../../../apps/studio/workspace/utils/design/layout";
 
@@ -9,15 +10,29 @@ export async function validateDesignLayoutFiles(
   layout: IDesignLayout,
   layerRoot: string,
 ) {
+  const root = await realpath(layerRoot).catch(() => path.resolve(layerRoot));
   const files = [
     layout.template,
-    ...layout.sections.map((section) => section.source),
+    ...flattenDesignSections(layout.sections).map((section) => section.source),
   ].filter((source): source is string => Boolean(source));
   await Promise.all(
     files.map(async (source) => {
-      const info = await stat(path.resolve(layerRoot, source)).catch(
+      const resolved = await realpath(path.resolve(layerRoot, source)).catch(
         () => undefined,
       );
+      const relative = resolved ? path.relative(root, resolved) : undefined;
+      if (
+        relative !== undefined &&
+        (relative === ".." ||
+          relative.startsWith(`..${path.sep}`) ||
+          path.isAbsolute(relative))
+      )
+        throw new Error(
+          `Design source leaves its layer: ${layout.layer}/${source}`,
+        );
+      const info = resolved
+        ? await stat(resolved).catch(() => undefined)
+        : undefined;
       if (!info?.isFile())
         throw new Error(`Missing Design source: ${layout.layer}/${source}`);
     }),

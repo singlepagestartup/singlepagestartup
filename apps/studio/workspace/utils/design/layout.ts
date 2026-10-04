@@ -24,6 +24,7 @@ export interface IDesignSection {
   builtin?: DesignBuiltinSection;
   title?: string;
   source?: string;
+  children?: IDesignSection[];
 }
 
 export interface IDesignLayout {
@@ -45,9 +46,24 @@ export interface IDesignLayoutSources extends IWorkspacePageSources {
   templates: Record<string, { default?: ComponentType<IDesignTemplateProps> }>;
 }
 
+export interface IDesignSectionView extends IDesignSection {
+  children?: IDesignSectionView[];
+  page?: IWorkspacePageView;
+}
+
 export interface IDesignLayoutView extends IDesignLayout {
   Template?: ComponentType<IDesignTemplateProps>;
-  sections: Array<IDesignSection & { page?: IWorkspacePageView }>;
+  sections: IDesignSectionView[];
+}
+
+/** Include groups and leaves in their declared depth-first order. */
+export function flattenDesignSections<T extends { children?: readonly T[] }>(
+  sections: readonly T[],
+): T[] {
+  return sections.flatMap((section) => [
+    section,
+    ...flattenDesignSections(section.children ?? []),
+  ]);
 }
 
 function object(value: unknown): value is Record<string, unknown> {
@@ -91,10 +107,10 @@ export function parseDesignLayout(
   if (!raw.sections.length && !template)
     throw new Error("Design layout needs a section or a custom template.");
   const ids = new Set<string>();
-  const sections = raw.sections.map((entry): IDesignSection => {
+  const section = (entry: unknown): IDesignSection => {
     if (!object(entry)) throw new Error("Design section must be an object.");
     for (const key of Object.keys(entry))
-      if (!["id", "builtin", "title", "source"].includes(key))
+      if (!["id", "builtin", "title", "source", "children"].includes(key))
         throw new Error(`Unknown Design section key: ${key}`);
     const { id, builtin } = entry;
     if (
@@ -104,6 +120,21 @@ export function parseDesignLayout(
     )
       throw new Error("Design section IDs must be unique kebab-case names.");
     ids.add(id);
+    if (entry.children !== undefined) {
+      if (builtin !== undefined || entry.source !== undefined)
+        throw new Error(
+          `Design group ${id} cannot declare a builtin or source.`,
+        );
+      if (!Array.isArray(entry.children) || !entry.children.length)
+        throw new Error(`Design group ${id} needs non-empty children.`);
+      if (typeof entry.title !== "string" || !entry.title.trim())
+        throw new Error(`Design group ${id} needs a title.`);
+      return {
+        id,
+        title: entry.title.trim(),
+        children: entry.children.map(section),
+      };
+    }
     if (builtin !== undefined) {
       if (
         !defaultDesignSections.includes(builtin as DesignBuiltinSection) ||
@@ -119,7 +150,8 @@ export function parseDesignLayout(
     if (typeof entry.title !== "string" || !entry.title.trim())
       throw new Error(`Design section ${id} needs a title.`);
     return { id, title: entry.title.trim(), source: sourcePath(entry.source) };
-  });
+  };
+  const sections = raw.sections.map(section);
   return { layer, template, sections };
 }
 
@@ -147,24 +179,26 @@ export function resolveDesignLayoutView(
     throw new Error(
       `Missing Design template default export: ${layout.layer}/${layout.template}`,
     );
+  const sectionView = (section: IDesignSection): IDesignSectionView => ({
+    ...section,
+    children: section.children?.map(sectionView),
+    page: section.source
+      ? resolveWorkspacePage(
+          {
+            id: section.id,
+            title: section.title!,
+            source: section.source,
+            children: [],
+          },
+          layout.layer,
+          sources,
+          "design",
+        )
+      : undefined,
+  });
   return {
     ...layout,
     Template,
-    sections: layout.sections.map((section) => ({
-      ...section,
-      page: section.source
-        ? resolveWorkspacePage(
-            {
-              id: section.id,
-              title: section.title!,
-              source: section.source,
-              children: [],
-            },
-            layout.layer,
-            sources,
-            "design",
-          )
-        : undefined,
-    })),
+    sections: layout.sections.map(sectionView),
   };
 }

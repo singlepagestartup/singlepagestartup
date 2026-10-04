@@ -379,6 +379,48 @@ Sources are relative to `design/<layer>/`. Built-in IDs are `overview`, `logos`,
 `colors`, `typography`, `interface`, `photography`, and `illustration`; each uses
 the same value for `id` and `builtin`. A custom section needs a unique kebab-case `id`,
 a `title`, and a `source`. It may replace a built-in ID with its own source.
+A group has an `id`, `title` and nonempty `children` instead of `source` or
+`builtin`. IDs are unique throughout the layout, including nested groups.
+The shared category navigation supports pointer and keyboard selection,
+preserves mounted examples, and offers **Show all**. The Design HTML download
+includes every category even when the screen shows one.
+
+```yaml
+sections:
+  - id: interface-kit
+    title: Interface kit
+    children:
+      - { id: kit-actions, title: Actions, source: interface-kit/Actions.tsx }
+      - { id: kit-inputs, title: Inputs, source: interface-kit/Inputs.tsx }
+  - id: content-blocks
+    title: Content blocks
+    children:
+      - { id: blocks-cards, title: Cards and collections, source: content-blocks/Cards.tsx }
+```
+
+The framework kit has nine categories: Icons and theme, Actions, Inputs,
+Navigation, Data display, Feedback, Overlays, Files and Conversation. The
+canonical specimen IDs, names and categories live in
+[`tools/studio/design/specimens.ts`](../../../tools/studio/design/specimens.ts).
+The selected category sources declare either literal `<Specimen id="…"
+title="…">` props or `data-specimen="…"` with a canonical H3. Validation reads
+actual JSX nodes, so strings and comments do not satisfy coverage. A reasoned
+`interface_review.omitted_specimens` entry documents a deliberate exclusion.
+
+A downstream project first maps its visual choices onto semantic tokens in
+`styles/startup.css`; an empty startup layout continues to use the framework
+components. When it needs different structure, its owned layout and sources
+replace the framework catalogue atomically. Preserve component IDs and behavior
+while changing typography, color, shape, density and approved iconography.
+Review default, focus, selected, disabled, pending, empty and error states as
+applicable. Portals must inherit the layer's tokens from their container.
+
+Content blocks compose elements from the kit. Their `data-composes` attribute
+names those component IDs; shared Button and Icon implementations come from
+`design/singlepage/interface-kit/primitives.tsx`. Their own recipes describe
+layout rather than defining a second set of controls. Interactive examples use
+local state; consuming products provide routes, validation rules and API flows.
+
 Files may be nested freely. TSX/JSX files export a default component with no
 required props; they may import other local components/data and render any
 structure. Markdown, HTML, SVG/raster images, video, audio, and file downloads

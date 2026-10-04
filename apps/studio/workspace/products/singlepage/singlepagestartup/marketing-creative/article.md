@@ -3,14 +3,14 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    product.singlepagestartup.creative: 487a52b6d1feb831b6fa08eb35ac85e4ff6995bc605e8e24c954c676590d61bd
+    product.singlepagestartup.creative: 7b7e31314b3006e86852a9f7ed84b48948b0036aac28107cfb16a4338e0b286e
 ---
 
 # Add your business rules without rebuilding the basics.
 
 Your product begins with something a customer needs. A useful order rule, a way to share information or a service that fits how their business works. The foundation should give you room to develop that idea.
 
-![People exchanging ideas at a worktable.](/workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-business-conversation.png)
+![People exchanging ideas at a worktable.](/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png)
 
 ## Start with the business, then shape the product
 

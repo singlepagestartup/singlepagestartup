@@ -18,7 +18,7 @@ export default function AnimatedCover({ text }: ICreativeTextProps = {}) {
         extrapolateRight: "clamp",
       });
       return (
-        <AbsoluteFill className="bg-[#F7F6F2]">
+        <AbsoluteFill className="bg-[var(--workspace-brand-background)]">
           <WalkthroughArtwork
             text={copy}
             photoScale={photoScale}

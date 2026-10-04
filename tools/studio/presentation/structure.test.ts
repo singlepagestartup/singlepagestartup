@@ -220,31 +220,10 @@ describe("Studio presentation structure", () => {
   test("keeps font assets and cascading styles in workspace", () => {
     const fontRoot = "apps/studio/workspace/assets/singlepage/fonts";
     expect(
-      existsSync(
-        path.join(
-          repositoryRoot,
-          fontRoot,
-          "jetbrains-mono/JetBrainsMono-wght.ttf",
-        ),
-      ),
+      existsSync(path.join(repositoryRoot, fontRoot, "onest/Onest-wght.ttf")),
     ).toBe(true);
     expect(
-      existsSync(
-        path.join(
-          repositoryRoot,
-          fontRoot,
-          "cormorant-garamond/CormorantGaramond[wght].ttf",
-        ),
-      ),
-    ).toBe(true);
-    expect(
-      existsSync(
-        path.join(
-          repositoryRoot,
-          fontRoot,
-          "cormorant-garamond/CormorantGaramond-Italic[wght].ttf",
-        ),
-      ),
+      existsSync(path.join(repositoryRoot, fontRoot, "onest/OFL.txt")),
     ).toBe(true);
 
     const runtime = source("apps/studio/runtime/styles.css");
@@ -261,10 +240,9 @@ describe("Studio presentation structure", () => {
       resolvedStyles.indexOf("./startup.css"),
     );
     const singlepage = source("apps/studio/workspace/styles/singlepage.css");
-    expect(singlepage).toContain("../assets/singlepage/fonts/jetbrains-mono");
-    expect(singlepage).toContain(
-      "../assets/singlepage/fonts/cormorant-garamond",
-    );
+    expect(singlepage).toContain("../assets/singlepage/fonts/onest");
+    expect(singlepage).not.toContain("JetBrains Mono");
+    expect(singlepage).not.toContain("Cormorant Garamond");
     const storybook = source("apps/studio/.storybook/main.ts");
     expect(storybook).not.toContain("../../host/styles/fonts/Primary");
   });
@@ -607,14 +585,14 @@ describe("Studio presentation structure", () => {
     expect(template).toMatch(/^\| Role\s+\| CSS family\s+\| Weights\s+\|/m);
     expect(role).toContain("`document.fonts.check(...)`");
     expect(role).toContain("Tailwind `max-w-7xl` (`1280px`)");
-    expect(design).toContain("singlepage-font-cormorant-garamond-variable");
+    expect(design).toContain("singlepage-font-onest-variable");
     expect(design).toContain("`max-w-7xl` (`1280px`)");
     expect(design).not.toContain("`1200px` grid");
     expect(parser).toContain("references missing font asset");
     expect(component).toContain("data-font-family");
     expect(component).toContain("data-font-asset-id");
-    expect(styles).toContain('font-family: "Cormorant Garamond"');
-    expect(styles).toContain("CormorantGaramond-Italic[wght].ttf");
+    expect(styles).toContain('font-family: "Onest"');
+    expect(styles).toContain("Onest-wght.ttf");
   });
 
   /**
@@ -657,12 +635,12 @@ describe("Studio presentation structure", () => {
   });
 
   /**
-   * BDD Scenario: Resolve presentation surfaces from the approved Design palette
-   * Given Design defines White Surface, Paper Canvas, Ink, and Lime roles
+   * BDD Scenario: Resolve presentation surfaces from the selected Design palette
+   * Given Design defines Surface and Canvas roles
    * When the React deck assigns its page and information surfaces
    * Then it uses semantic Design tokens instead of an unrelated canvas color
    */
-  test("uses approved semantic colors for presentation surfaces", () => {
+  test("uses selected semantic colors for presentation surfaces", () => {
     const presentation = source(
       "apps/studio/workspace/products/singlepage/singlepagestartup/presentation/ProjectPresentation.tsx",
     );
@@ -672,11 +650,19 @@ describe("Studio presentation structure", () => {
     expect(presentation).toContain(
       'backgroundColor: paletteValue(data, "surface")',
     );
-    expect(presentation).toContain("--workspace-brand-background,#F7F6F2");
-    expect(styles).toContain("--workspace-brand-surface: #ffffff");
-    expect(design).toContain(
-      "Presentations use White fields, Paper insets, Ink content, and Accent `#BFEF61` locators.",
-    );
+    for (const [role, token] of [
+      ["Canvas", "background"],
+      ["Surface", "surface"],
+    ]) {
+      const color = design.match(
+        new RegExp(`\\|\\s*${role}\\s*\\|\\s*\x60(#[0-9a-f]{6})\x60`, "i"),
+      )?.[1];
+      expect(color).toBeDefined();
+      expect(styles.toLowerCase()).toContain(
+        `--workspace-brand-${token}: ${color?.toLowerCase()}`,
+      );
+    }
+    expect(presentation).toContain("--workspace-brand-background,#F4F6F8");
   });
 
   /**

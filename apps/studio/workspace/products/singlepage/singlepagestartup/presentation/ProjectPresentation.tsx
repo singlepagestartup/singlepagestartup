@@ -41,13 +41,13 @@ function Slide({
       data-workspace-projection={data.projection}
       style={slideStyle(data)}
     >
-      <header className="flex items-center justify-between border-b border-black/15 pb-5">
+      <header className="flex items-center justify-between border-b border-[var(--workspace-brand-line)] pb-5">
         <img
           className="h-10 w-auto max-w-72"
           src={data.logo}
           alt="SinglePageStartup"
         />
-        <span className="text-sm uppercase tracking-widest text-black/60">
+        <span className="text-sm uppercase tracking-widest text-[var(--workspace-brand-muted)]">
           {data.name} · {String(index + 1).padStart(2, "0")} /{" "}
           {data.slides.length}
         </span>
@@ -70,7 +70,7 @@ function Slide({
           >
             {slide.title}
           </h1>
-          <p className="mt-6 max-w-6xl text-[22px] leading-relaxed text-black/70">
+          <p className="mt-6 max-w-6xl text-[22px] leading-relaxed text-[var(--workspace-brand-muted)]">
             {slide.summary}
           </p>
           <div
@@ -82,7 +82,7 @@ function Slide({
                 key={point.title}
               >
                 <h2 className="text-xl font-semibold">{point.title}</h2>
-                <p className="mt-2 text-lg leading-relaxed text-black/65">
+                <p className="mt-2 text-lg leading-relaxed text-[var(--workspace-brand-muted)]">
                   {point.detail}
                 </p>
               </article>
@@ -91,21 +91,33 @@ function Slide({
           {slide.action ? (
             <div className="mt-8">
               <a
-                className="inline-flex rounded-lg bg-[#111111] px-6 py-4 text-lg text-white underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
+                className="inline-flex items-center gap-3 rounded-xl bg-[var(--workspace-brand-accent)] px-6 py-4 text-lg font-semibold text-[var(--workspace-brand-foreground)] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
                 href={slide.action.href}
               >
-                {slide.action.label} ↗
+                {slide.action.label}
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  data-icon-family="phosphor"
+                  data-icon-name="arrow-up-right"
+                  data-icon-weight="regular"
+                  viewBox="0 0 256 256"
+                  fill="currentColor"
+                  className="size-5 shrink-0"
+                >
+                  <path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z" />
+                </svg>
               </a>
-              <p className="mt-3 text-base text-black/65">
+              <p className="mt-3 text-base text-[var(--workspace-brand-muted)]">
                 {slide.action.detail}
               </p>
             </div>
           ) : null}
         </div>
         {slide.image ? (
-          <figure className="flex h-full max-h-[600px] items-center justify-center overflow-hidden rounded-2xl bg-[var(--workspace-brand-background,#F7F6F2)]">
+          <figure className="aspect-square w-full max-w-[600px] justify-self-center overflow-hidden rounded-2xl bg-[var(--workspace-brand-background,#F4F6F8)]">
             <img
-              className="max-h-full w-full object-contain"
+              className="h-full w-full object-contain"
               src={slide.image.src}
               alt={slide.image.alt}
             />
@@ -113,7 +125,7 @@ function Slide({
         ) : null}
       </div>
       <footer
-        className="flex items-center justify-between border-t border-black/15 pt-4 text-sm text-black/60"
+        className="flex items-center justify-between border-t border-[var(--workspace-brand-line)] pt-4 text-sm text-[var(--workspace-brand-muted)]"
         data-slide-footer="true"
       >
         <span>{data.name}</span>

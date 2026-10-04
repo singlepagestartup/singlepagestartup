@@ -480,7 +480,7 @@ function MasterPrompt({
         color: paletteValue(data, "surface"),
       }}
     >
-      <div className="flex items-center gap-2">
+      <div className="relative flex items-center gap-2">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-65">
           Style master prompt
         </p>
@@ -505,7 +505,7 @@ function PromptUsageTooltip({
   if (!items.length) return null;
 
   return (
-    <div className="group relative inline-flex">
+    <div className="group inline-flex sm:relative">
       <button
         aria-describedby={id}
         aria-label="How to use this style master prompt"
@@ -515,7 +515,7 @@ function PromptUsageTooltip({
         <Info aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={2} />
       </button>
       <div
-        className="invisible absolute left-1/2 top-full z-20 mt-3 w-80 max-w-[calc(100vw-4rem)] -translate-x-1/2 rounded-2xl border p-5 text-left opacity-0 shadow-xl transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+        className="invisible absolute left-0 top-full z-20 mt-3 w-80 max-w-full rounded-2xl border p-5 text-left opacity-0 shadow-xl transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 sm:left-1/2 sm:max-w-[calc(100vw-4rem)] sm:-translate-x-1/2"
         id={id}
         role="tooltip"
         style={{

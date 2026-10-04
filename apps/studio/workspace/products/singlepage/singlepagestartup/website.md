@@ -23,15 +23,15 @@ sources:
     classification: constraint
     source: ../../../design/singlepage.md
     asset_ids:
-      - singlepage-generated-measured-space-primary-lockup
-      - singlepage-generated-measured-space-photography-business-conversation
-      - singlepage-generated-measured-space-illustration-module-hierarchy
-      - singlepage-generated-measured-space-illustration-coordinated-agents
-    supports: Current Measured Space imagery and typography with unchanged original image masters.
+      - singlepage-generated-living-focus-primary-lockup
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-illustration-module-hierarchy-cool-square
+      - singlepage-generated-living-focus-illustration-coordinated-agents-cool-square
+    supports: Living Focus imagery, Onest typography, cool neutral surfaces, graphite and lime actions from the selected Design direction.
 review:
   dependencies:
     brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
-    design: 6f29bf4c2ea795a190382e7091a7085ee9270f892486aeccd6c2aca62f1179c8
+    design: 859d4e2158d8e1dfd8c787855f87c44c7ff1fdf42cf87c0b9858e427f007211c
     product.singlepagestartup.product: 1bd3022ba57bd99882728e561cec47013e32d16dc2a138e8598efd17184e70e6
     product.singlepagestartup.sales: 5f4d91f14898077c62d3576a0dd298c4393d3aa788e05df4d42bf6d85b0cbf13
     strategy: d68e88a81632b3ddf4f57431d6963c9d74c28bf2ba0a3d9578fb2d925fe3bf82
@@ -63,9 +63,9 @@ Framework code and documentation are free. Coding-agent charges, infrastructure 
 
 ## Design constraints
 
-Apply the approved Measured Space identity: expressive serif headings, monospaced body copy, light neutral surfaces and a restrained green accent. Human photography connects the page to business work; the module and agent illustrations explain reuse and direction.
+Apply the Living Focus identity: Onest headings and body copy, white and cool gray surfaces, graphite text and panels, and lime actions. Human photography connects the page to business work; the module and agent illustrations explain reuse and direction.
 
-Keep the registered images intact, including their original backgrounds and proportions. Narrow screens stack content and allow the main button to wrap; wider screens pair text and imagery. Navigation, button states and FAQ disclosures remain clear and accessible.
+Use the registered square photograph deliveries. Image cards show the full 1:1 image; hero frames may crop a square photograph while preserving its proportions. Use the registered illustrations with pure-white backgrounds and keep their full square compositions visible. Apply their native bitmap colors without CSS recoloring or background masks. Narrow screens stack content and allow the main button to wrap; wider screens pair text and imagery. Navigation, button states and FAQ disclosures remain clear and accessible.
 
 The setup request can be copied into a coding agent. AI Chat retains its own action; this static preview shows a short unavailable message until its destination is supplied.
 

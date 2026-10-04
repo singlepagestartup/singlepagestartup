@@ -5,14 +5,14 @@ sources:
   message: Current Product, shared Operations & Economics, Sales, approved Strategy and Brand; reviewed 2026-09-13.
   channel_mechanics: Research CF-SPS-04, CF-SPS-08, CF-SPS-09 and CF-SPS-10; official YouTube, Google and Reddit documentation checked 2026-09-13.
   example: The six-unit minimum-order request illustrates a possible business rule; it is not a reported customer outcome.
-  assets: Approved Design Measured Space; original registered human photography and opaque illustrations. No new image generation or background removal.
+  assets: Living Focus direction selected by the operator on 2026-10-03; registered human photography and opaque illustrations from the current Design proposal.
 review:
   dependencies:
     brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
-    design: 6f29bf4c2ea795a190382e7091a7085ee9270f892486aeccd6c2aca62f1179c8
+    design: 859d4e2158d8e1dfd8c787855f87c44c7ff1fdf42cf87c0b9858e427f007211c
     product.singlepagestartup.product: 1bd3022ba57bd99882728e561cec47013e32d16dc2a138e8598efd17184e70e6
     product.singlepagestartup.sales: 5f4d91f14898077c62d3576a0dd298c4393d3aa788e05df4d42bf6d85b0cbf13
-    product.singlepagestartup.website: c3e6a545233fa3bd336a39bc28e599e7a7051e8c068e54a478ca587cd234c762
+    product.singlepagestartup.website: 69abaa01591d8d29e6d22a18ccc66786c202983f2284cd4d9dd8af88f49db4f5
 ---
 
 # Marketing Creative
@@ -41,7 +41,7 @@ The AI Chat bridge uses **Want to build your own version? Start with the foundat
 
 ## Creative system application
 
-Apply the approved Measured Space identity: light fields, dark text, lime accents, Cormorant Garamond headings, JetBrains Mono supporting text and the SinglePageStartup lockup. Photographs communicate people and business intent; illustrations explain the reusable foundation.
+Apply the Living Focus identity: white and cool gray fields, graphite text and panels, lime actions, Onest headings and supporting text, and the SinglePageStartup lockup. Photographs show people discussing and doing business work; illustrations explain the reusable foundation.
 
 | Composition                | Format                          | Material                                                                          |
 | -------------------------- | ------------------------------- | --------------------------------------------------------------------------------- |
@@ -51,7 +51,7 @@ Apply the approved Measured Space identity: light fields, dark text, lime accent
 | Short cover                | 1080 × 1920                     | Work-in-motion photograph with a request-to-result message.                       |
 | Social post                | 1080 × 1080                     | A typographic explanation of the business example and an action.                  |
 
-Use the registered original images with their current backgrounds and proportions. Each material has its own Text and Layout view. Markdown owns the copy; the visual composition adds typography, image placement and spacing. Cover and social layouts provide PNG downloads; the animated cover provides playback and MP4 export. The article and storyboard remain readable, editable documents.
+Use the registered square photograph deliveries and scale them proportionally. Cards, galleries and article images show the full 1:1 image. Cover and hero frames may crop a square photograph to fit their format; illustrations remain fully visible on their registered pure-white bitmap backgrounds. Use their native colors without CSS recoloring or background masks. Generated originals remain registered as masters. Each material has its own Text and Layout view. Markdown owns the copy; the visual composition adds typography, image placement and spacing. Cover and social layouts provide PNG downloads; the animated cover provides playback and MP4 export. The article and storyboard remain readable, editable documents.
 
 ## Production and review
 

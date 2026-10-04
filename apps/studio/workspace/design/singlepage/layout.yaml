@@ -1,15 +1,63 @@
-# Ordered default blocks. A startup layout may reorder, omit, or replace any block.
+# Foundations, reusable components, then compositions built from those components.
+template: LivingFocus.tsx
 sections:
-  - { id: overview, builtin: overview }
   - { id: logos, builtin: logos }
   - { id: colors, builtin: colors }
   - { id: typography, builtin: typography }
   - { id: interface, builtin: interface }
   - id: interface-kit
     title: Interface kit
-    source: interface-kit.html
+    children:
+      - {
+          id: kit-foundations,
+          title: Icons and theme,
+          source: interface-kit/Foundations.tsx,
+        }
+      - { id: kit-actions, title: Actions, source: interface-kit/Actions.tsx }
+      - { id: kit-inputs, title: Inputs, source: interface-kit/Inputs.tsx }
+      - {
+          id: kit-navigation,
+          title: Navigation,
+          source: interface-kit/Navigation.tsx,
+        }
+      - {
+          id: kit-data,
+          title: Data display,
+          source: interface-kit/DataDisplay.tsx,
+        }
+      - {
+          id: kit-feedback,
+          title: Feedback,
+          source: interface-kit/Feedback.tsx,
+        }
+      - {
+          id: kit-overlays,
+          title: Overlays,
+          source: interface-kit/Overlays.tsx,
+        }
+      - { id: kit-files, title: Files, source: interface-kit/Files.tsx }
+      - {
+          id: kit-conversation,
+          title: Conversation,
+          source: interface-kit/Conversation.tsx,
+        }
   - id: content-blocks
     title: Content blocks
-    source: content-blocks.html
+    children:
+      - {
+          id: blocks-editorial,
+          title: Editorial,
+          source: content-blocks/Editorial.tsx,
+        }
+      - {
+          id: blocks-cards,
+          title: Cards and collections,
+          source: content-blocks/Cards.tsx,
+        }
+      - {
+          id: blocks-conversion,
+          title: Offers and contextual actions,
+          source: content-blocks/Conversion.tsx,
+        }
   - { id: photography, builtin: photography }
   - { id: illustration, builtin: illustration }

@@ -1,7 +1,8 @@
 schema: singlepagestartup.pre-development-state.v1
-active_stage: 10-strategy
+active_stage: 00-business
 status: blocked
 active_artifacts:
-  - strategy
+  - brief
 blockers:
-  - strategy/singlepage.md#confirmation
+  - brief/singlepage.md#confirmation
+  - design/singlepage.md#confirmation

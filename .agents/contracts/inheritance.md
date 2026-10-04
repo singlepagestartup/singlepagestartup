@@ -138,7 +138,10 @@ folders in `libs/modules`.
   or names a complete template. An empty startup layout inherits the complete
   singlepage layout; a populated startup layout replaces it and reads every
   declared file from its own layer. Load only the selected layout's declared
-  template, sections and relevant imports. Section inheritance of
+  template, sections and relevant imports. A section group has a title and
+  nonempty `children`; every descendant source still belongs to that layout
+  layer. Component categories preserve state while switching; catalogue HTML
+  downloads include all categories. Section inheritance of
   `design/<layer>.md`, Assets resolution and the cascade of
   `styles/{singlepage,startup,default}.css` stay independent of the layout.
 - Font files and licenses belong to the layer that selected them, below

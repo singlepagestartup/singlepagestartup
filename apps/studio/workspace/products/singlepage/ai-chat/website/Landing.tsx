@@ -12,9 +12,9 @@ const display =
   "[font-family:var(--workspace-brand-font-display)] font-semibold tracking-tight";
 const muted = "text-[var(--workspace-brand-muted)]";
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#111111]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--workspace-brand-foreground)]";
 const logo =
-  "/workspace-assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg";
+  "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-primary-lockup.svg";
 
 function SectionHeading({ children }: { children: ReactNode }) {
   return (
@@ -87,7 +87,7 @@ export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
               {content.hero.paragraphs[1]}
             </p>
             <a
-              className={`mt-8 inline-flex min-h-12 items-center rounded-xl bg-[#111111] px-6 py-3 text-sm font-semibold text-white ${focus}`}
+              className={`mt-8 inline-flex min-h-12 items-center rounded-xl bg-[var(--workspace-brand-accent)] px-6 py-3 text-sm font-semibold text-[var(--workspace-brand-foreground)] hover:brightness-95 ${focus}`}
               href={content.hero.links[0].href}
             >
               {content.hero.links[0].text}
@@ -107,7 +107,7 @@ export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
           <div className="rounded-[32px] border border-[var(--workspace-brand-line)] bg-white p-4 shadow-xl sm:p-6">
             <div className="flex items-center justify-between border-b border-[var(--workspace-brand-line)] pb-4 text-xs uppercase tracking-widest text-[var(--workspace-brand-muted)]">
               <span>Project page</span>
-              <span className="rounded-full bg-[var(--workspace-brand-accent)] px-3 py-1 text-[#111111]">
+              <span className="rounded-full bg-[var(--workspace-brand-accent)] px-3 py-1 text-[var(--workspace-brand-foreground)]">
                 Current
               </span>
             </div>
@@ -151,7 +151,10 @@ export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
           <SectionHeading>{content.workflow.title}</SectionHeading>
           <ol className="mt-10 grid gap-5 @3xl:grid-cols-2 @5xl:grid-cols-4">
             {content.workflow.items.map((item, index) => (
-              <li className="border-t border-[#111111] pt-5" key={item.title}>
+              <li
+                className="border-t border-[var(--workspace-brand-foreground)] pt-5"
+                key={item.title}
+              >
                 <span className={`text-xs ${muted}`}>
                   {String(index + 1).padStart(2, "0")}
                 </span>
@@ -175,7 +178,7 @@ export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
               <div className="mt-6 flex flex-wrap gap-3">
                 {content.publish.links.map((link, index) => (
                   <a
-                    className={`inline-flex rounded-full border border-[#111111] px-4 py-2 text-sm font-semibold transition-colors hover:bg-[#111111] hover:text-white ${focus} ${index === content.publish.links.length - 1 ? "bg-[#111111] text-white" : "bg-white text-[#111111]"}`}
+                    className={`inline-flex rounded-full border border-[var(--workspace-brand-foreground)] px-4 py-2 text-sm font-semibold transition-colors hover:bg-[var(--workspace-brand-foreground)] hover:text-white ${focus} ${index === content.publish.links.length - 1 ? "bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-foreground)]" : "bg-white text-[var(--workspace-brand-foreground)]"}`}
                     href={link.href}
                     key={link.href}
                   >
@@ -191,7 +194,7 @@ export default function AIChatLanding({ text }: IAIChatLandingProps = {}) {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="rounded-[32px] bg-[#111111] p-8 text-white sm:p-12">
+          <div className="rounded-[32px] bg-[var(--workspace-brand-foreground)] p-8 text-white sm:p-12">
             <SectionHeading>{content.continue.title}</SectionHeading>
             <p className="mt-5 max-w-3xl text-base leading-7 text-white/70">
               {content.continue.paragraphs[0]}

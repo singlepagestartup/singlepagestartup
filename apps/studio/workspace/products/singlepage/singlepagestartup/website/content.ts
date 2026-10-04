@@ -35,7 +35,7 @@ export interface ICodeFrameworkWebsiteContent {
   labels: Record<string, string>;
 }
 
-const generated = "/workspace-assets/singlepage/generated/measured-space";
+const generated = "/workspace-assets/singlepage/generated/living-focus";
 
 /** Asset choices only. All visible page copy is authored in page.md. */
 export const websiteAssets: Record<
@@ -43,23 +43,23 @@ export const websiteAssets: Record<
   IWebsiteAsset
 > = {
   logo: {
-    id: "singlepage-generated-measured-space-primary-lockup",
+    id: "singlepage-generated-living-focus-primary-lockup",
     src: `${generated}/singlepagestartup-primary-lockup.svg`,
     alt: "SinglePageStartup",
   },
   photograph: {
-    id: "singlepage-generated-measured-space-photography-business-conversation",
-    src: `${generated}/singlepagestartup-photography-business-conversation.png`,
+    id: "singlepage-generated-living-focus-photography-business-conversation-square",
+    src: `${generated}/singlepagestartup-photography-business-conversation-square.png`,
     alt: "Editorial image of two people exchanging an idea at a worktable.",
   },
   modules: {
-    id: "singlepage-generated-measured-space-illustration-module-hierarchy",
-    src: `${generated}/singlepagestartup-illustration-module-hierarchy-v2.png`,
+    id: "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+    src: `${generated}/singlepagestartup-illustration-module-hierarchy-cool-square.png`,
     alt: "Conceptual drawing of reusable modules connected to a common software foundation.",
   },
   agents: {
-    id: "singlepage-generated-measured-space-illustration-coordinated-agents",
-    src: `${generated}/singlepagestartup-illustration-coordinated-agents-v2.png`,
+    id: "singlepage-generated-living-focus-illustration-coordinated-agents-cool-square",
+    src: `${generated}/singlepagestartup-illustration-coordinated-agents-cool-square.png`,
     alt: "Conceptual drawing of a person directing coding assistants toward a shared task.",
   },
 };

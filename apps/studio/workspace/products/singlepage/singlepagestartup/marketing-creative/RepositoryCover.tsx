@@ -12,21 +12,21 @@ export function RepositoryArtwork({ text }: ICreativeTextProps = {}) {
   return (
     <div
       data-workspace-projection="singlepage"
-      className={`relative h-full w-full overflow-hidden bg-[#F7F6F2] text-[#111111] ${creativeTypography.body}`}
+      className={`relative h-full w-full overflow-hidden bg-white text-[var(--workspace-brand-foreground)] ${creativeTypography.body}`}
     >
       <img
         src={copy.image.src}
         alt={copy.image.alt}
-        className="absolute right-0 top-0 h-[630px] w-[630px] object-contain"
+        className="absolute right-[30px] top-[90px] h-[520px] w-[520px] rounded-2xl object-contain"
       />
       <img
         src={creativeAssets.logo}
         alt="SinglePageStartup"
         className="absolute left-[54px] top-[48px] w-[253px]"
       />
-      <div className="absolute left-[54px] top-[177px] w-[554px] bg-[#F7F6F2]/95 pb-[24px] pr-[20px]">
+      <div className="absolute left-[54px] top-[168px] w-[540px]">
         <h1
-          className={`${creativeTypography.display} text-[93px] font-semibold leading-[0.91] tracking-[-0.025em]`}
+          className={`${creativeTypography.display} text-[68px] font-semibold leading-[1.04] tracking-[-0.035em]`}
         >
           {copy.title}
         </h1>
@@ -35,7 +35,10 @@ export function RepositoryArtwork({ text }: ICreativeTextProps = {}) {
         </p>
       </div>
       <div className="absolute bottom-[48px] left-[54px] flex items-center gap-[18px]">
-        <span className="h-[12px] w-[54px] bg-[#BFEF61]" aria-hidden="true" />
+        <span
+          className="h-[12px] w-[54px] bg-[var(--workspace-brand-accent)]"
+          aria-hidden="true"
+        />
         <span className="text-[16px]">{copy.action}</span>
       </div>
     </div>

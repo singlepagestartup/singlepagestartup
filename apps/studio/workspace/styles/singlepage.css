@@ -1,45 +1,31 @@
 @font-face {
-  font-family: "JetBrains Mono";
+  font-family: "Onest";
   font-style: normal;
-  font-weight: 100 800;
+  font-weight: 100 900;
   font-display: swap;
-  src: url("../assets/singlepage/fonts/jetbrains-mono/JetBrainsMono-wght.ttf")
-    format("truetype");
-}
-
-@font-face {
-  font-family: "Cormorant Garamond";
-  font-style: normal;
-  font-weight: 300 700;
-  font-display: swap;
-  src: url("../assets/singlepage/fonts/cormorant-garamond/CormorantGaramond[wght].ttf")
-    format("truetype");
-}
-
-@font-face {
-  font-family: "Cormorant Garamond";
-  font-style: italic;
-  font-weight: 300 700;
-  font-display: swap;
-  src: url("../assets/singlepage/fonts/cormorant-garamond/CormorantGaramond-Italic[wght].ttf")
-    format("truetype");
+  src: url("../assets/singlepage/fonts/onest/Onest-wght.ttf") format("truetype");
 }
 
 @layer workspace-singlepage {
   [data-workspace-projection="singlepage"],
   [data-workspace-projection="default"] {
-    --workspace-brand-font-body:
-      "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas,
-      monospace;
+    --workspace-brand-font-body: "Onest", ui-sans-serif, system-ui, sans-serif;
     --workspace-brand-font-display:
-      "Cormorant Garamond", ui-serif, Georgia, Cambria, "Times New Roman",
-      Times, serif;
+      "Onest", ui-sans-serif, system-ui, sans-serif;
     --workspace-brand-accent: #bfef61;
-    --workspace-brand-background: #f7f6f2;
-    --workspace-brand-foreground: #111111;
-    --workspace-brand-line: #cbc9c3;
-    --workspace-brand-muted: #565656;
-    --workspace-brand-primary: #111111;
+    --workspace-brand-on-accent: #18232a;
+    --workspace-brand-background: #f4f6f8;
+    --workspace-brand-danger: #b42338;
+    --workspace-brand-danger-surface: #fff1f3;
+    --workspace-brand-danger-line: #e9b4bd;
+    --workspace-brand-focus: #18232a;
+    --workspace-brand-focus-inverse: #ffffff;
+    --workspace-brand-foreground: #18232a;
+    --workspace-brand-line: #dce2e6;
+    --workspace-brand-muted: #5b6870;
+    --workspace-brand-primary: #18232a;
+    --workspace-brand-on-primary: #ffffff;
+    --workspace-brand-muted-on-primary: #c4cdd3;
     --workspace-brand-surface: #ffffff;
   }
 }

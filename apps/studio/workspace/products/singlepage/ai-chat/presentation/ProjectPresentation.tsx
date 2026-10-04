@@ -27,14 +27,17 @@ function Slide({
   index: number;
 }) {
   return (
-    <main className="flex h-full flex-col bg-white px-16 py-10 text-[#111111] [font-family:var(--workspace-brand-font-body)]">
-      <header className="flex items-center justify-between border-b border-black/15 pb-5">
+    <main
+      data-workspace-projection="singlepage"
+      className="flex h-full flex-col bg-white px-16 py-10 text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)]"
+    >
+      <header className="flex items-center justify-between border-b border-[var(--workspace-brand-line)] pb-5">
         <img
           className="h-10 w-auto max-w-72"
-          src="/workspace-assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg"
+          src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-primary-lockup.svg"
           alt="SinglePageStartup"
         />
-        <span className="text-sm uppercase tracking-widest text-black/60">
+        <span className="text-sm uppercase tracking-widest text-[var(--workspace-brand-muted)]">
           {data.name} · {String(index + 1).padStart(2, "0")} /{" "}
           {data.slides.length}
         </span>
@@ -50,7 +53,7 @@ function Slide({
         <h1 className="mt-5 max-w-6xl text-6xl leading-none font-semibold tracking-tight [font-family:var(--workspace-brand-font-display)]">
           {slide.title}
         </h1>
-        <p className="mt-6 max-w-6xl text-[22px] leading-relaxed text-black/70">
+        <p className="mt-6 max-w-6xl text-[22px] leading-relaxed text-[var(--workspace-brand-muted)]">
           {slide.lead}
         </p>
         <div className="mt-8 grid grid-cols-2 gap-5">
@@ -59,10 +62,10 @@ function Slide({
               className="border-l-2 border-[var(--workspace-brand-accent,#BFEF61)] pl-5"
               key={point}
             >
-              <p className="text-xs uppercase tracking-widest text-black/45">
+              <p className="text-xs uppercase tracking-widest text-[var(--workspace-brand-muted)]">
                 {String(pointIndex + 1).padStart(2, "0")}
               </p>
-              <p className="mt-2 text-xl leading-relaxed text-black/70">
+              <p className="mt-2 text-xl leading-relaxed text-[var(--workspace-brand-muted)]">
                 {point}
               </p>
             </article>
@@ -70,7 +73,7 @@ function Slide({
         </div>
       </div>
       <footer
-        className="flex items-center justify-between border-t border-black/15 pt-4 text-sm text-black/60"
+        className="flex items-center justify-between border-t border-[var(--workspace-brand-line)] pt-4 text-sm text-[var(--workspace-brand-muted)]"
         data-slide-footer="true"
       >
         <span>{data.subtitle}</span>

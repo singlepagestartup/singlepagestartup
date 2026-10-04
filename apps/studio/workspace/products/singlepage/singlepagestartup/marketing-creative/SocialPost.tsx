@@ -16,7 +16,7 @@ export default function SocialPost({ text }: ICreativeTextProps = {}) {
     >
       <article
         data-workspace-projection="singlepage"
-        className={`relative h-full w-full overflow-hidden bg-[#F7F6F2] px-[74px] py-[58px] text-[#111111] ${creativeTypography.body}`}
+        className={`relative h-full w-full overflow-hidden bg-white px-[74px] py-[58px] text-[var(--workspace-brand-foreground)] ${creativeTypography.body}`}
       >
         <header className="mb-[42px] flex items-center justify-between">
           <img
@@ -24,9 +24,12 @@ export default function SocialPost({ text }: ICreativeTextProps = {}) {
             alt="SinglePageStartup"
             className="w-[300px]"
           />
-          <span className="h-[14px] w-[88px] bg-[#BFEF61]" aria-hidden="true" />
+          <span
+            className="h-[14px] w-[88px] bg-[var(--workspace-brand-accent)]"
+            aria-hidden="true"
+          />
         </header>
-        <div className="[&_h1]:mb-[30px] [&_h1]:text-[79px] [&_h1]:font-semibold [&_h1]:leading-[0.95] [&_h1]:text-[#111111] [&_h1]:[font-family:var(--workspace-brand-font-display)] [&_p]:mb-[20px] [&_p]:text-[23px] [&_p]:leading-[1.5] [&_p]:text-[#111111] [&_a]:bg-[#BFEF61] [&_a]:px-[12px] [&_a]:py-[6px] [&_a]:text-[#111111] [&_a]:no-underline">
+        <div className="[&_h1]:mb-[30px] [&_h1]:text-[64px] [&_h1]:font-semibold [&_h1]:leading-[1.06] [&_h1]:text-[var(--workspace-brand-foreground)] [&_h1]:[font-family:var(--workspace-brand-font-display)] [&_p]:mb-[20px] [&_p]:text-[23px] [&_p]:leading-[1.5] [&_p]:text-[var(--workspace-brand-foreground)] [&_a]:bg-[var(--workspace-brand-accent)] [&_a]:px-[12px] [&_a]:py-[6px] [&_a]:text-[var(--workspace-brand-foreground)] [&_a]:no-underline">
           <MarkdownDocument>{text ?? sourceText}</MarkdownDocument>
         </div>
       </article>

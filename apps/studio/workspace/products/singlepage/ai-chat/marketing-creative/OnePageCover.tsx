@@ -11,29 +11,32 @@ export default function OnePageCover({ text }: { text?: string } = {}) {
       height={720}
       fileName="ai-chat-structured-project.png"
     >
-      <div className="relative grid h-full grid-cols-[1.1fr_0.9fr] overflow-hidden bg-[#F7F6F2] text-[#111111] [font-family:var(--workspace-brand-font-body)]">
+      <div
+        data-workspace-projection="singlepage"
+        className="relative grid h-full grid-cols-[1.1fr_0.9fr] overflow-hidden bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)]"
+      >
         <div className="flex flex-col p-16">
           <img
             alt="SinglePageStartup"
             className="w-64"
-            src="/workspace-assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg"
+            src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-primary-lockup.svg"
           />
           <div className="mt-auto">
-            <p className="mb-6 inline-block bg-[#BFEF61] px-4 py-2 text-sm font-semibold uppercase tracking-widest">
+            <p className="mb-6 inline-block bg-[var(--workspace-brand-accent)] px-4 py-2 text-sm font-semibold uppercase tracking-widest">
               {creativeAction(source)}
             </p>
-            <h1 className="max-w-3xl text-7xl leading-[0.95] font-semibold [font-family:var(--workspace-brand-font-display)]">
+            <h1 className="max-w-3xl text-[56px] leading-[1.06] tracking-tight font-semibold [font-family:var(--workspace-brand-font-display)]">
               {creativeTitle(source)}
             </h1>
-            <p className="mt-7 max-w-2xl text-2xl leading-relaxed text-[#565656]">
+            <p className="mt-6 max-w-2xl text-[21px] leading-[1.5] text-[var(--workspace-brand-muted)]">
               {creativeParagraph(source)}
             </p>
           </div>
         </div>
-        <div className="relative m-10 overflow-hidden rounded-[36px] border border-[#CBC9C3] bg-white p-7 shadow-2xl">
-          <div className="flex items-center justify-between border-b border-[#CBC9C3] pb-5 text-sm uppercase tracking-widest text-[#6B6B6B]">
+        <div className="relative m-10 overflow-hidden rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-7 shadow-lg">
+          <div className="flex items-center justify-between border-b border-[var(--workspace-brand-line)] pb-5 text-sm uppercase tracking-widest text-[var(--workspace-brand-muted)]">
             <span>Business model</span>
-            <span className="rounded-full bg-[#BFEF61] px-3 py-1 text-[#111111]">
+            <span className="rounded-full bg-[var(--workspace-brand-accent)] px-3 py-1 text-[var(--workspace-brand-foreground)]">
               Current
             </span>
           </div>
@@ -41,7 +44,7 @@ export default function OnePageCover({ text }: { text?: string } = {}) {
             {["Customers and offer", "Operations", "Sales", "Marketing"].map(
               (item, index) => (
                 <div
-                  className="flex items-center gap-4 rounded-2xl bg-[#F7F6F2] p-5"
+                  className="flex items-center gap-4 rounded-2xl bg-[var(--workspace-brand-background)] p-5"
                   key={item}
                 >
                   <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-sm font-semibold">

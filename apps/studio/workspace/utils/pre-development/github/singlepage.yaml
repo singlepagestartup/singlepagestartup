@@ -268,3 +268,298 @@ reconciliations:
       .claude/.env. Moving a provider-neutral config path changes no business fact,
       claim or product promise.
     affected_artifacts: []
+  - commit: 04220ed50c8128ee3dd94574208272a25e23c765
+    outcome: no-material-effect
+    summary:
+      Telegram notification delivery retries without a missing topic ID. Current
+      product materials make no topic-delivery promise, and the change adds no customer
+      outcome or visual rule.
+    affected_artifacts: []
+  - commit: 78ad44ed3dc2e13283242ef4520c206652bbd88e
+    outcome: no-material-effect
+    summary:
+      Silent voice notes are rejected before transcription and display No speech
+      detected. This corrects an existing chat state; current AI Chat positioning and offer
+      contain no voice-transcription promise or measured quality claim.
+    affected_artifacts: []
+  - commit: b124c57c418f085314ac71b4c2d64e231bc117ca
+    outcome: no-material-effect
+    summary:
+      The HTTP error mapper restores 422 classification while preserving an explicit
+      Validation error category. README error documentation and test wiring change no offer,
+      evidence boundary or design decision.
+    affected_artifacts: []
+  - commit: 919623b47fbf080a006328252f22384774ce7fa9
+    outcome: no-material-effect
+    summary:
+      Cache counters expire, large responses skip storage, Redis waits are bounded and
+      Redis has a configurable memory limit. These runtime bounds introduce no current
+      availability guarantee, price, product limit or observed outcome.
+    affected_artifacts: []
+  - commit: ebe7c0ad92d4f705a3e8bd6bff76ff9c356a8c3a
+    outcome: no-material-effect
+    summary:
+      JWT verification returns fixed authentication errors and sanitizes credentials
+      from responses and logs. Current materials claim no audited security or isolation
+      result, so their proof limits remain unchanged.
+    affected_artifacts: []
+  - commit: 5c3dd5d2bd7e4defd71232470d6950c0c06891f5
+    outcome: no-material-effect
+    summary:
+      Anonymous sessions are reused and cleanup applies a bounded inactivity policy
+      with ownership blockers. Registered AI Chat accounts and their recorded deletion and
+      backup terms are not replaced by anonymous-visitor retention.
+    affected_artifacts: []
+  - commit: fd18256bbe13537b873003a34074e2c2b5a07c02
+    outcome: no-material-effect
+    summary:
+      Unique-constraint errors return a fixed 409 response without database details,
+      and OAuth recognizes the sanitized conflict. Current offers and evidence boundaries do
+      not depend on the former error text.
+    affected_artifacts: []
+  - commit: 79aa5cadf6343efd389bfd6264a02bb09e9aa7f4
+    outcome: no-material-effect
+    summary:
+      Zod validation failures return bounded field-and-issue descriptions with 422.
+      This improves existing error reporting without adding a business promise or marketing
+      claim.
+    affected_artifacts: []
+  - commit: 09f17db18ee963d209a23a1ecae26a7e012f7a4c
+    outcome: no-material-effect
+    summary:
+      The merge publishes the inspected Telegram missing-topic fallback and
+      silent-audio handling. Its tree matches its second parent and adds no separate
+      business or visual decision.
+    affected_artifacts: []
+  - commit: 8c8684ae157e50454df3cef61b156b9036e25d91
+    outcome: no-material-effect
+    summary:
+      The merge publishes cache bounds plus a configurable offline queue whose wait
+      remains bounded. The added option and tests introduce no service-level commitment or
+      current offer change.
+    affected_artifacts: []
+  - commit: e3eb1acfe64b9094029af737ed8295c064c1c050
+    outcome: no-material-effect
+    summary:
+      JSON filter keys become bound SQL parameters, unsupported filters are rejected
+      and existing role queries use inArray. Current product claims specify no filter syntax
+      or search guarantee.
+    affected_artifacts: []
+  - commit: bb4f2b57956db397b883b8ab22c486ccb2c92711
+    outcome: no-material-effect
+    summary:
+      OAuth checks redirect origins, transports exchange codes through an HttpOnly
+      cookie and consumes codes atomically. AI Chat still specifies email-and-password
+      access; framework OAuth hardening adds no selected social-login offer or security
+      certification.
+    affected_artifacts: []
+  - commit: d40ad086a3baf94bd618dd2be9d227d1d8e706c8
+    outcome: no-material-effect
+    summary:
+      Bootstrap uses cryptographic secrets and API startup refuses recognized legacy
+      authorization secrets unless report mode is selected. Current onboarding promises no
+      fixed administrator password or unconditional startup, and committed code does not
+      verify deployment safety.
+    affected_artifacts: []
+  - commit: a30bd5c4d71f408a9787e7daa95b13831ec21b92
+    outcome: no-material-effect
+    summary:
+      The merge publishes the inspected OAuth origin, cookie and atomic-consumption
+      changes with no separate business decision; its tree matches its second parent.
+    affected_artifacts: []
+  - commit: 65a768721cb4a6a8b3b0c8263f98dae548e28721
+    outcome: no-material-effect
+    summary:
+      The merge publishes the inspected secret-generation and startup-guard changes. It
+      adds no independent offer, support or visual decision.
+    affected_artifacts: []
+  - commit: 975041f0fb8bf43ec70fc75bfed9df4cc78e0848
+    outcome: no-material-effect
+    summary:
+      The merge publishes the inspected filter validation and bound JSON-key changes
+      without an additional business claim.
+    affected_artifacts: []
+  - commit: 83f758dfeaaf50954fdfaa853e9d228bbf4a512a
+    outcome: no-material-effect
+    summary:
+      Sensitive identity reads require authorization, secret columns are omitted from
+      ordinary responses and sensitive cache paths are excluded. Current materials retain
+      their existing security proof limits and do not promise anonymous identity access.
+    affected_artifacts: []
+  - commit: c4f3c8f8a6ddab5ea569c755d0fa7d67ef5ed76e
+    outcome: no-material-effect
+    summary:
+      Identity admin forms change passwords through the dedicated handler, generic
+      writes reject unhashed credentials and additional identity reads are closed. These
+      corrections preserve the selected authentication offer and do not change the shared
+      brand concept.
+    affected_artifacts: []
+  - commit: a0da9e056ded19dd0243df4598318c6a2adcb9f1
+    outcome: no-material-effect
+    summary:
+      Password registration refuses an address already held by a verifying OAuth
+      provider. The guard does not add social sign-in to the selected email-and-password AI
+      Chat offer or establish verified account security.
+    affected_artifacts: []
+  - commit: 31e5c5f0947b0471557668115678a2377db1465b
+    outcome: no-material-effect
+    summary:
+      The data dump adds an anonymous-cleanup agent, empty test article rows and file
+      records, and replaces permission and role records. Inspected article fields contain
+      test placeholders rather than selected marketing content; the snapshot establishes no
+      customer or adoption result.
+    affected_artifacts: []
+  - commit: bf7127bcd33c96bf8feffa2471caebf1100bccb5
+    outcome: no-material-effect
+    summary:
+      HTTP dump routes initially receive an operator credential guard and public read
+      allow-lists are narrowed. No current Workspace offer promises anonymous dumps, and the
+      later removal of those routes is assessed separately.
+    affected_artifacts: []
+  - commit: c08466b1ba0912f245e6b28af6d8d81d22fae611
+    outcome: no-material-effect
+    summary:
+      HTTP dump and seed controller exposure is removed while runtime data maintenance
+      remains separate. Current product materials promise no HTTP dump endpoint or public
+      data export capability through it.
+    affected_artifacts: []
+  - commit: 09ff0454eac2b6356f384e7a7088ceaa3f5c7a37
+    outcome: no-material-effect
+    summary:
+      The merge publishes HTTP dump removal and removes an allow-list entry for a
+      nonexistent route. Its tree matches its second parent; no further business or visual
+      decision is introduced.
+    affected_artifacts: []
+  - commit: 93b6d9f0c5f104a5246cab84b3fbeaeeade28b2a
+    outcome: no-material-effect
+    summary:
+      Telegram Star webhook credentials use the shared constant-time comparison.
+      Pricing, payment methods and current security proof limits remain unchanged.
+    affected_artifacts: []
+  - commit: a820f34b3f0c2f148417070a11ca74050d41137a
+    outcome: no-material-effect
+    summary:
+      Cache clearing requires the operator credential at the actual route and only
+      removes cache namespaces. No current offer includes anonymous cache control or a
+      stronger availability commitment.
+    affected_artifacts: []
+  - commit: c85010d5fb90c6f76f673981008c9440b5bcb522
+    outcome: no-material-effect
+    summary:
+      Host generators use correct response types, own-property variant lookup, nosniff
+      headers and fixed public errors. Generated content selection and current marketing
+      claims remain unchanged; host test wiring is verification support.
+    affected_artifacts: []
+  - commit: 314cfa78aab90010368d827970a05648dcf83804
+    outcome: no-material-effect
+    summary:
+      Build configuration and logger imports prevent Node crypto from reaching the
+      browser bundle. This dependency correction adds no business capability or measured
+      compatibility claim.
+    affected_artifacts: []
+  - commit: a4f2e4aeb1c9ec3ebe78ad1faa58f2c83c564e33
+    outcome: no-material-effect
+    summary:
+      The server-only credential helper receives a separate import path, the error type
+      includes 422 and package configuration is adjusted. These build changes introduce no
+      offer, claim or visual rule.
+    affected_artifacts: []
+  - commit: ada697a93d6d0c0cca338bfd43b14e27bf70d1aa
+    outcome: no-material-effect
+    summary:
+      The browser-reachable page SDK uses console.error and the server credential
+      helper returns to the backend export. The import correction preserves product behavior
+      and adds no business evidence.
+    affected_artifacts: []
+  - commit: 1b1c653fc0e0653f39897dc18d7ddd78cf5969dc
+    outcome: no-material-effect
+    summary:
+      The merge publishes inspected generator and browser-import corrections, with
+      request typings and middleware import cleanup. Its tree matches its second parent; no
+      additional product or visual decision is introduced.
+    affected_artifacts: []
+  - commit: 368d8fa6a9e679682525fbc793c82358fbc26a03
+    outcome: no-material-effect
+    summary:
+      Cache clearing composes the existing operator-secret middleware instead of its
+      local wrapper. The credential requirement and current product claims are unchanged.
+    affected_artifacts: []
+  - commit: fde614eead2792069e2faf2c7a91ef57ff1b3c12
+    outcome: no-material-effect
+    summary:
+      The merge publishes the inspected cache-clear guard and improves scenario
+      diagnostics for missing cache routes versus refused credentials. It introduces no
+      business promise or proof beyond source content.
+    affected_artifacts: []
+  - commit: 91fb8918666e1c4b89597bcff4e4a30f4d226217
+    outcome: no-material-effect
+    summary:
+      The branch merge imports inspected dump, generator and cache hardening plus
+      Telegram webhook authentication. Combined diff is empty; it adds no separate
+      commercial decision or claim of deployed security.
+    affected_artifacts: []
+  - commit: 9911527bb7c421c8670502c2f34ec650f55839be
+    outcome: no-material-effect
+    summary:
+      Only formatting of a mocked role-permission result changes in an authorization
+      test. Runtime behavior and current business and design documents are unchanged.
+    affected_artifacts: []
+  - commit: 4bebe0e76ecf4c81939c668bfec434b4dfc83a98
+    outcome: no-material-effect
+    summary:
+      The merge publishes inspected identity read protection, response projection and
+      password-form corrections. Its tree matches its second parent and adds no independent
+      business decision.
+    affected_artifacts: []
+  - commit: 3e916f6c482c839d1e98dc684628b7a9d25dbe38
+    outcome: no-material-effect
+    summary:
+      The branch merge combines existing registration-provider and privileged-context
+      constants with the inspected API hardening. The combined diff contains their
+      coexistence and whitespace, not a new commercial or visual decision.
+    affected_artifacts: []
+  - commit: 56628de1b5a423d899c7dfebfaf99b16f04cac7d
+    outcome: no-material-effect
+    summary:
+      The merge publishes the inspected Telegram Star credential comparison without an
+      independent change to payment terms or business claims.
+    affected_artifacts: []
+  - commit: 998ea7c4fe9aec8b2fe8e1b9a0c0ba4a1ed8ac44
+    outcome: no-material-effect
+    summary:
+      A unit test covers password-registration refusal for an address owned by a
+      verifying provider. It changes no runtime offer or current business evidence.
+    affected_artifacts: []
+  - commit: 5bf0968e42b8bb849027c74b60ade57e965c3b04
+    outcome: no-material-effect
+    summary:
+      The identity SDK wire type makes credential columns optional and shares the
+      response schema with the API. Ordinary responses already omit those fields; current
+      access promises and proof limits remain unchanged.
+    affected_artifacts: []
+  - commit: 5c044edaff187883219f7ccff055b2fbd621bbff
+    outcome: no-material-effect
+    summary:
+      The merge publishes the inspected error-mapping branch. Its first-parent business
+      documents are unchanged and its tree matches the second parent; mapper resolutions add
+      no separate commercial or visual decision.
+    affected_artifacts: []
+  - commit: 87976d85cb0dbde3f2298b404b274d7769157b8a
+    outcome: no-material-effect
+    summary:
+      The merge publishes anonymous-session reuse and bounded cleanup, retaining the
+      JWT verification wrapper during the merge. Registered-account deletion terms and the
+      selected authentication offer remain unchanged.
+    affected_artifacts: []
+  - commit: 3f7dbef292204dc282c33529748f4a1e5e44f405
+    outcome: no-material-effect
+    summary:
+      The merge publishes the inspected registration-address guard and its tests, with
+      no additional business or visual decision.
+    affected_artifacts: []
+  - commit: 78d7d43125450fbf2d3c547c9b969a80cd9c3975
+    outcome: no-material-effect
+    summary:
+      The merge publishes the identity credential wire-type correction without adding
+      an authentication capability, security claim or visual decision.
+    affected_artifacts: []

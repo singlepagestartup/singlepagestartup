@@ -115,6 +115,21 @@ replaced, duplicated or no longer needed; verify its registry ID, path and
 current references, then remove the file, the entry and every stale
 current-artifact mention together. Age alone never authorizes deletion.
 
+Generated photographic and illustrative masters remain registered production
+sources after a square delivery is prepared. The master keeps its original
+file, hash, dimensions and exact generation prompt. The delivery records its
+source asset ID, actual square dimensions, editing tool, exact canvas-expansion
+prompt and review. Keeping a referenced master is not proposal rejection or
+supersession. Put the delivery in the active Design role and use the master as
+its production source. An already-square master may be reused unchanged with
+that fact recorded. Historical generation and editing prompts remain immutable;
+a later production rule does not retroactively describe earlier operations.
+
+Icon libraries and custom icon sets have registered vector sources. Record the
+library's version or pinned revision, source URL and license, or the custom
+set's authorship and rights. The Design Iconography section defines the drawing
+and usage rules; actual glyphs appear in its Icons block.
+
 Before visual generation, record whether existing project assets and preferred
 external references were supplied or explicitly absent, with provenance, rights
 and whether use is mandatory, adaptable, replaceable or reference-only. For

@@ -56,8 +56,8 @@ export function DocumentHeader({
 }: IDocumentHeaderProps) {
   return (
     <header className="mb-8 w-full rounded-3xl bg-slate-950 p-7 text-white shadow-xl md:p-10">
-      <div className="flex flex-wrap items-start justify-between gap-6">
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:flex-wrap">
+        <div className="min-w-0 w-full flex-1 sm:w-auto">
           {confirmation ? (
             <div className="mb-5 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em]">
               <ConfirmationBadge confirmation={confirmation} />

@@ -19,7 +19,7 @@ export default function ShortStoryboard({ text }: ICreativeTextProps = {}) {
   return (
     <article
       data-workspace-projection="singlepage"
-      className={`bg-[#F7F6F2] p-6 text-[#111111] sm:p-10 ${creativeTypography.body}`}
+      className={`bg-[var(--workspace-brand-background)] p-6 text-[var(--workspace-brand-foreground)] sm:p-10 ${creativeTypography.body}`}
     >
       <img
         src={creativeAssets.logo}
@@ -38,10 +38,10 @@ export default function ShortStoryboard({ text }: ICreativeTextProps = {}) {
         {copy.scenes.map((scene, index) => (
           <section
             key={`${index}-${scene.time}`}
-            className="overflow-hidden border border-[#CBC9C3] bg-white"
+            className="overflow-hidden border border-[var(--workspace-brand-line)] bg-white"
           >
-            <div className="relative flex aspect-[9/16] flex-col overflow-hidden bg-[#F7F6F2]">
-              <span className="absolute right-4 top-4 z-10 bg-[#BFEF61] px-3 py-1 text-xs">
+            <div className="relative flex aspect-[9/16] flex-col overflow-hidden bg-[var(--workspace-brand-background)]">
+              <span className="absolute right-4 top-4 z-10 bg-[var(--workspace-brand-accent)] px-3 py-1 text-xs">
                 {scene.time}
               </span>
               <img
@@ -60,15 +60,15 @@ export default function ShortStoryboard({ text }: ICreativeTextProps = {}) {
                 className="mt-auto aspect-square w-full object-contain"
               />
             </div>
-            <dl className="space-y-4 border-t border-[#CBC9C3] p-5 text-xs leading-relaxed">
+            <dl className="space-y-4 border-t border-[var(--workspace-brand-line)] p-5 text-xs leading-relaxed">
               <div>
-                <dt className="mb-1 font-semibold text-[#565656]">
+                <dt className="mb-1 font-semibold text-[var(--workspace-brand-muted)]">
                   {copy.labels[1]}
                 </dt>
                 <dd>{scene.visual}</dd>
               </div>
               <div>
-                <dt className="mb-1 font-semibold text-[#565656]">
+                <dt className="mb-1 font-semibold text-[var(--workspace-brand-muted)]">
                   {copy.labels[3]}
                 </dt>
                 <dd>{scene.voiceover}</dd>

@@ -12,12 +12,15 @@ export function WorkspaceDocument({
   children?: ReactNode;
 }) {
   return (
-    <div className="min-h-[760px] bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)]">
+    <div
+      data-workspace-projection="singlepage"
+      className="min-h-[760px] bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)]"
+    >
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--workspace-brand-line)] bg-white px-6 py-5">
         <img
           alt="SinglePageStartup"
           className="w-52"
-          src="/workspace-assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg"
+          src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-primary-lockup.svg"
         />
         <span className="rounded-full bg-[var(--workspace-brand-accent)] px-4 py-2 text-xs font-semibold uppercase tracking-widest">
           {eyebrow}

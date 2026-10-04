@@ -5,6 +5,7 @@ import "../../styles/default.css";
 
 import { LayerDataStatus } from "../components/LayerDataStatus";
 import { DesignRenderer } from "../components/DesignRenderer";
+import { flattenDesignSections } from "../design/layout";
 import {
   hasProjectDesignData,
   projectDesignData,
@@ -42,7 +43,8 @@ function ProjectDesignStory({ projection }: { projection: DesignProjection }) {
   }
   const layout = designLayouts[projection];
   const needsParsedData =
-    !layout.Template || layout.sections.some((section) => section.builtin);
+    !layout.Template ||
+    flattenDesignSections(layout.sections).some((section) => section.builtin);
   const data = !needsParsedData
     ? undefined
     : projection === "default"

@@ -97,35 +97,43 @@ the review body contains current visual decisions without a status table. -->
 - Browser QA: `document.fonts.check(...)` and computed `font-family` match the
   selected family; silent fallback is not accepted
 
+## Iconography
+
+- Name the icon source: library, version or pinned revision, weight, source URL,
+  license and registered assets; for a custom set, record its authorship,
+  editable vector sources and drawing method
+- Define the source grid, stroke or fill treatment, caps, joins, corner rules,
+  optical alignment, display sizes, color, states and accessible labels
+- Render a dedicated `Icons` block (`data-specimen="icons"`) with the actual
+  glyphs at their intended sizes and on the required surfaces. Show actions,
+  navigation and status symbols before products reuse the set. Icon cards are
+  a separate composition example and do not replace this block
+- Use one coherent family. New custom glyphs follow the recorded geometry;
+  library glyphs retain the selected family's native paths and weight
+- If the project uses no icons, record that scope explicitly
+
 ## Interface and product surfaces
 
-<!-- The reusable interface language only: how the semantic colors, type, and
-shape rules above behave on a product surface. Specific pages, routes, and
-forms stay in product-local website.md. Omit this section when the brief
-supplies no interface references and the project ships no product surface.
+<!-- Reusable interface foundations, component variants/states and compositions.
+Product-specific pages, routes, forms and workflows stay product-local.
 
-Required minimum whenever the project ships a product surface —
-controls: dominant action with its secondary, plain, disabled and separated
-destructive variants; selection as a chip and as a grouped choice, each with a
-non-colour signal; status and progress; fields and data rows; navigation for a
-public page and for a work screen; the dark pair when a dark column exists.
-Compositions: editorial entry; a content card carrying the project's own
-confirmed imagery at its original aspect ratio; an icon card on the declared
-icon grid; a repeated item grid. Conditional: offer comparison when the project
-sells, contextual sheet for a mobile or overlay surface, media-and-text row when
-illustration is active. Point at the rendered specimens from the boundary
-below. studio:validate fails a documented interface language that does not
-render them: actions, selection, status, fields, navigation, editorial-entry,
-content-card, icon-card, item-grid, plus dark-pair when a Dark column exists.
-Section and specimen names belong to the framework: the sections are
-`Interface kit` and `Content blocks`, and the specimens are named
-Actions, Selection, Status and progress, Fields and data rows, Navigation,
-Dark pair, Editorial entry, Photo cards, Icon cards, Numbered steps,
-Illustration and text, Repeated item grid, Offer comparison and Contextual
-sheet. A project restyles a block and rewrites its
-content in any format the layout accepts; it never translates a heading,
-renames a section or ships a block outside the catalogue.
-The Brand Designer role owns how a specimen is written, declared and omitted. -->
+Organize Interface kit into task-based categories using layout.yaml children;
+Content blocks composes kit elements. The canonical IDs, titles, categories
+and dependencies are in tools/studio/design/specimens.ts. Preserve them while
+restyling the selected layer. Missing required specimens need a reasoned
+interface_review.omitted_specimens.<id> entry.
+
+Use interactive TSX/JSX for behaviour and static HTML for CSS/native examples.
+Declare literal Specimen id/title props or data-specimen plus canonical H3 in
+a selected source; shared primitives carry common styles and behaviour.
+Show applicable variants, focus/keyboard rules, default/selected/disabled,
+pending, empty, error and success. Include compact usage and exact recipes.
+Content blocks declare data-composes and reuse those primitives.
+
+Document the downstream token mapping and component/composition boundary.
+Verify narrow screens, long copy, contrast, touch targets, keyboard, reduced
+motion, focus containment/return and themed portals. Clearly identify local
+simulations. The Brand Designer owns implementation and browser review. -->
 
 ### Purpose and evidence boundary
 
@@ -183,8 +191,18 @@ prove.
 
 - Plain-language usage: copy this style prompt, add the people/action or
   relationship to show, and attach relevant source references
-- Format follows the specific deliverable; quality checks stay in the internal
-  review block and actual dimensions in Assets
+- Generate the source master with a free aspect ratio suited to its composition;
+  do not force square dimensions in the generation request
+- Preserve the original. In a separate image-editing step, expand the shorter
+  canvas dimension with outpainting until the image is square, keeping the
+  entire source composition and its proportions. An already-square master may
+  be reused unchanged. Cropping, stretching and CSS masks do not perform this step
+- Use the project's common square delivery resolution; resize proportionally
+  only after canvas expansion when needed. Upscaling alone does not make an
+  image square or prove higher quality
+- Register the source and delivery asset separately, including their dimensions,
+  exact generation and expansion prompts, tool and source linkage. Render the
+  square delivery in Design and reusable image cards
 
 ### Generation examples
 
@@ -196,7 +214,10 @@ prove.
 <!-- This is an internal agent quality contract. Studio does not render it as a human-review card. -->
 
 - At least three materially different registered examples reviewed together at
-  source size, intended size, small preview, and declared crops
+  source size, intended size and small preview
+- Each delivery is square at the recorded common resolution. Compare it with
+  its source: the full composition remains visible, extensions are plausible,
+  and proportions, detail, color and focal subjects are preserved
 - Named real-world objects retain category-defining structure, count, scale,
   and proportions; merely similar or implausible substitutes are rejected
 - After a master changes, displayed examples must be generated with that exact
@@ -224,8 +245,16 @@ what they cannot prove.
 
 - Plain-language usage: copy this style prompt, add the people/action or
   relationship to show, and attach relevant source references
-- Choose the background and format for the project and intended use; transparency
-  is optional. Preserve the original master; record actual dimensions in Assets.
+- Choose the background for the project and intended use; transparency is optional
+- Generate the source master with a free aspect ratio suited to the relationship;
+  do not force square dimensions in the generation request
+- Preserve the original. Prepare a separate square delivery by expanding the
+  shorter canvas dimension through outpainting. Keep the complete drawing,
+  proportions, thin lines and background treatment; do not crop or stretch it.
+  An already-square master may be reused unchanged
+- Use the project's common square delivery resolution. Record both assets,
+  actual dimensions, exact prompts, editing tool and source linkage in Assets;
+  review the expansion before using the delivery in Design or products
 
 ### Generation examples
 
@@ -237,7 +266,10 @@ what they cannot prove.
 <!-- This is an internal agent quality contract. Studio does not render it as a human-review card. -->
 
 - At least three materially different registered examples reviewed together at
-  source size, intended size, small preview, and declared crops
+  source size, intended size and small preview
+- Each delivery is square at the recorded common resolution. Compare it with
+  its source: the full composition remains visible, extensions are plausible,
+  and proportions, detail, color and focal subjects are preserved
 - Named real-world objects retain category-defining structure, count, scale,
   and proportions unless abstraction or simplification is explicitly required
 - After a master changes, displayed examples must be generated with that exact

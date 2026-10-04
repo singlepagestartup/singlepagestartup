@@ -18,16 +18,16 @@ review:
 content:
   name: Code Framework
   projection: singlepage
-  logo: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-primary-lockup.svg
+  logo: /workspace-assets/singlepage/generated/living-focus/singlepagestartup-primary-lockup.svg
   visual:
     palette:
-      background: "#F7F6F2"
+      background: "#F4F6F8"
       surface: "#FFFFFF"
-      foreground: "#111111"
+      foreground: "#18232A"
       accent: "#BFEF61"
-      line: "#CBC9C3"
-    displayType: '"Cormorant Garamond", serif'
-    bodyType: '"JetBrains Mono", monospace'
+      line: "#DCE2E6"
+    displayType: '"Onest", sans-serif'
+    bodyType: '"Onest", sans-serif'
   slides:
     - id: cover
       eyebrow: Code Framework by SinglePageStartup
@@ -39,7 +39,7 @@ content:
         - title: Your business logic comes next.
           detail: Registration, carts and payments provide a starting point for your own product.
       image:
-        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-business-conversation.png
+        src: /workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png
         alt: Illustrative photograph of people discussing work; not a customer case study.
     - id: audience
       eyebrow: Who builds with it
@@ -59,7 +59,7 @@ content:
             Review whether the product serves your customer and expresses the business behavior you
             want.
       image:
-        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-moment-of-focus.png
+        src: /workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus-square.png
         alt: Illustrative photograph of a person focused on their work.
     - id: product
       eyebrow: Reusable foundations
@@ -77,7 +77,7 @@ content:
         - title: Project guidance
           detail: Give the agent structured context from business definition through product work.
       image:
-        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-module-hierarchy-v2.png
+        src: /workspace-assets/singlepage/generated/living-focus/singlepagestartup-illustration-module-hierarchy-cool-square.png
         alt: Conceptual isometric drawing of connected modules; not a runtime architecture screenshot.
     - id: workflow
       eyebrow: From request to result
@@ -108,7 +108,7 @@ content:
         - title: Keep the shared foundation.
           detail: The maker focuses on the business rule while the agent adapts the product.
       image:
-        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-coordinated-agents-v2.png
+        src: /workspace-assets/singlepage/generated/living-focus/singlepagestartup-illustration-coordinated-agents-cool-square.png
         alt: Conceptual illustration of coordinated work accompanying an example business requirement.
     - id: chat-bridge
       eyebrow: Two connected products
@@ -128,7 +128,7 @@ content:
             A chat-token purchase is not required to obtain the framework. Direct GitHub discovery also
             works.
       image:
-        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-illustration-framework-inheritance-v2.png
+        src: /workspace-assets/singlepage/generated/living-focus/singlepagestartup-illustration-framework-inheritance-cool-square.png
         alt: Conceptual illustration of a shared foundation and a derived project.
     - id: economics
       eyebrow: Price and support
@@ -191,5 +191,5 @@ content:
         href: https://github.com/singlepagestartup/singlepagestartup
         detail: Opens GitHub. Local setup follows with your coding agent.
       image:
-        src: /workspace-assets/singlepage/generated/measured-space/singlepagestartup-photography-work-in-motion.png
+        src: /workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png
         alt: Illustrative photograph of a person moving through their working day.

@@ -120,8 +120,8 @@ output.
 - Specify colors, typography, logo rules, spacing, grid, shape, hierarchy,
   photography, illustration, icons, diagrams, motion, accessibility and
   do/don't rules in `design.md`, which may hold concise reusable prompts and
-  example purposes but never pages, forms, success states, campaign formats or
-  advertisements. Treat photography and illustration as primary quality gates:
+  reusable component variants and states. Product-specific pages, forms,
+  journeys, campaign formats and advertisements stay with their product. Treat photography and illustration as primary quality gates:
   a visitor meets their consistency before evaluating strategy, so Design
   cannot complete from written direction alone. Give each the same five-part
   structure: purpose and evidence boundary, objective style master prompt,
@@ -137,6 +137,15 @@ output.
   scene or relationship, and source references. Example briefs state what must
   be communicated without fixing primitive coordinates, encoding SVG paths or
   pretending imagery is product evidence.
+- Give every Design a separate Iconography section and a rendered Icons block
+  before products reuse the set. Name the library, version or pinned revision,
+  weight, source and license; for custom icons, state authorship, editable
+  sources and the drawing method. Define grid, stroke or fill, caps, joins,
+  corners, optical alignment, display sizes, colors, states and accessible
+  labels. Show real action, navigation and status glyphs at their intended
+  sizes. Reuse one coherent family; icon cards do not replace the set itself.
+  Register its vector sources and license in Assets. Record an explicit scope
+  decision when a project uses no icons.
 - After changing a reusable media master, test its exact current wording on
   at least three different content briefs using the documented reference inputs.
   Compare the outputs with the selected style and existing examples, correct
@@ -155,11 +164,22 @@ output.
   and asset path. Verify the loaded file with `document.fonts.check(...)` and
   inspect the rendered specimen's computed family; never accept a browser
   fallback because the label looks correct.
-- Choose format and framing per image and intended use. Show every original
-  aspect ratio uncropped in Design; check derivative crops only when requested
-  by an actual output. Do not enforce the same center, margins or composition
-  across a visual family; consistency comes from shared treatment across varied
-  subjects.
+- Generate photography and illustration masters with free aspect ratios, letting
+  each composition determine its frame. Do not force the initial generation to
+  be square. Preserve every original, then use a separate image-editing step
+  to expand the shorter canvas dimension through outpainting until width equals
+  height. Keep the entire original composition and its proportions; cropping,
+  stretching or a CSS mask cannot substitute for expansion. An already-square
+  master may be reused unchanged. Set a common square delivery resolution for
+  the project and resize proportionally after expansion when needed; increased
+  pixel dimensions alone are not evidence of increased quality. Record the
+  source, derivative, actual dimensions, editing tool and exact expansion prompt
+  in Assets. Compare source and delivery at full size and small preview for
+  intact subjects, detail and plausible extensions. Display the reviewed square
+  delivery in Design and reusable cards; output-specific compositions may fit
+  that asset to their format. Logos and vector icons keep their native formats.
+  Preserve varied composition within a family rather than forcing the same
+  center, margins or arrangement.
 - Express spacing, containers, responsive columns, breakpoints, and radii with
   named Tailwind utilities and their resolved values. Do not invent a second
   arbitrary-pixel token system in the Design document. The default desktop
@@ -186,33 +206,40 @@ output.
   category-defining structure, count, scale, and proportions. Reject a merely
   similar silhouette or an invented, truncated, or implausible substitute
   unless abstraction or simplification is explicitly required.
-- Ship rendered interface specimens whenever the project ships a product
-  surface, declared as layer-owned HTML sections in `design/<layer>/layout.yaml`
-  and written as framework-free fragments over the `--workspace-brand-*` tokens
-  with state expressed in CSS (`hover`, `focus-visible`, `has-[:checked]`)
-  because injected scripts do not run, and each specimen's exact class recipe
-  printed beside it so a product surface is built from that exact string. The
-  Design template lists the required minimum; every specimen
-  declares `data-specimen="<id>"`, uses only the confirmed semantic roles and
-  type steps (a missing step is added to the document as a proposal and
-  confirmed, never improvised in markup), never frames supplied artwork with a
-  second background, and is omitted only with a reasoned
-  `interface_review.omitted_specimens.<id>` entry. Change a rule and its
-  specimen in the same revision.
-- The framework owns the wrapper and the project owns the content. A section
-  the framework declares in `design/singlepage/layout.yaml` keeps its title,
-  `Interface kit` and `Content blocks`, and every specimen keeps the name the
-  catalogue in `tools/studio/design/specimens.ts` gives it:
-  Actions, Selection, Status and progress, Fields and data rows, Navigation,
-  Dark pair, Editorial entry, Photo cards, Icon cards, Numbered steps,
-  Illustration and text, Repeated item grid, Offer comparison and Contextual
-  sheet.
-  A downstream Design changes the styling, the composition and the way a block
-  carries information, and writes that content as HTML, Markdown or a
-  component. It does not translate a specimen heading, rename a section or
-  ship a block the catalogue does not define. A surface that needs a block the
-  catalogue lacks gets it added to the catalogue and rendered in the framework
-  kit first, so every project inherits the same wrapper.
+- Ship a usable component catalogue whenever the project has an interface.
+  `Interface kit` holds reusable elements grouped by task: icons and theme,
+  actions, inputs, navigation, data display, feedback, overlays, files and
+  conversation. `Content blocks` holds compositions assembled from those
+  elements. The canonical IDs, titles, categories and composition dependencies
+  live in `tools/studio/design/specimens.ts`; extend that catalogue and render
+  the framework specimen before a downstream project uses a new component.
+- Declare layer-owned sources in `design/<layer>/layout.yaml`. Group related
+  sections with nonempty `children`; each leaf owns its source. Use TSX/JSX for
+  interactive behaviour and shared local primitives for repeated elements.
+  Use existing accessible headless primitives for focus management, keyboard
+  selection, modal containment and dismissal. Static HTML fragments may use
+  native controls and CSS states; injected scripts do not run. A specimen uses
+  a literal `data-specimen="<id>"` plus its canonical H3, or a literal
+  `<Specimen id="<id>" title="<canonical title>">` in a selected TSX/JSX source.
+  Keep declarations in selected category sources so validation can inspect them.
+- Each specimen shows meaningful variants and states, names its intended use,
+  documents keyboard/focus behaviour and gives the exact class recipe or shared
+  primitive it uses. Keep usage and recipes in expandable details. Verify
+  default, hover, focus, selected, disabled, pending, empty, error and success
+  where applicable. Demos use local state and explicitly identify simulated
+  work; product integrations supply real mutations, authentication and data.
+  Verify long labels, narrow screens, touch targets, contrast, reduced motion,
+  accessible names and announcements. Content blocks declare `data-composes`
+  with the component IDs they use and reuse the kit's primitives and tokens.
+- Keep component structure and interaction contracts stable when restyling a
+  downstream project. Map its approved typography, semantic colors, density,
+  shape and icon family onto the same roles, then verify the complete catalogue.
+  A token change includes inverse, focus, disabled, invalid and portal surfaces;
+  overlays inherit the theme from their container. Change rules and examples
+  together. Record a reasoned `interface_review.omitted_specimens.<id>` when a
+  component is outside a project's scope; silently missing components do not
+  count as an intentional omission. Preserve framework section and specimen
+  titles; project-specific copy belongs inside their examples.
 - Configure the Design review through the project's `design/<layer>/layout.yaml`:
   select/order relevant built-in blocks, add Markdown/React/HTML/media
   sections, or provide a complete layer-owned TSX/JSX template. Choose the
@@ -223,14 +250,15 @@ output.
   custom layout and its semantic impact in a browser, including layer
   ownership, relative assets and responsive behavior; its existence does not
   establish approval or resolve missing decisions. Design contains only
-  reusable logos, color, typography, photography, illustration, graphic
-  language, motion, and usage rules—never pages, buttons, forms, success
-  states, or acquisition formats. State the concept once as a positive,
+  reusable foundations, component variants and states, compositions, and
+  usage rules. Product-specific journeys and acquisition materials remain
+  product-local. State the concept once as a positive,
   plain-language explanation of the selected visual style, not as rejection,
   provenance, rights, or process notes; then place reusable graphic-language
-  and do/don't rules in the opening block. Do not add
-  a second page menu, asset counters, repeated summary card, or empty process
-  panels.
+  and do/don't rules in the opening block. Use the shared catalogue navigation
+  for component categories; avoid duplicate menus, asset counters, repeated
+  summary cards and empty process panels. Category selection preserves example
+  state, and downloads include every category.
 - When a product-local `marketing-creative.md` is active, create only the
   strategy-selected formats. Apply the approved brand and communication without
   redefining either; record exact copy, composition, variants, dimensions,
