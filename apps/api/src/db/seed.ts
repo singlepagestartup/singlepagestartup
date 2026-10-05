@@ -19,6 +19,8 @@ import { logger } from "@sps/backend-utils";
 import { exit } from "process";
 import {
   API_SERVICE_URL,
+  HOST_SERVICE_REVALIDATION_SECRET,
+  HOST_SERVICE_REVALIDATION_SECRET_HEADER,
   HOST_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -408,12 +410,13 @@ import {
 
   await fetch(HOST_SERVICE_URL + "/api/revalidate?path=/&type=layout", {
     headers: {
-      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      [HOST_SERVICE_REVALIDATION_SECRET_HEADER]:
+        HOST_SERVICE_REVALIDATION_SECRET ?? "",
     },
   })
     .then((res) => res.json())
     .catch((error) => {
-      logger.error("🚀 ~ /api/revalidation/revalidate error:", error);
+      logger.error("🚀 ~ /api/revalidate error:", error);
     });
 
   setTimeout(async () => {

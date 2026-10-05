@@ -3,13 +3,18 @@
  *
  * Given: the Host page service returns root and nested URL records as strings.
  * When: the Agent page-cache handler processes every configured language.
- * Then: it revalidates and fetches canonical localized paths without stopping after a page failure.
+ * Then: it revalidates and fetches canonical localized paths without stopping after a page failure,
+ *       and each revalidation carries the host revalidation secret.
  */
 
 const mockLoggerInfo = jest.fn();
 const mockLoggerError = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  HOST_SERVICE_REVALIDATION_SECRET: "test-host-revalidation-secret",
+  HOST_SERVICE_REVALIDATION_SECRET_HEADER:
+    jest.requireActual("@sps/shared-utils")
+      .HOST_SERVICE_REVALIDATION_SECRET_HEADER,
   HOST_SERVICE_URL: "http://localhost:3000/",
   RBAC_SECRET_KEY: "test-rbac-secret",
 }));
@@ -45,6 +50,7 @@ jest.mock("@sps/backend-utils", () => ({
   },
 }));
 
+import { HOST_SERVICE_REVALIDATION_SECRET_HEADER } from "@sps/shared-utils";
 import { Handler } from "./cache";
 
 const originalFetch = globalThis.fetch;
@@ -183,5 +189,37 @@ describe("Given: Host page URLs use the documented string contract", () => {
         ok: true,
       },
     });
+  });
+
+  /**
+   * BDD Scenario: a page revalidation carries the host secret.
+   *
+   * Given: a localized page URL.
+   * When: the handler asks the host to revalidate that page.
+   * Then: the request carries the revalidation secret, the encoded URL as its only path value, and the page type.
+   */
+  it("Then: asks the host to revalidate the page with the revalidation secret", async () => {
+    const handler = createHandler();
+    const fetchHost = jest.fn().mockResolvedValue({
+      ok: true,
+    });
+    globalThis.fetch = fetchHost as any;
+    const page = "http://localhost:3000/ru/gallery/item?view=grid&page=2";
+
+    await handler.revalidatePage(page);
+
+    expect(fetchHost).toHaveBeenCalledTimes(1);
+
+    const [url, init] = fetchHost.mock.calls[0];
+    const requested = new URL(url);
+
+    expect(requested.pathname).toMatch(/\/api\/revalidate$/);
+    expect(requested.searchParams.getAll("path")).toEqual([page]);
+    expect(requested.searchParams.get("type")).toBe("page");
+    expect(init.headers).toEqual({
+      [HOST_SERVICE_REVALIDATION_SECRET_HEADER]:
+        "test-host-revalidation-secret",
+    });
+    expect(mockLoggerError).not.toHaveBeenCalled();
   });
 });

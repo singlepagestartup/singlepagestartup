@@ -1,4 +1,9 @@
-import { HOST_SERVICE_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  HOST_SERVICE_REVALIDATION_SECRET,
+  HOST_SERVICE_REVALIDATION_SECRET_HEADER,
+  HOST_SERVICE_URL,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
@@ -68,7 +73,14 @@ export class Handler {
 
   async revalidatePage(path: string) {
     const res = await fetch(
-      HOST_SERVICE_URL + `/api/revalidate?path=${path}&type=page`,
+      HOST_SERVICE_URL +
+        `/api/revalidate?path=${encodeURIComponent(path)}&type=page`,
+      {
+        headers: {
+          [HOST_SERVICE_REVALIDATION_SECRET_HEADER]:
+            HOST_SERVICE_REVALIDATION_SECRET ?? "",
+        },
+      },
     )
       .then((res) => {
         if (!res.ok) {
