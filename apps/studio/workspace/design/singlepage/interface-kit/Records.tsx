@@ -121,12 +121,13 @@ export interface IRecordsProps<T extends { id: string }> {
   fields: IRecordField<T>[];
   searchFields?: IRecordField<T>[];
   actions: IRecordAction<T>[];
-  createLabel: string;
-  onCreate: () => void;
+  createLabel?: string;
+  onCreate?: () => void;
   onRemove?: (ids: string[]) => void;
   removalLabel?: string;
   removalDescription?: string;
   children?: ReactNode;
+  emptyState?: ReactNode;
   embedded?: boolean;
   compactActions?: boolean;
 }
@@ -176,9 +177,11 @@ export function RecordForm({
           <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">
             {children}
           </div>
-          <footer className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-6">
-            {footer}
-          </footer>
+          {footer && (
+            <footer className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-6">
+              {footer}
+            </footer>
+          )}
         </form>
       </RecordEditorPortal.Provider>
     </>
@@ -284,6 +287,7 @@ export function Records<T extends { id: string }>({
   removalLabel = "Delete",
   removalDescription = "Remove the selected records from this local preview?",
   children,
+  emptyState,
   embedded = false,
   compactActions = embedded,
 }: IRecordsProps<T>) {
@@ -337,16 +341,12 @@ export function Records<T extends { id: string }>({
     <section
       ref={setPortal}
       tabIndex={-1}
-      className={
-        embedded
-          ? "min-w-0 bg-[var(--workspace-brand-surface)]"
-          : twMerge(kit.card, "overflow-hidden p-0")
-      }
+      className={twMerge(kit.card, "min-w-0 overflow-hidden p-0")}
       aria-label={`${title} records`}
     >
       <header className="flex flex-wrap items-start justify-between gap-4 p-5 sm:p-6">
-        <div>
-          <p className={`text-xs ${kit.muted}`}>{scope}</p>
+        <div className="min-w-0">
+          <p className={`break-words text-xs ${kit.muted}`}>{scope}</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight">
             {title}
           </h2>
@@ -354,12 +354,19 @@ export function Records<T extends { id: string }>({
             Local preview · changes reset on reload.
           </p>
         </div>
-        <Button onClick={onCreate}>
-          <Icon name="plus" />
-          {createLabel}
-        </Button>
+        {onCreate && createLabel && (
+          <Button onClick={onCreate}>
+            <Icon name="plus" />
+            {createLabel}
+          </Button>
+        )}
       </header>
-      <div className="grid gap-4 border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-5 sm:grid-cols-[minmax(0,1fr)_220px] sm:px-6">
+      <div
+        className={twMerge(
+          "grid gap-4 border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-5 sm:grid-cols-[minmax(0,1fr)_220px] sm:px-6",
+          embedded && "mx-5 mb-5 rounded-2xl border-0 p-4 sm:mx-6 sm:px-4",
+        )}
+      >
         <label className="grid gap-2">
           <span className={kit.label}>Search records</span>
           <span className="relative">
@@ -453,7 +460,9 @@ export function Records<T extends { id: string }>({
             compactActions={compactActions}
           />
         ))}
-        {!visible.length && (
+        {!visible.length && !query && emptyState ? (
+          emptyState
+        ) : !visible.length ? (
           <div className="p-8 text-center">
             <p className="font-semibold">No matching records</p>
             {query && (
@@ -469,7 +478,7 @@ export function Records<T extends { id: string }>({
               </Button>
             )}
           </div>
-        )}
+        ) : null}
       </div>
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--workspace-brand-line)] p-5 sm:p-6">
         <div className="flex flex-wrap items-center gap-3">

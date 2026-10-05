@@ -243,7 +243,7 @@ export function EcommerceProductsToAttributesAdminV2Manager({
       <Records
         embedded={embedded}
         compactActions
-        title="Product attributes"
+        title="Attributes"
         scope="ecommerce / products-to-attributes"
         records={visible}
         fields={fields}

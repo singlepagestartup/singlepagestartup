@@ -186,37 +186,38 @@ export function EcommerceProductAdminV2List({
                 id: group.id,
                 title: group.title,
                 render: () => (
-                  <section
-                    className={`${kit.card} grid min-w-0 gap-5 p-5 sm:p-6`}
-                    data-ds-relation={group.id}
-                  >
-                    <header>
-                      <h3 className="text-xl font-semibold">{group.title}</h3>
-                      <p className={`mt-2 break-words text-xs ${kit.muted}`}>
-                        ecommerce / {group.id}
-                      </p>
-                    </header>
-                    <div className="grid justify-items-center gap-3 rounded-2xl bg-[var(--workspace-brand-background)] p-6 text-center">
-                      <Icon name="link" />
-                      <p className="font-semibold">
-                        No {group.title.toLowerCase()} links supplied
-                      </p>
-                      <p className={`max-w-md text-sm ${kit.muted}`}>
-                        This local preview has no example links for this group.
-                        Attributes contains editable example links.
-                      </p>
-                    </div>
-                    <dl className="grid min-w-0 gap-4 text-sm sm:grid-cols-2">
-                      <div>
-                        <dt className={kit.muted}>Linked records</dt>
-                        <dd className="mt-1">Product · {group.endpoint}</dd>
+                  <Records
+                    embedded
+                    title={group.title}
+                    scope={`ecommerce / ${group.id}`}
+                    records={[]}
+                    fields={[]}
+                    actions={[]}
+                    emptyState={
+                      <div className="grid min-w-0 gap-5 px-5 pb-5 sm:px-6 sm:pb-6">
+                        <div className="grid justify-items-center gap-3 rounded-2xl bg-[var(--workspace-brand-background)] p-6 text-center">
+                          <Icon name="link" />
+                          <p className="font-semibold">
+                            No {group.title.toLowerCase()} links supplied
+                          </p>
+                          <p className={`max-w-md text-sm ${kit.muted}`}>
+                            This local preview has no example links for this
+                            group. Attributes contains editable example links.
+                          </p>
+                        </div>
+                        <dl className="grid min-w-0 gap-4 text-sm sm:grid-cols-2">
+                          <div>
+                            <dt className={kit.muted}>Linked records</dt>
+                            <dd className="mt-1">Product · {group.endpoint}</dd>
+                          </div>
+                          <div>
+                            <dt className={kit.muted}>Relation fields</dt>
+                            <dd className="mt-1">{group.fields}</dd>
+                          </div>
+                        </dl>
                       </div>
-                      <div>
-                        <dt className={kit.muted}>Relation fields</dt>
-                        <dd className="mt-1">{group.fields}</dd>
-                      </div>
-                    </dl>
-                  </section>
+                    }
+                  />
                 ),
               })),
             ]}

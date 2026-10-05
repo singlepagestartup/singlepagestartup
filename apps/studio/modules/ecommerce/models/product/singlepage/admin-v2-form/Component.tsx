@@ -49,16 +49,8 @@ export function EcommerceProductAdminV2Form({
         ]
       : []);
   const [activeRelation, setActiveRelation] = useState("");
-  const [relationQuery, setRelationQuery] = useState("");
   const selectedRelation =
     sections.find((section) => section.id === activeRelation) ?? sections[0];
-  const matchingSections = sections.filter((section) =>
-    section.title.toLowerCase().includes(relationQuery.trim().toLowerCase()),
-  );
-  const selectableSections =
-    selectedRelation && !matchingSections.includes(selectedRelation)
-      ? [selectedRelation, ...matchingSections]
-      : matchingSections;
   return (
     <section
       className={
@@ -84,23 +76,29 @@ export function EcommerceProductAdminV2Form({
         id={`${id}-form`}
         onSubmit={(event) => {
           event.preventDefault();
+          if (activeTab !== "details") return;
           onSave?.(draft);
           setStatus("Product saved locally. Changes reset on reload.");
         }}
         footer={
-          <>
-            <p role="status" className={`mr-auto text-sm ${kit.muted}`}>
-              {status || "Local preview"}
-            </p>
-            <Button type="submit">
-              <Icon name="floppy-disk" />
-              {product.id ? "Save changes" : "Create product"}
-            </Button>
-          </>
+          activeTab === "details" ? (
+            <>
+              <p role="status" className={`mr-auto text-sm ${kit.muted}`}>
+                {status || "Local preview"}
+              </p>
+              <Button type="submit">
+                <Icon name="floppy-disk" />
+                {product.id ? "Save changes" : "Create product"}
+              </Button>
+            </>
+          ) : null
         }
       >
         <SectionTabsRoot value={activeTab} onValueChange={setActiveTab}>
-          <SectionTabsList aria-label="Product form sections" className="mb-5">
+          <SectionTabsList
+            aria-label="Product form sections"
+            className="mb-5 w-fit max-w-full"
+          >
             <SectionTabsTrigger value="details">Details</SectionTabsTrigger>
             <SectionTabsTrigger
               value="relations"
@@ -242,47 +240,37 @@ export function EcommerceProductAdminV2Form({
             className="data-[state=inactive]:hidden focus:outline-none"
           >
             {selectedRelation && (
-              <div className="grid min-w-0 gap-5">
-                <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-                  <label className="grid min-w-0 gap-2 text-sm">
-                    <span className={kit.label}>Filter relation groups</span>
-                    <input
-                      type="search"
-                      className={kit.field}
-                      placeholder="Search by group name"
-                      value={relationQuery}
-                      onChange={(event) => setRelationQuery(event.target.value)}
-                    />
-                  </label>
-                  <label className="grid min-w-0 gap-2 text-sm">
-                    <span className={kit.label}>Relation group</span>
-                    <Select
-                      value={selectedRelation.id}
-                      onValueChange={(value) => {
-                        if (value) setActiveRelation(value);
-                      }}
-                      options={selectableSections.map((section) => ({
-                        value: section.id,
-                        label: section.title,
-                      }))}
-                    />
-                  </label>
-                </div>
-                <p role="status" className={`text-xs ${kit.muted}`}>
-                  {relationQuery
-                    ? `${matchingSections.length} matching groups · ${sections.length} available`
-                    : `${sections.length} relation groups available`}
-                </p>
+              <SectionTabsRoot
+                value={selectedRelation.id}
+                onValueChange={setActiveRelation}
+                className="grid min-w-0 gap-5"
+              >
+                <SectionTabsList
+                  aria-label="Product relation groups"
+                  className="w-fit max-w-full gap-2 bg-transparent p-0"
+                >
+                  {sections.map((section) => (
+                    <SectionTabsTrigger
+                      key={section.id}
+                      value={section.id}
+                      className="rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] data-[state=active]:border-[var(--workspace-brand-foreground)] data-[state=active]:bg-[var(--workspace-brand-background)]"
+                    >
+                      {section.title}
+                    </SectionTabsTrigger>
+                  ))}
+                </SectionTabsList>
                 {sections.map((section) => (
-                  <div
+                  <SectionTabsContent
                     key={section.id}
-                    hidden={section.id !== selectedRelation.id}
+                    value={section.id}
+                    forceMount
+                    className="min-w-0 data-[state=inactive]:hidden focus:outline-none"
                     aria-label={`${section.title} relations`}
                   >
                     {section.render({ product })}
-                  </div>
+                  </SectionTabsContent>
                 ))}
-              </div>
+              </SectionTabsRoot>
             )}
           </SectionTabsContent>
         </SectionTabsRoot>

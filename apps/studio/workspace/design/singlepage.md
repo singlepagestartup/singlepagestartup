@@ -385,7 +385,8 @@ module_surface_review:
   corrections_review:
     source: User browser comments 1–22, Host Page comments 1–11, spacing/settings comments 1–12,
       profile/chat/admin comments 1–8, author/rating/chat/relation comments 1–9,
-      scalable-relations/actions/rating/confirmation/tabs comments 1–5 and coordinator/owner
+      scalable-relations/actions/rating/confirmation/tabs comments 1–5, relation navigation comments 1–3,
+      relation frame/save comments 1–2 and coordinator/owner
       source and browser review, 2026-10-05.
     status: revised-awaiting-review
     contracts:
@@ -407,7 +408,8 @@ module_surface_review:
         Subject technical fields stay outside the customer form. Hidden sections preserve drafts.
       - Checkout steps and body share the page grid. Confirmation siblings stretch to equal desktop
         heights. Legal page icons and update dates sit above aligned titles and reading content.
-      - Admin create/edit use the shared right-side RecordEditor and RecordForm bottom footer. Product
+      - Admin create/edit use the shared right-side RecordEditor and RecordForm bottom footer for fields.
+        Product Details owns its Save action; Relations owns immediate link and unlink actions. Product
         relation rows expose compact actions; the link form selects existing endpoint records and
         edits relation fields. Endpoint editors are reached from row actions.
       - Chat and thread selections share state. Settings, participant management and new-chat actions
@@ -466,8 +468,13 @@ module_surface_review:
         selection. New-chat PNG files appear in the list and header; General can replace and remove
         them. A rejected text file preserves the current image and shows feedback. Mobile dialogs
         fit within 16px insets, scroll vertically and retain their scoped theme without overflow.
-      - Product Relations exposes seven runtime groups at 1080px and 320px. Group search, selector
-        changes and hidden panels preserve a saved Attribute link and an unsaved Product title.
+      - Product Relations exposes seven runtime groups as wrapping pill tabs at 1080px and 358px.
+        Details/Relations fits its contents. Arrow keys switch groups; hidden panels preserve the
+        Attribute record filter and an unsaved Product title across group and section changes.
+        Attributes and empty groups share the Records frame, inset search and lower pagination.
+        Relations has no Product save footer; Enter in its search leaves the Product draft open.
+        Relation editing saves independently, pagination reaches the second page, and Cancel retains
+        the link. Details preserves its draft and saves the Product. The 358px document has no overflow.
         Orders, Files and Website widgets show the supplied empty preview state. Delete and Unlink
         use alert dialogs; Cancel restores the row action, retains records and keeps the parent open.
         The 320px document has no horizontal overflow, and its fixed footer remains usable.
@@ -705,13 +712,13 @@ Admin views are tools for inspecting and editing database records. Keep list fil
 
 A relation editor retains its own ID, both endpoint IDs, `orderIndex`, `variant` and `className` where the relation schema defines them. Endpoint choices use the corresponding model's selector and existing records. Linking creates a relation record; unlinking removes that relation while retaining both endpoint records. The relation form contains selectors and relation fields. Endpoint editing is reached from the row's contextual action and opens its model-owned form; model creation stays in its own collection. Keep link/unlink separate from deleting the model itself, with explicit destructive copy and the Danger palette.
 
-Use `interface-kit/Records.tsx` for the shared administration frame, selectable-field search, row selection, labelled field grid, row actions, page-size control and pagination. The model or relation supplies its fields, labels and callbacks. Inside an existing form surface, the embedded mode reuses the same controller without a second frame or extra padding. A record ID remains inspectable; localized title is distinct from the internal admin title. Keep secondary configuration in the editor rather than inventing badges or business states. The Article model has no publication status. Its author profiles and categories come from separate relations.
+Use `interface-kit/Records.tsx` for the shared administration frame, selectable-field search, row selection, labelled field grid, row actions, page-size control and pagination. The model or relation supplies its fields, labels and callbacks. Embedded relation groups retain one rounded white frame with a continuous border, an inset cool search region, hairline row dividers and pagination inside the same frame. Populated and empty groups use this component; their owners supply empty-state content, and create/link actions appear only when a callback is supplied. A record ID remains inspectable; localized title is distinct from the internal admin title. Keep secondary configuration in the editor rather than inventing badges or business states. The Article model has no publication status. Its author profiles and categories come from separate relations.
 
-Product forms accept a list of relation sections with stable IDs, labels and model-owned render callbacks, matching the runtime Product form. Relations shows the supplied group count. A search field and labelled group selector scale independently of the main Details/Relations tabs; mounted group panels preserve their drafts while hidden. The Studio Product list exposes Attributes, Orders, Categories, Stores, Ecommerce widgets, Files and Website widgets. Attributes has editable example links; the other six groups explicitly show that no example links are supplied. The actual Files relation is `products-to-file-storage-module-files`; the runtime form callback currently retains the older widgets-named key. Additional groups require their owning relation renderer and supplied records.
+Product forms accept a list of relation sections with stable IDs, labels and model-owned render callbacks, matching the runtime Product form. The Details/Relations tab list fits its contents; Relations shows the supplied group count. Inside Relations, outlined pill tabs expose every group and wrap onto additional rows as needed. Both levels use the shared section tabs with the lime active indicator and keyboard navigation. Mounted group panels preserve their drafts while hidden. The Studio Product list exposes Attributes, Orders, Categories, Stores, Ecommerce widgets, Files and Website widgets. Attributes has editable example links; the other six groups explicitly show that no example links are supplied. The actual Files relation is `products-to-file-storage-module-files`; the runtime form callback currently retains the older widgets-named key. Additional groups require their owning relation renderer and supplied records.
 
 The controller starts with ID search and 100 rows per page, matching the Shared admin-v2 controller. Page-size choices are 2, 5, 10, 25, 50 and 100. Changing the search, field or page size resets the page and selection; moving pages clears the selection. Localized title search covers the retained language values. Create, edit and record preview share `RecordEditor`; Delete and Unlink use the same confirmation geometry and Danger palette, with Cancel initially focused.
 
-Admin create and edit actions open the shared `RecordEditor` from the right: 80% of the wide viewport and full width on narrow screens. Nested relation and endpoint editors remain separate panels above a mounted parent; Back and Close return to that parent with its draft intact. `RecordForm` keeps fields in a scrolling body and Create/Save with Cancel in a fixed lower footer. The production V2 form and table controller remain the functional reference; the requested wider Studio panel applies the same ownership and transitions.
+Admin create and edit actions open the shared `RecordEditor` from the right: 80% of the wide viewport and full width on narrow screens. Nested relation and endpoint editors remain separate panels above a mounted parent; Back and Close return to that parent with its draft intact. `RecordForm` keeps fields in a scrolling body and renders a fixed lower footer when its owner supplies actions. Product Create/Save belongs to Details. Relations has no Product save footer and cannot submit the Product draft; linking, editing and unlinking belong to the relation manager. An individual relation editor retains its own Save action. The production V2 form and table controller remain the functional reference; the requested wider Studio panel applies the same ownership and transitions.
 
 Use the same Interface kit input, select, checkbox, button, feedback and overlay contracts in every admin view. Enabled buttons show a pointer cursor and visible hover/focus feedback; disabled controls retain their disabled appearance and cursor. Pending and feedback states belong to the record or relation being changed; other rows remain usable. Rows retain stable ID keys, and wrapped fields and narrow layouts preserve readable values and accessible actions. Embedded relation rows use compact icon actions with 44px targets, accessible names and title labels, preserving space for the endpoint labels and relation fields.
 
