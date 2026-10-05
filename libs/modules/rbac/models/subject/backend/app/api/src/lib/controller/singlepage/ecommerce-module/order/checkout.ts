@@ -77,6 +77,34 @@ export class Handler {
 
       await this.service.deanonymize({ id, email: data.email });
 
+      const subjectsToEcommerceModuleOrders =
+        await this.service.subjectsToEcommerceModuleOrders.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: id,
+                },
+              ],
+            },
+          },
+        });
+
+      const ecommerceModuleOrderIds = data.ecommerceModule.orders
+        .map((order: { id: string }) => order.id)
+        .filter((orderId: string) => {
+          return subjectsToEcommerceModuleOrders?.some(
+            (subjectToEcommerceModuleOrder) =>
+              subjectToEcommerceModuleOrder.ecommerceModuleOrderId === orderId,
+          );
+        });
+
+      if (!ecommerceModuleOrderIds.length) {
+        throw new Error("Not Found error. No ecommerce module orders found");
+      }
+
       const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
         params: {
           filters: {
@@ -84,9 +112,7 @@ export class Handler {
               {
                 column: "id",
                 method: "inArray",
-                value: data.ecommerceModule.orders.map(
-                  (order: { id: string }) => order.id,
-                ),
+                value: ecommerceModuleOrderIds,
               },
             ],
           },

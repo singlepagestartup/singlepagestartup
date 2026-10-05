@@ -450,9 +450,9 @@ describe("Given: an expired Telegram Stars subscription order", () => {
    *
    * Given: an expired subscription order has one product, one currency, one Telegram Stars invoice, and one Telegram chat.
    * When: delivered order processing completes the expired order.
-   * Then: it creates a new checkout for the same product and Telegram account so the billing provider can send a new invoice.
+   * Then: it creates a new checkout for the same product and Telegram account with the operator secret, so the owner-guarded checkout route accepts it and the billing provider can send a new invoice.
    */
-  it("Then: creates a new Telegram Stars checkout for the same subscription", async () => {
+  it("Then: creates a new Telegram Stars checkout for the same subscription with the operator secret", async () => {
     const { service } = createService({
       subjectsToSocialModuleProfiles: [
         {
@@ -546,6 +546,12 @@ describe("Given: an expired Telegram Stars subscription order", () => {
           },
         },
         account: "telegram-account-1",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "test-rbac-secret",
+          "Cache-Control": "no-store",
+        },
       },
     });
   });

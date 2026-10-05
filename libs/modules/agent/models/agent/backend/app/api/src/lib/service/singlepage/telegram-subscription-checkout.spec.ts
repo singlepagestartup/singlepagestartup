@@ -1,9 +1,9 @@
 /**
- * BDD Suite: Telegram subscription checkout duplicate handling.
+ * BDD Suite: Telegram subscription checkout callback.
  *
- * Given: the Telegram callback checkout flow receives active-subscription validation from RBAC checkout.
- * When: the agent service handles a repeated subscription checkout callback.
- * Then: the Telegram chat receives an existing-subscription message instead of an invoice.
+ * Given: the Telegram callback checkout flow calls the RBAC product checkout for the Telegram user who pressed the button.
+ * When: the agent service handles a subscription checkout callback, first or repeated.
+ * Then: the checkout carries a token of that user's subject, and a repeated checkout produces an existing-subscription message instead of an invoice.
  */
 
 jest.mock("@sps/shared-utils", () => {
@@ -47,6 +47,9 @@ function createService() {
     .mockResolvedValue({
       id: "message-subject",
     });
+  (service as any).signRbacModuleSubjectJwt = jest
+    .fn()
+    .mockResolvedValue("message-subject-jwt");
   (service as any).telegramBotReplyMessageCreate = jest
     .fn()
     .mockResolvedValue(undefined);
@@ -68,6 +71,72 @@ function createService() {
 
   return service;
 }
+
+function createCallbackProps() {
+  return {
+    jwtToken: "jwt-token",
+    rbacModuleSubject: {
+      id: "bot-subject",
+    },
+    shouldReplySocialModuleProfile: {
+      id: "telegram-bot-profile",
+    },
+    socialModuleChat: {
+      id: "chat-1",
+      sourceSystemId: "telegram-chat-1",
+    },
+    socialModuleAction: {
+      id: "action-1",
+    },
+    messageFromSocialModuleProfile: {
+      id: "sender-profile",
+    },
+    ecommerceModuleProductId: "product-subscription",
+  } as any;
+}
+
+describe("Given: a Telegram user presses the checkout button of a product", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  /**
+   * BDD Scenario
+   *
+   * Given: the callback context carries the bot subject's token, while the checkout is for the subject of the Telegram user who pressed the button.
+   * When: the Telegram checkout callback handler starts the product checkout.
+   * Then: the checkout request carries a token signed for the Telegram user's subject, which the owner-guarded checkout route accepts for that subject.
+   */
+  it("Then: sends a token of the Telegram user's subject with the checkout", async () => {
+    const service = createService();
+
+    mockedEcommerceModuleProductCheckout.mockResolvedValue({
+      billingModule: {
+        invoices: [],
+      },
+    });
+
+    await service.telegramBotEcommerceModuleProductFindByIdCheckout(
+      createCallbackProps(),
+    );
+
+    expect((service as any).signRbacModuleSubjectJwt).toHaveBeenCalledWith({
+      rbacModuleSubject: {
+        id: "message-subject",
+      },
+    });
+    expect(mockedEcommerceModuleProductCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "message-subject",
+        options: {
+          headers: {
+            Authorization: "Bearer message-subject-jwt",
+          },
+        },
+      }),
+    );
+  });
+});
 
 describe("Given: Telegram subscription checkout duplicate handling", () => {
   beforeEach(() => {
@@ -96,26 +165,7 @@ describe("Given: Telegram subscription checkout duplicate handling", () => {
       ),
     );
 
-    const props = {
-      jwtToken: "jwt-token",
-      rbacModuleSubject: {
-        id: "bot-subject",
-      },
-      shouldReplySocialModuleProfile: {
-        id: "telegram-bot-profile",
-      },
-      socialModuleChat: {
-        id: "chat-1",
-        sourceSystemId: "telegram-chat-1",
-      },
-      socialModuleAction: {
-        id: "action-1",
-      },
-      messageFromSocialModuleProfile: {
-        id: "sender-profile",
-      },
-      ecommerceModuleProductId: "product-subscription",
-    } as any;
+    const props = createCallbackProps();
 
     await expect(
       service.telegramBotEcommerceModuleProductFindByIdCheckout(props),
@@ -133,6 +183,11 @@ describe("Given: Telegram subscription checkout duplicate handling", () => {
           },
         },
         account: "telegram-chat-1",
+      },
+      options: {
+        headers: {
+          Authorization: "Bearer message-subject-jwt",
+        },
       },
     });
     expect((service as any).telegramBotReplyMessageCreate).toHaveBeenCalledWith(

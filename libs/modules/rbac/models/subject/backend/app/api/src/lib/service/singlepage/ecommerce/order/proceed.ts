@@ -1007,6 +1007,12 @@ export class Service {
                   },
                   account: telegramChats[0].sourceSystemId,
                 },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    "Cache-Control": "no-store",
+                  },
+                },
               });
             }
           }

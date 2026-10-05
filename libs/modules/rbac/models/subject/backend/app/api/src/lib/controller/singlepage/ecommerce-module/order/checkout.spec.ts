@@ -3,7 +3,7 @@
  *
  * Given: checkout handler dependencies are mocked for deterministic checkout execution.
  * When: subject submits checkout payload for existing cart orders.
- * Then: handler validates payload, annotates order comments, and delegates to checkout service.
+ * Then: handler validates payload, keeps only the subject's own orders, annotates their comments, and delegates to checkout service.
  */
 
 const orderFindMock = jest.fn();
@@ -43,15 +43,41 @@ function createContext(
   } as any;
 }
 
-function createService() {
+function createService(subjectOrderIds = ["order-1", "order-2"]) {
   return {
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     deanonymize: jest.fn().mockResolvedValue(undefined),
+    subjectsToEcommerceModuleOrders: {
+      find: jest.fn().mockResolvedValue(
+        subjectOrderIds.map((ecommerceModuleOrderId) => ({
+          subjectId: "subject-1",
+          ecommerceModuleOrderId,
+        })),
+      ),
+    },
     ecommerceOrderCheckout: jest.fn().mockResolvedValue({
       provider: "stripe",
       checkoutUrl: "https://example.test/pay",
     }),
   } as any;
+}
+
+function expectOrderLookup(orderIds: string[]) {
+  expect(orderFindMock).toHaveBeenCalledWith(
+    expect.objectContaining({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: orderIds,
+            },
+          ],
+        },
+      },
+    }),
+  );
 }
 
 describe("Given: ecommerce order checkout handler", () => {
@@ -117,6 +143,20 @@ describe("Given: ecommerce order checkout handler", () => {
       id: "subject-1",
       email: "user@example.test",
     });
+    expect(service.subjectsToEcommerceModuleOrders.find).toHaveBeenCalledWith({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: "subject-1",
+            },
+          ],
+        },
+      },
+    });
+    expectOrderLookup(["order-1", "order-2"]);
     expect(orderUpdateMock).toHaveBeenCalledTimes(2);
     expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -142,7 +182,7 @@ describe("Given: ecommerce order checkout handler", () => {
    * Then: only existing orders are updated and passed to the checkout service.
    */
   it("When: payload contains a deleted order id Then: stale order ids are ignored", async () => {
-    const service = createService();
+    const service = createService(["order-1", "deleted-order"]);
     const handler = new Handler(service);
     const context = createContext(
       { id: "subject-1" },
@@ -168,6 +208,7 @@ describe("Given: ecommerce order checkout handler", () => {
 
     await handler.execute(context, jest.fn());
 
+    expectOrderLookup(["order-1", "deleted-order"]);
     expect(orderUpdateMock).toHaveBeenCalledTimes(1);
     expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -176,5 +217,76 @@ describe("Given: ecommerce order checkout handler", () => {
         },
       }),
     );
+  });
+
+  /**
+   * BDD Scenario
+   *
+   * Given: the checkout payload names the subject's cart order and an order linked to another subject.
+   * When: the checkout request is handled.
+   * Then: only the subject's own order is looked up, annotated and passed to the checkout service.
+   */
+  it("When: payload contains an order of another subject Then: that order is neither annotated nor checked out", async () => {
+    const service = createService(["order-1"]);
+    const handler = new Handler(service);
+    const context = createContext(
+      { id: "subject-1" },
+      {
+        data: JSON.stringify({
+          provider: "stripe",
+          email: "user@example.test",
+          comment: "checkout note",
+          ecommerceModule: {
+            orders: [{ id: "order-1" }, { id: "order-of-another-subject" }],
+          },
+        }),
+      },
+    );
+
+    await handler.execute(context, jest.fn());
+
+    expectOrderLookup(["order-1"]);
+    expect(orderUpdateMock).toHaveBeenCalledTimes(1);
+    expect(orderUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "order-1" }),
+    );
+    expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ecommerceModule: {
+          orders: [{ id: "order-1" }],
+        },
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
+   *
+   * Given: every order in the checkout payload is linked to another subject.
+   * When: the checkout request is handled.
+   * Then: it is rejected as not found before any order is read, annotated or checked out.
+   */
+  it("When: payload contains only orders of another subject Then: checkout is rejected before any order is touched", async () => {
+    const service = createService(["order-1"]);
+    const handler = new Handler(service);
+    const context = createContext(
+      { id: "subject-1" },
+      {
+        data: JSON.stringify({
+          provider: "stripe",
+          email: "user@example.test",
+          ecommerceModule: {
+            orders: [{ id: "order-of-another-subject" }],
+          },
+        }),
+      },
+    );
+
+    await expect(handler.execute(context, jest.fn())).rejects.toThrow(
+      "No ecommerce module orders found",
+    );
+    expect(orderFindMock).not.toHaveBeenCalled();
+    expect(orderUpdateMock).not.toHaveBeenCalled();
+    expect(service.ecommerceOrderCheckout).not.toHaveBeenCalled();
   });
 });

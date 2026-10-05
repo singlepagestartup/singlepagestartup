@@ -277,6 +277,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/:id/ecommerce-module/products/:productId/checkout",
         handler: this.ecommerceModuleProductIdCheckout,
+        middlewares: [new RequestSubjectIdOwner().init()],
       },
       {
         method: "POST",
@@ -302,6 +303,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/:id/ecommerce-module/orders/checkout",
         handler: this.ecommerceModuleOrderCheckout,
+        middlewares: [new RequestSubjectIdOwner().init()],
       },
       {
         method: "GET",
