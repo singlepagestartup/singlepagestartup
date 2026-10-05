@@ -15,6 +15,8 @@ export class Handler {
     try {
       const data = await this.service.logout();
 
+      // The API writes no session cookie and reads none. A browser can still
+      // hold an API-origin copy written by an earlier release; this removes it.
       deleteCookie(c, "rbac.subject.jwt");
 
       return c.json({

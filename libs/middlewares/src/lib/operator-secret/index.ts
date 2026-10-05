@@ -17,9 +17,10 @@ const UNAUTHORIZED_MESSAGE = "Unauthorized";
  *
  * The credential itself is read and compared by `@sps/backend-utils` (issue
  * #276), so this middleware decides only what a refusal looks like. Sharing
- * that primitive is the point: the operator secret arrives in a header or a
- * cookie, it is compared in constant time, and an unconfigured secret refuses
- * every caller — and none of that should be decided twice.
+ * that primitive is the point: the operator secret arrives only in the
+ * `X-RBAC-SECRET-KEY` header, it is compared in constant time, and an
+ * unconfigured secret refuses every caller — and none of that should be
+ * decided twice.
  */
 export class Middleware {
   init(): MiddlewareHandler<any, any, {}> {

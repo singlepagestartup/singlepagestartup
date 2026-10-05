@@ -7,6 +7,7 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
+import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { IModel as IMessage } from "@sps/social/models/message/sdk/model";
 
 export interface IProps {
@@ -33,6 +34,7 @@ export async function action(props: IProps): Promise<IResult | undefined> {
     credentials: "include",
     method: "GET",
     ...options,
+    headers: saturateHeaders(options?.headers),
     next: {
       ...options?.next,
     },

@@ -1,16 +1,16 @@
 import { timingSafeEqual } from "node:crypto";
 import { Context } from "hono";
-import { getCookie } from "hono/cookie";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 /**
- * Reads the operator credential from a request: the `X-RBAC-SECRET-KEY` header
- * first, then the `rbac.secret-key` cookie. Both are what the is-authorized
- * middleware already accepts, so a guard built on this helper does not narrow
- * the documented ways of presenting the secret.
+ * Reads the operator credential from a request's `X-RBAC-SECRET-KEY` header.
+ *
+ * The secret is a service credential: Telegram, the agents, the cron jobs and
+ * the API's own loopback calls send it as this header. A cookie is never read,
+ * so a browser never presents the secret by attaching a stored cookie.
  */
 export function readRbacSecret(c: Context): string | undefined {
-  return c.req.header("X-RBAC-SECRET-KEY") || getCookie(c, "rbac.secret-key");
+  return c.req.header("X-RBAC-SECRET-KEY");
 }
 
 /**

@@ -10,8 +10,11 @@ import {
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
-import { getCookie } from "hono/cookie";
-import { getHttpErrorType } from "@sps/backend-utils";
+import {
+  authorization,
+  getHttpErrorType,
+  readRbacSecret,
+} from "@sps/backend-utils";
 import { createAllowedRoutesMatcher } from "./routes";
 
 export type IMiddlewareGeneric = unknown;
@@ -41,11 +44,8 @@ export class Middleware {
     return createMiddleware(async (c, next) => {
       const reqMethod = c.req.method.toUpperCase();
       const reqPath = c.req.path.toLowerCase();
-      const secretKey =
-        c.req.header("X-RBAC-SECRET-KEY") || getCookie(c, "rbac.secret-key");
-      const authorization =
-        c.req.header("Authorization")?.replace("Bearer ", "") ||
-        getCookie(c, "rbac.subject.jwt");
+      const secretKey = readRbacSecret(c);
+      const token = authorization(c);
 
       const origin = c.req.header("Host");
       const allowedOrigins = new Set([
@@ -76,11 +76,11 @@ export class Middleware {
       try {
         const headers: Record<string, string> = {
           ...(secretKey ? { "X-RBAC-SECRET-KEY": secretKey } : {}),
-          ...(authorization ? { Authorization: authorization } : {}),
+          ...(token ? { Authorization: token } : {}),
           "Cache-Control": "no-store",
         };
 
-        const cacheKey = `${reqMethod}:${reqPath}:${authorization || ""}:${secretKey || ""}`;
+        const cacheKey = `${reqMethod}:${reqPath}:${token || ""}:${secretKey || ""}`;
         if (cache.get<boolean>(cacheKey)) {
           return next();
         }

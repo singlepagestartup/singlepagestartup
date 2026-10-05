@@ -57,8 +57,8 @@ deletes both namespaces this middleware owns — `http-cache:data` and
 `http-cache:version` — and nothing else, so the MCP OAuth store and subject
 preferences that share the instance survive it.
 
-It requires the operator credential: `X-RBAC-SECRET-KEY`, or the
-`rbac.secret-key` cookie, compared in constant time against `RBAC_SECRET_KEY`.
+It requires the operator credential in the `X-RBAC-SECRET-KEY` header,
+compared in constant time against `RBAC_SECRET_KEY`.
 A deployment that never set that variable refuses every caller rather than
 admitting every caller, so the route cannot be flushed over HTTP there at all.
 

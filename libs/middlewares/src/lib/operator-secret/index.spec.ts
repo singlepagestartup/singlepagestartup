@@ -3,7 +3,7 @@
  *
  * Given: a service control route composed behind the operator middleware.
  * When: a request arrives with a matching, mismatched, or absent
- *       X-RBAC-SECRET-KEY header.
+ *       X-RBAC-SECRET-KEY header, or with the secret only in a cookie.
  * Then: only the matching credential reaches the handler, the rejection
  *       echoes neither the submitted value nor the configured one and does
  *       not name the header, and a service with no configured secret rejects
@@ -150,22 +150,20 @@ describe("operator credential on service control routes", () => {
 
   /**
    * BDD Scenario
-   * Given: the shared primitive accepts the operator secret in a cookie as well as a header.
-   * When: a control route is called with the cookie only.
-   * Then: it runs, so this guard does not narrow how the secret may be presented.
+   * Given: a browser holds the configured operator secret in an rbac.secret-key cookie.
+   * When: a control route is called with that cookie and no header.
+   * Then: the request is refused like one without a credential, because the
+   *       secret is accepted only from the X-RBAC-SECRET-KEY header.
    */
-  it("When: the credential arrives in the cookie Then: the control route runs", async () => {
-    const handler = jest.fn((c: any) => c.json({ ok: true }));
-    const hono = new Hono();
-
-    hono.post("/stop", new Middleware().init(), handler);
+  it("When: the credential arrives only in a cookie Then: the control route is not reached", async () => {
+    const { handler, hono } = createControlRoute();
 
     const response = await hono.request("/stop", {
       method: "POST",
       headers: { Cookie: `rbac.secret-key=${mockConfiguredSecret}` },
     });
 
-    expect(response.status).toBe(200);
-    expect(handler).toHaveBeenCalledTimes(1);
+    expect(response.status).toBe(401);
+    expect(handler).not.toHaveBeenCalled();
   });
 });

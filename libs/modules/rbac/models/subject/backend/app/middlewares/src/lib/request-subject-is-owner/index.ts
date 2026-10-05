@@ -2,8 +2,12 @@ import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
-import { getCookie } from "hono/cookie";
-import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
+import {
+  authorization,
+  getHttpErrorType,
+  readRbacSecret,
+  verifyJwt,
+} from "@sps/backend-utils";
 
 export interface IMiddlewareGeneric {}
 
@@ -19,8 +23,7 @@ export class Middleware {
           throw new Error("Configuration error. RBAC_SECRET_KEY not set");
         }
 
-        const secretKey =
-          c.req.header("X-RBAC-SECRET-KEY") || getCookie(c, "rbac.secret-key");
+        const secretKey = readRbacSecret(c);
 
         const id = c.req.param("id");
 
