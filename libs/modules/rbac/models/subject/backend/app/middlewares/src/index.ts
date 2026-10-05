@@ -11,6 +11,10 @@ export {
   type IMiddlewareGeneric as IRequestSubjectOwnsSocialModuleChatMiddlewareGeneric,
 } from "./lib/request-subject-owns-social-module-chat";
 export {
+  Middleware as RequestSubjectOwnsEcommerceModuleOrder,
+  type IMiddlewareGeneric as IRequestSubjectOwnsEcommerceModuleOrderMiddlewareGeneric,
+} from "./lib/request-subject-owns-ecommerce-module-order";
+export {
   Middleware as RequestSocialModuleThreadBelongsToChat,
   type IMiddlewareGeneric as IRequestSocialModuleThreadBelongsToChatMiddlewareGeneric,
 } from "./lib/request-social-module-thread-belongs-to-chat";
