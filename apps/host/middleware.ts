@@ -1,7 +1,7 @@
 import { internationalization } from "@sps/shared-configuration";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: any) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const defaultLanguage = internationalization.defaultLanguage.code;
 
@@ -14,6 +14,14 @@ export async function middleware(request: any) {
 
   if (!hasLanguagePrefix) {
     const nextUrl = request.nextUrl.clone();
+    const requestHost = request.headers.get("host");
+
+    if (requestHost) {
+      // Setting a host without a port retains the URL's existing port.
+      nextUrl.port = "";
+      nextUrl.host = requestHost;
+    }
+
     nextUrl.pathname = `/${defaultLanguage}${pathname}`;
     return NextResponse.redirect(nextUrl);
   }
