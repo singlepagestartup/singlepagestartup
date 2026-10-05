@@ -3,7 +3,7 @@
  *
  * Given: update handler dependencies are mocked with deterministic order state.
  * When: subject updates cart order lines.
- * Then: owner checks are enforced and update API receives submitted payload.
+ * Then: owner checks are enforced and update API receives only the submitted order lines.
  */
 
 const authorizationMock = jest.fn();
@@ -110,5 +110,85 @@ describe("Given: ecommerce order update handler", () => {
     expect(context.json).toHaveBeenCalledWith({
       data: expect.objectContaining({ id: "subject-1" }),
     });
+  });
+
+  /**
+   * BDD Scenario
+   *
+   * Given: the request data carries order fields beside the order lines.
+   * When: the subject submits the cart update.
+   * Then: the update API receives the order lines only.
+   */
+  it("When: data carries order fields beside the lines Then: only the lines reach the update API", async () => {
+    const handler = new Handler(createService());
+    const context = createContext(
+      { id: "subject-1", orderId: "order-1" },
+      {
+        data: JSON.stringify({
+          ordersToProducts: [{ id: "otp-1", quantity: 3 }],
+          status: "approving",
+          type: "history",
+          comment: "set through the cart",
+        }),
+      },
+    );
+
+    await handler.execute(context, jest.fn());
+
+    expect(orderUpdateMock).toHaveBeenCalledTimes(1);
+    expect(orderUpdateMock.mock.calls[0][0].data).toEqual({
+      ordersToProducts: [{ id: "otp-1", quantity: 3 }],
+    });
+  });
+
+  /**
+   * BDD Scenario
+   *
+   * Given: an order line carries fields besides its id and quantity.
+   * When: the subject submits the cart update.
+   * Then: the update API receives each line as its id and quantity.
+   */
+  it("When: a line carries extra fields Then: the line reaches the update API as id and quantity", async () => {
+    const handler = new Handler(createService());
+    const context = createContext(
+      { id: "subject-1", orderId: "order-1" },
+      {
+        data: JSON.stringify({
+          ordersToProducts: [
+            { id: "otp-1", quantity: 2, orderId: "order-2", productId: "p-2" },
+          ],
+        }),
+      },
+    );
+
+    await handler.execute(context, jest.fn());
+
+    expect(orderUpdateMock.mock.calls[0][0].data).toEqual({
+      ordersToProducts: [{ id: "otp-1", quantity: 2 }],
+    });
+  });
+
+  /**
+   * BDD Scenario
+   *
+   * Given: the request data carries ordersToProducts that is not a list.
+   * When: the subject submits the cart update.
+   * Then: the update is rejected before the update API is called.
+   */
+  it("When: ordersToProducts is not a list Then: update is rejected", async () => {
+    const handler = new Handler(createService());
+    const context = createContext(
+      { id: "subject-1", orderId: "order-1" },
+      {
+        data: JSON.stringify({
+          ordersToProducts: { id: "otp-1", quantity: 3 },
+        }),
+      },
+    );
+
+    await expect(handler.execute(context, jest.fn())).rejects.toThrow(
+      "No ordersToProducts provided",
+    );
+    expect(orderUpdateMock).not.toHaveBeenCalled();
   });
 });
