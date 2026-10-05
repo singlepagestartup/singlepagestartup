@@ -9,7 +9,7 @@ import { UseFormReturn } from "react-hook-form";
 export const variant = "form-field-default" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {
+  extends Omit<IParentComponentProps<IModel, typeof variant>, "apiProps"> {
   form: UseFormReturn<any>;
   formFieldName: string;
   entityFieldName: string;

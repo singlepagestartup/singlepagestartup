@@ -11,6 +11,7 @@ import {
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { queryClient, subscription } from "@sps/shared-frontend-client-api";
+import QueryString from "qs";
 import { useEffect } from "react";
 
 export type IProps = IParentProps["IEcommerceModuleOrderListProps"] & {
@@ -34,7 +35,16 @@ export function action(props: IProps) {
   }, [queryKey]);
 
   return useQuery<IResult>({
-    queryKey: [queryKey],
+    // Params are part of the key, as in the factory list query: the cart and
+    // an order list filtered by type can share a page (issue #303).
+    queryKey: [
+      queryKey,
+      props.params
+        ? QueryString.stringify(props.params, {
+            encodeValuesOnly: true,
+          })
+        : undefined,
+    ],
     // Canonical realtime subscription (issue #195): hand-written SDK
     // queries MUST declare meta.topics — the topic branch disables the
     // legacy route fallback whenever any topic subscriber matches, so a

@@ -29,6 +29,12 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 - A bracketed path segment such as `[knowledge.documents.id]` is a dynamic
   permission mask. A concrete UUID is literal and grants no access to another
   record id. Permissions without any role relation remain public.
+- Every permission row without a role is listed in
+  `models/permission/backend/repository/database/src/lib/roleless-permissions`
+  (framework rows in `singlepage.ts`, project rows in `startup.ts`). The rbac
+  unit lane fails when a seeded row carries no role and is missing from that
+  list, and the API logs such rows from the live table on its first
+  authorization. See the permission model README.
 - Add route access through `rbac.permissions`; keep resource ownership and module-specific checks in `backend/app/middlewares/src/lib/*` middleware for that module.
 - Controllers should compose exported middleware instances, not define middleware bodies inline.
 - Do not put social chat/thread/profile ownership logic, billing rules, or other domain rules into the global authorization service.
