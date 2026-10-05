@@ -3,6 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../service";
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { quantityBounds } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as ecommerceStoresToOrdersToApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
 import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
@@ -50,6 +51,18 @@ export class Handler {
         throw new Error(
           "Validation error. Invalid JSON in body['data']. Got: " +
             body["data"],
+        );
+      }
+
+      const quantity = data["quantity"] ?? 1;
+
+      if (
+        !Number.isInteger(quantity) ||
+        quantity < quantityBounds.min ||
+        quantity > quantityBounds.max
+      ) {
+        throw new Error(
+          `Validation error. data.quantity must be a whole number from ${quantityBounds.min} to ${quantityBounds.max}`,
         );
       }
 
@@ -171,7 +184,7 @@ export class Handler {
         data: {
           productId,
           orderId: order.id,
-          quantity: data.quantity || 1,
+          quantity,
         },
         options: {
           headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
