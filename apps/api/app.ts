@@ -16,7 +16,7 @@ import {
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 import { v4 as uuidv4 } from "uuid";
 import { ContentfulStatusCode } from "hono/utils/http-status";
-import { websocketManager } from "@sps/backend-utils";
+import { resolveCorsOrigin, websocketManager } from "@sps/backend-utils";
 
 import { app as telegramApp } from "@sps/telegram/backend/app/api";
 import { app as agentApp } from "@sps/agent/backend/app/api";
@@ -40,13 +40,7 @@ const { upgradeWebSocket } = createBunWebSocket<ServerWebSocket>();
 
 app.use(
   cors({
-    origin: (origin) => {
-      if (!origin) {
-        return null;
-      }
-
-      return origin;
-    },
+    origin: resolveCorsOrigin,
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: [
       "X-CSRF-Token",

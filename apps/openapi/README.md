@@ -37,6 +37,7 @@ nx run openapi:start
 ## Environment
 
 - Run `./apps/openapi/create_env.sh` to refresh `.env` and update OpenAPI servers from `apps/api/.env` and `apps/telegram/.env`.
+- `API_CORS_ALLOWED_ORIGINS` optionally limits the browser origins the server answers for cross-origin requests, as in the API (`apps/api/README.md`).
 
 ## Updating the spec
 

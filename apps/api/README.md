@@ -7,6 +7,24 @@ Audio transcription runs inside the API/RBAC message flow and uses:
 - `OPEN_AI_API_KEY` - required when audio transcription should run.
 - `OPEN_AI_TRANSCRIPTION_MODEL` - optional, defaults to `gpt-4o-transcribe`.
 
+`API_CORS_ALLOWED_ORIGINS` decides which browser origins the API, Telegram and
+OpenAPI apps answer for credentialed cross-origin requests. It is optional and
+holds a comma-separated list of origins written the way a browser sends
+`Origin`: scheme, host and port, with no path and no trailing slash, for
+example `https://example.com,https://admin.example.com`.
+
+- Unset or empty, the default: every origin is echoed in
+  `Access-Control-Allow-Origin` with credentials allowed. Local development,
+  Codespaces, Gitpod and tunnels rely on this.
+- Set: only an origin equal to one of the entries is echoed. Any other origin
+  gets no `Access-Control-Allow-Origin`, so the browser refuses a preflighted
+  request and keeps every response from the calling page. List the host and
+  every other front end that calls the API from a browser.
+
+Requests without an `Origin` header, such as server-to-server calls, MCP and
+scripts, are answered the same way in both modes. The three apps take the value
+through `resolveCorsOrigin` in `@sps/backend-utils`.
+
 ## Guidelines
 
 - `apps/api/app.ts` is the **only** host: mount every module backend app via `app.route("/api/<module>", moduleApp.hono)`; modules must not expose their own servers.

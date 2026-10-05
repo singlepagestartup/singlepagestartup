@@ -19,3 +19,4 @@ export {
   isBcryptHash,
   isBcryptSalt,
 } from "./bcrypt-columns";
+export { resolveCorsOrigin } from "./cors-origin";
