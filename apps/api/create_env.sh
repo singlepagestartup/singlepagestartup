@@ -93,6 +93,10 @@ add_env "MCP_SERVICE_URL" "http://127.0.0.1:3001/mcp"
 
 add_env "FILE_STORAGE_PROVIDER" "local"
 
+# Local development keeps the dummy provider, which marks an invoice paid
+# without a payment provider. Deployments set the list in tools/deployer/.env.
+add_env "ALLOWED_BILLING_SERVICE_PROVIDERS" "stripe,0xprocessing,payselection,cloudpayments,tiptoppay,dummy"
+
 add_env "LLM_SERVICE_URL" "http://localhost:8765"
 add_env "KNOWLEDGE_EMBEDDING_PROVIDER" "llm"
 add_env "KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL" "qwen/qwen3-embedding-8b"

@@ -1,5 +1,4 @@
 import {
-  ALLOWED_BILLING_SERVICE_PROVIDERS,
   API_SERVICE_URL,
   NextRequestOptions,
   RBAC_SECRET_KEY,
@@ -82,9 +81,7 @@ export class Handler {
 
       let result: any;
 
-      const allowedProviders = ALLOWED_BILLING_SERVICE_PROVIDERS.split(",");
-
-      if (!allowedProviders.includes(provider)) {
+      if (!this.service.isProviderAllowed({ provider })) {
         throw new Error(
           `Validation error. Provider ${provider} is not allowed`,
         );
