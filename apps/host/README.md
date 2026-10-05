@@ -9,6 +9,16 @@
 - Data access must go through module SDK providers (`Provider`, `clientApi`, `serverApi`). Relation components should use `variant="find"` with filters supplied via `apiProps.params.filters.and`.
 - For advanced fetching/transform logic, mirror the `singlepage/default` pattern: move data-handling into `client.tsx` / `server.tsx` wrappers so `Component.tsx` stays purely presentational.
 
+## Locale redirects
+
+Locale middleware adds the default language prefix while preserving the request
+Host header. It clears the internal server port before applying Host, so redirects
+behind a reverse proxy use the public domain and local redirects retain their
+explicit port. The path and query parameters remain in the redirect.
+
+`skipMiddlewareUrlNormalize` prevents Next from rewriting loopback hosts in the
+outgoing Location header; a login on `127.0.0.1` keeps the same cookie origin.
+
 ## Testing
 
 This repository uses a layered test strategy so developers can validate changes quickly without manual UI clicking.

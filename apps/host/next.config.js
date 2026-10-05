@@ -24,6 +24,8 @@ function makeConfig() {
 
   return withBundleAnalyzer({
     reactStrictMode: true,
+    // Preserve the public origin in locale redirects, including loopback hosts.
+    skipMiddlewareUrlNormalize: true,
     deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
     staticPageGenerationTimeout: 6000,
     images: {
