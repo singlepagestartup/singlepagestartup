@@ -41,3 +41,12 @@ export const ADDRESS_VERIFYING_PROVIDERS = Object.freeze([
  * loopback reads that need the full row travel with it.
  */
 export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
+
+/**
+ * Hono context variable a handler sets to the id of the subject whose tokens
+ * it has just revoked, as logout does. The is-authorized middleware reads it
+ * once the handler returns and stops answering any token of that subject from
+ * its cached decisions, so every one of them is refused at once in this
+ * process instead of when those entries expire.
+ */
+export const RBAC_REVOKED_SUBJECT_CONTEXT_KEY = "rbac.revoked-subject";

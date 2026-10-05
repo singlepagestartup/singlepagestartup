@@ -23,7 +23,7 @@ import {
   type TRbacAiReactionReasoning,
   parseRbacAiReactionRequestMetadata,
 } from "@sps/rbac/models/subject/sdk/model";
-import { blobifyFiles, getHttpErrorType } from "@sps/backend-utils";
+import { blobifyFiles, getHttpErrorType, signJwt } from "@sps/backend-utils";
 import {
   OpenRouter,
   type IOpenRouterGenerateResult,
@@ -47,7 +47,6 @@ import {
 import { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
 import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import { KnowledgeSearchResult } from "@sps/knowledge/backend/app/api/src/lib/types";
-import * as jwt from "hono/jwt";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { basename, extname, join, normalize } from "node:path";
@@ -1275,12 +1274,11 @@ export class Handler {
         replyBySocialModuleProfile.id,
       );
 
-      const replyByRbacSubjectAuthenticationJwt = await jwt.sign(
+      const replyByRbacSubjectAuthenticationJwt = await signJwt(
         {
-          exp:
-            Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-          iat: Math.floor(Date.now() / 1000),
-          subject: replyByRbacSubject,
+          subjectId: replyByRbacSubject.id,
+          type: "access",
+          lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
         },
         RBAC_JWT_SECRET,
       );

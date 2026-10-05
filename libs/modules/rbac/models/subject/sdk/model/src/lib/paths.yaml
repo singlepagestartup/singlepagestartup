@@ -477,7 +477,7 @@ paths:
       tags:
         - "rbac-subject"
       summary: Authentication me
-      description: Get current authenticated subject
+      description: The stored subject of the presented access token; null without a token or when the subject no longer exists. A refresh token or a token revoked by logout is refused with 401.
       responses:
         "200":
           description: Current subject
@@ -514,29 +514,26 @@ paths:
       tags:
         - "rbac-subject"
       summary: Authentication logout
-      description: Logout current subject
+      description: Revoke every token of the presented access token's subject. Without a valid access token nothing is revoked and the answer is the same.
       responses:
         "200":
-          description: Tokens
+          description: Logged out
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  jwt:
-                    type: string
-                  refresh:
-                    type: string
+                  ok:
+                    type: boolean
                 required:
-                  - jwt
-                  - refresh
+                  - ok
 
   /rbac/subjects/authentication/refresh:
     post:
       tags:
         - "rbac-subject"
       summary: Authentication refresh
-      description: Refresh authentication tokens
+      description: Exchange a refresh token for a new token pair. An access token or a refresh token revoked by logout is refused with 401.
       requestBody:
         required: true
         content:

@@ -35,7 +35,9 @@ export class Middleware {
             throw new Error("Validation error. No JWT token provided");
           }
 
-          const decoded = await verifyJwt(token, RBAC_JWT_SECRET);
+          const decoded = await verifyJwt(token, RBAC_JWT_SECRET, {
+            type: "access",
+          });
 
           if (decoded?.["subject"]?.["id"] !== id) {
             throw new Error(

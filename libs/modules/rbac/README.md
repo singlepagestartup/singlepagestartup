@@ -21,7 +21,7 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 
 ### Authorization layering:
 
-- `subject/backend/app/api/src/lib/service/singlepage/is-authorized.ts` is only the global permission resolver.
+- `subject/backend/app/api/src/lib/service/singlepage/is-authorized.ts` is only the global permission resolver. The token it reads must be an unrevoked access token (subject README, "Session Tokens").
 - The resolver receives the startup-exported Permission,
   roles-to-permissions, and subjects-to-roles services through Subject DI. It
   uses filtered service `find` calls; it must not call the local HTTP API or

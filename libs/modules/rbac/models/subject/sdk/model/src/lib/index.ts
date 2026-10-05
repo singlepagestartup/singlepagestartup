@@ -25,3 +25,4 @@ export * from "./ai-reaction-request";
 export * from "./ai-execution-action";
 export * from "./ai-thread-preferences";
 export * from "./telegram-personal-ai-agent";
+export * from "./token-revocation";

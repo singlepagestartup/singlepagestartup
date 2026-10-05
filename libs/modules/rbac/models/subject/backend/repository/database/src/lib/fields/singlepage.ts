@@ -11,4 +11,10 @@ export const fields = {
     .notNull()
     .unique()
     .$defaultFn(() => randomWordsGenerator({ type: "slug" })),
+  /**
+   * Revocation mark written by logout. A token of this subject signed in or
+   * before the second of this instant is refused; tokens signed later are
+   * not. Empty until the subject logs out for the first time.
+   */
+  tokensValidAfter: pgCore.timestamp("tokens_valid_after", { mode: "date" }),
 };

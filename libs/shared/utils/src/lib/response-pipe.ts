@@ -14,6 +14,7 @@ const isDebug =
 const sessionExpiredMessage = "Session expired. Please sign in again.";
 const authenticationStorageEvent = "sps-rbac-auth-storage-change";
 const invalidCredentialsPattern = /invalid credentials/i;
+const revokedTokenPattern = /token revoked/i;
 const sessionStatePattern =
   /unauthorized|token required|no session|authorization error|no subject provided in the token|invalid token issued/i;
 
@@ -84,6 +85,14 @@ function shouldTreatAsExpiredSession(props: {
 
   if (invalidCredentialsPattern.test(props.message)) {
     return false;
+  }
+
+  /**
+   * Logout revokes every token of the subject, the stored refresh token
+   * included, so waiting for a refresh cannot recover this session.
+   */
+  if (revokedTokenPattern.test(props.message)) {
+    return true;
   }
 
   if (hasBrowserRefreshToken()) {

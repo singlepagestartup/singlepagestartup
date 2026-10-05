@@ -118,7 +118,8 @@ describe("agent Telegram thread commands", () => {
    * BDD Scenario
    * Given: a sender asks for the Telegram chat threads.
    * When: the Telegram bot agent handles /threads.
-   * Then: it reads threads through the sender subject RBAC SDK and replies in-thread.
+   * Then: it reads threads through the sender subject RBAC SDK with an access
+   * token naming only the sender subject id, and replies in-thread.
    */
   it("handles /threads through the sender subject", async () => {
     const service = createService();
@@ -138,6 +139,13 @@ describe("agent Telegram thread commands", () => {
 
     await service.telegramBotCommandReplyMessageCreate(createProps("/threads"));
 
+    expect(mockedSign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        typ: "access",
+        subject: { id: "sender-subject" },
+      }),
+      "jwt-secret",
+    );
     expect(mockedThreadFind).toHaveBeenCalledWith({
       id: "sender-subject",
       socialModuleChatId: "chat-1",
