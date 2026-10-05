@@ -130,6 +130,12 @@ Show applicable variants, focus/keyboard rules, default/selected/disabled,
 pending, empty, error and success. Include compact usage and exact recipes.
 Content blocks declare data-composes and reuse those primitives.
 
+Follow .agents/contracts/inheritance.md#downstream-applicability for review
+structure: shared rules open Interface kit; each component or composition rule
+appears beside its corresponding rendered example. Bind notes to this Design
+document and collapse reference sources. Keep the catalogue structure and IDs
+when applying the project's own approved style.
+
 Document the downstream token mapping and component/composition boundary.
 Verify narrow screens, long copy, contrast, touch targets, keyboard, reduced
 motion, focus containment/return and themed portals. Clearly identify local
@@ -154,9 +160,11 @@ reference screenshot cannot establish.
 
 ### Confirmed reference patterns
 
-<!-- Provenance only. Studio cites these asset IDs as text and never renders,
-traces, or reproduces a reference layout; keep every registry prohibited_use
-intact. -->
+<!-- This table is the source of guidance beside rendered examples, not a
+separate gallery of text-only cards. Map each applicable pattern to its own
+component or composition example. Provenance only: Studio cites these asset
+IDs in collapsed source details and never renders, traces, or reproduces a
+reference layout; keep every registry prohibited_use intact. -->
 
 | Pattern | Decision | Avoid | Reference asset IDs |
 | ------- | -------- | ----- | ------------------- |

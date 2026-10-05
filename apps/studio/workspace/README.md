@@ -414,6 +414,25 @@ while changing typography, color, shape, density and approved iconography.
 Review default, focus, selected, disabled, pending, empty and error states as
 applicable. Portals must inherit the layer's tokens from their container.
 
+Design guidance follows the shared
+[review structure contract](../../../.agents/contracts/inheritance.md#downstream-applicability).
+Shared rules open Interface kit; rules for a component or composition appear
+beside its rendered example. Keep the intended treatment and what to avoid
+visible, with reference asset IDs in collapsed source details. The owning
+Design document supplies those rules and references. A downstream project
+retains this structure and the canonical catalogue IDs while applying its own
+approved style and applicable patterns.
+
+For TSX layouts using parsed Design data,
+`utils/components/InterfaceGuidance.tsx` supplies
+`InterfaceGuidanceProvider`, `InterfaceRules` and `SurfacePatternGuidance`.
+Wrap the catalogue with `guidance={data.interface}` from the selected layer;
+each note's `title` matches its pattern in that document. The shared Specimen
+accepts a `guidance` node; composition examples place the note within their
+own specimen. Custom templates and HTML sources follow the same placement
+and source ownership rules. Do not hardcode singlepage pattern copy or
+reference IDs in startup examples.
+
 Content blocks compose elements from the kit. Their `data-composes` attribute
 names those component IDs; shared Button and Icon implementations come from
 `design/singlepage/interface-kit/primitives.tsx`. Their own recipes describe

@@ -195,3 +195,19 @@ folders in `libs/modules`.
   asset. An inherited singlepage approval never satisfies this gate: write the
   startup layer or move the cursor back to the stage that is actually current,
   and never copy framework prose to silence the check.
+- Design review keeps the same catalogue structure in both layers: reusable
+  foundations, task-based `Interface kit` categories, then `Content blocks`
+  composed from kit elements. Put shared shape, spacing and interaction rules
+  at the beginning of Interface kit. Put each component or composition rule
+  beside its corresponding rendered example: show the intended treatment and
+  what to avoid, with reference asset IDs in collapsed source details. Keep
+  usage, states and implementation recipes in the example's own details. A
+  separate grid of text-only pattern cards does not replace this presentation.
+  The owning Design document remains the source of the rules and provenance;
+  bind the review notes to that layer's resolved content instead of copying
+  framework decisions into project components. Preserve canonical category
+  and specimen IDs, titles and interaction contracts while applying the
+  project's approved typography, semantic colors, icons, density and shapes.
+  Framework layout structure does not require the Living Focus style or its
+  eight reference patterns; the project supplies its own applicable rules,
+  evidence and review state.

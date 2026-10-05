@@ -1,3 +1,4 @@
+import { SurfacePatternGuidance } from "../../../utils/components/InterfaceGuidance";
 import { StatusBadge } from "../interface-kit/DataDisplay";
 import { useState } from "react";
 import {
@@ -28,6 +29,7 @@ export default function Cards() {
         <p className="mt-2 text-xs text-[var(--workspace-brand-muted)]">
           Composed from: surfaces
         </p>
+        <SurfacePatternGuidance title="Repeated item grid" />
         <p className="mt-2 max-w-3xl text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
           Square delivery images are made from the generated source masters.
           Equal image sizes and consistent caption spacing align the cards.

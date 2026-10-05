@@ -1,4 +1,5 @@
 import type { IDesignTemplateProps } from "../../utils/design/layout";
+import { InterfaceGuidanceProvider } from "../../utils/components/InterfaceGuidance";
 
 export default function LivingFocus({ data, children }: IDesignTemplateProps) {
   if (!data) return null;
@@ -90,7 +91,9 @@ export default function LivingFocus({ data, children }: IDesignTemplateProps) {
           </div>
         </div>
       </section>
-      {children}
+      <InterfaceGuidanceProvider guidance={data.interface}>
+        {children}
+      </InterfaceGuidanceProvider>
     </main>
   );
 }

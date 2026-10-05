@@ -130,6 +130,7 @@ export interface ISpecimenProps {
   id: string;
   title: string;
   description: string;
+  guidance?: ReactNode;
   states: string[];
   usage: string;
   recipe: string;
@@ -497,6 +498,7 @@ export function Specimen({
   id,
   title,
   description,
+  guidance,
   states,
   usage,
   recipe,
@@ -511,6 +513,7 @@ export function Specimen({
       <p className={`mt-2 max-w-3xl text-sm leading-[22px] ${kit.muted}`}>
         {description}
       </p>
+      {guidance}
       <div className="mt-6 min-w-0">{children}</div>
       <details className="mt-6 border-t border-[var(--workspace-brand-line)] pt-4 text-xs leading-5">
         <summary

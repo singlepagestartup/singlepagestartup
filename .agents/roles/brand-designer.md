@@ -231,6 +231,13 @@ output.
   Verify long labels, narrow screens, touch targets, contrast, reduced motion,
   accessible names and announcements. Content blocks declare `data-composes`
   with the component IDs they use and reuse the kit's primitives and tokens.
+- Apply the Design review structure in
+  `.agents/contracts/inheritance.md#downstream-applicability`: shared rules
+  open Interface kit, and component/composition guidance sits beside its live
+  example. Bind each note to the owning Design document; keep its source IDs
+  in collapsed details. Review the rule and example together in the resolved
+  layout, including narrow widths. A child's own visual style changes the
+  treatment, not this relationship between guidance and example.
 - Keep component structure and interaction contracts stable when restyling a
   downstream project. Map its approved typography, semantic colors, density,
   shape and icon family onto the same roles, then verify the complete catalogue.

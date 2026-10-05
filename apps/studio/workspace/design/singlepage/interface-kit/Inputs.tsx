@@ -1,3 +1,4 @@
+import { SurfacePatternGuidance } from "../../../utils/components/InterfaceGuidance";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import * as Slider from "@radix-ui/react-slider";
@@ -68,6 +69,12 @@ function Selection() {
     <Specimen
       id="selection"
       title="Selection"
+      guidance={
+        <>
+          <SurfacePatternGuidance title="Choice group" />
+          <SurfacePatternGuidance title="Settings section" />
+        </>
+      }
       description="A white selected surface sits within a cool gray track. Fixed slots and small lime markers keep choices steady."
       states={[
         "unselected",
@@ -184,6 +191,12 @@ function Fields() {
     <Specimen
       id="fields"
       title="Fields and data rows"
+      guidance={
+        <SurfacePatternGuidance
+          title="Step form"
+          context="Apply this rule when a form spans several steps."
+        />
+      }
       description="Labels, helper text and errors stay beside the field. The form validates and saves values within this preview."
       states={[
         "default",
