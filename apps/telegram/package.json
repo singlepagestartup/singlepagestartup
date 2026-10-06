@@ -6,6 +6,6 @@
     "start": "bun server.ts"
   },
   "dependencies": {
-    "hono": "^4.6.17"
+    "hono": "^4.12.34"
   }
 }

@@ -1,5 +1,6 @@
 import {
   RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
+  RBAC_JWT_ALGORITHM,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
@@ -115,7 +116,11 @@ export class Service {
     let subjectId: string | undefined = undefined;
 
     try {
-      const decoded = await jwt.verify(props.token, props.secret);
+      const decoded = await jwt.verify(
+        props.token,
+        props.secret,
+        RBAC_JWT_ALGORITHM,
+      );
       const claimedId = decoded.subject?.["id"];
 
       if (typeof claimedId === "string" && claimedId) {

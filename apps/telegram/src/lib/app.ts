@@ -73,7 +73,7 @@ export class App {
     this.controller.httpRoutes.forEach((route) => {
       this.hono.on(
         route.method,
-        route.path,
+        [route.path],
         ...(route.middlewares ?? []),
         route.handler,
       );
