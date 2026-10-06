@@ -221,7 +221,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "model-record-count",
-        await countContentModelRecords(args, { authHeaders }),
+        await countContentModelRecords(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -239,7 +242,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "model-record-find",
-        await findContentModelRecords(args, { authHeaders }),
+        await findContentModelRecords(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -256,7 +262,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "model-record-get",
-        await getContentModelRecordById(args, { authHeaders }),
+        await getContentModelRecordById(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -273,7 +282,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "model-record-create",
-        await createContentModelRecord(args, { authHeaders }),
+        await createContentModelRecord(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -290,7 +302,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "model-record-update",
-        await updateContentModelRecord(args, { authHeaders }),
+        await updateContentModelRecord(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -308,7 +323,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "model-record-delete-preview",
-        await previewDeleteContentModelRecord(args, { authHeaders }),
+        await previewDeleteContentModelRecord(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -325,7 +343,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "model-record-delete-apply",
-        await applyDeleteContentModelRecord(args, { authHeaders }),
+        await applyDeleteContentModelRecord(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -342,7 +363,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "relation-record-count",
-        await countContentRelationRecords(args, { authHeaders }),
+        await countContentRelationRecords(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -360,7 +384,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "relation-record-find",
-        await findContentRelationRecords(args, { authHeaders }),
+        await findContentRelationRecords(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -377,7 +404,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "relation-record-get",
-        await getContentRelationRecordById(args, { authHeaders }),
+        await getContentRelationRecordById(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -394,7 +424,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "relation-record-create",
-        await createContentRelationRecord(args, { authHeaders }),
+        await createContentRelationRecord(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -411,7 +444,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "relation-record-update",
-        await updateContentRelationRecord(args, { authHeaders }),
+        await updateContentRelationRecord(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -429,7 +465,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "relation-record-delete-preview",
-        await previewDeleteContentRelationRecord(args, { authHeaders }),
+        await previewDeleteContentRelationRecord(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );
@@ -446,7 +485,10 @@ export function registerTools(mcp: McpServer) {
 
       return okResponse(
         "relation-record-delete-apply",
-        await applyDeleteContentRelationRecord(args, { authHeaders }),
+        await applyDeleteContentRelationRecord(args, {
+          authHeaders,
+          scopes: extra.authInfo?.scopes,
+        }),
       );
     }),
   );

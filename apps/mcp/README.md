@@ -80,6 +80,8 @@ Generated/local client file as base64:
 
 Do not pass ChatGPT/Claude sandbox paths such as `/mnt/data/cover.webp`; the SinglePageStartup server cannot read files from the model provider's container. Encode the generated file as base64 or provide a publicly reachable URL.
 
+A base64 upload travels inside the tool call, so the whole call has to fit in `MCP_SERVICE_HTTP_MAX_BODY_BYTES` (4 MiB by default). Larger files need a public URL or a higher limit.
+
 ## Local Development
 
 Run stdio for local MCP clients that launch the process:
@@ -94,7 +96,7 @@ Run Streamable HTTP locally:
 npm run mcp:http
 ```
 
-Local HTTP defaults to `http://127.0.0.1:3001/mcp`. For Inspector/debugging with the static RBAC fallback:
+Local HTTP defaults to `http://127.0.0.1:3001/mcp`. `npm run mcp:http` loads `apps/api/.env` outside production, which is where a local process gets `RBAC_SECRET_KEY` for the fallback. For Inspector/debugging with the static RBAC fallback:
 
 ```bash
 MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true RBAC_SECRET_KEY=<secret> npm run mcp:http
@@ -108,7 +110,7 @@ To test the OAuth/Bearer flow locally without console commands, start `npm run m
 http://127.0.0.1:3001/authentication/oauth
 ```
 
-The page registers a local OAuth client, generates PKCE, redirects to the MCP login page, exchanges the authorization code for an MCP access token, and can run an MCP `initialize` smoke test with `Authorization: Bearer ...`.
+The page registers a local OAuth client, generates PKCE, redirects to the MCP consent and sign-in steps, exchanges the authorization code for an MCP access token, and can run an MCP `initialize` smoke test with `Authorization: Bearer ...`.
 
 For MCP Inspector with Streamable HTTP OAuth:
 
@@ -226,6 +228,31 @@ https://mcp.<domain>/.well-known/oauth-authorization-server/mcp
 
 The `/mcp` suffix variants are intentionally supported for clients that resolve OAuth metadata for the exact protected resource URL.
 
+## OAuth Scopes and Consent
+
+| Scope                | Allows                                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `mcp:content`        | every tool except the two delete-apply tools: guides, schemas, finds, counts, creates, updates, delete previews, page previews |
+| `mcp:content:delete` | `model-record-delete-apply` and `relation-record-delete-apply`                                                                 |
+
+Every token carries `mcp:content`; unknown requested scopes are ignored. The authorization page runs in two steps. The consent step shows the application name, the client id and the address the code returns to; when the authorization request includes `mcp:content:delete`, it also offers "Also allow deleting records", and the token carries the delete scope only when the user ticks it. Cancel returns `error=access_denied` to the client. The sign-in step then takes the SinglePageStartup email and password. The pages refuse to render inside a frame.
+
+A client that did not get the delete scope receives a permission error from the delete-apply tools. Reconnect it and tick the delete choice. Codex requests scopes explicitly:
+
+```bash
+codex mcp login "${REPO_NAME}-production" --scopes "mcp:content mcp:content:delete"
+```
+
+Tokens from the internal rbac.subject exchange, the `X-RBAC-SECRET-KEY` fallback and `MCP_SERVICE_AUTH_REQUIRED=false` carry both scopes. Stdio requests carry no OAuth token and are not limited by scopes. In every case `apps/api` still decides what the `rbac.subject` may do.
+
+Dynamic client registration accepts a redirect URI only when it is an `https` URL or an `http` URL on `localhost`, `127.0.0.1` or `[::1]`, without a fragment, credentials, whitespace or non-ASCII characters. Authorization and the code exchange match it exactly. A registered client expires after `MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS` (30 days by default); every token issue extends the expiry to at least the refresh-token lifetime, so a client in use keeps its registration.
+
+## Limits
+
+- `/mcp` refuses a request body larger than `MCP_SERVICE_HTTP_MAX_BODY_BYTES` (4194304 by default) with 413. OAuth endpoints accept up to 64 KiB.
+- A Streamable HTTP session idle for `MCP_SERVICE_HTTP_SESSION_IDLE_TTL_SECONDS` (86400 by default) is closed, and at `MCP_SERVICE_HTTP_MAX_SESSIONS` (500 by default) the least recently used session is closed to admit a new one. A closed session answers 404, and the client starts a new session as it does after a restart.
+- The HTTP server refuses to start on a legacy `RBAC_SECRET_KEY` or `RBAC_JWT_SECRET` and reports a short or legacy value of its other secrets. `MCP_SECRET_STRENGTH=report` starts it anyway; see `tools/deployer/README.md`.
+
 ## Internal rbac.subject Token Exchange
 
 `apps.api` exchanges a server-signed `rbac.subject` authentication JWT inside
@@ -248,7 +275,7 @@ containing a separate `subject`, `subjectId`, `subject_id`, `rbacSubjectId`, or
 A successful exchange returns an access-only bearer with:
 
 - client id `internal-rbac-subject`;
-- scope `mcp:content`;
+- scopes `mcp:content mcp:content:delete`, so the profile agent keeps the tools' preview and confirmation delete flow;
 - a fixed five-minute lifetime;
 - no refresh token.
 
@@ -282,9 +309,15 @@ MCP_SERVICE_OAUTH_JWT_SECRET=
 MCP_SERVICE_OAUTH_AUTH_CODE_TTL_SECONDS=300
 MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS=3600
 MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS=2592000
+MCP_SERVICE_OAUTH_CLIENT_TTL_SECONDS=2592000
+MCP_SERVICE_HTTP_MAX_BODY_BYTES=4194304
+MCP_SERVICE_HTTP_SESSION_IDLE_TTL_SECONDS=86400
+MCP_SERVICE_HTTP_MAX_SESSIONS=500
 ```
 
-`MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME` falls back to `API_SERVICE_DOCKER_HUB_REPOSITORY_NAME` when empty. Leave `MCP_SERVICE_ALLOWED_ORIGINS` empty to allow every Origin; OAuth/Bearer still protects data access. Redis is used for OAuth clients, codes, access-token mappings, and refresh tokens.
+`MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME` falls back to `API_SERVICE_DOCKER_HUB_REPOSITORY_NAME` when empty. Leave `MCP_SERVICE_ALLOWED_ORIGINS` empty to allow every Origin; OAuth/Bearer still protects data access. Redis is used for OAuth clients, codes, access-token mappings, and refresh tokens; every one of these keys expires.
+
+The rendered MCP environment never contains `RBAC_SECRET_KEY`. To use `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true` on a server for private debugging, add `RBAC_SECRET_KEY` to the MCP service env by hand; without it the fallback refuses every header.
 
 Deploy or remove only the MCP service:
 

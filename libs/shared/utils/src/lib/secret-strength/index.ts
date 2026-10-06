@@ -3,9 +3,10 @@
  *
  * The removed bootstrap generator hashed the shell's `$RANDOM`, so its whole
  * output space was 32768 strings. These predicates recognise a value of that
- * shape, and the API refuses to start on one. The setting that decides whether
- * a finding refuses or only reports lives with the other environment values,
- * in `envs/api.ts`.
+ * shape, and the API, MCP and Telegram services refuse to start on one. The
+ * setting that decides whether a finding refuses or only reports lives with the
+ * other environment values of each service (`envs/api.ts`, `envs/telegram.ts`,
+ * `MCP_SECRET_STRENGTH` in `apps/mcp/http.ts`).
  */
 
 export type ISecretVerdict = "ok" | "missing" | "short" | "legacy";
@@ -15,7 +16,7 @@ export interface ISecretAssessment {
   verdict: ISecretVerdict;
 }
 
-/** The values the boot check looks at, in report order. */
+/** The values the API's boot check looks at, in report order. */
 export const CHECKED_SECRET_NAMES = [
   "RBAC_SECRET_KEY",
   "RBAC_JWT_SECRET",
@@ -33,6 +34,26 @@ export const CHECKED_SECRET_NAMES = [
 export const FATAL_SECRET_NAMES = ["RBAC_SECRET_KEY", "RBAC_JWT_SECRET"];
 
 export const FATAL_SECRET_VERDICTS: ISecretVerdict[] = ["legacy", "missing"];
+
+/**
+ * The secrets the MCP service can hold. `RBAC_SECRET_KEY` is there only when an
+ * operator enabled the header fallback, `MCP_SERVICE_OAUTH_JWT_SECRET` only when
+ * a dedicated signing key is configured.
+ */
+export const MCP_CHECKED_SECRET_NAMES = [
+  "RBAC_SECRET_KEY",
+  "RBAC_JWT_SECRET",
+  "MCP_SERVICE_OAUTH_JWT_SECRET",
+  "MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET",
+  "KV_PASSWORD",
+];
+
+/** The secrets the Telegram service holds, in report order. */
+export const TELEGRAM_CHECKED_SECRET_NAMES = [
+  "RBAC_SECRET_KEY",
+  "RBAC_JWT_SECRET",
+  "TELEGRAM_SERVICE_WEBHOOK_SECRET",
+];
 
 export const MINIMUM_SECRET_LENGTH = 32;
 
@@ -211,8 +232,23 @@ export function assessSecret(name: string, value?: string): ISecretAssessment {
 
 export function assessSecrets(
   env: Record<string, string | undefined>,
+  names: readonly string[] = CHECKED_SECRET_NAMES,
 ): ISecretAssessment[] {
-  return CHECKED_SECRET_NAMES.map((name) => assessSecret(name, env[name]));
+  return names.map((name) => assessSecret(name, env[name]));
+}
+
+/**
+ * The boot check of the MCP and Telegram services. Each holds some of its
+ * secrets only in some setups and refuses the operation that needs an absent
+ * one, so only the values that are set are judged.
+ */
+export function assessConfiguredSecrets(
+  env: Record<string, string | undefined>,
+  names: readonly string[],
+): ISecretAssessment[] {
+  return assessSecrets(env, names).filter(
+    (assessment) => assessment.verdict !== "missing",
+  );
 }
 
 export function isFatalSecretAssessment(

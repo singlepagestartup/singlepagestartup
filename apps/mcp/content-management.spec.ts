@@ -2,7 +2,7 @@
  * BDD Suite: MCP compact content-management registration
  * Given the MCP server boots its compact content-management module
  * When resources and tools are registered
- * Then AI chat clients discover project guidance and compact module/model/relation tools
+ * Then AI chat clients discover project guidance and compact module/model/relation tools, and each tool call carries the connection's scopes
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -15,8 +15,13 @@ import {
   CONTENT_OPERATIONS_GUIDE_RESOURCE_URI,
   PROJECT_GUIDE_RESOURCE_URI,
 } from "./lib/guidance";
+import * as contentOperations from "./lib/content-management/operations";
 
 describe("MCP content-management registration", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   /**
    * BDD Scenario: Project and content guidance resources are registered
    * Given the content-management module is loaded
@@ -245,6 +250,47 @@ describe("MCP content-management registration", () => {
         },
       }),
     );
+  });
+
+  /**
+   * BDD Scenario: Tools pass the connection's scopes to operations
+   * Given an HTTP request whose MCP token carries only mcp:content
+   * When the model delete-apply tool runs
+   * Then the operation receives the forwarded credentials and exactly those scopes
+   */
+  it("passes the connection's granted scopes to delete apply", async () => {
+    const applyDelete = jest
+      .spyOn(contentOperations, "applyDeleteContentModelRecord")
+      .mockResolvedValue({ id: "widget-1" });
+    const mcp = {
+      registerTool: jest.fn(),
+    } as unknown as McpServer;
+    const args = {
+      module: "blog",
+      model: "widget",
+      id: "widget-1",
+      confirm: true,
+      confirmationToken: "model:blog:widget:widget-1",
+    };
+
+    registerTools(mcp);
+
+    const deleteToolCall = (mcp.registerTool as jest.Mock).mock.calls.find(
+      ([name]) => name === "model-record-delete-apply",
+    );
+
+    await deleteToolCall[2](args, {
+      authInfo: {
+        token: "mcp-access-token",
+        clientId: "mcp_client_1",
+        scopes: ["mcp:content"],
+      },
+    });
+
+    expect(applyDelete).toHaveBeenCalledWith(args, {
+      authHeaders: { Authorization: "Bearer mcp-access-token" },
+      scopes: ["mcp:content"],
+    });
   });
 
   /**

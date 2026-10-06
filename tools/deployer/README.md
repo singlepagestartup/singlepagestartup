@@ -149,6 +149,13 @@ maintenance window, and leaving it set is an explicit decision to keep running
 on an authorization bypass that can be found offline. The report names keys and
 verdicts only, never a value.
 
+The Telegram and MCP services run the same check when they start. They stop on
+a legacy `RBAC_SECRET_KEY` or `RBAC_JWT_SECRET` and report a short or legacy
+value of their other secrets. A secret a service does not hold is not a finding:
+each refuses the operation that needs it. `TELEGRAM_SECRET_STRENGTH=report` and
+`MCP_SECRET_STRENGTH=report` start them anyway, with the same consequence as
+`API_SECRET_STRENGTH=report`.
+
 ### Rotating the secrets of a deployment that already bootstrapped
 
 Until this change, the bootstrap scripts derived every generated credential from
@@ -176,12 +183,12 @@ secrets end every session, so plan the window.
 | `POSTGRES_PASSWORD` / `DATABASE_PASSWORD`    | run `ALTER ROLE "<user>" WITH PASSWORD '<new>';` inside the running PostgreSQL container, then update `tools/deployer/.env` and the GitHub secret, then redeploy API and MCP | editing `apps/db/.env` alone does nothing: the image is a stock PostgreSQL entrypoint and `POSTGRES_PASSWORD` applies only at the first init of `db_data` |
 | `REDIS_PASSWORD`                             | follow the coordinated procedure above: update the secret, deploy Redis, API and MCP as one rollout, then force-update `api_api` and `mcp_mcp`                               | cache and KV unavailable for the window                                                                                                                   |
 | `RBAC_JWT_SECRET`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, then deploy API, Telegram and MCP together                                                                        | every access and refresh token is invalidated. It also rotates the MCP OAuth signing key, because the MCP template falls back to this value               |
-| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, deploy API, Telegram and MCP, and **re-run the cron play** so the server crontab receives the new value           | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy      |
+| `RBAC_SECRET_KEY`                            | rotate in `tools/deployer/.env` and in the GitHub secrets, deploy API and Telegram, and **re-run the cron play** so the server crontab receives the new value                | this is the full authorization bypass. The middleware also accepts it from an `rbac.secret-key` cookie, so any browser that received it holds a copy      |
 | `MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET` | rotate and deploy API and MCP together                                                                                                                                       | the API-to-MCP exchange fails until both sides match                                                                                                      |
 | `RBAC_COOKIE_SESSION_SECRET`                 | rotate for hygiene                                                                                                                                                           | no runtime effect: nothing reads it today                                                                                                                 |
 | Administrator identity password              | change it through the API or the admin UI, then update `apps/api/.env` and `.agents/.env`                                                                                    | editing `.env` alone does not change the stored bcrypt hash; that value is only the bootstrap input                                                       |
 
-Four copies survive a rotation unless they are handled as well:
+Five copies survive a rotation unless they are handled as well:
 
 - **Docker images.** `.dockerignore` does not exclude `apps/api/.env`,
   `apps/mcp/.env`, `apps/telegram/.env` or `tools/deployer/.env`, and the
@@ -192,6 +199,9 @@ Four copies survive a rotation unless they are handled as well:
   variants of the four RBAC values.
 - **`tools/deployer/.env`** on the operator's own machine.
 - **The server crontab**, per the `RBAC_SECRET_KEY` row above.
+- **An MCP service env** where `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK` was
+  enabled and `RBAC_SECRET_KEY` added by hand. The deployer does not render the
+  secret into the MCP env, so no other MCP copy exists.
 
 Afterwards, treat the window before the rotation as one in which the old
 `RBAC_SECRET_KEY` could have been guessed. Review the action log for requests

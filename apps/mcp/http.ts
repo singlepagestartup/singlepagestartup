@@ -8,7 +8,14 @@ import {
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
+import {
+  assessConfiguredSecrets,
+  formatSecretAssessment,
+  isFatalSecretAssessment,
+  MCP_CHECKED_SECRET_NAMES,
+} from "@sps/shared-utils";
 import { createMcpServer } from "./actions.js";
+import { MCP_SCOPES } from "./lib/auth.js";
 import {
   installMcpFetchAuthForwarding,
   runWithMcpRequestAuthContext,
@@ -24,16 +31,61 @@ import {
   isOAuthRoute,
   verifyMcpAccessToken,
 } from "./lib/oauth.js";
+import {
+  readRequestBody,
+  RequestBodyTooLargeError,
+} from "./lib/request-body.js";
+import { McpSessionStore } from "./lib/session-store.js";
 
-type IHttpMcpSession = {
-  transport: StreamableHTTPServerTransport;
-};
+const DEFAULT_MAX_BODY_BYTES = 4 * 1024 * 1024;
+const DEFAULT_SESSION_IDLE_TTL_SECONDS = 24 * 60 * 60;
+const DEFAULT_MAX_SESSIONS = 500;
+const SESSION_SWEEP_INTERVAL_MS = 60 * 1000;
 
-const sessions = new Map<string, IHttpMcpSession>();
+const secretFindings = assessConfiguredSecrets(
+  process.env,
+  MCP_CHECKED_SECRET_NAMES,
+).filter((assessment) => assessment.verdict !== "ok");
+
+for (const finding of secretFindings) {
+  console.warn(`[secret-strength] ${formatSecretAssessment(finding)}`);
+}
+
+const fatalSecretFindings = secretFindings.filter(isFatalSecretAssessment);
+
+if (fatalSecretFindings.length > 0) {
+  if (process.env["MCP_SECRET_STRENGTH"] === "report") {
+    console.warn(
+      "[secret-strength] Starting anyway because MCP_SECRET_STRENGTH=report. " +
+        "This service is running on an authorization secret that can be " +
+        "found offline. See tools/deployer/README.md for the rotation steps.",
+    );
+  } else {
+    console.error(
+      "[secret-strength] Refusing to start. Rotate the values listed above, " +
+        "as described in tools/deployer/README.md. Set MCP_SECRET_STRENGTH=report " +
+        "to start anyway while a rotation is scheduled.",
+    );
+    process.exit(1);
+  }
+}
+
+const sessions = new McpSessionStore<StreamableHTTPServerTransport>({
+  idleTtlSeconds:
+    Number(process.env["MCP_SERVICE_HTTP_SESSION_IDLE_TTL_SECONDS"]) ||
+    DEFAULT_SESSION_IDLE_TTL_SECONDS,
+  maxSessions:
+    Number(process.env["MCP_SERVICE_HTTP_MAX_SESSIONS"]) ||
+    DEFAULT_MAX_SESSIONS,
+});
+const maxBodyBytes =
+  Number(process.env["MCP_SERVICE_HTTP_MAX_BODY_BYTES"]) ||
+  DEFAULT_MAX_BODY_BYTES;
 const host = process.env["MCP_SERVICE_HTTP_HOST"] || "127.0.0.1";
 const port = Number(process.env["MCP_SERVICE_HTTP_PORT"] || 3001);
 
 installMcpFetchAuthForwarding();
+setInterval(() => sessions.closeIdle(), SESSION_SWEEP_INTERVAL_MS).unref();
 
 const server = createServer(async (req, res) => {
   try {
@@ -72,7 +124,7 @@ const server = createServer(async (req, res) => {
     }
 
     const sessionId = getHeader(req, "mcp-session-id");
-    const existingSession = sessionId ? sessions.get(sessionId) : undefined;
+    const existingTransport = sessionId ? sessions.get(sessionId) : undefined;
     const parsedBody =
       req.method === "POST" ? await readJsonBody(req, res) : undefined;
 
@@ -80,7 +132,7 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    if (sessionId && !existingSession) {
+    if (sessionId && !existingTransport) {
       return sendJson(res, 404, {
         jsonrpc: "2.0",
         error: {
@@ -91,13 +143,13 @@ const server = createServer(async (req, res) => {
       });
     }
 
-    const session =
-      existingSession ||
+    const transport =
+      existingTransport ||
       (req.method === "POST" && isInitializeRequest(parsedBody)
         ? await createHttpSession()
         : undefined);
 
-    if (!session) {
+    if (!transport) {
       return sendJson(res, 400, {
         jsonrpc: "2.0",
         error: {
@@ -129,7 +181,7 @@ const server = createServer(async (req, res) => {
         scopes: requestAuth.scopes,
         expiresAt: requestAuth.expiresAt,
       },
-      () => session.transport.handleRequest(authenticatedReq, res, parsedBody),
+      () => transport.handleRequest(authenticatedReq, res, parsedBody),
     );
   } catch (error) {
     console.error("MCP HTTP error:", error);
@@ -154,12 +206,12 @@ server.listen(port, host, () => {
   );
 });
 
-async function createHttpSession(): Promise<IHttpMcpSession> {
+async function createHttpSession() {
   const mcp = createMcpServer();
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
     onsessioninitialized: (sessionId) => {
-      sessions.set(sessionId, { transport });
+      sessions.add(sessionId, transport);
     },
     onsessionclosed: (sessionId) => {
       sessions.delete(sessionId);
@@ -177,7 +229,7 @@ async function createHttpSession(): Promise<IHttpMcpSession> {
 
   await mcp.connect(transport);
 
-  return { transport };
+  return transport;
 }
 
 async function getRequestAuth(req: IncomingMessage): Promise<
@@ -193,12 +245,14 @@ async function getRequestAuth(req: IncomingMessage): Promise<
     }
   | { ok: false; message: string }
 > {
+  // OAuth scopes limit what a connector may ask for. The auth-disabled mode and
+  // the operator secret below have no connector to limit.
   if (process.env["MCP_SERVICE_AUTH_REQUIRED"] === "false") {
     return {
       ok: true,
       token: "anonymous",
       clientId: "anonymous",
-      scopes: ["mcp:content"],
+      scopes: [...MCP_SCOPES],
     };
   }
 
@@ -234,7 +288,7 @@ async function getRequestAuth(req: IncomingMessage): Promise<
         ok: true,
         token: "rbac-secret-key",
         clientId: "rbac-secret-key",
-        scopes: ["mcp:content"],
+        scopes: [...MCP_SCOPES],
         rbacSecretKey: providedSecret,
       };
     }
@@ -275,17 +329,24 @@ function getRequestUrl(req: IncomingMessage) {
 }
 
 async function readJsonBody(req: IncomingMessage, res: ServerResponse) {
-  const chunks: Buffer[] = [];
-
   try {
-    for await (const chunk of req) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    }
-
-    const raw = Buffer.concat(chunks).toString("utf8");
+    const raw = await readRequestBody(req, maxBodyBytes);
 
     return JSON.parse(raw) as unknown;
   } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      sendJson(res, 413, {
+        jsonrpc: "2.0",
+        error: {
+          code: -32000,
+          message: error.message,
+        },
+        id: null,
+      });
+
+      return undefined;
+    }
+
     sendJson(res, 400, {
       jsonrpc: "2.0",
       error: {
