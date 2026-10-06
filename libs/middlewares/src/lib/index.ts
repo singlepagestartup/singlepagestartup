@@ -37,3 +37,8 @@ export {
   Middleware as OperatorSecretMiddleware,
   type IMiddlewareGeneric as IOperatorSecretMiddlewareGeneric,
 } from "./operator-secret";
+export {
+  Middleware as OperatorSecretAttemptsMiddleware,
+  type IMiddlewareGeneric as IOperatorSecretAttemptsMiddlewareGeneric,
+  type IMiddlewareOptions as IOperatorSecretAttemptsMiddlewareOptions,
+} from "./operator-secret-attempts";

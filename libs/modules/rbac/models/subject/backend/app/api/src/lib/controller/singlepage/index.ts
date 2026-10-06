@@ -5,7 +5,13 @@ import { Table } from "@sps/rbac/models/subject/backend/repository/database";
 import { Service } from "../../service";
 import { Context } from "hono";
 import {
+  RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT,
+  RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+  RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS,
+} from "@sps/shared-utils";
+import {
   RequestProfileSubjectIdOwner,
+  RequestRateLimit,
   RequestSocialModuleThreadBelongsToChat,
   RequestSubjectCanManageChatAgentProfile,
   RequestSubjectIdOwner,
@@ -136,21 +142,45 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/authentication/init",
         handler: this.authenticationInit,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "init",
+            attemptsPerAddress: RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS,
+          }),
+        ],
       },
       {
         method: "POST",
         path: "/authentication/email-and-password/registration",
         handler: this.authenticationEmailAndPasswordRegistraion,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "email-and-password-registration",
+            attemptsPerAddress: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+          }),
+        ],
       },
       {
         method: "POST",
         path: "/authentication/ethereum-virtual-machine",
         handler: this.authenticationEthereumVirtualMachine,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "ethereum-virtual-machine",
+            attemptsPerAddress: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+          }),
+        ],
       },
       {
         method: "POST",
         path: "/authentication/refresh",
         handler: this.authenticationRefresh,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "refresh",
+            attemptsPerAddress: RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS,
+          }),
+        ],
       },
       {
         method: "POST",
@@ -171,6 +201,14 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/authentication/email-and-password/authentication",
         handler: this.authenticationEmailAndPasswordAuthentication,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "email-and-password-authentication",
+            attemptsPerAddress: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+            attemptsPerAccount: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT,
+            accountField: "login",
+          }),
+        ],
       },
       {
         method: "GET",
@@ -226,11 +264,25 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/authentication/email-and-password/forgot-password",
         handler: this.authenticationEmailAndPasswordForgotPassword,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "email-and-password-forgot-password",
+            attemptsPerAddress: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+            attemptsPerAccount: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ACCOUNT,
+            accountField: "email",
+          }),
+        ],
       },
       {
         method: "POST",
         path: "/authentication/email-and-password/reset-password",
         handler: this.authenticationEmailAndPasswordResetPassword,
+        middlewares: [
+          new RequestRateLimit().init({
+            name: "email-and-password-reset-password",
+            attemptsPerAddress: RBAC_RATE_LIMIT_CREDENTIAL_ATTEMPTS_PER_ADDRESS,
+          }),
+        ],
       },
       {
         method: "GET",

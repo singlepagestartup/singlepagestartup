@@ -18,3 +18,9 @@ export {
   Middleware as RequestSubjectCanManageChatAgentProfile,
   type IMiddlewareGeneric as IRequestSubjectCanManageChatAgentProfileMiddlewareGeneric,
 } from "./lib/request-subject-can-manage-chat-agent-profile";
+export {
+  Middleware as RequestRateLimit,
+  type IMiddlewareGeneric as IRequestRateLimitMiddlewareGeneric,
+  type IMiddlewareOptions as IRequestRateLimitMiddlewareOptions,
+  type IMiddlewareRule as IRequestRateLimitMiddlewareRule,
+} from "./lib/request-rate-limit";

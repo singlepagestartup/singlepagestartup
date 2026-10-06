@@ -12,6 +12,7 @@ import {
   RequestIdMiddleware,
   ActionLoggerMiddleware,
   BillRouteMiddleware,
+  OperatorSecretAttemptsMiddleware,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 import { v4 as uuidv4 } from "uuid";
@@ -142,6 +143,14 @@ app.get(
     };
   }),
 );
+
+/**
+ * Logs and counts wrong operator secrets (issue #310) before any middleware
+ * acts on a secret, so an address over its budget is refused before the HTTP
+ * cache, the action logger and is-authorized run.
+ */
+const operatorSecretAttemptsMiddleware = new OperatorSecretAttemptsMiddleware();
+app.use(operatorSecretAttemptsMiddleware.init());
 
 /**
  * Ordering contract (issue #195): RevalidationMiddleware MUST be registered
