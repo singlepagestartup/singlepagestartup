@@ -1,0 +1,27 @@
+{
+  "id": "knowledge.source.ai-chat-editor",
+  "title": "ai-chat-editor",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat Source editor.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "knowledge.source",
+    "pageName": "knowledge",
+    "variantName": "ai-chat-editor",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "knowledge",
+    "entityType": "model",
+    "entity": "source",
+    "variant": "ai-chat-editor"
+  },
+  "contentSlots": []
+}

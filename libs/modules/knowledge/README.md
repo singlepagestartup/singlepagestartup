@@ -1,223 +1,65 @@
-# Knowledge Module
+# Knowledge
 
-## Purpose
+Knowledge stores editable materials as **Source**, derives **Chunk** vectors, and provides scoped retrieval and generation. Several Files can belong to one Source. The user's notes and analyzed file descriptions share its `content`.
 
-The Knowledge module stores editable markdown documents, indexes them into PostgreSQL with pgvector, retrieves relevant text chunks with embeddings from either the local `apps/llm` gateway or OpenRouter, and generates source-grounded answers through selectable local or hosted models. It is a generic RAG engine and does not read or write Social/RBAC tables.
+The backend lives in `backend/app/api`; Source and Chunk have the standard model layers and SDKs. All associations use SPS relations. Social owns profile access, message origin/citations, and skill links. RBAC passes permitted `sourceIds` into Knowledge; Knowledge does not read Social permissions. An explicit empty scope returns no results.
 
-## Models
+## File analysis
 
-| Model                                   | Purpose                                                   |
-| --------------------------------------- | --------------------------------------------------------- |
-| [document](./models/document/README.md) | Editable markdown source of truth                         |
-| [source](./models/source/README.md)     | Derived index record for a document or imported file      |
-| [chunk](./models/chunk/README.md)       | Searchable text fragment with a 768-dimensional embedding |
-| edit-suggestion                         | Pending markdown create/update suggestion                 |
+File format is detected from stored bytes. The common material service processes every current attachment:
 
-Sources connect to chunks through the `sources-to-chunks` SPS relation. Sources also connect to uploaded file-storage records through `sources-to-file-storage-module-files`, so imported files can be viewed from admin UI. Social profile scoping is owned outside this module: RBAC/Social load profile-document links and pass explicit `documentIds` into Knowledge.
+- PDF: render every page, transcribe text and tables, describe images and diagrams.
+- Image: recognize text and describe the visual content.
+- Video: describe frames at one-second intervals by default and combine them with time-aligned speech transcription.
+- Audio: transcribe speech with segment timestamps.
+- UTF-8 text: preserve its structure and timestamps.
 
-## Runtime Requirements
+The service combines these descriptions with user context into Source content. Files retain their original bytes and are linked through `sources-to-file-storage-module-files`. `/learn` reuses the Message's existing Files and creates one Source for the whole message. Repeating that operation uses the same Source and relations.
 
-- PostgreSQL must run from `pgvector/pgvector:pg17`.
-- The shared migration wrapper creates the `vector` extension before repository migrations run.
-- `apps/llm` serves the OpenAI-compatible local gateway for local embeddings, local models, HuggingFace presets, Claude, and OpenAI.
-- `apps/api` can alternatively call OpenRouter's OpenAI-compatible embeddings endpoint directly.
-- Knowledge owns RAG data and vector search; generation routing and the local model catalog live in `apps/llm`, while the embedding provider switch lives in `apps/api`.
+Content contains `Контекст пользователя`, `Сведения из материалов`, and `Общее описание` sections. The user section has `knowledge:user` Markdown markers. The server preserves its text during reconstruction; the model receives it as context. The editor keeps human notes editable and generated descriptions visible. A Source without Files can use ordinary text content.
 
-Environment variables:
+Adding, detaching, replacing, reordering, or moving a File relation invalidates generated content and chunks atomically and analyzes all current Files. Moving a relation rebuilds both Sources. Physical File deletion captures affected Sources before cascade. Source deletion and relation detachment preserve stored Files. Failed analysis leaves human text and attachments available for retry and does not publish partial descriptions. Conditional publication rejects a changed content hash or attachment snapshot.
 
-| Location        | Variable                                | Default                   | Purpose                                                         |
-| --------------- | --------------------------------------- | ------------------------- | --------------------------------------------------------------- |
-| `apps/api/.env` | `KNOWLEDGE_EMBEDDING_PROVIDER`          | `llm`                     | Embedding route: `llm` or `openrouter`                          |
-| `apps/api/.env` | `KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL` | `qwen/qwen3-embedding-8b` | OpenRouter model used when the provider is `openrouter`         |
-| `apps/api/.env` | `OPEN_ROUTER_API_KEY`                   | empty                     | OpenRouter credential required by the direct embedding route    |
-| `apps/api/.env` | `LLM_SERVICE_URL`                       | `http://localhost:8765`   | Local gateway URL used for generation and local embeddings      |
-| `apps/llm/.env` | `OLLAMA_EMBED_MODEL`                    | `nomic-embed-text`        | Ollama embedding model behind `local/default-embedding`         |
-| `apps/llm/.env` | `OLLAMA_EMBED_DIMENSIONS`               | `768`                     | Output size requested from Ollama; must remain 768 for pgvector |
-| `apps/llm/.env` | `OLLAMA_MODEL_IDS`                      | `nomic-embed-text`        | Other Ollama models pulled by the reconciler                    |
-| `apps/llm/.env` | `OLLAMA_MODELS_DIR`                     | `.ollama/models`          | Project-local native Ollama model cache                         |
-| `apps/llm/.env` | `ANTHROPIC_API_KEY`                     | empty                     | Anthropic key consumed by `apps/llm`                            |
-| `apps/llm/.env` | `OPENAI_API_KEY`                        | empty                     | OpenAI key consumed by `apps/llm`                               |
+## Indexing and search
 
-`apps/api` always calls `local/default-embedding` for the `llm` provider, so switching local models requires changing only `OLLAMA_EMBED_MODEL` in `apps/llm/.env`. The Ollama reconciler treats that model as required even when it is absent from `OLLAMA_MODEL_IDS`. For OpenRouter, the API sends `dimensions: 768` and `encoding_format: float`; both indexing and query search use the same configured provider and model.
+The server computes SHA-256 `contentHash` from content with normalized line endings and outer whitespace. Indexing chunks the saved content, validates embedding count and dimensions, and replaces chunks in a transaction. It publishes only if the Source still has the processed hash. Success sets `indexedContentHash` and `lastIndexedAt` through ordinary framework CRUD.
 
-Vectors from different embedding models are not comparable. After changing `KNOWLEDGE_EMBEDDING_PROVIDER`, `KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL`, or `OLLAMA_EMBED_MODEL`, rebuild all derived vectors with `npm run knowledge:index -- --clear`. Do not query a partially reindexed database with the new model.
+Search accepts only chunks whose Source hashes match. Profile-scoped search materializes the permitted candidates before ranking, so approximate global vector filtering cannot silently lose candidates from a small profile scope. Global search ranks fresh chunks through the HNSW index before joining the bounded results to Sources. Neighbor retrieval also checks index freshness.
 
-Generation model slugs are loaded from `GET /api/knowledge/models?task=chat`, which proxies `apps/llm`.
+`Reindex` rebuilds chunks and embeddings from saved content; it does not repeat vision or transcription. Changing the embedding model or chunking configuration requires an explicit forced rebuild of affected Sources before using the new configuration. `--clear` removes chunks and index markers and preserves Source and its Files/relations. Dry-run makes no writes and invokes no model provider.
 
-| Slug                                | Provider    | Provider model               |
-| ----------------------------------- | ----------- | ---------------------------- |
-| `qwen/qwen3-1-7b`                   | Ollama      | `qwen3:1.7b`                 |
-| `huggingface/qwen2-5-0-5b-instruct` | HuggingFace | `Qwen/Qwen2.5-0.5B-Instruct` |
-| `anthropic/claude-sonnet-4`         | Anthropic   | `claude-sonnet-4-20250514`   |
-| `anthropic/claude-opus-4-1`         | Anthropic   | `claude-opus-4-1-20250805`   |
-| `openai/gpt-5-2`                    | OpenAI      | `gpt-5.2`                    |
-| `openai/gpt-5-5`                    | OpenAI      | `gpt-5.5`                    |
+## Chat and access
 
-## Startup
+RBAC handles profile-scoped create, read, update, delete, file management, `/learn`, and skill runs. Messages use Knowledge only with an explicit `@knowledge` mention. Search and read/edit tools are bound to Source IDs available to the replying profile.
 
-Start core infrastructure:
+`profile_knowledge_read` reads saved content in pages of up to 12,000 characters and returns `nextOffset` and the current content hash. `profile_knowledge_edit` directly saves user context and an optional title when the user requests or confirms the edit; it preserves file-derived sections and triggers indexing. The edit must carry the hash returned by the read operation, so a concurrent content change requires another read. Chat edits use ordinary Source updates. There is no Edit Suggestion, approval entity, version history, or restore operation.
 
-```bash
-./up.sh
-```
+Origin and citation links use `messages-to-knowledge-module-sources` with `kind=origin|citation`; skill material uses `skills-to-knowledge-module-sources`. Metadata can contain generation results and usage, but relations determine material ownership and origin.
 
-Start the LLM gateway explicitly when indexing/searching with embeddings:
+## API and SDK
 
-```bash
-npm run llm:install
-npm run llm:ollama:start
-npm run llm:ollama:pull
-npm run llm:dev
-```
+- `GET /api/knowledge/status`, `GET /api/knowledge/models`.
+- `POST /api/knowledge/search`, `POST /api/knowledge/generate`.
+- `POST /api/knowledge/index`.
+- `POST /api/knowledge/sources/:id/reindex`.
+- Generated CRUD for Source, Chunk, `sources-to-chunks`, and `sources-to-file-storage-module-files`.
 
-`npm run llm:dev` starts the Python gateway and tails the project-local Ollama log by default. Ollama state is kept under `apps/llm/.ollama`, and `npm run llm:ollama:stop` stops only the process owned by this project pid file.
+The Knowledge module SDK uses `sourceIds` and `reindexSource`. Source content editing uses its model SDK or the scoped RBAC SDK. The chat sidebar provides Files add/replace/detach actions; it saves text changes before changing attachments.
 
-## Server Deployment
+## Runtime configuration
 
-Production RAG infrastructure is managed by `tools/deployer` in the same flow as `api`, `host`, `mcp`, and `telegram`:
+Embeddings and chat configuration live in `backend/app/api/src/lib/configuration.ts`; vector dimensions are 768. File analysis uses OpenRouter:
 
-```bash
-cd tools/deployer
-./llm.sh up
-./api.sh up
-```
+| Variable                             | Default                   |
+| ------------------------------------ | ------------------------- |
+| `KNOWLEDGE_ANALYSIS_MODEL`           | `google/gemini-2.5-flash` |
+| `KNOWLEDGE_TRANSCRIPTION_MODEL`      | `openai/whisper-1`        |
+| `KNOWLEDGE_VIDEO_FRAME_STEP_SECONDS` | `1`                       |
+| `KNOWLEDGE_PDF_INFO_COMMAND`         | `pdfinfo`                 |
+| `KNOWLEDGE_PDF_RENDER_COMMAND`       | `pdftoppm`                |
 
-The full deployer bootstrap also starts LLM before API:
+Install Poppler and FFmpeg for local processing; the application Docker image includes them. Current per-file limits are 100 MB, 200 PDF pages, and 3600 seconds of audio/video. A synthesis input over one million characters is rejected. Empty, failed, or truncated model responses are not published. Errors are returned by the operation or logged; Source has no persisted processing-status fields.
 
-```bash
-cd tools/deployer
-./up.sh
-```
+## Verification
 
-Required deployer variables are listed in `tools/deployer/.env.example`:
-
-- `LLM_SERVICE_NAME=llm`
-- `LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME`
-- `LLM_SERVICE_URL=http://llm:8765`
-- `KNOWLEDGE_EMBEDDING_PROVIDER=llm` or `openrouter`
-- `KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL=qwen/qwen3-embedding-8b`
-- optional `OPEN_ROUTER_API_KEY` when OpenRouter embeddings are enabled
-- `OLLAMA_EMBED_MODEL=nomic-embed-text`
-- `OLLAMA_EMBED_DIMENSIONS=768`
-- `OLLAMA_MODEL_IDS=nomic-embed-text`
-- optional `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and `HF_TOKEN`
-
-The server stack runs three private Docker Swarm services: the Python LLM gateway, Ollama, and a one-shot Ollama model pull service. LLM is not exposed through Traefik by default; API reaches it through internal overlay DNS at `http://llm:8765`.
-
-Server PostgreSQL must use `pgvector/pgvector:pg17`. The deployer changes only the image, while the existing `/home/code/postgres_data` volume path is preserved.
-
-## Migrations
-
-Generate migrations after schema changes:
-
-```bash
-NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/knowledge:repository-generate
-```
-
-Run only knowledge migrations:
-
-```bash
-NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/knowledge:repository-migrate
-```
-
-Run normal API migrations, including knowledge:
-
-```bash
-NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run api:db:migrate
-```
-
-Do not hand-edit Drizzle migration SQL, snapshots, or journal files for table-field changes. Change the schema and run the repository generator target.
-
-## Indexing
-
-Dry-run discovery and chunking without writing rows or calling Ollama:
-
-```bash
-npm run knowledge:index -- --dry-run --limit=5
-```
-
-Index a bounded sample:
-
-```bash
-npm run knowledge:index -- --limit=5
-```
-
-Clear derived Knowledge rows before a full reindex:
-
-```bash
-npm run knowledge:index -- --clear
-```
-
-Index from a custom root:
-
-```bash
-npm run knowledge:index -- --root=apps/studio/workspace/startup --limit=5
-```
-
-The indexer treats `knowledge/document.description` as the source of truth. File discovery remains an import path for source transcripts and canonical content only: `content.txt`, `content.md`, `transcript.txt`, `transcript.md`, `transcription.txt`, and `transcription.md` are read into editable documents first, then documents are indexed into derived Source and Chunk rows. Generated outputs such as `description.md` and `youtube_description.md` are intentionally ignored. Unchanged document hashes are skipped when the source still has chunk relations.
-
-## Social Chat Learning
-
-Profile-scoped RAG and learning are available through the single RBAC AI reaction endpoint `POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/openrouter`. There is no parallel Knowledge-only reaction contract.
-
-In the Host chat UI, sending a message creates the `social.message` first and the agent flow calls the OpenRouter reaction endpoint for the connected AI assistant profile. Users do not call the endpoint manually from the browser.
-
-Learning is explicit:
-
-- `@knowledge /learn Some text to remember` stores the text after the controls.
-- `@knowledge /learn` with supported `.txt`, `.md`, or `.markdown` attachments stores those attachments.
-- Attachments without `/learn` are sent as normal chat attachments and are not indexed as Knowledge.
-- Learning is handled by the OpenRouter reaction path and remains explicit in every chat variant.
-
-Each learned item is stored by RBAC as a deterministic Knowledge document using the replying AI profile id, source message id, optional file id, and content hash. RBAC calls `KnowledgeService.learnContent({ slug, title, content, metadata })`, then links the returned document to the AI profile through the Social-owned `profiles-to-knowledge-module-documents` relation. Each learned document is immediately indexed, which creates sources, chunks, pgvector embeddings, and source/chunk relations through the existing indexer.
-
-Normal non-`/learn` messages are orchestrated by the OpenRouter reaction path. Profile Knowledge is loaded, searched, reranked, and exposed as a capability only when the persisted message text contains an explicit `@knowledge` mention. Messages without that mention receive no RAG documents, chunks, system context, or Knowledge-search tool. Explicit searches remain bound to document ids linked to the replying AI profile; an empty `documentIds` array never falls back to global Knowledge or another profile's documents.
-
-The Knowledge document sidebar in the Social chat UI shows documents linked to the answering AI profile through RBAC-scoped endpoints. Users can edit document `title` and markdown `description` from the sidebar. Saving edits does not reindex automatically; users must click `Reindex`, which calls the RBAC-scoped reindex route after validating the profile-document relation.
-
-## API
-
-The module is mounted at `/api/knowledge`.
-
-Custom routes:
-
-- `GET /api/knowledge/status`
-- `GET /api/knowledge/models?task=chat|embedding|audio`
-- `POST /api/knowledge/search`
-- `POST /api/knowledge/generate`
-- `POST /api/knowledge/index`
-- `POST /api/knowledge/documents/:id/reindex`
-- `POST /api/knowledge/edit-suggestions/:id/approve`
-- `POST /api/knowledge/edit-suggestions/:id/reject`
-
-CRUD routes for `document`, `edit-suggestion`, `source`, `chunk`, `sources-to-chunks`, and `sources-to-file-storage-module-files` remain available through their generated apps and SDKs. Profile-document links are managed by the Social module and profile-scoped operations are exposed through RBAC.
-
-Knowledge service methods are social-agnostic:
-
-- `KnowledgeService.search({ query, documentIds?, topK?, minSimilarity? })`
-- `KnowledgeService.generate({ query, documentIds?, persona?, generationModelSlug?, topK?, minSimilarity? })`
-- `KnowledgeService.learnContent({ slug, title, content, summary?, metadata? })`
-
-## AdminV2
-
-The host AdminV2 shell registers the Knowledge module under `/admin/knowledge`.
-
-Routes:
-
-- `/admin/knowledge`: search, generate, and sample indexing panel.
-- `/admin/knowledge/document`: editable markdown documents.
-- `/admin/knowledge/source`: generated source admin table.
-- `/admin/knowledge/chunk`: generated chunk admin table.
-- `/admin/knowledge/edit-suggestion`: generated edit suggestion admin table.
-
-Social Profile forms show linked Knowledge Documents through the Social-owned `profiles-to-knowledge-module-documents` relation. Source forms show related Files and Chunks through admin-v2 relation tables. Chunk forms show related Sources through the `sources-to-chunks` relation table.
-
-Admin/global Knowledge frontend code should use the Knowledge SDK actions instead of ad hoc fetches. Profile-scoped Social chat document UI must use the RBAC scoped SDK actions.
-
-## Troubleshooting
-
-- `extension "vector" is not available`: rebuild the DB container after changing `apps/db/Dockerfile` to `pgvector/pgvector:pg17`, then rerun migrations.
-- `LLM embedding request failed`: start `apps/llm`, verify `GET http://localhost:8765/v1/models` responds, and confirm `local/default-embedding` maps to the expected `provider_model`.
-- `OPEN_ROUTER_API_KEY is required`: add the key to `apps/api/.env` or switch `KNOWLEDGE_EMBEDDING_PROVIDER` back to `llm`.
-- `ANTHROPIC_API_KEY is not set`: set the key in `apps/llm/.env` before using Claude models.
-- Wrong embedding dimension: the selected model must support a 768-dimensional output. Knowledge rejects any other vector size before writing pgvector rows.
+Run `@sps/knowledge:jest:test` and `@sps/knowledge:jest:integration` explicitly. Database tests cover scope isolation, stale-result rejection, atomic chunk replacement, file snapshot changes, and File preservation. File processing and chat flows also require native parser fixtures and browser verification.

@@ -27,7 +27,7 @@ describe("Given: exact and masked RBAC permission paths", () => {
       id: "permission-exact",
       type: "HTTP",
       method: "GET",
-      path: "/api/exact-profile-id/knowledge/documents",
+      path: "/api/exact-profile-id/knowledge/sources",
     };
     service.find = jest.fn().mockImplementation(async (props: any) => {
       const pathFilter = props.params.filters.and.find(
@@ -77,7 +77,7 @@ describe("Given: exact and masked RBAC permission paths", () => {
       id: "permission-template",
       type: "HTTP",
       method: "PATCH",
-      path: `/api/rbac/subjects/owner-id/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/${targetProfileId}/knowledge/documents/[knowledge.documents.id]`,
+      path: `/api/rbac/subjects/owner-id/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/${targetProfileId}/knowledge/sources/[knowledge.sources.id]`,
     };
     service.find = jest.fn().mockImplementation(async (props: any) => {
       const pathFilter = props.params.filters.and.find(
@@ -87,9 +87,9 @@ describe("Given: exact and masked RBAC permission paths", () => {
       return pathFilter.method === "like" ? [templatePermission] : [];
     });
 
-    const matchingRoute = `/api/rbac/subjects/owner-id/social-module/profiles/requester-a/chats/chat-a/profiles/${targetProfileId}/knowledge/documents/document-a`;
+    const matchingRoute = `/api/rbac/subjects/owner-id/social-module/profiles/requester-a/chats/chat-a/profiles/${targetProfileId}/knowledge/sources/document-a`;
     const foreignTargetRoute =
-      "/api/rbac/subjects/owner-id/social-module/profiles/requester-b/chats/chat-b/profiles/another-profile-id/knowledge/documents/document-b";
+      "/api/rbac/subjects/owner-id/social-module/profiles/requester-b/chats/chat-b/profiles/another-profile-id/knowledge/sources/document-b";
 
     await expect(
       service.resolveByRoute({

@@ -108,7 +108,7 @@
             "command": "nx run @sps/social:relations:profiles-to-ecommerce-module-products:repository-generate"
           },
           {
-            "command": "nx run @sps/social:relations:profiles-to-knowledge-module-documents:repository-generate"
+            "command": "nx run @sps/social:relations:profiles-to-knowledge-module-sources:repository-generate"
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-chats:repository-generate"
@@ -136,6 +136,12 @@
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-blog-module-articles:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:messages-to-knowledge-module-sources:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:skills-to-knowledge-module-sources:repository-generate"
           }
         ]
       }
@@ -204,7 +210,7 @@
             "command": "nx run @sps/social:relations:profiles-to-ecommerce-module-products:repository-migrate"
           },
           {
-            "command": "nx run @sps/social:relations:profiles-to-knowledge-module-documents:repository-migrate"
+            "command": "nx run @sps/social:relations:profiles-to-knowledge-module-sources:repository-migrate"
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-chats:repository-migrate"
@@ -232,6 +238,12 @@
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-blog-module-articles:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:messages-to-knowledge-module-sources:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:skills-to-knowledge-module-sources:repository-migrate"
           }
         ]
       }
@@ -671,11 +683,11 @@
         ]
       }
     },
-    "relations:profiles-to-knowledge-module-documents:repository-generate": {
+    "relations:profiles-to-knowledge-module-sources:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/social/relations/profiles-to-knowledge-module-documents/backend/repository/database",
+        "cwd": "libs/modules/social/relations/profiles-to-knowledge-module-sources/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -686,13 +698,13 @@
         ]
       }
     },
-    "relations:profiles-to-knowledge-module-documents:repository-migrate": {
+    "relations:profiles-to-knowledge-module-sources:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/api/.env",
-        "cwd": "libs/modules/social/relations/profiles-to-knowledge-module-documents/backend/repository/database",
+        "cwd": "libs/modules/social/relations/profiles-to-knowledge-module-sources/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -983,6 +995,64 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/social/relations/profiles-to-blog-module-articles/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:messages-to-knowledge-module-sources:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/messages-to-knowledge-module-sources/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:messages-to-knowledge-module-sources:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/messages-to-knowledge-module-sources/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:skills-to-knowledge-module-sources:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/skills-to-knowledge-module-sources/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:skills-to-knowledge-module-sources:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/skills-to-knowledge-module-sources/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

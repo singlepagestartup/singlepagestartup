@@ -26,7 +26,7 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
   roles-to-permissions, and subjects-to-roles services through Subject DI. It
   uses filtered service `find` calls; it must not call the local HTTP API or
   issue handwritten SQL.
-- A bracketed path segment such as `[knowledge.documents.id]` is a dynamic
+- A bracketed path segment such as `[knowledge.sources.id]` is a dynamic
   permission mask. A concrete UUID is literal and grants no access to another
   record id. Permissions without any role relation remain public.
 - Add route access through `rbac.permissions`; keep resource ownership and module-specific checks in `backend/app/middlewares/src/lib/*` middleware for that module.
@@ -45,7 +45,7 @@ The endpoint validates subject/profile/chat/message access, requires the replyin
 
 The web composer does not call this endpoint. It creates one message and persists the complete user-selected execution settings in `message.metadata.rbacAiReactionRequest`: contract version, model id, reasoning, skill ids, and Knowledge-search flag. The RBAC Subject SDK model owns the typed parser/normalizer; Social stores the envelope as opaque metadata. The action logger launches Agent once, Agent dispatches every automatic profile connected to the chat, and each OpenRouter execution reloads the same answer settings from the saved message. The replying profile is supplied by Agent from chat membership and is validated by the endpoint; it is not selected by message metadata. Internal query/body data cannot override persisted model, skill, or Knowledge settings. Messages without an envelope use safe automatic defaults.
 
-If the message starts with `@knowledge /learn`, the endpoint strips the controls, calls `KnowledgeService.learnContent(...)` for the message text plus supported `.txt`, `.md`, or `.markdown` attachments, and creates the Social `profiles-to-knowledge-module-documents` relation for the replying AI profile if needed. Normal replies load and search Knowledge only when their persisted message text explicitly contains `@knowledge`; without that mention no RAG context or Knowledge tool is added. Explicit retrieval stays scoped to the profile-document relation, and the final AI answer is saved as a social message in the same thread. A separate Knowledge-only reaction endpoint is not exposed.
+If the message starts with `@knowledge /learn`, the endpoint strips the controls, calls `KnowledgeService.learnContent(...)` once for the message text and all of its Files (PDF, image, video, audio, or UTF-8 text), and creates the Social `profiles-to-knowledge-module-sources` relation for the replying AI profile if needed. Normal replies load and search Knowledge only when their persisted message text explicitly contains `@knowledge`; without that mention no RAG context or Knowledge tool is added. Explicit retrieval stays scoped to the profile-Source relation, and the final AI answer is saved as a social message in the same thread. A separate Knowledge-only reaction endpoint is not exposed.
 
 The persisted control syntax is channel-independent. The web composer inserts
 `@knowledge /learn`, while the Telegram adapter maps private `/learn`, group
@@ -61,18 +61,18 @@ When the replying `social.profile` invokes a linked skill, profile Knowledge sea
 RBAC also owns profile-scoped document operations for the Social chat sidebar:
 
 ```text
-GET /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/knowledge/documents
-PATCH /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/knowledge/documents/:knowledgeModuleDocumentId
-POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/knowledge/documents/:knowledgeModuleDocumentId/reindex
+GET /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/knowledge/sources
+PATCH /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/knowledge/sources/:knowledgeModuleSourceId
+POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/knowledge/sources/:knowledgeModuleSourceId/reindex
 ```
 
-These routes validate subject/profile access and the Social profile-document relation before calling generic Knowledge document update or reindex methods.
+These routes validate subject/profile access and the Social profile-Source relation before calling generic Knowledge Source update or reindex methods.
 
 Telegram personal AI provisioning also ensures one existing-model RBAC grant
 for the profile owner. The role slug is
 `social-profile-<social-profile-id>-knowledge-owner`; fourteen chat-scoped
 assistant-management permissions cover profile listing/update/avatar, six
-skill operations, and five Knowledge-document operations. They keep the target
+skill operations, and five Knowledge Source operations. They keep the target
 AI profile UUID literal, and the role is
 assigned to the authenticated owner through `subjects-to-roles`. No
 profile-to-role relation or extra authorization middleware is introduced.

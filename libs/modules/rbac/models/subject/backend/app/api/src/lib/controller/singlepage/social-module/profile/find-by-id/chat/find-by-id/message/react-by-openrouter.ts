@@ -1,4 +1,8 @@
 import {
+  replaceKnowledgeUserContext,
+  readKnowledgeUserContext,
+} from "@sps/shared-utils";
+import {
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
@@ -112,21 +116,13 @@ interface IRequestData {
   };
 }
 
-interface ILearnContentItem {
-  content: string;
-  title: string;
-  fileId?: string | null;
-  fileName?: string | null;
-  filePath?: string | null;
-}
-
 interface IResolvedOpenRouterKnowledgeContext {
   query: string;
   requestedSkillIds: string[];
   requestedKnowledgeSearch: boolean;
   useKnowledgeSearch: boolean;
-  knowledgeDocumentIds: string[];
-  searchDocumentIds: string[];
+  knowledgeSourceIds: string[];
+  searchSourceIds: string[];
   candidateSources: KnowledgeSearchResult[];
   sources: KnowledgeSearchResult[];
   retrieval: IOpenRouterKnowledgeRetrievalMetadata;
@@ -1489,7 +1485,7 @@ export class Handler {
       });
       const profileCapabilityTools = this.buildProfileCapabilityTools({
         availableSkills: openRouterKnowledgeContext.availableSkills,
-        knowledgeDocumentIds: openRouterKnowledgeContext.knowledgeDocumentIds,
+        knowledgeSourceIds: openRouterKnowledgeContext.knowledgeSourceIds,
       });
       const allowedMcpServerIds = Array.isArray(
         replyBySocialModuleProfile.allowedMcpServerIds,
@@ -1695,7 +1691,7 @@ export class Handler {
             profileId: replyBySocialModuleProfile.id,
             triggerMessageId: socialModuleMessage.id,
             useKnowledgeSearch: openRouterKnowledgeContext.useKnowledgeSearch,
-            documentIds: openRouterKnowledgeContext.searchDocumentIds,
+            sourceIds: openRouterKnowledgeContext.searchSourceIds,
             citations: openRouterKnowledgeContext.sources,
             sources: openRouterKnowledgeContext.sources,
             retrieval: openRouterKnowledgeContext.retrieval,
@@ -1773,6 +1769,21 @@ export class Handler {
           },
         );
 
+      for (const sourceId of new Set(
+        openRouterKnowledgeContext.sources
+          .map((source) => source.sourceId)
+          .filter((id): id is string => Boolean(id)),
+      )) {
+        await this.service.socialModule.messagesToKnowledgeModuleSources.findOrCreate(
+          {
+            data: {
+              messageId: repliedSocialModuleMessage.id,
+              knowledgeModuleSourceId: sourceId,
+              kind: "citation",
+            },
+          },
+        );
+      }
       return c.json({
         data: {
           socialModule: {
@@ -2141,17 +2152,17 @@ export class Handler {
     }
 
     const useKnowledgeSearch = props.requestedKnowledgeSearch;
-    const knowledgeDocumentIds = useKnowledgeSearch
-      ? await this.findKnowledgeDocumentIdsForProfile(props.replyProfile.id)
+    const knowledgeSourceIds = useKnowledgeSearch
+      ? await this.findKnowledgeSourceIdsForProfile(props.replyProfile.id)
       : [];
-    const searchDocumentIds = useKnowledgeSearch ? knowledgeDocumentIds : [];
+    const searchSourceIds = useKnowledgeSearch ? knowledgeSourceIds : [];
     const candidateSources =
       useKnowledgeSearch && query
         ? await this.knowledgeService.search({
             query,
             topK: KNOWLEDGE_INITIAL_TOP_K,
             neighborWindow: KNOWLEDGE_NEIGHBOR_WINDOW,
-            documentIds: searchDocumentIds,
+            sourceIds: searchSourceIds,
           })
         : [];
     const knowledgeRerankResult = await this.rerankKnowledgeSources({
@@ -2184,8 +2195,8 @@ export class Handler {
       requestedSkillIds,
       requestedKnowledgeSearch: props.requestedKnowledgeSearch,
       useKnowledgeSearch,
-      knowledgeDocumentIds,
-      searchDocumentIds,
+      knowledgeSourceIds,
+      searchSourceIds,
       candidateSources,
       sources,
       retrieval: {
@@ -2348,7 +2359,6 @@ export class Handler {
               retrievalRole: source.retrievalRole,
               sourceId: source.sourceId,
               sourceTitle: source.sourceTitle,
-              sourceOriginalPath: source.sourceOriginalPath,
               chunkIndex: source.chunkIndex,
               similarity: source.similarity,
               text: source.text,
@@ -2381,11 +2391,11 @@ export class Handler {
     return lines.length ? lines.join("\n") : "(no prior context)";
   }
 
-  private async findKnowledgeDocumentIdsForProfile(
+  private async findKnowledgeSourceIdsForProfile(
     socialModuleProfileId: string,
   ) {
     const relations =
-      await this.service.socialModule.profilesToKnowledgeModuleDocuments.find({
+      await this.service.socialModule.profilesToKnowledgeModuleSources.find({
         params: {
           filters: {
             and: [
@@ -2413,21 +2423,21 @@ export class Handler {
 
     return (
       relations
-        ?.map((relation: { knowledgeModuleDocumentId?: string }) => {
-          return relation.knowledgeModuleDocumentId;
+        ?.map((relation: { knowledgeModuleSourceId?: string }) => {
+          return relation.knowledgeModuleSourceId;
         })
-        .filter((documentId: unknown): documentId is string => {
-          return typeof documentId === "string" && Boolean(documentId);
+        .filter((sourceId: unknown): sourceId is string => {
+          return typeof sourceId === "string" && Boolean(sourceId);
         }) || []
     );
   }
 
-  private async ensureProfileKnowledgeDocumentRelation(props: {
+  private async ensureProfileKnowledgeSourceRelation(props: {
     socialModuleProfileId: string;
-    knowledgeModuleDocumentId: string;
+    knowledgeModuleSourceId: string;
   }) {
     const existing =
-      await this.service.socialModule.profilesToKnowledgeModuleDocuments.find({
+      await this.service.socialModule.profilesToKnowledgeModuleSources.find({
         params: {
           filters: {
             and: [
@@ -2437,9 +2447,9 @@ export class Handler {
                 value: props.socialModuleProfileId,
               },
               {
-                column: "knowledgeModuleDocumentId",
+                column: "knowledgeModuleSourceId",
                 method: "eq",
-                value: props.knowledgeModuleDocumentId,
+                value: props.knowledgeModuleSourceId,
               },
             ],
           },
@@ -2451,10 +2461,10 @@ export class Handler {
       return existing[0];
     }
 
-    return this.service.socialModule.profilesToKnowledgeModuleDocuments.create({
+    return this.service.socialModule.profilesToKnowledgeModuleSources.create({
       data: {
         profileId: props.socialModuleProfileId,
-        knowledgeModuleDocumentId: props.knowledgeModuleDocumentId,
+        knowledgeModuleSourceId: props.knowledgeModuleSourceId,
       },
     });
   }
@@ -2608,7 +2618,7 @@ export class Handler {
 
   private buildProfileCapabilityTools(props: {
     availableSkills: ISocialModuleSkill[];
-    knowledgeDocumentIds: string[];
+    knowledgeSourceIds: string[];
   }): ISocialProfileAiTool[] {
     const tools: ISocialProfileAiTool[] = [];
 
@@ -2676,7 +2686,7 @@ export class Handler {
       });
     }
 
-    if (props.knowledgeDocumentIds.length) {
+    if (props.knowledgeSourceIds.length) {
       tools.push({
         source: "knowledge",
         display: {
@@ -2687,7 +2697,7 @@ export class Handler {
           function: {
             name: "profile_knowledge_search",
             description:
-              "Search only Knowledge documents linked to this social.profile.",
+              "Search only Knowledge Sources linked to this social.profile.",
             parameters: {
               type: "object",
               properties: {
@@ -2709,7 +2719,7 @@ export class Handler {
         execute: async (args) => {
           const sources = await this.knowledgeService.search({
             query: String(args["query"]).trim(),
-            documentIds: props.knowledgeDocumentIds,
+            sourceIds: props.knowledgeSourceIds,
             topK: KNOWLEDGE_RERANK_TOP_K,
             neighborWindow: KNOWLEDGE_NEIGHBOR_WINDOW,
           });
@@ -2721,6 +2731,114 @@ export class Handler {
             text: source.text,
             similarity: source.similarity,
           }));
+        },
+      });
+    }
+
+    if (props.knowledgeSourceIds.length) {
+      const requireSource = async (args: Record<string, unknown>) => {
+        const id = String(args["sourceId"] || "");
+        if (!props.knowledgeSourceIds.includes(id))
+          throw new Error(
+            "Source is not available in this profile Knowledge scope.",
+          );
+        const [source] = await this.knowledgeService.listSources({
+          sourceIds: [id],
+        });
+        if (!source) throw new Error("Knowledge Source was not found.");
+        return source;
+      };
+      tools.push({
+        source: "knowledge",
+        display: { label: "Read Knowledge source" },
+        definition: {
+          type: "function",
+          function: {
+            name: "profile_knowledge_read",
+            description:
+              "Read saved Source content in pages. Use IDs returned by profile_knowledge_search, follow nextOffset to read more, and preserve userContext when editing.",
+            parameters: {
+              type: "object",
+              properties: {
+                sourceId: { type: "string", enum: props.knowledgeSourceIds },
+                offset: { type: "integer", minimum: 0 },
+                limit: { type: "integer", minimum: 1, maximum: 12000 },
+              },
+              required: ["sourceId"],
+              additionalProperties: false,
+            },
+          },
+        },
+        execute: async (args) => {
+          const source = await requireSource(args);
+          const offset = Math.max(0, Math.floor(Number(args["offset"]) || 0));
+          const limit = Math.max(
+            1,
+            Math.min(12000, Math.floor(Number(args["limit"]) || 12000)),
+          );
+          const end = Math.min(source.content.length, offset + limit);
+          const userContext = readKnowledgeUserContext(source.content);
+          return {
+            sourceId: source.id,
+            title: source.title,
+            contentHash: source.contentHash,
+            content: source.content.slice(offset, end),
+            offset,
+            contentLength: source.content.length,
+            nextOffset: end < source.content.length ? end : null,
+            userContext: userContext.slice(0, 12000),
+            userContextLength: userContext.length,
+          };
+        },
+      });
+      tools.push({
+        source: "knowledge",
+        display: { label: "Edit Knowledge context" },
+        definition: {
+          type: "function",
+          function: {
+            name: "profile_knowledge_edit",
+            description:
+              "Directly save user context and optional title in a Source when the user explicitly requests or confirms this edit. Read the Source first, pass its contentHash as expectedContentHash, and preserve its other human notes. File-derived descriptions are rebuilt from files. Do not edit when the user is only discussing a possible change.",
+            parameters: {
+              type: "object",
+              properties: {
+                sourceId: { type: "string", enum: props.knowledgeSourceIds },
+                userContext: { type: "string" },
+                expectedContentHash: { type: "string" },
+                title: { type: "string" },
+              },
+              required: ["sourceId", "userContext", "expectedContentHash"],
+              additionalProperties: false,
+            },
+          },
+        },
+        execute: async (args) => {
+          const source = await requireSource(args);
+          if (typeof args["userContext"] !== "string")
+            throw new Error("User context is required.");
+          if (args["expectedContentHash"] !== source.contentHash)
+            throw new Error(
+              "Source changed after reading. Read it again before editing.",
+            );
+          const saved = await this.knowledgeService.updateSource({
+            sourceId: source.id,
+            content: replaceKnowledgeUserContext(
+              source.content,
+              args["userContext"],
+            ),
+            expectedContentHash: source.contentHash,
+            ...(typeof args["title"] === "string"
+              ? { title: args["title"] }
+              : {}),
+          });
+          return {
+            sourceId: saved.source?.id,
+            contentHash: saved.source?.contentHash,
+            indexedContentHash: saved.source?.indexedContentHash,
+            lastIndexedAt: saved.source?.lastIndexedAt,
+            indexError: saved.indexError,
+          };
         },
       });
     }
@@ -2884,7 +3002,7 @@ export class Handler {
           .map((source, index) => {
             return [
               `Source ${index + 1}: ${source.sourceTitle || "Untitled"}`,
-              `Path: ${source.sourceOriginalPath || "unknown"}`,
+              `Source ID: ${source.sourceId || "unknown"}`,
               `Similarity: ${this.formatKnowledgeSimilarity(source.similarity)}`,
               `Retrieval role: ${source.retrievalRole}`,
               source.text,
@@ -2921,121 +3039,6 @@ export class Handler {
     socialModuleMessage: ISocialModuleMessage;
     sourceSocialModuleProfileId: string;
   }) {
-    const contentItems = await this.collectLearnContentItems({
-      socialModuleMessage: props.socialModuleMessage,
-    });
-
-    if (!contentItems.length) {
-      throw new Error(
-        "Validation error. /learn requires message text or .txt/.md/.markdown attachments.",
-      );
-    }
-
-    const learned: Awaited<ReturnType<KnowledgeService["learnContent"]>>[] = [];
-
-    for (const [index, item] of contentItems.entries()) {
-      const content = this.toLearnText(item.content).trim();
-
-      if (!content) {
-        continue;
-      }
-
-      const contentHash = this.sha256(content);
-      const slug = this.toSlug(
-        [
-          "knowledge",
-          props.replyProfile.id,
-          props.socialModuleMessage.id,
-          item.fileId || "message",
-          contentHash.slice(0, 16),
-        ].join("-"),
-      );
-      const entry = await this.knowledgeService.learnContent({
-        slug,
-        title: this.toLearnText(item.title),
-        content,
-        summary: "Content learned from social chat message",
-        metadata: {
-          sourceKind: "chat-message",
-          sourceSystem: "social-chat-learn",
-          assistantSocialModuleProfileId: props.replyProfile.id,
-          socialModuleChatId: props.socialModuleChatId,
-          socialModuleThreadId: props.socialModuleThreadId,
-          socialModuleMessageId: props.socialModuleMessage.id,
-          fileId: item.fileId || null,
-          fileName: this.toLearnText(item.fileName) || null,
-          filePath: this.toLearnText(item.filePath) || null,
-          contentHash,
-          sourceSocialModuleProfileId: props.sourceSocialModuleProfileId,
-          triggerMessageId: props.socialModuleMessage.id,
-          learnItemIndex: index,
-        },
-      });
-
-      learned.push(entry);
-      await this.ensureProfileKnowledgeDocumentRelation({
-        socialModuleProfileId: props.replyProfile.id,
-        knowledgeModuleDocumentId: entry.document.id,
-      });
-    }
-
-    const content =
-      learned.length === 1
-        ? "Learned 1 knowledge item."
-        : `Learned ${learned.length} knowledge items.`;
-
-    return api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-      {
-        id: props.replyByRbacSubjectId,
-        socialModuleProfileId: props.replyProfile.id,
-        socialModuleChatId: props.socialModuleChatId,
-        socialModuleThreadId: props.socialModuleThreadId,
-        data: {
-          description: content,
-          interaction: {
-            role: "assistant",
-            content,
-          },
-          metadata: {
-            knowledge: {
-              action: "learn",
-              profileId: props.replyProfile.id,
-              triggerMessageId: props.socialModuleMessage.id,
-              documents: learned.map((entry) => {
-                return {
-                  id: entry.document.id,
-                  slug: entry.document.slug,
-                  title: entry.document.title,
-                };
-              }),
-              indexes: learned.map((entry) => entry.index),
-            },
-          },
-        },
-        options: {
-          headers: {
-            Authorization: "Bearer " + props.rbacSubjectAuthenticationJwt,
-          },
-        },
-      },
-    );
-  }
-
-  private async collectLearnContentItems(props: {
-    socialModuleMessage: ISocialModuleMessage;
-  }): Promise<ILearnContentItem[]> {
-    const items: ILearnContentItem[] = [];
-    const strippedMessage = this.stripLearnPrefix(
-      props.socialModuleMessage.description || "",
-    );
-
-    if (strippedMessage) {
-      items.push({
-        content: this.toLearnText(strippedMessage),
-        title: this.toTitle(strippedMessage),
-      });
-    }
-
     const relations =
       await this.service.socialModule.messagesToFileStorageModuleFiles.find({
         params: {
@@ -3048,65 +3051,75 @@ export class Handler {
               },
             ],
           },
-          orderBy: {
-            and: [
-              {
-                column: "orderIndex",
-                method: "asc",
-              },
-            ],
-          },
+          orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
         },
       });
-    const fileIds =
-      relations
-        ?.map((relation) => relation.fileStorageModuleFileId)
-        .filter((fileId): fileId is string => Boolean(fileId)) || [];
-
-    if (!fileIds.length) {
-      return items;
-    }
-
-    const files = await this.service.fileStorageModule.file.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: fileIds,
+    const fileIds = [
+      ...new Set(
+        (relations || [])
+          .map((relation) => relation.fileStorageModuleFileId)
+          .filter(Boolean),
+      ),
+    ] as string[];
+    const userContext = this.stripLearnPrefix(
+      props.socialModuleMessage.description || "",
+    );
+    if (!userContext && !fileIds.length)
+      throw new Error("Validation error. /learn requires text or attachments.");
+    const entry = await this.knowledgeService.learnContent({
+      slug: this.toSlug(
+        `knowledge-${props.replyProfile.id}-${props.socialModuleMessage.id}`,
+      ),
+      title: this.toTitle(userContext) || "Материалы из чата",
+      content: userContext,
+      fileIds,
+      onSourceSaved: async (sourceId) => {
+        await this.ensureProfileKnowledgeSourceRelation({
+          socialModuleProfileId: props.replyProfile.id,
+          knowledgeModuleSourceId: sourceId,
+        });
+        await this.service.socialModule.messagesToKnowledgeModuleSources.findOrCreate(
+          {
+            data: {
+              messageId: props.socialModuleMessage.id,
+              knowledgeModuleSourceId: sourceId,
+              kind: "origin",
+              orderIndex: 0,
             },
-          ],
-        },
+          },
+        );
       },
     });
-
-    for (const file of files || []) {
-      if (!this.isSupportedLearnAttachment(file)) {
-        continue;
-      }
-
-      const content = this.toLearnText(
-        await this.readFileStorageModuleFile(file),
-      );
-      const filePath = this.toLearnText(file.file);
-      const fileName =
-        this.toLearnText(file.adminTitle) || basename(filePath) || "Attachment";
-
-      if (!content.trim()) {
-        continue;
-      }
-
-      items.push({
-        content,
-        title: fileName,
-        fileId: file.id,
-        fileName,
-        filePath,
-      });
-    }
-
-    return items;
+    const content = entry.processingError
+      ? `Материал сохранён с вложениями. Анализ не завершён: ${entry.processingError}`
+      : entry.indexError
+        ? `Материал сохранён. Индексация не завершена: ${entry.indexError}`
+        : "Материал сохранён и проиндексирован.";
+    return api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+      {
+        id: props.replyByRbacSubjectId,
+        socialModuleProfileId: props.replyProfile.id,
+        socialModuleChatId: props.socialModuleChatId,
+        socialModuleThreadId: props.socialModuleThreadId,
+        data: {
+          description: content,
+          interaction: { role: "assistant", content },
+          metadata: {
+            knowledge: {
+              action: "learn",
+              index: entry.index,
+              processingError: entry.processingError,
+              indexError: entry.indexError,
+            },
+          },
+        },
+        options: {
+          headers: {
+            Authorization: "Bearer " + props.rbacSubjectAuthenticationJwt,
+          },
+        },
+      },
+    );
   }
 
   private resolveManualOpenRouterModel(props: {
@@ -3273,16 +3286,6 @@ export class Handler {
           .filter((skillId): skillId is string => Boolean(skillId)),
       ),
     );
-  }
-
-  private isSupportedLearnAttachment(file: IFileStorageModuleFile) {
-    const filePath = this.toLearnText(file.file);
-    const extension = (
-      this.toLearnText(file.extension) ||
-      extname(filePath.split("?")[0]).replace(".", "")
-    ).toLowerCase();
-
-    return ["txt", "md", "markdown"].includes(extension);
   }
 
   protected isTextFileStorageFile(file: IFileStorageModuleFile) {

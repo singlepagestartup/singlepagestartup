@@ -1,12 +1,13 @@
+import { Table } from "@sps/knowledge/models/source/backend/repository/database";
+
 export interface KnowledgeSourceInput {
+  slug: string;
   title: string;
-  type: string;
   content: string;
   description?: string | null;
-  originalPath: string;
-  contentHash: string;
-  metadata: Record<string, unknown>;
 }
+
+export type KnowledgeSourceIndexInput = typeof Table.$inferSelect;
 
 export interface KnowledgeChunkInput {
   text: string;
@@ -23,25 +24,10 @@ export interface KnowledgeSearchResult {
   chunkIndex: number;
   sourceId: string | null;
   sourceTitle: string | null;
-  sourceOriginalPath: string | null;
-  sourceType: string | null;
   distance: number | null;
   similarity: number | null;
   retrievalRole: "seed" | "neighbor";
   metadata: Record<string, unknown>;
-}
-
-export interface KnowledgeDocumentIndexInput {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  status: string;
-  summary?: string | null;
-  tags: string[];
-  metadata: Record<string, unknown>;
-  contentHash: string;
-  lastIndexedAt?: Date | null;
 }
 
 export interface KnowledgeIndexResult {
@@ -49,8 +35,8 @@ export interface KnowledgeIndexResult {
   skipped: number;
   dryRun: boolean;
   sources: {
+    sourceId: string;
     title: string;
-    originalPath: string;
     chunks: number;
     status: "indexed" | "skipped" | "dry_run";
   }[];

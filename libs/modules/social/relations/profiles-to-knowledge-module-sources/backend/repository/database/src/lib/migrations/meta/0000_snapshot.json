@@ -1,0 +1,121 @@
+{
+  "id": "280893ca-4010-4b35-8cf2-847740e3898b",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sl_ps_to_ke_me_ss_gch": {
+      "name": "sl_ps_to_ke_me_ss_gch",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pe_id": {
+          "name": "pe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ke_me_se_id": {
+          "name": "ke_me_se_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sl_ps_to_ke_me_ss_gch_pe_id_sl_profile_id_fk": {
+          "name": "sl_ps_to_ke_me_ss_gch_pe_id_sl_profile_id_fk",
+          "tableFrom": "sl_ps_to_ke_me_ss_gch",
+          "tableTo": "sl_profile",
+          "columnsFrom": [
+            "pe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sl_ps_to_ke_me_ss_gch_ke_me_se_id_sps_ke_source_id_fk": {
+          "name": "sl_ps_to_ke_me_ss_gch_ke_me_se_id_sps_ke_source_id_fk",
+          "tableFrom": "sl_ps_to_ke_me_ss_gch",
+          "tableTo": "sps_ke_source",
+          "columnsFrom": [
+            "ke_me_se_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sl_profile_source_unique": {
+          "name": "sl_profile_source_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "pe_id",
+            "ke_me_se_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

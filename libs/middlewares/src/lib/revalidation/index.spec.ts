@@ -136,8 +136,8 @@ describe("action / RPC endpoint topic rules (issue #195 F3)", () => {
         `social.chats.${CID}.messages`,
         "social.actions",
         `social.chats.${CID}.actions`,
-        "social.profiles-to-knowledge-module-documents",
-        "knowledge.documents",
+        "social.profiles-to-knowledge-module-sources",
+        "knowledge.sources",
       ]),
     );
     expect(topics).not.toContain("social.openrouter");

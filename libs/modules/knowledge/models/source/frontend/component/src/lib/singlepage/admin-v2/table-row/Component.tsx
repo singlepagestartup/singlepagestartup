@@ -25,16 +25,12 @@ export function Component(props: IComponentPropsExtended) {
             <p className="truncate">{props.data.title}</p>
           </div>
           <div className="flex flex-col gap-0.5 overflow-hidden">
-            <p className="text-xs text-muted-foreground">Original Path</p>
-            <p className="truncate">{props.data.originalPath}</p>
-          </div>
-          <div className="flex flex-col gap-0.5 overflow-hidden">
             <p className="text-xs text-muted-foreground">Status</p>
-            <p className="truncate">{props.data.status}</p>
-          </div>
-          <div className="flex flex-col gap-0.5 overflow-hidden">
-            <p className="text-xs text-muted-foreground">Type</p>
-            <p className="truncate">{props.data.type}</p>
+            <p className="truncate">
+              {props.data.contentHash === props.data.indexedContentHash
+                ? "Indexed"
+                : "Needs indexing"}
+            </p>
           </div>
           <div className="flex flex-col gap-0.5 overflow-hidden">
             <p className="text-xs text-muted-foreground">Slug</p>

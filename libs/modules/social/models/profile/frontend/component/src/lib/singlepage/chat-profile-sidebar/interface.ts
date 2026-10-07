@@ -1,6 +1,6 @@
 export { type IModel } from "@sps/social/models/profile/sdk/model";
 import { IModel } from "@sps/social/models/profile/sdk/model";
-import { IModel as IKnowledgeModuleDocument } from "@sps/knowledge/models/document/sdk/model";
+import { IModel as IKnowledgeModuleSource } from "@sps/knowledge/models/source/sdk/model";
 import { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 
@@ -11,13 +11,13 @@ export interface IClientComponentProps
   data: IModel;
   language: string;
   skills?: ISocialModuleSkill[];
-  knowledgeDocuments?: IKnowledgeModuleDocument[];
-  selectedKnowledgeDocument?: IKnowledgeModuleDocument | null;
+  knowledgeSources?: IKnowledgeModuleSource[];
+  selectedKnowledgeSource?: IKnowledgeModuleSource | null;
   isSkillsLoading?: boolean;
-  isKnowledgeDocumentsLoading?: boolean;
-  hasKnowledgeDocumentsError?: boolean;
-  onKnowledgeDocumentCreate?: (profile: IModel) => void;
-  onKnowledgeDocumentSelect?: (document: IKnowledgeModuleDocument) => void;
+  isKnowledgeSourcesLoading?: boolean;
+  hasKnowledgeSourcesError?: boolean;
+  onKnowledgeSourceCreate?: (profile: IModel) => void;
+  onKnowledgeSourceSelect?: (document: IKnowledgeModuleSource) => void;
   onMcpServersEdit?: (profile: IModel) => void;
   onProfileEdit?: (profile: IModel) => void;
   onSkillCreate?: (profile: IModel) => void;

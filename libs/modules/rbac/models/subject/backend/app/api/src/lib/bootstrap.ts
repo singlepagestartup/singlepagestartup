@@ -76,8 +76,12 @@ import { Repository as SocialProfilesToChatsRepository } from "@sps/social/relat
 import { Configuration as SocialProfilesToChatsConfiguration } from "@sps/social/relations/profiles-to-chats/backend/app/api/src/lib/configuration";
 import { Repository as SocialProfilesToSkillsRepository } from "@sps/social/relations/profiles-to-skills/backend/app/api/src/lib/repository";
 import { Configuration as SocialProfilesToSkillsConfiguration } from "@sps/social/relations/profiles-to-skills/backend/app/api/src/lib/configuration";
-import { Repository as SocialProfilesToKnowledgeModuleDocumentsRepository } from "@sps/social/relations/profiles-to-knowledge-module-documents/backend/app/api/src/lib/repository";
-import { Configuration as SocialProfilesToKnowledgeModuleDocumentsConfiguration } from "@sps/social/relations/profiles-to-knowledge-module-documents/backend/app/api/src/lib/configuration";
+import { Repository as SocialProfilesToKnowledgeModuleSourcesRepository } from "@sps/social/relations/profiles-to-knowledge-module-sources/backend/app/api/src/lib/repository";
+import { Repository as SocialSkillsToKnowledgeModuleSourcesRepository } from "@sps/social/relations/skills-to-knowledge-module-sources/backend/app/api/src/lib/repository";
+import { Repository as SocialMessagesToKnowledgeModuleSourcesRepository } from "@sps/social/relations/messages-to-knowledge-module-sources/backend/app/api/src/lib/repository";
+import { Configuration as SocialProfilesToKnowledgeModuleSourcesConfiguration } from "@sps/social/relations/profiles-to-knowledge-module-sources/backend/app/api/src/lib/configuration";
+import { Configuration as SocialSkillsToKnowledgeModuleSourcesConfiguration } from "@sps/social/relations/skills-to-knowledge-module-sources/backend/app/api/src/lib/configuration";
+import { Configuration as SocialMessagesToKnowledgeModuleSourcesConfiguration } from "@sps/social/relations/messages-to-knowledge-module-sources/backend/app/api/src/lib/configuration";
 import { Repository as SocialProfilesToMessagesRepository } from "@sps/social/relations/profiles-to-messages/backend/app/api/src/lib/repository";
 import { Configuration as SocialProfilesToMessagesConfiguration } from "@sps/social/relations/profiles-to-messages/backend/app/api/src/lib/configuration";
 import { Repository as SocialProfilesToActionsRepository } from "@sps/social/relations/profiles-to-actions/backend/app/api/src/lib/repository";
@@ -215,9 +219,19 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
             new SocialProfilesToSkillsConfiguration(),
           ),
         ),
-        profilesToKnowledgeModuleDocuments: new CRUDService<any>(
-          new SocialProfilesToKnowledgeModuleDocumentsRepository(
-            new SocialProfilesToKnowledgeModuleDocumentsConfiguration(),
+        profilesToKnowledgeModuleSources: new CRUDService<any>(
+          new SocialProfilesToKnowledgeModuleSourcesRepository(
+            new SocialProfilesToKnowledgeModuleSourcesConfiguration(),
+          ),
+        ),
+        messagesToKnowledgeModuleSources: new CRUDService<any>(
+          new SocialMessagesToKnowledgeModuleSourcesRepository(
+            new SocialMessagesToKnowledgeModuleSourcesConfiguration(),
+          ),
+        ),
+        skillsToKnowledgeModuleSources: new CRUDService<any>(
+          new SocialSkillsToKnowledgeModuleSourcesRepository(
+            new SocialSkillsToKnowledgeModuleSourcesConfiguration(),
           ),
         ),
         profilesToMessages: new CRUDService<any>(

@@ -98,21 +98,9 @@ export class App implements IDefaultApp<Env> {
       return c.json({ data });
     });
 
-    this.hono.post("/documents/:id/reindex", async (c) => {
+    this.hono.post("/sources/:id/reindex", async (c) => {
       const service = new KnowledgeService();
-      const data = await service.reindexDocument(c.req.param("id"));
-      return c.json({ data });
-    });
-
-    this.hono.post("/edit-suggestions/:id/approve", async (c) => {
-      const service = new KnowledgeService();
-      const data = await service.approveEditSuggestion(c.req.param("id"));
-      return c.json({ data });
-    });
-
-    this.hono.post("/edit-suggestions/:id/reject", async (c) => {
-      const service = new KnowledgeService();
-      const data = await service.rejectEditSuggestion(c.req.param("id"));
+      const data = await service.reindexSource(c.req.param("id"));
       return c.json({ data });
     });
   }

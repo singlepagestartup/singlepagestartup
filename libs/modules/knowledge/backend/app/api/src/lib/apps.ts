@@ -1,5 +1,3 @@
-import { app as editSuggestion } from "@sps/knowledge/models/edit-suggestion/backend/app/api";
-import { app as document } from "@sps/knowledge/models/document/backend/app/api";
 import { app as sourcesToChunks } from "@sps/knowledge/relations/sources-to-chunks/backend/app/api";
 import { app as sourcesToFileStorageModuleFiles } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api";
 import { app as chunk } from "@sps/knowledge/models/chunk/backend/app/api";
@@ -15,16 +13,6 @@ export class Apps {
   }
 
   bindApps() {
-    this.apps.push({
-      type: "model",
-      route: "/edit-suggestions",
-      app: editSuggestion,
-    });
-    this.apps.push({
-      type: "model",
-      route: "/documents",
-      app: document,
-    });
     this.apps.push({
       type: "relation",
       route: "/sources-to-chunks",

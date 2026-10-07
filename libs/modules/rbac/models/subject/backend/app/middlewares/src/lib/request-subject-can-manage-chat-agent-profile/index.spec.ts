@@ -38,7 +38,7 @@ function createService() {
         }),
       },
       profilesToSkills: { find: jest.fn(async () => []) },
-      profilesToKnowledgeModuleDocuments: {
+      profilesToKnowledgeModuleSources: {
         find: jest.fn(async () => []),
       },
     },
@@ -81,14 +81,14 @@ describe("Given: RBAC authorizes management of a chat AI profile", () => {
     const service = createService();
     const app = new Hono();
     const route =
-      "/subjects/:id/profiles/:socialModuleProfileId/chats/:socialModuleChatId/profiles/:targetSocialModuleProfileId/knowledge/documents";
+      "/subjects/:id/profiles/:socialModuleProfileId/chats/:socialModuleChatId/profiles/:targetSocialModuleProfileId/knowledge/sources";
 
     app.get(route, new Middleware(service as any).init(), (c) =>
       c.json({ ok: true }),
     );
 
     const response = await app.request(
-      "/subjects/subject-id/profiles/requester-profile-id/chats/chat-id/profiles/target-profile-id/knowledge/documents",
+      "/subjects/subject-id/profiles/requester-profile-id/chats/chat-id/profiles/target-profile-id/knowledge/sources",
     );
 
     expect(response.status).toBe(200);

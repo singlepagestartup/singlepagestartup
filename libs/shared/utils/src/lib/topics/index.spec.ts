@@ -251,18 +251,18 @@ describe("read/mutation symmetry (the framework realtime guarantee)", () => {
   });
 
   /**
-   * BDD Scenario: A knowledge document create reaches the document-LIST
+   * BDD Scenario: A knowledge Source create reaches the document-LIST
    * subscription (same class as the chat-list regression).
    */
-  it("matches knowledge document create to the document-list subscription", () => {
+  it("matches knowledge Source create to the Source-list subscription", () => {
     const docListRead = deriveTopicsFromPath(
-      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/knowledge/documents`,
+      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/knowledge/sources`,
     );
     const docCreate = deriveTopicsFromPath(
-      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/knowledge/documents`,
+      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/knowledge/sources`,
     );
 
-    expect(docListRead).toContain("social.documents");
+    expect(docListRead).toContain("social.sources");
     expect(intersects(docListRead, docCreate)).toBe(true);
   });
 

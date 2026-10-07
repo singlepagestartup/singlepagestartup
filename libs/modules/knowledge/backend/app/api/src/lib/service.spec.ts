@@ -17,8 +17,6 @@ function createSearchResult(
     chunkIndex: 0,
     sourceId: "source-1",
     sourceTitle: "Source",
-    sourceOriginalPath: "source.txt",
-    sourceType: "text",
     distance: 0.1,
     similarity: 0.9,
     retrievalRole: "seed",
@@ -165,12 +163,12 @@ describe("knowledge service", () => {
 
     await service.search({
       query: "project documentation",
-      documentIds: ["document-1", "document-2", "document-1", " "],
+      sourceIds: ["source-1", "source-2", "source-1", " "],
     });
 
     expect(searchChunks).toHaveBeenCalledWith(
       expect.objectContaining({
-        documentIds: ["document-1", "document-2"],
+        sourceIds: ["source-1", "source-2"],
       }),
     );
   });
@@ -197,7 +195,7 @@ describe("knowledge service", () => {
     });
 
     await expect(
-      service.search({ query: "project documentation", documentIds: [] }),
+      service.search({ query: "project documentation", sourceIds: [] }),
     ).resolves.toEqual([]);
     expect(embed).not.toHaveBeenCalled();
     expect(searchChunks).not.toHaveBeenCalled();
@@ -211,13 +209,13 @@ describe("knowledge service", () => {
    * Then: the response preserves caller order and drops missing documents.
    */
   it("lists documents in caller-provided order", async () => {
-    const findDocumentsByIds = jest.fn().mockResolvedValue([
-      { id: "document-2", title: "Second" },
-      { id: "document-1", title: "First" },
+    const findSourcesByIds = jest.fn().mockResolvedValue([
+      { id: "source-2", title: "Second" },
+      { id: "source-1", title: "First" },
     ]);
     const service = new KnowledgeService({
       repository: {
-        findDocumentsByIds,
+        findSourcesByIds,
       } as any,
       embeddingClient: {} as any,
       generationClient: {} as any,
@@ -225,12 +223,12 @@ describe("knowledge service", () => {
     });
 
     await expect(
-      service.listDocuments({
-        documentIds: ["document-1", "document-2", "missing-document"],
+      service.listSources({
+        sourceIds: ["source-1", "source-2", "missing-document"],
       }),
     ).resolves.toEqual([
-      { id: "document-1", title: "First" },
-      { id: "document-2", title: "Second" },
+      { id: "source-1", title: "First" },
+      { id: "source-2", title: "Second" },
     ]);
   });
 
@@ -245,7 +243,7 @@ describe("knowledge service", () => {
     const contexts = [
       createSearchResult({
         id: "chunk-1",
-        text: "Documentation context",
+        text: "Sourceation context",
         chunkIndex: 0,
       }),
     ];
@@ -260,7 +258,7 @@ describe("knowledge service", () => {
       local: false,
     };
     const persona = {
-      title: "Documentation expert",
+      title: "Sourceation expert",
       description: { tone: "concise" },
     };
     const service = new KnowledgeService({
@@ -278,14 +276,14 @@ describe("knowledge service", () => {
 
     const result = await service.generate({
       query: "project documentation",
-      documentIds: ["document-1"],
+      sourceIds: ["source-1"],
       persona,
       generationModelSlug: "anthropic/claude-opus-4-1",
     });
 
     expect(searchChunks).toHaveBeenCalledWith(
       expect.objectContaining({
-        documentIds: ["document-1"],
+        sourceIds: ["source-1"],
       }),
     );
     expect(generate).toHaveBeenCalledWith(
@@ -335,7 +333,7 @@ describe("knowledge service", () => {
 
     await service.generate({
       query: "Поправь предыдущий текст",
-      documentIds: ["document-1"],
+      sourceIds: ["source-1"],
       chatHistory: [
         {
           role: "assistant",
@@ -368,11 +366,11 @@ describe("knowledge service", () => {
    * Then: it rejects before model dimension checks or document upsert.
    */
   it("requires content before learning generic knowledge", async () => {
-    const upsertDocumentBySlug = jest.fn();
+    const upsertSourceBySlug = jest.fn();
     const modelGet = jest.fn();
     const service = new KnowledgeService({
       repository: {
-        upsertDocumentBySlug,
+        upsertSourceBySlug,
       } as any,
       embeddingClient: {} as any,
       generationClient: {} as any,
@@ -387,8 +385,8 @@ describe("knowledge service", () => {
         title: "Message",
         content: "   ",
       }),
-    ).rejects.toThrow("Knowledge learn content is required");
-    expect(upsertDocumentBySlug).not.toHaveBeenCalled();
+    ).rejects.toThrow("Knowledge learn content or files are required");
+    expect(upsertSourceBySlug).not.toHaveBeenCalled();
     expect(modelGet).not.toHaveBeenCalled();
   });
 
@@ -400,53 +398,37 @@ describe("knowledge service", () => {
    * Then: it runs embedding indexing for the returned document id.
    */
   it("stores learned content and indexes the returned document", async () => {
-    const upsertDocumentBySlug = jest
-      .fn()
-      .mockResolvedValue({ id: "document-1" });
+    const source = { id: "source-1", content: "Learned context" };
+    const upsertSourceBySlug = jest.fn().mockResolvedValue(source);
     const service = new KnowledgeService({
       repository: {
-        upsertDocumentBySlug,
+        upsertSourceBySlug,
+        findSourceById: jest.fn().mockResolvedValue(source),
       } as any,
       embeddingClient: {} as any,
       generationClient: {} as any,
-      modelClient: {
-        get: jest.fn().mockResolvedValue({
-          id: "nomic-embed-text",
-          dimensions: 768,
-        }),
-      } as any,
+      modelClient: {} as any,
     });
     const index = jest
       .spyOn(service, "index")
       .mockResolvedValue({ indexed: 1, skipped: 0 } as any);
-
     const result = await service.learnContent({
-      slug: "knowledge-profile-message-file-hash",
-      title: " Uploaded knowledge ",
-      content: " Learned context ",
-      summary: "Summary",
-      metadata: {
-        sourceKind: "chat-message",
-      },
+      slug: "knowledge-source",
+      title: "Uploaded knowledge",
+      content: "Learned context",
+      description: "Summary",
     });
-
-    expect(upsertDocumentBySlug).toHaveBeenCalledWith(
-      expect.objectContaining({
-        slug: "knowledge-profile-message-file-hash",
+    expect(upsertSourceBySlug).toHaveBeenCalledWith(
+      {
+        slug: "knowledge-source",
         title: "Uploaded knowledge",
-        description: "Learned context",
-        summary: "Summary",
-        status: "imported",
-        metadata: {
-          sourceKind: "chat-message",
-        },
-      }),
+        content: "Learned context",
+        description: "Summary",
+      },
+      true,
     );
-    expect(index).toHaveBeenCalledWith({ documentId: "document-1" });
-    expect(result).toEqual({
-      document: { id: "document-1" },
-      index: { indexed: 1, skipped: 0 },
-    });
+    expect(index).toHaveBeenCalledWith({ sourceId: "source-1" });
+    expect(result.source).toEqual(source);
   });
 
   /**
@@ -461,7 +443,7 @@ describe("knowledge service", () => {
     const modelGet = jest.fn();
     const service = new KnowledgeService({
       repository: {
-        listDocumentsForIndex: jest.fn().mockResolvedValue([]),
+        listSourcesForIndex: jest.fn().mockResolvedValue([]),
       } as any,
       embeddingClient: {} as any,
       generationClient: {} as any,
@@ -474,7 +456,7 @@ describe("knowledge service", () => {
 
     try {
       await expect(
-        service.index({ documentId: "document-1", dryRun: true }),
+        service.index({ sourceId: "source-1", dryRun: true }),
       ).resolves.toEqual(
         expect.objectContaining({ indexed: 0, skipped: 0, dryRun: true }),
       );
@@ -491,46 +473,46 @@ describe("knowledge service", () => {
   /**
    * BDD Scenario: missing document deletion.
    *
-   * Given: a delete request references a missing Knowledge document.
+   * Given: a delete request references a missing Knowledge source.
    * When: the service validates the document id.
    * Then: cleanup is not attempted.
    */
   it("rejects deleting a missing document before cleanup", async () => {
-    const deleteDocumentWithDerivedData = jest.fn();
+    const deleteSourceWithDerivedData = jest.fn();
     const service = new KnowledgeService({
       repository: {
-        findDocumentById: jest.fn().mockResolvedValue(undefined),
-        deleteDocumentWithDerivedData,
+        findSourceById: jest.fn().mockResolvedValue(undefined),
+        deleteSourceWithDerivedData,
       } as any,
       embeddingClient: {} as any,
       generationClient: {} as any,
       modelClient: {} as any,
     });
 
-    await expect(service.deleteDocument("missing-document")).rejects.toThrow(
-      "Knowledge document missing-document was not found.",
+    await expect(service.deleteSource("missing-document")).rejects.toThrow(
+      "Knowledge source missing-document was not found.",
     );
-    expect(deleteDocumentWithDerivedData).not.toHaveBeenCalled();
+    expect(deleteSourceWithDerivedData).not.toHaveBeenCalled();
   });
 
   /**
    * BDD Scenario: document deletion cleanup.
    *
-   * Given: a Knowledge document exists.
+   * Given: a Knowledge source exists.
    * When: the service deletes it.
    * Then: repository cleanup runs without embedding generation or reindexing.
    */
   it("deletes a document through cleanup without embedding generation", async () => {
-    const document = { id: "document-1", title: "Temporary knowledge" };
-    const deleteDocumentWithDerivedData = jest.fn().mockResolvedValue(document);
+    const document = { id: "source-1", title: "Temporary knowledge" };
+    const deleteSourceWithDerivedData = jest.fn().mockResolvedValue(document);
     const embeddingClient = {
       embed: jest.fn(),
       embedMany: jest.fn(),
     };
     const service = new KnowledgeService({
       repository: {
-        findDocumentById: jest.fn().mockResolvedValue(document),
-        deleteDocumentWithDerivedData,
+        findSourceById: jest.fn().mockResolvedValue(document),
+        deleteSourceWithDerivedData,
       } as any,
       embeddingClient: embeddingClient as any,
       generationClient: {} as any,
@@ -540,8 +522,8 @@ describe("knowledge service", () => {
     });
     const index = jest.spyOn(service, "index");
 
-    await expect(service.deleteDocument("document-1")).resolves.toBe(document);
-    expect(deleteDocumentWithDerivedData).toHaveBeenCalledWith("document-1");
+    await expect(service.deleteSource("source-1")).resolves.toBe(document);
+    expect(deleteSourceWithDerivedData).toHaveBeenCalledWith("source-1");
     expect(embeddingClient.embed).not.toHaveBeenCalled();
     expect(embeddingClient.embedMany).not.toHaveBeenCalled();
     expect(index).not.toHaveBeenCalled();

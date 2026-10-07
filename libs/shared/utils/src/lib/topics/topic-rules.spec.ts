@@ -107,8 +107,8 @@ describe("defaultCompiledTopicRules — framework action endpoints", () => {
     expect(topics).toContain("social.messages");
     expect(topics).toContain("social.actions");
     expect(topics).toContain("social.chats.c-1.actions");
-    expect(topics).toContain("social.profiles-to-knowledge-module-documents");
-    expect(topics).toContain("knowledge.documents");
+    expect(topics).toContain("social.profiles-to-knowledge-module-sources");
+    expect(topics).toContain("knowledge.sources");
     expect(topics).toContain("rbac.subjects-to-billing-module-currencies");
     expect(topics).not.toContain("social.openrouter");
   });
@@ -121,14 +121,14 @@ describe("defaultCompiledTopicRules — framework action endpoints", () => {
    */
   it("maps profile Knowledge reads onto relation and document topics", () => {
     const paths = [
-      "/api/rbac/subjects/sub-1/social-module/profiles/requester-1/chats/chat-1/profiles/assistant-1/knowledge/documents",
-      "/api/rbac/subjects/sub-1/social-module/profiles/assistant-1/knowledge/documents",
+      "/api/rbac/subjects/sub-1/social-module/profiles/requester-1/chats/chat-1/profiles/assistant-1/knowledge/sources",
+      "/api/rbac/subjects/sub-1/social-module/profiles/assistant-1/knowledge/sources",
     ];
 
     for (const path of paths) {
       expect(resolveTopicsForPath(path, defaultCompiledTopicRules)).toEqual([
-        "social.profiles-to-knowledge-module-documents",
-        "knowledge.documents",
+        "social.profiles-to-knowledge-module-sources",
+        "knowledge.sources",
       ]);
     }
   });

@@ -1,3 +1,6 @@
+import { IComponentProps as IChatSidebarItemComponentProps } from "./chat-sidebar-item/interface";
+import { IComponentProps as IChatSidebarDetailComponentProps } from "./chat-sidebar-detail/interface";
+import { IComponentProps as IAiChatEditorComponentProps } from "./ai-chat-editor/interface";
 import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input/interface";
 import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
@@ -11,6 +14,9 @@ import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 export type IComponentProps =
+  | IChatSidebarItemComponentProps
+  | IChatSidebarDetailComponentProps
+  | IAiChatEditorComponentProps
   | IAdminSelectInputComponentProps
   | IAdminTableComponentProps
   | IAdminFormComponentProps

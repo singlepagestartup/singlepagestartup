@@ -3,7 +3,7 @@ import {
   AI_CHAT_DOCUMENT_AGENTS,
   AI_CHAT_DEFAULT_AGENT,
   type IProjectAgent,
-} from "../../../../../../utils/src/lib/constants/ai-chat-agents";
+} from "@sps/shared-utils";
 export { AI_CHAT_AGENTS, type IProjectAgent };
 
 export function documentAgent(documentId: string): IProjectAgent {

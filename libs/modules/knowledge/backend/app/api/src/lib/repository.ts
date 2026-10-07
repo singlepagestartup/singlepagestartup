@@ -1,6 +1,7 @@
 import { getDrizzle } from "@sps/shared-backend-database-config";
-import { Table as DocumentTable } from "@sps/knowledge/models/document/backend/repository/database";
-import { Table as EditSuggestionTable } from "@sps/knowledge/models/edit-suggestion/backend/repository/database";
+import { CRUDService } from "@sps/shared-backend-api";
+import { Repository as SourceRepository } from "@sps/knowledge/models/source/backend/app/api/src/lib/repository";
+import { Configuration as SourceConfiguration } from "@sps/knowledge/models/source/backend/app/api/src/lib/configuration";
 import { Table as SourceTable } from "@sps/knowledge/models/source/backend/repository/database";
 import { Table as ChunkTable } from "@sps/knowledge/models/chunk/backend/repository/database";
 import { Table as FileTable } from "@sps/file-storage/models/file/backend/repository/database";
@@ -8,20 +9,22 @@ import { Table as SourcesToChunksTable } from "@sps/knowledge/relations/sources-
 import { Table as SourcesToFileStorageModuleFilesTable } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/repository/database";
 import {
   KnowledgeChunkInput,
-  KnowledgeDocumentIndexInput,
   KnowledgeSearchResult,
   KnowledgeSourceInput,
 } from "./types";
-import { and, eq, inArray, not, or, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
+import { Repository as FileRelationRepository } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/repository";
+import { Configuration as FileRelationConfiguration } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/configuration";
+import { Repository as FileRepository } from "@sps/file-storage/models/file/backend/app/api/src/lib/repository";
+import { Configuration as FileConfiguration } from "@sps/file-storage/models/file/backend/app/api/src/lib/configuration";
+import { readUserContext, hashContent } from "./service/utils";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 export class KnowledgeRepository {
   private db = getDrizzle({
-    DocumentTable,
-    EditSuggestionTable,
     SourceTable,
     ChunkTable,
     FileTable,
@@ -29,780 +32,614 @@ export class KnowledgeRepository {
     SourcesToFileStorageModuleFilesTable,
   });
 
+  private sourceCrud(db = this.db) {
+    const repository = new SourceRepository(new SourceConfiguration());
+    repository.db = db;
+    return new CRUDService<typeof SourceTable.$inferSelect>(repository);
+  }
+
   async getStatus() {
-    const [documentCount] = await this.db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(DocumentTable)
-      .execute();
-    const [sourceCount] = await this.db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(SourceTable)
-      .execute();
-    const [chunkCount] = await this.db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(ChunkTable)
-      .execute();
-
-    return {
-      documents: Number(documentCount?.count || 0),
-      sources: Number(sourceCount?.count || 0),
-      chunks: Number(chunkCount?.count || 0),
-    };
+    const [row] = await this.db.execute(sql`SELECT
+      (SELECT count(*)::int FROM sps_ke_source) AS sources,
+      (SELECT count(*)::int FROM sps_ke_chunk) AS chunks`);
+    return row;
   }
 
-  async findSourceByOriginalPath(originalPath: string) {
-    const [source] = await this.db
-      .select()
-      .from(SourceTable)
-      .where(eq(SourceTable.originalPath, originalPath))
-      .limit(1)
-      .execute();
-
-    return source;
+  async findSourceById(id: string) {
+    return this.sourceCrud().findById({ id });
   }
 
-  async findDocumentById(id: string) {
-    const [document] = await this.db
-      .select()
-      .from(DocumentTable)
-      .where(eq(DocumentTable.id, id))
-      .limit(1)
-      .execute();
-
-    return document;
-  }
-
-  async findDocumentsByIds(documentIds: string[]) {
-    const ids = Array.from(
-      new Set(
-        documentIds
-          .map((documentId) => this.toStringValue(documentId).trim())
-          .filter((documentId) => Boolean(documentId)),
-      ),
-    );
-
-    if (!ids.length) {
-      return [];
-    }
-
+  async findSourcesByIds(sourceIds: string[]) {
+    if (!sourceIds.length) return [];
     return this.db
       .select()
-      .from(DocumentTable)
-      .where(inArray(DocumentTable.id, ids))
-      .execute();
+      .from(SourceTable)
+      .where(inArray(SourceTable.id, sourceIds));
   }
 
-  async listDocumentsForIndex(props?: {
-    limit?: number;
-    documentId?: string;
-  }): Promise<KnowledgeDocumentIndexInput[]> {
-    let query = this.db
-      .select({
-        id: DocumentTable.id,
-        title: DocumentTable.title,
-        slug: DocumentTable.slug,
-        description: DocumentTable.description,
-        status: DocumentTable.status,
-        summary: DocumentTable.summary,
-        tags: DocumentTable.tags,
-        metadata: DocumentTable.metadata,
-        contentHash: DocumentTable.contentHash,
-        lastIndexedAt: DocumentTable.lastIndexedAt,
-      })
-      .from(DocumentTable)
-      .$dynamic();
+  async listSourcesForIndex(props?: { limit?: number; sourceId?: string }) {
+    const query = this.db.select().from(SourceTable).$dynamic();
+    if (props?.sourceId) query.where(eq(SourceTable.id, props.sourceId));
+    if (props?.limit && !props.sourceId) query.limit(props.limit);
+    return query.execute();
+  }
 
-    if (props?.documentId) {
-      query = query.where(eq(DocumentTable.id, props.documentId));
-    }
-
-    if (props?.limit && props.limit > 0) {
-      query = query.limit(props.limit);
-    }
-
-    const documents = await query.execute();
-
-    return documents.map((document) => {
-      return {
-        ...document,
-        id: String(document.id),
-        title: this.toStringValue(document.title),
-        slug: this.toStringValue(document.slug),
-        description: this.toStringValue(document.description),
-        status: this.toStringValue(document.status),
-        summary:
-          document.summary === null || document.summary === undefined
-            ? null
-            : this.toStringValue(document.summary),
-        tags: Array.isArray(document.tags) ? document.tags : [],
-        metadata: this.toRecord(document.metadata),
-        contentHash: this.toStringValue(document.contentHash),
-        lastIndexedAt:
-          document.lastIndexedAt instanceof Date
-            ? document.lastIndexedAt
-            : null,
+  async upsertSourceBySlug(
+    input: KnowledgeSourceInput,
+    preserveExisting = false,
+  ) {
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtext(${input.slug}))`,
+      );
+      const [existing] = await tx
+        .select()
+        .from(SourceTable)
+        .where(eq(SourceTable.slug, input.slug));
+      if (existing && preserveExisting) return existing;
+      const data = {
+        ...input,
+        adminTitle: input.title,
+        contentHash: hashContent(input.content),
       };
+      if (existing)
+        return this.sourceCrud(tx).update({
+          id: existing.id,
+          data: { ...existing, ...data },
+        });
+      return this.sourceCrud(tx).create({ data });
     });
   }
 
-  async upsertDocumentFromSourceInput(input: KnowledgeSourceInput) {
-    const slug = this.toSlug(input.originalPath);
-    const metadata = {
-      ...input.metadata,
-      importedFilePath: input.metadata.absolutePath || input.originalPath,
-      importedOriginalPath: input.originalPath,
-      importedSourceType: input.type,
-    };
-
-    const [existing] = await this.db
-      .select()
-      .from(DocumentTable)
-      .where(eq(DocumentTable.slug, slug))
-      .limit(1)
-      .execute();
-
-    const values = {
-      title: input.title,
-      description: input.content,
-      summary: input.description || null,
-      status: "imported",
-      metadata,
-      adminTitle: input.title,
-      updatedAt: new Date(),
-    };
-
-    if (existing) {
-      const [updated] = await this.db
-        .update(DocumentTable)
-        .set(values)
-        .where(eq(DocumentTable.id, existing.id))
-        .returning()
-        .execute();
-
-      return updated;
-    }
-
-    const [created] = await this.db
-      .insert(DocumentTable)
-      .values({
-        ...values,
-        slug,
-      })
-      .returning()
-      .execute();
-
-    return created;
-  }
-
-  async updateDocumentIndexMetadata(props: {
-    documentId: string;
-    contentHash: string;
-  }) {
-    const [updated] = await this.db
-      .update(DocumentTable)
-      .set({
-        status: "indexed",
-        contentHash: props.contentHash,
-        lastIndexedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(DocumentTable.id, props.documentId))
-      .returning()
-      .execute();
-
-    return updated;
-  }
-
-  async updateDocumentDescription(props: {
-    documentId: string;
-    description: string;
+  async updateSource(props: {
+    sourceId: string;
+    content?: string;
+    data?: Partial<typeof SourceTable.$inferSelect>;
     title?: string;
+    description?: string | null;
+    expectedContentHash?: string;
   }) {
-    const values = {
-      ...(props.title ? { title: props.title } : {}),
-      description: props.description,
-      contentHash: "",
-      updatedAt: new Date(),
-    };
-    const [updated] = await this.db
-      .update(DocumentTable)
-      .set(values)
-      .where(eq(DocumentTable.id, props.documentId))
-      .returning()
-      .execute();
-
-    return updated;
-  }
-
-  async deleteDocumentWithDerivedData(documentId: string) {
-    const document = await this.findDocumentById(documentId);
-
-    if (!document) {
-      return undefined;
-    }
-
-    const sources = await this.findSourcesByDocumentId(documentId);
-    const sourceIds = sources
-      .map((source) => source.id)
-      .filter((sourceId): sourceId is string => {
-        return Boolean(sourceId);
+    return this.db.transaction(async (tx) => {
+      const [source] = await tx
+        .select()
+        .from(SourceTable)
+        .where(eq(SourceTable.id, props.sourceId))
+        .for("update");
+      if (!source)
+        throw new Error(`Knowledge Source ${props.sourceId} was not found.`);
+      if (
+        props.expectedContentHash !== undefined &&
+        source.contentHash !== props.expectedContentHash
+      )
+        return null;
+      return this.sourceCrud(tx).update({
+        id: source.id,
+        data: {
+          ...source,
+          ...props.data,
+          id: source.id,
+          content: props.content ?? props.data?.content ?? source.content,
+          contentHash: hashContent(
+            props.content ?? props.data?.content ?? source.content,
+          ),
+          indexedContentHash: source.indexedContentHash,
+          lastIndexedAt: source.lastIndexedAt,
+          ...(props.title !== undefined ? { title: props.title } : {}),
+          ...(props.description !== undefined
+            ? { description: props.description }
+            : {}),
+        },
       });
-
-    await this.deleteSourceFilesBySourceIds(sourceIds);
-    await this.deleteSourceChunkRelationsBySourceIds(sourceIds);
-    await this.deleteSourcesByIds(sourceIds);
-    await this.db
-      .delete(EditSuggestionTable)
-      .where(eq(EditSuggestionTable.targetDocumentId, documentId))
-      .execute();
-    await this.db
-      .delete(DocumentTable)
-      .where(eq(DocumentTable.id, documentId))
-      .execute();
-
-    return document;
-  }
-
-  async createDocumentFromSuggestion(props: {
-    title: string;
-    description: string;
-    metadata?: Record<string, unknown>;
-  }) {
-    const slug = this.toUniqueSlug(props.title || "knowledge-document");
-    const [created] = await this.db
-      .insert(DocumentTable)
-      .values({
-        title: props.title,
-        adminTitle: props.title,
-        slug,
-        description: props.description,
-        status: "draft",
-        metadata: props.metadata || {},
-      })
-      .returning()
-      .execute();
-
-    return created;
-  }
-
-  async upsertSourceForDocument(props: {
-    document: KnowledgeDocumentIndexInput;
-    contentHash: string;
-  }) {
-    return this.upsertSource({
-      title: props.document.title,
-      type: "knowledge-document",
-      content: props.document.description,
-      description: props.document.summary || null,
-      originalPath: this.getDocumentOriginalPath(props.document.id),
-      contentHash: props.contentHash,
-      metadata: {
-        ...props.document.metadata,
-        documentId: props.document.id,
-        documentSlug: props.document.slug,
-        documentStatus: props.document.status,
-        sourceKind: "knowledge-document",
-      },
     });
   }
 
-  getDocumentOriginalPath(documentId: string) {
-    return `knowledge-document:${documentId}`;
+  async deleteSourceWithDerivedData(sourceId: string) {
+    return this.db.transaction(async (tx) => {
+      const [source] = await tx
+        .select()
+        .from(SourceTable)
+        .where(eq(SourceTable.id, sourceId))
+        .for("update");
+      if (!source) return null;
+      await this.clearSourceChunks(tx, sourceId);
+      // Raw files can also belong to chats and other Sources; keep them.
+      return this.sourceCrud(tx).delete({ id: sourceId });
+    });
   }
 
-  async upsertSource(input: KnowledgeSourceInput) {
-    const existing = await this.findSourceByOriginalPath(input.originalPath);
-    const values = {
-      title: input.title,
-      type: input.type,
-      content: input.content,
-      description: input.description,
-      originalPath: input.originalPath,
-      contentHash: input.contentHash,
-      status: "indexed",
-      lastIndexedAt: new Date(),
-      metadata: input.metadata,
-      adminTitle: input.title,
-      slug: this.toSlug(input.originalPath),
-    };
-
-    if (existing) {
-      const [updated] = await this.db
-        .update(SourceTable)
-        .set({
-          ...values,
-          updatedAt: new Date(),
-        })
-        .where(eq(SourceTable.id, existing.id))
-        .returning()
-        .execute();
-
-      return updated;
-    }
-
-    const [created] = await this.db
-      .insert(SourceTable)
-      .values(values)
-      .returning()
-      .execute();
-
-    return created;
+  private async clearSourceChunks(tx: typeof this.db, sourceId: string) {
+    const relations = await tx
+      .select()
+      .from(SourcesToChunksTable)
+      .where(eq(SourcesToChunksTable.sourceId, sourceId));
+    await tx
+      .delete(SourcesToChunksTable)
+      .where(eq(SourcesToChunksTable.sourceId, sourceId));
+    if (relations.length)
+      await tx.delete(ChunkTable).where(
+        inArray(
+          ChunkTable.id,
+          relations.map((r) => r.chunkId),
+        ),
+      );
   }
 
   async clearDerivedData() {
-    await this.db.delete(SourcesToFileStorageModuleFilesTable).execute();
-    await this.db.delete(SourcesToChunksTable).execute();
-    await this.db.delete(ChunkTable).execute();
-    await this.db.delete(SourceTable).execute();
+    return this.db.transaction(async (tx) => {
+      await tx.delete(SourcesToChunksTable);
+      await tx.delete(ChunkTable);
+      for (const source of await tx.select().from(SourceTable).for("update")) {
+        await this.sourceCrud(tx).update({
+          id: source.id,
+          data: { ...source, indexedContentHash: null, lastIndexedAt: null },
+        });
+      }
+    });
   }
 
-  async deleteChunksBySourceId(sourceId: string) {
-    await this.db
-      .delete(SourcesToChunksTable)
-      .where(eq(SourcesToChunksTable.sourceId, sourceId))
-      .execute();
-
-    await this.deleteOrphanChunks();
+  async invalidateFileContent(
+    sourceId: string,
+    userContext: string,
+    expectedContentHash: string,
+  ) {
+    return this.db.transaction(async (tx) => {
+      const [source] = await tx
+        .select()
+        .from(SourceTable)
+        .where(eq(SourceTable.id, sourceId))
+        .for("update");
+      if (!source || source.contentHash !== expectedContentHash) return null;
+      await this.clearSourceChunks(tx, sourceId);
+      return this.sourceCrud(tx).update({
+        id: source.id,
+        data: {
+          ...source,
+          content: userContext,
+          contentHash: hashContent(userContext),
+          description: null,
+          indexedContentHash: null,
+          lastIndexedAt: null,
+        },
+      });
+    });
   }
 
-  private async findSourcesByDocumentId(documentId: string) {
-    return this.db
-      .select()
-      .from(SourceTable)
-      .where(
-        or(
+  async publishChunks(
+    sourceId: string,
+    contentHash: string,
+    chunks: KnowledgeChunkInput[],
+  ) {
+    return this.db.transaction(async (tx) => {
+      const [source] = await tx
+        .select()
+        .from(SourceTable)
+        .where(eq(SourceTable.id, sourceId))
+        .for("update");
+      if (!source || source.contentHash !== contentHash) return false;
+      await this.clearSourceChunks(tx, sourceId);
+      if (chunks.length) {
+        const created = await tx.insert(ChunkTable).values(chunks).returning();
+        await tx.insert(SourcesToChunksTable).values(
+          created.map((chunk) => ({
+            sourceId,
+            chunkId: chunk.id,
+            orderIndex: chunk.chunkIndex,
+          })),
+        );
+      }
+      await this.sourceCrud(tx).update({
+        id: sourceId,
+        data: {
+          ...source,
+          indexedContentHash: contentHash,
+          lastIndexedAt: new Date(),
+        },
+      });
+      return true;
+    });
+  }
+
+  async saveAnalyzedContent(props: {
+    sourceId: string;
+    expectedContentHash: string;
+    fileSnapshot: string;
+    content: string;
+  }) {
+    return this.db.transaction(async (tx) => {
+      const [source] = await tx
+        .select()
+        .from(SourceTable)
+        .where(eq(SourceTable.id, props.sourceId))
+        .for("update");
+      if (!source || source.contentHash !== props.expectedContentHash)
+        return null;
+      const files = await tx
+        .select({
+          relation: SourcesToFileStorageModuleFilesTable,
+          file: FileTable,
+        })
+        .from(SourcesToFileStorageModuleFilesTable)
+        .innerJoin(
+          FileTable,
           eq(
-            SourceTable.originalPath,
-            this.getDocumentOriginalPath(documentId),
+            FileTable.id,
+            SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
           ),
-          sql`${SourceTable.metadata}->>'documentId' = ${documentId}`,
-        ),
-      )
-      .execute();
+        )
+        .where(eq(SourcesToFileStorageModuleFilesTable.sourceId, source.id))
+        .orderBy(
+          asc(SourcesToFileStorageModuleFilesTable.orderIndex),
+          asc(SourcesToFileStorageModuleFilesTable.id),
+        );
+      const snapshot = JSON.stringify(
+        files.map(({ relation, file }) => [
+          relation.id,
+          relation.fileStorageModuleFileId,
+          relation.orderIndex,
+          file.updatedAt,
+        ]),
+      );
+      if (snapshot !== props.fileSnapshot) return null;
+      return this.sourceCrud(tx).update({
+        id: source.id,
+        data: {
+          ...source,
+          content: props.content,
+          contentHash: hashContent(props.content),
+        },
+      });
+    });
   }
 
-  private async deleteSourceFilesBySourceIds(sourceIds: string[]) {
-    if (!sourceIds.length) {
-      return;
-    }
-
-    const fileRelations = await this.db
+  async sourceFiles(sourceId: string) {
+    return this.db
       .select({
-        fileId: SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
-        file: FileTable.file,
+        relation: SourcesToFileStorageModuleFilesTable,
+        file: FileTable,
       })
       .from(SourcesToFileStorageModuleFilesTable)
-      .leftJoin(
+      .innerJoin(
         FileTable,
         eq(
           FileTable.id,
           SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
         ),
       )
-      .where(inArray(SourcesToFileStorageModuleFilesTable.sourceId, sourceIds))
-      .execute();
-    const fileIds = fileRelations
-      .map((relation) => relation.fileId)
-      .filter((fileId): fileId is string => {
-        return Boolean(fileId);
-      });
-    const fileById = new Map(
-      fileRelations.map((relation) => {
-        return [relation.fileId, relation.file] as const;
-      }),
+      .where(eq(SourcesToFileStorageModuleFilesTable.sourceId, sourceId))
+      .orderBy(
+        asc(SourcesToFileStorageModuleFilesTable.orderIndex),
+        asc(SourcesToFileStorageModuleFilesTable.id),
+      );
+  }
+
+  private relationCrud(db = this.db) {
+    const repository = new FileRelationRepository(
+      new FileRelationConfiguration(),
     );
+    repository.db = db;
+    return new CRUDService<
+      typeof SourcesToFileStorageModuleFilesTable.$inferSelect
+    >(repository);
+  }
 
-    await this.db
-      .delete(SourcesToFileStorageModuleFilesTable)
-      .where(inArray(SourcesToFileStorageModuleFilesTable.sourceId, sourceIds))
-      .execute();
+  private async lockFiles(
+    tx: typeof this.db,
+    fileIds: string[],
+    mode: "key share" | "update" = "key share",
+  ) {
+    const ids = [...new Set(fileIds)];
+    if (!ids.length) return;
+    const files = await tx
+      .select()
+      .from(FileTable)
+      .where(inArray(FileTable.id, ids))
+      .orderBy(asc(FileTable.id))
+      .for(mode);
+    if (files.length !== ids.length)
+      throw new Error("Stored file was not found.");
+  }
 
-    if (fileIds.length) {
-      const remainingRelations = await this.db
-        .select({
-          fileId: SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
-        })
+  private async lockSources(tx: typeof this.db, sourceIds: string[]) {
+    if (!sourceIds.length) return [];
+    return tx
+      .select()
+      .from(SourceTable)
+      .where(inArray(SourceTable.id, [...new Set(sourceIds)]))
+      .orderBy(asc(SourceTable.id))
+      .for("update");
+  }
+
+  private async invalidateSources(
+    tx: typeof this.db,
+    sources: (typeof SourceTable.$inferSelect)[],
+  ) {
+    for (const source of sources) {
+      const content = readUserContext(source.content);
+      await this.clearSourceChunks(tx, source.id);
+      await this.sourceCrud(tx).update({
+        id: source.id,
+        data: {
+          ...source,
+          content,
+          contentHash: hashContent(content),
+          indexedContentHash: null,
+          lastIndexedAt: null,
+          description: null,
+        },
+      });
+    }
+  }
+
+  async mutateFileRelation(props: {
+    action: "create" | "update" | "delete";
+    id?: string;
+    data?: any;
+  }) {
+    return this.db.transaction(async (tx) => {
+      const previous = props.id
+        ? await this.relationCrud(tx).findById({ id: props.id })
+        : null;
+      if (props.action !== "create" && !previous)
+        throw new Error("Knowledge file relation was not found.");
+      await this.lockFiles(
+        tx,
+        [
+          previous?.fileStorageModuleFileId,
+          props.data?.fileStorageModuleFileId,
+        ].filter(Boolean),
+      );
+      const sourceIds: string[] = [
+        ...new Set([previous?.sourceId, props.data?.sourceId].filter(Boolean)),
+      ] as string[];
+      const sources = await this.lockSources(tx, sourceIds);
+      if (previous) {
+        const [current] = await tx
+          .select()
+          .from(SourcesToFileStorageModuleFilesTable)
+          .where(eq(SourcesToFileStorageModuleFilesTable.id, previous.id))
+          .for("update");
+        if (
+          !current ||
+          current.sourceId !== previous.sourceId ||
+          current.fileStorageModuleFileId !== previous.fileStorageModuleFileId
+        )
+          throw new Error(
+            "Knowledge file relation changed. Retry the operation.",
+          );
+      }
+      let relation;
+      if (props.action === "create")
+        relation = await this.relationCrud(tx).create({ data: props.data });
+      else if (props.action === "delete")
+        relation = await this.relationCrud(tx).delete({ id: props.id! });
+      else
+        relation = await this.relationCrud(tx).update({
+          id: props.id!,
+          data: { ...previous!, ...props.data },
+        });
+      await this.invalidateSources(tx, sources);
+      return { relation, sourceIds };
+    });
+  }
+
+  async mutateStoredFile(props: {
+    action: "update" | "delete";
+    id: string;
+    data?: any;
+  }) {
+    return this.db.transaction(async (tx) => {
+      await this.lockFiles(tx, [props.id], "update");
+      const relations = await tx
+        .select()
         .from(SourcesToFileStorageModuleFilesTable)
         .where(
-          inArray(
+          eq(
             SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
-            fileIds,
+            props.id,
           ),
-        )
-        .execute();
-      const remainingFileIds = new Set(
-        remainingRelations
-          .map((relation) => relation.fileId)
-          .filter((fileId): fileId is string => {
-            return Boolean(fileId);
-          }),
-      );
-      const orphanFileIds = fileIds.filter((fileId) => {
-        return !remainingFileIds.has(fileId);
-      });
+        );
+      const sourceIds = [
+        ...new Set(relations.map((relation) => relation.sourceId)),
+      ];
+      const sources = await this.lockSources(tx, sourceIds);
+      const repository = new FileRepository(new FileConfiguration());
+      repository.db = tx;
+      const crud = new CRUDService<typeof FileTable.$inferSelect>(repository);
+      const previous = await crud.findById({ id: props.id });
+      if (!previous) throw new Error("Stored file was not found.");
+      const file =
+        props.action === "delete"
+          ? await crud.delete({ id: props.id })
+          : await crud.update({
+              id: props.id,
+              data: { ...previous, ...props.data },
+            });
+      await this.invalidateSources(tx, sources);
+      return { file, sourceIds };
+    });
+  }
 
-      await Promise.all(
-        orphanFileIds.map((fileId) => {
-          return this.deleteStoredFile(fileById.get(fileId));
-        }),
+  async attachFiles(sourceId: string, fileIds: string[]) {
+    if (!fileIds.length) return;
+    await this.db.transaction(async (tx) => {
+      await this.lockFiles(tx, fileIds);
+      const sources = await this.lockSources(tx, [sourceId]);
+      const existing = await tx
+        .select()
+        .from(SourcesToFileStorageModuleFilesTable)
+        .where(eq(SourcesToFileStorageModuleFilesTable.sourceId, sourceId));
+      const attached = new Set(
+        existing.map((relation) => relation.fileStorageModuleFileId),
       );
-
-      if (!orphanFileIds.length) {
-        return;
+      let orderIndex =
+        Math.max(-1, ...existing.map((relation) => relation.orderIndex)) + 1;
+      let changed = false;
+      for (const fileStorageModuleFileId of [...new Set(fileIds)]) {
+        if (attached.has(fileStorageModuleFileId)) continue;
+        await this.relationCrud(tx).create({
+          data: { sourceId, fileStorageModuleFileId, orderIndex: orderIndex++ },
+        });
+        changed = true;
       }
-
-      await this.db
-        .delete(FileTable)
-        .where(inArray(FileTable.id, orphanFileIds))
-        .execute();
-    }
+      if (changed) await this.invalidateSources(tx, sources);
+    });
   }
 
-  private async deleteSourceChunkRelationsBySourceIds(sourceIds: string[]) {
-    if (!sourceIds.length) {
-      return;
-    }
-
-    await this.db
-      .delete(SourcesToChunksTable)
-      .where(inArray(SourcesToChunksTable.sourceId, sourceIds))
-      .execute();
-
-    await this.deleteOrphanChunks();
-  }
-
-  private async deleteSourcesByIds(sourceIds: string[]) {
-    if (!sourceIds.length) {
-      return;
-    }
-
-    await this.db
-      .delete(SourceTable)
-      .where(inArray(SourceTable.id, sourceIds))
-      .execute();
-  }
-
-  async insertChunksForSource(sourceId: string, chunks: KnowledgeChunkInput[]) {
-    if (!chunks.length) {
-      return [];
-    }
-
-    const createdChunks = await this.db
-      .insert(ChunkTable)
-      .values(chunks)
-      .returning()
-      .execute();
-
-    await this.db
-      .insert(SourcesToChunksTable)
-      .values(
-        createdChunks.map((chunk) => {
-          return {
-            sourceId,
-            chunkId: chunk.id,
-          };
-        }),
-      )
-      .execute();
-
-    return createdChunks;
-  }
-
-  async hasSourceChunks(sourceId: string) {
-    const [relation] = await this.db
-      .select({ id: SourcesToChunksTable.id })
-      .from(SourcesToChunksTable)
-      .where(eq(SourcesToChunksTable.sourceId, sourceId))
-      .limit(1)
-      .execute();
-
-    return Boolean(relation);
-  }
-
-  async hasIndexedChunks(sourceId: string, contentHash: string) {
-    const [chunk] = await this.db
-      .select({ id: ChunkTable.id })
-      .from(ChunkTable)
-      .innerJoin(
-        SourcesToChunksTable,
-        eq(SourcesToChunksTable.chunkId, ChunkTable.id),
-      )
+  async fileSourceIds(fileId: string) {
+    const rows = await this.db
+      .select({ sourceId: SourcesToFileStorageModuleFilesTable.sourceId })
+      .from(SourcesToFileStorageModuleFilesTable)
       .where(
-        and(
-          eq(SourcesToChunksTable.sourceId, sourceId),
-          eq(ChunkTable.contentHash, contentHash),
+        eq(
+          SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
+          fileId,
         ),
-      )
-      .limit(1)
-      .execute();
+      );
+    return [...new Set(rows.map((r) => r.sourceId))];
+  }
 
-    return Boolean(chunk);
+  async setFiles(
+    sourceId: string,
+    fileIds: string[],
+    expectedFileIds?: string[],
+  ) {
+    return this.db.transaction(async (tx) => {
+      await this.lockFiles(tx, fileIds);
+      const sources = await this.lockSources(tx, [sourceId]);
+      if (!sources.length) throw new Error("Knowledge Source was not found.");
+      const existing = await tx
+        .select()
+        .from(SourcesToFileStorageModuleFilesTable)
+        .where(eq(SourcesToFileStorageModuleFilesTable.sourceId, sourceId))
+        .orderBy(
+          asc(SourcesToFileStorageModuleFilesTable.orderIndex),
+          asc(SourcesToFileStorageModuleFilesTable.id),
+        );
+      if (
+        expectedFileIds &&
+        JSON.stringify(existing.map((item) => item.fileStorageModuleFileId)) !==
+          JSON.stringify(expectedFileIds)
+      )
+        throw new Error(
+          "Knowledge attachments changed. Refresh and retry the operation.",
+        );
+      const ids = [...new Set(fileIds)];
+      for (const relation of existing) {
+        if (!ids.includes(relation.fileStorageModuleFileId))
+          await this.relationCrud(tx).delete({ id: relation.id });
+      }
+      for (const [orderIndex, fileStorageModuleFileId] of ids.entries()) {
+        const relation = existing.find(
+          (item) => item.fileStorageModuleFileId === fileStorageModuleFileId,
+        );
+        if (relation)
+          await this.relationCrud(tx).update({
+            id: relation.id,
+            data: { ...relation, orderIndex },
+          });
+        else
+          await this.relationCrud(tx).create({
+            data: { sourceId, fileStorageModuleFileId, orderIndex },
+          });
+      }
+      await this.invalidateSources(tx, sources);
+    });
   }
 
   async ensureFileForSource(props: { sourceId: string; filePath: string }) {
-    const existingRelation = await this.findSourceFileRelation(props.sourceId);
+    const existing = await this.sourceFiles(props.sourceId);
+    const linked = existing.find(
+      ({ file }) => file.slug === this.toSlug(props.filePath),
+    );
+    if (linked) return linked.file;
     const filePayload = await this.createFilePayload(props.filePath);
-
-    if (existingRelation?.fileStorageModuleFileId) {
-      const [previousFile] = await this.db
-        .select()
-        .from(FileTable)
-        .where(eq(FileTable.id, existingRelation.fileStorageModuleFileId))
-        .limit(1)
-        .execute();
-
-      const [updatedFile] = await this.db
-        .update(FileTable)
-        .set({
-          ...filePayload,
-          updatedAt: new Date(),
-        })
-        .where(eq(FileTable.id, existingRelation.fileStorageModuleFileId))
-        .returning()
-        .execute();
-
-      await this.deleteStoredFile(previousFile?.file);
-
-      return updatedFile;
-    }
-
-    const [createdFile] = await this.db
+    const [file] = await this.db
       .insert(FileTable)
       .values(filePayload)
-      .returning()
-      .execute();
-
-    await this.db
-      .insert(SourcesToFileStorageModuleFilesTable)
-      .values({
-        sourceId: props.sourceId,
-        fileStorageModuleFileId: createdFile.id,
-      })
-      .execute();
-
-    return createdFile;
+      .returning();
+    await this.attachFiles(props.sourceId, [file.id]);
+    return file;
   }
 
   async searchChunks(props: {
     embedding: number[];
     topK: number;
     minSimilarity?: number;
-    documentIds?: string[];
+    sourceIds?: string[];
   }): Promise<KnowledgeSearchResult[]> {
-    const embeddingValue = `[${props.embedding.join(",")}]`;
-    const minSimilarity = props.minSimilarity ?? -1;
-    const rows = props.documentIds?.length
-      ? await this.db.execute<Record<string, unknown>>(sql`
-          WITH query_vector AS (
-            SELECT ${embeddingValue}::vector AS embedding
-          ),
-          filtered_chunks AS MATERIALIZED (
-            SELECT
-              c.id,
-              c.text,
-              c.chunk_index AS "chunkIndex",
-              c.metadata,
-              sc.se_id AS "sourceId",
-              s.title AS "sourceTitle",
-              s.original_path AS "sourceOriginalPath",
-              s.type AS "sourceType",
-              (c.embedding <=> query_vector.embedding) AS distance
-            FROM sps_ke_chunk c
-            CROSS JOIN query_vector
-            INNER JOIN sps_ke_ss_to_cs_rae sc ON sc.ck_id = c.id
-            INNER JOIN sps_ke_source s ON s.id = sc.se_id
-            WHERE (1 - (c.embedding <=> query_vector.embedding)) >= ${minSimilarity}
-            AND s.metadata->>'documentId' IN (${sql.join(
-              props.documentIds.map((id) => sql`${id}`),
-              sql`, `,
-            )})
-          )
-          SELECT
-            id,
-            text,
-            "chunkIndex",
-            metadata,
-            "sourceId",
-            "sourceTitle",
-            "sourceOriginalPath",
-            "sourceType",
-            distance,
-            (1 - distance) AS similarity
-          FROM filtered_chunks
-          ORDER BY distance
-          LIMIT ${props.topK}
-        `)
-      : await this.db.execute<Record<string, unknown>>(sql`
-          SELECT
-            c.id,
-            c.text,
-            c.chunk_index AS "chunkIndex",
-            c.metadata,
-            sc.se_id AS "sourceId",
-            s.title AS "sourceTitle",
-            s.original_path AS "sourceOriginalPath",
-            s.type AS "sourceType",
-            (c.embedding <=> ${embeddingValue}::vector) AS distance,
-            (1 - (c.embedding <=> ${embeddingValue}::vector)) AS similarity
-          FROM sps_ke_chunk c
-          LEFT JOIN sps_ke_ss_to_cs_rae sc ON sc.ck_id = c.id
-          LEFT JOIN sps_ke_source s ON s.id = sc.se_id
-          WHERE (1 - (c.embedding <=> ${embeddingValue}::vector)) >= ${minSimilarity}
-          ORDER BY c.embedding <=> ${embeddingValue}::vector
-          LIMIT ${props.topK}
-        `);
-
-    return rows.map((row: any) => {
-      return {
-        id: row.id,
-        text: row.text,
-        chunkIndex: Number(row.chunkIndex),
-        sourceId: row.sourceId,
-        sourceTitle: row.sourceTitle,
-        sourceOriginalPath: row.sourceOriginalPath,
-        sourceType: row.sourceType,
+    if (props.sourceIds && !props.sourceIds.length) return [];
+    const vector = `[${props.embedding.join(",")}]`;
+    const scope = props.sourceIds
+      ? sql`AND s.id IN (${sql.join(
+          props.sourceIds.map((id) => sql`${id}::uuid`),
+          sql`, `,
+        )})`
+      : sql``;
+    if (!props.sourceIds) {
+      const rows = await this.db.execute(sql`WITH ranked AS MATERIALIZED (
+        SELECT c.id, c.text, c.chunk_index AS "chunkIndex", c.metadata,
+          (c.embedding <=> ${vector}::vector) AS distance
+        FROM sps_ke_chunk c
+        WHERE (SELECT s.indexed_content_hash = s.content_hash
+          FROM sps_ke_ss_to_cs_rae sc INNER JOIN sps_ke_source s ON s.id = sc.se_id
+          WHERE sc.ck_id = c.id) IS TRUE
+          AND (1 - (c.embedding <=> ${vector}::vector)) >= ${props.minSimilarity ?? -1}
+        ORDER BY c.embedding <=> ${vector}::vector LIMIT ${props.topK}
+      ) SELECT ranked.*, s.id AS "sourceId", s.title AS "sourceTitle", (1 - ranked.distance) AS similarity
+        FROM ranked INNER JOIN sps_ke_ss_to_cs_rae sc ON sc.ck_id = ranked.id
+        INNER JOIN sps_ke_source s ON s.id = sc.se_id ORDER BY ranked.distance`);
+      return rows.map((row) => ({
+        ...row,
         distance: Number(row.distance),
         similarity: Number(row.similarity),
         retrievalRole: "seed",
-        metadata: row.metadata || {},
-      };
-    });
+      })) as KnowledgeSearchResult[];
+    }
+    const candidates = sql`SELECT c.id, c.text, c.chunk_index AS "chunkIndex", c.metadata, c.embedding,
+      s.id AS "sourceId", s.title AS "sourceTitle"
+      FROM sps_ke_chunk c INNER JOIN sps_ke_ss_to_cs_rae sc ON sc.ck_id = c.id INNER JOIN sps_ke_source s ON s.id = sc.se_id
+      WHERE s.indexed_content_hash = s.content_hash ${scope}`;
+    const materialization = sql`MATERIALIZED`;
+    const rows = await this.db
+      .execute(sql`WITH candidates AS ${materialization} (${candidates})
+      SELECT id, text, "chunkIndex", metadata, "sourceId", "sourceTitle",
+      (embedding <=> ${vector}::vector) AS distance, (1 - (embedding <=> ${vector}::vector)) AS similarity
+      FROM candidates WHERE (1 - (embedding <=> ${vector}::vector)) >= ${props.minSimilarity ?? -1}
+      ORDER BY embedding <=> ${vector}::vector LIMIT ${props.topK}`);
+    return rows.map((row) => ({
+      ...row,
+      distance: Number(row.distance),
+      similarity: Number(row.similarity),
+      retrievalRole: "seed",
+    })) as KnowledgeSearchResult[];
   }
 
   async findNeighborChunks(props: {
-    seeds: Array<{
+    seeds: {
       sourceId: string;
       chunkIndex: number;
       distance?: number | null;
       similarity?: number | null;
-    }>;
+    }[];
     window: number;
   }): Promise<KnowledgeSearchResult[]> {
-    const seeds = props.seeds.filter((seed) => {
-      return Boolean(seed.sourceId) && Number.isFinite(seed.chunkIndex);
-    });
-    const window = Math.max(0, Math.floor(Number(props.window || 0)));
-
-    if (!seeds.length || !window) {
-      return [];
+    const results: KnowledgeSearchResult[] = [];
+    for (const seed of props.seeds) {
+      const rows = await this.db
+        .execute(sql`SELECT c.id, c.text, c.chunk_index AS "chunkIndex", c.metadata, s.id AS "sourceId", s.title AS "sourceTitle"
+        FROM sps_ke_chunk c INNER JOIN sps_ke_ss_to_cs_rae sc ON sc.ck_id = c.id INNER JOIN sps_ke_source s ON s.id = sc.se_id
+        WHERE s.id = ${seed.sourceId}::uuid AND s.indexed_content_hash = s.content_hash AND c.chunk_index BETWEEN ${seed.chunkIndex - props.window} AND ${seed.chunkIndex + props.window}
+        ORDER BY c.chunk_index`);
+      results.push(
+        ...(rows.map((row) => ({
+          ...row,
+          distance: seed.distance ?? null,
+          similarity: seed.similarity ?? null,
+          retrievalRole: "neighbor",
+        })) as KnowledgeSearchResult[]),
+      );
     }
-
-    const seedValues = sql.join(
-      seeds.map((seed) => {
-        return sql`(${seed.sourceId}::uuid, ${seed.chunkIndex}::int, ${
-          seed.distance ?? null
-        }::double precision, ${seed.similarity ?? null}::double precision)`;
-      }),
-      sql`, `,
-    );
-
-    const rows = await this.db.execute<Record<string, unknown>>(sql`
-      WITH seed_values(source_id, seed_chunk_index, seed_distance, seed_similarity) AS (
-        VALUES ${seedValues}
-      )
-      SELECT
-        c.id,
-        c.text,
-        c.chunk_index AS "chunkIndex",
-        c.metadata,
-        sc.se_id AS "sourceId",
-        s.title AS "sourceTitle",
-        s.original_path AS "sourceOriginalPath",
-        s.type AS "sourceType",
-        seed_values.seed_distance AS distance,
-        seed_values.seed_similarity AS similarity
-      FROM seed_values
-      INNER JOIN sps_ke_ss_to_cs_rae sc ON sc.se_id = seed_values.source_id
-      INNER JOIN sps_ke_chunk c ON c.id = sc.ck_id
-      LEFT JOIN sps_ke_source s ON s.id = sc.se_id
-      WHERE c.chunk_index BETWEEN seed_values.seed_chunk_index - ${window}
-        AND seed_values.seed_chunk_index + ${window}
-      ORDER BY seed_values.seed_distance NULLS LAST, sc.se_id, c.chunk_index
-    `);
-
-    return rows.map((row: any) => {
-      return {
-        id: row.id,
-        text: row.text,
-        chunkIndex: Number(row.chunkIndex),
-        sourceId: row.sourceId,
-        sourceTitle: row.sourceTitle,
-        sourceOriginalPath: row.sourceOriginalPath,
-        sourceType: row.sourceType,
-        distance:
-          row.distance === null || row.distance === undefined
-            ? null
-            : Number(row.distance),
-        similarity:
-          row.similarity === null || row.similarity === undefined
-            ? null
-            : Number(row.similarity),
-        retrievalRole: "neighbor",
-        metadata: row.metadata || {},
-      };
-    });
-  }
-
-  async isChunkIndexed(sourceId: string, contentHash: string) {
-    return this.hasIndexedChunks(sourceId, contentHash);
-  }
-
-  async findEditSuggestionById(id: string) {
-    const [suggestion] = await this.db
-      .select()
-      .from(EditSuggestionTable)
-      .where(eq(EditSuggestionTable.id, id))
-      .limit(1)
-      .execute();
-
-    return suggestion;
-  }
-
-  async createEditSuggestion(props: {
-    title: string;
-    description?: string;
-    operation?: "create" | "update";
-    targetDocumentId?: string | null;
-    proposedDescription: string;
-    rationale?: string;
-    metadata?: Record<string, unknown>;
-  }) {
-    const [created] = await this.db
-      .insert(EditSuggestionTable)
-      .values({
-        title: props.title,
-        adminTitle: props.title,
-        slug: this.toUniqueSlug(props.title || "edit-suggestion"),
-        description: props.description || "",
-        operation: props.operation || "update",
-        targetDocumentId: props.targetDocumentId || null,
-        proposedDescription: props.proposedDescription,
-        rationale: props.rationale || "",
-        metadata: props.metadata || {},
-      })
-      .returning()
-      .execute();
-
-    return created;
-  }
-
-  async updateEditSuggestionStatus(props: {
-    id: string;
-    status: "approved" | "rejected";
-    metadata?: Record<string, unknown>;
-  }) {
-    const [updated] = await this.db
-      .update(EditSuggestionTable)
-      .set({
-        status: props.status,
-        metadata: props.metadata,
-        updatedAt: new Date(),
-      })
-      .where(eq(EditSuggestionTable.id, props.id))
-      .returning()
-      .execute();
-
-    return updated;
+    return results;
   }
 
   private toSlug(value: string) {
@@ -812,171 +649,6 @@ export class KnowledgeRepository {
       .replace(/^-+|-+$/g, "")
       .slice(0, 180);
   }
-
-  private toUniqueSlug(value: string) {
-    return this.toSlug(`${value}-${Date.now().toString(36)}`);
-  }
-
-  private toStringValue(value: unknown) {
-    if (typeof value === "string") {
-      return value;
-    }
-
-    if (value === null || value === undefined) {
-      return "";
-    }
-
-    if (value instanceof Date) {
-      return value.toISOString();
-    }
-
-    return String(value);
-  }
-
-  private toSerializableRecord(value: unknown): Record<string, unknown> {
-    const normalized = this.toSerializableJson(value);
-
-    if (
-      normalized &&
-      typeof normalized === "object" &&
-      !Array.isArray(normalized)
-    ) {
-      return normalized as Record<string, unknown>;
-    }
-
-    return {};
-  }
-
-  private toSerializableJson(value: unknown): unknown {
-    if (value instanceof Date) {
-      return value.toISOString();
-    }
-
-    if (Array.isArray(value)) {
-      return value.map((item) => this.toSerializableJson(item));
-    }
-
-    if (value && typeof value === "object") {
-      return Object.fromEntries(
-        Object.entries(value).map(([key, entryValue]) => {
-          return [key, this.toSerializableJson(entryValue)];
-        }),
-      );
-    }
-
-    return value;
-  }
-
-  private toRecord(value: unknown): Record<string, unknown> {
-    if (typeof value === "string") {
-      try {
-        const parsed = JSON.parse(value);
-        return this.toRecord(parsed);
-      } catch {
-        return {};
-      }
-    }
-
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      return value as Record<string, unknown>;
-    }
-
-    return {};
-  }
-
-  async upsertDocumentBySlug(props: {
-    slug: string;
-    title: string;
-    description: string;
-    summary: string | null;
-    status: string;
-    metadata: Record<string, unknown>;
-  }) {
-    const slug = this.toStringValue(props.slug).trim();
-    const title = this.toStringValue(props.title);
-    const description = this.toStringValue(props.description);
-    const summary =
-      props.summary === null || props.summary === undefined
-        ? null
-        : this.toStringValue(props.summary);
-    const status = this.toStringValue(props.status) || "imported";
-    const metadata = JSON.stringify(this.toSerializableRecord(props.metadata));
-    const [document] = await this.db.execute<{
-      id: string;
-      title: string;
-      slug: string;
-      description: string;
-      status: string;
-      summary: string | null;
-      tags: string[];
-      metadata: Record<string, unknown>;
-      contentHash: string;
-      lastIndexedAt: Date | null;
-      adminTitle: string;
-    }>(sql`
-      INSERT INTO sps_ke_document (
-        title,
-        description,
-        summary,
-        status,
-        metadata,
-        content_hash,
-        admin_title,
-        slug,
-        updated_at
-      )
-      VALUES (
-        ${title},
-        ${description},
-        ${summary},
-        ${status},
-        CAST(${metadata} AS jsonb),
-        ${""},
-        ${title},
-        ${slug},
-        NOW()
-      )
-      ON CONFLICT (slug) DO UPDATE SET
-        title = EXCLUDED.title,
-        description = EXCLUDED.description,
-        summary = EXCLUDED.summary,
-        status = EXCLUDED.status,
-        metadata = EXCLUDED.metadata,
-        content_hash = ${""},
-        admin_title = EXCLUDED.admin_title,
-        updated_at = NOW()
-      RETURNING
-        id,
-        title,
-        slug,
-        description,
-        status,
-        summary,
-        tags,
-        metadata,
-        content_hash AS "contentHash",
-        last_indexed_at AS "lastIndexedAt",
-        admin_title AS "adminTitle"
-    `);
-
-    if (!document?.id) {
-      throw new Error(`Knowledge document upsert failed for slug ${slug}`);
-    }
-
-    return document;
-  }
-
-  private async findSourceFileRelation(sourceId: string) {
-    const [relation] = await this.db
-      .select()
-      .from(SourcesToFileStorageModuleFilesTable)
-      .where(eq(SourcesToFileStorageModuleFilesTable.sourceId, sourceId))
-      .limit(1)
-      .execute();
-
-    return relation;
-  }
-
   private async createFilePayload(filePath: string) {
     const buffer = await fs.readFile(filePath);
     const fileName = path.basename(filePath);
@@ -1037,38 +709,5 @@ export class KnowledgeRepository {
         height: 0,
       };
     }
-  }
-
-  private async deleteStoredFile(file?: string | null) {
-    const fileName = file?.split("/").pop();
-
-    if (!fileName) {
-      return;
-    }
-
-    const fileStorage = new Provider({
-      type: FILE_STORAGE_PROVIDER,
-      folder: FILE_STORAGE_FOLDER,
-    });
-
-    await fileStorage.deleteFile({ name: fileName });
-  }
-
-  private async deleteOrphanChunks() {
-    const relations = await this.db
-      .select({ chunkId: SourcesToChunksTable.chunkId })
-      .from(SourcesToChunksTable)
-      .execute();
-    const linkedChunkIds = relations.map((relation) => relation.chunkId);
-
-    if (!linkedChunkIds.length) {
-      await this.db.delete(ChunkTable).execute();
-      return;
-    }
-
-    await this.db
-      .delete(ChunkTable)
-      .where(not(inArray(ChunkTable.id, linkedChunkIds)))
-      .execute();
   }
 }

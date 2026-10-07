@@ -32,8 +32,8 @@ export function getSocialProfileKnowledgePermissionDescriptors(
   const targetProfilePath = `${chatProfilesPath}/profiles/${props.socialModuleProfileId}`;
   const skillsPath = `${targetProfilePath}/skills`;
   const skillPath = `${skillsPath}/[social.skills.id]`;
-  const knowledgeDocumentsPath = `${targetProfilePath}/knowledge/documents`;
-  const knowledgeDocumentPath = `${knowledgeDocumentsPath}/[knowledge.documents.id]`;
+  const knowledgeSourcesPath = `${targetProfilePath}/knowledge/sources`;
+  const knowledgeSourcePath = `${knowledgeSourcesPath}/[knowledge.sources.id]`;
 
   return [
     { method: "GET", path: `${chatProfilesPath}/profiles` },
@@ -45,11 +45,11 @@ export function getSocialProfileKnowledgePermissionDescriptors(
     { method: "POST", path: skillPath },
     { method: "PATCH", path: skillPath },
     { method: "DELETE", path: skillPath },
-    { method: "GET", path: knowledgeDocumentsPath },
-    { method: "POST", path: knowledgeDocumentsPath },
-    { method: "PATCH", path: knowledgeDocumentPath },
-    { method: "POST", path: `${knowledgeDocumentPath}/reindex` },
-    { method: "DELETE", path: knowledgeDocumentPath },
+    { method: "GET", path: knowledgeSourcesPath },
+    { method: "POST", path: knowledgeSourcesPath },
+    { method: "PATCH", path: knowledgeSourcePath },
+    { method: "POST", path: `${knowledgeSourcePath}/reindex` },
+    { method: "DELETE", path: knowledgeSourcePath },
   ];
 }
 

@@ -21,3 +21,5 @@ export { normalizeAiResponseText } from "./lib/ai-response-text/singlepage";
 export * from "./lib/audio-transcription";
 export * from "./lib/telegram-voice-transcription";
 export { util as getPagination } from "./lib/get-pagination";
+
+export * from "./lib/knowledge-content";

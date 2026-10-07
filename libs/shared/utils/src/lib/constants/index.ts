@@ -41,3 +41,5 @@ export const ADDRESS_VERIFYING_PROVIDERS = Object.freeze([
  * loopback reads that need the full row travel with it.
  */
 export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
+
+export * from "./ai-chat-agents";

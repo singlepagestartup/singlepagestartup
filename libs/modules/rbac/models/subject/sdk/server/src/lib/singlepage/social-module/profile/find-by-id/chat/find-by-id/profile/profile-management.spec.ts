@@ -9,7 +9,7 @@ import { action as findSkills } from "./find-by-id/skill/find";
 import { action as findAvailableSkills } from "./find-by-id/skill/available";
 import { action as linkSkill } from "./find-by-id/skill/link";
 import { action as unlinkSkill } from "./find-by-id/skill/unlink";
-import { action as findDocuments } from "./find-by-id/knowledge/document/find";
+import { action as findDocuments } from "./find-by-id/knowledge/source/find";
 
 const common = {
   host: "http://api.test",
@@ -65,7 +65,7 @@ describe("chat assistant management SDK", () => {
       expect.stringContaining(
         "/skills/available?limit=7&offset=12&search=web+search",
       ),
-      expect.stringContaining("/knowledge/documents?limit=7&offset=18"),
+      expect.stringContaining("/knowledge/sources?limit=7&offset=18"),
     ]);
   });
 

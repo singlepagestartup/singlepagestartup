@@ -159,7 +159,7 @@ export function buildGroundedPrompt(
         .map((context, index) => {
           return [
             `Source ${index + 1}: ${context.sourceTitle || "Untitled"}`,
-            `Path: ${context.sourceOriginalPath || "unknown"}`,
+            `Path: ${context.sourceId || "unknown"}`,
             `Similarity: ${formatSimilarity(context.similarity)}`,
             `Retrieval role: ${context.retrievalRole}`,
             context.text,

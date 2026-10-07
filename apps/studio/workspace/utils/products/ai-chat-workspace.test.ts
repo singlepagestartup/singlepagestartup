@@ -630,7 +630,7 @@ describe("AI Chat agent profiles", () => {
       );
       expect(agent).not.toHaveProperty("skills");
       expect(agent).not.toHaveProperty("knowledge");
-      expect(agent).not.toHaveProperty("knowledgeDocuments");
+      expect(agent).not.toHaveProperty("knowledgeSources");
     }
   });
   test("binds role responsibilities to the actual document and attachment sections", () => {

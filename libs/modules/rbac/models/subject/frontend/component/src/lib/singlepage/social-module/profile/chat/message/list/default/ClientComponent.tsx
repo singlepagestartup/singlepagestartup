@@ -1,19 +1,19 @@
 "use client";
 
 import { Composer } from "./components/Composer";
-import { KnowledgeDocumentDialog } from "./components/KnowledgeDocumentDialog";
+import { KnowledgeSourceDialog } from "./components/KnowledgeSourceDialog";
 import { McpServersDialog } from "./components/McpServersDialog";
 import { MessageTimelineSection } from "./components/MessageTimelineSection";
 import { ProfileEditDialog } from "./components/ProfileEditDialog";
 import { ProfileSidebarPanel } from "./components/ProfileSidebarPanel";
 import { ProfileSidebarSheet } from "./components/ProfileSidebarSheet";
-import { useKnowledgeDocuments } from "./hooks/use-knowledge-documents";
+import { useKnowledgeSources } from "./hooks/use-knowledge-sources";
 import { useOpenRouterModelControls } from "./hooks/use-openrouter-model-controls";
 import { useProfileSidebar } from "./hooks/use-profile-sidebar";
 import { useProfileSkills } from "./hooks/use-profile-skills";
 import { useThreadMessagesRefetch } from "./hooks/use-thread-messages-refetch";
 import { IComponentPropsExtended } from "./interface";
-import type { KnowledgeDocument, SocialSkill } from "./types";
+import type { KnowledgeSource, SocialSkill } from "./types";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SocialModuleSkillChatCreateDialog } from "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-create-dialog";
 import { useCallback, useRef, useState } from "react";
@@ -64,7 +64,7 @@ export function Component(props: IComponentPropsExtended) {
   // AI-opponent layout all gate on the same condition (issue #195 cleanup).
   const isArtificialIntelligenceAssistant =
     assistantProfile?.variant === "artificial-intelligence";
-  const knowledgeDocuments = useKnowledgeDocuments({
+  const knowledgeSources = useKnowledgeSources({
     subjectId: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChat: props.socialModuleChat,
@@ -76,7 +76,7 @@ export function Component(props: IComponentPropsExtended) {
     socialModuleChatId: props.socialModuleChat.id,
   });
   const composerSkillsProfileId =
-    knowledgeDocuments.knowledgeAssistantProfileId || "missing-profile";
+    knowledgeSources.knowledgeAssistantProfileId || "missing-profile";
   const profileSkills = useProfileSkills({
     enabled: isArtificialIntelligenceAssistant,
     subjectId: props.data.id,
@@ -107,9 +107,9 @@ export function Component(props: IComponentPropsExtended) {
     setIsSkillDialogOpen(true);
   }
 
-  function openSidebarKnowledgeDocumentCreateDialog(profile: SocialProfile) {
+  function openSidebarKnowledgeSourceCreateDialog(profile: SocialProfile) {
     profileSidebar.setIsMobileSheetOpen(false);
-    profileSidebar.onKnowledgeDocumentCreate(profile);
+    profileSidebar.onKnowledgeSourceCreate(profile);
   }
 
   function openProfileEditDialog() {
@@ -122,9 +122,9 @@ export function Component(props: IComponentPropsExtended) {
     setIsMcpServersDialogOpen(true);
   }
 
-  function openKnowledgeDocumentEditDialog(document: KnowledgeDocument) {
+  function openKnowledgeSourceEditDialog(document: KnowledgeSource) {
     profileSidebar.setIsMobileSheetOpen(false);
-    profileSidebar.onKnowledgeDocumentSelect(document);
+    profileSidebar.onKnowledgeSourceSelect(document);
   }
 
   function openSkillEditDialog(skill: SocialSkill) {
@@ -166,19 +166,17 @@ export function Component(props: IComponentPropsExtended) {
         }}
       >
         <ProfileSidebarPanel
-          hasKnowledgeDocumentsError={profileSidebar.hasKnowledgeDocumentsError}
-          isKnowledgeDocumentsLoading={
-            profileSidebar.isKnowledgeDocumentsLoading
-          }
+          hasKnowledgeSourcesError={profileSidebar.hasKnowledgeSourcesError}
+          isKnowledgeSourcesLoading={profileSidebar.isKnowledgeSourcesLoading}
           isSkillsLoading={profileSidebar.isSkillsLoading}
-          knowledgeDocuments={profileSidebar.knowledgeDocuments}
+          knowledgeSources={profileSidebar.knowledgeSources}
           language={props.language}
-          onKnowledgeDocumentCreate={
+          onKnowledgeSourceCreate={
             profileSidebar.canManageSelectedProfile
-              ? openSidebarKnowledgeDocumentCreateDialog
+              ? openSidebarKnowledgeSourceCreateDialog
               : undefined
           }
-          onKnowledgeDocumentSelect={openKnowledgeDocumentEditDialog}
+          onKnowledgeSourceSelect={openKnowledgeSourceEditDialog}
           onMcpServersEdit={
             profileSidebar.canManageSelectedProfile
               ? openMcpServersDialog
@@ -200,7 +198,7 @@ export function Component(props: IComponentPropsExtended) {
               : undefined
           }
           profile={profileSidebar.selectedProfile}
-          selectedKnowledgeDocument={profileSidebar.selectedKnowledgeDocument}
+          selectedKnowledgeSource={profileSidebar.selectedKnowledgeSource}
           skills={profileSidebar.skills}
         />
       </ProfileSidebarSheet>
@@ -245,28 +243,42 @@ export function Component(props: IComponentPropsExtended) {
               );
             }}
           />
-          <KnowledgeDocumentDialog
-            document={profileSidebar.selectedKnowledgeDocument}
-            draft={profileSidebar.knowledgeDocumentDraft}
-            isDeleting={profileSidebar.isDeletingKnowledgeDocument}
-            isDirty={profileSidebar.isKnowledgeDocumentDirty}
-            isOpen={Boolean(profileSidebar.selectedKnowledgeDocument)}
-            isReindexing={profileSidebar.isReindexingKnowledgeDocument}
-            isSaving={profileSidebar.isSavingKnowledgeDocument}
-            language={props.language}
-            mode={
-              profileSidebar.isCreatingKnowledgeDocument ? "create" : "edit"
+          <KnowledgeSourceDialog
+            fileScope={
+              profileSidebar.selectedProfile &&
+              profileSidebar.selectedKnowledgeSource
+                ? {
+                    id: props.data.id,
+                    socialModuleProfileId: props.socialModuleProfile.id,
+                    socialModuleChatId: props.socialModuleChat.id,
+                    targetSocialModuleProfileId:
+                      profileSidebar.selectedProfile.id,
+                    knowledgeModuleSourceId:
+                      profileSidebar.selectedKnowledgeSource.id,
+                  }
+                : undefined
             }
-            needsReindex={profileSidebar.selectedKnowledgeDocumentNeedsReindex}
-            onDelete={profileSidebar.onKnowledgeDocumentDelete}
-            onDraftChange={profileSidebar.onKnowledgeDocumentDraftChange}
+            onFilesUpdated={profileSidebar.onKnowledgeSourceSelect}
+            document={profileSidebar.selectedKnowledgeSource}
+            draft={profileSidebar.knowledgeSourceDraft}
+            isDeleting={profileSidebar.isDeletingKnowledgeSource}
+            isDirty={profileSidebar.isKnowledgeSourceDirty}
+            isOpen={Boolean(profileSidebar.selectedKnowledgeSource)}
+            isReindexing={profileSidebar.isReindexingKnowledgeSource}
+            isSaving={profileSidebar.isSavingKnowledgeSource}
+            language={props.language}
+            mode={profileSidebar.isCreatingKnowledgeSource ? "create" : "edit"}
+            needsReindex={profileSidebar.selectedKnowledgeSourceNeedsReindex}
+            onDelete={profileSidebar.onKnowledgeSourceDelete}
+            onUnlink={profileSidebar.onKnowledgeSourceUnlink}
+            onDraftChange={profileSidebar.onKnowledgeSourceDraftChange}
             onOpenChange={(open) => {
               if (!open) {
-                profileSidebar.closeKnowledgeDocument();
+                profileSidebar.closeKnowledgeSource();
               }
             }}
-            onReindex={profileSidebar.onKnowledgeDocumentReindex}
-            onSave={profileSidebar.onKnowledgeDocumentSave}
+            onReindex={profileSidebar.onKnowledgeSourceReindex}
+            onSave={profileSidebar.onKnowledgeSourceSave}
           />
           <McpServersDialog
             isOpen={isMcpServersDialogOpen}
@@ -348,21 +360,19 @@ export function Component(props: IComponentPropsExtended) {
         !profileSidebar.isMobileSheetOpen ? (
           <aside className="hidden min-h-0 w-96 shrink-0 border-l border-slate-200 2xl:block">
             <ProfileSidebarPanel
-              hasKnowledgeDocumentsError={
-                profileSidebar.hasKnowledgeDocumentsError
-              }
-              isKnowledgeDocumentsLoading={
-                profileSidebar.isKnowledgeDocumentsLoading
+              hasKnowledgeSourcesError={profileSidebar.hasKnowledgeSourcesError}
+              isKnowledgeSourcesLoading={
+                profileSidebar.isKnowledgeSourcesLoading
               }
               isSkillsLoading={profileSidebar.isSkillsLoading}
-              knowledgeDocuments={profileSidebar.knowledgeDocuments}
+              knowledgeSources={profileSidebar.knowledgeSources}
               language={props.language}
-              onKnowledgeDocumentCreate={
+              onKnowledgeSourceCreate={
                 profileSidebar.canManageSelectedProfile
-                  ? openSidebarKnowledgeDocumentCreateDialog
+                  ? openSidebarKnowledgeSourceCreateDialog
                   : undefined
               }
-              onKnowledgeDocumentSelect={openKnowledgeDocumentEditDialog}
+              onKnowledgeSourceSelect={openKnowledgeSourceEditDialog}
               onMcpServersEdit={
                 profileSidebar.canManageSelectedProfile
                   ? openMcpServersDialog
@@ -385,9 +395,7 @@ export function Component(props: IComponentPropsExtended) {
               }
               onClose={profileSidebar.closeProfile}
               profile={profileSidebar.selectedProfile}
-              selectedKnowledgeDocument={
-                profileSidebar.selectedKnowledgeDocument
-              }
+              selectedKnowledgeSource={profileSidebar.selectedKnowledgeSource}
               skills={profileSidebar.skills}
             />
           </aside>

@@ -11,7 +11,10 @@ export function Component(props: IComponentPropsExtended) {
       renderField={props.renderField || "title"}
       renderFunction={(entity) => {
         const title = entity.title || "Untitled";
-        const status = entity.status || "Unknown Status";
+        const status =
+          entity.contentHash === entity.indexedContentHash
+            ? "Indexed"
+            : "Needs indexing";
 
         return `${title} | ${status}`;
       }}

@@ -186,8 +186,7 @@ export class Handler {
             try {
               const fileStorageFile = await fileStorageModuleFileApi.create({
                 data: {
-                  adminTitle:
-                    "Social Module Message Id: " + socialModuleMessage.id,
+                  adminTitle: file.name,
                   file: file,
                 },
                 options: {

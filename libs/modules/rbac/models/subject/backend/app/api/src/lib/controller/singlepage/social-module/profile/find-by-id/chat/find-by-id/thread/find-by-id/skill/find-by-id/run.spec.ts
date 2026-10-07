@@ -143,7 +143,13 @@ function createService(
           ],
         ),
       },
-      profilesToKnowledgeModuleDocuments: {
+      skillsToKnowledgeModuleSources: {
+        findOrCreate: jest.fn().mockResolvedValue({}),
+      },
+      messagesToKnowledgeModuleSources: {
+        findOrCreate: jest.fn().mockResolvedValue({}),
+      },
+      profilesToKnowledgeModuleSources: {
         find: jest.fn().mockResolvedValue([]),
         create: jest.fn().mockResolvedValue({
           id: "profile-document-relation-1",
@@ -182,7 +188,7 @@ describe("Given: rbac social skill transcript run", () => {
     jest.clearAllMocks();
 
     mockKnowledgeLearnContent.mockResolvedValue({
-      document: {
+      source: {
         id: "knowledge-document-1",
       },
       index: {
@@ -232,25 +238,15 @@ describe("Given: rbac social skill transcript run", () => {
         slug: expect.stringMatching(/^knowledge-profile-1-thread-1-skill-1-/),
         title: "Video title",
         content: "Video transcript",
-        summary: "Transcript imported from social skill run",
-        metadata: expect.objectContaining({
-          sourceKind: "transcript",
-          sourceSystem: "social-skill",
-          socialModuleProfileId: "profile-1",
-          socialModuleChatId: "chat-1",
-          socialModuleThreadId: "thread-1",
-          socialModuleSkillId: "skill-1",
-          socialModuleSkillSlug: "youtube-description",
-        }),
       }),
     );
     expect(
-      service.socialModule.profilesToKnowledgeModuleDocuments.create,
+      service.socialModule.profilesToKnowledgeModuleSources.create,
     ).toHaveBeenCalledWith(
       expect.objectContaining({
         data: {
           profileId: "profile-1",
-          knowledgeModuleDocumentId: "knowledge-document-1",
+          knowledgeModuleSourceId: "knowledge-document-1",
         },
       }),
     );
@@ -276,7 +272,6 @@ describe("Given: rbac social skill transcript run", () => {
           metadata: expect.objectContaining({
             socialSkillRun: expect.objectContaining({
               role: "assistant",
-              knowledgeDocumentId: "knowledge-document-1",
               modelSlug: "openai/gpt-5-5",
             }),
           }),
@@ -286,7 +281,7 @@ describe("Given: rbac social skill transcript run", () => {
     expect(context.json).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          knowledgeDocument: {
+          knowledgeSource: {
             id: "knowledge-document-1",
           },
         }),

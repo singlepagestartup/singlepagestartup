@@ -104,22 +104,20 @@ export class Handler {
         ),
         title: body.title || skill.title,
         content: transcript,
-        summary: "Transcript imported from social skill run",
-        metadata: {
-          sourceKind: "transcript",
-          sourceSystem: "social-skill",
-          socialModuleProfileId,
-          socialModuleChatId,
-          socialModuleThreadId,
-          socialModuleSkillId,
-          socialModuleSkillSlug: skill.slug,
-          socialSkillTitle: skill.title,
-          transcriptHash,
-        },
       });
-      await this.ensureProfileKnowledgeDocumentRelation({
+      if (!knowledgeIngest.source)
+        throw new Error("Knowledge Source was not saved");
+      await this.service.socialModule.skillsToKnowledgeModuleSources.findOrCreate(
+        {
+          data: {
+            skillId: skill.id,
+            knowledgeModuleSourceId: knowledgeIngest.source.id,
+          },
+        },
+      );
+      await this.ensureProfileKnowledgeSourceRelation({
         socialModuleProfileId,
-        knowledgeModuleDocumentId: knowledgeIngest.document.id,
+        knowledgeModuleSourceId: knowledgeIngest.source.id,
       });
       const prompt = this.buildPrompt({
         profile,
@@ -157,7 +155,6 @@ export class Handler {
             role: "user",
             skillId: skill.id,
             skillSlug: skill.slug,
-            knowledgeDocumentId: knowledgeIngest.document.id,
             transcriptPreview: transcript.slice(0, 500),
           },
         },
@@ -173,7 +170,6 @@ export class Handler {
             role: "assistant",
             skillId: skill.id,
             skillSlug: skill.slug,
-            knowledgeDocumentId: knowledgeIngest.document.id,
             modelSlug: generation.model || modelSlug,
             provider: generation.provider,
             providerModel: generation.providerModel,
@@ -182,11 +178,21 @@ export class Handler {
         },
       });
 
+      await this.service.socialModule.messagesToKnowledgeModuleSources.findOrCreate(
+        {
+          data: {
+            messageId: userMessage.id,
+            knowledgeModuleSourceId: knowledgeIngest.source.id,
+            kind: "origin",
+          },
+        },
+      );
+
       return c.json({
         data: {
           userMessage,
           assistantMessage,
-          knowledgeDocument: knowledgeIngest.document,
+          knowledgeSource: knowledgeIngest.source,
           knowledgeIndex: knowledgeIngest.index,
           generation: {
             modelSlug: generation.model || modelSlug,
@@ -281,12 +287,12 @@ export class Handler {
     }
   }
 
-  private async ensureProfileKnowledgeDocumentRelation(props: {
+  private async ensureProfileKnowledgeSourceRelation(props: {
     socialModuleProfileId: string;
-    knowledgeModuleDocumentId: string;
+    knowledgeModuleSourceId: string;
   }) {
     const existing =
-      await this.service.socialModule.profilesToKnowledgeModuleDocuments.find({
+      await this.service.socialModule.profilesToKnowledgeModuleSources.find({
         params: {
           filters: {
             and: [
@@ -296,9 +302,9 @@ export class Handler {
                 value: props.socialModuleProfileId,
               },
               {
-                column: "knowledgeModuleDocumentId",
+                column: "knowledgeModuleSourceId",
                 method: "eq",
-                value: props.knowledgeModuleDocumentId,
+                value: props.knowledgeModuleSourceId,
               },
             ],
           },
@@ -310,10 +316,10 @@ export class Handler {
       return existing[0];
     }
 
-    return this.service.socialModule.profilesToKnowledgeModuleDocuments.create({
+    return this.service.socialModule.profilesToKnowledgeModuleSources.create({
       data: {
         profileId: props.socialModuleProfileId,
-        knowledgeModuleDocumentId: props.knowledgeModuleDocumentId,
+        knowledgeModuleSourceId: props.knowledgeModuleSourceId,
       },
     });
   }

@@ -12,9 +12,7 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       profilesToBlogModuleArticles={props.profilesToBlogModuleArticles}
       profilesToFileStorageModuleFiles={props.profilesToFileStorageModuleFiles}
-      profilesToKnowledgeModuleDocuments={
-        props.profilesToKnowledgeModuleDocuments
-      }
+      profilesToKnowledgeModuleSources={props.profilesToKnowledgeModuleSources}
       profilesToSkills={props.profilesToSkills}
       profilesToWebsiteBuilderModuleWidgets={
         props.profilesToWebsiteBuilderModuleWidgets

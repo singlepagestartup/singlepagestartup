@@ -13,7 +13,6 @@ export const Table = pgTable(
   },
   (table) => {
     return {
-      statusIdx: pgCore.index("sps_ke_source_status_idx").on(table.status),
       contentHashIdx: pgCore
         .index("sps_ke_source_content_hash_idx")
         .on(table.contentHash),

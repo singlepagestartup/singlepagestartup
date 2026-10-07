@@ -1,126 +1,84 @@
-/**
- * BDD Suite: knowledge indexer input normalization.
- *
- * Given: repository rows can contain non-string values from existing data.
- * When: the Knowledge indexer prepares content for hashing and embeddings.
- * Then: it normalizes indexable document fields before derived source/chunk writes.
- */
-
 import { KnowledgeIndexer, hashContent } from "./index";
 
-describe("knowledge indexer input normalization", () => {
-  /**
-   * BDD Scenario: non-string document description.
-   *
-   * Given: a document row has a Date-like description value.
-   * When: the document is indexed.
-   * Then: hashing, embeddings, and source creation receive normalized string content.
-   */
-  it("normalizes document description before hashing and source creation", async () => {
-    const description = new Date("2026-01-01T00:00:00.000Z");
-    const repository = {
-      listDocumentsForIndex: jest.fn().mockResolvedValue([
-        {
-          id: "document-1",
-          title: "Document",
-          slug: "document",
-          description,
-          status: "imported",
-          summary: "",
-          tags: [],
-          metadata: {},
-          contentHash: "",
-          lastIndexedAt: null,
-        },
-      ]),
-      getDocumentOriginalPath: jest
-        .fn()
-        .mockReturnValue("knowledge-document:1"),
-      findSourceByOriginalPath: jest.fn().mockResolvedValue(null),
-      upsertSourceForDocument: jest.fn().mockResolvedValue({
-        id: "source-1",
-      }),
-      deleteChunksBySourceId: jest.fn(),
-      insertChunksForSource: jest.fn().mockResolvedValue([]),
-      updateDocumentIndexMetadata: jest.fn(),
-    };
-    const embeddingClient = {
-      embedMany: jest.fn().mockResolvedValue([[0.1, 0.2, 0.3]]),
-    };
-
-    const indexer = new KnowledgeIndexer({
+function setup(
+  indexedContentHash: string | null = null,
+  content = "Knowledge notes",
+) {
+  const source = {
+    id: "source-1",
+    title: "Notes",
+    content,
+    contentHash: hashContent(content),
+    indexedContentHash,
+  };
+  const repository = {
+    listSourcesForIndex: jest.fn().mockResolvedValue([source]),
+    publishChunks: jest.fn().mockResolvedValue(true),
+    clearDerivedData: jest.fn(),
+  };
+  const embeddingClient = {
+    embedMany: jest.fn().mockResolvedValue([Array(768).fill(0.1)]),
+    validateEmbedding: jest.fn(),
+  };
+  return {
+    source,
+    repository,
+    embeddingClient,
+    indexer: new KnowledgeIndexer({
       repository: repository as any,
       embeddingClient: embeddingClient as any,
-    });
+    }),
+  };
+}
 
-    await indexer.index({
-      documentId: "document-1",
-    });
-
-    expect(embeddingClient.embedMany).toHaveBeenCalledWith([
-      "2026-01-01T00:00:00.000Z",
-    ]);
-    expect(repository.upsertSourceForDocument).toHaveBeenCalledWith(
-      expect.objectContaining({
-        document: expect.objectContaining({
-          description: "2026-01-01T00:00:00.000Z",
-        }),
-      }),
+describe("Source indexing", () => {
+  it("publishes text and vectors against the processed content hash", async () => {
+    const { source, repository, embeddingClient, indexer } = setup();
+    await indexer.index({ sourceId: source.id });
+    expect(embeddingClient.embedMany).toHaveBeenCalledWith([source.content]);
+    expect(repository.publishChunks).toHaveBeenCalledWith(
+      source.id,
+      source.contentHash,
+      expect.arrayContaining([
+        expect.objectContaining({ text: source.content }),
+      ]),
     );
   });
 
-  /**
-   * BDD Scenario: already-indexed document status healing.
-   *
-   * Given: a document has matching indexed chunks but still has an imported status.
-   * When: the document is reindexed.
-   * Then: the indexer updates document metadata without embedding the content again.
-   */
-  it("marks already-indexed imported documents as indexed on reindex", async () => {
-    const description = "Knowledge notes";
-    const contentHash = hashContent(description);
-    const repository = {
-      listDocumentsForIndex: jest.fn().mockResolvedValue([
-        {
-          id: "document-1",
-          title: "Document",
-          slug: "document",
-          description,
-          status: "imported",
-          summary: "",
-          tags: [],
-          metadata: {},
-          contentHash,
-          lastIndexedAt: null,
-        },
-      ]),
-      getDocumentOriginalPath: jest
-        .fn()
-        .mockReturnValue("knowledge-document:document-1"),
-      findSourceByOriginalPath: jest.fn().mockResolvedValue({
-        id: "source-1",
-        contentHash,
-      }),
-      hasSourceChunks: jest.fn().mockResolvedValue(true),
-      updateDocumentIndexMetadata: jest.fn(),
-    };
-    const embeddingClient = {
-      embedMany: jest.fn(),
-    };
-
-    const indexer = new KnowledgeIndexer({
-      repository: repository as any,
-      embeddingClient: embeddingClient as any,
-    });
-
-    await indexer.index({
-      documentId: "document-1",
-    });
-
+  it("skips an unchanged indexed source and force reindexes it", async () => {
+    const { embeddingClient, indexer } = setup(hashContent("Knowledge notes"));
+    expect((await indexer.index()).skipped).toBe(1);
     expect(embeddingClient.embedMany).not.toHaveBeenCalled();
-    expect(repository.updateDocumentIndexMetadata).toHaveBeenCalledWith({
-      documentId: "document-1",
-      contentHash,
-    });
+    await indexer.index({ force: true });
+    expect(embeddingClient.embedMany).toHaveBeenCalledTimes(1);
+  });
+
+  it("dry run does not clear, embed or publish", async () => {
+    const { repository, embeddingClient, indexer } = setup();
+    await indexer.index({ dryRun: true, clear: true });
+    expect(repository.clearDerivedData).not.toHaveBeenCalled();
+    expect(repository.publishChunks).not.toHaveBeenCalled();
+    expect(embeddingClient.embedMany).not.toHaveBeenCalled();
+  });
+
+  it("does not count stale publication as indexed", async () => {
+    const { repository, indexer } = setup();
+    repository.publishChunks.mockResolvedValue(false);
+    expect(await indexer.index()).toMatchObject({ indexed: 0, skipped: 1 });
+  });
+
+  it("rejects incomplete vectors before publishing", async () => {
+    const { repository, embeddingClient, indexer } = setup();
+    embeddingClient.embedMany.mockResolvedValue([]);
+    await expect(indexer.index()).rejects.toThrow("count");
+    expect(repository.publishChunks).not.toHaveBeenCalled();
+  });
+
+  it("clears an empty source index without an embedding request", async () => {
+    const { embeddingClient, indexer } = setup(null, "");
+    embeddingClient.embedMany.mockResolvedValue([]);
+    await indexer.index();
+    expect(embeddingClient.embedMany).toHaveBeenCalledWith([]);
+    expect(embeddingClient.validateEmbedding).not.toHaveBeenCalled();
   });
 });

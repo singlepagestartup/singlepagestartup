@@ -42,7 +42,7 @@ import {
 } from "@sps/social/models/chat/frontend/component/src/lib/singlepage/ai-chat-workspace/ProjectSetup";
 import { ProjectComposer } from "@sps/social/models/thread/frontend/component/src/lib/singlepage/ai-chat-composer/Component";
 import { ProjectConversation } from "@sps/social/models/message/frontend/component/src/lib/singlepage/ai-chat-conversation/Component";
-import { ProjectDocumentEditor } from "@sps/knowledge/models/document/frontend/component/src/lib/singlepage/ai-chat-editor/Component";
+import { ProjectSourceEditor } from "@sps/knowledge/models/source/frontend/component/src/lib/singlepage/ai-chat-editor/Component";
 import { ProjectThreadButton } from "@sps/social/models/thread/frontend/component/src/lib/singlepage/ai-chat-sidebar-item/Component";
 import definitions from "./definitions.json";
 import {
@@ -979,7 +979,7 @@ export default function ProjectChat({
                     <div
                       className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-sps-line @[900px]/chat:block @[900px]/chat:border-l`}
                     >
-                      <ProjectDocumentEditor
+                      <ProjectSourceEditor
                         document={document}
                         sources={project.sources}
                         sections={selectedSections}
