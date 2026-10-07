@@ -1,6 +1,26 @@
 const USER_BLOCK =
   /^## Контекст пользователя\n<!-- knowledge:user -->\n([\s\S]*?)\n<!-- \/knowledge:user -->/;
 
+/** Fit a JSON string's UTF-8 byte budget without splitting Unicode characters. */
+export function sliceKnowledgeToolText(
+  text: string,
+  maxBytes: number,
+  maxChars = text.length,
+) {
+  const encoder = new TextEncoder();
+  let result = "";
+  let bytes = 2;
+  let chars = 0;
+  for (const character of text) {
+    const size = encoder.encode(JSON.stringify(character)).length - 2;
+    if (chars >= maxChars || bytes + size > maxBytes) break;
+    result += character;
+    bytes += size;
+    chars++;
+  }
+  return result;
+}
+
 export function readKnowledgeUserContext(content: string) {
   const match = content.match(USER_BLOCK);
   return match ? match[1] : content;

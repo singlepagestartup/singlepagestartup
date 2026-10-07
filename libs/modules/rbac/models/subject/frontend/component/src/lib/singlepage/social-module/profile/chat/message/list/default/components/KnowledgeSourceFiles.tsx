@@ -4,6 +4,7 @@ import { action as useFiles } from "@sps/rbac/models/subject/sdk/client/src/lib/
 import { action as useUpdateFiles } from "@sps/rbac/models/subject/sdk/client/src/lib/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/update";
 import type { IProps as IScope } from "@sps/rbac/models/subject/sdk/server/src/lib/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/find";
 import { Button } from "@sps/shared-ui-shadcn";
+import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
 import { toast } from "sonner";
 import type { KnowledgeSource } from "../types";
 
@@ -15,6 +16,7 @@ interface IProps {
 interface IRowProps {
   id: string;
   title: string;
+  fileUrl: string | null;
   busy: boolean;
   disabled: boolean;
   onReplace: (id: string) => void;
@@ -22,8 +24,20 @@ interface IRowProps {
 }
 const Row = memo(function Row(props: IRowProps) {
   return (
-    <li className="flex items-center gap-2 rounded-md border p-2 text-xs">
+    <li className="flex flex-wrap items-center gap-2 rounded-md border p-2 text-xs">
       <span className="min-w-0 flex-1 break-all">{props.title}</span>
+      {props.fileUrl ? (
+        <Button variant="outline" size="sm" className="w-auto" asChild>
+          <a
+            href={props.fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Open ${props.title}`}
+          >
+            Open
+          </a>
+        </Button>
+      ) : null}
       <Button
         type="button"
         variant="outline"
@@ -154,6 +168,13 @@ export function KnowledgeSourceFiles(props: IProps) {
             key={file.id}
             id={file.id}
             title={file.adminTitle || file.alt || file.id}
+            fileUrl={
+              file.file
+                ? /^https?:\/\//i.test(file.file)
+                  ? file.file
+                  : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`
+                : null
+            }
             busy={processingId === file.id}
             disabled={Boolean(props.disabled || update.isPending)}
             onReplace={replace}

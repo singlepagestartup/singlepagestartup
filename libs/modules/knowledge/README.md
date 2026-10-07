@@ -32,7 +32,9 @@ Search accepts only chunks whose Source hashes match. Profile-scoped search mate
 
 RBAC handles profile-scoped create, read, update, delete, file management, `/learn`, and skill runs. Messages use Knowledge only with an explicit `@knowledge` mention. Search and read/edit tools are bound to Source IDs available to the replying profile.
 
-`profile_knowledge_read` reads saved content in pages of up to 12,000 characters and returns `nextOffset` and the current content hash. `profile_knowledge_edit` directly saves user context and an optional title when the user requests or confirms the edit; it preserves file-derived sections and triggers indexing. The edit must carry the hash returned by the read operation, so a concurrent content change requires another read. Chat edits use ordinary Source updates. There is no Edit Suggestion, approval entity, version history, or restore operation.
+`profile_knowledge_search` returns bounded excerpts with `sourceId`, `textLength`, and `textTruncated`. `profile_knowledge_read` reads saved content in pages of up to 12,000 Unicode characters and returns `nextOffset` and the current content hash. Both tool responses fit a 24 KiB UTF-8 JSON budget, below the tool loop's 32 KiB limit. Pagination preserves the full saved text, including multibyte characters and JSON escapes. Follow `nextOffset` with the same `section`; offsets count UTF-16 code units.
+
+The read response includes a user-context preview. If `userContextTruncated` is true, read all pages with `section=userContext` before editing. `profile_knowledge_edit` directly saves user context and an optional title when the user requests or confirms the edit; it preserves file-derived sections and triggers indexing. The edit must carry the hash returned by the read operation, so a concurrent content change requires another read. Chat edits use ordinary Source updates. There is no Edit Suggestion, approval entity, version history, or restore operation.
 
 Origin and citation links use `messages-to-knowledge-module-sources` with `kind=origin|citation`; skill material uses `skills-to-knowledge-module-sources`. Metadata can contain generation results and usage, but relations determine material ownership and origin.
 
@@ -44,7 +46,7 @@ Origin and citation links use `messages-to-knowledge-module-sources` with `kind=
 - `POST /api/knowledge/sources/:id/reindex`.
 - Generated CRUD for Source, Chunk, `sources-to-chunks`, and `sources-to-file-storage-module-files`.
 
-The Knowledge module SDK uses `sourceIds` and `reindexSource`. Source content editing uses its model SDK or the scoped RBAC SDK. The chat sidebar provides Files add/replace/detach actions; it saves text changes before changing attachments.
+The Knowledge module SDK uses `sourceIds` and `reindexSource`. Source content editing uses its model SDK or the scoped RBAC SDK. The chat sidebar provides Files open/add/replace/detach actions; it saves text changes before changing attachments. Open displays the original stored File in a new browser tab. Analyze files repeats analysis of all current attachments and indexing; Reindex only rebuilds the saved text's index.
 
 ## Runtime configuration
 

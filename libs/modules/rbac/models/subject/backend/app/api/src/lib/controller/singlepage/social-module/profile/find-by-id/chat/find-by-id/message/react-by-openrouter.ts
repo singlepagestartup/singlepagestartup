@@ -1,6 +1,10 @@
 import {
   replaceKnowledgeUserContext,
   readKnowledgeUserContext,
+  sliceKnowledgeToolText,
+  KNOWLEDGE_TOOL_RESULT_MAX_BYTES,
+  KNOWLEDGE_TOOL_READ_MAX_CHARS,
+  KNOWLEDGE_TOOL_USER_CONTEXT_MAX_BYTES,
 } from "@sps/shared-utils";
 import {
   NEXT_PUBLIC_API_SERVICE_URL,
@@ -2697,7 +2701,7 @@ export class Handler {
           function: {
             name: "profile_knowledge_search",
             description:
-              "Search only Knowledge Sources linked to this social.profile.",
+              "Search only Knowledge Sources linked to this social.profile. Results contain bounded text excerpts; use profile_knowledge_read with sourceId for complete content.",
             parameters: {
               type: "object",
               properties: {
@@ -2724,13 +2728,37 @@ export class Handler {
             neighborWindow: KNOWLEDGE_NEIGHBOR_WINDOW,
           });
 
-          return sources.map((source) => ({
-            id: source.id,
-            sourceId: source.sourceId,
-            sourceTitle: source.sourceTitle,
-            text: source.text,
-            similarity: source.similarity,
-          }));
+          const results = sources
+            .slice(0, KNOWLEDGE_RERANK_TOP_K)
+            .map((source) => ({
+              id: source.id,
+              sourceId: source.sourceId,
+              sourceTitle: sliceKnowledgeToolText(
+                source.sourceTitle || "",
+                1024,
+                300,
+              ),
+              text: "",
+              textLength: source.text.length,
+              textTruncated: false,
+              similarity: source.similarity,
+            }));
+          const textBudget = Math.floor(
+            (KNOWLEDGE_TOOL_RESULT_MAX_BYTES -
+              Buffer.byteLength(JSON.stringify(results), "utf8")) /
+              Math.max(1, results.length),
+          );
+          return results.map((result, index) => {
+            const text = sliceKnowledgeToolText(
+              sources[index].text,
+              textBudget,
+            );
+            return {
+              ...result,
+              text,
+              textTruncated: text.length < result.textLength,
+            };
+          });
         },
       });
     }
@@ -2756,13 +2784,18 @@ export class Handler {
           function: {
             name: "profile_knowledge_read",
             description:
-              "Read saved Source content in pages. Use IDs returned by profile_knowledge_search, follow nextOffset to read more, and preserve userContext when editing.",
+              "Read saved Source content in UTF-8 byte-bounded pages. Follow nextOffset with the same section to read more. userContext is a preview; if userContextTruncated, read all pages with section=userContext before editing and preserve all existing notes.",
             parameters: {
               type: "object",
               properties: {
                 sourceId: { type: "string", enum: props.knowledgeSourceIds },
                 offset: { type: "integer", minimum: 0 },
-                limit: { type: "integer", minimum: 1, maximum: 12000 },
+                limit: {
+                  type: "integer",
+                  minimum: 1,
+                  maximum: KNOWLEDGE_TOOL_READ_MAX_CHARS,
+                },
+                section: { type: "string", enum: ["content", "userContext"] },
               },
               required: ["sourceId"],
               additionalProperties: false,
@@ -2771,23 +2804,53 @@ export class Handler {
         },
         execute: async (args) => {
           const source = await requireSource(args);
-          const offset = Math.max(0, Math.floor(Number(args["offset"]) || 0));
+          const userContext = readKnowledgeUserContext(source.content);
+          const section =
+            args["section"] === "userContext" ? "userContext" : "content";
+          const content =
+            section === "userContext" ? userContext : source.content;
+          const offset = Math.min(
+            content.length,
+            Math.max(0, Math.floor(Number(args["offset"]) || 0)),
+          );
           const limit = Math.max(
             1,
-            Math.min(12000, Math.floor(Number(args["limit"]) || 12000)),
+            Math.min(
+              KNOWLEDGE_TOOL_READ_MAX_CHARS,
+              Math.floor(
+                Number(args["limit"]) || KNOWLEDGE_TOOL_READ_MAX_CHARS,
+              ),
+            ),
           );
-          const end = Math.min(source.content.length, offset + limit);
-          const userContext = readKnowledgeUserContext(source.content);
-          return {
+          const userContextPreview = sliceKnowledgeToolText(
+            userContext,
+            KNOWLEDGE_TOOL_USER_CONTEXT_MAX_BYTES,
+          );
+          const result = {
             sourceId: source.id,
-            title: source.title,
+            title: sliceKnowledgeToolText(source.title || "", 1024, 300),
             contentHash: source.contentHash,
-            content: source.content.slice(offset, end),
+            section,
+            content: "",
             offset,
-            contentLength: source.content.length,
-            nextOffset: end < source.content.length ? end : null,
-            userContext: userContext.slice(0, 12000),
+            contentLength: content.length,
+            nextOffset: content.length,
+            userContext: userContextPreview,
+            userContextTruncated:
+              userContextPreview.length < userContext.length,
             userContextLength: userContext.length,
+          };
+          const page = sliceKnowledgeToolText(
+            content.slice(offset),
+            KNOWLEDGE_TOOL_RESULT_MAX_BYTES -
+              Buffer.byteLength(JSON.stringify(result), "utf8"),
+            limit,
+          );
+          const end = offset + page.length;
+          return {
+            ...result,
+            content: page,
+            nextOffset: end < content.length ? end : null,
           };
         },
       });

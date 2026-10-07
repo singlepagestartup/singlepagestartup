@@ -1994,6 +1994,96 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     expect(JSON.stringify(result).length).toBeLessThan(1000);
   });
 
+  it("reads Russian text and long user notes in complete byte-bounded pages", async () => {
+    const notes = 'Пояснение 😀\n"цитата"\\\t'.repeat(1000);
+    const content = `## Контекст пользователя\n<!-- knowledge:user -->\n${notes}\n<!-- /knowledge:user -->\n${"Данные файла 🧾\n".repeat(3000)}`;
+    const source = {
+      id: "source-1",
+      title: "Урок",
+      content,
+      contentHash: "hash-1",
+    };
+    const handler = new Handler({} as any) as any;
+    handler.knowledgeService = { listSources: jest.fn(async () => [source]) };
+    const read = handler
+      .buildProfileCapabilityTools({
+        availableSkills: [],
+        knowledgeSourceIds: [source.id],
+      })
+      .find(
+        (tool: any) =>
+          tool.definition.function.name === "profile_knowledge_read",
+      );
+
+    for (const [section, expected] of [
+      ["content", content],
+      ["userContext", notes],
+    ]) {
+      let offset = 0;
+      let reconstructed = "";
+      do {
+        const page = await read.execute({
+          sourceId: source.id,
+          section,
+          offset,
+        });
+        expect(
+          Buffer.byteLength(JSON.stringify(page), "utf8"),
+        ).toBeLessThanOrEqual(24 * 1024);
+        expect(page.userContextTruncated).toBe(true);
+        expect(page.content.length).toBeGreaterThan(0);
+        expect(expected.slice(offset).startsWith(page.content)).toBe(true);
+        expect(page.content).toBe(
+          Array.from(expected.slice(offset))
+            .slice(0, Array.from(page.content).length)
+            .join(""),
+        );
+        reconstructed += page.content;
+        if (page.nextOffset === null) break;
+        expect(page.nextOffset).toBeGreaterThan(offset);
+        offset = page.nextOffset;
+      } while (offset < expected.length);
+      expect(reconstructed).toBe(expected);
+    }
+  });
+
+  it("bounds all search excerpts and identifies where full Source reading is needed", async () => {
+    const search = jest.fn(async () =>
+      Array.from({ length: 12 }, (_, index) =>
+        createKnowledgeSearchResult({
+          id: `chunk-${index}`,
+          sourceId: "source-1",
+          sourceTitle: "Урок 😀".repeat(2000),
+          text: 'Большой фрагмент 😀\n"числа"\\'.repeat(2000),
+        }),
+      ),
+    );
+    const handler = new Handler({} as any) as any;
+    handler.knowledgeService = { search };
+    const tool = handler
+      .buildProfileCapabilityTools({
+        availableSkills: [],
+        knowledgeSourceIds: ["source-1"],
+      })
+      .find(
+        (tool: any) =>
+          tool.definition.function.name === "profile_knowledge_search",
+      );
+    const results = await tool.execute({ query: "Большой фрагмент" });
+    expect(results).toHaveLength(12);
+    expect(
+      Buffer.byteLength(JSON.stringify(results), "utf8"),
+    ).toBeLessThanOrEqual(24 * 1024);
+    expect(
+      results.every(
+        (result: any) =>
+          result.textTruncated &&
+          result.text.length > 0 &&
+          result.sourceId === "source-1",
+      ),
+    ).toBe(true);
+  });
+
   /**
    * BDD Scenario
    * Given: the allowed SinglePageStartup MCP session exposes one live tool.
