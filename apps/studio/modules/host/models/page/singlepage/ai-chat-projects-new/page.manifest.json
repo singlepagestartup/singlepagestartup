@@ -1,0 +1,26 @@
+{
+  "id": "ai-chat-projects-new",
+  "title": "ai-chat-projects-new",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat page recipe for /ai-chat/projects/new.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ai-chat-projects-new",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "social.chat.ai-chat-workspace",
+      "path": "../../../../../social/models/chat/singlepage/ai-chat-workspace"
+    }
+  ]
+}

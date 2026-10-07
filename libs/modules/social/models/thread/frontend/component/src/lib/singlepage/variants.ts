@@ -1,3 +1,5 @@
+import { Component as AIChatComposer } from "./ai-chat-composer";
+import { Component as AIChatSidebarItem } from "./ai-chat-sidebar-item";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -11,6 +13,8 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Find } from "./find";
 import { Component as Default } from "./default";
 export const variants = {
+  "ai-chat-composer": AIChatComposer,
+  "ai-chat-sidebar-item": AIChatSidebarItem,
   "admin-select-input": AdminSelectInput,
   "admin-table": AdminTable,
   "admin-form": AdminForm,

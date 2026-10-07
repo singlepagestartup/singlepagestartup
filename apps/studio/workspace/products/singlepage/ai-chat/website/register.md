@@ -8,29 +8,62 @@ confirmation:
   content_sha256: 2d4d3b02e0de5e83136a44c967c0d4f15871ce7dfd662324a971ce98acd429cf
 review:
   dependencies:
-    product.ai-chat.website: e1989d4215fe29be295c762314b12748a711d7b459df3bed937424ae84b2fa6f
+    product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
 ---
 
 # Create your workspace
 
-Create an account to upload project materials and turn them into a connected business and marketing model.
+<!-- section: hero -->
 
-## Account details
+## Bring your project into chat.
 
-**Email**
+Create an account to add your notes, files and images. Work with AI in each document's thread, then use saved documents in new project conversations.
 
-Used to sign in and receive service messages.
+<!-- section: account -->
 
-**Password**
+## Create an account
 
-Create a password for this account.
+Your free token balance appears in the workspace.
 
-**Repeat password**
+<!-- section: materials -->
 
-Enter the same password again.
+## Before you add files
 
-[Create account](/projects/new)
+Read [How your materials are processed and stored](/projects/example#how-your-materials-are-processed-and-stored), including external AI processing and backup retention after deletion.
 
-Already have an account? [Sign in](/login)
+<!-- section: success -->
 
-After registration you will see the available free token balance and continue directly to the material-upload page.
+## Your account is ready
+
+Continue to your project chat and add your notes, files and images.
+
+<!-- section: controls -->
+
+## Interface labels
+
+| Control                  | Text                                                                                                             |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| back-label               | Back to AI Chat                                                                                                  |
+| back-href                | /                                                                                                                |
+| email-label              | Email                                                                                                            |
+| email-placeholder        | you@example.com                                                                                                  |
+| password-label           | Password                                                                                                         |
+| repeat-password-label    | Repeat password                                                                                                  |
+| terms-label              | How your materials are processed and stored                                                                      |
+| terms-href               | /projects/example#how-your-materials-are-processed-and-stored                                                    |
+| submit                   | Create account                                                                                                   |
+| sign-in-label            | Sign in                                                                                                          |
+| sign-in-href             | /login                                                                                                           |
+| existing-account         | Already have an account?                                                                                         |
+| continue-label           | Open project chat                                                                                                |
+| continue-href            | /projects/new                                                                                                    |
+| email-error              | Enter a valid email address.                                                                                     |
+| password-error           | Enter a password.                                                                                                |
+| repeat-password-error    | Enter the same password in both fields.                                                                          |
+| success-message          | Your account is ready.                                                                                           |
+| photo-src                | /workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1-square.png    |
+| photo-asset-id           | singlepage-generated-living-focus-photography-project-start-v1-square                                            |
+| photo-alt                | A woman working on her project with a laptop and notebook.                                                       |
+| secondary-photo-src      | /workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-progress-v1-square.png |
+| secondary-photo-asset-id | singlepage-generated-living-focus-photography-project-progress-v1-square                                         |
+| secondary-photo-alt      | A man reviewing a project sketch beside his laptop.                                                              |

@@ -1,3 +1,5 @@
+import { Component as AIChatWorkspace } from "./ai-chat-workspace";
+import { Component as AIChatPreview } from "./ai-chat-preview";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -11,6 +13,8 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Find } from "./find";
 import { Component as Default } from "./default";
 export const variants = {
+  "ai-chat-workspace": AIChatWorkspace,
+  "ai-chat-preview": AIChatPreview,
   "admin-select-input": AdminSelectInput,
   "admin-table": AdminTable,
   "admin-form": AdminForm,

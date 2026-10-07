@@ -3,48 +3,28 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    product.ai-chat.page.content.project-model: cea20d06949299e0fc1861e91aa73e3a388eb69324da5172a2cf3a8d8bb4747e
-    product.ai-chat.website: e1989d4215fe29be295c762314b12748a711d7b459df3bed937424ae84b2fa6f
+    product.ai-chat.page.content.project-model: f17aa0f1649f24c00b387547fb0800c632db2e752cdc54fd696b53e07d8a3473
+    product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
 ---
 
-# Build and preview the landing page in a sandbox
+# Future landing-page generation
 
-AI Chat prepares the first draft from the selected customer, problem, offer, evidence and action in the Project model. The page is assembled from available SinglePageStartup blocks. Edit its data and inspect the frontend result here. This version is a private preview until the user starts the publication flow.
+Landing-page generation is outside the first release. The current workspace creates written project and product descriptions that you can correct, review, edit, accept and export.
 
-## Start from project decisions
+## Purpose of the later page
 
-| Landing-page decision        | What AI Chat uses                                                                                                 |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Customer**                 | The selected Customer Segment, its situation and decision role.                                                   |
-| **Problem and result**       | The relevant customer problem, desired progress and the result the product provides.                              |
-| **Offer**                    | The Value Proposition, included result, price or commercial condition when defined, and important limits.         |
-| **Reason to choose**         | Approved evidence, relevant difference from alternatives and supported claims.                                    |
-| **Primary action**           | The next action defined for this point in the Sales process, including the information the customer must provide. |
-| **Objections and questions** | Material objections, conditions, dependencies and answers needed before the customer can act.                     |
+After the owner evaluates and improves the project-description workflow, the AI agent will build a landing page from reviewed project documents. Its purpose is to collect initial enquiries and test a hypothesis. Enquiries and a successful test are not guaranteed.
 
-If a required decision is unknown or conflicting, the editor shows it beside the affected section. The rest of the page remains available for work.
+## Intended future editing flow
 
-## Edit the sandbox
+The later page will use the selected customer, problem, offer, evidence and next action. The intended editor assembles SinglePageStartup blocks and provides Text and Layout views of the same saved page data. Changes will be saved with the project and shown in a private preview.
 
-The editor provides two views of the same saved landing-page data:
+If a future edit or preview fails, preserve the saved data, identify the affected content, block or rendering step and offer retry or support. If the page exposes a problem with the offer, price or evidence, return to the owning Product description for correction and review.
 
-- **Text** contains the headline, explanation, offer, proof, process, answers to objections and primary action;
-- **Layout** renders the selected SinglePageStartup blocks with that wording, imagery, form and actions.
+## Future deployment
 
-A change is saved to the project in the service database and can appear immediately in Layout for frontend testing. The user can revise a block, change its order, select approved imagery and inspect the complete customer path without deploying a site.
+The intended deployment flow uses GitHub authorization for a repository created in the user's account and a connected server, including Beget or Timeweb. A deployment key connects the server, and GitHub Actions handles deployment and later approved updates.
 
-When work on the page reveals a real problem with the customer, offer, price, evidence or sales action, update that decision in the Project model. The landing page then uses the revised decision after review.
+Deployment will be a paid offer. Prices and availability are not set. This view does not offer a current editor or a publication action.
 
-## Publish the page on your server
-
-The sandbox is the version used to review the page. It is not published until the user selects **Publish on my server**.
-
-The publication flow asks the user to sign in with GitHub and authorize access to the project repository. SinglePageStartup creates the repository in the user's GitHub account and writes the current landing page and Code Framework foundation to it.
-
-The user then connects an existing server or opens an account with a hosting provider such as Beget or Timeweb. The interface asks for the deployment key supplied by the server or provider. SinglePageStartup configures automatic deployment from the GitHub repository to that server. After the first deployment, the landing page receives a public address.
-
-The authorized GitHub connection remains available for later approved changes. SinglePageStartup writes those changes to the same repository, and the configured deployment updates the public site.
-
-[Publish on my server](/projects/example/landing-page/publish)
-
-[Return to the business workspace](/projects/example)
+[Return to my project texts](/projects/example)

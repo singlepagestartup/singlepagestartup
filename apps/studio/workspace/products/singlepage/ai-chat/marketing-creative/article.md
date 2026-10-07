@@ -3,27 +3,33 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    product.ai-chat.creative: 45271defa23617549a5078f8ce9c47e530b694ff9ac50d63196adc094b20f1d1
+    product.ai-chat.creative: 046608e08cbb233ac0bdfd6f4a8d60c10d71b66a40a757efc83beee71a434ef2
 ---
 
-# Turn your files into a business model you can actually use.
+# Describe your project using the notes and files you already have.
 
-An idea often lives across notes, documents, screenshots, presentations and unfinished decisions. You may already know a great deal about the future business and still be unable to explain how its customers, offer, sales, operations and marketing fit together.
+An idea often lives across notes, documents, screenshots and unfinished decisions. You may know who the customer is but still need to describe the offer, how you will deliver it or how the business will cover its costs. SinglePageStartup AI Chat helps you write those descriptions and identify what needs more work.
 
 ## Upload the material in its current form
 
-Add the files, images and text you already have. AI Chat drafts five compact sections—Request, Strategy, Brand, Design and Products—and shows which decisions are missing, proposed or contradictory. Review one decision at a time while the complete project page updates beside it.
+Attach the files, images and text you already have in a project chat. AI Chat checks them and drafts shortened versions of the Workspace documents: Brief, Strategy, Brand, Design and Products. Brief describes the project and its constraints. Strategy and Brand set its direction and meaning; Design describes the intended appearance in words.
 
-You can correct a section directly, ask why information was placed there, request criticism of an idea or tell the chat to update the relevant document. The current result can be exported and used with another AI tool, adviser or team member.
+Each product has its own customer and offer, Operations & Economics, Sales, Promotion, Analytics and research where needed. Promotion describes how you intend to present the product, with Website, Creative and Presentation text where relevant. You can work on one product without combining its decisions with another's.
 
-## Turn the model into a landing-page sandbox
+## Correct the shortcomings the AI agent identifies
 
-Once the customer, problem and offer are clear enough, assemble a landing page from the same work. Edit its Text and Layout, save the data with the project and inspect the private frontend preview.
+Each document has its own thread for discussion and editing. Read the draft, answer the agent's questions and correct missing or contradictory information there. You can leave an unanswered question open and return to it later. The review count shows which sections you have checked; missing facts remain visible separately.
 
-When the page is ready, sign in with GitHub and create the project repository. Connect an existing server or open an account with a hosting provider such as Beget or Timeweb, then enter its deployment key. SinglePageStartup configures automatic deployment so the first release and later approved changes reach the same public site.
+Accept the descriptions when they reflect your project. Freely export the documents and use them with another AI tool, adviser or team member. The accepted work is a first step toward customers; it does not establish demand for the project.
 
 ## Continue with the business already described
 
-Ask a question, compare alternatives, request criticism or prepare the next material without explaining the business again. If the available token balance runs out, top it up and return to the same task. When the project needs a chatbot or another digital product, use the same Code Framework foundation and repository-to-server path.
+Create a topic in the general project workspace and choose the saved documents to attach. Ask the agent to assess an idea, compare alternatives or prepare another text using those files. Return to the owning document's thread for edits. Its reviewed version stays available while you revise a new draft, and you can continue with saved documents while other sections still have open questions.
 
-[Organize my materials](/register)
+The balance may go below zero. At −2,000 internal tokens or lower, new paid AI requests are restricted; top up above that threshold and return to the same task.
+
+## Later: a landing page for the project
+
+Landing-page creation and server deployment are planned for a later stage. The AI agent will use the accepted descriptions to prepare a page intended to collect initial enquiries and test a hypothesis. Deployment availability and prices are undecided. The first-stage offer is the written project and product documents.
+
+[Start with my files](/register)

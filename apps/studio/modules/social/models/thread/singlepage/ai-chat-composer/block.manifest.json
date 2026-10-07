@@ -1,0 +1,27 @@
+{
+  "id": "social.thread.ai-chat-composer",
+  "title": "ai-chat-composer",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat thread view.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.thread",
+    "pageName": "social",
+    "variantName": "ai-chat-composer",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "thread",
+    "variant": "ai-chat-composer"
+  },
+  "contentSlots": []
+}

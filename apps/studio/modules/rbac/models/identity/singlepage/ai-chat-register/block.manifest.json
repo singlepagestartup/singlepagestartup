@@ -1,0 +1,27 @@
+{
+  "id": "rbac.identity.ai-chat-register",
+  "title": "ai-chat-register",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat identity view.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "rbac.identity",
+    "pageName": "rbac",
+    "variantName": "ai-chat-register",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "identity",
+    "variant": "ai-chat-register"
+  },
+  "contentSlots": []
+}

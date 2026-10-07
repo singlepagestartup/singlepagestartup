@@ -1,6 +1,13 @@
+import { Component } from "@sps/rbac/models/identity/frontend/component/src/lib/singlepage/ai-chat-login";
 import sourceText from "./login.md?raw";
-import { ServiceDocument } from "./ServiceDocument";
+import { parseAIChatServicePage } from "./content";
+import { AccountProvider } from "./../../../../../../../libs/shared/frontend/components/src/lib/singlepage/ai-chat/Account";
+import { aiChatAccount } from "../../../../../../../tools/studio/products/fixtures/ai-chat-account";
 
 export default function Login({ text }: { text?: string } = {}) {
-  return <ServiceDocument eyebrow="Sign in" text={text ?? sourceText} />;
+  return (
+    <AccountProvider account={aiChatAccount}>
+      <Component copy={parseAIChatServicePage(text ?? sourceText)} />
+    </AccountProvider>
+  );
 }

@@ -1,3 +1,4 @@
+import { Component as AIChatSettings } from "./ai-chat-settings";
 import { Component as EcommerceModuleOrderCheckoutDefault } from "./ecommerce-module/order/checkout-default";
 import { Component as EcommerceModuleOrderListCheckoutDefault } from "./ecommerce-module/order/list/checkout-default";
 import { Component as EcommerceModuleOrderUpdateDefault } from "./ecommerce-module/order/update-default";
@@ -41,6 +42,7 @@ import { Component as SocialModuleProfileChatListDefault } from "./social-module
 import { Component as SocialModuleProfileChatOverviewDefault } from "./social-module/profile/chat/overview/default";
 
 export const variants = {
+  "ai-chat-settings": AIChatSettings,
   "ecommerce-module-order-checkout-default":
     EcommerceModuleOrderCheckoutDefault,
   "ecommerce-module-order-list-checkout-default":

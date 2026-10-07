@@ -1,3 +1,5 @@
+import { IComponentProps as IAIChatLoginProps } from "./ai-chat-login/interface";
+import { IComponentProps as IAIChatRegisterProps } from "./ai-chat-register/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
 import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
@@ -14,6 +16,8 @@ import { IComponentProps as ICreateByEmailComponentProps } from "./create-by-ema
 import { IComponentProps as IFormFieldDefaultComponentProps } from "./form-field-default/interface";
 
 export type IComponentProps =
+  | IAIChatLoginProps
+  | IAIChatRegisterProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps

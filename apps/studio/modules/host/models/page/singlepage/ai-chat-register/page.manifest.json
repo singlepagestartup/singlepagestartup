@@ -1,0 +1,26 @@
+{
+  "id": "ai-chat-register",
+  "title": "ai-chat-register",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat page recipe for /ai-chat/register.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ai-chat-register",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "rbac.identity.ai-chat-register",
+      "path": "../../../../../rbac/models/identity/singlepage/ai-chat-register"
+    }
+  ]
+}

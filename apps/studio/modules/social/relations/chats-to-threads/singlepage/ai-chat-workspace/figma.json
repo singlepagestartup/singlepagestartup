@@ -1,0 +1,21 @@
+{
+  "componentName": "social.chats-to-threads",
+  "pageName": "social",
+  "variantName": "ai-chat-workspace",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.chats-to-threads.ai-chat-workspace",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/relations/chats-to-threads/singlepage/ai-chat-workspace",
+    "sps.figma.component": "social.chats-to-threads",
+    "sps.figma.variant": "ai-chat-workspace",
+    "sps.source.module": "social",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "chats-to-threads",
+    "sps.source.variant": "ai-chat-workspace",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/relations/chats-to-threads/singlepage/ai-chat-workspace/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/relations/chats-to-threads/singlepage/ai-chat-workspace/Component.stories.tsx"
+  }
+}

@@ -30,3 +30,13 @@ Messages store social chat content and interaction data.
 - `admin-select-input`: admin select input for choosing a message.
 - `admin-table`: admin table listing messages.
 - `admin-table-row`: admin row showing message fields.
+
+## AI Chat conversation
+
+The `ai-chat-conversation` variant shows messages and the context snapshots used
+by each reply. Replies retain the active document name, selected
+work sections, document text and attachment snapshots used for that message.
+Later edits or selection changes preserve earlier context. Agent avatars open
+the role description; project documents belong to the conversation context.
+These records currently live in the AI Chat frontend prototype, without adding
+fields to the Social message schema or invoking an AI provider.

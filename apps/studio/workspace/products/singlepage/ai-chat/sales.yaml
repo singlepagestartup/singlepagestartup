@@ -1,6 +1,6 @@
 schema: singlepagestartup.sales-process.v2
 product_id: ai-chat
-readiness: blocked
+readiness: ready
 owner: The SinglePageStartup project creator currently owns every sales and
   service stage.
 seller: The SinglePageStartup project creator operates AI Chat. Payments are
@@ -17,84 +17,95 @@ pricing: The AI Chat Product records token purchases in Revenue Streams. The
   to the model and the balance is settled once the answer returns and its actual
   cost is known. Tokens are sold in roubles at a thirty per cent margin over
   provider cost, converted at a fixed 100 roubles per dollar, so a token costs the
-  customer 0.13 roubles and no request costs less than that. Purchased tokens do
-  not expire, purchases are normally final, and a refund is a case-by-case
-  decision rather than a published entitlement. Top-ups are sold in five packages
+  customer 0.13 roubles and no successful request costs less than that. If an AI
+  request fails or is cancelled, all deductions for that request are returned to
+  the token balance, including the initial token and any settlement. Its net
+  charge is zero even if the provider incurred a cost. Purchased tokens do not
+  expire, purchases are normally final, and a cash refund for a top-up purchase
+  is a case-by-case decision rather than a published entitlement. Top-ups are
+  sold in five packages
   of 100, 300, 500, 1,000 and 3,000 roubles at the same token price, so a larger
-  package carries no extra discount.
+  package carries no extra discount. The balance may become negative. At minus
+  2,000 internal tokens or below, equivalent to USD 2 of provider-cost debt,
+  further paid AI requests are restricted until a top-up raises the balance above
+  that threshold. This does not cap the final cost of an already submitted request.
 capacity: One project owner runs the service and processes support requests
   within 24 hours. Continuous live support and higher service levels have not
   been defined.
-blockers:
-  - Write what customers are told about how their uploaded material is processed,
-    where it is stored and how long backups are kept. The facts are settled. The
-    service runs on Contabo in Amsterdam, OpenRouter is the selected AI and
-    embedding provider, document text reaches it both to be embedded and as
-    retrieved context, vectors stay in the project's own PostgreSQL with
-    pgvector, and host backups persist for up to six months after deletion.
+blockers: []
 segments:
   - id: business-users
     name: Early-stage project owners
     audience:
       People with a business idea or an early-stage project who have notes,
       documents, images, decisions or partial answers. They need to organize
-      this material into one business model, continue working with it and
-      prepare a landing-page preview before publishing it through their
-      repository and server.
+      this material into written project and product descriptions, correct
+      their gaps and continue working from the saved context. The first-stage
+      offer delivers text documents. Landing-page assembly, block editing and
+      paid server deployment belong to subsequent development; they are not
+      available steps in this first-stage customer journey.
     roles:
       The same person is normally the user, beneficiary and decision-maker, and
       may also buy and pay for tokens. For organizational customers, the buyer,
-      payer and person authorized to commission or manage a public site are
-      still unknown.
+      payer and purchasing authority are customer-specific.
     needs:
       - Upload existing notes, documents, images and decisions without first
         deciding where every item belongs.
-      - Review compact Request, Strategy, Brand, Design and Products stages
-        during the first session.
+      - Review shortened written Brief, Strategy, Brand and Design documents,
+        with separate Products.
+      - Keep the full section structure for each product, including its Product
+        description, Operations & Economics, Sales, Promotion, Analytics and
+        research or evidence where needed.
+      - Describe intended public presentation in Promotion through written
+        Website, Creative and Presentation descriptions where relevant, without
+        requiring a built site or produced media.
+      - Discuss and edit each generated file in its own working thread, keeping
+        its conversation and draft together.
       - See what is missing, proposed or contradictory and correct it through
         ordinary conversation.
-      - Develop and question later ideas without explaining the business again.
-      - Assemble and review a first landing page in the SinglePageStartup
-        sandbox.
-      - Authenticate with GitHub, create the project repository and connect a
-        server when the page needs to become public.
-      - Export the resulting structure for use outside the service.
+      - Create project discussion topics and attach selected saved documents
+        without explaining their contents again.
+      - Export the resulting structure and freely use it outside the service.
       - Add detail without creating copies that must be updated by hand.
     motivations:
       - Turn scattered project material into a usable model.
       - Spend less time sorting information and repeating context.
       - Have a continuing counterpart that helps develop ideas and points out
         weaknesses.
-      - Keep control over corrections, repository authorization, server
-        connection and the decision to publish.
+      - Keep control over the project facts, corrections, accepted documents
+        and their use outside the service.
       - Pay for continued use only when the product has proved useful.
-    purchase_trigger: The token balance is too low for the next request, and the
+    purchase_trigger: The balance reaches the negative limit and further
+      requests are restricted, or the person chooses to top up earlier. The
       person chooses a clearly priced package to continue the saved setup,
       document work, discussion or material creation.
     decision_criteria:
-      - Existing materials and guided answers become a coherent project model
-        written in ordinary language.
-      - About one focused hour is enough to prepare useful context without
+      - Existing materials and guided answers become coherent written project
+        descriptions and separate product documents in ordinary language.
+      - The first session is structured for about one focused hour, without
         forcing completion or inventing missing answers.
+      - Every product keeps its full section structure; missing decisions and
+        evidence remain visible rather than appearing complete.
       - The user can see where information was placed, correct it and approve
         the result.
-      - Accepted information is reused without another explanation from the user.
+      - Each file keeps its own discussion and edits when the user switches threads.
+      - Selected saved documents supply context for separate project topics.
+      - A reviewed document stays usable while its next draft is being revised;
+        unfinished sections do not prevent work with the reviewed material.
       - Later discussions test ideas and point out weaknesses instead of
         automatically agreeing with them.
       - Unknowns block only the decisions that require them.
-      - Landing-page edits are saved with the project and shown immediately in a
-        private preview.
-      - Publication creates a repository in the user's GitHub account and
-        deploys it to a server the user controls.
-      - Later approved changes can update the same repository and deployment.
       - The terms for continued use, data processing and support are clear.
     value_proposition:
       Upload the project files, images and notes already available,
-      then review compact Request, Strategy, Brand, Design and Products stages.
-      AI Chat assembles them into an editable project model, shows what is
-      missing, uses the accepted context in later discussions and helps prepare
-      a landing-page sandbox that can be published through a GitHub repository
-      and the user's server.
+      then review shortened written Brief, Strategy, Brand and Design
+      documents and a complete set of sections for each separate product.
+      AI Chat identifies gaps and contradictions for the person to correct in
+      each file's working thread. The person can attach selected saved documents
+      to new project topics, export the documents and freely use them outside
+      the service. The owner's
+      first-stage goal is to learn how useful this project-description flow is
+      and improve it before selling later deployment services.
     objections:
       - concern:
           I have notes and documents, but I do not know which project section
@@ -107,21 +118,29 @@ segments:
           missing information marked for review.
       - concern: I will have to repeat the same background in every request.
         response:
-          AI Chat keeps accepted project decisions and asks only for information
-          missing from the current task.
+          Attach the saved documents relevant to a project topic. AI Chat uses
+          that context and asks for information missing from the current task.
         evidence:
-          Demonstrate a later request that uses the accepted project page and
-          shows the source behind the answer.
-      - concern:
-          Will the landing-page preview appear publicly or overwrite an accepted
-          project decision?
+          Demonstrate a separate topic with selected reviewed documents attached,
+          and show the document behind the answer.
+      - concern: Does the first-stage offer build or publish a landing page?
         response:
-          The preview remains private until the user starts publication. Project
-          decisions change only after review. Publication uses an authorized
-          project repository and a server connection controlled by the user.
+          The first-stage offer delivers written project and product documents.
+          Landing-page assembly, the block editor and paid server deployment
+          belong to later development. Future deployment prices and
+          availability are undecided and do not affect the current text offer.
         evidence:
-          Show the sandbox state, saved data, GitHub authorization, repository
-          creation, server connection and deployment status as separate steps.
+          Show the written deliverables and the first-stage boundary. Any future
+          publication example must be labeled as a future requirement, not an
+          available action or an observed result.
+      - concern: A short description may hide missing business decisions.
+        response:
+          Shortened project documents preserve their structure, and every
+          product keeps its own full section structure. Unknown decisions,
+          contradictions and missing evidence stay visible for correction.
+        evidence: Show two separate products with their own customer and offer,
+          Operations & Economics, Sales, written Promotion, Analytics and
+          applicable evidence, including a question that remains open.
       - concern: The chat may simply agree with every idea.
         response:
           AI Chat can examine assumptions, expose contradictions, compare
@@ -143,14 +162,15 @@ segments:
           The person has an idea, notes or partial decisions that have not yet
           become a coherent project.
         message:
-          Bring what you already have, review the proposed structure and keep
-          developing the project from the accepted result.
+          Send your notes, photographs and files in chat. Check what needs more
+          work, edit each file with the agent in its own thread and attach the
+          saved documents to new project topics.
         cta: See how AI Chat works
         destination: AI Chat landing page or matching full explanation
       - id: search
         channel: Search-oriented explanations
         context: The person is searching for help with a business brief, project
-          strategy, positioning or landing page.
+          strategy, positioning or product description.
         message: Resolve the current decision and save the result in the project model.
         cta: Start with this task
         destination: An explanation of the task with a link to New project
@@ -166,7 +186,7 @@ segments:
         destination: Matching explanation or AI Chat page
     journey:
       - id: discover
-        name: See an idea become structured
+        name: See the project chat at work
         customer_goal:
           Find a practical way to turn available project material into
           something useful for further work.
@@ -177,8 +197,9 @@ segments:
           Can this help me organize my project without another long
           planning exercise?
         experience:
-          A concrete before-and-after example that makes the product's scope
-          clear.
+          A short view shows uploaded files, the agent's questions, a file's
+          discussion and editor, its review status and a new topic using attached
+          saved documents.
         touchpoint: Demonstration, search result, short extract or community answer
         owner:
           The project owner prepares and presents every example; the visitor
@@ -188,10 +209,12 @@ segments:
             feels scattered.
         required_fields:
           - No personal information is required for discovery.
-        action:
-          Show how mixed notes or guided answers become a project model for
-          review, then use it to discuss an idea or prepare a landing-page
-          sandbox.
+        action: >-
+          Show the customer flow in chat: upload materials, check gaps identified
+          by the agent, discuss and edit each file in its own thread, then attach
+          selected reviewed documents to a new project topic. Keep
+          the first explanation short enough to understand within fifteen
+          seconds; comprehension has not been measured.
         exit_condition:
           The visitor chooses to start a project, seeks more information,
           defers or leaves.
@@ -206,7 +229,8 @@ segments:
         customer_question: What can I do here, and what happens to the information I provide?
         experience:
           A direct email-and-password registration or sign-in path followed by
-          material upload. Social login is not offered.
+          the project chat, where the person can add material. Social login is
+          not offered.
         touchpoint: Registration and sign-in pages
         owner:
           The user registers and logs in; the project owner operates access and the
@@ -217,56 +241,72 @@ segments:
           - Email address and password.
         action:
           Register or authenticate the account, show the available token balance
-          and continue to the material-upload step.
+          and open the project chat for material upload.
         exit_condition: The person accepts the conditions and enters, requests
           clarification or declines.
         failure:
-          If access fails or the terms are unsuitable, the person can request
-          support, return later or choose another service. Support requests are
+          If the terms are unsuitable, the person can request clarification,
+          return later or choose another service. Support requests are
           processed within 24 hours.
         metric:
           Registrations, successful logins, access failures and voluntarily
           reported reasons for declining.
       - id: describe
-        name: Build the first project model
+        name: Upload and check project materials
         customer_goal:
           Turn available files, images and partial knowledge into one
-          business and marketing model.
+          written project description and a separate description of each product.
         customer_action:
-          Upload existing material, add explanatory text, then review
-          compact Request, Strategy, Brand, Design and Products stages.
+          Enter a project name, upload files, photographs, notes and explanatory
+          text on the material screen, then follow the analysis and review
+          shortened Brief, Strategy, Brand and Design documents and each
+          product's full section structure with the agent in their owning threads.
         customer_question: What do I need to decide now, and what can remain unknown?
         experience:
-          The user can submit existing files and images without learning the
-          document structure first. Each screen shows extracted statements, one
-          question that affects the model and the current project page. The
-          token balance remains visible.
-        touchpoint: Material upload and guided intake page
+          Project creation, material upload and analysis have separate screens
+          before the document chats. Uploaded files remain visible beside
+          the working documents. Each
+          generated file has its own discussion and editor. The agent points out
+          missing information and contradictions. Section
+          indicators show how much information is present and what needs more
+          work or review. The user does not need to learn the document structure
+          before uploading, and the token balance remains visible.
+        touchpoint: Project name, material upload, analysis and document chats
         owner:
           The user supplies and approves project facts; the project owner operates
-          the guided intake.
+          intake and document work in the chat.
         entry_conditions:
           - The user has access and a project or business idea to develop.
         required_fields:
           - Available files, images or facts for the current task and an
             explicit unknown where the user cannot answer.
-        action:
-          Place supplied information in Request, Strategy, Brand, Design and
-          Products, ask one question at a time and link every statement to its
-          source. Inside Products, group customer and value, access and
-          relationship, money and delivery, and sales and learning instead of
-          showing nine separate forms.
+        action: >-
+          Create the named project, receive its uploaded material, show analysis
+          progress and place supplied information in shortened
+          written Brief, Strategy, Brand and Design documents. Ask one material
+          question at a time and keep each statement's source visible. Open each
+          generated file as an independent thread for discussion and editing.
+          Give every
+          product its own full
+          section structure: Product, Operations & Economics, Sales, Promotion,
+          Analytics and research or evidence where needed. Promotion describes
+          the intended public presentation in words, including Website,
+          Creative and Presentation text where relevant. Mark missing decisions,
+          contradictions and evidence without inventing answers. Show which
+          sections have content and which need more information or review;
+          these indicators do not validate the business or its demand.
         exit_condition:
-          The five-stage draft supports a useful, reviewable project model
-          or the user saves incomplete work.
+          Written project documents and separate product drafts are available in
+          their own threads for review, or the person saves incomplete work with
+          its gaps.
         failure:
-          If the token balance runs out, save the work and open token purchase
-          without losing the current task. If information is missing, record the
-          unknown with the affected decision and continue with the rest or
-          return later.
+          If the balance reaches the negative limit, the person can top up,
+          pause or return later without losing the current task. If information
+          is missing, record the unknown with the affected decision and continue
+          with the rest or return later.
         metric:
-          Projects started, stages reviewed, corrections, unknowns, time to a
-          reviewed model and abandonment points.
+          Projects described, draft documents produced, per-product section
+          coverage, questions, unknowns, contradictions and abandonment points.
       - id: purchase
         name: Top up tokens and return to work
         customer_goal:
@@ -287,8 +327,8 @@ segments:
           The user chooses and pays for a package; the project owner operates
           payment acceptance and the Russian online receipt flow.
         entry_conditions:
-          - The available token balance is insufficient for requested intake,
-            chat, document or material work.
+          - The balance reaches the negative limit and further requests are
+            restricted, or the user chooses to top up earlier.
         required_fields:
           - Selected token package and payment details required by the
             configured payment flow.
@@ -299,111 +339,99 @@ segments:
           Tokens are credited and the user resumes work, chooses another
           package, defers purchase or leaves.
         failure:
-          Keep the work and balance unchanged, explain the payment result and
-          offer another attempt, support or a return without purchase.
+          If the person declines or cannot complete the purchase, they can
+          choose another package, seek help, defer or return without buying.
         metric: Purchase-page entries, successful purchases, failures, package
           selection, return to task and repeat purchases.
       - id: review
-        name: Review the structured project
+        name: Correct, accept and export the documents
         customer_goal:
-          Check that the business and marketing model describes the project
-          accurately and makes missing decisions clear.
+          Check that the written documents describe the project and every
+          product accurately and make missing decisions clear.
         customer_action:
-          Read the project model, correct a decision, export the current
-          document or continue through chat.
+          Open a project or product file's thread, discuss the gaps with the
+          agent and review the proposed text in its editor. Edit it, explicitly
+          save and review the useful result, switch to another file or export
+          the text.
         customer_question:
           Does this explain how my business should work, what is
           missing and what I should do next?
         experience:
-          A readable project page that can be corrected through chat without
-          entering the same information again.
-        touchpoint: Project model
-        owner:
-          The user accepts or corrects the project; the project owner maintains the
-          project page.
+          Each file retains its conversation, draft and reviewed version when
+          the person switches threads. Section indicators distinguish available
+          content from missing information and pending review. The latest
+          reviewed version remains available while a new draft is edited. Each
+          product retains its own sections and open questions.
+        touchpoint: Independent document threads with their conversation and editor
+        owner: The user accepts or corrects the descriptions; the project owner
+          operates document delivery and learns from the corrections.
         entry_conditions:
-          - The compact Request, Strategy, Brand, Design and Products stages
-            contain enough reviewed information for a coherent project page.
+          - Draft Brief, Strategy, Brand and written Design documents and
+            separate product drafts are available for review.
         required_fields:
-          - Connected business and marketing model, visible assumptions,
-            unknowns and user corrections.
-        action:
-          Present the complete model, show where supplied information was placed,
-          save corrections in their main sections and offer the relevant next
-          action.
+          - Written project descriptions, each product's own section coverage,
+            visible assumptions, unknowns, evidence gaps and user corrections.
+        action: Work through the agent's identified shortcomings in the affected
+          file's thread. Put proposed changes in its editor for the user to
+          correct, save and review; an agent-filled draft is not acceptance.
+          Update that file's content and review indicators and preserve its
+          latest reviewed version until the new draft is reviewed. Keep
+          unanswered questions visible. Make reviewed documents available for
+          export and attachment to new project topics without requiring every
+          file to be finished. The person may freely use the exported results
+          outside the service.
         exit_condition:
-          The user continues through chat, edits a section, exports the
-          document or prepares the landing page.
+          The user accepts useful text, corrects a section, exports the
+          documents, opens a project topic with selected saved files or saves
+          open questions for later.
         failure:
           Preserve accepted parts, expose the contradiction and request only the
           necessary clarification.
-        metric:
-          Pages accepted, correction cycles, contradictions and repeated-input
-          problems.
-      - id: landing-preview
-        name: Prepare the landing-page sandbox
-        customer_goal:
-          See how the offer could work as a landing page without rebuilding
-          the project context or publishing a site.
-        customer_action:
-          Review the generated Text and Layout, revise the page, save the
-          sandbox or start publication.
-        customer_question:
-          Does this page express the approved audience, value and
-          action accurately?
-        experience:
-          SinglePageStartup blocks assemble the page; edits are saved in the
-          service database and appear immediately in the frontend preview.
-        touchpoint: Landing-page sandbox
-        owner:
-          The user reviews and edits the sandbox; the project owner operates AI
-          Chat storage and preview.
-        entry_conditions:
-          - The project page is accepted and the user wants to inspect a
-            possible landing page.
-        required_fields:
-          - Reviewed audience, offer, action and page content.
-        action:
-          Assemble the page from available SinglePageStartup blocks, save edits
-          with the project and render the current private preview. Offer
-          publication when the page is ready.
-        exit_condition:
-          The sandbox is saved, returned for changes, moved to publication
-          or cancelled.
-        failure:
-          Preserve saved data and identify the exact content, block or rendering
-          problem. Do not imply that the preview is public.
-        metric:
-          Sandboxes created, reviewed, revised, saved, cancelled and moved into
-          publication.
+        metric: Documents accepted or revised, correction cycles, per-product
+          completeness, unresolved gaps, contradictions, useful-result feedback,
+          exports and repeated-input problems.
       - id: continue
         name: Develop and challenge ideas
         customer_goal:
           Think through another idea or complete a project task without
           explaining the project again.
         customer_action:
-          Discuss an idea, request criticism, compare alternatives,
-          request a material, add a product or update an accepted decision.
+          Create or reopen a project topic, choose the saved documents to attach
+          and discuss an idea, request criticism, compare alternatives or request
+          a material. Return to the owning file's thread to add a product or
+          update an accepted decision.
         customer_question:
           Can I use what we already agreed, test this idea and change
           only what matters now?
         experience:
-          AI Chat already has the relevant context, explains whether it
-          supports or questions the idea and asks only for information missing
-          from the current task.
-        touchpoint: Project page and product materials
+          Each project topic keeps its own conversation and selected document
+          attachments. The agent uses those reviewed files as context, explains
+          whether they support or question the idea and asks for information
+          missing from the current task. Document editing remains in the file's
+          own thread, with the topic still available when the person returns.
+        touchpoint: General project workspace with separate topics and attached saved files
         owner:
           The user directs continued work; the project owner maintains access and
           the saved project context.
         entry_conditions:
-          - The user has an accepted project page and another decision or
-            material to work on.
+          - The user has at least one saved reviewed document and another
+            decision or material to work on; other files may remain unfinished.
         required_fields:
-          - The next request, relevant change and applicable access terms.
-        action:
-          Use accepted project decisions, save reviewed changes in the affected
-          sections, deduct tokens for completed operations and open token
-          purchase when the balance is too low for the next request.
+          - The topic, next request, selected saved documents, relevant change
+            and applicable access terms.
+        action: Create or reopen the topic with its selected saved documents as
+          context. Keep the topic's conversation separate from other topics and
+          document threads. Route proposed document changes to the owning file's
+          thread for editing and user review; use its last reviewed version until
+          the replacement is reviewed. Keep content and review status visible.
+          Charge one token when the input
+          is sent to the model.
+          Settle a successful request once the answer returns and its actual
+          cost is known. Return all request deductions for a failed or cancelled
+          request, leaving a net charge of zero. Keep the task saved so the
+          person can continue when ready. Allow continued use within the
+          negative-balance limit and open token purchase when that limit is
+          reached.
         exit_condition:
           The requested task is completed, the user buys more tokens,
           pauses or chooses to leave.
@@ -414,66 +442,22 @@ segments:
           Useful later results, idea discussions rated useful, criticism acted on,
           return use, repeat purchases, repeated-input problems and reasons for
           stopping.
-      - id: framework
-        name: Publish and maintain the site
-        customer_goal:
-          Turn the approved landing-page sandbox into a public site on
-          infrastructure the person controls.
-        customer_action:
-          Sign in with GitHub, authorize project-repository access,
-          create the repository, connect a server or hosting provider and start
-          deployment.
-        customer_question:
-          What will be created in my accounts, which access is required
-          and how will later changes reach the site?
-        experience: A guided publication flow shows repository creation, server
-          connection, deployment configuration, the first deployment and its
-          public address. Publishing the landing page does not require a token
-          purchase.
-        touchpoint:
-          Landing-page publication page, GitHub authorization and server
-          connection
-        owner:
-          The user controls the GitHub repository and server account; the project
-          owner operates the authorized integration and deployment flow.
-        entry_conditions:
-          - The landing page is approved for publication, or another site,
-            chatbot or digital-product need appears during project work.
-        required_fields:
-          - GitHub authorization for the project repository.
-          - Repository name and confirmed creation destination.
-          - Existing server or hosting-provider destination and the required
-            deployment key.
-        action: Create the repository from the approved page and Code Framework
-          foundation, connect the server, configure automatic deployment, run
-          the first deployment and show the public address. Use the same
-          authorized repository for later approved updates.
-        exit_condition:
-          The site is deployed, the user returns to correct the page,
-          pauses at a saved connection step or cancels before publication.
-        failure:
-          Preserve the repository and last working deployment, identify the
-          failed connection or deployment step and allow a retry without
-          rebuilding the sandbox.
-        metric:
-          GitHub connections, repositories created, servers connected, deployment
-          starts, successful deployments, failed steps, public addresses and
-          later updates.
       - id: manage
         name: Manage the account and project
         customer_goal:
           Change account or project settings and understand the current
           service state.
         customer_action:
-          Open settings, update account or project details, view purchase
-          history, manage saved landing-page data or request account deletion.
+          Change the password or view purchases in account Settings. Select a
+          project in chat to rename it or manage its documents. Brief account
+          deletion from account Settings.
         customer_question:
           Where can I change my account, project, payments or saved
-          landing-page sandbox?
+          documents?
         experience:
-          One settings area contains account, project, billing and data
-          actions, separate from the project documents.
-        touchpoint: Settings page
+          Account Settings contains password, billing and account-data actions.
+          Each project has its own settings inside its chat.
+        touchpoint: Account Settings and selected-project settings inside chat
         owner: The user chooses each change; the project owner operates the
           corresponding service action.
         entry_conditions:
@@ -481,13 +465,13 @@ segments:
         required_fields:
           - Only the information required by the selected settings action.
         action:
-          Show account, project, billing and sandbox-data settings and apply only
-          the action the user explicitly selects.
+          Show account-wide controls in Settings and project controls in the
+          selected project chat. Apply only the action the user selects.
         exit_condition: The selected setting is saved, the user returns to work,
           requests help or leaves the account.
         failure:
-          Preserve the previous setting and show the available retry or support
-          path.
+          If the available account or project actions do not meet the person's
+          needs, they can seek help, defer the change or request account exit.
         metric:
           Settings actions, incomplete changes, deletion requests and support
           transitions.
@@ -503,8 +487,9 @@ segments:
         owner: The user describes the need; the project owner is the sole person
           responsible for processing it.
         entry_conditions:
-          - Access, cards, project decisions, the landing-page sandbox, GitHub
-            connection, server deployment or purchasing needs clarification.
+          - Access, supplied materials, written project and product sections,
+            corrections, context-aware chat, export or purchasing needs
+            clarification.
         required_fields:
           - The question, desired outcome and relevant context.
         action:
@@ -519,6 +504,116 @@ segments:
         metric:
           Common requests, time to first response, useful answers, unresolved
           requests and unmet expectations.
+    future_journey:
+      - id: landing-preview
+        name: "FUTURE: Prepare the landing-page sandbox"
+        availability: future-only
+        measurement: disabled-for-first-stage
+        customer_goal:
+          In a later offer, see how the reviewed documents could become a
+          landing page. This is outside first-stage delivery and activation.
+        customer_action:
+          Future only, after this offer becomes available, review and revise
+          generated Text and Layout or defer further work.
+        customer_question: What could a future landing-page offer include?
+        experience:
+          A future sandbox would assemble SinglePageStartup blocks, save page
+          edits with the project and show a private preview. No block editor or
+          sandbox is offered in the first stage.
+        touchpoint: Future landing-page sandbox, unavailable in the first stage
+        owner:
+          The user would review the page; the project owner would operate the
+          later offer after evaluating and improving project-description use.
+        entry_conditions:
+          - The first-stage description flow has been evaluated and improved.
+          - The later landing-page offer is available on its own stated terms.
+        required_fields:
+          - Reviewed audience, offer, intended action and page content.
+        action:
+          Future requirement, outside the current journey, assemble the page
+          from available blocks, save edits with the project and render its
+          private preview. Future prices and availability are undecided.
+        exit_condition:
+          In the future offer, the page is saved, revised, deferred or considered
+          for later paid deployment; none is a first-stage completion condition.
+        failure:
+          The person could defer the later offer, use the exported documents
+          elsewhere or choose another page-building approach.
+        metric:
+          Disabled for the first stage. Future sandbox creation, revisions,
+          saved previews and consideration of deployment require a separate
+          measurement scope when that offer becomes available.
+      - id: framework
+        name: "FUTURE: Deploy and maintain the site"
+        availability: future-only
+        measurement: disabled-for-first-stage
+        customer_goal:
+          In a later paid offer, publish a reviewed page on the person's server.
+          Publication is outside current acquisition, activation and completion.
+        customer_action:
+          Future only, after reviewing that offer's availability and commercial
+          terms, authorize its project repository and connect a server.
+        customer_question: What would the later deployment offer cost and require?
+        experience:
+          Future technical requirements cover GitHub authorization, creation
+          of a project repository, server connection and automatic deployment.
+          No token purchase is required by that technical branch; this does not
+          establish a free deployment offer. Its price and availability are unknown.
+        touchpoint: Future deployment flow, unavailable in the first stage
+        owner:
+          The user would control the repository and server account; the project
+          owner would operate the later paid offer on its own commercial terms.
+        entry_conditions:
+          - The description workflow has been evaluated and improved.
+          - A later deployment offer is available with defined commercial terms.
+          - The page is reviewed for publication and the user wants that offer.
+        required_fields:
+          - GitHub authorization limited to the project repository.
+          - Repository name and confirmed creation destination.
+          - Beget or Timeweb deployment destination and the required deployment key.
+          - The customer's own domain when domain attachment is requested.
+        action:
+          Future requirements cover creating the repository, connecting the
+          customer's server, configuring GitHub Actions for initial and later
+          deployment and attaching an existing domain through the provider API.
+          The service does not sell or register the domain. These requirements
+          are not an available first-stage deployment action.
+        exit_condition:
+          In the future offer, the page is published, returned for changes,
+          deferred or declined; publication does not complete the first-stage offer.
+        failure:
+          The person could decline the later commercial terms, defer deployment
+          or choose another provider or deployment approach.
+        metric: Disabled for the first stage. Future repository and server
+          connections, deployments, public addresses and updates require their
+          own measurement scope; none indicates current description-flow success.
+sources:
+  chat-workflow:
+    type: constraint
+    date: "2026-10-06"
+    source: brief/singlepage.md, sources.ai_chat_landing_presentation; the
+      intended customer process uses chat for material upload and agent review.
+      Each generated file has its own discussion and editing thread. General
+      project topics attach selected saved reviewed documents as context, with
+      each document's reviewed version available while a new draft is revised.
+      The landing walkthrough prefills an editable audience answer; Send answer
+      opens and enriches Products.md, then the user clicks the enabled Save and
+      review action. This prepared demonstration is not a claim that missing
+      customer facts can be invented. Content and review indicators show
+      remaining work; their calculation is not specified and they are not proof
+      of business quality or implemented capability.
+  first-stage-boundary:
+    type: constraint
+    date: "2026-10-06"
+    source: brief/singlepage.md, sources.ai_chat_launch_stage and
+      sources.future_deployment_commercial_terms; scoped operator direction
+      for written project and product descriptions before later deployment sales.
+  customer-decision-profile:
+    type: assumption
+    resolution: professional-choice
+    source: The motivations, objections and intended journey are a proposed
+      process based on Product and the Brief; they are not interview findings
+      or observed customer behavior.
 confirmation:
   confirmed: true
   by: operator
@@ -532,4 +627,4 @@ confirmation:
   content_sha256: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400
 review:
   dependencies:
-    product.ai-chat.product: 42ddf02fc96144fbda92fbffde2ff32d5c115b3d66f5108cad5855e271b2f5dd
+    product.ai-chat.product: 5212a0163b9d453689340ff925ed6d6d94d729e0c890e8e0d75209b6e6eb50bb

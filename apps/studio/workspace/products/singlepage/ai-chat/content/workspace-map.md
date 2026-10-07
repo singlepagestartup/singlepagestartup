@@ -8,94 +8,76 @@ confirmation:
   content_sha256: b84c426171d25131fd5395c37a6505370515e8c0a3648ff8fc0962b6d2f04633
 review:
   dependencies:
-    product.ai-chat.product: 128b557ac48280f0ad09eefbe05fdc4e54a8aaa4c8c972205ffa5f53cb6cbc9e
+    product.ai-chat.product: 5212a0163b9d453689340ff925ed6d6d94d729e0c890e8e0d75209b6e6eb50bb
 ---
 
 # Project model
 
-The first setup produces an editable Project model: one page with the current information from Request, Strategy, Brand, Design and Products, including unresolved questions. AI Chat uses this page when answering later questions or editing supplied materials, so the user does not have to explain the project again in every conversation.
+Brief.md, Strategy.md, Brand.md, Design.md and Products.md each have a working thread with their own conversation, draft and edits. Each product has its own sections. The user answers the agent's questions in the owning file's thread and reviews the wording before saving it. The general project workspace holds separate discussion topics with selected saved documents attached as their knowledge base. The documents can be freely exported.
 
-The page displays information from the five sections together without storing another copy. Each fact is still edited in its main section. For example, a product price is stored in the Product section and only displayed in the Project model.
+The overview displays the owning texts without storing another editable copy. A product's offer and economics are edited in that Product; the project overview displays them.
 
-## Page structure
+## Project stages
 
-### Request
+### Brief
 
-- what the project is and why the user is working on it now;
-- its current state, products and supplied materials;
-- the requested result, boundaries, decision authority and constraints;
-- unanswered questions that cannot be resolved from the supplied information.
+Describe the project, current situation, products, supplied material, intended result, boundaries, constraints and decision authority. Unknown facts remain open.
 
 ### Strategy
 
-- the intended final state of the complete project;
-- priority audiences and the role of each product;
-- positioning and the customer path across products and channels;
-- continued use and measures of success.
-
-Strategy describes how the project should work when it fulfils the Request. It records the intended result, not a roadmap or the history of how each decision was made.
+Describe priority audiences, product roles, positioning, customer paths, channels and measures of success. State how the project should work, rather than a history of decisions.
 
 ### Brand
 
-- what the audience should understand and remember;
-- the promise, supported claims and available evidence;
-- voice, important objections and calls to action.
+Describe meaning, promise, supported claims, evidence, voice, objections and calls to action.
 
 ### Design
 
-- visual identity and interface principles;
-- existing assets and references that should be preserved;
-- photography, illustration and essential production rules;
-- accessibility and technical constraints that affect the result.
+Write the intended visual direction, existing assets, interface principles and constraints. This first-release text does not generate a brand identity or build a landing page.
 
 ### Products
 
-Each product is shown as one business model:
+Keep separate descriptions for every product in scope. Each product opens its own sections:
 
-1. **Customer and value:** customer segments and roles, circumstances, desired progress, problems, alternatives, the offer and its value.
-2. **Access and relationship:** discovery, evaluation, purchase, delivery, use, support and continued use.
-3. **Money and delivery:** payer, revenue, resources, activities, partners, costs and financing where relevant.
-4. **Sales and learning:** the complete customer process, measures, current observations and unanswered research questions.
+| Product section            | Contents                                                                                                                            |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Product**                | Customer, problem, offer, value, alternatives and conditions.                                                                       |
+| **Operations & Economics** | Delivery, revenue, resources, activities, partners, costs and financing owned by that Product.                                      |
+| **Sales**                  | Discovery, evaluation, purchase, delivery, use, support and continued use.                                                          |
+| **Promotion**              | A written description of how this product will be presented publicly, with Website, Creative and Presentation texts where relevant. |
+| **Analytics & Research**   | Measures, observations, questions and evidence required for its assumptions, with research where needed.                            |
 
-When several products use one model, that model has a stable identifier and is stored once. The Project model shows which products use it without copying the shared facts.
+Shared resources use the same resource identifier in the Products that consume them, with each Product stating its allocated share. The economics view introduces no intermediate shared model.
 
 ## Product development loop
 
-This diagram is the editable source for the order of work. It separates draft decisions from evidence and shows what happens when research supports or disproves a critical assumption.
-
 ```mermaid
 flowchart LR
-    A[Brief: idea, goal and known facts] --> B[Draft Product]
-    B --> C[Draft Operations & Economics]
-    C --> D[Draft Sales]
-    D --> E[Critical assumptions]
-    E --> F[Research and experiments]
-    F --> G{What did the evidence show?}
-    G -->|Supports| H[Refine and confirm decisions]
-    G -->|Disproves| I[Change Product, model or Sales]
-    I --> E
-    H --> J[Materials and implementation]
+    A[Brief: idea, goal and supplied facts] --> B[Draft Product descriptions]
+    B --> C[Each Product: operations and economics]
+    C --> D[Each Product: Sales]
+    D --> E[Shortcomings and critical assumptions]
+    E --> F[Analytics and research where needed]
+    F --> G[Correct and review the owning text]
+    G --> H[Accept, export and attach to a project topic]
+    G --> E
 ```
 
-The Brief provides the idea, intended result and known facts. Product, Operations & Economics and Sales turn them into a complete draft that can be inspected for critical assumptions. Research and experiments then provide the evidence needed to keep or change those decisions.
-
-Materials and implementation include Product Content, Website, Marketing Creative, Presentation and the work required to deliver the product. Observations and measurements from implemented work belong to Analytics. If they expose another critical assumption, the loop begins again from that assumption; the team updates the owning decision before revising dependent materials.
+The AI agent identifies shortcomings for the user to correct. Research records attributable evidence where it exists and questions where it does not. Acceptance records review of the text, not validation of the business.
 
 ## Information states
 
-Every statement has one of four review states:
+- **accepted:** the user reviewed this wording;
+- **proposal:** a draft awaiting the user's review;
+- **unknown:** the supplied material and user have not established the required fact;
+- **conflict:** supplied statements give incompatible answers.
 
-- **accepted:** the user has reviewed the current wording;
-- **proposal:** AI Chat drafted the statement and the user has not reviewed it yet;
-- **unknown:** neither the supplied material nor the user provides the required information;
-- **conflict:** two supplied statements give incompatible answers to the same question.
+These labels apply to the owning description. A proposed change returns to that text for review before replacing accepted wording.
 
-These states help the user review the page. They do not create a separate hypothesis register or another business document.
+## Continued work in chat
 
-## Use after setup
+The user creates a topic in the general project workspace and chooses which saved, reviewed documents to attach. Each topic keeps its own conversation and uses those files to evaluate an idea, compare options or draft written content. Document changes return to the owning file's thread for review.
 
-For each request, AI Chat uses the relevant parts of the Project model. It can answer a question, critique an idea, edit an uploaded file or prepare new material. Its answer follows accepted project decisions. If missing information would change the answer, AI Chat names what is missing instead of filling the gap itself.
+Topics can start with one reviewed file while other sections have open questions. A document's last reviewed version remains available as topic context while its new draft is being revised, and changes only after review and saving. The user may freely export and use the documents outside AI Chat. A missing fact remains open rather than being invented to complete an answer.
 
-When the user accepts a change, AI Chat updates the main section where that information is stored and marks affected materials for review. A landing page, presentation or advertisement may reuse approved facts, but it does not become the source of the offer, price or product conditions.
-
-The Project model is enough for ordinary questions and the first product materials. When a topic needs deeper research, a complete process or its own working document, the user can open the relevant detailed section of the project.
+Landing-page generation and paid server deployment are future capabilities outside this first release. The later page is intended to collect initial enquiries and test a hypothesis; those outcomes are not guaranteed.

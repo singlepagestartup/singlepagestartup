@@ -1,0 +1,4 @@
+import { Component as View } from "@sps/rbac/models/identity/frontend/component/src/lib/singlepage/ai-chat-login";
+export function Component() {
+  return <View />;
+}

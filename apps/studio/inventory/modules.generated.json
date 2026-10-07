@@ -4,8 +4,8 @@
   "totals": {
     "modules": 16,
     "entities": 157,
-    "variants": 1847,
-    "coveredVariants": 34
+    "variants": 1871,
+    "coveredVariants": 50
   },
   "modules": [
     {
@@ -3172,6 +3172,14 @@
               "coveredBy": []
             },
             {
+              "variant": "ai-chat-tokens",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "ecommerce.order.ai-chat-tokens"
+              ]
+            },
+            {
               "variant": "cart-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/variants.ts",
@@ -4944,6 +4952,14 @@
               "coveredBy": []
             },
             {
+              "variant": "ai-chat-attachments",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/file-storage/models/file/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "file-storage.file.ai-chat-attachments"
+              ]
+            },
+            {
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/file-storage/models/file/frontend/component/src/lib/singlepage/variants.ts",
@@ -5332,6 +5348,54 @@
             },
             {
               "variant": "admin-v2-table-row",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "ai-chat",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-help",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-login",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-projects-new",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-projects-project-id",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-register",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-settings",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-tokens",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
@@ -6164,6 +6228,14 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/knowledge/models/document/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-editor",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/knowledge/models/document/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "knowledge.document.ai-chat-editor"
+              ]
             },
             {
               "variant": "chat-sidebar-detail",
@@ -7100,6 +7172,22 @@
               "coveredBy": []
             },
             {
+              "variant": "ai-chat-login",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/identity/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "rbac.identity.ai-chat-login"
+              ]
+            },
+            {
+              "variant": "ai-chat-register",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/identity/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "rbac.identity.ai-chat-register"
+              ]
+            },
+            {
               "variant": "create-by-email",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/identity/frontend/component/src/lib/singlepage/variants.ts",
@@ -7349,6 +7437,14 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-settings",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "rbac.subject.ai-chat-settings"
+              ]
             },
             {
               "variant": "authentication-button-default",
@@ -8886,6 +8982,22 @@
               "coveredBy": []
             },
             {
+              "variant": "ai-chat-preview",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/models/chat/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "social.chat.ai-chat-preview"
+              ]
+            },
+            {
+              "variant": "ai-chat-workspace",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/models/chat/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "social.chat.ai-chat-workspace"
+              ]
+            },
+            {
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/chat/frontend/component/src/lib/singlepage/variants.ts",
@@ -8966,6 +9078,14 @@
               "coveredBy": []
             },
             {
+              "variant": "ai-chat-conversation",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/models/message/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "social.message.ai-chat-conversation"
+              ]
+            },
+            {
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/message/frontend/component/src/lib/singlepage/variants.ts",
@@ -9044,6 +9164,14 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-agent",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "social.profile.ai-chat-agent"
+              ]
             },
             {
               "variant": "articles-default",
@@ -9266,6 +9394,22 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-composer",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "social.thread.ai-chat-composer"
+              ]
+            },
+            {
+              "variant": "ai-chat-sidebar-item",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "social.thread.ai-chat-sidebar-item"
+              ]
             },
             {
               "variant": "default",
@@ -9640,6 +9784,14 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/relations/chats-to-threads/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-workspace",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/social/relations/chats-to-threads/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "social.chats-to-threads.ai-chat-workspace"
+              ]
             },
             {
               "variant": "default",
@@ -11559,6 +11711,30 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
+            },
+            {
+              "variant": "ai-chat-header",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "website-builder.widget.ai-chat-header"
+              ]
+            },
+            {
+              "variant": "ai-chat-help",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "website-builder.widget.ai-chat-help"
+              ]
+            },
+            {
+              "variant": "ai-chat-landing",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "website-builder.widget.ai-chat-landing"
+              ]
             },
             {
               "variant": "content-default",

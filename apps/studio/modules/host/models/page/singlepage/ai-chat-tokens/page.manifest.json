@@ -1,0 +1,26 @@
+{
+  "id": "ai-chat-tokens",
+  "title": "ai-chat-tokens",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat page recipe for /ai-chat/tokens.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ai-chat-tokens",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "ecommerce.order.ai-chat-tokens",
+      "path": "../../../../../ecommerce/models/order/singlepage/ai-chat-tokens"
+    }
+  ]
+}

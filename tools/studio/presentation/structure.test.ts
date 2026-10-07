@@ -112,12 +112,12 @@ describe("Studio presentation structure", () => {
   });
 
   /**
-   * BDD Scenario: Keep the AI Chat development loop editable and visible
-   * Given Project model guides work from the Brief through validation
+   * BDD Scenario: Keep AI Chat's first-stage text review loop visible
+   * Given Project model guides separate product drafts through correction
    * When its text source and React layout are reviewed
-   * Then both preserve the same decision loop before materials and implementation
+   * Then both lead to reviewed texts, export and a project topic
    */
-  test("keeps the Project model validation loop aligned across text and layout", () => {
+  test("keeps the first-stage text review loop aligned across text and layout", () => {
     const document = source(
       "apps/studio/workspace/products/singlepage/ai-chat/content/workspace-map.md",
     );
@@ -126,15 +126,16 @@ describe("Studio presentation structure", () => {
     );
 
     expect(document).toContain("```mermaid\nflowchart LR");
-    expect(document).toContain("D --> E[Critical assumptions]");
     expect(document).toContain(
-      "G -->|Disproves| I[Change Product, model or Sales]",
+      "D --> E[Shortcomings and critical assumptions]",
     );
-    expect(document).toContain("I --> E");
-    expect(document).toContain("H --> J[Materials and implementation]");
-    expect(layout).toContain('title: "Critical assumptions"');
-    expect(layout).toContain('title: "Research & experiments"');
-    expect(layout).toContain("What did the evidence show?");
+    expect(document).toContain(
+      "G --> H[Accept, export and attach to a project topic]",
+    );
+    expect(document).toContain("G --> E");
+    expect(layout).toContain('title: "AI-identified shortcomings"');
+    expect(layout).toContain('title: "Review, export and open a topic"');
+    expect(layout).toContain("Unanswered fact or assumption");
   });
 
   /**

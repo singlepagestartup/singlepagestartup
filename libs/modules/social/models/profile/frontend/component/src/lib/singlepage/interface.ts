@@ -1,3 +1,4 @@
+import { IComponentProps as IAIChatAgentComponentProps } from "./ai-chat-agent/interface";
 import { IComponentProps as IArticlesDefaultComponentProps } from "./articles-default/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/interface";
@@ -17,6 +18,7 @@ import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-r
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 export type IComponentProps =
+  | IAIChatAgentComponentProps
   | IArticlesDefaultComponentProps
   | IOverviewDefaultComponentProps
   | IButtonDefaultComponentProps

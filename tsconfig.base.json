@@ -63,6 +63,9 @@
       "@sps/shared-frontend-client-store": [
         "libs/shared/frontend/client/store/src/index.ts"
       ],
+      "@sps/shared-frontend-client-utils/*": [
+        "libs/shared/frontend/client/utils/src/lib/*"
+      ],
       "@sps/shared-frontend-client-utils": [
         "libs/shared/frontend/client/utils/src/index.ts"
       ],

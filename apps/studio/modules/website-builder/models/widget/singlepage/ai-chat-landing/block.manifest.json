@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.widget.ai-chat-landing",
+  "title": "ai-chat-landing",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat widget view.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "ai-chat-landing",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "ai-chat-landing"
+  },
+  "contentSlots": []
+}

@@ -1,0 +1,223 @@
+{
+  "sections": {
+    "hero": {
+      "title": "Your account.",
+      "paragraphs": [
+        "Change your password, view purchases or manage account data. Choose and manage projects in [the project chat](/ai-chat/projects/example)."
+      ],
+      "items": [],
+      "links": [
+        {
+          "text": "the project chat",
+          "href": "/ai-chat/projects/example"
+        }
+      ]
+    },
+    "account": {
+      "title": "Change password",
+      "paragraphs": [
+        "Enter your current password, then enter the new password twice."
+      ],
+      "items": [
+        {
+          "title": "Current password",
+          "text": "Verify access to this account."
+        },
+        {
+          "title": "New password",
+          "text": "Replace the current password."
+        },
+        {
+          "title": "Repeat password",
+          "text": "Check that the two entries match."
+        }
+      ],
+      "links": []
+    },
+    "purchases": {
+      "title": "Tokens and purchases",
+      "paragraphs": [
+        "View your current token balance, purchase history and receipts. [Buy tokens](/ai-chat/tokens) to continue a saved task when the balance restricts new paid AI requests."
+      ],
+      "items": [],
+      "links": [
+        {
+          "text": "Buy tokens",
+          "href": "/ai-chat/tokens"
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Materials and deletion",
+      "paragraphs": [
+        "The service sends relevant material to external AI providers for your requested work. Read [How your materials are processed and stored](/ai-chat/projects/example#how-your-materials-are-processed-and-stored) before deleting your account.",
+        "Deletion removes your account and the active data the service controls across all your projects, including uploaded material, documents and conversations. Contabo backups may retain copies for up to six months; the service cannot shorten that period."
+      ],
+      "items": [],
+      "links": [
+        {
+          "text": "How your materials are processed and stored",
+          "href": "/ai-chat/projects/example#how-your-materials-are-processed-and-stored"
+        }
+      ]
+    },
+    "danger": {
+      "title": "Delete account and project data",
+      "paragraphs": [
+        "Review the account and all project data that will be removed before you confirm. Choose **Cancel** to keep your account and data."
+      ],
+      "items": [],
+      "links": []
+    },
+    "recovery": {
+      "title": "When a change cannot be saved",
+      "paragraphs": [
+        "If a change fails, your previous setting or last saved document stays in place. Retry the change or ask for help. If deletion fails, check the result before trying again."
+      ],
+      "items": [],
+      "links": []
+    },
+    "success": {
+      "title": "Password changed",
+      "paragraphs": [
+        "Your new password is saved. Return to your workspace to keep working."
+      ],
+      "items": [],
+      "links": []
+    },
+    "controls": {
+      "title": "Interface labels",
+      "paragraphs": [],
+      "items": [
+        {
+          "title": "back-label",
+          "text": "Back to workspace"
+        },
+        {
+          "title": "back-href",
+          "text": "/ai-chat/projects/example"
+        },
+        {
+          "title": "current-password-label",
+          "text": "Current password"
+        },
+        {
+          "title": "repeat-password-label",
+          "text": "Repeat new password"
+        },
+        {
+          "title": "password-label",
+          "text": "New password"
+        },
+        {
+          "title": "save-account",
+          "text": "Change password"
+        },
+        {
+          "title": "purchases-label",
+          "text": "View purchases and receipts"
+        },
+        {
+          "title": "purchases-empty",
+          "text": "No purchases yet."
+        },
+        {
+          "title": "account-summary-label",
+          "text": "Account"
+        },
+        {
+          "title": "project-summary-label",
+          "text": "Projects"
+        },
+        {
+          "title": "buy-tokens",
+          "text": "Buy tokens"
+        },
+        {
+          "title": "tokens-href",
+          "text": "/ai-chat/tokens"
+        },
+        {
+          "title": "delete-label",
+          "text": "Delete account and project data"
+        },
+        {
+          "title": "deletion-title",
+          "text": "Delete this account and its project data?"
+        },
+        {
+          "title": "deletion-description",
+          "text": "Deletion removes the account and active data from all your projects the service controls. Contabo backups may retain copies for up to six months."
+        },
+        {
+          "title": "cancel",
+          "text": "Cancel"
+        },
+        {
+          "title": "confirm-delete",
+          "text": "Confirm deletion"
+        },
+        {
+          "title": "deletion-message",
+          "text": "Deletion confirmed."
+        },
+        {
+          "title": "retry",
+          "text": "Try again"
+        },
+        {
+          "title": "help-label",
+          "text": "Ask for help"
+        },
+        {
+          "title": "help-href",
+          "text": "/ai-chat/help"
+        },
+        {
+          "title": "success-message",
+          "text": "Password changed."
+        },
+        {
+          "title": "password-mismatch",
+          "text": "The new passwords do not match."
+        },
+        {
+          "title": "password-unchanged",
+          "text": "Choose a password different from your current one."
+        },
+        {
+          "title": "all-projects-summary",
+          "text": "All projects, uploaded materials, documents and conversations."
+        }
+      ],
+      "links": []
+    }
+  },
+  "labels": {
+    "back-label": "Back to workspace",
+    "back-href": "/ai-chat/projects/example",
+    "current-password-label": "Current password",
+    "repeat-password-label": "Repeat new password",
+    "password-label": "New password",
+    "save-account": "Change password",
+    "purchases-label": "View purchases and receipts",
+    "purchases-empty": "No purchases yet.",
+    "account-summary-label": "Account",
+    "project-summary-label": "Projects",
+    "buy-tokens": "Buy tokens",
+    "tokens-href": "/ai-chat/tokens",
+    "delete-label": "Delete account and project data",
+    "deletion-title": "Delete this account and its project data?",
+    "deletion-description": "Deletion removes the account and active data from all your projects the service controls. Contabo backups may retain copies for up to six months.",
+    "cancel": "Cancel",
+    "confirm-delete": "Confirm deletion",
+    "deletion-message": "Deletion confirmed.",
+    "retry": "Try again",
+    "help-label": "Ask for help",
+    "help-href": "/ai-chat/help",
+    "success-message": "Password changed.",
+    "password-mismatch": "The new passwords do not match.",
+    "password-unchanged": "Choose a password different from your current one.",
+    "all-projects-summary": "All projects, uploaded materials, documents and conversations."
+  }
+}

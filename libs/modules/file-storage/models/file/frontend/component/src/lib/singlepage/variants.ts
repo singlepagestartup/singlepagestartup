@@ -1,3 +1,4 @@
+import { Component as AIChatAttachments } from "./ai-chat-attachments";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -12,6 +13,7 @@ import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 
 export const variants = {
+  "ai-chat-attachments": AIChatAttachments,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

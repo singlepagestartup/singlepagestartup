@@ -2,132 +2,125 @@ schema: singlepagestartup.product-presentation.v1
 product_id: ai-chat
 content:
   name: AI Chat
-  subtitle: From project files to a business model and landing page
+  subtitle: Product and business overview
   slides:
     - id: problem
       label: The problem
-      title: The business exists across files, notes and unfinished decisions.
+      title: The project is still spread across files and unfinished decisions.
       lead:
-        A founder may already have research, screenshots, presentations and ideas
+        A person starting a business alone may already have notes, photographs,
+        research, screenshots and ideas
         but still lack one connected explanation of the customer, offer, sales,
         operations and marketing.
       points:
         - Important knowledge remains scattered and difficult to reuse.
-        - General AI answers stay generic when the business must be explained
-          again each time.
-        - Missing decisions are hard to see before the offer reaches customers.
+        - A fresh conversation may require explaining the project again.
+        - Products need their own offers, delivery plans and economics.
     - id: result
       label: The result
-      title: Upload the material and receive one editable business and marketing
-        model.
+      title: Build an editable knowledge base for the project.
       lead:
-        AI Chat accepts notes, documents, screenshots and images, then guides the
-        user through compact Request, Strategy, Brand, Design and Products
-        stages. The result shows what is defined, missing, proposed or
-        contradictory.
+        The intended AI Chat flow turns uploaded material and answers into short
+        project and product documents. Each file has its own thread for discussion
+        and editing with the agent. Selected saved documents become the context
+        for new topics in the project workspace.
       points:
-        - Business foundation, products, customers and value propositions.
-        - Operations, economics, sales and complete customer journeys.
-        - Strategy, brand, website, marketing materials and presentation.
-        - An exportable document that can also be used outside AI Chat.
+        - Brief records the starting material; Strategy sets the direction; Brand defines the promise, evidence and voice.
+        - Design is a written description of the intended appearance, existing assets and constraints.
+        - Products contains separate descriptions for each product, with customer and offer in Product, Operations & Economics, Sales, Promotion, Analytics and applicable Research. Promotion includes Website, Creative and Presentation text where relevant.
+        - Edit the documents, accept them and freely export them for use elsewhere.
     - id: intake
-      label: Upload and questions
-      title: Bring the files as they are and review five compact stages.
-      lead:
-        Registration leads directly to material upload. AI Chat interprets the
-        files, proposes the relevant statements and asks one missing answer at a
-        time only when it changes the current result. The setup aims to create
-        useful context in about one focused hour without forcing unknown
-        answers.
+      label: Start in chat
+      title: Bring your files into the conversation.
+      lead: After registration, the person uploads material in chat. The agent
+        reviews it, drafts the relevant sections and identifies missing or
+        contradictory information. The first setup is structured for about one
+        focused hour; unanswered questions can remain open.
       points:
         - Email-and-password registration and sign-in.
-        - Text, document, screenshot and image upload.
-        - Request, Strategy, Brand, Design and Products review.
+        - Notes, documents, screenshots and photographs enter a project chat.
+        - Uploaded files and drafted sections remain available during the conversation.
         - Visible token balance and saved progress.
     - id: workspace
-      label: Business workspace
-      title: See the whole business, change its documents and ask relevant questions.
-      lead:
-        The workspace shows the connected model and its missing decisions. Chat
-        uses the same business sources, so the person can refine or challenge
-        the work without repeating it.
+      label: Review and continued work
+      title: Work on the files together. Keep the reviewed context.
+      lead: Each intended document thread keeps its own discussion, edits and
+        agent interaction. Section indicators show what is present and what still
+        needs work. In the general project workspace, the person creates topics
+        and chooses which saved documents to attach to each conversation.
       points:
-        - Show what is missing or contradictory.
-        - Ask for criticism, alternatives or a concrete material.
-        - Update the section that owns a decision.
-        - Export the current document for use elsewhere.
+        - Work through the gaps and contradictions the AI agent identifies.
+        - Keep supplied facts, assumptions and unanswered questions distinct.
+        - Discuss and edit each file in its own thread; revisit affected sections when information changes.
+        - Keep the reviewed version available as topic context while revising a new draft.
+        - Continue with selected saved documents while other sections still have open questions.
+        - Accept the text and export the documents for use elsewhere.
     - id: landing-page
-      label: Page sandbox
-      title: Assemble and inspect the first landing page.
-      lead:
-        The landing-page workspace uses the selected customer, problem, offer,
-        proof and action from the business model. SinglePageStartup blocks
-        assemble a private preview whose data is saved with the project.
+      label: Later development
+      title: A landing page can follow the project description.
+      lead: A later stage will let the AI agent build a landing page from the
+        accepted documents, with the aim of collecting initial enquiries and
+        testing a hypothesis. The owner evaluates and improves project
+        description before selling server deployments.
       points:
-        - Edit the Text and Layout of the complete page.
-        - Save changes to the project and render them immediately in the
-          frontend preview.
-        - Keep the sandbox private while the page is being reviewed.
-        - Sign in with GitHub and create the project repository when the page is
-          ready.
-        - Connect the user's server and configure automatic deployment.
+        - Landing-page assembly, editing and server publication are subsequent development.
+        - The first-stage offer is written project and product documents.
+        - Initial enquiries and hypothesis testing are intended purposes, not guaranteed results.
+        - Deployment availability and prices are undecided.
     - id: tokens
       label: Paid continuation
-      title: Buy tokens when the available balance is insufficient for the next task.
+      title: Top up the balance and continue your saved work.
       lead:
-        Token purchase can occur during file processing, document work or later
-        chat. The current task remains saved while the person chooses a package
-        and pays.
+        Top up at any time. The balance may go below zero; at −2,000 internal
+        tokens or lower, new paid AI requests are restricted. A top-up above
+        that threshold permits new paid requests on the saved task.
       points:
-        - Show the current balance and configured packages.
-        - Show the complete price and purchase conditions before payment.
-        - Credit the balance and return to the interrupted action.
-        - Keep purchase and framework adoption as separate outcomes.
+        - 0.13 roubles per token; top-ups of 100, 300, 500, 1,000 or 3,000 roubles without package discounts.
+        - Purchased tokens do not expire; cash refunds for top-ups are decided case by case.
+        - Charge one token on sending input; successful requests settle actual cost rounded up to a whole token, with a 0.13-rouble minimum.
+        - Failed or cancelled requests restore every deduction, including the initial token and settlement, for a net charge of zero. The service bears provider expense.
     - id: account
       label: Account and support
       title: Registration, settings, purchases and help have explicit places.
       lead:
         The complete product journey includes account access, project settings,
-        purchase history, saved sandbox data and a support route processed by
+        purchase history, saved project documents and a support route processed by
         the project owner.
       points:
         - Register or sign in with email and password.
-        - Manage project and account settings in one place.
+        - Manage project and account settings; read the processing and backup-retention disclosure before upload or deletion.
         - View token purchases and return to saved work.
         - Send a support request with a 24-hour processing boundary.
     - id: framework
       label: Code Framework
-      title: When the business needs software, lead directly to the reusable
-        foundation.
+      title: Use Code Framework when the project needs software.
       lead:
-        An approved landing page can be written to a repository in the user's
-        GitHub account and deployed to the user's connected server. A chatbot or
-        another digital product can use the same Code Framework foundation.
+        SinglePageStartup Code Framework is the existing reusable codebase for
+        a site, chatbot or another digital product. Choose the relevant common
+        functions, adapt them with a coding agent and review the result.
       points:
-        - Explain what will be created in GitHub and which repository access is
-          required.
-        - Connect the user's server or hosting provider with its deployment key.
-        - Show repository creation, deployment status and the public address.
-        - Use the same authorized repository for later approved updates.
+        - Reuse relevant functions such as registration and payments.
+        - Adapt the rules and interface for the particular product.
+        - Deploy the adapted code to the user's own server.
+        - Framework code is free; coding-agent use and infrastructure have separate costs.
     - id: action
       label: The next action
-      title: Organize the material already available.
-      lead:
-        The person does not need another abstract project start. The first useful
-        action is to upload existing files and receive an editable business
-        model with visible gaps and a path to customers.
+      title: Bring your project into chat.
+      lead: Upload notes, photographs and documents, or describe the project in
+        your own words. Work through the agent's questions and corrections.
+        Attach selected saved files to your next topic in the project workspace.
       points:
-        - Organize my materials.
-        - Review and improve the business model.
-        - Prepare the landing-page sandbox.
-        - Publish the page through the GitHub repository and connected server.
+        - Upload the material already available.
+        - Work on each project and product file in its own thread with the agent.
+        - Review the text and keep unanswered questions visible.
+        - Export the documents or continue working with them in chat.
 confirmation:
   confirmed: false
 review:
   dependencies:
-    brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
-    design: 6f29bf4c2ea795a190382e7091a7085ee9270f892486aeccd6c2aca62f1179c8
-    product.ai-chat.presentation-renderer: 2874ea2ed3a7b265ec73c6b95040526463aa6111537ef2e31864d821379b2f6b
-    product.ai-chat.product: 128b557ac48280f0ad09eefbe05fdc4e54a8aaa4c8c972205ffa5f53cb6cbc9e
-    product.ai-chat.research: 6b9b404ced17a62287e65b1e631e3244c3258a5f4515483d60303bd4a9786a1b
-    product.ai-chat.sales: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400
+    brand: 83560cbabdd3b93b883965c9dc409e11ca0f3ca5fa9fee61a1da2eefa50fa7ca
+    design: 29967227ba81c137910289b30db8f2450b978369ea2f09f9e4020a2e2947a2d1
+    product.ai-chat.presentation-renderer: c3d44bf7b947e8b9b393116ce3fb0b11ffb94cc0efd3fd8591ca22bb642a9d03
+    product.ai-chat.product: 5212a0163b9d453689340ff925ed6d6d94d729e0c890e8e0d75209b6e6eb50bb
+    product.ai-chat.research: 18c4eb91ecafed47abbb711b79b2c66926274541a86113ec1627ae2880147c1d
+    product.ai-chat.sales: 79f28a18291ea9aeffdbc17c4218f2327421e23092f86dc7540319e09ce66ede

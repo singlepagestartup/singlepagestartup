@@ -1,0 +1,27 @@
+{
+  "id": "social.message.ai-chat-conversation",
+  "title": "ai-chat-conversation",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat message view.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.message",
+    "pageName": "social",
+    "variantName": "ai-chat-conversation",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "message",
+    "variant": "ai-chat-conversation"
+  },
+  "contentSlots": []
+}

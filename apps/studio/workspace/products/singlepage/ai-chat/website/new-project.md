@@ -3,82 +3,71 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    product.ai-chat.page.content.one-hour-setup: 27da8d94d51be659df15ec9ab0a735ec1fcd70907773455141c653bb59bdd486
-    product.ai-chat.website: e1989d4215fe29be295c762314b12748a711d7b459df3bed937424ae84b2fa6f
+    product.ai-chat.page.content.one-hour-setup: 86532294fa856d249a06ab800b909744d631caf96cb8059e720b1bab48b7b2d3
+    product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
 ---
 
-# Add your project materials
+# Create a project and add your materials
 
-Upload the material you already have and briefly explain the business or idea. AI Chat extracts relevant statements, proposes where each one belongs and prepares an editable project model for your review. The first session is planned for about one hour of focused work.
+Enter a project name. The next screen accepts your notes, files and images, with an optional description. Continue to a separate analysis screen, where the AI agent checks the material and prepares the project and product documents. Open a document's working thread to discuss and edit that file with the agent, then save the section after review. The first session is planned for about one focused hour; you can pause or leave a question open.
 
-## Start with existing material
+## Create the project, upload and analyze
 
-Add the material in its current form. It may include documents, tables, presentations, conversations, links, notes, screenshots, images, references or decisions that have not yet been sorted.
+**Project name:** Name the workspace before adding material.
 
-**Upload:** Choose files or drag them here.
+**Project notes:** What are you working on, what already exists and what result do you need?
 
-**Explanation:** What is this business or idea, and what are you trying to do now?
+**Attach files:** Add documents, tables, presentations, notes, screenshots or images in their current form. The attached files remain visible in the upload list and later beside the document chats.
 
-Before asking the first question, AI Chat shows:
+Before uploading, read [How your materials are processed and stored](#how-your-materials-are-processed-and-stored).
 
-- the statements it extracted, their sources and the sections where it proposes to place them;
-- contradictions and unclear statements that need your review;
-- unanswered questions that prevent part of the initial model from being used;
-- an editable draft. Nothing is approved automatically.
+**Analyze materials** opens the analysis screen. It shows progress, supplied sources and draft readiness. **Open document chats** becomes available when analysis is ready.
 
-AI Chat does not ask you to repeat information already present in the supplied material. It does not invent prices, budgets, rights, capacity, evidence or operating facts. An unanswered question affects only the decisions that depend on it.
+The AI agent shows the proposed texts, their supplied sources and the shortcomings it identifies. Correct an inaccurate statement, resolve a contradiction or answer a question that affects the description. Unknown prices, budgets, rights, capacity and evidence stay unknown until a supplied source or your answer establishes them. Nothing is accepted automatically.
 
-## Work through five stages
+## Five short text stages
 
-Each stage has a shorter first pass that collects enough information to understand the project, choose a direction and prepare the first product materials.
+| Stage        | Written result                                                                                                                                        |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Brief**    | The project, current situation, products, intended result, boundaries, constraints and supplied material.                                             |
+| **Strategy** | Priority audiences, product roles, positioning, customer paths, channels and measures of success.                                                     |
+| **Brand**    | Meaning, promise, supported claims, evidence, voice, objections and calls to action.                                                                  |
+| **Design**   | A text description of the visual direction, existing assets, interface principles and constraints.                                                    |
+| **Products** | Separate product descriptions, each with its own customer and offer, operations and economics, Sales, Promotion, Analytics and research where needed. |
 
-| Stage        | Question                                                                                  | Result                                                                                                                                                        | Time       |
-| ------------ | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| **Request**  | What are we working on, what already exists and what result is needed?                    | Subject, current situation, products in scope, desired result, boundaries, constraints and supplied materials.                                                | 10 minutes |
-| **Strategy** | What should the whole project look like when it works as intended?                        | Priority audiences, product roles, positioning, customer path, coordinated channels and measures of success. It describes the intended result, not a roadmap. | 10 minutes |
-| **Brand**    | What should people understand, remember and trust?                                        | Meaning, promise, supported claims, proof, voice, important objections and the primary action.                                                                | 8 minutes  |
-| **Design**   | How should that meaning become visible and usable?                                        | Existing assets, visual direction, interface principles, required imagery, accessibility and production constraints.                                          | 7 minutes  |
-| **Products** | What is offered, who is it for, how is it delivered and how does the business sustain it? | A model for every product in scope, plus shared operating and economic decisions when several products use the same model.                                    | 15 minutes |
+The AI agent drafts these shortened texts using the same stages as Workspace. Design describes intended appearance; this step does not generate the visual identity or build a landing page.
 
-The remaining time is for uploading, reviewing and correcting the material. Progress reflects reviewed decisions, not time spent or the amount of text entered. You may pause, leave a question unanswered or return to any section later.
+## Review each product separately
 
-## Review one decision at a time
+| Product section            | What you review                                                                                                                     |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Product**                | Its customer, problem, offer, value, alternatives and conditions.                                                                   |
+| **Operations & Economics** | How this product is delivered, its revenue, resources, activities, partners, costs and financing.                                   |
+| **Sales**                  | How customers discover, evaluate, buy, receive and use it, including support and continued use.                                     |
+| **Promotion**              | A written description of how this product will be presented publicly, with Website, Creative and Presentation texts where relevant. |
+| **Analytics & Research**   | Measures, observations, questions and evidence needed to evaluate its assumptions. Include research where the decision needs it.    |
 
-Each screen shows:
+Each Product owns its economics. When products share a resource, each states its allocated share under the same resource identifier. The economics view displays these Product decisions rather than introducing a shared model between products.
 
-1. **What AI Chat found:** short proposed statements linked to their sources.
-2. **One current question:** the next unanswered question required to complete the selected stage.
-3. **Review controls:** accept, edit, mark as unknown or remove. Acceptance applies only to the visible statement.
-4. **Project page:** the model updates after each change and shows which sections already contain enough information to use.
+## Correct, review and accept the texts
 
-AI Chat asks the next question needed for the initial model. Optional detail remains collapsed until you decide to develop that part. Questions use ordinary language; you do not have to choose document names, Business Model Canvas blocks or storage locations.
+1. Read the draft for the selected project stage or product section.
+2. Correct the shortcomings the AI agent identifies and edit the affected text.
+3. Accept the reviewed description, or leave an unanswered question open.
+4. Create a topic in the general project workspace and attach selected saved documents for the next conversation, or freely export the documents.
 
-## Cover the product without nine separate forms
+Each document keeps its own conversation, edits and review state. Opening another file leaves that thread's work in place. Acceptance applies to the text you reviewed. A new proposed change is reviewed in the owning file's thread; the last reviewed version remains available for topics until you save the revision. You can create a topic with one reviewed document while other sections still have open questions.
 
-The Products stage covers the nine Business Model Canvas blocks in four groups that keep related decisions together.
+[Review my project texts](/projects/example)
 
-| Group                       | What it covers                                                                                                                                              |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Customer and value**      | Customer segments and roles, circumstances, jobs, problems, desired progress, alternatives, the offer, the included result and reasons to choose it.        |
-| **Access and relationship** | How each segment discovers, evaluates, buys, receives and uses the product, then gets support or continues using it.                                        |
-| **Money and delivery**      | Who pays and for what; required resources, recurring work, partners, costs and financing where it differs from revenue.                                     |
-| **Sales and learning**      | The complete customer process, handoffs, refusals and incomplete actions, measures, current observations and research questions that may change a decision. |
+Each document thread shows missing information and its draft or reviewed state beside the conversation. Review progress counts the sections you have reviewed; an unanswered question stays visible. The token balance remains visible. It may go below zero. At −2,000 internal tokens or lower, new paid AI requests are restricted; top up above that threshold to continue from the saved step. Failed or cancelled AI requests restore all their token deductions for a net charge of zero.
 
-When several products use the same operating model, shared resources, activities, partners, revenue logic and costs are recorded once. Conditions that apply to one product stay with that product.
+## How your materials are processed and stored
 
-## Finish with a reviewed project model
+The service and your uploaded materials are hosted on a Contabo server in Amsterdam. The original materials and their search representations remain in the service's own storage and PostgreSQL database, with pgvector storing the vectors used to find relevant passages.
 
-The first setup is complete when:
+Document text is sent to OpenRouter to create those search representations. Relevant passages are also sent through OpenRouter as context for an AI answer. These requests are handled under the selected provider's terms; uploading a file does not keep its text entirely inside this service.
 
-- Request names the project, current situation, products, requested result, boundaries and constraints;
-- Strategy names the intended final state, priority audiences, product roles, customer path, channels and measures of success;
-- Brand and Design provide the meaning, supported claims, voice, visual direction and interface principles needed for the first customer-facing material;
-- every product in scope has an identifiable customer, value, offer and delivery model;
-- unresolved decisions and contradictions are visible;
-- you have reviewed the complete draft.
+Deleting your account removes the account and active project data the service controls. Contabo backups may retain copies for up to six months after deletion, and the service cannot shorten that period.
 
-The result becomes the project model AI Chat uses in later conversations and when editing uploaded materials. You can then ask a question, revise a section, create a landing page or open the detailed workspace documents without starting another intake.
-
-[Build my project model](/projects/example)
-
-Your progress is saved while files are processed and questions are answered. The current token balance stays visible. If more tokens are required, top up the balance and return to the same step.
+This information is available before registration and upload, and beside the account-deletion action in Settings.

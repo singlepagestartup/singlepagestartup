@@ -123,6 +123,7 @@ export interface ISelectProps extends SelectPrimitive.SelectProps {
   placeholder?: string;
   "aria-label"?: string;
   "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
   options: ISelectOption[];
 }
 
@@ -432,20 +433,32 @@ export const Select = forwardRef<HTMLButtonElement, ISelectProps>(
       options,
       "aria-label": ariaLabel,
       "aria-invalid": ariaInvalid,
+      "aria-describedby": ariaDescribedBy,
       ...props
     },
     ref,
   ) {
-    const [portal, setPortal] = useState<HTMLDivElement | null>(null);
+    const [projection, setProjection] = useState("singlepage");
 
     return (
-      <div ref={setPortal} className="min-w-0">
+      <div
+        ref={(node) => {
+          if (node)
+            setProjection(
+              node
+                .closest("[data-workspace-projection]")
+                ?.getAttribute("data-workspace-projection") ?? "singlepage",
+            );
+        }}
+        className="min-w-0"
+      >
         <SelectPrimitive.Root {...props}>
           <SelectPrimitive.Trigger
             ref={ref}
             id={id}
             aria-label={ariaLabel}
             aria-invalid={ariaInvalid}
+            aria-describedby={ariaDescribedBy}
             className={twMerge(picker.trigger, className)}
           >
             <SelectPrimitive.Value placeholder={placeholder} />
@@ -453,8 +466,10 @@ export const Select = forwardRef<HTMLButtonElement, ISelectProps>(
               <Icon name="caret-down" className={picker.icon} />
             </SelectPrimitive.Icon>
           </SelectPrimitive.Trigger>
-          <SelectPrimitive.Portal container={portal}>
+          {/* Keep fixed positioning outside CSS containers while retaining the project theme. */}
+          <SelectPrimitive.Portal>
             <SelectPrimitive.Content
+              data-workspace-projection={projection}
               position="popper"
               align="start"
               sideOffset={6}

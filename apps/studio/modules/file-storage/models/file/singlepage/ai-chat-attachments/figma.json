@@ -1,0 +1,21 @@
+{
+  "componentName": "file-storage.file",
+  "pageName": "file-storage",
+  "variantName": "ai-chat-attachments",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "file-storage.file.ai-chat-attachments",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "file-storage/models/file/singlepage/ai-chat-attachments",
+    "sps.figma.component": "file-storage.file",
+    "sps.figma.variant": "ai-chat-attachments",
+    "sps.source.module": "file-storage",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "file",
+    "sps.source.variant": "ai-chat-attachments",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-attachments/Component.tsx",
+    "sps.code.story": "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-attachments/Component.stories.tsx"
+  }
+}

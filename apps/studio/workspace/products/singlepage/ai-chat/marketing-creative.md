@@ -3,41 +3,45 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    brand: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
-    design: 859d4e2158d8e1dfd8c787855f87c44c7ff1fdf42cf87c0b9858e427f007211c
-    product.ai-chat.product: 128b557ac48280f0ad09eefbe05fdc4e54a8aaa4c8c972205ffa5f53cb6cbc9e
-    product.ai-chat.sales: 9ce83a549912024d0916ae119c2f6ddb55502ed0d727983f60dfc89e63b60400
-    product.ai-chat.website: e1989d4215fe29be295c762314b12748a711d7b459df3bed937424ae84b2fa6f
+    brand: 83560cbabdd3b93b883965c9dc409e11ca0f3ca5fa9fee61a1da2eefa50fa7ca
+    design: 29967227ba81c137910289b30db8f2450b978369ea2f09f9e4020a2e2947a2d1
+    product.ai-chat.product: 5212a0163b9d453689340ff925ed6d6d94d729e0c890e8e0d75209b6e6eb50bb
+    product.ai-chat.sales: 79f28a18291ea9aeffdbc17c4218f2327421e23092f86dc7540319e09ce66ede
+    product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
 ---
 
 # AI Chat marketing creative
 
 ## Objective and customer situation
 
-Reach people who have a business idea and accumulated files, notes and images but still lack one clear model of how the business, marketing and first offer should work. Show the concrete transformation: mixed material becomes a five-stage Request, Strategy, Brand, Design and Products review, an editable project model, relevant chat, a private landing-page preview and a path to publication on the user's server.
+Reach people who have a business idea and accumulated files, notes and images but still need to describe the project and its products. Show the work in chat: attached files, a question about missing information, an editable document and a new topic using selected saved documents. AI Chat drafts shortened written Brief, Strategy, Brand, Design and Products documents. Each file has its own thread for discussion and editing with the agent. Each product keeps its own customer and offer, Operations & Economics, Sales, Promotion, Analytics and applicable research. Promotion describes intended public presentation in words, with Website, Creative and Presentation text where relevant. The user corrects shortcomings with the agent, accepts the text and can export it or attach saved documents to topics in the general project workspace.
 
-Use full demonstrations, short vertical extracts, searchable explanations and relevant community answers. Each material leads to the landing page or directly to registration. Token purchases happen inside the product when the available balance is insufficient. A concrete need for a site, chatbot or another digital product leads to Code Framework.
+Use full demonstrations, short vertical extracts, searchable explanations and relevant community answers. Each material leads to the AI Chat landing page or directly to registration and upload. Token purchases are optional before the balance reaches −2,000 internal tokens; at that threshold or lower, a top-up above it restores new paid AI requests. A separate software need can lead to the existing Code Framework. Landing-page assembly and server deployment through AI Chat belong to later development; their availability and commercial terms are undecided.
 
 ## Materials and destinations
 
-| Material             | Situation and message                                                                                                                                 | Intended next action             |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| Business-model cover | A person has files and an idea but cannot see the complete business. Upload the material, review five compact stages and receive one connected model. | Open the landing page.           |
-| Article              | Explain how mixed files and a compact five-stage review become an editable business model and landing-page sandbox.                                   | Organize the reader's materials. |
-| Social post          | Contrast disconnected material with one working business document, a page preview and a user-owned deployed site.                                     | Register and upload materials.   |
+| Material             | Situation and message                                                                                                    | Intended next action             |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| Business-model cover | Upload the notes and files already available, then review a compact written description of the project and its products. | Open the AI Chat landing page.   |
+| Article              | Show how the AI agent drafts the project documents, identifies shortcomings and helps the user correct them.             | Organize the reader's materials. |
+| Social post          | Describe the project, correct its documents and reuse or export the accepted work.                                       | Register and upload materials.   |
 
 ## Message system
 
 Lead with the recognizable problem and result:
 
-- files, notes and images exist, but the business is still hard to explain;
-- AI Chat drafts Request, Strategy, Brand, Design and Products, then asks for the missing information needed to complete the initial project model;
-- the user sees what is missing, can refine it in conversation and can export the document;
-- the same work becomes a saved landing-page sandbox built from SinglePageStartup blocks;
-- when the page is ready, GitHub authentication, repository creation and server connection lead to a public site;
-- Code Framework supplies the deployable foundation for that page and later software needs.
+- files, notes and images exist, but the project and its products are still hard to explain;
+- AI Chat drafts written Brief, Strategy, Brand, Design and Products documents and asks for information needed for the current decision;
+- each product retains its own customer and offer, Operations & Economics, Sales, Promotion, Analytics and applicable research;
+- Promotion describes intended public presentation, including Website, Creative and Presentation text where relevant;
+- the AI agent identifies shortcomings for the user to correct, with unanswered questions and contradictions still visible;
+- the user discusses and edits each file in its own thread, then can freely export the reviewed text or attach selected saved documents to new project topics;
+- a reviewed version remains available while a new draft is being edited; other sections can still have open questions;
+- the accepted descriptions are a first step toward customers. They do not establish demand or promise enquiries.
 
-Use **Organize my materials** as the principal action. Do not lead with SinglePageStartup, “start a project,” “context,” “structured project” or technical explanations. Do not promise customers, revenue or speed that has not been observed.
+Future landing-page development will use the accepted descriptions to build a page for initial enquiries and hypothesis testing. Keep this later direction separate from the first-stage documents and action. Server deployment is a later commercial offer with undecided terms.
+
+Use **Start with my files** as the principal action. Short customer materials show what the user can do in chat. The full document structure, business assumptions and future development belong in Presentation. Do not lead with SinglePageStartup, “start a project,” “context,” “structured project” or technical explanations. Do not promise customers, revenue or speed that has not been observed.
 
 ## Production specification
 

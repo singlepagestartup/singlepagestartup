@@ -1,3 +1,5 @@
+import { IComponentProps as IAIChatComposerProps } from "./ai-chat-composer/interface";
+import { IComponentProps as IAIChatSidebarItemProps } from "./ai-chat-sidebar-item/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/interface";
 import { IComponentProps as IAdminV2FormComponentProps } from "./admin-v2/form/interface";
@@ -12,6 +14,8 @@ import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
+  | IAIChatComposerProps
+  | IAIChatSidebarItemProps
   | IAdminSelectInputComponentProps
   | IAdminTableComponentProps
   | IAdminFormComponentProps

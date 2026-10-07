@@ -1,6 +1,13 @@
+import { Component } from "@sps/rbac/models/identity/frontend/component/src/lib/singlepage/ai-chat-register";
 import sourceText from "./register.md?raw";
-import { ServiceDocument } from "./ServiceDocument";
+import { parseAIChatServicePage } from "./content";
+import { AccountProvider } from "./../../../../../../../libs/shared/frontend/components/src/lib/singlepage/ai-chat/Account";
+import { aiChatAccount } from "../../../../../../../tools/studio/products/fixtures/ai-chat-account";
 
 export default function Register({ text }: { text?: string } = {}) {
-  return <ServiceDocument eyebrow="Create account" text={text ?? sourceText} />;
+  return (
+    <AccountProvider account={aiChatAccount}>
+      <Component copy={parseAIChatServicePage(text ?? sourceText)} />
+    </AccountProvider>
+  );
 }

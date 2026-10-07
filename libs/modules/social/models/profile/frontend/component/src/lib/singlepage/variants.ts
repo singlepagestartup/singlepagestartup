@@ -1,3 +1,4 @@
+import { Component as AIChatAgent } from "./ai-chat-agent";
 import { Component as ArticlesDefault } from "./articles-default";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
@@ -17,6 +18,7 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Default } from "./default";
 import { Component as Find } from "./find";
 export const variants = {
+  "ai-chat-agent": AIChatAgent,
   "articles-default": ArticlesDefault,
   "overview-default": OverviewDefault,
   "button-default": ButtonDefault,

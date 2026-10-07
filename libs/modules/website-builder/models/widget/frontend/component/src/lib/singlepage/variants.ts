@@ -1,3 +1,6 @@
+import { Component as AIChatHeader } from "./ai-chat-header";
+import { Component as AIChatHelp } from "./ai-chat-help";
+import { Component as AIChatLanding } from "./ai-chat-landing";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -14,6 +17,9 @@ import { Component as ContentDefaultComponent } from "./content-default";
 import { Component as FooterDefaultComponent } from "./footer-default";
 import { Component as NavbarDefaultComponent } from "./navbar-default";
 export const variants = {
+  "ai-chat-header": AIChatHeader,
+  "ai-chat-help": AIChatHelp,
+  "ai-chat-landing": AIChatLanding,
   find: Find,
   "admin-select-input": AdminSelectInput,
   "admin-table-row": AdminTableRow,

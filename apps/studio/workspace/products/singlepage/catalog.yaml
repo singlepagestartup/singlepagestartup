@@ -98,12 +98,12 @@ products:
               preview: singlepagestartup/content/Guide.tsx
   - id: ai-chat
     name: AI Chat
-    summary: Upload notes, documents, screenshots and images, review a compact
-      five-stage project model in about one focused session, then keep working
-      with a chat that uses the same project. Build and preview a landing page
-      in the sandbox, publish it through a GitHub repository and the user's
-      server, buy tokens for more hosted work or use Code Framework for another
-      digital product.
+    summary: Describe your project or upload notes, documents and images. Review
+      short Request, Strategy, Brand and Design texts, plus separate Products
+      with their own sections. Correct shortcomings the AI agent identifies,
+      accept and freely export the documents or continue in chat from the saved
+      project. Landing-page creation and paid server deployment belong to later
+      development.
     research: ai-chat/research.md
     analytics: ai-chat/analytics.md
     sales: ai-chat/sales.yaml
@@ -149,38 +149,15 @@ products:
                 representations:
                   text: ai-chat/website/login.md
                   preview: ai-chat/website/Login.tsx
-              - id: new-project
-                title: Add materials
-                route: /projects/new
-                uses:
-                  - product.ai-chat.page.content.one-hour-setup
-                representations:
-                  text: ai-chat/website/new-project.md
-                  preview: ai-chat/website/NewProject.tsx
               - id: project-workspace
-                title: Business workspace
+                title: Project chat
                 route: /projects/[project-id]
                 uses:
+                  - product.ai-chat.page.content.one-hour-setup
                   - product.ai-chat.page.content.project-model
                 representations:
                   text: ai-chat/website/project-workspace.md
-                  preview: ai-chat/website/ProjectWorkspace.tsx
-              - id: landing-page-workspace
-                title: Landing-page sandbox
-                route: /projects/[project-id]/landing-page
-                uses:
-                  - product.ai-chat.page.content.project-model
-                representations:
-                  text: ai-chat/website/landing-page.md
-                  preview: ai-chat/website/LandingPageWorkspace.tsx
-              - id: publish-site
-                title: Publish site
-                route: /projects/[project-id]/landing-page/publish
-                uses:
-                  - product.ai-chat.page.website.landing-page-workspace
-                representations:
-                  text: ai-chat/website/publish.md
-                  preview: ai-chat/website/PublishSite.tsx
+                  preview: ai-chat/website/ProjectWorkspace/Screen.tsx
               - id: tokens
                 title: Buy tokens
                 route: /tokens

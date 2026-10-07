@@ -1,0 +1,170 @@
+{
+  "sections": {
+    "hero": {
+      "title": "Bring your project into chat.",
+      "paragraphs": [
+        "Create an account to add your notes, files and images. Work with AI in each document's thread, then use saved documents in new project conversations."
+      ],
+      "items": [],
+      "links": []
+    },
+    "account": {
+      "title": "Create an account",
+      "paragraphs": [
+        "Your free token balance appears in the workspace."
+      ],
+      "items": [],
+      "links": []
+    },
+    "materials": {
+      "title": "Before you add files",
+      "paragraphs": [
+        "Read [How your materials are processed and stored](/ai-chat/projects/example#how-your-materials-are-processed-and-stored), including external AI processing and backup retention after deletion."
+      ],
+      "items": [],
+      "links": [
+        {
+          "text": "How your materials are processed and stored",
+          "href": "/ai-chat/projects/example#how-your-materials-are-processed-and-stored"
+        }
+      ]
+    },
+    "success": {
+      "title": "Your account is ready",
+      "paragraphs": [
+        "Continue to your project chat and add your notes, files and images."
+      ],
+      "items": [],
+      "links": []
+    },
+    "controls": {
+      "title": "Interface labels",
+      "paragraphs": [],
+      "items": [
+        {
+          "title": "back-label",
+          "text": "Back to AI Chat"
+        },
+        {
+          "title": "back-href",
+          "text": "/ai-chat/"
+        },
+        {
+          "title": "email-label",
+          "text": "Email"
+        },
+        {
+          "title": "email-placeholder",
+          "text": "you@example.com"
+        },
+        {
+          "title": "password-label",
+          "text": "Password"
+        },
+        {
+          "title": "repeat-password-label",
+          "text": "Repeat password"
+        },
+        {
+          "title": "terms-label",
+          "text": "How your materials are processed and stored"
+        },
+        {
+          "title": "terms-href",
+          "text": "/ai-chat/projects/example#how-your-materials-are-processed-and-stored"
+        },
+        {
+          "title": "submit",
+          "text": "Create account"
+        },
+        {
+          "title": "sign-in-label",
+          "text": "Sign in"
+        },
+        {
+          "title": "sign-in-href",
+          "text": "/ai-chat/login"
+        },
+        {
+          "title": "existing-account",
+          "text": "Already have an account?"
+        },
+        {
+          "title": "continue-label",
+          "text": "Open project chat"
+        },
+        {
+          "title": "continue-href",
+          "text": "/ai-chat/projects/new"
+        },
+        {
+          "title": "email-error",
+          "text": "Enter a valid email address."
+        },
+        {
+          "title": "password-error",
+          "text": "Enter a password."
+        },
+        {
+          "title": "repeat-password-error",
+          "text": "Enter the same password in both fields."
+        },
+        {
+          "title": "success-message",
+          "text": "Your account is ready."
+        },
+        {
+          "title": "photo-src",
+          "text": "/sps/images/singlepagestartup-photography-project-start-v1-square.png"
+        },
+        {
+          "title": "photo-asset-id",
+          "text": "singlepage-generated-living-focus-photography-project-start-v1-square"
+        },
+        {
+          "title": "photo-alt",
+          "text": "A woman working on her project with a laptop and notebook."
+        },
+        {
+          "title": "secondary-photo-src",
+          "text": "/sps/images/singlepagestartup-photography-project-progress-v1-square.png"
+        },
+        {
+          "title": "secondary-photo-asset-id",
+          "text": "singlepage-generated-living-focus-photography-project-progress-v1-square"
+        },
+        {
+          "title": "secondary-photo-alt",
+          "text": "A man reviewing a project sketch beside his laptop."
+        }
+      ],
+      "links": []
+    }
+  },
+  "labels": {
+    "back-label": "Back to AI Chat",
+    "back-href": "/ai-chat/",
+    "email-label": "Email",
+    "email-placeholder": "you@example.com",
+    "password-label": "Password",
+    "repeat-password-label": "Repeat password",
+    "terms-label": "How your materials are processed and stored",
+    "terms-href": "/ai-chat/projects/example#how-your-materials-are-processed-and-stored",
+    "submit": "Create account",
+    "sign-in-label": "Sign in",
+    "sign-in-href": "/ai-chat/login",
+    "existing-account": "Already have an account?",
+    "continue-label": "Open project chat",
+    "continue-href": "/ai-chat/projects/new",
+    "email-error": "Enter a valid email address.",
+    "password-error": "Enter a password.",
+    "repeat-password-error": "Enter the same password in both fields.",
+    "success-message": "Your account is ready.",
+    "photo-src": "/sps/images/singlepagestartup-photography-project-start-v1-square.png",
+    "photo-asset-id": "singlepage-generated-living-focus-photography-project-start-v1-square",
+    "photo-alt": "A woman working on her project with a laptop and notebook.",
+    "secondary-photo-src": "/sps/images/singlepagestartup-photography-project-progress-v1-square.png",
+    "secondary-photo-asset-id": "singlepage-generated-living-focus-photography-project-progress-v1-square",
+    "secondary-photo-alt": "A man reviewing a project sketch beside his laptop."
+  }
+}

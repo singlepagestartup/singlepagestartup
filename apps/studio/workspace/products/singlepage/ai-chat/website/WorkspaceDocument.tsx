@@ -40,11 +40,7 @@ export function WorkspaceDocument({
           >
             {[
               { label: "Add materials", href: "/projects/new" },
-              { label: "Business workspace", href: "/projects/example" },
-              {
-                label: "Landing page",
-                href: "/projects/example/landing-page",
-              },
+              { label: "Project documents", href: "/projects/example" },
               { label: "Tokens", href: "/tokens" },
               { label: "Settings", href: "/settings" },
               { label: "Help", href: "/help" },

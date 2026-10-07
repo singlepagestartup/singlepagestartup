@@ -1,0 +1,27 @@
+{
+  "id": "social.chat.ai-chat-preview",
+  "title": "ai-chat-preview",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat chat view.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.chat",
+    "pageName": "social",
+    "variantName": "ai-chat-preview",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "chat",
+    "variant": "ai-chat-preview"
+  },
+  "contentSlots": []
+}

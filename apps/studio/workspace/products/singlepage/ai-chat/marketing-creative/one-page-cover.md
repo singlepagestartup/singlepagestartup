@@ -3,13 +3,13 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    product.ai-chat.creative: 45271defa23617549a5078f8ce9c47e530b694ff9ac50d63196adc094b20f1d1
+    product.ai-chat.creative: 046608e08cbb233ac0bdfd6f4a8d60c10d71b66a40a757efc83beee71a434ef2
 ---
 
-# Your business is already in those files. Put it together.
+# Your notes, photos and plans. One project chat.
 
-Upload notes, documents and images. Review Request, Strategy, Brand, Design and Products in one compact setup, see what is missing and turn the offer into a landing page.
+Attach your materials in chat. AI checks for gaps and helps you discuss and edit each document in its own thread. Review a document, then attach its saved version to a new project topic or freely export it.
 
-> From scattered material to a business you can explain and test.
+> Your first step toward customers.
 
-[Organize my materials](/register)
+[Start with my files](/register)

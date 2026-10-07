@@ -22,6 +22,7 @@ const config: StorybookConfig = {
     options: {},
   },
   staticDirs: [
+    { from: "../../host/public/sps", to: "/sps" },
     "../runtime",
     "../foundations",
     { from: "../workspace/assets", to: "/workspace-assets" },

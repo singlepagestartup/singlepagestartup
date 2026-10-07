@@ -1,0 +1,21 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "variantName": "ai-chat-register",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.ai-chat-register",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/models/page/singlepage/ai-chat-register",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "ai-chat-register",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "ai-chat-register",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/models/page/singlepage/ai-chat-register/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/models/page/singlepage/ai-chat-register/Component.stories.tsx"
+  }
+}
