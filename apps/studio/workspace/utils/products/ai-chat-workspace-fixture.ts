@@ -1,11 +1,11 @@
 import {
-  createChatProject,
+  createProjectProfile,
   prepareProjectDocuments,
-  type IChatProject,
+  type IProjectProfile,
 } from "./ai-chat-workspace";
 import definitions from "../../../modules/social/relations/chats-to-threads/singlepage/ai-chat-workspace/definitions.json";
-export function aiChatProjectFixture(): IChatProject {
-  const project = createChatProject("pottery", "Pottery workshops");
+export function aiChatProjectFixture(): IProjectProfile {
+  const project = createProjectProfile("pottery", "Pottery workshops");
   project.notes =
     "Weekend pottery workshops for adults trying pottery for the first time. A small group makes a cup by hand.";
   return {

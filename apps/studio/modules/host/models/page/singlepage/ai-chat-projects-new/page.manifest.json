@@ -19,8 +19,8 @@
   },
   "blocks": [
     {
-      "id": "social.chat.ai-chat-workspace",
-      "path": "../../../../../social/models/chat/singlepage/ai-chat-workspace"
+      "id": "social.profile.ai-chat-workspace",
+      "path": "../../../../../social/models/profile/singlepage/ai-chat-workspace"
     }
   ]
 }

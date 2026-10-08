@@ -3,8 +3,8 @@ import { Component } from "./Component";
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 const meta = {
-  id: "modules-social-models-chat-singlepage-ai-chat-workspace",
-  title: "Modules/Social/Models/Chat/Singlepage/ai-chat-workspace",
+  id: "modules-social-models-profile-singlepage-ai-chat-workspace",
+  title: "Modules/Social/Models/Profile/Singlepage/ai-chat-workspace",
   component: Component,
   parameters: { layout: "fullscreen" },
   decorators: [

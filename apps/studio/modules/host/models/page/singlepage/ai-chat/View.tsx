@@ -11,13 +11,13 @@ import { Component as LoginPage } from "../../../../../rbac/models/identity/sing
 import { Component as SettingsPage } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/index";
 import { Component as HelpPage } from "../../../../../website-builder/models/widget/singlepage/ai-chat-help/index";
 import { Component as TokensPage } from "../../../../../ecommerce/models/order/singlepage/ai-chat-tokens/index";
-import { Component as ProjectWorkspace } from "../../../../../social/models/chat/singlepage/ai-chat-workspace/index";
+import { Component as ProjectWorkspace } from "../../../../../social/models/profile/singlepage/ai-chat-workspace/index";
 
 export interface IAIChatPageProps {
   url?: string;
   account?: IAIChatAccount;
   onNavigate?: (url: string) => void;
-  workspace?: import("../../../../../social/models/chat/singlepage/ai-chat-workspace/View").IProjectWorkspaceProps;
+  workspace?: import("../../../../../social/models/profile/singlepage/ai-chat-workspace/View").IProjectWorkspaceProps;
 }
 export default function AIChatPage({
   url = "/ai-chat/",

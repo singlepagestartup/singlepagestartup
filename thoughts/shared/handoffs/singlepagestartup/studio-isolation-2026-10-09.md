@@ -15,3 +15,7 @@ Host production build проходит с NODE_OPTIONS=--max-old-space-size=8192
 Браузер: desktop Host composition; mobile 390 CSS px без переполнения; sidebar начинается на 72 px под navbar; Ctrl+Enter отправляет сообщение; редактирование и review Brief открывают New thread; создание чата и настройки контекста работают. Скриншот: /private/tmp/studio-isolation-mobile.png. Storybook остаётся на 4321.
 
 Следующий шаг: code review исправления в PR #371. Production-перенос локальных views остаётся отдельным этапом. Бизнес-документы и загруженные файлы других задач не включать в commit.
+
+Project selector и контейнер проектов относятся к Social Profile: `ai-chat-project-select` и `ai-chat-workspace`. Header получает готовый selector через `projectNavigation`; список, создание и selected state находятся в Profile workspace. Исправлены owner paths, manifests и термин `IProjectProfile`. В Studio используются локальные данные; API-запрос профилей при production-переносе должен находиться в компоненте Social Profile.
+
+Проверки владельца профилей: 246 тестов, TypeScript, content check, inventory/validator и независимая Storybook-сборка прошли. Логи: /private/tmp/studio-profile-selector-tests.log, /private/tmp/studio-profile-selector-build.log. В браузере создание второго профиля, переключение и сохранение документа проверены; на 390 CSS px меню закрывается после выбора/создания и фокус возвращается на navigation trigger. Скриншот: /private/tmp/studio-project-profile-selector.png. Дополнительный commit: `fix(studio): own project navigation in Social Profile`.

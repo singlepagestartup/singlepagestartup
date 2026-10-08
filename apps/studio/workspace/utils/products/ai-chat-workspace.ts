@@ -87,7 +87,7 @@ export interface IProjectTopic {
   draftFiles?: IProjectSource[];
 }
 
-export interface IChatProject {
+export interface IProjectProfile {
   agents?: IProjectAgent[];
   setupComplete?: boolean;
   id: string;
@@ -99,7 +99,10 @@ export interface IChatProject {
   topics: IProjectTopic[];
 }
 
-export function createChatProject(id: string, name: string): IChatProject {
+export function createProjectProfile(
+  id: string,
+  name: string,
+): IProjectProfile {
   if (!name.trim()) throw new Error("A project needs a name.");
   return {
     id,
@@ -112,15 +115,15 @@ export function createChatProject(id: string, name: string): IChatProject {
   };
 }
 
-export function hasProjectMaterials(project: IChatProject): boolean {
+export function hasProjectMaterials(project: IProjectProfile): boolean {
   return Boolean(project.notes.trim() || project.sources.length);
 }
 
 export function sendProjectMessage(
-  project: IChatProject,
+  project: IProjectProfile,
   conversationId: string,
   exchange: IProjectMessageExchange,
-): IChatProject {
+): IProjectProfile {
   const document = project.documents.find((item) => item.id === conversationId);
   const topic = project.topics.find((item) => item.id === conversationId);
   const conversation = document ?? topic;
@@ -221,9 +224,9 @@ export function documentWorkingOn(
 // Studio's deterministic draft scaffolding. Supplied text stays attributed;
 // this does not extract facts from binary files or call an AI provider.
 export function prepareProjectDocuments(
-  project: IChatProject,
+  project: IProjectProfile,
   definitions: IProjectDocumentDefinition[],
-): IChatProject {
+): IProjectProfile {
   if (!hasProjectMaterials(project))
     throw new Error("Add materials before analysis.");
   const sourceText = [
@@ -356,7 +359,7 @@ export function attachProjectAsset(
 }
 
 export function topicDocumentContext(
-  project: IChatProject,
+  project: IProjectProfile,
   documentIds: string[],
 ): IProjectDocumentContext[] {
   return [...new Set(documentIds)].flatMap((id) => {
@@ -375,12 +378,12 @@ export function topicDocumentContext(
 }
 
 export function createProjectTopic(
-  project: IChatProject,
+  project: IProjectProfile,
   id: string,
   title: string,
   documentIds: string[],
   agent: IProjectAgent | null = documentAgent("thread"),
-): IChatProject {
+): IProjectProfile {
   if (!title.trim()) throw new Error("A topic needs a name.");
   const ids = [...new Set(documentIds)].filter((documentId) =>
     project.documents.some((item) => item.id === documentId && item.saved),
@@ -411,14 +414,14 @@ export function createProjectTopic(
 }
 
 export function topicAgentContext(
-  project: IChatProject,
+  project: IProjectProfile,
   topic: Pick<IProjectTopic, "documentIds">,
 ): IProjectDocumentContext[] {
   return topicDocumentContext(project, topic.documentIds);
 }
 
 export function documentAgentContext(
-  project: IChatProject,
+  project: IProjectProfile,
   currentDocument: IProjectDocument,
 ): IProjectDocumentContext[] {
   const context: IProjectDocumentContext[] = [];

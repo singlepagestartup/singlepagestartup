@@ -1,27 +1,25 @@
 "use client";
-import { useId, useRef, useState } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
-  Button,
   Icon,
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import { useAIChatAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
+export interface IHeaderNavigationProps {
+  onNavigate: () => void;
+  onCloseAutoFocus: (event: Event) => void;
+}
+
 export interface IAccountHeaderProps {
   page: "register" | "login" | "settings" | "help" | "tokens" | "chat";
   balance?: { free: number; purchased: number } | null;
-  projects?: { id: string; name: string }[];
-  selectedProject?: string;
-  onProjectSelect?: (id: string) => void;
-  onNewProject?: () => void;
+  projectNavigation?: (props: IHeaderNavigationProps) => ReactNode;
 }
 export default function AccountHeader({
   page,
   balance: suppliedBalance,
-  projects = [],
-  selectedProject,
-  onProjectSelect,
-  onNewProject,
+  projectNavigation,
 }: IAccountHeaderProps) {
   const account = useAIChatAccount();
   const navigationId = useId();
@@ -200,95 +198,19 @@ export default function AccountHeader({
                 {item.label}
               </a>
             ))}
-            {!auth && onProjectSelect && projects.length > 0 ? (
-              <DropdownMenu.Root modal={false}>
-                <DropdownMenu.Trigger asChild>
-                  <button
-                    type="button"
-                    aria-label="Project"
-                    className={`inline-flex min-h-11 max-w-60 items-center gap-2 rounded-xl px-3 text-sm text-sps-muted hover:bg-sps-grey data-[state=open]:bg-sps-grey ${kit.focus}`}
-                  >
-                    <Icon name="folder-open" />
-                    <span className="min-w-0 truncate">
-                      {projects.find(
-                        (project) => project.id === selectedProject,
-                      )?.name ?? "Select project"}
-                    </span>
-                    <Icon name="caret-down" className="size-4 shrink-0" />
-                  </button>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Portal>
-                  <DropdownMenu.Content
-                    align="end"
-                    sideOffset={8}
-                    collisionPadding={12}
-                    onCloseAutoFocus={(event) => {
-                      if (
-                        !navigationOpen &&
-                        navigationTrigger.current?.offsetParent
-                      ) {
-                        event.preventDefault();
-                        navigationTrigger.current.focus();
-                      }
-                    }}
-                    className="z-50 w-64 max-w-[calc(100vw-24px)] rounded-xl border border-sps-line bg-sps-white p-2 text-sps-graphite shadow-lg font-sps"
-                  >
-                    <DropdownMenu.Label className="px-3 py-2 text-xs font-semibold text-sps-muted">
-                      Projects
-                    </DropdownMenu.Label>
-                    <DropdownMenu.RadioGroup
-                      value={selectedProject}
-                      onValueChange={(id) => {
-                        onProjectSelect(id);
-                        setNavigationOpen(false);
-                      }}
-                    >
-                      {projects.map((project) => (
-                        <DropdownMenu.RadioItem
-                          key={project.id}
-                          value={project.id}
-                          className={menuItemClassName}
-                        >
-                          <Icon name="folder-open" />
-                          <span className="min-w-0 flex-1 truncate">
-                            {project.name}
-                          </span>
-                          <DropdownMenu.ItemIndicator>
-                            <Icon name="check" className="size-4" />
-                          </DropdownMenu.ItemIndicator>
-                        </DropdownMenu.RadioItem>
-                      ))}
-                    </DropdownMenu.RadioGroup>
-                    {onNewProject && (
-                      <>
-                        <DropdownMenu.Separator className="my-1 h-px bg-sps-line" />
-                        <DropdownMenu.Item
-                          onSelect={() => {
-                            onNewProject();
-                            setNavigationOpen(false);
-                          }}
-                          className={menuItemClassName}
-                        >
-                          <Icon name="plus" />
-                          New project
-                        </DropdownMenu.Item>
-                      </>
-                    )}
-                  </DropdownMenu.Content>
-                </DropdownMenu.Portal>
-              </DropdownMenu.Root>
-            ) : !auth && onNewProject ? (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  onNewProject();
-                  setNavigationOpen(false);
-                }}
-              >
-                <Icon name="plus" />
-                New project
-              </Button>
-            ) : null}
+            {!auth &&
+              projectNavigation?.({
+                onNavigate: () => setNavigationOpen(false),
+                onCloseAutoFocus: (event) => {
+                  if (
+                    !navigationOpen &&
+                    navigationTrigger.current?.offsetParent
+                  ) {
+                    event.preventDefault();
+                    navigationTrigger.current.focus();
+                  }
+                },
+              })}
           </div>
           {!auth && (
             <DropdownMenu.Root modal={false}>

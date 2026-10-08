@@ -4,6 +4,7 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -12,8 +13,8 @@ import {
   Icon,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import {
-  createChatProject,
-  type IChatProject,
+  createProjectProfile,
+  type IProjectProfile,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import { AccountHeader } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
 import {
@@ -21,8 +22,9 @@ import {
   ProjectProcessingDisclosure,
 } from "./ProjectSetup";
 import ProjectChat from "../../../../relations/chats-to-threads/singlepage/ai-chat-workspace/View";
+import { Component as ProjectProfileSelect } from "../ai-chat-project-select/index";
 export interface IProjectWorkspaceProps {
-  initialProjects?: IChatProject[];
+  initialProjects?: IProjectProfile[];
   initialProjectId?: string;
   text?: string;
   navigationHref?: string;
@@ -35,7 +37,11 @@ export default function ProjectWorkspace({
 }: IProjectWorkspaceProps = {}) {
   const id = useId();
   const sequence = useRef(0);
-  const [projects, setProjects] = useState<IChatProject[]>(initialProjects);
+  const [projects, setProjects] = useState<IProjectProfile[]>(initialProjects);
+  const profiles = useMemo(
+    () => projects.map((profile) => ({ id: profile.id, title: profile.name })),
+    [projects],
+  );
   const [selected, setSelected] = useState(
     initialProjectId ?? initialProjects[0]?.id ?? "",
   );
@@ -78,7 +84,10 @@ export default function ProjectWorkspace({
     if (navigationHref?.includes("how-your-materials")) setDisclosureOpen(true);
   }, [navigationHref]);
   const updateProject = useCallback(
-    (projectId: string, update: (project: IChatProject) => IChatProject) => {
+    (
+      projectId: string,
+      update: (project: IProjectProfile) => IProjectProfile,
+    ) => {
       setProjects((current) =>
         current.map((project) =>
           project.id === projectId ? update(project) : project,
@@ -88,7 +97,7 @@ export default function ProjectWorkspace({
     [],
   );
   function createProject(name: string) {
-    const project = createChatProject(`${id}-${++sequence.current}`, name);
+    const project = createProjectProfile(`${id}-${++sequence.current}`, name);
     setProjects((current) => [...current, project]);
     setSelected(project.id);
     setCreating(false);
@@ -96,17 +105,27 @@ export default function ProjectWorkspace({
   return (
     <div
       data-sps-theme="singlepage"
+      data-ds-block="social.profile.ai-chat-workspace"
       className="@container min-h-screen bg-sps-grey text-sps-graphite font-sps"
     >
       <AccountHeader
         page="chat"
-        projects={projects}
-        selectedProject={selected}
-        onProjectSelect={(value) => {
-          setSelected(value);
-          setCreating(false);
-        }}
-        onNewProject={() => setCreating(true)}
+        projectNavigation={({ onNavigate, onCloseAutoFocus }) => (
+          <ProjectProfileSelect
+            data={profiles}
+            value={selected}
+            onChange={(value) => {
+              setSelected(value);
+              setCreating(false);
+              onNavigate();
+            }}
+            onCreate={() => {
+              setCreating(true);
+              onNavigate();
+            }}
+            onCloseAutoFocus={onCloseAutoFocus}
+          />
+        )}
       />
       {creating && (
         <CreateProjectScreen

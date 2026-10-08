@@ -160,18 +160,25 @@ AI Chat prototypes live entirely in Studio. Each variant keeps a local `View.tsx
 with props and callbacks, while `Component.tsx` supplies a small Storybook example.
 Product website previews use those local views and editable Markdown content.
 
-| Owner                   | View responsibility                                        |
-| ----------------------- | ---------------------------------------------------------- |
-| Host Page               | Page composition and local navigation                      |
-| RBAC Identity / Subject | Registration, login, account settings and account provider |
-| Social Profile          | Agent selection and role editor                            |
-| Social Chat             | Workspace setup and project state                          |
-| Social Thread / Message | Composer, sidebar item and conversation                    |
-| Social chats-to-threads | Document/chat workspace composition                        |
-| Knowledge Source        | Editable document sections and review controls             |
-| File Storage File       | References and generated attachment views                  |
-| Ecommerce Order         | Token purchase preview                                     |
-| Website Builder Widget  | Navigation, help and landing page                          |
+| Owner                   | View responsibility                                                  |
+| ----------------------- | -------------------------------------------------------------------- |
+| Host Page               | Page composition and local navigation                                |
+| RBAC Identity / Subject | Registration, login, account settings and account provider           |
+| Social Profile          | Project workspace, project selector, agent selection and role editor |
+| Social Chat             | Conversation preview                                                 |
+| Social Thread / Message | Composer, sidebar item and conversation                              |
+| Social chats-to-threads | Document/chat workspace composition                                  |
+| Knowledge Source        | Editable document sections and review controls                       |
+| File Storage File       | References and generated attachment views                            |
+| Ecommerce Order         | Token purchase preview                                               |
+| Website Builder Widget  | Navigation, help and landing page                                    |
+
+Projects are Social Profiles in the local AI Chat model. The Profile workspace
+owns their list, creation and selected state. Its `ai-chat-project-select` view
+receives profile IDs and titles through `data`; the header renders it through
+the `projectNavigation` slot. Profile API queries belong to the Social Profile
+component when production adapters are added. Studio currently uses local
+records and does not make those queries.
 
 Local helpers and example data live in `workspace/utils/products`, visual primitives
 in `workspace/design/singlepage/interface-kit/ai-chat`, and styles in `runtime`.

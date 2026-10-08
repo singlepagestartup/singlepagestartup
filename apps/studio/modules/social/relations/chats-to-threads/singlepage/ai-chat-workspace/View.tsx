@@ -25,7 +25,7 @@ import {
   topicDocumentContext,
   topicAgentContext,
   documentWorkingOn,
-  type IChatProject,
+  type IProjectProfile,
   type IProjectDocument,
   type IProjectMessage,
   type IProjectAsset,
@@ -39,7 +39,7 @@ import {
 import {
   ProjectSetup,
   ProjectSteps,
-} from "../../../../models/chat/singlepage/ai-chat-workspace/ProjectSetup";
+} from "../../../../models/profile/singlepage/ai-chat-workspace/ProjectSetup";
 import { ProjectComposer } from "../../../../models/thread/singlepage/ai-chat-composer/View";
 import { ProjectConversation } from "../../../../models/message/singlepage/ai-chat-conversation/View";
 import { ProjectSourceEditor } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/View";
@@ -53,12 +53,12 @@ import {
 } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
 import { ProjectAgentPicker } from "../../../../models/profile/singlepage/ai-chat-agent/View";
 export interface IProjectChatProps {
-  project: IChatProject;
+  project: IProjectProfile;
   active: boolean;
   navigationHref?: string;
   onUpdate: (
     id: string,
-    update: (project: IChatProject) => IChatProject,
+    update: (project: IProjectProfile) => IProjectProfile,
   ) => void;
 }
 type ProjectView = "document" | "topic" | "new-topic" | "settings" | "future";
@@ -115,7 +115,7 @@ export default function ProjectChat({
   }, []);
   const [documentListOpen, setDocumentListOpen] = useState(true);
   const setProject = useCallback(
-    (update: (project: IChatProject) => IChatProject) =>
+    (update: (project: IProjectProfile) => IProjectProfile) =>
       onUpdate(project.id, update),
     [project.id, onUpdate],
   );

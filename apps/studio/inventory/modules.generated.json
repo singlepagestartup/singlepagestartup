@@ -9017,8 +9017,7 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/social/models/chat/singlepage/ai-chat-preview/Component.stories.tsx",
-            "apps/studio/modules/social/models/chat/singlepage/ai-chat-workspace/Component.stories.tsx"
+            "apps/studio/modules/social/models/chat/singlepage/ai-chat-preview/Component.stories.tsx"
           ]
         },
         {
@@ -9224,6 +9223,8 @@
           ],
           "storyFiles": [
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-agent/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/ai-chat-project-select/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/ai-chat-workspace/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/article-find-by-id-comment-form-default/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/author-find-by-id-overview-default/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/author/Component.stories.tsx",

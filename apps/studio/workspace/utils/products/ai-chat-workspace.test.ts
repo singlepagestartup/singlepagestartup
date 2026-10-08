@@ -15,7 +15,7 @@ import {
   validateProjectDocumentGuides,
 } from "../../products/singlepage/ai-chat/website/content";
 import {
-  createChatProject,
+  createProjectProfile,
   attachProjectAsset,
   createProjectTopic,
   topicAgentContext,
@@ -45,7 +45,7 @@ const projectDefinitions = Object.values(definitions).filter(
 function projectWithDrafts() {
   return prepareProjectDocuments(
     {
-      ...createChatProject("workshop", "Pottery workshops"),
+      ...createProjectProfile("workshop", "Pottery workshops"),
       notes: "Weekend workshops for adults.",
       sources: [
         { id: "notes", name: "Notes.md", text: "Make cups by hand.", size: 20 },
@@ -85,8 +85,8 @@ describe("AI Chat project workflow", () => {
     ).toContain(expected);
   });
   test("requires a name before upload and materials before analysis", () => {
-    expect(() => createChatProject("project", "  ")).toThrow();
-    const project = createChatProject("project", "  Pottery  ");
+    expect(() => createProjectProfile("project", "  ")).toThrow();
+    const project = createProjectProfile("project", "  Pottery  ");
     expect(project.name).toBe("Pottery");
     expect(project.stage).toBe("upload");
     expect(hasProjectMaterials(project)).toBe(false);
@@ -176,7 +176,7 @@ describe("AI Chat project workflow", () => {
   });
   test("another project starts without the first project's materials or threads", () => {
     const first = projectWithDrafts();
-    const second = createChatProject("second", "Another project");
+    const second = createProjectProfile("second", "Another project");
     expect(second.sources).toEqual([]);
     expect(second.documents).toEqual([]);
     expect(second.topics).toEqual([]);
@@ -259,7 +259,9 @@ describe("AI Chat project workflow", () => {
     expect(
       continued.sources.filter((file) => file.id === first.id),
     ).toHaveLength(1);
-    expect(createChatProject("second", "Another project").sources).toEqual([]);
+    expect(createProjectProfile("second", "Another project").sources).toEqual(
+      [],
+    );
     expect(
       sendProjectMessage(continued, "strategy", {
         userId: "empty",
@@ -706,7 +708,7 @@ describe("AI Chat agent profiles", () => {
       next.topics[0].messages.at(-1)?.context?.map((item) => item.name),
     ).toEqual(["Brief.md"]);
     expect(
-      createChatProject("another", "Another project").agents,
+      createProjectProfile("another", "Another project").agents,
     ).toBeUndefined();
   });
   test("includes the active document even when empty and omits unknown placeholders", () => {

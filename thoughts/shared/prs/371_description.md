@@ -5,6 +5,7 @@ AI Chat previews are local React views in Studio, split by module, model and rel
 ## Changes
 
 - Move 24 AI Chat variants, account state, fixtures, helpers and content into Studio. Keep the account provider under RBAC Subject. Remove prototype-only production variants, the Host `/ai-chat` route, style preset and copied assets.
+- Keep projects under Social Profile: the Profile workspace owns the local records, creation and selected state; `ai-chat-project-select` receives profile IDs/titles and the header renders it through a slot. Profile queries belong to that model's component when production adapters are added.
 - Add local Host Page, Layout, Widget and Metadata views, forms and selectors, plus managers for five existing relation types. Compose pages from local records and registered external widget previews. Define local view contracts without production SDK imports.
 - Keep styles, fonts, images, PNG/PDF export helpers and generated content inside Studio. Remove production aliases and Host static directories from Storybook. Add import-boundary tests and verify a build from a copy containing only Studio and its tools.
 - Consolidate Document and Edit Suggestion into Source; replace profile, message and skill links with explicit Source relations. Keep contentHash, indexedContentHash and lastIndexedAt for index freshness.
@@ -18,13 +19,13 @@ AI Chat previews are local React views in Studio, split by module, model and rel
 
 Studio isolation correction:
 
-- [x] `bun test tools/studio apps/studio/workspace apps/studio/modules/host/models/page/singlepage/ai-chat/View.test.tsx` — 245 tests passed, including import boundaries, Host records and relations, Markdown rendering, agent attribution and workspace behavior.
+- [x] `bun test tools/studio apps/studio/workspace apps/studio/modules/host/models/page/singlepage/ai-chat/View.test.tsx` — 246 tests passed, including import boundaries, project Profile ownership, Host records and relations, Markdown rendering, agent attribution and workspace behavior.
 - [x] `tsc -p apps/studio/tsconfig.json --noEmit --incremental false` — passed in the checkout and the isolated Studio copy.
 - [x] `bun tools/studio/products/publish-ai-chat.ts --check`, inventory generation and Design system validation — passed.
 - [x] `node tools/agents/code-placement.mjs`, `git diff --check` and downstream commit-message validation — passed.
 - [x] Storybook production build — passed in the checkout and a copy containing `apps/studio` and `tools/studio`, without `libs`, `apps/host` or the root tsconfig. The copy uses installed third-party packages through `node_modules`.
 - [x] `NODE_OPTIONS=--max-old-space-size=8192 NX_DAEMON=false NX_ISOLATE_PLUGINS=false ./node_modules/.bin/nx run host:next:build --skip-nx-cache` — production compilation, type checks and static generation passed. Next lint is disabled by the existing build configuration.
-- [x] Browser checks: Host composition on desktop; mobile AI Chat at 390 CSS px without page overflow; sidebar below the visible navbar; Ctrl+Enter submission; editing and reviewing Brief; chat creation and context settings.
+- [x] Browser checks: Host composition on desktop; mobile AI Chat at 390 CSS px without page overflow; sidebar below the visible navbar; Ctrl+Enter submission; editing and reviewing Brief; chat creation and context settings; project profile creation/selection with retained local state and mobile navigation focus.
 
 Previous implementation checks recorded for the retained Knowledge, MCP, Studio Design and Host locale changes:
 
@@ -53,6 +54,7 @@ The Host build exhausted the default Node heap; the successful build used an 8 G
 ## Downstream migration
 
 - Projects with owned AI Chat prototypes, Studio catalogs or production imports must keep prototype views in Studio module/model/relation folders, pass local data and callbacks through props, and keep the account provider under RBAC Subject. Replace SDK types with local view contracts. Update owned generators and asset URLs to Studio destinations, preserving content, role provenance and review state. Remove prototype production registrations and routes after their local previews are available. Verify import boundaries, independent Storybook builds, production builds, document review, chat context, agents and mobile navigation. Production transfer remains a separate step.
+- Projects overriding project navigation must move the project workspace binding from Social Chat to Social Profile and update recipe, story and content-generator paths. Render the Profile selector through the header slot; keep profile queries with the Social Profile component and use profile IDs for selection. Update owned references to IProjectProfile/createProjectProfile and preserve each profile's local documents, chats and notes. Verify creation, switching, empty lists and mobile menu focus.
 - Projects with owned Knowledge schemas, tools, forms, SDK consumers or Studio bindings must switch Document/Edit Suggestion consumers to Source.content and direct scoped editing. Replace profile/document access and message/skill links with Source relations. Generate owned schema changes using repository-generate targets. Preserve access scope, user notes, complete attachment rebuilding, hash-based freshness and stale-result rejection; configure Poppler, FFmpeg and the analysis/transcription providers. Verify scope isolation and attachment/edit/index flows.
 - Projects overriding Knowledge tool adapters or attachment rows must retain byte-bounded search excerpts and paginated reads. Follow nextOffset for the same section; offsets use UTF-16 code units and preserve Unicode. Read all userContext pages before replacing truncated notes, and expose the original File URL through an Open action. Verify Russian text, emoji, JSON escapes and PDF/TXT viewing.
 - Projects overriding file mutation services/controllers must keep File Storage independent of Knowledge and perform Knowledge-aware updates/deletions through KnowledgeService.updateStoredFile/deleteStoredFile or its API routes. Capture and invalidate all affected Sources before relation cascades, rebuild every remaining attachment, and preserve user context. Verify shared-File operations and exactly-once stored-byte deletion.

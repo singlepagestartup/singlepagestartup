@@ -14,7 +14,7 @@ import {
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
 import {
   hasProjectMaterials,
-  type IChatProject,
+  type IProjectProfile,
   type IProjectSource,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import { readProjectFiles } from "../../../../../../workspace/utils/products/ai-chat-files";
@@ -25,7 +25,7 @@ interface ICreateProjectProps {
   onCancel?: () => void;
 }
 interface IProjectSetupProps {
-  project: IChatProject;
+  project: IProjectProfile;
   analysisStep: number;
   disclosureId: string;
   onNotes: (notes: string) => void;

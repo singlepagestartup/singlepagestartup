@@ -167,3 +167,27 @@ describe("Host Studio coverage", () => {
     ).not.toContain("host.page.default");
   });
 });
+
+describe("AI Chat project ownership", () => {
+  test("discovers project selection and workspace under Social Profile", async () => {
+    const actual = await collectModuleInventory();
+    const social = actual.modules.find((record) => record.name === "social")!;
+    const profile = social.entities.find(
+      (entity) => entity.entityType === "model" && entity.entity === "profile",
+    )!;
+    const chat = social.entities.find(
+      (entity) => entity.entityType === "model" && entity.entity === "chat",
+    )!;
+    for (const variant of ["ai-chat-project-select", "ai-chat-workspace"])
+      expect(
+        profile.storyFiles?.some((file) =>
+          file.includes(`/singlepage/${variant}/`),
+        ),
+      ).toBe(true);
+    expect(
+      chat.storyFiles?.some((file) =>
+        file.includes("/singlepage/ai-chat-workspace/"),
+      ),
+    ).toBe(false);
+  });
+});
