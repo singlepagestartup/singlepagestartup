@@ -6,7 +6,7 @@ export function Component() {
   const [sections, setSections] = useState<string[]>([]);
   const [document] = useState(aiChatProjectFixture().documents[0]);
   const [files, setFiles] = useState<
-    import("../../../../../../workspace/utils/products/ai-chat-workspace").IProjectSource[]
+    import("../../../../../../workspace/utils/products/ai-chat-workspace").IProjectFile[]
   >([]);
   return (
     <View

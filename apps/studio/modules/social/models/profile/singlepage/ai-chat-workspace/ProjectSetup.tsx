@@ -15,7 +15,7 @@ import {
 import {
   hasProjectMaterials,
   type IProjectProfile,
-  type IProjectSource,
+  type IProjectFile,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import { readProjectFiles } from "../../../../../../workspace/utils/products/ai-chat-files";
 import disclosure from "./disclosure.json";
@@ -29,7 +29,7 @@ interface IProjectSetupProps {
   analysisStep: number;
   disclosureId: string;
   onNotes: (notes: string) => void;
-  onFiles: (sources: IProjectSource[]) => void;
+  onFiles: (sources: IProjectFile[]) => void;
   onRemove: (id: string) => void;
   onAnalyze: () => void;
   onOpenDocuments: () => void;

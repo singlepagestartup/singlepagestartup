@@ -30,7 +30,7 @@ import {
   type IProjectDocument,
   type IProjectMessage,
   type IProjectAsset,
-  type IProjectSource,
+  type IProjectFile,
   type IProjectTopic,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import {
@@ -134,7 +134,7 @@ export default function ProjectProfile({
   const section = selectedSections.length === 1 ? selectedSections[0] : "";
   const knowledge = useMemo(
     () => projectKnowledge(project),
-    [project.id, project.documents],
+    [project.id, project.documents, project.sources],
   );
   const workChats = useMemo(
     () => projectWorkChats(project),
@@ -246,42 +246,58 @@ export default function ProjectProfile({
     if (!document) return;
     setWorkingSections((current) => ({ ...current, [document.id]: titles }));
   }
-  function attachFile(
-    file: IProjectSource,
-    title: string,
-    kind: IProjectAsset["kind"],
-  ) {
-    const assetId = `${id}-asset-${++sequence.current}`;
-    updateDocument((current) =>
-      attachProjectAsset(current, file, title, kind, assetId),
-    );
-  }
-  function uploadFiles(
-    files: IProjectSource[],
-    title: string,
-    kind: IProjectAsset["kind"],
-  ) {
-    const assetIds = files.map(() => `${id}-asset-${++sequence.current}`);
-    setProject((current) => ({
-      ...current,
-      sources: [...current.sources, ...files],
-      documents: current.documents.map((item) =>
-        item.id === selectedDocument
-          ? files.reduce(
-              (document, file, index) =>
-                attachProjectAsset(
-                  document,
-                  file,
-                  title,
-                  kind,
-                  assetIds[index],
-                ),
-              item,
-            )
-          : item,
-      ),
-    }));
-  }
+  const attachFile = useCallback(
+    (file: IProjectFile, title: string, kind: IProjectAsset["kind"]) => {
+      const assetId = `${id}-asset-${++sequence.current}`;
+      updateDocument((current) =>
+        attachProjectAsset(current, file, title, kind, assetId),
+      );
+    },
+    [id, updateDocument],
+  );
+  const uploadFiles = useCallback(
+    (files: IProjectFile[], title: string, kind: IProjectAsset["kind"]) => {
+      const assetIds = files.map(() => `${id}-asset-${++sequence.current}`);
+      setProject((current) => ({
+        ...current,
+        sources: [...current.sources, ...files],
+        documents: current.documents.map((item) =>
+          item.id === selectedDocument
+            ? files.reduce(
+                (document, file, index) =>
+                  attachProjectAsset(
+                    document,
+                    file,
+                    title,
+                    kind,
+                    assetIds[index],
+                  ),
+                item,
+              )
+            : item,
+        ),
+      }));
+    },
+    [id, setProject, selectedDocument],
+  );
+  const changeDocumentAsset = useCallback(
+    (assetId: string, update: Partial<IProjectAsset>) =>
+      updateDocument((current) => ({
+        ...current,
+        assets: (current.assets ?? []).map((asset) =>
+          asset.id === assetId ? { ...asset, ...update } : asset,
+        ),
+      })),
+    [updateDocument],
+  );
+  const detachDocumentAsset = useCallback(
+    (assetId: string) =>
+      updateDocument((current) => ({
+        ...current,
+        assets: (current.assets ?? []).filter((asset) => asset.id !== assetId),
+      })),
+    [updateDocument],
+  );
   function discussSection(title: string) {
     changeSections([title]);
     setPane("chat");
@@ -400,7 +416,7 @@ export default function ProjectProfile({
   const updateConversationFiles = useCallback(
     (
       conversationId: string,
-      update: (files: IProjectSource[]) => IProjectSource[],
+      update: (files: IProjectFile[]) => IProjectFile[],
     ) =>
       setProject((current) => ({
         ...current,
@@ -418,7 +434,7 @@ export default function ProjectProfile({
     [setProject],
   );
   const addDocumentFiles = useCallback(
-    (files: IProjectSource[]) =>
+    (files: IProjectFile[]) =>
       updateConversationFiles(selectedDocument, (current) => [
         ...current,
         ...files,
@@ -433,7 +449,7 @@ export default function ProjectProfile({
     [selectedDocument, updateConversationFiles],
   );
   const addTopicFiles = useCallback(
-    (files: IProjectSource[]) =>
+    (files: IProjectFile[]) =>
       updateConversationFiles(selectedTopic, (current) => [
         ...current,
         ...files,
@@ -563,7 +579,9 @@ export default function ProjectProfile({
                 project.documents.map((item) => {
                   const sources = knowledge.sources.filter(
                     (source) =>
-                      source.documentId === item.id &&
+                      knowledge.bundles
+                        .find((bundle) => bundle.id === item.id)
+                        ?.sourceIds.includes(source.id) &&
                       relations.some(
                         (relation) =>
                           relation.knowledgeModuleSourceId === source.id,
@@ -1043,34 +1061,52 @@ export default function ProjectProfile({
                     <div
                       className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-sps-line @[900px]/chat:block @[900px]/chat:border-l`}
                     >
-                      <ProjectSourceEditor
-                        document={document}
-                        sources={project.sources}
-                        sections={selectedSections}
-                        onSection={discussSection}
-                        onEdit={editDocumentSection}
-                        onReview={reviewDocument}
-                        onAttach={attachFile}
-                        onUpload={uploadFiles}
-                        onAssetChange={(assetId, update) =>
-                          updateDocument((current) => ({
-                            ...current,
-                            assets: (current.assets ?? []).map((asset) =>
-                              asset.id === assetId
-                                ? { ...asset, ...update }
-                                : asset,
-                            ),
-                          }))
-                        }
-                        onAssetRemove={(assetId) =>
-                          updateDocument((current) => ({
-                            ...current,
-                            assets: (current.assets ?? []).filter(
-                              (asset) => asset.id !== assetId,
-                            ),
-                          }))
-                        }
-                      />
+                      <ProfileSources
+                        variant="find"
+                        data={knowledge.relations}
+                        apiProps={{
+                          params: {
+                            filters: {
+                              and: [
+                                {
+                                  column: "profileId",
+                                  method: "eq",
+                                  value: project.id,
+                                },
+                              ],
+                            },
+                          },
+                        }}
+                      >
+                        {(relations) => (
+                          <ProjectSourceEditor
+                            document={document}
+                            data={knowledge.sources.filter(
+                              (source) =>
+                                knowledge.bundles
+                                  .find((bundle) => bundle.id === document.id)
+                                  ?.sourceIds.includes(source.id) &&
+                                relations.some(
+                                  (relation) =>
+                                    relation.knowledgeModuleSourceId ===
+                                    source.id,
+                                ),
+                            )}
+                            files={knowledge.files}
+                            fileRelations={knowledge.sourceFiles}
+                            attachmentViews={knowledge.attachmentViews}
+                            sources={project.sources}
+                            sections={selectedSections}
+                            onSection={discussSection}
+                            onEdit={editDocumentSection}
+                            onReview={reviewDocument}
+                            onAttach={attachFile}
+                            onUpload={uploadFiles}
+                            onAssetChange={changeDocumentAsset}
+                            onAssetRemove={detachDocumentAsset}
+                          />
+                        )}
+                      </ProfileSources>
                     </div>
                   </div>
                 )}

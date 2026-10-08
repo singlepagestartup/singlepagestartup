@@ -12,7 +12,7 @@ export function Component() {
               id: "pottery:brief:customers",
               title: "Customers and value",
               content: "",
-              documentId: "brief",
+              variant: "ai-chat-section",
             },
           ],
         }}

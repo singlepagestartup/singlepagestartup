@@ -1,0 +1,21 @@
+{
+  "componentName": "knowledge.sources-to-file-storage-module-files",
+  "pageName": "knowledge",
+  "variantName": "ai-chat-find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "knowledge.sources-to-file-storage-module-files.ai-chat-find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "knowledge/relations/sources-to-file-storage-module-files/singlepage/ai-chat-find",
+    "sps.figma.component": "knowledge.sources-to-file-storage-module-files",
+    "sps.figma.variant": "ai-chat-find",
+    "sps.source.module": "knowledge",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "sources-to-file-storage-module-files",
+    "sps.source.variant": "ai-chat-find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/knowledge/relations/sources-to-file-storage-module-files/singlepage/ai-chat-find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/knowledge/relations/sources-to-file-storage-module-files/singlepage/ai-chat-find/Component.stories.tsx"
+  }
+}

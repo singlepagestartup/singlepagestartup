@@ -19,6 +19,14 @@ Studio содержит собственные React views, интерфейсы
 - [x] Перенести центральную рабочую область из chats-to-threads в Social Profile. Навигацию знаний и чатов собирать через существующие связи и локальные модельные компоненты.
 - [x] Проверить изоляцию, типы, отношения разных пользователей, маршруты, Storybook и работу меню в браузере; обновить handoff и PR.
 
+## Декомпозиция блоков знаний
+
+- [x] Проверить production Source, profiles-to-knowledge-module-sources и sources-to-file-storage-module-files по README, schema и frontend. Source содержит title/content/description; несколько File связаны по sourceId/fileStorageModuleFileId и orderIndex. Удаление связи сохраняет File. Редактор меняет пользовательский блок content и сохраняет описания материалов.
+- [x] Выделить каждый блок в локальный вариант Source ai-chat-section. Отделить группировку Brief/Strategy от полей Source, а параметры отображения файлов — от production отношений.
+- [x] Собрать редактор через Profile-to-Source find и вложения через Source-to-File find. Передавать записи и обработчики через props, без imports из libs.
+- [x] Проверить изоляцию источников и файлов, уникальность пары Source/File, сохранение описаний при редактировании, несколько вложений и detach. Проверить Storybook на desktop/mobile.
+- [x] Обновить handoff и PR с результатами и оставшимися границами локальных адаптеров.
+
 ## Критерии
 
 В коде Studio нет импортов из libs, apps/host или production aliases. Production не импортирует Studio. Storybook собирается из локальных Studio views. Сохраняются документы, чаты, настройка агентов, мобильный sidebar и Host composition. Проверки выявляют нарушение границы до сборки.

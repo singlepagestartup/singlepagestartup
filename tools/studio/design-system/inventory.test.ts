@@ -206,3 +206,30 @@ describe("AI Chat project ownership", () => {
     ).toBe(false);
   });
 });
+
+describe("AI Chat Source ownership", () => {
+  test("discovers Source section and its existing File relation", async () => {
+    const inventory = await collectModuleInventory();
+    const knowledge = inventory.modules.find(
+      (module) => module.name === "knowledge",
+    )!;
+    const source = knowledge.entities.find(
+      (entity) => entity.entityType === "model" && entity.entity === "source",
+    )!;
+    const relation = knowledge.entities.find(
+      (entity) =>
+        entity.entityType === "relation" &&
+        entity.entity === "sources-to-file-storage-module-files",
+    )!;
+    expect(
+      source.storyFiles?.some((file) =>
+        file.includes("/singlepage/ai-chat-section/"),
+      ),
+    ).toBe(true);
+    expect(
+      relation.storyFiles?.some((file) =>
+        file.includes("/singlepage/ai-chat-find/"),
+      ),
+    ).toBe(true);
+  });
+});

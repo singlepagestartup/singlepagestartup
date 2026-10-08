@@ -1,0 +1,27 @@
+{
+  "id": "knowledge.sources-to-file-storage-module-files.ai-chat-find",
+  "title": "ai-chat-find",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Local scoped Source-to-File relation view.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "knowledge.sources-to-file-storage-module-files",
+    "pageName": "knowledge",
+    "variantName": "ai-chat-find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "knowledge",
+    "entityType": "relation",
+    "entity": "sources-to-file-storage-module-files",
+    "variant": "ai-chat-find"
+  },
+  "contentSlots": []
+}

@@ -6,7 +6,7 @@
     "entities": 157,
     "variants": 1843,
     "coveredVariants": 45,
-    "representedEntities": 41
+    "representedEntities": 42
   },
   "modules": [
     {
@@ -6416,7 +6416,8 @@
           ],
           "storyFiles": [
             "apps/studio/modules/knowledge/models/source/singlepage/ai-chat-editor/Component.stories.tsx",
-            "apps/studio/modules/knowledge/models/source/singlepage/ai-chat-navigation/Component.stories.tsx"
+            "apps/studio/modules/knowledge/models/source/singlepage/ai-chat-navigation/Component.stories.tsx",
+            "apps/studio/modules/knowledge/models/source/singlepage/ai-chat-section/Component.stories.tsx"
           ]
         },
         {
@@ -6555,7 +6556,9 @@
               "coveredBy": []
             }
           ],
-          "storyFiles": []
+          "storyFiles": [
+            "apps/studio/modules/knowledge/relations/sources-to-file-storage-module-files/singlepage/ai-chat-find/Component.stories.tsx"
+          ]
         }
       ]
     },

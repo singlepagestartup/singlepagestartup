@@ -7,7 +7,7 @@ import {
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import {
   type IProjectDocument,
-  type IProjectSource,
+  type IProjectFile,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import { readProjectFiles } from "../../../../../../workspace/utils/products/ai-chat-files";
 import { ProjectPendingFile } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/View";
@@ -18,8 +18,8 @@ export interface IComposerProps {
   onSend: () => void;
   label: string;
   placeholder: string;
-  files: IProjectSource[];
-  onFiles: (files: IProjectSource[]) => void;
+  files: IProjectFile[];
+  onFiles: (files: IProjectFile[]) => void;
   onRemoveFile: (id: string) => void;
   document?: Pick<IProjectDocument, "title" | "sections">;
   workingSections?: string[];

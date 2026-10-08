@@ -1,4 +1,8 @@
-import type { IProjectProfile } from "./ai-chat-workspace";
+import type {
+  IProjectProfile,
+  IProjectFile,
+  IProjectAsset,
+} from "./ai-chat-workspace";
 
 // Local API-shaped records. Production SDKs are connected after Studio review.
 export interface IAIChatUserProfile {
@@ -32,9 +36,42 @@ export interface IProfileSourceRelation {
 }
 export interface IAIChatSource {
   id: string;
+  variant: string;
   title: string;
   content: string;
-  documentId: string;
+  description?: string | null;
+}
+export interface IAIChatFile {
+  id: string;
+  file: string;
+  alt?: string | null;
+  adminTitle?: string;
+  size?: number | null;
+  mimeType?: string | null;
+}
+export interface ISourceFileRelation {
+  id: string;
+  sourceId: string;
+  fileStorageModuleFileId: string;
+  orderIndex: number;
+}
+// Bundle membership and asset review are Studio view parameters, not schema fields.
+export interface ISourceBundle {
+  id: string;
+  sourceIds: string[];
+}
+export interface ISourceAttachmentView
+  extends Omit<IProjectAsset, "file" | "section" | "delivery"> {
+  relationId: string;
+  deliveryFileId?: string;
+}
+export interface IProjectKnowledge {
+  sources: IAIChatSource[];
+  relations: IProfileSourceRelation[];
+  bundles: ISourceBundle[];
+  files: IAIChatFile[];
+  sourceFiles: ISourceFileRelation[];
+  attachmentViews: ISourceAttachmentView[];
 }
 export interface ILocalFindProps<T> {
   variant: "find";
@@ -131,20 +168,77 @@ export function projectProfileIdFromHref(href?: string): string | undefined {
   }
 }
 
-export function projectKnowledge(project: IProjectProfile): {
-  sources: IAIChatSource[];
-  relations: IProfileSourceRelation[];
-} {
+export function projectKnowledge(project: IProjectProfile): IProjectKnowledge {
+  const sourceId = (documentId: string, title: string) =>
+    `${project.id}:${documentId}:${title}`;
   const sources = project.documents.flatMap((document) =>
     document.sections.map((section) => ({
-      id: `${project.id}:${document.id}:${section.title}`,
+      id: sourceId(document.id, section.title),
+      variant: "ai-chat-section" as const,
       title: section.title,
       content: document.values[section.title] ?? "",
-      documentId: document.id,
+      description: section.prompt,
     })),
   );
+  const files = new Map<string, IAIChatFile>();
+  const sourceFiles = new Map<string, ISourceFileRelation>();
+  const attachmentViews: ISourceAttachmentView[] = [];
+  const addFile = (file: IProjectFile) =>
+    files.set(file.id, {
+      id: file.id,
+      file: file.fileUrl ?? "",
+      alt: file.name,
+      size: file.size,
+      mimeType: file.mimeType,
+    });
+  project.sources.forEach(addFile);
+  for (const document of project.documents) {
+    for (const section of document.sections) {
+      const id = sourceId(document.id, section.title);
+      let orderIndex = 0;
+      for (const asset of (document.assets ?? []).filter(
+        (asset) => asset.section === section.title,
+      )) {
+        const relationId = `${id}:file:${asset.file.id}`;
+        addFile(asset.file);
+        if (sourceFiles.has(relationId)) continue;
+        sourceFiles.set(relationId, {
+          id: relationId,
+          sourceId: id,
+          fileStorageModuleFileId: asset.file.id,
+          orderIndex: orderIndex++,
+        });
+        const { file, section: _, delivery, ...presentation } = asset;
+        attachmentViews.push({
+          ...presentation,
+          relationId,
+          deliveryFileId: delivery?.id,
+        });
+        if (delivery) {
+          addFile(delivery);
+          const deliveryId = `${id}:file:${delivery.id}`;
+          if (!sourceFiles.has(deliveryId))
+            sourceFiles.set(deliveryId, {
+              id: deliveryId,
+              sourceId: id,
+              fileStorageModuleFileId: delivery.id,
+              orderIndex: orderIndex++,
+            });
+        }
+      }
+    }
+  }
   return {
     sources,
+    files: [...files.values()],
+    sourceFiles: [...sourceFiles.values()],
+    attachmentViews,
+    bundles: project.documents.map((document) => ({
+      id: document.id,
+      sourceIds: document.sections.map((section) =>
+        sourceId(document.id, section.title),
+      ),
+    })),
     relations: sources.map((source) => ({
       id: `${source.id}:profile`,
       profileId: project.id,

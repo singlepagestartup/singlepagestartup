@@ -4,7 +4,7 @@ import {
   snapshotAgent,
   type IProjectAgent,
 } from "./ai-chat-agent-resolver";
-export interface IProjectSource {
+export interface IProjectFile {
   id: string;
   name: string;
   text: string;
@@ -15,7 +15,7 @@ export interface IProjectSource {
 
 export interface IProjectAsset {
   id: string;
-  file: IProjectSource;
+  file: IProjectFile;
   section: string;
   kind: "reference" | "generated";
   category: string;
@@ -23,7 +23,7 @@ export interface IProjectAsset {
   prompt: string;
   tool: string;
   status: "proposed" | "approved";
-  delivery?: IProjectSource;
+  delivery?: IProjectFile;
 }
 
 export interface IProjectDocumentContext {
@@ -45,8 +45,8 @@ export interface IProjectMessage {
   text: string;
   agent?: IProjectAgent | null;
   context?: IProjectDocumentContext[];
-  files?: IProjectSource[];
-  filesUsed?: IProjectSource[];
+  files?: IProjectFile[];
+  filesUsed?: IProjectFile[];
   workingOn?: IProjectWorkingOn;
 }
 
@@ -70,7 +70,7 @@ export interface IProjectDocument extends IProjectDocumentDefinition {
   assets?: IProjectAsset[];
   savedAssets?: IProjectAsset[];
   messages: IProjectMessage[];
-  draftFiles?: IProjectSource[];
+  draftFiles?: IProjectFile[];
   proposal?: { section: string; text: string };
 }
 
@@ -84,7 +84,7 @@ export interface IProjectTopic {
   title: string;
   documentIds: string[];
   messages: IProjectMessage[];
-  draftFiles?: IProjectSource[];
+  draftFiles?: IProjectFile[];
 }
 
 export interface IProjectProfile {
@@ -95,7 +95,7 @@ export interface IProjectProfile {
   name: string;
   stage: "upload" | "analysis" | "documents" | "topics";
   notes: string;
-  sources: IProjectSource[];
+  sources: IProjectFile[];
   documents: IProjectDocument[];
   topics: IProjectTopic[];
 }
@@ -334,13 +334,22 @@ export function reviewProjectDocument(
 
 export function attachProjectAsset(
   document: IProjectDocument,
-  file: IProjectSource,
+  file: IProjectFile,
   section: string,
   kind: IProjectAsset["kind"],
   id: string,
 ): IProjectDocument {
   if (!document.sections.some((field) => field.title === section))
     throw new Error("Choose a document section for this file.");
+  // The production Source/File pair is unique, irrespective of display category.
+  if (
+    document.assets?.some(
+      (asset) =>
+        asset.section === section &&
+        (asset.file.id === file.id || asset.delivery?.id === file.id),
+    )
+  )
+    return document;
   return {
     ...document,
     assets: [

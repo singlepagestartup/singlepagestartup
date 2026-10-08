@@ -8,30 +8,30 @@ import {
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import type {
   IProjectAsset,
-  IProjectSource,
+  IProjectFile,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import { readProjectFiles } from "../../../../../../workspace/utils/products/ai-chat-files";
 import { Feedback } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
 
 export interface IFilePreviewProps {
-  file: IProjectSource;
+  file: IProjectFile;
   compact?: boolean;
 }
 export interface IPendingFileProps {
-  file: IProjectSource;
+  file: IProjectFile;
   onRemove: (id: string) => void;
 }
 export interface ISectionAssetsProps {
   section: string;
   assets: IProjectAsset[];
-  sources: IProjectSource[];
+  sources: IProjectFile[];
   onAttach: (
-    file: IProjectSource,
+    file: IProjectFile,
     section: string,
     kind: IProjectAsset["kind"],
   ) => void;
   onUpload: (
-    files: IProjectSource[],
+    files: IProjectFile[],
     section: string,
     kind: IProjectAsset["kind"],
   ) => void;
@@ -73,7 +73,13 @@ export const ProjectPendingFile = memo(function ProjectPendingFile({
 
 export function ProjectFilePreview({ file, compact }: IFilePreviewProps) {
   return (
-    <figure className="min-w-0 overflow-hidden rounded-xl border border-sps-line bg-sps-white">
+    <figure
+      data-module="file-storage"
+      data-model="file"
+      data-id={file.id}
+      data-variant="ai-chat-attachments"
+      className="min-w-0 overflow-hidden rounded-xl border border-sps-line bg-sps-white"
+    >
       {file.mimeType?.startsWith("image/") && file.fileUrl ? (
         <a
           href={file.fileUrl}
@@ -98,6 +104,17 @@ export function ProjectFilePreview({ file, compact }: IFilePreviewProps) {
           className="size-4 shrink-0"
         />
         <span className="min-w-0 flex-1 break-words">{file.name}</span>
+        {file.fileUrl && (
+          <a
+            href={file.fileUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Open ${file.name}`}
+            className={`${kit.plain} min-h-9 shrink-0 px-2 ${compact ? "col-span-2 justify-self-end" : ""}`}
+          >
+            Open
+          </a>
+        )}
         {file.fileUrl && (
           <a
             href={file.fileUrl}
@@ -155,7 +172,8 @@ export function ProjectSectionAssets({
   const available = sources.filter(
     (source) =>
       !assets.some(
-        (asset) => asset.file.id === source.id && asset.kind === kind,
+        (asset) =>
+          asset.file.id === source.id || asset.delivery?.id === source.id,
       ),
   );
   async function upload(files: FileList | null) {

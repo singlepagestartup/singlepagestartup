@@ -1,10 +1,10 @@
-import type { IProjectSource } from "./ai-chat-workspace";
+import type { IProjectFile } from "./ai-chat-workspace";
 
 /** Retain the original bytes for previews and downloads; text extraction is separate. */
 export async function readProjectFiles(
   files: FileList | File[],
   prefix: string,
-): Promise<IProjectSource[]> {
+): Promise<IProjectFile[]> {
   const prepared = await Promise.all(
     Array.from(files).map(async (file, index) => {
       const plain =

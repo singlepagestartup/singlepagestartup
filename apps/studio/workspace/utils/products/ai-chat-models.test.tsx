@@ -105,7 +105,10 @@ test("source sections and navigation belong to the selected project profile", ()
   const customers = knowledge.sources.find(
     (source) => source.title === "Customers and value",
   )!;
-  expect(customers.documentId).toBe("brief");
+  expect(
+    knowledge.bundles.find((bundle) => bundle.id === "brief")?.sourceIds,
+  ).toContain(customers.id);
+  expect(customers).not.toHaveProperty("documentId");
   expect(
     knowledge.relations.every((relation) => relation.profileId === project.id),
   ).toBe(true);

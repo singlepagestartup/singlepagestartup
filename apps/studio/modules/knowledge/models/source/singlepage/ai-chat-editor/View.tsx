@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useId, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   Button,
   Icon,
@@ -10,30 +10,39 @@ import {
   projectDocumentText,
   type IProjectDocument,
   type IProjectAsset,
-  type IProjectSource,
+  type IProjectFile,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import {
   AI_CHAT_DOCUMENT_GUIDES,
   projectDocumentGuide,
 } from "../../../../../../workspace/utils/products/ai-chat-content";
-import { ProjectSectionAssets } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/View";
+import { Component as SourceSection } from "../ai-chat-section/index";
+import type {
+  IAIChatSource,
+  IAIChatFile,
+  ISourceFileRelation,
+  ISourceAttachmentView,
+} from "../../../../../../workspace/utils/products/ai-chat-models";
 import { DocumentGuide, type IDocumentGuideProps } from "./DocumentGuide";
-import { MarkdownField } from "./MarkdownField";
 
 export interface IDocumentEditorProps {
   document: IProjectDocument;
+  data: IAIChatSource[];
+  files: IAIChatFile[];
+  fileRelations: ISourceFileRelation[];
+  attachmentViews: ISourceAttachmentView[];
   sections: string[];
   onSection: (section: string) => void;
   onEdit: (section: string, text: string) => void;
   onReview: () => void;
-  sources: IProjectSource[];
+  sources: IProjectFile[];
   onAttach: (
-    file: IProjectSource,
+    file: IProjectFile,
     section: string,
     kind: IProjectAsset["kind"],
   ) => void;
   onUpload: (
-    files: IProjectSource[],
+    files: IProjectFile[],
     section: string,
     kind: IProjectAsset["kind"],
   ) => void;
@@ -43,6 +52,10 @@ export interface IDocumentEditorProps {
 
 export function ProjectSourceEditor({
   document,
+  data,
+  files,
+  fileRelations,
+  attachmentViews,
   sections,
   onSection,
   onEdit,
@@ -53,7 +66,6 @@ export function ProjectSourceEditor({
   onAssetChange,
   onAssetRemove,
 }: IDocumentEditorProps) {
-  const id = useId();
   const reviewed = isDocumentReviewed(document);
   const guide = projectDocumentGuide(AI_CHAT_DOCUMENT_GUIDES, document.id);
   const [openedGuide, setOpenedGuide] =
@@ -71,6 +83,38 @@ export function ProjectSourceEditor({
       });
     },
     [guide, document.title],
+  );
+  const sourceTitle = useCallback(
+    (sourceId: string) => data.find((source) => source.id === sourceId)?.title,
+    [data],
+  );
+  const editSource = useCallback(
+    (sourceId: string, content: string) => {
+      const title = sourceTitle(sourceId);
+      if (title) onEdit(title, content);
+    },
+    [sourceTitle, onEdit],
+  );
+  const discussSource = useCallback(
+    (sourceId: string) => {
+      const title = sourceTitle(sourceId);
+      if (title) onSection(title);
+    },
+    [sourceTitle, onSection],
+  );
+  const attachSourceFile = useCallback(
+    (file: IProjectFile, sourceId: string, kind: IProjectAsset["kind"]) => {
+      const title = sourceTitle(sourceId);
+      if (title) onAttach(file, title, kind);
+    },
+    [sourceTitle, onAttach],
+  );
+  const uploadSourceFiles = useCallback(
+    (files: IProjectFile[], sourceId: string, kind: IProjectAsset["kind"]) => {
+      const title = sourceTitle(sourceId);
+      if (title) onUpload(files, title, kind);
+    },
+    [sourceTitle, onUpload],
   );
   function downloadDocument() {
     const url = URL.createObjectURL(
@@ -126,44 +170,25 @@ export function ProjectSourceEditor({
         </div>
       </div>
       <div className="space-y-4">
-        {document.sections.map((field, index) => (
-          <div
-            key={field.title}
-            className="rounded-xl border border-sps-line bg-sps-white p-3"
-          >
-            <MarkdownField
-              key={`${document.id}-${field.title}`}
-              id={`${id}-${index}`}
-              label={`${document.title}: ${field.title}`}
-              section={field.title}
-              value={document.values[field.title] ?? ""}
-              onChange={onEdit}
-              helpLabel={`About ${document.title}.md: ${field.title}`}
-              onHelp={guide?.sections[field.title] ? openGuide : undefined}
-              placeholder={field.prompt}
-            />
-            <button
-              type="button"
-              onClick={() => onSection(field.title)}
-              className={`${kit.plain} mt-1 min-h-9 px-0 text-xs`}
-            >
-              <Icon name="chat-circle" className="size-4" />
-              {sections.includes(field.title)
-                ? "Discussing in chat"
-                : "Discuss this section"}
-            </button>
-            <ProjectSectionAssets
-              section={field.title}
-              assets={(document.assets ?? []).filter(
-                (asset) => asset.section === field.title,
-              )}
-              sources={sources}
-              onAttach={onAttach}
-              onUpload={onUpload}
-              onChange={onAssetChange}
-              onRemove={onAssetRemove}
-            />
-          </div>
+        {data.map((source) => (
+          <SourceSection
+            key={source.id}
+            data={source}
+            label={`${document.title}: ${source.title}`}
+            discussing={sections.includes(source.title)}
+            files={files}
+            fileRelations={fileRelations}
+            attachmentViews={attachmentViews}
+            availableFiles={sources}
+            onEdit={editSource}
+            onDiscuss={discussSource}
+            onAttach={attachSourceFile}
+            onUpload={uploadSourceFiles}
+            onAssetChange={onAssetChange}
+            onAssetRemove={onAssetRemove}
+            helpLabel={`About ${document.title}.md: ${source.title}`}
+            onHelp={guide?.sections[source.title] ? openGuide : undefined}
+          />
         ))}
       </div>
       <Button
