@@ -139,7 +139,7 @@ publish(
   JSON.stringify(guidePublication, null, 2) + "\n",
 );
 publish(
-  "apps/studio/modules/social/relations/chats-to-threads/singlepage/ai-chat-workspace/definitions.json",
+  "apps/studio/modules/social/models/profile/singlepage/ai-chat-project/definitions.json",
   JSON.stringify(definitions, null, 2) + "\n",
 );
 const materials = readFileSync(path.join(source, "new-project.md"), "utf8");

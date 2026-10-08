@@ -1,11 +1,10 @@
 "use client";
 import { useId, useRef, useState, type ReactNode } from "react";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
   Icon,
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
-import { useAIChatAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { Component as SubjectAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/index";
 export interface IHeaderNavigationProps {
   onNavigate: () => void;
   onCloseAutoFocus: (event: Event) => void;
@@ -21,12 +20,9 @@ export default function AccountHeader({
   balance: suppliedBalance,
   projectNavigation,
 }: IAccountHeaderProps) {
-  const account = useAIChatAccount();
   const navigationId = useId();
   const navigationTrigger = useRef<HTMLButtonElement>(null);
   const [navigationOpen, setNavigationOpen] = useState(false);
-  const balance =
-    suppliedBalance === undefined ? account.balance : suppliedBalance;
   const auth = page === "register" || page === "login";
   const nav = auth
     ? [
@@ -37,11 +33,6 @@ export default function AccountHeader({
         },
       ]
     : [{ label: "Help", href: "/ai-chat/help", icon: "question" as const }];
-  const balanceLabel = balance
-    ? `${(balance.free + balance.purchased).toLocaleString("en-US")} tokens`
-    : "Balance unavailable";
-  const menuItemClassName =
-    "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-sps-grey data-highlighted:text-sps-graphite";
   return (
     <header
       className={`sticky top-0 z-40 border-b border-sps-line bg-sps-white px-4 py-3 @[800px]:px-8 @[800px]:py-5 ${auth ? "" : "h-18 @[800px]:h-24"}`}
@@ -213,71 +204,11 @@ export default function AccountHeader({
               })}
           </div>
           {!auth && (
-            <DropdownMenu.Root modal={false}>
-              <DropdownMenu.Trigger asChild>
-                <button
-                  type="button"
-                  aria-label={`Profile, ${balanceLabel}`}
-                  onClick={() => setNavigationOpen(false)}
-                  className={`inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-2 py-2 @[800px]:ml-2 @[800px]:min-h-12 @[800px]:px-3 text-left hover:bg-sps-grey data-[state=open]:bg-sps-grey ${kit.focus} ${page === "settings" || page === "tokens" ? "bg-sps-grey" : ""}`}
-                >
-                  <Icon name="user-circle" className="size-6" />
-                  <span className="hidden min-w-0 @[800px]:block">
-                    <span className="block text-sm font-semibold">Profile</span>
-                    <span className="block text-xs text-sps-muted">
-                      {balanceLabel}
-                    </span>
-                  </span>
-                  <Icon
-                    name="caret-down"
-                    className="hidden size-4 text-sps-muted @[800px]:block"
-                  />
-                </button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Portal>
-                <DropdownMenu.Content
-                  align="end"
-                  sideOffset={8}
-                  collisionPadding={12}
-                  className="z-50 w-64 max-w-[calc(100vw-24px)] rounded-xl border border-sps-line bg-sps-white p-2 text-sps-graphite shadow-lg font-sps"
-                >
-                  <DropdownMenu.Label className="px-3 py-2">
-                    <span className="block text-sm font-semibold">
-                      Your account
-                    </span>
-                    <span className="mt-1 block text-xs text-sps-muted">
-                      {balanceLabel}
-                    </span>
-                    {account.email && (
-                      <span className="mt-1 block break-all text-xs text-sps-muted">
-                        {account.email}
-                      </span>
-                    )}
-                  </DropdownMenu.Label>
-                  <DropdownMenu.Separator className="my-1 h-px bg-sps-line" />
-                  <DropdownMenu.Item asChild>
-                    <a
-                      href="/ai-chat/tokens"
-                      aria-current={page === "tokens" ? "page" : undefined}
-                      className={menuItemClassName}
-                    >
-                      <Icon name="wallet" />
-                      Buy tokens
-                    </a>
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item asChild>
-                    <a
-                      href="/ai-chat/settings"
-                      aria-current={page === "settings" ? "page" : undefined}
-                      className={menuItemClassName}
-                    >
-                      <Icon name="gear-six" />
-                      Settings
-                    </a>
-                  </DropdownMenu.Item>
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
+            <SubjectAccount
+              page={page}
+              balance={suppliedBalance}
+              onNavigate={() => setNavigationOpen(false)}
+            />
           )}
           {!auth && (
             <button

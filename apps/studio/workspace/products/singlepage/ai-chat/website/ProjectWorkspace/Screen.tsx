@@ -7,6 +7,7 @@ export default function ProjectWorkspace(
   return (
     <AccountProvider account={aiChatAccount}>
       <Component
+        data={aiChatAccount.profiles[0]}
         {...props}
         navigationHref={props.navigationHref?.replace(
           /^\/projects/,

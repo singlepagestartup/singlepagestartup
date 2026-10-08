@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subjects-to-social-module-profiles.ai-chat-find",
+  "title": "ai-chat-find",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Local filtered subjects-to-social-module-profiles records.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "rbac.subjects-to-social-module-profiles",
+    "pageName": "rbac",
+    "variantName": "ai-chat-find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "rbac",
+    "entityType": "relation",
+    "entity": "subjects-to-social-module-profiles",
+    "variant": "ai-chat-find"
+  },
+  "contentSlots": []
+}

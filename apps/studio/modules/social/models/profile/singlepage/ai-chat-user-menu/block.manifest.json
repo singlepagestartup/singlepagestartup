@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.ai-chat-user-menu",
+  "title": "ai-chat-user-menu",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Local profile model navigation.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "ai-chat-user-menu",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "ai-chat-user-menu"
+  },
+  "contentSlots": []
+}

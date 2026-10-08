@@ -1,17 +1,17 @@
 {
-  "id": "social.chats-to-threads.ai-chat-workspace",
-  "title": "ai-chat-workspace",
+  "id": "social.profile.ai-chat-project",
+  "title": "ai-chat-project",
   "layer": "singlepage",
   "state": "draft",
-  "description": "AI Chat chats-to-threads view.",
+  "description": "Project Social Profile settings, knowledge navigation and chat workspace.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
   },
   "figma": {
-    "componentName": "social.chats-to-threads",
+    "componentName": "social.profile",
     "pageName": "social",
-    "variantName": "ai-chat-workspace",
+    "variantName": "ai-chat-project",
     "nodeId": null,
     "variantNodeId": null,
     "syncStatus": "not-created",
@@ -19,9 +19,9 @@
   },
   "source": {
     "module": "social",
-    "entityType": "relation",
-    "entity": "chats-to-threads",
-    "variant": "ai-chat-workspace"
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "ai-chat-project"
   },
   "contentSlots": []
 }

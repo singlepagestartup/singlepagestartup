@@ -6,7 +6,7 @@
     "entities": 157,
     "variants": 1843,
     "coveredVariants": 45,
-    "representedEntities": 39
+    "representedEntities": 41
   },
   "modules": [
     {
@@ -6415,7 +6415,8 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/knowledge/models/source/singlepage/ai-chat-editor/Component.stories.tsx"
+            "apps/studio/modules/knowledge/models/source/singlepage/ai-chat-editor/Component.stories.tsx",
+            "apps/studio/modules/knowledge/models/source/singlepage/ai-chat-navigation/Component.stories.tsx"
           ]
         },
         {
@@ -7628,6 +7629,7 @@
           "storyFiles": [
             "apps/studio/modules/rbac/models/subject/singlepage/account-menu-default/Component.stories.tsx",
             "apps/studio/modules/rbac/models/subject/singlepage/admin-v2-settings/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/subject/singlepage/ai-chat-account/Component.stories.tsx",
             "apps/studio/modules/rbac/models/subject/singlepage/ai-chat-settings/Component.stories.tsx",
             "apps/studio/modules/rbac/models/subject/singlepage/me-crm-form-deafult/Component.stories.tsx",
             "apps/studio/modules/rbac/models/subject/singlepage/me-delete/Component.stories.tsx",
@@ -8681,7 +8683,9 @@
               "coveredBy": []
             }
           ],
-          "storyFiles": []
+          "storyFiles": [
+            "apps/studio/modules/rbac/relations/subjects-to-social-module-profiles/singlepage/ai-chat-find/Component.stories.tsx"
+          ]
         }
       ]
     },
@@ -9017,6 +9021,7 @@
             }
           ],
           "storyFiles": [
+            "apps/studio/modules/social/models/chat/singlepage/ai-chat-navigation/Component.stories.tsx",
             "apps/studio/modules/social/models/chat/singlepage/ai-chat-preview/Component.stories.tsx"
           ]
         },
@@ -9224,6 +9229,8 @@
           "storyFiles": [
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-agent/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-project-select/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/ai-chat-project/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/ai-chat-user-menu/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-workspace/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/article-find-by-id-comment-form-default/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/author-find-by-id-overview-default/Component.stories.tsx",
@@ -9805,9 +9812,7 @@
               "coveredBy": []
             }
           ],
-          "storyFiles": [
-            "apps/studio/modules/social/relations/chats-to-threads/singlepage/ai-chat-workspace/Component.stories.tsx"
-          ]
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10221,7 +10226,9 @@
               "coveredBy": []
             }
           ],
-          "storyFiles": []
+          "storyFiles": [
+            "apps/studio/modules/social/relations/profiles-to-chats/singlepage/ai-chat-find/Component.stories.tsx"
+          ]
         },
         {
           "module": "social",
@@ -10428,7 +10435,9 @@
               "coveredBy": []
             }
           ],
-          "storyFiles": []
+          "storyFiles": [
+            "apps/studio/modules/social/relations/profiles-to-knowledge-module-sources/singlepage/ai-chat-find/Component.stories.tsx"
+          ]
         },
         {
           "module": "social",

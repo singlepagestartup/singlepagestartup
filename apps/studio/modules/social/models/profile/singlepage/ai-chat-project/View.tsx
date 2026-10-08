@@ -6,6 +6,7 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -36,14 +37,18 @@ import {
   Feedback,
   TextField,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
-import {
-  ProjectSetup,
-  ProjectSteps,
-} from "../../../../models/profile/singlepage/ai-chat-workspace/ProjectSetup";
-import { ProjectComposer } from "../../../../models/thread/singlepage/ai-chat-composer/View";
-import { ProjectConversation } from "../../../../models/message/singlepage/ai-chat-conversation/View";
+import { ProjectSetup, ProjectSteps } from "../ai-chat-workspace/ProjectSetup";
+import { ProjectComposer } from "../../../thread/singlepage/ai-chat-composer/View";
+import { ProjectConversation } from "../../../message/singlepage/ai-chat-conversation/View";
 import { ProjectSourceEditor } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/View";
-import { ProjectThreadButton } from "../../../../models/thread/singlepage/ai-chat-sidebar-item/View";
+import { Component as SourceDocumentNavigation } from "../../../../../knowledge/models/source/singlepage/ai-chat-navigation/index";
+import { Component as ChatNavigation } from "../../../chat/singlepage/ai-chat-navigation/index";
+import { Component as ProfileSources } from "../../../../relations/profiles-to-knowledge-module-sources/singlepage/ai-chat-find/index";
+import { Component as ProfileChats } from "../../../../relations/profiles-to-chats/singlepage/ai-chat-find/index";
+import {
+  projectKnowledge,
+  projectWorkChats,
+} from "../../../../../../workspace/utils/products/ai-chat-models";
 import definitions from "./definitions.json";
 import {
   documentAgent,
@@ -51,8 +56,8 @@ import {
   snapshotAgent,
   type IProjectAgent,
 } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
-import { ProjectAgentPicker } from "../../../../models/profile/singlepage/ai-chat-agent/View";
-export interface IProjectChatProps {
+import { ProjectAgentPicker } from "../../../profile/singlepage/ai-chat-agent/View";
+export interface IProjectProfileProps {
   project: IProjectProfile;
   active: boolean;
   navigationHref?: string;
@@ -72,12 +77,12 @@ const projectDefinitions = Object.values(definitions).filter(
   (item) => item.id !== "product",
 );
 
-export default function ProjectChat({
+export default function ProjectProfile({
   project,
   active,
   navigationHref,
   onUpdate,
-}: IProjectChatProps) {
+}: IProjectProfileProps) {
   const id = useId();
   const sequence = useRef(0);
   const proposalView = useRef<HTMLDivElement>(null);
@@ -127,6 +132,14 @@ export default function ProjectChat({
     ? documentWorkingOn(document, workingSections[document.id]).sections
     : [];
   const section = selectedSections.length === 1 ? selectedSections[0] : "";
+  const knowledge = useMemo(
+    () => projectKnowledge(project),
+    [project.id, project.documents],
+  );
+  const workChats = useMemo(
+    () => projectWorkChats(project),
+    [project.id, project.topics],
+  );
   const savedCount = project.documents.filter((item) => item.saved).length;
   const working = project.stage === "documents" || project.stage === "topics";
   const anchor = (name: string) => (active ? name : `${id}-${name}`);
@@ -533,16 +546,47 @@ export default function ProjectChat({
             hidden={!documentListOpen}
             className={`${documentListOpen ? "grid" : "hidden"} ml-3 mt-1 grid-cols-1 gap-1`}
           >
-            {project.documents.map((item) => (
-              <ProjectThreadButton
-                key={item.id}
-                id={item.id}
-                name={`${item.title}.md`}
-                selected={view === "document" && selectedDocument === item.id}
-                reviewed={isDocumentReviewed(item)}
-                onSelect={selectDocument}
-              />
-            ))}
+            <ProfileSources
+              variant="find"
+              data={knowledge.relations}
+              apiProps={{
+                params: {
+                  filters: {
+                    and: [
+                      { column: "profileId", method: "eq", value: project.id },
+                    ],
+                  },
+                },
+              }}
+            >
+              {(relations) =>
+                project.documents.map((item) => {
+                  const sources = knowledge.sources.filter(
+                    (source) =>
+                      source.documentId === item.id &&
+                      relations.some(
+                        (relation) =>
+                          relation.knowledgeModuleSourceId === source.id,
+                      ),
+                  );
+                  return sources.length ? (
+                    <SourceDocumentNavigation
+                      key={item.id}
+                      data={{
+                        id: item.id,
+                        title: item.title,
+                        sources,
+                        reviewed: isDocumentReviewed(item),
+                      }}
+                      selected={
+                        view === "document" && selectedDocument === item.id
+                      }
+                      onSelect={selectDocument}
+                    />
+                  ) : null;
+                })
+              }
+            </ProfileSources>
           </div>
         </div>
       </nav>
@@ -584,16 +628,34 @@ export default function ProjectChat({
           </Tooltip.Root>
         </Tooltip.Provider>
         <div className="mt-2 grid gap-1">
-          {project.topics.map((item) => (
-            <ProjectThreadButton
-              key={item.id}
-              id={item.id}
-              name={item.title}
-              topic
-              selected={view === "topic" && selectedTopic === item.id}
-              onSelect={selectTopic}
-            />
-          ))}
+          <ProfileChats
+            variant="find"
+            data={workChats.profilesToChats}
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    { column: "profileId", method: "eq", value: project.id },
+                  ],
+                },
+              },
+            }}
+          >
+            {(relations) =>
+              workChats.chats
+                .filter((chat) =>
+                  relations.some((relation) => relation.chatId === chat.id),
+                )
+                .map((chat) => (
+                  <ChatNavigation
+                    key={chat.id}
+                    data={chat}
+                    selected={view === "topic" && selectedTopic === chat.id}
+                    onSelect={selectTopic}
+                  />
+                ))
+            }
+          </ProfileChats>
         </div>
       </div>
     </>
@@ -606,6 +668,8 @@ export default function ProjectChat({
     >
       <main
         ref={workspaceRef}
+        data-ds-block="social.profile.ai-chat-project"
+        data-profile-id={project.id}
         className="@container/workspace mx-auto max-w-[1440px] px-4 py-6 @[640px]:px-5"
       >
         {!working && (

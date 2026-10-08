@@ -178,12 +178,27 @@ describe("AI Chat project ownership", () => {
     const chat = social.entities.find(
       (entity) => entity.entityType === "model" && entity.entity === "chat",
     )!;
-    for (const variant of ["ai-chat-project-select", "ai-chat-workspace"])
+    for (const variant of [
+      "ai-chat-project-select",
+      "ai-chat-workspace",
+      "ai-chat-project",
+      "ai-chat-user-menu",
+    ])
       expect(
         profile.storyFiles?.some((file) =>
           file.includes(`/singlepage/${variant}/`),
         ),
       ).toBe(true);
+    const relation = social.entities.find(
+      (entity) =>
+        entity.entityType === "relation" &&
+        entity.entity === "chats-to-threads",
+    )!;
+    expect(
+      relation.storyFiles?.some((file) =>
+        file.includes("/singlepage/ai-chat-workspace/"),
+      ) ?? false,
+    ).toBe(false);
     expect(
       chat.storyFiles?.some((file) =>
         file.includes("/singlepage/ai-chat-workspace/"),

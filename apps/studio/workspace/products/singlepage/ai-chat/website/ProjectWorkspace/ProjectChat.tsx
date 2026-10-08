@@ -1,1 +1,1 @@
-export { default } from "../../../../../../modules/social/relations/chats-to-threads/singlepage/ai-chat-workspace/View";
+export { default } from "../../../../../../modules/social/models/profile/singlepage/ai-chat-project/View";

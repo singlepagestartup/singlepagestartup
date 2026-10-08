@@ -1,5 +1,6 @@
 "use client";
 import { isAIChatRoute } from "./utils";
+import { projectProfileIdFromHref } from "../../../../../../workspace/utils/products/ai-chat-models";
 import { useState, useEffect, type MouseEvent } from "react";
 import {
   AccountProvider,
@@ -11,13 +12,17 @@ import { Component as LoginPage } from "../../../../../rbac/models/identity/sing
 import { Component as SettingsPage } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/index";
 import { Component as HelpPage } from "../../../../../website-builder/models/widget/singlepage/ai-chat-help/index";
 import { Component as TokensPage } from "../../../../../ecommerce/models/order/singlepage/ai-chat-tokens/index";
+import { Component as SubjectProfiles } from "../../../../../rbac/relations/subjects-to-social-module-profiles/singlepage/ai-chat-find/index";
 import { Component as ProjectWorkspace } from "../../../../../social/models/profile/singlepage/ai-chat-workspace/index";
 
 export interface IAIChatPageProps {
   url?: string;
   account?: IAIChatAccount;
   onNavigate?: (url: string) => void;
-  workspace?: import("../../../../../social/models/profile/singlepage/ai-chat-workspace/View").IProjectWorkspaceProps;
+  workspace?: Omit<
+    import("../../../../../social/models/profile/singlepage/ai-chat-workspace/View").IProjectWorkspaceProps,
+    "data" | "onNavigateHref"
+  >;
 }
 export default function AIChatPage({
   url = "/ai-chat/",
@@ -26,11 +31,17 @@ export default function AIChatPage({
   workspace,
 }: IAIChatPageProps = {}) {
   const [currentUrl, setCurrentUrl] = useState(url);
+  const [workspaceHref, setWorkspaceHref] = useState(
+    projectProfileIdFromHref(url)
+      ? url.split(/[?#]/)[0]
+      : "/ai-chat/projects/new",
+  );
   const [workspaceOpened, setWorkspaceOpened] = useState(
     url.includes("/projects"),
   );
   useEffect(() => {
     setCurrentUrl(url);
+    if (projectProfileIdFromHref(url)) setWorkspaceHref(url.split(/[?#]/)[0]);
     if (url.includes("/projects")) setWorkspaceOpened(true);
   }, [url]);
   useEffect(() => {
@@ -41,6 +52,13 @@ export default function AIChatPage({
     window.addEventListener("popstate", pop);
     return () => window.removeEventListener("popstate", pop);
   }, [onNavigate]);
+  function visit(href: string) {
+    setCurrentUrl(href);
+    if (projectProfileIdFromHref(href)) setWorkspaceHref(href.split(/[?#]/)[0]);
+    if (href.includes("/projects")) setWorkspaceOpened(true);
+    if (onNavigate) onNavigate(href);
+    else window.history.pushState(null, "", href);
+  }
   function navigate(event: MouseEvent<HTMLDivElement>) {
     const anchor = (event.target as Element).closest("a");
     if (
@@ -56,15 +74,12 @@ export default function AIChatPage({
     const href = anchor.getAttribute("href");
     if (!href?.startsWith("/ai-chat/") || !isAIChatRoute(href)) return;
     event.preventDefault();
-    setCurrentUrl(href);
-    if (href.includes("/projects")) setWorkspaceOpened(true);
-    if (onNavigate) onNavigate(href);
-    else window.history.pushState(null, "", href);
+    visit(href);
   }
   const path = currentUrl.split(/[?#]/)[0].replace(/\/$/, "") || "/ai-chat";
   const project = path.startsWith("/ai-chat/projects");
   return (
-    <AccountProvider account={account}>
+    <AccountProvider account={account} workspaceHref={workspaceHref}>
       <div
         className="min-w-0 font-sps text-sps-graphite"
         data-module="host"
@@ -80,7 +95,49 @@ export default function AIChatPage({
         {path === "/ai-chat/tokens" && <TokensPage />}
         {workspaceOpened && (
           <div hidden={!project}>
-            <ProjectWorkspace {...workspace} navigationHref={currentUrl} />
+            <SubjectProfiles
+              variant="find"
+              data={account.subjectsToProfiles ?? []}
+              apiProps={{
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "subjectId",
+                        method: "eq",
+                        value: account.subject?.id ?? "",
+                      },
+                    ],
+                  },
+                },
+              }}
+            >
+              {(relations) => {
+                const profile =
+                  account.subject &&
+                  account.profiles?.find(
+                    (profile) =>
+                      profile.variant === "ai-chat-user" &&
+                      relations.some(
+                        (relation) =>
+                          relation.socialModuleProfileId === profile.id,
+                      ),
+                  );
+                return profile ? (
+                  <ProjectWorkspace
+                    key={profile.id}
+                    {...workspace}
+                    data={profile}
+                    navigationHref={currentUrl}
+                    onNavigateHref={visit}
+                  />
+                ) : (
+                  <main role="status" className="p-6">
+                    User profile unavailable.
+                  </main>
+                );
+              }}
+            </SubjectProfiles>
           </div>
         )}
       </div>

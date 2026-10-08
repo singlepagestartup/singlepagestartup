@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { MarkdownDocument } from "./Markdown";
+import { useAIChatWorkspaceHref } from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-settings/Account";
 import { Button, Icon, kit, SquareImage, type IconName } from "./primitives";
 import type {
   IAIChatServicePageContent,
@@ -60,6 +61,7 @@ export function ServicePage({
   children,
   showIntro = true,
 }: IServicePageProps) {
+  const workspaceHref = useAIChatWorkspaceHref();
   return (
     <div
       data-sps-theme="singlepage"
@@ -68,7 +70,10 @@ export function ServicePage({
       <AccountHeader page={page} />
       <main className="mx-auto max-w-6xl px-5 py-7 @[640px]:px-8 @[640px]:py-10">
         <a
-          href={copy.labels["back-href"]}
+          href={copy.labels["back-href"].replace(
+            "/ai-chat/projects/example",
+            workspaceHref,
+          )}
           className={`mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-sps-muted hover:text-sps-graphite ${kit.focus}`}
         >
           <Icon name="arrow-left" />
@@ -173,12 +178,15 @@ export function SectionText({
   tone = "light",
   size = "sm",
 }: ISectionTextProps) {
+  const workspaceHref = useAIChatWorkspaceHref();
   return (
     <div
       className={`space-y-3 ${size === "xs" ? "text-xs [&>div]:text-xs [&>div]:leading-relaxed" : "text-sm"} leading-relaxed [&_p]:m-0 [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-4 [&_strong]:font-semibold ${tone === "dark" ? "text-white/80 [&_a]:text-white [&_strong]:text-white" : "text-sps-muted [&_a]:text-sps-graphite [&_strong]:text-sps-graphite"}`}
     >
       {section.paragraphs.map((paragraph, index) => (
-        <MarkdownDocument key={index}>{paragraph}</MarkdownDocument>
+        <MarkdownDocument key={index}>
+          {paragraph.replaceAll("/ai-chat/projects/example", workspaceHref)}
+        </MarkdownDocument>
       ))}
     </div>
   );
