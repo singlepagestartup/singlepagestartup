@@ -14,6 +14,7 @@ export interface ModuleEntityRecord {
   entity: string;
   componentRoot: string;
   variants: ModuleVariantRecord[];
+  storyFiles?: string[];
 }
 
 export interface ModuleRecord {
@@ -43,6 +44,7 @@ export interface GeneratedModuleInventory {
     entities: number;
     variants: number;
     coveredVariants: number;
+    representedEntities?: number;
   };
   modules: ModuleRecord[];
 }
@@ -142,7 +144,7 @@ async function pathExists(filePath: string): Promise<boolean> {
 
 async function walk(
   dir: string,
-  fileName: string,
+  fileName: string | RegExp,
   output: string[],
 ): Promise<void> {
   let entries: Awaited<ReturnType<typeof readdir>> = [];
@@ -165,7 +167,12 @@ async function walk(
       continue;
     }
 
-    if (entry.isFile() && entry.name === fileName) {
+    if (
+      entry.isFile() &&
+      (typeof fileName === "string"
+        ? entry.name === fileName
+        : fileName.test(entry.name))
+    ) {
       output.push(entryPath);
     }
   }
@@ -298,10 +305,38 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
   await walk(MODULES_ROOT, "variants.ts", variantFiles);
 
   const blockManifests = await readBlockManifests();
+  const pageManifestPaths: string[] = [];
+  await walk(
+    path.join(DESIGN_SYSTEM_ROOT, "modules", "host", "models", "page"),
+    "page.manifest.json",
+    pageManifestPaths,
+  );
+  for (const manifestPath of pageManifestPaths.sort()) {
+    const json = JSON.parse(await readFile(manifestPath, "utf8")) as {
+      id?: unknown;
+      layer?: unknown;
+    };
+    if (
+      typeof json.id !== "string" ||
+      (json.layer !== "singlepage" && json.layer !== "startup")
+    )
+      continue;
+    blockManifests.push({
+      id: `host.page.${json.id}`,
+      layer: json.layer,
+      source: {
+        module: "host",
+        entityType: "model",
+        entity: "page",
+        variant: json.id,
+      },
+      manifestPath: toPosixPath(path.relative(ROOT, manifestPath)),
+    });
+  }
   const coverageBySource = new Map<string, string[]>();
 
   for (const block of blockManifests) {
-    const key = sourceKey(block.source);
+    const key = `${block.layer}:${sourceKey(block.source)}`;
     const existing = coverageBySource.get(key) ?? [];
     existing.push(block.id);
     coverageBySource.set(key, existing);
@@ -333,12 +368,12 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
     for (const variant of variants) {
       const coveredBy =
         coverageBySource.get(
-          sourceKey({
+          `${parsed.scope.split("/")[0]}:${sourceKey({
             module: parsed.module,
             entityType: parsed.entityType,
             entity: parsed.entity,
             variant,
-          }),
+          })}`,
         ) ?? [];
 
       entity.variants.push({
@@ -359,6 +394,21 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
       .join(":")
       .localeCompare([right.module, right.entityType, right.entity].join(":")),
   )) {
+    const stories: string[] = [];
+    await walk(
+      path.join(
+        DESIGN_SYSTEM_ROOT,
+        "modules",
+        entity.module,
+        entity.entityType === "model" ? "models" : "relations",
+        entity.entity,
+      ),
+      /\.stories\.(ts|tsx|mdx)$/,
+      stories,
+    );
+    entity.storyFiles = stories
+      .map((file) => toPosixPath(path.relative(ROOT, file)))
+      .sort();
     entity.variants.sort((left, right) =>
       [left.scope, left.variant]
         .join(":")
@@ -391,6 +441,9 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
       variants: variants.length,
       coveredVariants: variants.filter(
         (variant) => variant.coveredBy.length > 0,
+      ).length,
+      representedEntities: entities.filter(
+        (entity) => entity.storyFiles?.length,
       ).length,
     },
     modules,

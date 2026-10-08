@@ -35,14 +35,3 @@ time, thread creation time, and finally thread ID.
 RBAC stores the versioned `rbacAiThreadPreferences` namespace in `metadata`
 for chat-composer preferences such as the explicitly selected OpenRouter model.
 Unknown metadata keys are preserved when that namespace is updated.
-
-## AI Chat composer
-
-The `ai-chat-composer` variant owns the message input, pending attachments and
-Working on control. Document chats include the active document automatically.
-Working on selects the whole document by default, one section or several
-sections; each document keeps its selection when navigating between chats.
-The document editor's discussion action selects that section in the composer.
-Project threads use the same composer with their attached reviewed documents.
-These controls currently use local frontend state, without changing the Social
-thread schema or calling an AI provider.

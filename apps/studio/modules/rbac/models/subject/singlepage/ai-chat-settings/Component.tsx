@@ -1,4 +1,4 @@
-import { Component as View } from "@sps/rbac/models/subject/frontend/component/src/lib/singlepage/ai-chat-settings";
+import { Component as View } from "./index";
 export function Component() {
   return <View />;
 }

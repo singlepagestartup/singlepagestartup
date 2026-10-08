@@ -4,8 +4,9 @@
   "totals": {
     "modules": 16,
     "entities": 157,
-    "variants": 1867,
-    "coveredVariants": 50
+    "variants": 1843,
+    "coveredVariants": 45,
+    "representedEntities": 39
   },
   "modules": [
     {
@@ -89,7 +90,8 @@
               "variantsFile": "libs/modules/agent/models/agent/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "agent",
@@ -169,7 +171,8 @@
               "variantsFile": "libs/modules/agent/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -254,7 +257,8 @@
               "variantsFile": "libs/modules/analytic/models/metric/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "analytic",
@@ -334,7 +338,8 @@
               "variantsFile": "libs/modules/analytic/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -431,7 +436,8 @@
               "variantsFile": "libs/modules/billing/models/currency/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "billing",
@@ -511,7 +517,8 @@
               "variantsFile": "libs/modules/billing/models/invoice/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "billing",
@@ -591,7 +598,8 @@
               "variantsFile": "libs/modules/billing/models/payment-intent/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "billing",
@@ -671,7 +679,8 @@
               "variantsFile": "libs/modules/billing/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "billing",
@@ -739,7 +748,8 @@
               "variantsFile": "libs/modules/billing/relations/payment-intents-to-currencies/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "billing",
@@ -807,7 +817,8 @@
               "variantsFile": "libs/modules/billing/relations/payment-intents-to-invoices/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -910,6 +921,16 @@
               "variantsFile": "libs/modules/blog/models/article/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/blog/models/article/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/blog/models/article/singlepage/card/Component.stories.tsx",
+            "apps/studio/modules/blog/models/article/singlepage/cover/Component.stories.tsx",
+            "apps/studio/modules/blog/models/article/singlepage/detail/Component.stories.tsx",
+            "apps/studio/modules/blog/models/article/singlepage/featured/Component.stories.tsx",
+            "apps/studio/modules/blog/models/article/singlepage/overview-default/Component.stories.tsx",
+            "apps/studio/modules/blog/models/article/singlepage/related-default/Component.stories.tsx",
+            "apps/studio/modules/blog/models/article/singlepage/row/Component.stories.tsx"
           ]
         },
         {
@@ -996,6 +1017,9 @@
               "variantsFile": "libs/modules/blog/models/category/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/blog/models/category/singlepage/button-default/Component.stories.tsx"
           ]
         },
         {
@@ -1114,6 +1138,14 @@
               "variantsFile": "libs/modules/blog/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/blog/models/widget/singlepage/article-find-by-id-tag-find-default/Component.stories.tsx",
+            "apps/studio/modules/blog/models/widget/singlepage/article-find-card-default/Component.stories.tsx",
+            "apps/studio/modules/blog/models/widget/singlepage/article-find-default/Component.stories.tsx",
+            "apps/studio/modules/blog/models/widget/singlepage/article-find-featured/Component.stories.tsx",
+            "apps/studio/modules/blog/models/widget/singlepage/article-overview-default/Component.stories.tsx",
+            "apps/studio/modules/blog/models/widget/singlepage/tag-find-button/Component.stories.tsx"
           ]
         },
         {
@@ -1182,7 +1214,8 @@
               "variantsFile": "libs/modules/blog/relations/articles-to-ecommerce-module-products/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "blog",
@@ -1250,7 +1283,8 @@
               "variantsFile": "libs/modules/blog/relations/articles-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "blog",
@@ -1318,7 +1352,8 @@
               "variantsFile": "libs/modules/blog/relations/articles-to-website-builder-module-widgets/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "blog",
@@ -1386,7 +1421,8 @@
               "variantsFile": "libs/modules/blog/relations/categories-to-articles/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "blog",
@@ -1454,7 +1490,8 @@
               "variantsFile": "libs/modules/blog/relations/categories-to-website-builder-module-widgets/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "blog",
@@ -1522,7 +1559,8 @@
               "variantsFile": "libs/modules/blog/relations/widgets-to-articles/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "blog",
@@ -1590,7 +1628,8 @@
               "variantsFile": "libs/modules/blog/relations/widgets-to-categories/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -1687,7 +1726,8 @@
               "variantsFile": "libs/modules/broadcast/models/channel/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "broadcast",
@@ -1767,7 +1807,8 @@
               "variantsFile": "libs/modules/broadcast/models/message/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "broadcast",
@@ -1841,7 +1882,8 @@
               "variantsFile": "libs/modules/broadcast/relations/channels-to-messages/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -1928,6 +1970,9 @@
               "variantsFile": "libs/modules/crm/models/form/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/crm/models/form/singlepage/default/Component.stories.tsx"
           ]
         },
         {
@@ -2032,6 +2077,11 @@
                 "crm.input.textarea-default"
               ]
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/crm/models/input/singlepage/select-option-default/Component.stories.tsx",
+            "apps/studio/modules/crm/models/input/singlepage/text-default/Component.stories.tsx",
+            "apps/studio/modules/crm/models/input/singlepage/textarea-default/Component.stories.tsx"
           ]
         },
         {
@@ -2114,6 +2164,9 @@
               "variantsFile": "libs/modules/crm/models/option/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/crm/models/option/singlepage/default/Component.stories.tsx"
           ]
         },
         {
@@ -2196,6 +2249,9 @@
               "variantsFile": "libs/modules/crm/models/request/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/crm/models/request/singlepage/default/Component.stories.tsx"
           ]
         },
         {
@@ -2278,6 +2334,9 @@
               "variantsFile": "libs/modules/crm/models/step/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/crm/models/step/singlepage/default/Component.stories.tsx"
           ]
         },
         {
@@ -2366,6 +2425,9 @@
                 "crm.widget.form-list-default"
               ]
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/crm/models/widget/singlepage/form-list-default/Component.stories.tsx"
           ]
         },
         {
@@ -2434,7 +2496,8 @@
               "variantsFile": "libs/modules/crm/relations/forms-to-requests/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "crm",
@@ -2502,7 +2565,8 @@
               "variantsFile": "libs/modules/crm/relations/forms-to-steps/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "crm",
@@ -2570,7 +2634,8 @@
               "variantsFile": "libs/modules/crm/relations/inputs-to-options/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "crm",
@@ -2638,7 +2703,8 @@
               "variantsFile": "libs/modules/crm/relations/options-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "crm",
@@ -2706,7 +2772,8 @@
               "variantsFile": "libs/modules/crm/relations/steps-to-inputs/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "crm",
@@ -2774,7 +2841,8 @@
               "variantsFile": "libs/modules/crm/relations/widgets-to-forms/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "crm",
@@ -2842,7 +2910,8 @@
               "variantsFile": "libs/modules/crm/relations/widgets-to-website-builder-module-widgets/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -2931,6 +3000,10 @@
               "variantsFile": "libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/ecommerce/models/attribute/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/attribute/singlepage/admin-v2-select-input/Component.stories.tsx"
           ]
         },
         {
@@ -3011,7 +3084,8 @@
               "variantsFile": "libs/modules/ecommerce/models/attribute-key/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -3103,7 +3177,8 @@
               "variantsFile": "libs/modules/ecommerce/models/category/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -3172,14 +3247,6 @@
               "coveredBy": []
             },
             {
-              "variant": "ai-chat-tokens",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "ecommerce.order.ai-chat-tokens"
-              ]
-            },
-            {
               "variant": "cart-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/variants.ts",
@@ -3221,6 +3288,14 @@
               "variantsFile": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/ecommerce/models/order/singlepage/ai-chat-tokens/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/order/singlepage/checkout-confirmation-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/order/singlepage/checkout-details-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/order/singlepage/checkout-payment-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/order/singlepage/checkout-stepper-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/order/singlepage/summary-default/Component.stories.tsx"
           ]
         },
         {
@@ -3334,6 +3409,20 @@
               "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/ecommerce/models/product/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/product/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/product/singlepage/admin-v2-select-input/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/product/singlepage/card-related/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/product/singlepage/card/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/product/singlepage/cart-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/product/singlepage/gallery/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/product/singlepage/overview-cta/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/product/singlepage/overview-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/product/singlepage/overview-purchase/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/product/singlepage/pinned/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/product/singlepage/tier/Component.stories.tsx"
           ]
         },
         {
@@ -3420,7 +3509,8 @@
               "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -3544,6 +3634,11 @@
               "variantsFile": "libs/modules/ecommerce/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/ecommerce/models/widget/singlepage/product-find-card/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/widget/singlepage/product-find-tiers/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/models/widget/singlepage/product-overview-default/Component.stories.tsx"
           ]
         },
         {
@@ -3612,7 +3707,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/attribute-keys-to-attributes/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -3680,7 +3776,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/attributes-to-billing-module-currencies/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -3748,7 +3845,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/categories-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -3816,7 +3914,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/categories-to-products/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -3890,7 +3989,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/categories-to-website-builder-module-widgets/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -3958,7 +4058,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/orders-to-billing-module-currencies/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4026,7 +4127,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/orders-to-billing-module-payment-intents/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4106,7 +4208,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/orders-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4192,7 +4295,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/orders-to-products/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4260,6 +4364,9 @@
               "variantsFile": "libs/modules/ecommerce/relations/products-to-attributes/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/ecommerce/relations/products-to-attributes/singlepage/admin-v2-manager/Component.stories.tsx"
           ]
         },
         {
@@ -4334,7 +4441,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/products-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4402,7 +4510,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/products-to-website-builder-module-widgets/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4470,7 +4579,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/stores-to-attributes/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4538,7 +4648,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/stores-to-orders/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4606,7 +4717,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/stores-to-products/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4674,7 +4786,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/stores-to-products-to-attributes/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4742,7 +4855,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/widgets-to-categories/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4810,7 +4924,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/widgets-to-products/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "ecommerce",
@@ -4878,7 +4993,8 @@
               "variantsFile": "libs/modules/ecommerce/relations/widgets-to-stores/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -4952,14 +5068,6 @@
               "coveredBy": []
             },
             {
-              "variant": "ai-chat-attachments",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/file-storage/models/file/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "file-storage.file.ai-chat-attachments"
-              ]
-            },
-            {
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/file-storage/models/file/frontend/component/src/lib/singlepage/variants.ts",
@@ -4971,6 +5079,9 @@
               "variantsFile": "libs/modules/file-storage/models/file/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-attachments/Component.stories.tsx"
           ]
         },
         {
@@ -5051,7 +5162,8 @@
               "variantsFile": "libs/modules/file-storage/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "file-storage",
@@ -5119,7 +5231,8 @@
               "variantsFile": "libs/modules/file-storage/relations/widgets-to-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -5166,13 +5279,17 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/layout/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.layout.admin-v2-form"
+              ]
             },
             {
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/layout/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.layout.admin-v2-select-input"
+              ]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -5196,7 +5313,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/layout/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.layout.default"
+              ]
             },
             {
               "variant": "find",
@@ -5204,6 +5323,12 @@
               "variantsFile": "libs/modules/host/models/layout/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/host/models/layout/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/host/models/layout/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/host/models/layout/singlepage/admin-v2-select-input/Component.stories.tsx",
+            "apps/studio/modules/host/models/layout/singlepage/default/Component.stories.tsx"
           ]
         },
         {
@@ -5246,13 +5371,17 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/metadata/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.metadata.admin-v2-form"
+              ]
             },
             {
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/metadata/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.metadata.admin-v2-select-input"
+              ]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -5276,7 +5405,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/metadata/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.metadata.default"
+              ]
             },
             {
               "variant": "find",
@@ -5284,6 +5415,12 @@
               "variantsFile": "libs/modules/host/models/metadata/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/host/models/metadata/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/host/models/metadata/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/host/models/metadata/singlepage/admin-v2-select-input/Component.stories.tsx",
+            "apps/studio/modules/host/models/metadata/singlepage/default/Component.stories.tsx"
           ]
         },
         {
@@ -5326,13 +5463,17 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.page.admin-v2-form"
+              ]
             },
             {
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.page.admin-v2-select-input"
+              ]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -5353,58 +5494,12 @@
               "coveredBy": []
             },
             {
-              "variant": "ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "ai-chat-help",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "ai-chat-login",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "ai-chat-projects-new",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "ai-chat-projects-project-id",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "ai-chat-register",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "ai-chat-settings",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "ai-chat-tokens",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.page.default"
+              ]
             },
             {
               "variant": "find",
@@ -5424,6 +5519,44 @@
               "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/host/models/page/singlepage/admin-dashboard/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/admin-entity-drawer/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/admin-model-edit/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/admin-model-list/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/admin-module-dashboard/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/admin-preview-dialog/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/admin-relation-manager/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/admin-settings/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/admin-v2-select-input/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/ai-chat-help/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/ai-chat-login/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/ai-chat-projects-new/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/ai-chat-projects-project-id/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/ai-chat-register/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/ai-chat-settings/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/ai-chat-tokens/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/blog-articles-blog-articles-slug/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/blog-authors-social-profiles-slug/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/blog/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/composition/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/ecommerce-products-ecommerce-products-slug/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/ecommerce-products/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/privacy/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/rbac-subject-authentication-reset-password/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/rbac-subject-authentication-select-method/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/rbac-subject-settings/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-payment/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/root/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/social-chats-social-chats-id-threads-social-threads-id/Component.stories.tsx",
+            "apps/studio/modules/host/models/page/singlepage/terms/Component.stories.tsx"
           ]
         },
         {
@@ -5466,13 +5599,17 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.widget.admin-v2-form"
+              ]
             },
             {
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "host.widget.admin-v2-select-input"
+              ]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -5506,6 +5643,12 @@
               "variantsFile": "libs/modules/host/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/host/models/widget/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/host/models/widget/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/host/models/widget/singlepage/admin-v2-select-input/Component.stories.tsx",
+            "apps/studio/modules/host/models/widget/singlepage/default/Component.stories.tsx"
           ]
         },
         {
@@ -5580,6 +5723,9 @@
               "variantsFile": "libs/modules/host/relations/layouts-to-widgets/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/host/relations/layouts-to-widgets/singlepage/admin-v2-manager/Component.stories.tsx"
           ]
         },
         {
@@ -5648,6 +5794,9 @@
               "variantsFile": "libs/modules/host/relations/pages-to-layouts/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/host/relations/pages-to-layouts/singlepage/admin-v2-manager/Component.stories.tsx"
           ]
         },
         {
@@ -5710,6 +5859,9 @@
               "variantsFile": "libs/modules/host/relations/pages-to-metadata/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/host/relations/pages-to-metadata/singlepage/admin-v2-manager/Component.stories.tsx"
           ]
         },
         {
@@ -5778,6 +5930,9 @@
               "variantsFile": "libs/modules/host/relations/pages-to-widgets/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/host/relations/pages-to-widgets/singlepage/admin-v2-manager/Component.stories.tsx"
           ]
         },
         {
@@ -6076,6 +6231,10 @@
               "variantsFile": "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/website-builder/widget/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/host/relations/widgets-to-external-widgets/singlepage/admin-v2-manager/Component.stories.tsx",
+            "apps/studio/modules/host/relations/widgets-to-external-widgets/singlepage/default/Component.stories.tsx"
           ]
         }
       ]
@@ -6161,7 +6320,8 @@
               "variantsFile": "libs/modules/knowledge/models/chunk/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "knowledge",
@@ -6230,14 +6390,6 @@
               "coveredBy": []
             },
             {
-              "variant": "ai-chat-editor",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/knowledge/models/source/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "knowledge.source.ai-chat-editor"
-              ]
-            },
-            {
               "variant": "chat-sidebar-detail",
               "scope": "singlepage",
               "variantsFile": "libs/modules/knowledge/models/source/frontend/component/src/lib/singlepage/variants.ts",
@@ -6261,6 +6413,9 @@
               "variantsFile": "libs/modules/knowledge/models/source/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/knowledge/models/source/singlepage/ai-chat-editor/Component.stories.tsx"
           ]
         },
         {
@@ -6329,7 +6484,8 @@
               "variantsFile": "libs/modules/knowledge/relations/sources-to-chunks/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "knowledge",
@@ -6397,7 +6553,8 @@
               "variantsFile": "libs/modules/knowledge/relations/sources-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -6482,7 +6639,8 @@
               "variantsFile": "libs/modules/notification/models/notification/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "notification",
@@ -6562,7 +6720,8 @@
               "variantsFile": "libs/modules/notification/models/template/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "notification",
@@ -6642,7 +6801,8 @@
               "variantsFile": "libs/modules/notification/models/topic/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "notification",
@@ -6722,7 +6882,8 @@
               "variantsFile": "libs/modules/notification/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "notification",
@@ -6790,7 +6951,8 @@
               "variantsFile": "libs/modules/notification/relations/notifications-to-templates/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "notification",
@@ -6858,7 +7020,8 @@
               "variantsFile": "libs/modules/notification/relations/topics-to-notifications/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -6943,7 +7106,8 @@
               "variantsFile": "libs/modules/rbac/models/action/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -7010,22 +7174,6 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/identity/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
-            },
-            {
-              "variant": "ai-chat-login",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/identity/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.identity.ai-chat-login"
-              ]
-            },
-            {
-              "variant": "ai-chat-register",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/identity/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.identity.ai-chat-register"
-              ]
             },
             {
               "variant": "create-by-email",
@@ -7123,6 +7271,16 @@
               "variantsFile": "libs/modules/rbac/models/identity/frontend/component/src/lib/singlepage/form-field-default/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/rbac/models/identity/singlepage/ai-chat-login/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/identity/singlepage/ai-chat-register/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/identity/singlepage/card-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/identity/singlepage/find-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/identity/singlepage/login-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/identity/singlepage/password-reset-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/identity/singlepage/register-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/identity/singlepage/reset-password-default/Component.stories.tsx"
           ]
         },
         {
@@ -7130,7 +7288,8 @@
           "entityType": "model",
           "entity": "permission",
           "componentRoot": "libs/modules/rbac/models/permission/frontend/component",
-          "variants": []
+          "variants": [],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -7210,7 +7369,8 @@
               "variantsFile": "libs/modules/rbac/models/role/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -7277,14 +7437,6 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
-            },
-            {
-              "variant": "ai-chat-settings",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.subject.ai-chat-settings"
-              ]
             },
             {
               "variant": "authentication-button-default",
@@ -7472,6 +7624,17 @@
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/rbac/models/subject/singlepage/account-menu-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/subject/singlepage/admin-v2-settings/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/subject/singlepage/ai-chat-settings/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/subject/singlepage/me-crm-form-deafult/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/subject/singlepage/me-delete/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/subject/singlepage/me-identity-find-information/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/subject/singlepage/me-information/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/subject/singlepage/me-profile-information/Component.stories.tsx",
+            "apps/studio/modules/rbac/models/subject/singlepage/me-social-module-profile-find-information/Component.stories.tsx"
           ]
         },
         {
@@ -7618,6 +7781,9 @@
               "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/rbac/models/widget/singlepage/subject-me-account-settings/Component.stories.tsx"
           ]
         },
         {
@@ -7686,7 +7852,8 @@
               "variantsFile": "libs/modules/rbac/relations/permissions-to-billing-module-currencies/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -7754,7 +7921,8 @@
               "variantsFile": "libs/modules/rbac/relations/roles-to-ecommerce-module-products/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -7822,7 +7990,8 @@
               "variantsFile": "libs/modules/rbac/relations/roles-to-permissions/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -7890,7 +8059,8 @@
               "variantsFile": "libs/modules/rbac/relations/subjects-to-actions/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -7958,7 +8128,8 @@
               "variantsFile": "libs/modules/rbac/relations/subjects-to-billing-module-currencies/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -8026,7 +8197,8 @@
               "variantsFile": "libs/modules/rbac/relations/subjects-to-billing-module-payment-intents/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -8094,7 +8266,8 @@
               "variantsFile": "libs/modules/rbac/relations/subjects-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -8162,7 +8335,8 @@
               "variantsFile": "libs/modules/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -8230,7 +8404,8 @@
               "variantsFile": "libs/modules/rbac/relations/subjects-to-ecommerce-module-products/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -8298,7 +8473,8 @@
               "variantsFile": "libs/modules/rbac/relations/subjects-to-identities/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -8366,7 +8542,8 @@
               "variantsFile": "libs/modules/rbac/relations/subjects-to-notification-module-topics/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -8434,7 +8611,8 @@
               "variantsFile": "libs/modules/rbac/relations/subjects-to-roles/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "rbac",
@@ -8502,7 +8680,8 @@
               "variantsFile": "libs/modules/rbac/relations/subjects-to-social-module-profiles/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -8593,7 +8772,8 @@
               "variantsFile": "libs/modules/social/models/action/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -8673,7 +8853,8 @@
               "variantsFile": "libs/modules/social/models/attribute/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -8753,7 +8934,8 @@
               "variantsFile": "libs/modules/social/models/attribute-key/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -8822,22 +9004,6 @@
               "coveredBy": []
             },
             {
-              "variant": "ai-chat-preview",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/models/chat/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.chat.ai-chat-preview"
-              ]
-            },
-            {
-              "variant": "ai-chat-workspace",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/models/chat/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.chat.ai-chat-workspace"
-              ]
-            },
-            {
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/chat/frontend/component/src/lib/singlepage/variants.ts",
@@ -8849,6 +9015,10 @@
               "variantsFile": "libs/modules/social/models/chat/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/social/models/chat/singlepage/ai-chat-preview/Component.stories.tsx",
+            "apps/studio/modules/social/models/chat/singlepage/ai-chat-workspace/Component.stories.tsx"
           ]
         },
         {
@@ -8918,14 +9088,6 @@
               "coveredBy": []
             },
             {
-              "variant": "ai-chat-conversation",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/models/message/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.message.ai-chat-conversation"
-              ]
-            },
-            {
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/message/frontend/component/src/lib/singlepage/variants.ts",
@@ -8937,6 +9099,10 @@
               "variantsFile": "libs/modules/social/models/message/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/social/models/message/singlepage/ai-chat-conversation/Component.stories.tsx",
+            "apps/studio/modules/social/models/message/singlepage/bubble-default/Component.stories.tsx"
           ]
         },
         {
@@ -9006,14 +9172,6 @@
               "coveredBy": []
             },
             {
-              "variant": "ai-chat-agent",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.profile.ai-chat-agent"
-              ]
-            },
-            {
               "variant": "articles-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
@@ -9063,6 +9221,16 @@
                 "social.profile.author-find-by-id-overview-default"
               ]
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/social/models/profile/singlepage/ai-chat-agent/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/article-find-by-id-comment-form-default/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/author-find-by-id-overview-default/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/author/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/byline/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/card/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/compact/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/find-row/Component.stories.tsx"
           ]
         },
         {
@@ -9167,7 +9335,8 @@
               "variantsFile": "libs/modules/social/models/skill/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -9236,22 +9405,6 @@
               "coveredBy": []
             },
             {
-              "variant": "ai-chat-composer",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.thread.ai-chat-composer"
-              ]
-            },
-            {
-              "variant": "ai-chat-sidebar-item",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.thread.ai-chat-sidebar-item"
-              ]
-            },
-            {
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/variants.ts",
@@ -9263,6 +9416,11 @@
               "variantsFile": "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/social/models/thread/singlepage/ai-chat-composer/Component.stories.tsx",
+            "apps/studio/modules/social/models/thread/singlepage/ai-chat-sidebar-item/Component.stories.tsx",
+            "apps/studio/modules/social/models/thread/singlepage/list-default/Component.stories.tsx"
           ]
         },
         {
@@ -9365,6 +9523,11 @@
               "variantsFile": "libs/modules/social/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/social/models/widget/singlepage/chat-list-default/Component.stories.tsx",
+            "apps/studio/modules/social/models/widget/singlepage/chat-overview-default/Component.stories.tsx",
+            "apps/studio/modules/social/models/widget/singlepage/profile-article-find-by-id-comment-find-default/Component.stories.tsx"
           ]
         },
         {
@@ -9433,7 +9596,8 @@
               "variantsFile": "libs/modules/social/relations/attribute-keys-to-attributes/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -9501,7 +9665,8 @@
               "variantsFile": "libs/modules/social/relations/chats-to-actions/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -9569,7 +9734,8 @@
               "variantsFile": "libs/modules/social/relations/chats-to-messages/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -9626,14 +9792,6 @@
               "coveredBy": []
             },
             {
-              "variant": "ai-chat-workspace",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/relations/chats-to-threads/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.chats-to-threads.ai-chat-workspace"
-              ]
-            },
-            {
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/relations/chats-to-threads/frontend/component/src/lib/singlepage/variants.ts",
@@ -9645,6 +9803,9 @@
               "variantsFile": "libs/modules/social/relations/chats-to-threads/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/social/relations/chats-to-threads/singlepage/ai-chat-workspace/Component.stories.tsx"
           ]
         },
         {
@@ -9713,7 +9874,8 @@
               "variantsFile": "libs/modules/social/relations/messages-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -9781,7 +9943,8 @@
               "variantsFile": "libs/modules/social/relations/messages-to-knowledge-module-sources/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -9849,7 +10012,8 @@
               "variantsFile": "libs/modules/social/relations/profiles-to-actions/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -9917,7 +10081,8 @@
               "variantsFile": "libs/modules/social/relations/profiles-to-attributes/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -9985,7 +10150,8 @@
               "variantsFile": "libs/modules/social/relations/profiles-to-blog-module-articles/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10053,7 +10219,8 @@
               "variantsFile": "libs/modules/social/relations/profiles-to-chats/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10121,7 +10288,8 @@
               "variantsFile": "libs/modules/social/relations/profiles-to-ecommerce-module-products/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10189,7 +10357,8 @@
               "variantsFile": "libs/modules/social/relations/profiles-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10257,7 +10426,8 @@
               "variantsFile": "libs/modules/social/relations/profiles-to-knowledge-module-sources/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10325,7 +10495,8 @@
               "variantsFile": "libs/modules/social/relations/profiles-to-messages/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10393,7 +10564,8 @@
               "variantsFile": "libs/modules/social/relations/profiles-to-skills/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10461,7 +10633,8 @@
               "variantsFile": "libs/modules/social/relations/profiles-to-website-builder-module-widgets/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10529,7 +10702,8 @@
               "variantsFile": "libs/modules/social/relations/skills-to-knowledge-module-sources/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10597,7 +10771,8 @@
               "variantsFile": "libs/modules/social/relations/threads-to-actions/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10665,7 +10840,8 @@
               "variantsFile": "libs/modules/social/relations/threads-to-ecommerce-module-products/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "social",
@@ -10733,7 +10909,8 @@
               "variantsFile": "libs/modules/social/relations/threads-to-messages/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -10820,6 +10997,9 @@
               "variantsFile": "libs/modules/startup/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/startup/models/widget/singlepage/default/Component.stories.tsx"
           ]
         }
       ]
@@ -10899,7 +11079,8 @@
               "variantsFile": "libs/modules/telegram/models/page/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "telegram",
@@ -10973,7 +11154,8 @@
               "variantsFile": "libs/modules/telegram/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "telegram",
@@ -11029,7 +11211,8 @@
               "variantsFile": "libs/modules/telegram/relations/pages-to-widgets/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "telegram",
@@ -11085,7 +11268,8 @@
               "variantsFile": "libs/modules/telegram/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     },
@@ -11218,6 +11402,11 @@
                 "website-builder.button.secondary"
               ]
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/website-builder/models/button/singlepage/link/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/button/singlepage/primary/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/button/singlepage/secondary/Component.stories.tsx"
           ]
         },
         {
@@ -11300,6 +11489,9 @@
               "variantsFile": "libs/modules/website-builder/models/buttons-array/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/website-builder/models/buttons-array/singlepage/default/Component.stories.tsx"
           ]
         },
         {
@@ -11380,6 +11572,14 @@
               "variantsFile": "libs/modules/website-builder/models/feature/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/website-builder/models/feature/singlepage/badge-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/feature/singlepage/card/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/feature/singlepage/dropdown/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/feature/singlepage/list-item-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/feature/singlepage/status-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/feature/singlepage/testimotional/Component.stories.tsx"
           ]
         },
         {
@@ -11460,7 +11660,8 @@
               "variantsFile": "libs/modules/website-builder/models/logotype/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -11540,7 +11741,8 @@
               "variantsFile": "libs/modules/website-builder/models/slide/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -11620,7 +11822,8 @@
               "variantsFile": "libs/modules/website-builder/models/slider/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -11689,37 +11892,12 @@
               "coveredBy": []
             },
             {
-              "variant": "ai-chat-header",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "website-builder.widget.ai-chat-header"
-              ]
-            },
-            {
-              "variant": "ai-chat-help",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "website-builder.widget.ai-chat-help"
-              ]
-            },
-            {
-              "variant": "ai-chat-landing",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "website-builder.widget.ai-chat-landing"
-              ]
-            },
-            {
               "variant": "content-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": [
                 "website-builder.widget.content-buttons-array-find-default",
                 "website-builder.widget.content-cta",
-                "website-builder.widget.content-default",
                 "website-builder.widget.content-default",
                 "website-builder.widget.content-faq",
                 "website-builder.widget.content-feature-find-card",
@@ -11762,6 +11940,31 @@
                 "website-builder.widget.navbar-default"
               ]
             }
+          ],
+          "storyFiles": [
+            "apps/studio/modules/website-builder/models/widget/singlepage/admin-v2-navigation/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/admin-v2-rich-editor/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/ai-chat-header/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/ai-chat-help/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/ai-chat-landing/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-buttons-array-find-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-cta/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-faq/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-card/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-grid/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-row/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-testimotionals/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-files-find-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-hero/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-page-header/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-rich/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/content-testimonials/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/footer-compact/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/footer-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/singlepage/navbar-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/models/widget/startup/content-default/Component.stories.tsx"
           ]
         },
         {
@@ -11830,7 +12033,8 @@
               "variantsFile": "libs/modules/website-builder/relations/buttons-arrays-to-buttons/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -11898,7 +12102,8 @@
               "variantsFile": "libs/modules/website-builder/relations/buttons-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -11966,7 +12171,8 @@
               "variantsFile": "libs/modules/website-builder/relations/features-to-buttons-arrays/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -12034,7 +12240,8 @@
               "variantsFile": "libs/modules/website-builder/relations/features-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -12102,7 +12309,8 @@
               "variantsFile": "libs/modules/website-builder/relations/logotypes-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -12170,7 +12378,8 @@
               "variantsFile": "libs/modules/website-builder/relations/sliders-to-slides/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -12238,7 +12447,8 @@
               "variantsFile": "libs/modules/website-builder/relations/slides-to-buttons-arrays/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -12306,7 +12516,8 @@
               "variantsFile": "libs/modules/website-builder/relations/slides-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -12386,7 +12597,8 @@
               "variantsFile": "libs/modules/website-builder/relations/widgets-to-buttons-arrays/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -12454,7 +12666,8 @@
               "variantsFile": "libs/modules/website-builder/relations/widgets-to-features/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -12522,7 +12735,8 @@
               "variantsFile": "libs/modules/website-builder/relations/widgets-to-file-storage-module-files/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -12590,7 +12804,8 @@
               "variantsFile": "libs/modules/website-builder/relations/widgets-to-logotypes/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         },
         {
           "module": "website-builder",
@@ -12658,7 +12873,8 @@
               "variantsFile": "libs/modules/website-builder/relations/widgets-to-sliders/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
             }
-          ]
+          ],
+          "storyFiles": []
         }
       ]
     }

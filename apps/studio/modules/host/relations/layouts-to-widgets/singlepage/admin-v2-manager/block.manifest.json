@@ -1,0 +1,27 @@
+{
+  "id": "host.layouts-to-widgets.admin-v2-manager",
+  "title": "Host layouts-to-widgets / admin-v2-manager",
+  "description": "Local Studio projection of Host layouts-to-widgets using the existing SDK fields and links.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "relation",
+    "entity": "layouts-to-widgets",
+    "variant": "admin-v2-manager"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.layouts-to-widgets",
+    "pageName": "host",
+    "variantName": "admin-v2-manager",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

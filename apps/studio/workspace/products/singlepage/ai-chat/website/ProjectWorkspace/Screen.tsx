@@ -1,6 +1,6 @@
-import { Component } from "@sps/social/models/chat/frontend/component/src/lib/singlepage/ai-chat-workspace";
-import { AccountProvider } from "./../../../../../../../../libs/shared/frontend/components/src/lib/singlepage/ai-chat/Account";
-import { aiChatAccount } from "../../../../../../../../tools/studio/products/fixtures/ai-chat-account";
+import { Component } from "../../../../../../modules/social/models/chat/singlepage/ai-chat-workspace/index";
+import { AccountProvider } from "../../../../../../modules/rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { aiChatAccount } from "../../../../../utils/products/ai-chat-account-fixture";
 export default function ProjectWorkspace(
   props: { text?: string; navigationHref?: string } = {},
 ) {

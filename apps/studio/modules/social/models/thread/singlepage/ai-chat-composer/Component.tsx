@@ -1,12 +1,12 @@
-import { Component as View } from "@sps/social/models/thread/frontend/component/src/lib/singlepage/ai-chat-composer";
+import { Component as View } from "./index";
 import { useState } from "react";
-import { aiChatProjectFixture } from "./../../../../../../../../tools/studio/products/fixtures/ai-chat-workspace";
+import { aiChatProjectFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 export function Component() {
   const [value, setValue] = useState("");
   const [sections, setSections] = useState<string[]>([]);
   const [document] = useState(aiChatProjectFixture().documents[0]);
   const [files, setFiles] = useState<
-    import("@sps/shared-frontend-client-utils/ai-chat/workspace").IProjectSource[]
+    import("../../../../../../workspace/utils/products/ai-chat-workspace").IProjectSource[]
   >([]);
   return (
     <View

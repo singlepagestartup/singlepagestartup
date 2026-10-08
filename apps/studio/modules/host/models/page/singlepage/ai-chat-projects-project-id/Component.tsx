@@ -1,6 +1,6 @@
-import { aiChatProjectFixture } from "./../../../../../../../../tools/studio/products/fixtures/ai-chat-workspace";
-import { Component as Page } from "@sps/host/models/page/frontend/component/src/lib/singlepage/ai-chat-projects-project-id";
-import { aiChatAccount } from "./../../../../../../../../tools/studio/products/fixtures/ai-chat-account";
+import { aiChatProjectFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
+import { Component as Page } from "./index";
+import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 const stayInStory = (_url: string) => {};
 export function Component() {
   return (

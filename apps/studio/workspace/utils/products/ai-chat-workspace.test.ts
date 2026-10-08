@@ -3,7 +3,7 @@ import {
   resolveThreadAgent,
   snapshotAgent,
   AI_CHAT_AGENTS,
-} from "@sps/shared-frontend-client-utils/ai-chat/agents";
+} from "./ai-chat-agent-resolver";
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";

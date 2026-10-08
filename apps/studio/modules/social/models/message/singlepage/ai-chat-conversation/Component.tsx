@@ -1,4 +1,4 @@
-import { Component as View } from "@sps/social/models/message/frontend/component/src/lib/singlepage/ai-chat-conversation";
+import { Component as View } from "./index";
 export function Component() {
   return (
     <View

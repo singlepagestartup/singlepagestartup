@@ -1,7 +1,7 @@
-import { Component as View } from "@sps/knowledge/models/source/frontend/component/src/lib/singlepage/ai-chat-editor";
+import { Component as View } from "./index";
 import { useState } from "react";
-import { aiChatProjectFixture } from "./../../../../../../../../tools/studio/products/fixtures/ai-chat-workspace";
-import { reviewProjectDocument } from "@sps/shared-frontend-client-utils/ai-chat/workspace";
+import { aiChatProjectFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
+import { reviewProjectDocument } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 export function Component() {
   const [document, setDocument] = useState(aiChatProjectFixture().documents[0]);
   const [section, setSection] = useState(document.sections[0].title);

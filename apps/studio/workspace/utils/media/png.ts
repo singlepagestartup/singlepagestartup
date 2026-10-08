@@ -1,4 +1,4 @@
-import { htmlToImageCaptureAdapter } from "@sps/shared-frontend-client-pdf";
+import { htmlToImageCaptureAdapter } from "./pdf/index";
 
 /** Capture a fixed artboard, reusing the same font/image renderer as PDF export. */
 export async function captureArtifactPng(

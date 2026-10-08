@@ -1,0 +1,27 @@
+{
+  "id": "host.metadata.admin-v2-form",
+  "title": "Host metadata / admin-v2-form",
+  "description": "Local Studio projection of Host metadata using the existing SDK fields and links.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "metadata",
+    "variant": "admin-v2-form"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.metadata",
+    "pageName": "host",
+    "variantName": "admin-v2-form",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

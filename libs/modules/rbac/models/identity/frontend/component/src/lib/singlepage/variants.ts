@@ -1,5 +1,3 @@
-import { Component as AIChatLogin } from "./ai-chat-login";
-import { Component as AIChatRegister } from "./ai-chat-register";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as AdminTable } from "./admin/table";
@@ -16,8 +14,6 @@ import { Component as CreateByEmail } from "./create-by-email";
 import { Component as FormFieldDefault } from "./form-field-default";
 
 export const variants = {
-  "ai-chat-login": AIChatLogin,
-  "ai-chat-register": AIChatRegister,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

@@ -1,5 +1,3 @@
-import { IComponentProps as IAIChatWorkspaceProps } from "./ai-chat-workspace/interface";
-import { IComponentProps as IAIChatPreviewProps } from "./ai-chat-preview/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/interface";
 import { IComponentProps as IAdminV2FormComponentProps } from "./admin-v2/form/interface";
@@ -14,8 +12,6 @@ import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
-  | IAIChatWorkspaceProps
-  | IAIChatPreviewProps
   | IAdminSelectInputComponentProps
   | IAdminTableComponentProps
   | IAdminFormComponentProps

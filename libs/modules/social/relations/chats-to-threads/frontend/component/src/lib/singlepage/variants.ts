@@ -1,4 +1,3 @@
-import { Component as AIChatWorkspace } from "./ai-chat-workspace";
 import { Component as AdminV2Form } from "./admin-v2/form";
 import { Component as AdminV2SelectInput } from "./admin-v2/select-input";
 import { Component as AdminV2Table } from "./admin-v2/table";
@@ -10,7 +9,6 @@ import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 export const variants = {
-  "ai-chat-workspace": AIChatWorkspace,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

@@ -439,20 +439,36 @@ export const Select = forwardRef<HTMLButtonElement, ISelectProps>(
     ref,
   ) {
     const [projection, setProjection] = useState("singlepage");
+    const [editorDepth, setEditorDepth] = useState(0);
 
     return (
       <div
         ref={(node) => {
-          if (node)
+          if (node) {
             setProjection(
               node
                 .closest("[data-workspace-projection]")
                 ?.getAttribute("data-workspace-projection") ?? "singlepage",
             );
+            setEditorDepth(
+              Number(
+                node
+                  .closest("[data-ds-panel-depth]")
+                  ?.getAttribute("data-ds-panel-depth") ?? 0,
+              ),
+            );
+          }
         }}
         className="min-w-0"
       >
-        <SelectPrimitive.Root {...props}>
+        <SelectPrimitive.Root
+          {...props}
+          onValueChange={(value) => {
+            // Radix's hidden form select can emit an empty value while newly
+            // created options register. Empty values are placeholders, not options.
+            if (value) props.onValueChange?.(value);
+          }}
+        >
           <SelectPrimitive.Trigger
             ref={ref}
             id={id}
@@ -474,7 +490,12 @@ export const Select = forwardRef<HTMLButtonElement, ISelectProps>(
               align="start"
               sideOffset={6}
               collisionPadding={12}
-              className={picker.content}
+              className={twMerge(
+                picker.content,
+                ["z-60", "z-80", "z-[100]", "z-[120]"][
+                  Math.min(editorDepth, 3)
+                ],
+              )}
             >
               <SelectPrimitive.ScrollUpButton className="flex h-7 items-center justify-center">
                 <Icon name="caret-down" className="rotate-180" />

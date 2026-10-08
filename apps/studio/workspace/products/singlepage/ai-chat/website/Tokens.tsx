@@ -1,8 +1,8 @@
-import { Component } from "@sps/ecommerce/models/order/frontend/component/src/lib/singlepage/ai-chat-tokens";
+import { Component } from "../../../../../modules/ecommerce/models/order/singlepage/ai-chat-tokens/index";
 import sourceText from "./tokens.md?raw";
 import { parseAIChatServicePage } from "./content";
-import { AccountProvider } from "./../../../../../../../libs/shared/frontend/components/src/lib/singlepage/ai-chat/Account";
-import { aiChatAccount } from "../../../../../../../tools/studio/products/fixtures/ai-chat-account";
+import { AccountProvider } from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { aiChatAccount } from "../../../../utils/products/ai-chat-account-fixture";
 
 export default function Tokens({ text }: { text?: string } = {}) {
   return (

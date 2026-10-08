@@ -1,4 +1,3 @@
-import { IComponentProps as IAIChatAttachmentsProps } from "./ai-chat-attachments/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/interface";
 import { IComponentProps as IAdminV2FormComponentProps } from "./admin-v2/form/interface";
@@ -13,7 +12,6 @@ import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interf
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
-  | IAIChatAttachmentsProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps

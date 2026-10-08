@@ -1,6 +1,6 @@
-import { Component as View } from "@sps/social/relations/chats-to-threads/frontend/component/src/lib/singlepage/ai-chat-workspace";
+import { Component as View } from "./index";
 import { useState } from "react";
-import { aiChatProjectFixture } from "./../../../../../../../../tools/studio/products/fixtures/ai-chat-workspace";
+import { aiChatProjectFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 export function Component() {
   const [project, setProject] = useState(aiChatProjectFixture);
   return (

@@ -1,4 +1,3 @@
-import { Component as AIChatTokens } from "./ai-chat-tokens";
 import { Component as OrdersToProductsQuantityDefault } from "./orders-to-products/quantity/default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -18,7 +17,6 @@ import { Component as CartDefault } from "./cart-default";
 import { Component as FormFieldDefault } from "./form-field-default";
 
 export const variants = {
-  "ai-chat-tokens": AIChatTokens,
   "orders-to-products-quantity-default": OrdersToProductsQuantityDefault,
   find: Find,
   "admin-table-row": AdminTableRow,

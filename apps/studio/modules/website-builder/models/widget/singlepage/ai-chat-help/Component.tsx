@@ -1,4 +1,4 @@
-import { Component as View } from "@sps/website-builder/models/widget/frontend/component/src/lib/singlepage/ai-chat-help";
+import { Component as View } from "./index";
 export function Component() {
   return <View />;
 }

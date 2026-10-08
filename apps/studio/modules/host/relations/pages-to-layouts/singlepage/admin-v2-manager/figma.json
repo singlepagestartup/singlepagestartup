@@ -1,0 +1,21 @@
+{
+  "componentName": "host.pages-to-layouts",
+  "pageName": "host",
+  "variantName": "admin-v2-manager",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.pages-to-layouts.admin-v2-manager",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/relations/pages-to-layouts/singlepage/admin-v2-manager",
+    "sps.figma.component": "host.pages-to-layouts",
+    "sps.figma.variant": "admin-v2-manager",
+    "sps.source.module": "host",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "pages-to-layouts",
+    "sps.source.variant": "admin-v2-manager",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/relations/pages-to-layouts/singlepage/admin-v2-manager/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/relations/pages-to-layouts/singlepage/admin-v2-manager/Component.stories.tsx"
+  }
+}

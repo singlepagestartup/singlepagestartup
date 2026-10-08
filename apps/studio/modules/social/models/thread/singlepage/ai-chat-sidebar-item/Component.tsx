@@ -1,4 +1,4 @@
-import { Component as View } from "@sps/social/models/thread/frontend/component/src/lib/singlepage/ai-chat-sidebar-item";
+import { Component as View } from "./index";
 import { useCallback, useState } from "react";
 export function Component() {
   const [selected, setSelected] = useState(false);

@@ -1,0 +1,22 @@
+@theme {
+  --color-sps-green: #bfef61;
+  --color-sps-grey: #f4f6f8;
+  --color-sps-graphite: #18232a;
+  --color-sps-muted: #5b6870;
+  --color-sps-line: #dce2e6;
+  --color-sps-white: #ffffff;
+  --color-sps-muted-inverse: #c4cdd3;
+  --color-sps-danger: #b42338;
+  --color-sps-danger-surface: #fff1f3;
+  --color-sps-danger-line: #e9b4bd;
+  --font-sps: "Onest", ui-sans-serif, system-ui, sans-serif;
+}
+
+@font-face {
+  font-family: "Onest";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/workspace-assets/singlepage/fonts/onest/Onest-wght.ttf")
+    format("truetype");
+}

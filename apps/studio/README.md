@@ -99,8 +99,8 @@ wrapper reads these existing pages without creating a duplicate hidden deck.
 It derives a 2× PNG raster and PDF point dimensions at 72/96 from the source CSS
 size. The default 1600 × 900 presentation becomes 3200 × 1800 raster pixels on
 1200 × 675 pt PDF pages. Fonts, image readiness, ordered PDF assembly and URL
-lifecycle come from `@sps/shared-frontend-client-pdf`; its README documents the
-browser/capture limitations and API for other Studio surfaces.
+lifecycle come from the local `workspace/utils/media/pdf` implementation.
+It uses browser fonts and images through html-to-image and assembles pages with jsPDF.
 
 The direct `?document=presentation` route remains a plain deck for the existing
 CLI HTML/PDF/PNG exporter. Product data, layer resolution and slide content use
@@ -153,6 +153,65 @@ apps/studio/modules/<module>/<models|relations>/<entity>/<layer>/<variant>/
 Host pages remain under
 `apps/studio/modules/host/models/page/<layer>/<page-variant>/`. Existing stable
 component/page IDs are preserved across the Studio rename.
+
+## Local AI Chat views
+
+AI Chat prototypes live entirely in Studio. Each variant keeps a local `View.tsx`
+with props and callbacks, while `Component.tsx` supplies a small Storybook example.
+Product website previews use those local views and editable Markdown content.
+
+| Owner                   | View responsibility                                        |
+| ----------------------- | ---------------------------------------------------------- |
+| Host Page               | Page composition and local navigation                      |
+| RBAC Identity / Subject | Registration, login, account settings and account provider |
+| Social Profile          | Agent selection and role editor                            |
+| Social Chat             | Workspace setup and project state                          |
+| Social Thread / Message | Composer, sidebar item and conversation                    |
+| Social chats-to-threads | Document/chat workspace composition                        |
+| Knowledge Source        | Editable document sections and review controls             |
+| File Storage File       | References and generated attachment views                  |
+| Ecommerce Order         | Token purchase preview                                     |
+| Website Builder Widget  | Navigation, help and landing page                          |
+
+Local helpers and example data live in `workspace/utils/products`, visual primitives
+in `workspace/design/singlepage/interface-kit/ai-chat`, and styles in `runtime`.
+`bun tools/studio/products/publish-ai-chat.ts` generates local Studio JSON from
+editable copy and role definitions. It does not publish production code or assets.
+`bun test tools/studio/design-system/isolation.test.ts` rejects imports from libs
+and Host, including type imports and CSS sources. Storybook has its own tsconfig
+and serves fonts and images from Studio workspace assets.
+
+## Host model and relation previews
+
+`Modules/Host/Models/Page/Singlepage/composition` provides one local workspace
+for Page, Layout, Widget, Metadata and all five existing Host relations. Each
+model also has `admin-v2-list`, `admin-v2-form` and `admin-v2-select-input`
+stories. Each relation has an `admin-v2-manager` story and appears inside its
+owner's editor. A link editor can create or edit its target in a nested panel.
+Unlink retains both model records; deleting a model removes its incident links.
+
+`HostStudioProvider` accepts `state` with `onStateChange` for controlled data,
+or `initialState` for a local preview. Each model and relation owns its local
+`interface.ts` contract. All mutations affect in-memory state; reloading resets
+the preview. Studio has no dependency on production SDK types or providers.
+
+The page canvas uses the same records and links as the editors. Layout widgets
+with `variant="default"` precede Page widgets; `variant="additional"` widgets
+follow them. Links render by `orderIndex`, with ID as a stable tie-breaker.
+Metadata renders SEO and social examples inside the canvas and does not modify
+the browser's title or meta tags. The canvas labels the records and slots for
+review; it is a composition inspector rather than the production route renderer.
+
+External links retain the module and widget ID. The existing Blog and Ecommerce
+Studio previews resolve `preview-blog-overview-widget` and
+`preview-ecommerce-overview-widget`. Other IDs show an unavailable-renderer
+placeholder until their Studio projection is connected. Existing page recipes
+and Widget previews retain their IDs and behavior.
+
+Inventory includes discoverable `storyFiles` per entity and a
+`representedEntities` total. Variant coverage reads both block and page
+manifests and keeps `singlepage` coverage separate from `startup`. Host coverage
+tests require stories for its four models and five relations.
 
 The Startup module has a Widget scaffold at
 `apps/studio/modules/startup/models/widget/singlepage/default/`, visible in

@@ -42,5 +42,4 @@ export const ADDRESS_VERIFYING_PROVIDERS = Object.freeze([
  */
 export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
 
-export * from "./ai-chat-agents";
 export * from "./knowledge";

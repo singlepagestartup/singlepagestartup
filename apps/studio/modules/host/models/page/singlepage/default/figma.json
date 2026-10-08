@@ -1,0 +1,21 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "variantName": "default",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/models/page/singlepage/default",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "default",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/models/page/singlepage/default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/models/page/singlepage/default/Component.stories.tsx"
+  }
+}

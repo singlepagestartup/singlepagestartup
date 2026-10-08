@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Component as Header } from "@sps/website-builder/models/widget/frontend/component/src/lib/singlepage/ai-chat-header";
+import { Component as Header } from "./index";
 export function Component() {
   const [projects, setProjects] = useState([
     { id: "pottery", name: "Pottery workshops" },

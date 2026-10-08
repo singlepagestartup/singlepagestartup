@@ -127,3 +127,43 @@ describe("Studio module directories", () => {
     expect(await missingModuleDirectories(actual)).toEqual([]);
   });
 });
+
+describe("Host Studio coverage", () => {
+  test("all four models and five relations have discoverable stories", async () => {
+    const actual = await collectModuleInventory();
+    const host = actual.modules.find((record) => record.name === "host")!;
+    expect(host.entities).toHaveLength(9);
+    expect(
+      host.entities.filter((entity) => !entity.storyFiles?.length),
+    ).toEqual([]);
+    for (const entity of host.entities) {
+      const management =
+        entity.entityType === "model" ? "admin-v2-list" : "admin-v2-manager";
+      expect(
+        entity.storyFiles?.some((file) => file.includes(`/${management}/`)),
+      ).toBe(true);
+    }
+  });
+  test("local page recipes remain discoverable without production registration", async () => {
+    const actual = await collectModuleInventory();
+    const page = actual.modules
+      .find((record) => record.name === "host")!
+      .entities.find((entity) => entity.entity === "page")!;
+    expect(
+      page.storyFiles?.some((file) => file.includes("/singlepage/ai-chat/")),
+    ).toBe(true);
+    expect(page.variants.some((item) => item.variant === "ai-chat")).toBe(
+      false,
+    );
+    expect(
+      page.variants.find(
+        (item) => item.scope === "singlepage" && item.variant === "default",
+      )?.coveredBy,
+    ).toContain("host.page.default");
+    expect(
+      page.variants.find(
+        (item) => item.scope === "startup" && item.variant === "default",
+      )?.coveredBy ?? [],
+    ).not.toContain("host.page.default");
+  });
+});

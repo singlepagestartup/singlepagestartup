@@ -1,4 +1,4 @@
-import { Component as View } from "@sps/ecommerce/models/order/frontend/component/src/lib/singlepage/ai-chat-tokens";
+import { Component as View } from "./index";
 export function Component() {
   return <View />;
 }

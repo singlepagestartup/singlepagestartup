@@ -1,6 +1,3 @@
-import { IComponentProps as IAIChatHeaderProps } from "./ai-chat-header/interface";
-import { IComponentProps as IAIChatHelpProps } from "./ai-chat-help/interface";
-import { IComponentProps as IAIChatLandingProps } from "./ai-chat-landing/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/interface";
 import { IComponentProps as IAdminV2FormComponentProps } from "./admin-v2/form/interface";
@@ -17,9 +14,6 @@ import { IComponentProps as IContentDefaultComponentProps } from "./content-defa
 import { IComponentProps as IFooterDefaultComponentProps } from "./footer-default/interface";
 import { IComponentProps as INavbarDefaultComponentProps } from "./navbar-default/interface";
 export type IComponentProps =
-  | IAIChatHeaderProps
-  | IAIChatHelpProps
-  | IAIChatLandingProps
   | IFindComponentProps
   | IAdminSelectInputComponentProps
   | IAdminTableRowComponentProps

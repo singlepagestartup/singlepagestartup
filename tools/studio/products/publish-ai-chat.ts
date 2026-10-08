@@ -7,7 +7,7 @@ import {
   parseProjectDocumentDefinitions,
   parseProjectDocumentGuides,
   validateProjectDocumentGuides,
-} from "../../../libs/shared/frontend/client/utils/src/lib/ai-chat/content";
+} from "../../../apps/studio/workspace/utils/products/ai-chat-content";
 
 const root = path.resolve(import.meta.dir, "../../..");
 const source = path.join(
@@ -33,12 +33,8 @@ function publish(relative: string, data: string | Buffer) {
 function servicePaths(value: unknown): unknown {
   if (typeof value === "string")
     return value
-      .replace(
-        /\/workspace-assets\/singlepage\/generated\/living-focus\//g,
-        "/sps/images/",
-      )
       .replace(/\]\((\/(?!ai-chat\/)[^)]*)\)/g, "](/ai-chat$1)")
-      .replace(/^\/(?!ai-chat\/|sps\/)(.*)$/, "/ai-chat/$1");
+      .replace(/^\/(?!ai-chat\/|workspace-assets\/)(.*)$/, "/ai-chat/$1");
   if (Array.isArray(value)) return value.map(servicePaths);
   if (value && typeof value === "object")
     return Object.fromEntries(
@@ -80,7 +76,7 @@ const roles = readdirSync(path.join(root, ".agents/roles"))
   });
 if (!roles.length) throw new Error("No canonical pre-development roles found.");
 publish(
-  "libs/shared/utils/src/lib/constants/ai-chat-roles.generated.json",
+  "apps/studio/workspace/utils/products/ai-chat-roles.generated.json",
   JSON.stringify(roles, null, 2) + "\n",
 );
 
@@ -98,7 +94,7 @@ for (const [name, owner] of Object.entries(copies)) {
   const copy =
     name === "page" ? parseAIChatWebsite(text) : parseAIChatServicePage(text);
   publish(
-    `libs/modules/${module}/${kind}/${entity}/frontend/component/src/lib/singlepage/${variant}/content.json`,
+    `apps/studio/modules/${module}/${kind}/${entity}/singlepage/${variant}/content.json`,
     JSON.stringify(servicePaths(copy), null, 2) + "\n",
   );
 }
@@ -139,16 +135,16 @@ const guidePublication = Object.fromEntries(
   }),
 );
 publish(
-  "libs/shared/utils/src/lib/constants/ai-chat-document-guides.generated.json",
+  "apps/studio/workspace/utils/products/ai-chat-document-guides.generated.json",
   JSON.stringify(guidePublication, null, 2) + "\n",
 );
 publish(
-  "libs/modules/social/relations/chats-to-threads/frontend/component/src/lib/singlepage/ai-chat-workspace/definitions.json",
+  "apps/studio/modules/social/relations/chats-to-threads/singlepage/ai-chat-workspace/definitions.json",
   JSON.stringify(definitions, null, 2) + "\n",
 );
 const materials = readFileSync(path.join(source, "new-project.md"), "utf8");
 publish(
-  "libs/modules/social/models/chat/frontend/component/src/lib/singlepage/ai-chat-workspace/disclosure.json",
+  "apps/studio/modules/social/models/chat/singlepage/ai-chat-workspace/disclosure.json",
   JSON.stringify(
     materials.slice(
       materials.indexOf("## How your materials are processed and stored"),
@@ -157,26 +153,8 @@ publish(
     2,
   ) + "\n",
 );
-const assets = "apps/studio/workspace/assets/singlepage";
-for (const image of [
-  "singlepagestartup-primary-lockup.svg",
-  "singlepagestartup-photography-solo-founder-v1-square.png",
-  "singlepagestartup-photography-project-start-v1-square.png",
-  "singlepagestartup-photography-project-progress-v1-square.png",
-  "singlepagestartup-photography-work-in-motion-square.png",
-]) {
-  publish(
-    `apps/host/public/sps/images/${image}`,
-    readFileSync(path.join(root, assets, "generated/living-focus", image)),
-  );
-}
-for (const file of ["Onest-wght.ttf", "OFL.txt"])
-  publish(
-    `apps/host/public/sps/fonts/${file}`,
-    readFileSync(path.join(root, assets, "fonts/onest", file)),
-  );
 console.log(
   check
-    ? "AI Chat runtime publication is current."
-    : "Published AI Chat copy and assets.",
+    ? "AI Chat Studio content is current."
+    : "Generated AI Chat Studio content.",
 );

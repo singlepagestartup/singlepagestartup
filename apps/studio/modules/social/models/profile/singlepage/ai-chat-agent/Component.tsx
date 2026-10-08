@@ -3,8 +3,8 @@ import { useState } from "react";
 import {
   documentAgent,
   type IProjectAgent,
-} from "@sps/shared-frontend-client-utils/ai-chat/agents";
-import { ProjectAgentPicker } from "@sps/social/models/profile/frontend/component/src/lib/singlepage/ai-chat-agent/Component";
+} from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
+import { ProjectAgentPicker } from "./View";
 export function Component() {
   const [agent, setAgent] = useState<IProjectAgent | null>(
     documentAgent("strategy"),

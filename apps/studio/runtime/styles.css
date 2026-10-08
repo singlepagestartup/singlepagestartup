@@ -1,6 +1,5 @@
 @import "tailwindcss" source(none);
-@import "../../host/styles/presets/sps.css";
-@source "../../../libs/**/*.{js,ts,jsx,tsx}";
+@import "./sps.css";
 
 @source "../modules/**/*.{js,ts,jsx,tsx,html}";
 @source "../workspace/**/*.{js,ts,jsx,tsx,html}";

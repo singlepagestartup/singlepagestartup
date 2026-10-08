@@ -1,0 +1,27 @@
+{
+  "id": "host.layout.admin-v2-select-input",
+  "title": "Host layout / admin-v2-select-input",
+  "description": "Local Studio projection of Host layout using the existing SDK fields and links.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "layout",
+    "variant": "admin-v2-select-input"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.layout",
+    "pageName": "host",
+    "variantName": "admin-v2-select-input",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Component } from "./Component";
-import { AccountProvider } from "@sps/shared-frontend-components/singlepage/ai-chat/Account";
-import { aiChatAccount } from "./../../../../../../../../tools/studio/products/fixtures/ai-chat-account";
+import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 const meta = {
   id: "modules-social-models-message-singlepage-ai-chat-conversation",
   title: "Modules/Social/Models/Message/Singlepage/ai-chat-conversation",

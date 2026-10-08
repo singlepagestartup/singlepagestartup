@@ -1,6 +1,5 @@
 import { Component as ChatSidebarItem } from "./chat-sidebar-item";
 import { Component as ChatSidebarDetail } from "./chat-sidebar-detail";
-import { Component as AiChatEditor } from "./ai-chat-editor";
 import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminTable } from "./admin/table";
 import { Component as AdminForm } from "./admin/form";
@@ -16,7 +15,6 @@ import { Component as Find } from "./find";
 export const variants = {
   "chat-sidebar-item": ChatSidebarItem,
   "chat-sidebar-detail": ChatSidebarDetail,
-  "ai-chat-editor": AiChatEditor,
   "admin-select-input": AdminSelectInput,
   "admin-table": AdminTable,
   "admin-form": AdminForm,

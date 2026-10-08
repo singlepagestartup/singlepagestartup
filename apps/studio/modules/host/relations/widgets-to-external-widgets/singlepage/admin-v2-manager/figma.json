@@ -1,0 +1,21 @@
+{
+  "componentName": "host.widgets-to-external-widgets",
+  "pageName": "host",
+  "variantName": "admin-v2-manager",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.widgets-to-external-widgets.admin-v2-manager",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/relations/widgets-to-external-widgets/singlepage/admin-v2-manager",
+    "sps.figma.component": "host.widgets-to-external-widgets",
+    "sps.figma.variant": "admin-v2-manager",
+    "sps.source.module": "host",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "widgets-to-external-widgets",
+    "sps.source.variant": "admin-v2-manager",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/relations/widgets-to-external-widgets/singlepage/admin-v2-manager/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/relations/widgets-to-external-widgets/singlepage/admin-v2-manager/Component.stories.tsx"
+  }
+}

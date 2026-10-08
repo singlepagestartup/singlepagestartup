@@ -1,4 +1,3 @@
-import { IComponentProps as IAIChatSettingsProps } from "./ai-chat-settings/interface";
 import { IComponentProps as IEcommerceModuleOrderCheckoutDefaultComponentProps } from "./ecommerce-module/order/checkout-default/interface";
 import { IComponentProps as IEcommerceModuleOrderListCheckoutDefaultComponentProps } from "./ecommerce-module/order/list/checkout-default/interface";
 import { IComponentProps as IEcommerceModuleOrderUpdateDefaultComponentProps } from "./ecommerce-module/order/update-default/interface";
@@ -43,7 +42,6 @@ import { IComponentProps as ISocialModuleProfileChatListDefaultComponentProps } 
 import { IComponentProps as ISocialModuleProfileChatOverviewDefaultComponentProps } from "./social-module/profile/chat/overview/default/interface";
 
 export type IComponentProps =
-  | IAIChatSettingsProps
   | IEcommerceModuleOrderCheckoutDefaultComponentProps
   | IEcommerceModuleOrderListCheckoutDefaultComponentProps
   | IEcommerceModuleOrderUpdateDefaultComponentProps

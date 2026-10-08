@@ -1,0 +1,27 @@
+{
+  "id": "host.metadata.admin-v2-select-input",
+  "title": "Host metadata / admin-v2-select-input",
+  "description": "Local Studio projection of Host metadata using the existing SDK fields and links.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "metadata",
+    "variant": "admin-v2-select-input"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.metadata",
+    "pageName": "host",
+    "variantName": "admin-v2-select-input",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

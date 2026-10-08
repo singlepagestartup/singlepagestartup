@@ -18,4 +18,4 @@ Relations live in the owning modules:
 
 Ordinary Source edits trigger text indexing. `POST /api/knowledge/sources/:id/reindex` rebuilds vectors from saved content. File relation mutations trigger full file analysis followed by indexing. Deleting a Source removes its chunks and relations and preserves Files.
 
-Frontend variants include the normal admin views, `chat-sidebar-item`, `chat-sidebar-detail`, and `ai-chat-editor`. Data access uses the Source SDK.
+Frontend variants include the normal admin views, `chat-sidebar-item`, and `chat-sidebar-detail`. Data access uses the Source SDK. The AI Chat editor prototype lives in `apps/studio/modules/knowledge/models/source/singlepage/ai-chat-editor`.

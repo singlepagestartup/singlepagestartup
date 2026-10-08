@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "@uiw/react-md-editor/markdown-editor.css";
 @import "tw-animate-css";
-@import "./presets/sps.css";
 
 @import "./presets/safelist.css";
 

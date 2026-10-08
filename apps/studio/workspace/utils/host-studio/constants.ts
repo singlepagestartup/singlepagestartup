@@ -1,0 +1,95 @@
+/** Studio descriptors mirror Host's existing fields; they do not define a schema. */
+export const HOST_STUDIO_MODELS = [
+  "page",
+  "layout",
+  "widget",
+  "metadata",
+] as const;
+export const HOST_STUDIO_FIELDS = {
+  page: [
+    "adminTitle",
+    "title",
+    "url",
+    "description",
+    "language",
+    "variant",
+    "className",
+  ],
+  layout: ["adminTitle", "title", "slug", "variant", "className"],
+  widget: ["adminTitle", "slug", "variant", "className"],
+  metadata: [
+    "title",
+    "description",
+    "keywords",
+    "author",
+    "viewport",
+    "variant",
+    "opengraphTitle",
+    "opengraphDescription",
+    "opengraphUrl",
+    "opengraphType",
+    "opengraphSiteName",
+    "opengraphLocale",
+    "twitterCard",
+    "twitterSite",
+    "twitterCreator",
+    "twitterTitle",
+    "twitterDescription",
+    "twitterUrl",
+    "twitterDomain",
+    "twitterAppCountry",
+  ],
+} as const;
+export const HOST_STUDIO_RELATIONS = {
+  "pages-to-layouts": {
+    owner: "page",
+    ownerKey: "pageId",
+    target: "layout",
+    targetKey: "layoutId",
+  },
+  "pages-to-widgets": {
+    owner: "page",
+    ownerKey: "pageId",
+    target: "widget",
+    targetKey: "widgetId",
+  },
+  "pages-to-metadata": {
+    owner: "page",
+    ownerKey: "pageId",
+    target: "metadata",
+    targetKey: "metadataId",
+  },
+  "layouts-to-widgets": {
+    owner: "layout",
+    ownerKey: "layoutId",
+    target: "widget",
+    targetKey: "widgetId",
+  },
+  "widgets-to-external-widgets": {
+    owner: "widget",
+    ownerKey: "widgetId",
+    target: null,
+    targetKey: "externalWidgetId",
+  },
+} as const;
+export const HOST_STUDIO_EXTERNAL_MODULES = [
+  "analytic",
+  "billing",
+  "blog",
+  "crm",
+  "ecommerce",
+  "file-storage",
+  "notification",
+  "rbac",
+  "social",
+  "startup",
+  "website-builder",
+] as const;
+export const HOST_STUDIO_SAMPLE_IDS = {
+  page: "00000000-0000-4000-8000-000000000001",
+  layout: "00000000-0000-4000-8000-000000000002",
+  header: "00000000-0000-4000-8000-000000000003",
+  content: "00000000-0000-4000-8000-000000000004",
+  footer: "00000000-0000-4000-8000-000000000005",
+  metadata: "00000000-0000-4000-8000-000000000006",
+} as const;

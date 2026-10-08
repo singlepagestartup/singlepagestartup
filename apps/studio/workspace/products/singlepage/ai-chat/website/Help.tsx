@@ -1,8 +1,8 @@
-import { Component } from "@sps/website-builder/models/widget/frontend/component/src/lib/singlepage/ai-chat-help";
+import { Component } from "../../../../../modules/website-builder/models/widget/singlepage/ai-chat-help/index";
 import sourceText from "./help.md?raw";
 import { parseAIChatServicePage } from "./content";
-import { AccountProvider } from "./../../../../../../../libs/shared/frontend/components/src/lib/singlepage/ai-chat/Account";
-import { aiChatAccount } from "../../../../../../../tools/studio/products/fixtures/ai-chat-account";
+import { AccountProvider } from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { aiChatAccount } from "../../../../utils/products/ai-chat-account-fixture";
 
 export default function Help({ text }: { text?: string } = {}) {
   return (

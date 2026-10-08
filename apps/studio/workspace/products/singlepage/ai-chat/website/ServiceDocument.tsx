@@ -1,1 +1,1 @@
-export * from "./../../../../../../../libs/shared/frontend/components/src/lib/singlepage/ai-chat/ServiceDocument";
+export * from "../../../../design/singlepage/interface-kit/ai-chat/ServiceDocument";

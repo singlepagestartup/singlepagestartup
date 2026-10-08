@@ -1,11 +1,3 @@
-import { Component as AIChatPageHelp } from "./ai-chat-help";
-import { Component as AIChatPageSettings } from "./ai-chat-settings";
-import { Component as AIChatPageTokens } from "./ai-chat-tokens";
-import { Component as AIChatPageProjectsProjectId } from "./ai-chat-projects-project-id";
-import { Component as AIChatPageProjectsNew } from "./ai-chat-projects-new";
-import { Component as AIChatPageLogin } from "./ai-chat-login";
-import { Component as AIChatPageRegister } from "./ai-chat-register";
-import { Component as AIChatPage } from "./ai-chat";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -21,14 +13,6 @@ import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 export const variants = {
-  "ai-chat-help": AIChatPageHelp,
-  "ai-chat-settings": AIChatPageSettings,
-  "ai-chat-tokens": AIChatPageTokens,
-  "ai-chat-projects-project-id": AIChatPageProjectsProjectId,
-  "ai-chat-projects-new": AIChatPageProjectsNew,
-  "ai-chat-login": AIChatPageLogin,
-  "ai-chat-register": AIChatPageRegister,
-  "ai-chat": AIChatPage,
   "url-segment-value": UrlSegmentValue,
   "find-by-url": FindByUrl,
   find: Find,

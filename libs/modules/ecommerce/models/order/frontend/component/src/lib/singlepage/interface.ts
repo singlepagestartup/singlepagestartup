@@ -1,4 +1,3 @@
-import { IComponentProps as IAIChatTokensProps } from "./ai-chat-tokens/interface";
 import { IComponentProps as IOrdersToProductsQuantityDefaultComponentProps } from "./orders-to-products/quantity/default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
@@ -17,7 +16,6 @@ import { IComponentProps as IDeleteComponentProps } from "./delete/interface";
 import { IComponentProps as ICartDefaultComponentProps } from "./cart-default/interface";
 import { IComponentProps as IFormFieldDefaultComponentProps } from "./form-field-default/interface";
 export type IComponentProps =
-  | IAIChatTokensProps
   | IOrdersToProductsQuantityDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
