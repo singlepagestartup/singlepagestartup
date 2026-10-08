@@ -24,6 +24,11 @@
         path: /home/code/docker-compose.postgres.yaml
         state: absent
 
+    - name: Remove PostgreSQL application role script
+      file:
+        path: /home/code/create_application_role.sh
+        state: absent
+
     # - name: Delete postgres_data directory
     #   file:
     #     path: /home/code/postgres_data

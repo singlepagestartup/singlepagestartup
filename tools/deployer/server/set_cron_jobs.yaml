@@ -4,6 +4,7 @@
   vars:
     api_service_url: "{{ API_SERVICE_URL }}"
     rbac_secret_key: "{{ RBAC_SECRET_KEY }}"
+    database_backup_retention_days: "{{ DATABASE_BACKUP_RETENTION_DAYS | default('14', true) }}"
   tasks:
     - name: docker image prune cron
       cron:
@@ -21,11 +22,11 @@
       file:
         path: /home/code/db_backups
         state: directory
-        mode: 0755
+        mode: "0700"
 
     - name: create postgres dump
       cron:
         name: "create postgres dump"
         minute: "0"
         hour: "0"
-        job: "/home/code/create_db_dump.sh"
+        job: "DATABASE_BACKUP_RETENTION_DAYS={{ database_backup_retention_days }} /home/code/create_db_dump.sh >> /home/code/create_db_dump.log 2>&1"

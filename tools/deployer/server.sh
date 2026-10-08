@@ -8,6 +8,7 @@ get_environment_type $2
 . ./get_env.sh
 
 RBAC_SECRET_KEY=$(get_env "$BASH_SOURCE" "RBAC_SECRET_KEY")
+DATABASE_BACKUP_RETENTION_DAYS=$(get_env_or_default "$BASH_SOURCE" "DATABASE_BACKUP_RETENTION_DAYS" "14")
 
 API_SERVICE_SUBDOMAIN=$(get_env "$BASH_SOURCE" "API_SERVICE_SUBDOMAIN")
 DOMAIN=$(get_env "$BASH_SOURCE" "DOMAIN")
@@ -29,4 +30,5 @@ ansible-playbook \
 ansible-playbook \
     ./server/set_cron_jobs.yaml \
     -e "API_SERVICE_URL=$API_SERVICE_URL \
-        RBAC_SECRET_KEY=$RBAC_SECRET_KEY"
+        RBAC_SECRET_KEY=$RBAC_SECRET_KEY \
+        DATABASE_BACKUP_RETENTION_DAYS=$DATABASE_BACKUP_RETENTION_DAYS"

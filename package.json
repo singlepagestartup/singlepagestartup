@@ -51,6 +51,7 @@
     "studio:presentation:export": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:presentation:export --",
     "studio:presentation:test": "bun test tools/studio apps/studio/workspace",
     "secrets:test": "bun test tools/dev/generate-secret.test.ts",
+    "database:test": "bun test tools/dev/create-env.test.ts tools/dev/create-db-dump.test.ts",
     "agents:editorial:test": "node --test tools/agents/editorial-pass.test.mjs",
     "agents:duplicates:check": "bun tools/agents/duplicate-sentences.ts",
     "agents:statements:check": "bun tools/agents/statement-form.ts",

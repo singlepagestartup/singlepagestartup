@@ -8,6 +8,7 @@ services:
     restart: always
     volumes:
       - ./db_data:/var/lib/postgresql/data
+      - ./create_application_role.sh:/docker-entrypoint-initdb.d/create_application_role.sh:ro
     env_file:
       - .env
     expose:
