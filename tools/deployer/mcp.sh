@@ -78,8 +78,17 @@ then
     exit 0
 fi
 
+configure_mcp_clients() {
+    ../mcp/setup-project-mcp.sh "$1" \
+        --env-file "$PWD/.env" \
+        --remote-url "https://$SERVICE_URL/mcp" \
+        --environment "${ENVIRONMENT_TYPE:-production}"
+}
+
 if [ "$1" != "down" ]
 then
+    configure_mcp_clients --check-clients || exit 1
+
     ./domain.sh present $SERVICE_URL $SERVICE_A && \
     ./pull_docker_image.sh "$DOCKER_HUB_URL/$DOCKER_HUB_SERVICE_REPOSITORY" "$ENVIRONMENT_TYPE" && \
     ansible-playbook \
@@ -110,7 +119,8 @@ then
             GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
             PORTAINER_URL=$PORTAINER_URL \
             SERVICE_URL=$SERVICE_URL \
-            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE"
+            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
+    configure_mcp_clients --write-clients
 else
     ansible-playbook \
         ./mcp/clear_github.yaml \

@@ -125,9 +125,109 @@ connecting. Keep custom auth headers empty for OAuth. Inspector should open
 
 If Inspector keeps reconnecting without `Authorization`, clear the Inspector browser session storage or restart Inspector. It caches OAuth clients and tokens by MCP server URL.
 
+## Generated Project Client Configs
+
+`./create_env.sh` and a successful `tools/deployer/mcp.sh up` generate remote
+MCP configuration in the checkout. Generation during ENV creation requires
+`MCP_SERVICE_NAME` and `DOMAIN` in `tools/deployer/.env`, or an explicit
+`MCP_SERVICE_PUBLIC_URL`. Runtime container ENV creation and `mcp.sh down` do
+not generate client files.
+
+For a downstream project such as `m2commerce`, configure its deployer:
+
+```dotenv
+GITHUB_REPOSITORY=owner/m2commerce
+DOMAIN=m2commerce.ru
+MCP_SERVICE_NAME=mcp
+MCP_SERVICE_SUBDOMAIN=mcp
+MCP_CLIENT_OPENCODE_VERSION=auto
+```
+
+The connector is named `m2commerce-production` and points to
+`https://mcp.m2commerce.ru/mcp`. Preview deployment uses the deployer's actual
+domain and a separate `<repo-name>-preview` connector. A deployment passes its
+computed HTTPS endpoint to the generator, so client configuration matches the
+service address.
+
+| Client                                                                                  | Project file                                         | Remote server format                                                      |
+| --------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------- |
+| [OpenCode V1](https://opencode.ai/docs/mcp-servers/)                                    | `opencode.json` or existing JSONC config             | `mcp.<name>`, `type: remote`, `enabled: true`                             |
+| [OpenCode V2](https://opencode.ai/v2/docs/mcp-servers/)                                 | Same file, including an existing `.opencode/` config | `mcp.servers.<name>`, `type: remote`; connects by default                 |
+| [Claude Code](https://code.claude.com/docs/en/mcp)                                      | `.mcp.json`                                          | `mcpServers.<name>`, `type: http`                                         |
+| [Codex](https://developers.openai.com/codex/mcp/)                                       | `.codex/config.toml`                                 | `[mcp_servers."<name>"]`, `url`; requires a trusted project               |
+| [Cursor](https://cursor.com/docs/mcp)                                                   | `.cursor/mcp.json`                                   | `mcpServers.<name>`, `url`                                                |
+| [VS Code / Copilot](https://code.visualstudio.com/docs/agent-customization/mcp-servers) | `.vscode/mcp.json`                                   | `servers.<name>`, `type: http`; current Copilot also supports `.mcp.json` |
+
+`auto` retains the format of an existing OpenCode MCP configuration. For a new
+config it detects `opencode --version`, falling back to V2 when detection is
+unavailable. Set `MCP_CLIENT_OPENCODE_VERSION=1` or `2` to choose the format for
+a new file. An existing config with a different format requires migration
+before applying that override; the generator does not migrate other OpenCode
+settings.
+
+The client generator runs on Bun and uses its built-in TOML parser without
+additional npm dependencies. The project dependency and CI use Bun 1.3.6. The
+launcher disables automatic `.env` loading; only the existing process variables
+and selected deployer file determine client settings.
+
+Regenerate the files without deploying:
+
+```bash
+npm run mcp:clients:generate
+```
+
+Or supply the endpoint explicitly:
+
+```bash
+npm run mcp:clients:generate -- --remote-url https://mcp.m2commerce.ru/mcp
+```
+
+The URL resolution order is `--remote-url`, process `MCP_SERVICE_PUBLIC_URL`,
+deployer `MCP_SERVICE_PUBLIC_URL`, then the deployer's subdomain and domain.
+`MCP_SERVICE_URL` is the internal API-to-MCP address and is not a client URL.
+The generator prints setup commands when run without `--write-clients`.
+
+Generation preserves other servers, client settings, and comments outside the
+updated server entry. JSON client entries with the generated name are replaced;
+Codex updates that server's URL. Invalid configuration aborts generation before
+any client file is written. Repeat runs with the same inputs leave the files
+unchanged. Generated remote entries contain public URLs and OAuth settings,
+without RBAC secrets or bearer tokens.
+
+`mcp.sh up` validates generation with `--check-clients` before DNS changes,
+image pulls, or MCP playbooks. It writes the configs after deployment succeeds.
+
+Authenticate from the project root after generation:
+
+```bash
+opencode mcp auth m2commerce-production
+codex mcp login m2commerce-production --scopes mcp:content
+```
+
+Claude Code uses `/mcp`; Cursor and VS Code use their MCP settings. Sign in with
+the deployed project's account. Generation configures the connection; each
+client stores its own OAuth session. ChatGPT and Claude web connectors are
+configured in their UI with the same HTTPS URL.
+
+GitHub Actions exports an `mcp-client-configs` artifact after successful MCP
+deployment. It contains only the generated public connector entries and uses
+the source project's OpenCode format. It does not include existing client
+credentials or change repository files remotely. To generate the merged files
+in a developer checkout, run `npm run mcp:clients:generate` there. The
+`MCP_CLIENT_CONFIG_OUTPUT_DIR` environment variable or `--output-dir` option
+selects an export directory instead of the checkout.
+
+Validate the generator and bootstrap/deployment hooks with:
+
+```bash
+npm run mcp:clients:test
+```
+
 ## Codex Client Setup
 
-Codex uses its own MCP configuration. Project `.mcp.json` is not enough for Codex Desktop/CLI to show this server in active MCP settings.
+Codex uses `.codex/config.toml` in a trusted project. The generated remote entry
+is ready for `codex mcp login`; `.mcp.json` alone does not configure Codex.
+The commands below also support manual registration through the client's CLI.
 
 Print repo-derived Codex and Claude setup commands:
 
@@ -197,7 +297,9 @@ claude mcp add --transport http "${REPO_NAME}-local" http://127.0.0.1:3001/mcp
 
 `claude mcp add` only registers the server. Start Claude Code, run `/mcp`, select the server, and authenticate there. Claude should open the OAuth login page; if it does not, open the URL it prints manually.
 
-This repository's project `.mcp.json` intentionally keeps `<repo-name>` as the local SinglePageStartup MCP. Use `<repo-name>-production` for the deployed connector to avoid name and precedence conflicts.
+Generation adds `<repo-name>-production` to `.mcp.json` and preserves local
+entries. The legacy `--write-project` option adds a local stdio entry named
+`<repo-name>`; it does not configure the other clients.
 
 To apply Claude Code configuration from the helper, pass a real production URL:
 

@@ -16,9 +16,15 @@ jobs:
     defaults:
       run:
         working-directory: ./tools/deployer
+    env:
+      MCP_CLIENT_CONFIG_OUTPUT_DIR: ${{ runner.temp }}/mcp-client-configs
     steps:
       - name: Check out repository code
         uses: actions/checkout@v5
+      - name: Set up MCP config generator Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.6"
       - name: Set script file name
         id: set-script-file-name
         run: echo "SCRIPT_FILE_NAME=$(echo ${{ github.ref_name }} | cut -d'-' -f2)" >> $GITHUB_OUTPUT
@@ -86,6 +92,7 @@ jobs:
             "WHISPER_COMPUTE_TYPE ${{ secrets.PREVIEW_WHISPER_COMPUTE_TYPE }}"\
             "MCP_SERVICE_NAME ${{ secrets.PREVIEW_MCP_SERVICE_NAME }}"\
             "MCP_SERVICE_SUBDOMAIN ${{ secrets.PREVIEW_MCP_SERVICE_SUBDOMAIN }}"\
+            "MCP_CLIENT_OPENCODE_VERSION ${{ secrets.PREVIEW_MCP_CLIENT_OPENCODE_VERSION }}"\
             "MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.PREVIEW_MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK ${{ secrets.PREVIEW_MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK }}"\
             "MCP_SERVICE_ALLOWED_ORIGINS ${{ secrets.PREVIEW_MCP_SERVICE_ALLOWED_ORIGINS }}"\
@@ -205,6 +212,7 @@ jobs:
             "WHISPER_COMPUTE_TYPE ${{ secrets.WHISPER_COMPUTE_TYPE }}"\
             "MCP_SERVICE_NAME ${{ secrets.MCP_SERVICE_NAME }}"\
             "MCP_SERVICE_SUBDOMAIN ${{ secrets.MCP_SERVICE_SUBDOMAIN }}"\
+            "MCP_CLIENT_OPENCODE_VERSION ${{ secrets.MCP_CLIENT_OPENCODE_VERSION }}"\
             "MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK ${{ secrets.MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK }}"\
             "MCP_SERVICE_ALLOWED_ORIGINS ${{ secrets.MCP_SERVICE_ALLOWED_ORIGINS }}"\
@@ -274,3 +282,11 @@ jobs:
       - name: Run service script
         run: |
           ./$(echo ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}).sh
+      - name: Upload generated MCP client configs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-client-configs
+          path: ${{ runner.temp }}/mcp-client-configs
+          include-hidden-files: true
+          if-no-files-found: ignore
