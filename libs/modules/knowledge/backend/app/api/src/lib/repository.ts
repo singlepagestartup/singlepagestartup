@@ -19,6 +19,7 @@ import { Repository as FileRelationRepository } from "@sps/knowledge/relations/s
 import { Configuration as FileRelationConfiguration } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/configuration";
 import { Repository as FileRepository } from "@sps/file-storage/models/file/backend/app/api/src/lib/repository";
 import { Configuration as FileConfiguration } from "@sps/file-storage/models/file/backend/app/api/src/lib/configuration";
+import { Service as FileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import { readUserContext, hashContent } from "./service/utils";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -425,7 +426,7 @@ export class KnowledgeRepository {
   async mutateStoredFile(props: {
     action: "update" | "delete";
     id: string;
-    data?: any;
+    data?: Partial<typeof FileTable.$inferSelect>;
   }) {
     return this.db.transaction(async (tx) => {
       await this.lockFiles(tx, [props.id], "update");
@@ -444,7 +445,7 @@ export class KnowledgeRepository {
       const sources = await this.lockSources(tx, sourceIds);
       const repository = new FileRepository(new FileConfiguration());
       repository.db = tx;
-      const crud = new CRUDService<typeof FileTable.$inferSelect>(repository);
+      const crud = new FileService(repository);
       const previous = await crud.findById({ id: props.id });
       if (!previous) throw new Error("Stored file was not found.");
       const file =

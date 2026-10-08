@@ -20,6 +20,13 @@ Content contains `Контекст пользователя`, `Сведения 
 
 Adding, detaching, replacing, reordering, or moving a File relation invalidates generated content and chunks atomically and analyzes all current Files. Moving a relation rebuilds both Sources. Physical File deletion captures affected Sources before cascade. Source deletion and relation detachment preserve stored Files. Failed analysis leaves human text and attachments available for retry and does not publish partial descriptions. Conditional publication rejects a changed content hash or attachment snapshot.
 
+Stored File updates and deletions that affect Knowledge go through
+`KnowledgeService.updateStoredFile` and `deleteStoredFile`. Knowledge captures
+the affected Sources and calls the File Storage service in its transaction,
+then rebuilds every affected Source from its current attachments. File Storage
+has no dependency on Knowledge and does not start analysis itself. Its service
+owns deletion of the original stored bytes and the File record.
+
 ## Indexing and search
 
 The server computes SHA-256 `contentHash` from content with normalized line endings and outer whitespace. Indexing chunks the saved content, validates embedding count and dimensions, and replaces chunks in a transaction. It publishes only if the Source still has the processed hash. Success sets `indexedContentHash` and `lastIndexedAt` through ordinary framework CRUD.
@@ -44,6 +51,8 @@ Origin and citation links use `messages-to-knowledge-module-sources` with `kind=
 - `POST /api/knowledge/search`, `POST /api/knowledge/generate`.
 - `POST /api/knowledge/index`.
 - `POST /api/knowledge/sources/:id/reindex`.
+- `PATCH /api/knowledge/files/:id` with `{ "data": { ...fileFields } }`.
+- `DELETE /api/knowledge/files/:id`: delete a stored File and rebuild its Sources.
 - Generated CRUD for Source, Chunk, `sources-to-chunks`, and `sources-to-file-storage-module-files`.
 
 The Knowledge module SDK uses `sourceIds` and `reindexSource`. Source content editing uses its model SDK or the scoped RBAC SDK. The chat sidebar provides Files open/add/replace/detach actions; it saves text changes before changing attachments. Open displays the original stored File in a new browser tab. Analyze files repeats analysis of all current attachments and indexing; Reindex only rebuilds the saved text's index.

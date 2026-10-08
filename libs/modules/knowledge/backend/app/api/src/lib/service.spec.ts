@@ -26,6 +26,83 @@ function createSearchResult(
 }
 
 describe("knowledge service", () => {
+  describe("stored file mutations", () => {
+    function setup() {
+      const file = { id: "file", file: "/report.txt" };
+      const mutateStoredFile = jest.fn().mockResolvedValue({
+        file,
+        sourceIds: ["source-1", "source-2"],
+      });
+      const service = new KnowledgeService({
+        repository: { mutateStoredFile } as any,
+        embeddingClient: {} as any,
+        generationClient: {} as any,
+        modelClient: {} as any,
+      });
+      const rebuildFiles = jest
+        .spyOn(service, "rebuildFiles")
+        .mockResolvedValue(undefined);
+      return { file, mutateStoredFile, service, rebuildFiles };
+    }
+
+    it.each(["update", "delete"] as const)(
+      "rebuilds every affected Source after a stored file %s commits",
+      async (action) => {
+        const state = setup();
+        const data = { alt: "Updated report" };
+        const result =
+          action === "update"
+            ? await state.service.updateStoredFile({ id: state.file.id, data })
+            : await state.service.deleteStoredFile({ id: state.file.id });
+
+        expect(result).toBe(state.file);
+        expect(state.mutateStoredFile).toHaveBeenCalledWith({
+          action,
+          id: state.file.id,
+          ...(action === "update" ? { data } : {}),
+        });
+        expect(state.rebuildFiles.mock.calls).toEqual([
+          ["source-1"],
+          ["source-2"],
+        ]);
+        expect(state.mutateStoredFile.mock.invocationCallOrder[0]).toBeLessThan(
+          state.rebuildFiles.mock.invocationCallOrder[0],
+        );
+      },
+    );
+
+    it("does not rebuild Sources when the File Storage mutation fails", async () => {
+      const state = setup();
+      state.mutateStoredFile.mockRejectedValueOnce(
+        new Error("file deletion failed"),
+      );
+
+      await expect(
+        state.service.deleteStoredFile({ id: state.file.id }),
+      ).rejects.toThrow("file deletion failed");
+      expect(state.rebuildFiles).not.toHaveBeenCalled();
+    });
+
+    it("still rebuilds other Sources when one material analysis fails", async () => {
+      const state = setup();
+      const error = new Error("vision unavailable");
+      state.rebuildFiles.mockRejectedValueOnce(error);
+      const log = jest.spyOn(console, "error").mockImplementation(() => {});
+      try {
+        await expect(
+          state.service.deleteStoredFile({ id: state.file.id }),
+        ).resolves.toBe(state.file);
+        expect(state.rebuildFiles).toHaveBeenCalledWith("source-2");
+        expect(log).toHaveBeenCalledWith(
+          "Knowledge rebuild after stored file change failed",
+          "source-1",
+          error,
+        );
+      } finally {
+        log.mockRestore();
+      }
+    });
+  });
   /**
    * BDD Scenario: empty search query.
    *

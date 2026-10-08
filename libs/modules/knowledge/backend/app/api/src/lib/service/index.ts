@@ -128,6 +128,42 @@ export class KnowledgeService {
     return this.repository.deleteSourceWithDerivedData(sourceId);
   }
 
+  async updateStoredFile(props: {
+    id: string;
+    data: NonNullable<
+      Parameters<KnowledgeRepository["mutateStoredFile"]>[0]["data"]
+    >;
+  }) {
+    if (
+      !props.data ||
+      typeof props.data !== "object" ||
+      Array.isArray(props.data)
+    )
+      throw new Error("Validation error. File data must be an object.");
+    return this.mutateStoredFile({ action: "update", ...props });
+  }
+
+  async deleteStoredFile(props: { id: string }) {
+    return (await this.mutateStoredFile({ action: "delete", ...props }))!;
+  }
+
+  private async mutateStoredFile(
+    props: Parameters<KnowledgeRepository["mutateStoredFile"]>[0],
+  ) {
+    const result = await this.repository.mutateStoredFile(props);
+    const results = await Promise.allSettled(
+      result.sourceIds.map((sourceId) => this.rebuildFiles(sourceId)),
+    );
+    for (const [index, rebuild] of results.entries())
+      if (rebuild.status === "rejected")
+        console.error(
+          "Knowledge rebuild after stored file change failed",
+          result.sourceIds[index],
+          rebuild.reason,
+        );
+    return result.file;
+  }
+
   async search(props: {
     query: string;
     topK?: number;

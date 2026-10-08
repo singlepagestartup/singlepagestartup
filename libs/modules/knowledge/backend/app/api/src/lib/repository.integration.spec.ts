@@ -10,6 +10,7 @@ import { Table as SourceFileTable } from "@sps/knowledge/relations/sources-to-fi
 import { eq, sql } from "drizzle-orm";
 import { assembleContent, hashContent } from "./service/utils";
 import { randomUUID } from "node:crypto";
+import { Provider } from "@sps/providers-file-storage";
 
 const repository = new KnowledgeRepository();
 const db = getDrizzle({ SourceTable, ChunkTable, FileTable, SourceFileTable });
@@ -42,6 +43,10 @@ afterAll(async () => {
   for (const id of fileIds)
     await db.delete(FileTable).where(eq(FileTable.id, id));
   await getPostgresClient().end();
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 describe("Knowledge Source transactions", () => {
@@ -223,10 +228,14 @@ describe("Knowledge Source transactions", () => {
       ).toEqual([]);
       expect(await repository.sourceFiles(item.id)).toHaveLength(1);
     }
+    const deleteBytes = jest
+      .spyOn(Provider.prototype, "deleteFile")
+      .mockResolvedValue(undefined);
     const removed = await repository.mutateStoredFile({
       action: "delete",
       id: file.id,
     });
+    expect(deleteBytes).toHaveBeenCalledWith({ name: "shared-test.txt" });
     expect(removed.sourceIds.sort()).toEqual([first.id, second.id].sort());
     for (const item of [first, second]) {
       expect(await repository.sourceFiles(item.id)).toEqual([]);

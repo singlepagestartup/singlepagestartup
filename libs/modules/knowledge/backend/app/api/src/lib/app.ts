@@ -103,5 +103,21 @@ export class App implements IDefaultApp<Env> {
       const data = await service.reindexSource(c.req.param("id"));
       return c.json({ data });
     });
+
+    this.hono.patch("/files/:id", async (c) => {
+      const service = new KnowledgeService();
+      const body = await c.req.json();
+      const data = await service.updateStoredFile({
+        id: c.req.param("id"),
+        data: body.data,
+      });
+      return c.json({ data });
+    });
+
+    this.hono.delete("/files/:id", async (c) => {
+      const service = new KnowledgeService();
+      const data = await service.deleteStoredFile({ id: c.req.param("id") });
+      return c.json({ data });
+    });
   }
 }

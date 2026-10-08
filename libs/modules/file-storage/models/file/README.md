@@ -4,6 +4,10 @@
 
 Files store uploaded media and metadata for images, videos, and documents.
 
+File Storage does not import Knowledge. Its service deletes the stored bytes
+and the File record, and ordinary updates use the model's CRUD repository.
+Knowledge owns operations that also rebuild Sources using that File.
+
 ## Fields
 
 - `id`: unique identifier (UUID).
