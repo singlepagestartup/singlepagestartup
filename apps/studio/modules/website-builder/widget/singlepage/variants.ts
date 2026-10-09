@@ -2,13 +2,13 @@ import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Navigation } from "./admin-v2-navigation/index";
 import { Component as AdminV2RichEditor } from "./admin-v2-rich-editor/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
-import { Component as ContinueAiChat } from "./continue/ai-chat/index";
+import { Component as ContentAiChatContinue } from "./content/ai-chat/continue/index";
 import { Component as FooterAiChat } from "./footer/ai-chat/index";
-import { Component as HeaderAiChat } from "./header/ai-chat/index";
-import { Component as HelpAiChat } from "./help/ai-chat/index";
-import { Component as HeroAiChat } from "./hero/ai-chat/index";
-import { Component as HeaderLandingAiChat } from "./header/landing/ai-chat/index";
-import { Component as TryAiChat } from "./try/ai-chat/index";
+import { Component as NavbarAiChat } from "./navbar/ai-chat/index";
+import { Component as ContentAiChatHelp } from "./content/ai-chat/help/index";
+import { Component as ContentAiChatHero } from "./content/ai-chat/hero/index";
+import { Component as NavbarAiChatLanding } from "./navbar/ai-chat/landing/index";
+import { Component as ContentAiChatTry } from "./content/ai-chat/try/index";
 import { Component as ContentButtonsArrayFindDefault } from "./content-buttons-array-find-default/index";
 import { Component as ContentCta } from "./content-cta/index";
 import { Component as ContentDefault } from "./content-default/index";
@@ -33,13 +33,13 @@ export const variants = {
   "admin-v2-navigation": AdminV2Navigation,
   "admin-v2-rich-editor": AdminV2RichEditor,
   "admin-v2-table": AdminV2Table,
-  "continue-ai-chat": ContinueAiChat,
+  "content-ai-chat-continue": ContentAiChatContinue,
   "footer-ai-chat": FooterAiChat,
-  "header-ai-chat": HeaderAiChat,
-  "help-ai-chat": HelpAiChat,
-  "hero-ai-chat": HeroAiChat,
-  "header-landing-ai-chat": HeaderLandingAiChat,
-  "try-ai-chat": TryAiChat,
+  "navbar-ai-chat": NavbarAiChat,
+  "content-ai-chat-help": ContentAiChatHelp,
+  "content-ai-chat-hero": ContentAiChatHero,
+  "navbar-ai-chat-landing": NavbarAiChatLanding,
+  "content-ai-chat-try": ContentAiChatTry,
   "content-buttons-array-find-default": ContentButtonsArrayFindDefault,
   "content-cta": ContentCta,
   "content-default": ContentDefault,

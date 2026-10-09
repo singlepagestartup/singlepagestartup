@@ -84,7 +84,7 @@ const copies = {
   register: "rbac/identity/authentication/register/ai-chat",
   login: "rbac/identity/authentication/login/ai-chat",
   settings: "rbac/subject/account-data",
-  help: "website-builder/widget/help/ai-chat",
+  help: "website-builder/widget/content/ai-chat/help",
   tokens: "ecommerce/order/checkout/tokens/ai-chat",
 };
 const website = servicePaths(
@@ -95,18 +95,18 @@ publish(
   JSON.stringify(website, null, 2) + "\n",
 );
 const landingCopies = {
-  "hero/ai-chat": {
+  "content/ai-chat/hero": {
     hero: website.hero,
     labels: {
       "hero-photo-alt": website.labels["hero-photo-alt"],
       "navigation-foundation": website.labels["navigation-foundation"],
     },
   },
-  "try/ai-chat": {
+  "content/ai-chat/try": {
     workflow: website.workflow,
     uploadNote: website.labels["demo-upload-note"],
   },
-  "continue/ai-chat": {
+  "content/ai-chat/continue": {
     continue: website.continue,
     terms: website.terms,
     startLink: website.hero.links[0],

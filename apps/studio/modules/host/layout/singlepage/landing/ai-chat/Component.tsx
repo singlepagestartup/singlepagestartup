@@ -25,7 +25,7 @@ export function Component({
         Skip to page content
       </a>
       <WebsiteBuilderModuleWidget
-        variant="header-landing-ai-chat"
+        variant="navbar-ai-chat-landing"
         subjectAccount={subjectAccount}
       />
       <div className="min-w-0 flex-1">{children}</div>

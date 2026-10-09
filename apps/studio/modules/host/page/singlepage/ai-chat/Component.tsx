@@ -22,11 +22,11 @@ export function Component({ content }: IAIChatPageProps = {}) {
         className="outline-none"
       >
         <WebsiteBuilderModuleWidget
-          variant="hero-ai-chat"
+          variant="content-ai-chat-hero"
           content={content && { hero: content.hero, labels: content.labels }}
         />
         <WebsiteBuilderModuleWidget
-          variant="try-ai-chat"
+          variant="content-ai-chat-try"
           content={
             content && {
               workflow: content.workflow,
@@ -40,7 +40,7 @@ export function Component({ content }: IAIChatPageProps = {}) {
           />
         </WebsiteBuilderModuleWidget>
         <WebsiteBuilderModuleWidget
-          variant="continue-ai-chat"
+          variant="content-ai-chat-continue"
           content={
             content && {
               continue: content.continue,

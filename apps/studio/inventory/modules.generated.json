@@ -5831,9 +5831,9 @@
           "storyFiles": [
             "apps/studio/modules/website-builder/button/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/button/singlepage/header/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/link/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/website-builder/button/singlepage/navbar/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/navigation/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/primary/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/secondary/Component.stories.tsx"
@@ -5928,9 +5928,9 @@
             "apps/studio/modules/website-builder/buttons-array/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/website-builder/buttons-array/singlepage/admin-v2-table/Component.stories.tsx",
             "apps/studio/modules/website-builder/buttons-array/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/buttons-array/singlepage/header/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/buttons-array/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/website-builder/buttons-array/singlepage/navbar-default/Component.stories.tsx"
+            "apps/studio/modules/website-builder/buttons-array/singlepage/navbar-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/buttons-array/singlepage/navbar/ai-chat/Component.stories.tsx"
           ]
         },
         {
@@ -6438,17 +6438,17 @@
             "apps/studio/modules/website-builder/widget/singlepage/content-page-header/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-rich/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-testimonials/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/continue/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/continue/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/help/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/hero/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/try/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/footer-compact/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/footer-default/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/footer/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/header/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/header/landing/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/help/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/hero/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/navbar-default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/try/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/navbar/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/navbar/ai-chat/landing/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/startup/content-default/Component.stories.tsx"
           ]
         }

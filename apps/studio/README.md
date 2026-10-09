@@ -228,17 +228,17 @@ tokens, project creation, project content, project settings and thread creation.
 Pages use the public model entries. The website Preview adapter handles local
 navigation between those pages.
 
-Layout `landing-ai-chat` composes Website Builder `header-landing-ai-chat` and
-`footer-ai-chat`. Its Subject slot is supplied by Page. The landing header uses
+Layout `landing-ai-chat` composes Website Builder `navbar-ai-chat-landing` and
+`footer-ai-chat`. Its Subject slot is supplied by Page. The landing navbar uses
 the same `brand-ai-chat` Logotype as the service screens. Try the chat is a Button
-record displayed through Buttons Array. Page places `hero-ai-chat`, `try-ai-chat`
-and `continue-ai-chat` inside the Layout, and supplies Social Chat as the `children`
-of `try-ai-chat`. Each Widget has its own generated content fixture. The Social
+record displayed through Buttons Array. Page places `content-ai-chat-hero`, `content-ai-chat-try`
+and `content-ai-chat-continue` inside the Layout, and supplies Social Chat as the `children`
+of `content-ai-chat-try`. Each Widget has its own generated content fixture. The Social
 preview reads `utils/products/ai-chat-website.generated.json`; editable website
 documents pass their content override through Host Page.
 
-Layout `service-ai-chat` owns its themed container, Website Builder header and footer.
-Pages supply `profileSelect` and `subjectAccount` slots. The header directly
+Layout `service-ai-chat` owns its themed container, Website Builder navbar and footer.
+Pages supply `profileSelect` and `subjectAccount` slots. The navbar directly
 composes Logotype, Buttons Array and Button models; Help is a Button example.
 Website Builder imports no Social, RBAC or Host components.
 
@@ -250,7 +250,14 @@ also be supplied. Navbar uses Logotype and Buttons Array → Button for navigati
 Account state and its dropdown belong to Subject. Admin Panel is visible in
 that dropdown after sign-in. The compact footer contains no admin link.
 
-Studio variants name their purpose first and presentation last: `overview-ai-chat`
+Website Builder variants classify their content and navigation: editable blocks
+use `content-ai-chat-hero`, `content-ai-chat-try`, `content-ai-chat-continue` and
+`content-ai-chat-help`; navigation uses `navbar-ai-chat` and
+`navbar-ai-chat-landing`; the footer uses `footer-ai-chat`. Button and Buttons
+Array use `navbar-ai-chat` for the navbar's links. Nested folders mirror those
+keys, for example `singlepage/content/ai-chat/hero`.
+
+Other Studio models name their variants by purpose, with presentation last: `overview-ai-chat`
 displays one model, `list-ai-chat` displays records, and
 `project-select-item-ai-chat` identifies a Project Select item. Folders group
 purpose as in `singlepage/project/select/item/ai-chat`. Host Page variants and

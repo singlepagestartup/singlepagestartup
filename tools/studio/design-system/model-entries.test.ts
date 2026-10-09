@@ -245,7 +245,7 @@ test("Studio module stories display models without relation or API filter contra
   }
 });
 
-test("AI Chat model variants put purpose before visual style and mirror nested folders", () => {
+test("AI Chat model variants classify their purpose and mirror nested folders", () => {
   let checked = 0;
   for (const file of files(modules).filter((file) =>
     file.endsWith("/block.manifest.json"),
@@ -259,7 +259,13 @@ test("AI Chat model variants put purpose before visual style and mirror nested f
     )
       continue;
     expect(variant.startsWith("ai-chat")).toBe(false);
-    expect(variant.endsWith("-ai-chat")).toBe(true);
+    if (module === "website-builder") {
+      expect(variant).toMatch(
+        /^(content-ai-chat-.+|navbar-ai-chat(?:-.+)?|footer-ai-chat|brand-ai-chat)$/,
+      );
+    } else {
+      expect(variant.endsWith("-ai-chat")).toBe(true);
+    }
     const variantPath = path.relative(
       path.join(modules, module, entity, "singlepage"),
       path.dirname(file),

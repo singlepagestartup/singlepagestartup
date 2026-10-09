@@ -23,7 +23,7 @@ export default function Help({ text }: { text?: string } = {}) {
         )}
       >
         <WebsiteBuilderModuleWidget
-          variant="help-ai-chat"
+          variant="content-ai-chat-help"
           copy={parseAIChatServicePage(text ?? sourceText)}
         />
       </HostModuleLayout>

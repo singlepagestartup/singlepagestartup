@@ -23,8 +23,8 @@
       "path": "../../../layout/singlepage/service/ai-chat"
     },
     {
-      "id": "website-builder.widget.help-ai-chat",
-      "path": "../../../../website-builder/widget/singlepage/help/ai-chat"
+      "id": "website-builder.widget.content-ai-chat-help",
+      "path": "../../../../website-builder/widget/singlepage/content/ai-chat/help"
     },
     {
       "id": "rbac.subject.account",

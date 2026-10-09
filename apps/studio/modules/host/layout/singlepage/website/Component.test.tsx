@@ -15,10 +15,10 @@ test("landing Page places native widgets inside one Layout and injects Subject a
   ]);
   const header = html.match(/<header\b[\s\S]*?<\/header>/)?.[0] ?? "";
   for (const block of [
-    "website-builder.widget.header-landing-ai-chat",
+    "website-builder.widget.navbar-ai-chat-landing",
     "website-builder.logotype.brand-ai-chat",
-    "website-builder.buttons-array.header-ai-chat",
-    "website-builder.button.header-ai-chat",
+    "website-builder.buttons-array.navbar-ai-chat",
+    "website-builder.button.navbar-ai-chat",
     "rbac.subject.account",
   ])
     expect(header).toContain(`data-ds-block="${block}"`);
@@ -28,11 +28,15 @@ test("landing Page places native widgets inside one Layout and injects Subject a
     'data-ds-block="website-builder.widget.footer-ai-chat"',
   );
   const main = html.match(/<main\b[\s\S]*?<\/main>/)?.[0] ?? "";
-  for (const block of ["hero-ai-chat", "try-ai-chat", "continue-ai-chat"])
+  for (const block of [
+    "content-ai-chat-hero",
+    "content-ai-chat-try",
+    "content-ai-chat-continue",
+  ])
     expect(main).toContain(`data-ds-block="website-builder.widget.${block}"`);
   expect(main).toContain("Check materials");
   expect(main).not.toContain(
-    'data-ds-block="website-builder.widget.header-landing-ai-chat"',
+    'data-ds-block="website-builder.widget.navbar-ai-chat-landing"',
   );
   expect(main).not.toContain("<footer");
 });

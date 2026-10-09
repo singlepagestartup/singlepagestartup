@@ -23,16 +23,16 @@
       "path": "../../../layout/singlepage/landing/ai-chat"
     },
     {
-      "id": "website-builder.widget.hero-ai-chat",
-      "path": "../../../../website-builder/widget/singlepage/hero/ai-chat"
+      "id": "website-builder.widget.content-ai-chat-hero",
+      "path": "../../../../website-builder/widget/singlepage/content/ai-chat/hero"
     },
     {
-      "id": "website-builder.widget.try-ai-chat",
-      "path": "../../../../website-builder/widget/singlepage/try/ai-chat"
+      "id": "website-builder.widget.content-ai-chat-try",
+      "path": "../../../../website-builder/widget/singlepage/content/ai-chat/try"
     },
     {
-      "id": "website-builder.widget.continue-ai-chat",
-      "path": "../../../../website-builder/widget/singlepage/continue/ai-chat"
+      "id": "website-builder.widget.content-ai-chat-continue",
+      "path": "../../../../website-builder/widget/singlepage/content/ai-chat/continue"
     },
     {
       "id": "social.chat.overview-preview-ai-chat",

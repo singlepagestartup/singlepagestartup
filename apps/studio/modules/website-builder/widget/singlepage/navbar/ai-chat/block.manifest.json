@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.widget.navbar-ai-chat",
+  "title": "navbar-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Navbar composes Website Builder Logotype and Buttons Array. Host Page supplies Profile Select and Subject Account through its Layout slots.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "navbar-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "navbar-ai-chat"
+  },
+  "contentSlots": []
+}

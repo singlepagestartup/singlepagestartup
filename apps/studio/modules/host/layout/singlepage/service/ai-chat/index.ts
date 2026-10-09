@@ -1,1 +1,1 @@
-export { Component, type IAIChatHeaderLayoutProps } from "./Component";
+export { Component, type IServiceAiChatLayoutProps } from "./Component";

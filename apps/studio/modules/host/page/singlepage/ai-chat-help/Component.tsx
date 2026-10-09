@@ -20,7 +20,7 @@ export function Component() {
       )}
     >
       <WebsiteBuilderModuleWidget
-        variant="help-ai-chat"
+        variant="content-ai-chat-help"
         projectHref={projectHref}
       />
     </HostModuleLayout>
