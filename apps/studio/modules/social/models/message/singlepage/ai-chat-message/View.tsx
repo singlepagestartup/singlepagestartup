@@ -1,5 +1,5 @@
 "use client";
-import { memo, useCallback, useRef, useEffect, useState } from "react";
+import { memo } from "react";
 import {
   Icon,
   kit,
@@ -13,72 +13,17 @@ import {
   ProjectFilePreview,
 } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/View";
 
-import {
-  documentAgent,
-  type IProjectAgent,
-} from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
-import {
-  ProjectAgentAvatar,
-  ProjectAgentProfile,
-} from "../../../profile/singlepage/ai-chat-agent/View";
+import { type IProjectAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
+import { ProjectAgentAvatar } from "../../../profile/singlepage/ai-chat-agent/View";
 
-export interface IConversationProps {
-  messages: IProjectMessage[];
-  agent?: IProjectAgent | null;
-  showContext?: boolean;
-  className?: string;
-}
-
-export function ProjectConversation({
-  messages,
-  agent = documentAgent("thread"),
-  showContext = true,
-  className = "",
-}: IConversationProps) {
-  const [profile, setProfile] = useState<IProjectAgent | null>(null);
-  const selectProfile = useCallback(
-    (selected: IProjectAgent) => setProfile(selected),
-    [],
-  );
-  const end = useRef<HTMLDivElement>(null);
-  const previous = useRef(messages.length);
-  useEffect(() => {
-    if (messages.length > previous.current)
-      end.current?.scrollIntoView({ block: "nearest", behavior: "instant" });
-    previous.current = messages.length;
-  }, [messages.length]);
-  return (
-    <>
-      <div
-        role="log"
-        aria-label="Conversation"
-        aria-live="polite"
-        className={`${className} space-y-6 p-4 @[640px]:p-6`}
-      >
-        {messages.map((message) => (
-          <ProjectMessageRow
-            key={message.id}
-            message={message}
-            agent={message.agent === undefined ? agent : message.agent}
-            onSelect={selectProfile}
-            showContext={showContext}
-          />
-        ))}
-        <div ref={end} />
-      </div>
-      <ProjectAgentProfile agent={profile} onClose={() => setProfile(null)} />
-    </>
-  );
-}
-
-interface IProjectMessageRowProps {
+export interface IProjectMessageRowProps {
   message: IProjectMessage;
   agent: IProjectAgent | null;
   onSelect: (agent: IProjectAgent) => void;
   showContext: boolean;
 }
 
-const ProjectMessageRow = memo(function ProjectMessageRow({
+export const ProjectMessageRow = memo(function ProjectMessageRow({
   message,
   agent: replyingAgent,
   onSelect,
@@ -86,6 +31,11 @@ const ProjectMessageRow = memo(function ProjectMessageRow({
 }: IProjectMessageRowProps) {
   return (
     <article
+      data-ds-block="social.message.ai-chat-message"
+      data-module="social"
+      data-model="message"
+      data-id={message.id}
+      data-variant="ai-chat-message"
       className={`flex min-w-0 gap-3 ${message.role === "user" ? "ml-6" : ""}`}
     >
       {message.role === "assistant" &&

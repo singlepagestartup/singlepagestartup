@@ -1,0 +1,27 @@
+{
+  "id": "social.message.ai-chat-message",
+  "title": "ai-chat-message",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "One Social Message with profile attribution, context and Files.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.message",
+    "pageName": "social",
+    "variantName": "ai-chat-message",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "message",
+    "variant": "ai-chat-message"
+  },
+  "contentSlots": []
+}

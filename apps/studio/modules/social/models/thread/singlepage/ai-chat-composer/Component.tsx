@@ -1,10 +1,16 @@
 import { Component as View } from "./index";
+import { projectKnowledge } from "../../../../../../workspace/utils/products/ai-chat-models";
 import { useState } from "react";
 import { aiChatProjectFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 export function Component() {
   const [value, setValue] = useState("");
   const [sections, setSections] = useState<string[]>([]);
-  const [document] = useState(aiChatProjectFixture().documents[0]);
+  const [project] = useState(aiChatProjectFixture);
+  const document = project.documents[0];
+  const graph = projectKnowledge(project);
+  const sources = graph.sources.filter((source) =>
+    graph.bundles[0].sourceSlugs.includes(source.slug),
+  );
   const [files, setFiles] = useState<
     import("../../../../../../workspace/utils/products/ai-chat-workspace").IProjectFile[]
   >([]);
@@ -22,9 +28,12 @@ export function Component() {
         setFiles((current) => current.filter((file) => file.id !== id))
       }
       label="Message the AI agent"
-      document={document}
-      workingSections={sections}
-      onWorkingSections={setSections}
+      knowledge={{
+        title: document.title,
+        sources,
+        selectedSourceIds: sections,
+        onChange: setSections,
+      }}
       placeholder="What would you like to work on?"
     />
   );

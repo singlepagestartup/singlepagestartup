@@ -27,6 +27,14 @@ Studio содержит собственные React views, интерфейсы
 - [x] Проверить изоляцию источников и файлов, уникальность пары Source/File, сохранение описаний при редактировании, несколько вложений и detach. Проверить Storybook на desktop/mobile.
 - [x] Обновить handoff и PR с результатами и оставшимися границами локальных адаптеров.
 
+## Декомпозиция разговоров
+
+- [x] Собрать Profile → Chat → Thread → Message через локальные find-варианты существующих profiles-to-chats, chats-to-threads и threads-to-messages.
+- [x] Представить Brief, Strategy, Brand, Design, Products и рабочие разговоры отдельными Threads одного Chat. Сохранить независимые сообщения и черновики.
+- [x] Перенести заголовок, conversation, proposal, Working On и composer в Thread. Message отображает одну запись; Profile navigation, создание и настройки Thread имеют отдельные views.
+- [x] Передавать Sources из Profile и фильтровать документную группу по slug. Working On выбирает Source IDs; рабочие Threads получают все Sources профиля без селектора разделов.
+- [x] Проверить типы, тесты, Storybook без production-кода, отправку и Source updates, переключение тредов и mobile navigation. Обновить документацию и PR.
+
 ## Критерии
 
 В коде Studio нет импортов из libs, apps/host или production aliases. Production не импортирует Studio. Storybook собирается из локальных Studio views. Сохраняются документы, чаты, настройка агентов, мобильный sidebar и Host composition. Проверки выявляют нарушение границы до сборки.

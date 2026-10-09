@@ -7,7 +7,7 @@ import Page from "./View";
 import { isAIChatRoute } from "./utils";
 import { documentAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
 import { ProjectAgentPicker } from "../../../../../social/models/profile/singlepage/ai-chat-agent/View";
-import { ProjectConversation } from "../../../../../social/models/message/singlepage/ai-chat-conversation/View";
+import { ProjectConversation } from "../../../../../social/models/thread/singlepage/ai-chat-conversation/View";
 
 const root = path.resolve(import.meta.dir, "../../../../../../../..");
 const studio = path.join(root, "apps/studio");

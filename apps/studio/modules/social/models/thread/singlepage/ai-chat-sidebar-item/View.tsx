@@ -4,8 +4,10 @@ import {
   Icon,
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
+import type { IAIChatThread } from "../../../../../../workspace/utils/products/ai-chat-threads";
 
 export interface IThreadButtonProps {
+  data?: IAIChatThread;
   id: string;
   name: string;
   topic?: boolean;
@@ -15,6 +17,7 @@ export interface IThreadButtonProps {
 }
 
 export const ProjectThreadButton = memo(function ProjectThreadButton({
+  data,
   id,
   name,
   topic,
@@ -25,6 +28,11 @@ export const ProjectThreadButton = memo(function ProjectThreadButton({
   return (
     <button
       type="button"
+      data-ds-block="social.thread.ai-chat-sidebar-item"
+      data-module="social"
+      data-model="thread"
+      data-id={data?.id ?? id}
+      data-thread-id={data?.id ?? id}
       onClick={() => onSelect(id)}
       aria-pressed={selected}
       className={`flex min-h-10 w-full min-w-0 items-center gap-2 rounded-lg px-2 py-2 text-left text-sm ${topic ? "font-medium" : "font-normal"} ${kit.focus} ${selected ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`}

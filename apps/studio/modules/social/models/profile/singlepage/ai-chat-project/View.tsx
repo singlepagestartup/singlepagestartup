@@ -1,6 +1,5 @@
 "use client";
 import * as Dialog from "@radix-ui/react-dialog";
-import * as Tooltip from "@radix-ui/react-tooltip";
 import {
   useCallback,
   useEffect,
@@ -31,32 +30,28 @@ import {
   type IProjectMessage,
   type IProjectAsset,
   type IProjectFile,
-  type IProjectTopic,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import {
   Feedback,
   TextField,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
 import { ProjectSetup, ProjectSteps } from "../ai-chat-workspace/ProjectSetup";
-import { ProjectComposer } from "../../../thread/singlepage/ai-chat-composer/View";
-import { ProjectConversation } from "../../../message/singlepage/ai-chat-conversation/View";
-import { ProjectSourceEditor } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/View";
-import { Component as SourceDocumentNavigation } from "../../../../../knowledge/models/source/singlepage/ai-chat-navigation/index";
-import { Component as ChatNavigation } from "../../../chat/singlepage/ai-chat-navigation/index";
+import { Component as ChatWorkspace } from "../../../chat/singlepage/ai-chat-workspace/index";
+import { Component as ThreadWorkspace } from "../../../thread/singlepage/ai-chat-workspace/index";
+import { ThreadHeader } from "../../../thread/singlepage/ai-chat-workspace/View";
+import { Component as ThreadSettings } from "../../../thread/singlepage/ai-chat-settings/index";
+import { projectThreadGraph } from "../../../../../../workspace/utils/products/ai-chat-threads";
 import { Component as ProfileSources } from "../../../../relations/profiles-to-knowledge-module-sources/singlepage/ai-chat-find/index";
 import { Component as ProfileChats } from "../../../../relations/profiles-to-chats/singlepage/ai-chat-find/index";
-import {
-  projectKnowledge,
-  projectWorkChats,
-} from "../../../../../../workspace/utils/products/ai-chat-models";
+import { projectKnowledge } from "../../../../../../workspace/utils/products/ai-chat-models";
 import definitions from "./definitions.json";
 import {
   documentAgent,
   resolveThreadAgent,
   snapshotAgent,
-  type IProjectAgent,
 } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
-import { ProjectAgentPicker } from "../../../profile/singlepage/ai-chat-agent/View";
+import { Component as ProfileNavigation } from "../ai-chat-navigation/index";
+import { Component as ThreadCreate } from "../../../thread/singlepage/ai-chat-create/index";
 export interface IProjectProfileProps {
   project: IProjectProfile;
   active: boolean;
@@ -67,12 +62,6 @@ export interface IProjectProfileProps {
   ) => void;
 }
 type ProjectView = "document" | "topic" | "new-topic" | "settings" | "future";
-interface IThreadSettingsProps {
-  topic: IProjectTopic;
-  documents: IProjectDocument[];
-  onSave: (title: string, documentIds: string[]) => void;
-  onDelete: () => void;
-}
 const projectDefinitions = Object.values(definitions).filter(
   (item) => item.id !== "product",
 );
@@ -85,7 +74,6 @@ export default function ProjectProfile({
 }: IProjectProfileProps) {
   const id = useId();
   const sequence = useRef(0);
-  const proposalView = useRef<HTMLDivElement>(null);
   const [analysisStep, setAnalysisStep] = useState(0);
   const [view, setView] = useState<ProjectView>("document");
   const [selectedDocument, setSelectedDocument] = useState("brief");
@@ -97,11 +85,6 @@ export default function ProjectProfile({
   const [pane, setPane] = useState<"chat" | "document">("chat");
   const [projectName, setProjectName] = useState(project.name);
   const [nameSaved, setNameSaved] = useState(false);
-  const [topicTitle, setTopicTitle] = useState("");
-  const [threadAgent, setThreadAgent] = useState<IProjectAgent | null>(
-    documentAgent("thread"),
-  );
-  const [attachments, setAttachments] = useState<string[]>([]);
   const [productName, setProductName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -136,17 +119,19 @@ export default function ProjectProfile({
     () => projectKnowledge(project),
     [project.id, project.documents, project.sources],
   );
-  const workChats = useMemo(
-    () => projectWorkChats(project),
-    [project.id, project.topics],
+  const conversations = useMemo(
+    () => projectThreadGraph(project),
+    [project.id, project.name, project.documents, project.topics],
   );
+  const selectedThreadId = conversations.selections.find(
+    (selection) =>
+      selection.kind === (view === "document" ? "document" : "work") &&
+      selection.localId ===
+        (view === "document" ? selectedDocument : selectedTopic),
+  )?.threadId;
   const savedCount = project.documents.filter((item) => item.saved).length;
   const working = project.stage === "documents" || project.stage === "topics";
   const anchor = (name: string) => (active ? name : `${id}-${name}`);
-  useEffect(() => {
-    if (active && view === "document" && pane === "chat" && document?.proposal)
-      proposalView.current?.scrollIntoView({ block: "nearest" });
-  }, [active, view, pane, document?.proposal]);
   useLayoutEffect(() => {
     if (!navigationHref || !active) return;
     const hash = navigationHref.split("#")[1];
@@ -298,10 +283,6 @@ export default function ProjectProfile({
       })),
     [updateDocument],
   );
-  function discussSection(title: string) {
-    changeSections([title]);
-    setPane("chat");
-  }
   function sendDocumentMessage() {
     if (!document) return;
     const text = inputs[document.id]?.trim() ?? "";
@@ -353,22 +334,8 @@ export default function ProjectProfile({
     }));
     setPane("chat");
   }
-  function saveAgent(agent: IProjectAgent) {
-    setProject((current) => ({
-      ...current,
-      agents: [
-        ...(current.agents ?? []).filter((item) => item.id !== agent.id),
-        snapshotAgent(agent),
-      ],
-    }));
-  }
   function newTopic() {
     setMobileSidebarOpen(false);
-    setTopicTitle("");
-    setThreadAgent(documentAgent("thread"));
-    setAttachments(
-      project.documents.filter((item) => item.saved).map((item) => item.id),
-    );
     setView("new-topic");
     setDocumentListOpen(false);
     setProject((current) => ({
@@ -378,17 +345,19 @@ export default function ProjectProfile({
         current.setupComplete || current.documents.every(isDocumentReviewed),
     }));
   }
-  function createTopic(event: FormEvent) {
-    event.preventDefault();
-    if (!topicTitle.trim() || !attachments.length) return;
+  function createTopic(title: string) {
+    const reviewedIds = project.documents
+      .filter((item) => item.saved)
+      .map((item) => item.id);
+    if (!title.trim() || !reviewedIds.length) return;
     const topicId = `${id}-topic-${++sequence.current}`;
     setProject((current) =>
       createProjectTopic(
         current,
         topicId,
-        topicTitle,
-        attachments,
-        threadAgent,
+        title,
+        reviewedIds,
+        documentAgent("thread"),
       ),
     );
     setSelectedTopic(topicId);
@@ -513,171 +482,107 @@ export default function ProjectProfile({
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  const sidebarContent = (
-    <>
-      <div className="mb-3">
-        <h1
-          className={`break-words text-lg font-semibold ${isMobile ? "pr-10" : ""}`}
-        >
-          {project.name}
-        </h1>
-      </div>
-      <nav aria-label="Project navigation" className="space-y-1">
-        <button
-          type="button"
-          onClick={() => {
-            setView("settings");
-            setMobileSidebarOpen(false);
-          }}
-          aria-label="Project settings"
-          aria-pressed={view === "settings"}
-          className={`flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-white/10 ${kit.focus} ${view === "settings" ? "bg-white/15" : "text-white/80"}`}
-        >
-          <Icon name="gear-six" className="size-4" />
-          Settings
-        </button>
-        <div className="rounded-xl bg-black/20 p-1.5">
-          <button
-            type="button"
-            aria-label={
-              documentListOpen ? "Hide document list" : "Show document list"
-            }
-            aria-expanded={documentListOpen}
-            aria-controls={`${id}-document-list`}
-            onClick={() => setDocumentListOpen((open) => !open)}
-            className={`flex min-h-11 w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-left text-sm font-semibold text-white ${kit.focus}`}
-          >
-            <Icon name="folder-open" className="size-4 shrink-0" />
-            <span className="min-w-0 flex-1">Documents</span>
-            <span className="text-xs text-white/60">
-              {project.documents.length}
-            </span>
-            <Icon
-              name="caret-down"
-              className={`size-4 shrink-0 transition-transform ${documentListOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-          <div
-            id={`${id}-document-list`}
-            hidden={!documentListOpen}
-            className={`${documentListOpen ? "grid" : "hidden"} ml-3 mt-1 grid-cols-1 gap-1`}
-          >
-            <ProfileSources
-              variant="find"
-              data={knowledge.relations}
-              apiProps={{
-                params: {
-                  filters: {
-                    and: [
-                      { column: "profileId", method: "eq", value: project.id },
-                    ],
-                  },
-                },
-              }}
-            >
-              {(relations) =>
-                project.documents.map((item) => {
-                  const sources = knowledge.sources.filter(
-                    (source) =>
-                      knowledge.bundles
-                        .find((bundle) => bundle.id === item.id)
-                        ?.sourceIds.includes(source.id) &&
-                      relations.some(
-                        (relation) =>
-                          relation.knowledgeModuleSourceId === source.id,
-                      ),
-                  );
-                  return sources.length ? (
-                    <SourceDocumentNavigation
-                      key={item.id}
-                      data={{
-                        id: item.id,
-                        title: item.title,
-                        sources,
-                        reviewed: isDocumentReviewed(item),
-                      }}
-                      selected={
-                        view === "document" && selectedDocument === item.id
-                      }
-                      onSelect={selectDocument}
-                    />
-                  ) : null;
-                })
-              }
-            </ProfileSources>
-          </div>
-        </div>
-      </nav>
-      <div className="mt-5 border-t border-white/15 pt-4">
-        <p className="mb-3 text-xs font-semibold text-white/60">Threads</p>
-        <Tooltip.Provider delayDuration={150}>
-          <Tooltip.Root>
-            <Tooltip.Trigger asChild>
-              <button
-                type="button"
-                aria-disabled={!savedCount}
-                onClick={(event) => {
-                  if (!savedCount) {
-                    event.preventDefault();
-                    return;
-                  }
-                  newTopic();
-                }}
-                className={`flex min-h-11 w-full items-center gap-2 rounded-xl border border-white/20 px-3 text-sm aria-disabled:cursor-not-allowed aria-disabled:opacity-40 ${kit.focus}`}
-              >
-                <Icon name="plus" className="size-4" />
-                New thread
-              </button>
-            </Tooltip.Trigger>
-            {!savedCount && (
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  side="right"
-                  sideOffset={8}
-                  collisionPadding={12}
-                  className="z-50 max-w-72 rounded-xl border border-sps-line bg-sps-graphite p-3 font-sps text-xs leading-5 text-sps-white shadow-lg"
-                >
-                  Fill in at least one document and save it as reviewed to
-                  create a thread.
-                  <Tooltip.Arrow className="fill-sps-graphite" />
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            )}
-          </Tooltip.Root>
-        </Tooltip.Provider>
-        <div className="mt-2 grid gap-1">
-          <ProfileChats
-            variant="find"
-            data={workChats.profilesToChats}
-            apiProps={{
-              params: {
-                filters: {
-                  and: [
-                    { column: "profileId", method: "eq", value: project.id },
-                  ],
-                },
-              },
-            }}
-          >
-            {(relations) =>
-              workChats.chats
-                .filter((chat) =>
-                  relations.some((relation) => relation.chatId === chat.id),
-                )
-                .map((chat) => (
-                  <ChatNavigation
-                    key={chat.id}
-                    data={chat}
-                    selected={view === "topic" && selectedTopic === chat.id}
-                    onSelect={selectTopic}
-                  />
-                ))
-            }
-          </ProfileChats>
-        </div>
-      </div>
-    </>
+  const sidebarToggle = isMobile ? (
+    <Dialog.Trigger asChild>
+      <Button
+        variant="plain"
+        className="min-h-9 shrink-0 px-2"
+        aria-label="Show sidebar"
+        title="Show sidebar"
+      >
+        <Icon name="list" />
+      </Button>
+    </Dialog.Trigger>
+  ) : (
+    <Button
+      variant="plain"
+      className="min-h-9 shrink-0 px-2"
+      aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+      title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+      aria-expanded={sidebarOpen}
+      aria-controls={`${id}-sidebar`}
+      onClick={() => setSidebarOpen((open) => !open)}
+    >
+      <Icon name="list" />
+    </Button>
   );
+  const threadActions = topic ? (
+    <div className="flex min-w-0 max-w-full flex-1 items-center justify-end gap-2">
+      <div
+        aria-label="Thread context documents"
+        className="flex max-h-20 min-w-0 flex-wrap justify-end gap-2 overflow-y-auto"
+      >
+        {topicDocumentContext(project, topic.documentIds).map((item) => (
+          <span
+            key={item.name}
+            title={item.name}
+            className="inline-flex max-w-full items-center gap-2 rounded-lg bg-sps-grey px-3 py-2 text-xs"
+          >
+            <Icon name="file-text" className="size-4 shrink-0" />
+            <span className="truncate">{item.name}</span>
+          </span>
+        ))}
+      </div>
+      <ThreadSettings
+        key={topic.id}
+        topic={topic}
+        onSave={(title) =>
+          setProject((current) => ({
+            ...current,
+            topics: current.topics.map((item) =>
+              item.id === topic.id
+                ? {
+                    ...item,
+                    title,
+                  }
+                : item,
+            ),
+          }))
+        }
+        onDelete={() => {
+          const next = project.topics.find((item) => item.id !== topic.id);
+          setProject((current) => ({
+            ...current,
+            stage: next ? "topics" : "documents",
+            topics: current.topics.filter((item) => item.id !== topic.id),
+          }));
+          setInputs((current) => {
+            const remaining = { ...current };
+            delete remaining[topic.id];
+            return remaining;
+          });
+          setSelectedTopic(next?.id ?? "");
+          setView(next ? "topic" : "document");
+          setDocumentListOpen(!next);
+        }}
+      />
+    </div>
+  ) : undefined;
+  const sidebarContent = (
+    <ProfileNavigation
+      id={id}
+      profileId={project.id}
+      name={project.name}
+      mobile={isMobile}
+      documents={project.documents}
+      knowledge={knowledge}
+      graph={conversations}
+      documentListOpen={documentListOpen}
+      selectedDocument={view === "document" ? selectedDocument : undefined}
+      selectedTopic={view === "topic" ? selectedTopic : undefined}
+      settingsSelected={view === "settings"}
+      canCreateThread={Boolean(savedCount)}
+      onSettings={() => {
+        setView("settings");
+        setMobileSidebarOpen(false);
+      }}
+      onToggleDocuments={() => setDocumentListOpen((open) => !open)}
+      onDocument={selectDocument}
+      onThread={selectTopic}
+      onCreateThread={newTopic}
+    />
+  );
+
   return (
     <Dialog.Root
       modal={false}
@@ -810,635 +715,321 @@ export default function ProjectProfile({
                   {sidebarContent}
                 </aside>
               )}
-              <section
-                className="@container/chat flex min-h-0 min-w-0 flex-col"
-                aria-label="Active conversation"
+              <ProfileChats
+                variant="find"
+                data={conversations.profileChats}
+                apiProps={{
+                  params: {
+                    filters: {
+                      and: [
+                        {
+                          column: "profileId",
+                          method: "eq",
+                          value: project.id,
+                        },
+                      ],
+                    },
+                  },
+                }}
               >
-                <header className="sticky top-18 z-10 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-sps-line bg-sps-white p-4 @[760px]/workspace:top-0">
-                  <div className="flex min-w-0 items-center gap-3">
-                    {isMobile ? (
-                      <Dialog.Trigger asChild>
-                        <Button
-                          variant="plain"
-                          className="min-h-9 shrink-0 px-2"
-                          aria-label="Show sidebar"
-                          title="Show sidebar"
-                        >
-                          <Icon name="list" />
-                        </Button>
-                      </Dialog.Trigger>
-                    ) : (
-                      <Button
-                        variant="plain"
-                        className="min-h-9 shrink-0 px-2"
-                        aria-label={
-                          sidebarOpen ? "Hide sidebar" : "Show sidebar"
-                        }
-                        title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
-                        aria-expanded={sidebarOpen}
-                        aria-controls={`${id}-sidebar`}
-                        onClick={() => setSidebarOpen((open) => !open)}
-                      >
-                        <Icon name="list" />
-                      </Button>
-                    )}
-                    <div className="min-w-0">
-                      <p className={`text-xs ${kit.muted}`}>
-                        {view === "document"
-                          ? "Document chat"
-                          : view === "topic" || view === "new-topic"
-                            ? "Project thread"
-                            : "Project"}
-                      </p>
-                      <h2 className="mt-1 break-words text-base font-semibold">
-                        {view === "document"
-                          ? `${document?.title}.md`
-                          : view === "topic"
-                            ? topic?.title
-                            : view === "new-topic"
-                              ? "New thread"
-                              : view === "settings"
-                                ? "Project settings"
-                                : "Future capabilities"}
-                      </h2>
-                    </div>
-                  </div>
-                  {view === "document" && (
-                    <div className="flex rounded-lg bg-sps-grey p-1 @[900px]/chat:hidden">
-                      {(["chat", "document"] as const).map((item) => (
-                        <button
-                          type="button"
-                          key={item}
-                          aria-pressed={pane === item}
-                          onClick={() => setPane(item)}
-                          className={`min-h-9 rounded-md px-3 text-xs font-semibold ${kit.focus} ${pane === item ? "bg-sps-white" : kit.muted}`}
-                        >
-                          {item === "chat" ? "Chat" : "Document"}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {view === "topic" && topic && (
-                    <div className="flex min-w-0 max-w-full flex-1 items-center justify-end gap-2">
-                      <div
-                        aria-label="Thread context documents"
-                        className="flex max-h-20 min-w-0 flex-wrap justify-end gap-2 overflow-y-auto"
-                      >
-                        {topicDocumentContext(project, topic.documentIds).map(
-                          (item) => (
-                            <span
-                              key={item.name}
-                              title={item.name}
-                              className="inline-flex max-w-full items-center gap-2 rounded-lg bg-sps-grey px-3 py-2 text-xs"
-                            >
-                              <Icon
-                                name="file-text"
-                                className="size-4 shrink-0"
-                              />
-                              <span className="truncate">{item.name}</span>
-                            </span>
-                          ),
-                        )}
-                      </div>
-                      <ThreadSettings
-                        key={topic.id}
-                        topic={topic}
-                        documents={project.documents}
-                        onSave={(title, documentIds) =>
-                          setProject((current) => ({
-                            ...current,
-                            topics: current.topics.map((item) =>
-                              item.id === topic.id
-                                ? {
-                                    ...item,
-                                    title,
-                                    documentIds: documentIds.filter(
-                                      (documentId) =>
-                                        current.documents.some(
-                                          (document) =>
-                                            document.id === documentId &&
-                                            document.saved,
-                                        ),
-                                    ),
-                                  }
-                                : item,
-                            ),
-                          }))
-                        }
-                        onDelete={() => {
-                          const next = project.topics.find(
-                            (item) => item.id !== topic.id,
-                          );
-                          setProject((current) => ({
-                            ...current,
-                            stage: next ? "topics" : "documents",
-                            topics: current.topics.filter(
-                              (item) => item.id !== topic.id,
-                            ),
-                          }));
-                          setInputs((current) => {
-                            const remaining = { ...current };
-                            delete remaining[topic.id];
-                            return remaining;
-                          });
-                          setSelectedTopic(next?.id ?? "");
-                          setView(next ? "topic" : "document");
-                          setDocumentListOpen(!next);
-                        }}
-                      />
-                    </div>
-                  )}
-                </header>
-                {view === "document" && document && (
-                  <div className="grid min-h-0 min-w-0 flex-1 @[900px]/chat:grid-cols-[minmax(0,1fr)_360px]">
-                    <div
-                      className={`${pane === "chat" ? "flex" : "hidden"} min-h-0 min-w-0 flex-col overflow-y-auto @[900px]/chat:flex`}
-                    >
-                      <div className="min-h-0 flex-1 overflow-y-auto">
-                        <ProjectConversation
-                          className="min-h-[50dvh] @[760px]/workspace:min-h-0"
-                          key={document.id}
-                          messages={document.messages}
-                          agent={documentAgent(
-                            document.id.includes("-product-")
-                              ? "products"
-                              : document.id,
-                          )}
-                        />
-                        {document.proposal && (
-                          <div
-                            ref={proposalView}
-                            className="mx-4 mb-4 rounded-xl border border-sps-line bg-sps-grey p-4"
-                          >
-                            <p className="text-xs font-semibold">
-                              Proposed update · {document.proposal.section}
-                            </p>
-                            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6">
-                              {document.proposal.text}
-                            </p>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              <Button onClick={applyProposal}>
-                                <Icon name="pencil-simple" className="size-4" />
-                                Apply to draft
-                              </Button>
-                              <Button
-                                variant="plain"
-                                onClick={() =>
-                                  updateDocument((current) => ({
-                                    ...current,
-                                    proposal: undefined,
-                                  }))
-                                }
-                              >
-                                Dismiss
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <ProjectComposer
-                        key={document.id}
-                        files={document.draftFiles ?? []}
-                        onFiles={addDocumentFiles}
-                        onRemoveFile={removeDocumentFile}
-                        value={inputs[document.id] ?? ""}
-                        onChange={(text) =>
-                          setInputs((current) => ({
-                            ...current,
-                            [document.id]: text,
-                          }))
-                        }
-                        onSend={sendDocumentMessage}
-                        label="Message the AI agent"
-                        document={document}
-                        workingSections={selectedSections}
-                        onWorkingSections={changeSections}
-                        placeholder={
-                          section
-                            ? (document.sections.find(
-                                (field) => field.title === section,
-                              )?.prompt ??
-                              "Add information or request a change.")
-                            : selectedSections.length
-                              ? "Discuss the selected sections or request a change."
-                              : "Discuss this document or request a change."
-                        }
-                      />
-                      {document.id === "products" && (
-                        <form
-                          onSubmit={addProduct}
-                          className="grid gap-3 border-t border-sps-line p-4"
-                        >
-                          <TextField
-                            label="Add a product"
-                            value={productName}
-                            onChange={(event) =>
-                              setProductName(event.target.value)
-                            }
-                            placeholder="Product or service name"
-                            required
-                            maxLength={100}
-                          />
-                          <Button
-                            type="submit"
-                            variant="secondary"
-                            disabled={!productName.trim()}
-                          >
-                            <Icon name="plus" />
-                            Create product document
-                          </Button>
-                        </form>
-                      )}
-                      {document.saved && (
-                        <div className="p-4 pt-0">
-                          <Button variant="secondary" onClick={newTopic}>
-                            <Icon name="chat-circle" />
-                            Start a thread with saved documents
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                    <div
-                      className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-sps-line @[900px]/chat:block @[900px]/chat:border-l`}
-                    >
-                      <ProfileSources
-                        variant="find"
-                        data={knowledge.relations}
-                        apiProps={{
-                          params: {
-                            filters: {
-                              and: [
-                                {
-                                  column: "profileId",
-                                  method: "eq",
-                                  value: project.id,
-                                },
-                              ],
-                            },
+                {(chatLinks) =>
+                  chatLinks.some(
+                    (link) => link.chatId === conversations.chat.id,
+                  ) ? (
+                    <ProfileSources
+                      variant="find"
+                      data={knowledge.relations}
+                      apiProps={{
+                        params: {
+                          filters: {
+                            and: [
+                              {
+                                column: "profileId",
+                                method: "eq",
+                                value: project.id,
+                              },
+                            ],
                           },
-                        }}
-                      >
-                        {(relations) => (
-                          <ProjectSourceEditor
-                            document={document}
-                            data={knowledge.sources.filter(
-                              (source) =>
-                                knowledge.bundles
-                                  .find((bundle) => bundle.id === document.id)
-                                  ?.sourceIds.includes(source.id) &&
-                                relations.some(
-                                  (relation) =>
-                                    relation.knowledgeModuleSourceId ===
-                                    source.id,
-                                ),
-                            )}
-                            files={knowledge.files}
-                            fileRelations={knowledge.sourceFiles}
-                            attachmentViews={knowledge.attachmentViews}
-                            sources={project.sources}
-                            sections={selectedSections}
-                            onSection={discussSection}
-                            onEdit={editDocumentSection}
-                            onReview={reviewDocument}
-                            onAttach={attachFile}
-                            onUpload={uploadFiles}
-                            onAssetChange={changeDocumentAsset}
-                            onAssetRemove={detachDocumentAsset}
-                          />
-                        )}
-                      </ProfileSources>
-                    </div>
-                  </div>
-                )}
-                {view === "new-topic" && (
-                  <form
-                    onSubmit={createTopic}
-                    className="mx-auto grid w-full max-w-xl gap-5 overflow-y-auto p-5 @[640px]:p-8"
-                  >
-                    <p className={`text-sm leading-6 ${kit.muted}`}>
-                      Choose the reviewed documents this conversation should
-                      use.
-                    </p>
-                    <TextField
-                      label="Thread name"
-                      value={topicTitle}
-                      onChange={(event) => setTopicTitle(event.target.value)}
-                      required
-                      maxLength={100}
-                      placeholder="What do you want to work on?"
-                    />
-                    <div>
-                      <p className={`${kit.label} mb-3`}>AI agent</p>
-                      <ProjectAgentPicker
-                        agent={threadAgent}
-                        agents={project.agents ?? []}
-                        onChange={setThreadAgent}
-                        onSave={saveAgent}
-                      />
-                    </div>
-                    <fieldset>
-                      <legend className={`${kit.label} mb-3`}>
-                        Attach reviewed documents
-                      </legend>
-                      <div className="space-y-2">
-                        {project.documents.map((item) => (
-                          <label
-                            key={item.id}
-                            className={`flex min-h-12 items-center gap-3 rounded-xl border border-sps-line p-3 text-sm ${!item.saved ? "opacity-50" : ""}`}
-                          >
-                            <input
-                              type="checkbox"
-                              disabled={!item.saved}
-                              checked={attachments.includes(item.id)}
-                              onChange={(event) =>
-                                setAttachments((current) =>
-                                  event.target.checked
-                                    ? [...current, item.id]
-                                    : current.filter(
-                                        (value) => value !== item.id,
-                                      ),
-                                )
-                              }
-                              className="size-4 shrink-0 accent-sps-graphite"
-                            />
-                            <span className="min-w-0 flex-1 break-words">
-                              {item.title}.md
-                            </span>
-                            <span className={`text-xs ${kit.muted}`}>
-                              {item.saved
-                                ? isDocumentReviewed(item)
-                                  ? "Reviewed"
-                                  : "Last reviewed version"
-                                : "Not reviewed yet"}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </fieldset>
-                    <Button
-                      type="submit"
-                      disabled={!topicTitle.trim() || !attachments.length}
-                    >
-                      <Icon name="chat-circle" />
-                      Create thread
-                    </Button>
-                  </form>
-                )}
-                {view === "topic" && topic && (
-                  <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-                    <div className="min-h-0 flex-1 overflow-y-auto">
-                      <ProjectConversation
-                        className="min-h-[50dvh] @[760px]/workspace:min-h-0"
-                        key={topic.id}
-                        messages={topic.messages}
-                        agent={resolveThreadAgent(topic.agent)}
-                        showContext={false}
-                      />
-                    </div>
-                    <ProjectComposer
-                      key={topic.id}
-                      files={topic.draftFiles ?? []}
-                      onFiles={addTopicFiles}
-                      onRemoveFile={removeTopicFile}
-                      value={inputs[topic.id] ?? ""}
-                      onChange={(text) =>
-                        setInputs((current) => ({
-                          ...current,
-                          [topic.id]: text,
-                        }))
-                      }
-                      onSend={sendTopicMessage}
-                      label="Message in this thread"
-                      placeholder="Ask a question or describe what you want to work on."
-                    />
-                  </div>
-                )}
-                {view === "settings" && (
-                  <section
-                    id={`${id}-settings`}
-                    className="space-y-4 overflow-y-auto p-5"
-                    aria-label="Selected project settings"
-                  >
-                    <form
-                      onSubmit={(event) => {
-                        event.preventDefault();
-                        if (!projectName.trim()) return;
-                        setProject((current) => ({
-                          ...current,
-                          name: projectName.trim(),
-                        }));
-                        setNameSaved(true);
+                        },
                       }}
-                      className="flex max-w-xl flex-wrap items-end gap-3"
                     >
-                      <div className="w-full min-w-0 @[480px]:w-auto @[480px]:flex-1">
-                        <TextField
-                          label="Project name"
-                          value={projectName}
-                          required
-                          maxLength={100}
-                          onChange={(event) => {
-                            setProjectName(event.target.value);
-                            setNameSaved(false);
-                          }}
-                        />
-                      </div>
-                      <Button
-                        type="submit"
-                        disabled={
-                          !projectName.trim() ||
-                          projectName.trim() === project.name
-                        }
-                      >
-                        Save name
-                      </Button>
-                    </form>
-                    {nameSaved && (
-                      <div className="mt-3">
-                        <Feedback>Project name saved.</Feedback>
-                      </div>
-                    )}
-                    <div className="border-t border-sps-line pt-5">
-                      <Button
-                        variant="secondary"
-                        disabled={!savedCount}
-                        onClick={exportDocuments}
-                      >
-                        <Icon name="arrow-down" />
-                        Export reviewed documents
-                      </Button>
-                    </div>
-                  </section>
-                )}
-                {view === "future" && (
-                  <div className="space-y-5 p-5">
-                    <p className={`text-sm leading-6 ${kit.muted}`}>
-                      Website generation and paid server deployment are planned
-                      for a later release.
+                      {(sourceLinks) => {
+                        const profileSources = knowledge.sources.filter(
+                          (source) =>
+                            sourceLinks.some(
+                              (link) =>
+                                link.knowledgeModuleSourceId === source.id,
+                            ),
+                        );
+                        return (
+                          <ChatWorkspace
+                            data={conversations.chat}
+                            threads={conversations.threads}
+                            relations={conversations.chatThreads}
+                            selectedThreadId={
+                              view === "document" || view === "topic"
+                                ? selectedThreadId
+                                : undefined
+                            }
+                          >
+                            {(thread) => (
+                              <>
+                                {!thread && (
+                                  <ThreadHeader
+                                    title={
+                                      view === "new-topic"
+                                        ? "New thread"
+                                        : view === "settings"
+                                          ? "Project settings"
+                                          : "Future capabilities"
+                                    }
+                                    label="Project"
+                                    navigation={sidebarToggle}
+                                  />
+                                )}
+
+                                {view === "document" && document && thread && (
+                                  <ThreadWorkspace
+                                    key={thread.id}
+                                    data={thread}
+                                    messages={conversations.messages}
+                                    relations={conversations.threadMessages}
+                                    agent={documentAgent(
+                                      document.id.includes("-product-")
+                                        ? "products"
+                                        : document.id,
+                                    )}
+                                    navigation={sidebarToggle}
+                                    knowledge={profileSources}
+                                    sourceSlugs={
+                                      knowledge.bundles.find(
+                                        (bundle) => bundle.id === document.id,
+                                      )?.sourceSlugs ?? []
+                                    }
+                                    pane={pane}
+                                    onPane={setPane}
+                                    workingSourceIds={profileSources
+                                      .filter((source) =>
+                                        selectedSections.includes(source.title),
+                                      )
+                                      .map((source) => source.id)}
+                                    onWorkingSources={(ids) =>
+                                      changeSections(
+                                        profileSources
+                                          .filter((source) =>
+                                            ids.includes(source.id),
+                                          )
+                                          .map((source) => source.title),
+                                      )
+                                    }
+                                    composer={{
+                                      files: document.draftFiles ?? [],
+                                      onFiles: addDocumentFiles,
+                                      onRemoveFile: removeDocumentFile,
+                                      value: inputs[document.id] ?? "",
+                                      onChange: (text) =>
+                                        setInputs((current) => ({
+                                          ...current,
+                                          [document.id]: text,
+                                        })),
+                                      onSend: sendDocumentMessage,
+                                      label: "Message the AI agent",
+                                      placeholder: section
+                                        ? (document.sections.find(
+                                            (field) => field.title === section,
+                                          )?.prompt ??
+                                          "Add information or request a change.")
+                                        : selectedSections.length
+                                          ? "Discuss the selected sections or request a change."
+                                          : "Discuss this document or request a change.",
+                                    }}
+                                    proposal={document.proposal}
+                                    onApplyProposal={applyProposal}
+                                    onDismissProposal={() =>
+                                      updateDocument((current) => ({
+                                        ...current,
+                                        proposal: undefined,
+                                      }))
+                                    }
+                                    editor={{
+                                      document,
+                                      files: knowledge.files,
+                                      fileRelations: knowledge.sourceFiles,
+                                      attachmentViews:
+                                        knowledge.attachmentViews,
+                                      sources: project.sources,
+                                      onEdit: editDocumentSection,
+                                      onReview: reviewDocument,
+                                      onAttach: attachFile,
+                                      onUpload: uploadFiles,
+                                      onAssetChange: changeDocumentAsset,
+                                      onAssetRemove: detachDocumentAsset,
+                                    }}
+                                  >
+                                    {document.id === "products" && (
+                                      <form
+                                        onSubmit={addProduct}
+                                        className="grid gap-3 border-t border-sps-line p-4"
+                                      >
+                                        <TextField
+                                          label="Add a product"
+                                          value={productName}
+                                          onChange={(event) =>
+                                            setProductName(event.target.value)
+                                          }
+                                          placeholder="Product or service name"
+                                          required
+                                          maxLength={100}
+                                        />
+                                        <Button
+                                          type="submit"
+                                          variant="secondary"
+                                          disabled={!productName.trim()}
+                                        >
+                                          <Icon name="plus" />
+                                          Create product document
+                                        </Button>
+                                      </form>
+                                    )}
+                                    {document.saved && (
+                                      <div className="p-4 pt-0">
+                                        <Button
+                                          variant="secondary"
+                                          onClick={newTopic}
+                                        >
+                                          <Icon name="chat-circle" />
+                                          Start a thread with saved documents
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </ThreadWorkspace>
+                                )}
+                                {view === "new-topic" && (
+                                  <ThreadCreate
+                                    key={`${project.id}:new-thread`}
+                                    canCreate={Boolean(savedCount)}
+                                    onCreate={createTopic}
+                                  />
+                                )}
+                                {view === "topic" && topic && thread && (
+                                  <ThreadWorkspace
+                                    key={thread.id}
+                                    data={thread}
+                                    messages={conversations.messages}
+                                    relations={conversations.threadMessages}
+                                    agent={resolveThreadAgent(topic.agent)}
+                                    navigation={sidebarToggle}
+                                    actions={threadActions}
+                                    knowledge={profileSources}
+                                    sourceSlugs={profileSources.map(
+                                      (source) => source.slug,
+                                    )}
+                                    composer={{
+                                      files: topic.draftFiles ?? [],
+                                      onFiles: addTopicFiles,
+                                      onRemoveFile: removeTopicFile,
+                                      value: inputs[topic.id] ?? "",
+                                      onChange: (text) =>
+                                        setInputs((current) => ({
+                                          ...current,
+                                          [topic.id]: text,
+                                        })),
+                                      onSend: sendTopicMessage,
+                                      label: "Message in this thread",
+                                      placeholder:
+                                        "Ask a question or describe what you want to work on.",
+                                    }}
+                                  />
+                                )}
+                                {view === "settings" && (
+                                  <section
+                                    id={`${id}-settings`}
+                                    className="space-y-4 overflow-y-auto p-5"
+                                    aria-label="Selected project settings"
+                                  >
+                                    <form
+                                      onSubmit={(event) => {
+                                        event.preventDefault();
+                                        if (!projectName.trim()) return;
+                                        setProject((current) => ({
+                                          ...current,
+                                          name: projectName.trim(),
+                                        }));
+                                        setNameSaved(true);
+                                      }}
+                                      className="flex max-w-xl flex-wrap items-end gap-3"
+                                    >
+                                      <div className="w-full min-w-0 @[480px]:w-auto @[480px]:flex-1">
+                                        <TextField
+                                          label="Project name"
+                                          value={projectName}
+                                          required
+                                          maxLength={100}
+                                          onChange={(event) => {
+                                            setProjectName(event.target.value);
+                                            setNameSaved(false);
+                                          }}
+                                        />
+                                      </div>
+                                      <Button
+                                        type="submit"
+                                        disabled={
+                                          !projectName.trim() ||
+                                          projectName.trim() === project.name
+                                        }
+                                      >
+                                        Save name
+                                      </Button>
+                                    </form>
+                                    {nameSaved && (
+                                      <div className="mt-3">
+                                        <Feedback>Project name saved.</Feedback>
+                                      </div>
+                                    )}
+                                    <div className="border-t border-sps-line pt-5">
+                                      <Button
+                                        variant="secondary"
+                                        disabled={!savedCount}
+                                        onClick={exportDocuments}
+                                      >
+                                        <Icon name="arrow-down" />
+                                        Export reviewed documents
+                                      </Button>
+                                    </div>
+                                  </section>
+                                )}
+                                {view === "future" && (
+                                  <div className="space-y-5 p-5">
+                                    <p
+                                      className={`text-sm leading-6 ${kit.muted}`}
+                                    >
+                                      Website generation and paid server
+                                      deployment are planned for a later
+                                      release.
+                                    </p>
+                                    <Button disabled>Create website</Button>
+                                    <Button disabled variant="secondary">
+                                      Deploy to server
+                                    </Button>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </ChatWorkspace>
+                        );
+                      }}
+                    </ProfileSources>
+                  ) : (
+                    <p role="status" className="p-4">
+                      Chat unavailable.
                     </p>
-                    <Button disabled>Create website</Button>
-                    <Button disabled variant="secondary">
-                      Deploy to server
-                    </Button>
-                  </div>
-                )}
-              </section>
+                  )
+                }
+              </ProfileChats>
             </div>
           </>
         )}
       </main>
-    </Dialog.Root>
-  );
-}
-
-function ThreadSettings({
-  topic,
-  documents,
-  onSave,
-  onDelete,
-}: IThreadSettingsProps) {
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState(topic.title);
-  const [documentIds, setDocumentIds] = useState(topic.documentIds);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  return (
-    <Dialog.Root
-      open={open}
-      onOpenChange={(next) => {
-        if (next) {
-          setTitle(topic.title);
-          setDocumentIds(topic.documentIds);
-          setConfirmDelete(false);
-        }
-        setOpen(next);
-      }}
-    >
-      <Dialog.Trigger asChild>
-        <Button
-          variant="plain"
-          className="min-h-9 shrink-0 px-2"
-          aria-label="Thread settings"
-          title="Thread settings"
-        >
-          <Icon name="gear-six" />
-        </Button>
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-sps-graphite/40" />
-        <Dialog.Content className="fixed inset-y-4 right-4 z-50 flex w-[calc(100%-32px)] max-w-xl flex-col overflow-hidden rounded-2xl border border-sps-line bg-sps-white font-sps text-sps-graphite shadow-xl focus:outline-none">
-          <div className="flex items-start justify-between gap-3 border-b border-sps-line p-5">
-            <div>
-              <Dialog.Title className="text-lg font-semibold">
-                Thread settings
-              </Dialog.Title>
-              <Dialog.Description className="mt-1 text-sm leading-6 text-sps-muted">
-                Rename the thread and choose documents for future replies.
-              </Dialog.Description>
-            </div>
-            <Dialog.Close asChild>
-              <Button
-                variant="plain"
-                className="min-h-9 px-2"
-                aria-label="Close thread settings"
-              >
-                <Icon name="x" />
-              </Button>
-            </Dialog.Close>
-          </div>
-          <div className="min-h-0 space-y-6 overflow-y-auto p-5">
-            <form
-              className="space-y-5"
-              onSubmit={(event) => {
-                event.preventDefault();
-                if (!title.trim()) return;
-                onSave(title.trim(), documentIds);
-                setOpen(false);
-              }}
-            >
-              <TextField
-                label="Thread name"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                required
-                maxLength={100}
-              />
-              <fieldset>
-                <legend className={`${kit.label} mb-3`}>
-                  Context documents
-                </legend>
-                <div className="space-y-2">
-                  {documents.map((document) => (
-                    <label
-                      key={document.id}
-                      className={`flex min-h-12 items-center gap-3 rounded-xl border border-sps-line p-3 text-sm ${!document.saved ? "opacity-50" : ""}`}
-                    >
-                      <input
-                        type="checkbox"
-                        disabled={!document.saved}
-                        checked={documentIds.includes(document.id)}
-                        onChange={(event) =>
-                          setDocumentIds((current) =>
-                            event.target.checked
-                              ? [...current, document.id]
-                              : current.filter((id) => id !== document.id),
-                          )
-                        }
-                        className="size-4 shrink-0 accent-sps-graphite"
-                      />
-                      <Icon name="file-text" className="size-4 shrink-0" />
-                      <span className="min-w-0 flex-1 break-words">
-                        {document.title}.md
-                      </span>
-                      <span className={`text-xs ${kit.muted}`}>
-                        {document.saved
-                          ? isDocumentReviewed(document)
-                            ? "Reviewed"
-                            : "Last reviewed version"
-                          : "Not reviewed yet"}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-              <Button type="submit" disabled={!title.trim()}>
-                <Icon name="floppy-disk" />
-                Save changes
-              </Button>
-            </form>
-            <div className="border-t border-sps-line pt-5">
-              {confirmDelete ? (
-                <div className="space-y-3">
-                  <p className="break-words text-sm leading-6">
-                    Delete “{topic.title}” and its messages?
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="danger"
-                      onClick={() => {
-                        setOpen(false);
-                        onDelete();
-                      }}
-                    >
-                      Delete thread
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => setConfirmDelete(false)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <Button variant="danger" onClick={() => setConfirmDelete(true)}>
-                  <Icon name="trash" />
-                  Delete thread
-                </Button>
-              )}
-            </div>
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
     </Dialog.Root>
   );
 }

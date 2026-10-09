@@ -160,19 +160,20 @@ AI Chat prototypes live entirely in Studio. Each variant keeps a local `View.tsx
 with props and callbacks, while `Component.tsx` supplies a small Storybook example.
 Product website previews use those local views and editable Markdown content.
 
-| Owner                   | View responsibility                                                |
-| ----------------------- | ------------------------------------------------------------------ |
-| Host Page               | Page composition and local navigation                              |
-| RBAC Identity / Subject | Registration, login, account settings and account provider         |
-| Social Profile          | Current-user menu, project workspace, project selector and agents  |
-| Social Chat             | Work chat navigation and conversation preview                      |
-| Social Thread / Message | Composer and conversation                                          |
-| RBAC / Social relations | Subject profiles, profile chats and profile Sources filtered by ID |
-| Knowledge Source        | Document bundle navigation, editable sections and review controls  |
-| Knowledge relation      | Ordered Source-to-File links filtered by Source ID                 |
-| File Storage File       | References and generated attachment views                          |
-| Ecommerce Order         | Token purchase preview                                             |
-| Website Builder Widget  | Navigation, help and landing page                                  |
+| Owner                   | View responsibility                                               |
+| ----------------------- | ----------------------------------------------------------------- |
+| Host Page               | Page composition and local navigation                             |
+| RBAC Identity / Subject | Registration, login, account settings and account provider        |
+| Social Profile          | Current-user menu, project workspace, project selector and agents |
+| Social Chat             | Resolve the selected Thread through Chat-to-Thread links          |
+| Social Thread           | Conversation, Working On, composer, creation and settings         |
+| Social Message          | One message, role attribution, context and attachments            |
+| RBAC / Social relations | Subject profiles, profile chats, Sources, Threads and Messages    |
+| Knowledge Source        | Document bundle navigation, editable sections and review controls |
+| Knowledge relation      | Ordered Source-to-File links filtered by Source ID                |
+| File Storage File       | References and generated attachment views                         |
+| Ecommerce Order         | Token purchase preview                                            |
+| Website Builder Widget  | Navigation, help and landing page                                 |
 
 The current subject resolves its `ai-chat-user` Social Profile through
 `subjects-to-social-module-profiles`. RBAC Subject `ai-chat-account` renders that
@@ -185,12 +186,26 @@ project selector. The route ID selects an accessible Profile; a missing link
 renders an unavailable state. Creation adds a local project Profile, its chat
 and the two Profile-to-Chat links. Account pages return to the selected Profile.
 
-Social Profile `ai-chat-project` owns the central settings, sidebar, editor and
-conversation area. Knowledge navigation uses `profiles-to-knowledge-module-sources`
-and Source components; work chat navigation uses `profiles-to-chats` and Chat
+Social Profile `ai-chat-project` composes its settings, navigation and Chat.
+The local `profiles-to-chats` find view resolves one project Chat. Chat
+`ai-chat-workspace` selects a linked Thread through `chats-to-threads/ai-chat-find`.
+Brief, Strategy, Brand, Design, Products and added product discussions have separate
+Threads. Work conversations are also Threads of that Chat. An unlinked selection
+renders an unavailable state.
+
+Thread `ai-chat-workspace` owns its header, conversation, proposal and composer,
+plus the Source editor for document discussions. Its conversation resolves ordered
+Messages through `threads-to-messages/ai-chat-find` and renders one
+`message/ai-chat-message` per record. Thread creation and settings have separate
+variants. A work Thread uses Profile knowledge without Working On or a document
+selection form.
+
+Knowledge navigation uses `profiles-to-knowledge-module-sources` and Source
 components. Each document block renders `knowledge.source/ai-chat-section` with
-its own Source ID, title, content and description. Brief/Strategy grouping uses
-separate local bundle membership; Source has no documentId or nested Files.
+its Source ID, slug, title, content and description. Brief/Strategy grouping uses
+separate local bundle membership by Source slug. The Profile passes its linked
+Sources to Thread; document Threads filter that group, and Working On selects
+Source IDs within it. Source has no documentId or nested Files.
 
 The Profile-to-Source find view scopes the editor as well as navigation.
 Each Source finds its Files through Knowledge
@@ -215,8 +230,10 @@ retrieval records, not editor blocks.
 
 Local relation views accept `variant="find"` and scope their records through
 `apiProps.params.filters.and`. Data is supplied through props and fixtures;
-these views do not fetch production APIs. API adapters, independently persisted
-Sources, Chat/default Thread records and chunk indexing remain later work.
+these views do not fetch production APIs. `projectThreadGraph` adapts the existing editor state into Chat, Thread, Message
+and relation records. Selection metadata stays outside model fields. The Profile
+still coordinates aggregate state updates through local callbacks. API adapters,
+independent persistence and chunk indexing remain later work.
 
 Local helpers and example data live in `workspace/utils/products`, visual primitives
 in `workspace/design/singlepage/interface-kit/ai-chat`, and styles in `runtime`.

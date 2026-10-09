@@ -169,14 +169,11 @@ describe("Host Studio coverage", () => {
 });
 
 describe("AI Chat project ownership", () => {
-  test("discovers project selection and workspace under Social Profile", async () => {
+  test("discovers Profile, Chat, Thread and Message ownership", async () => {
     const actual = await collectModuleInventory();
     const social = actual.modules.find((record) => record.name === "social")!;
     const profile = social.entities.find(
       (entity) => entity.entityType === "model" && entity.entity === "profile",
-    )!;
-    const chat = social.entities.find(
-      (entity) => entity.entityType === "model" && entity.entity === "chat",
     )!;
     for (const variant of [
       "ai-chat-project-select",
@@ -189,19 +186,46 @@ describe("AI Chat project ownership", () => {
           file.includes(`/singlepage/${variant}/`),
         ),
       ).toBe(true);
-    const relation = social.entities.find(
-      (entity) =>
-        entity.entityType === "relation" &&
-        entity.entity === "chats-to-threads",
+    for (const [entity, variants] of [
+      ["chat", ["ai-chat-workspace"]],
+      [
+        "thread",
+        [
+          "ai-chat-workspace",
+          "ai-chat-conversation",
+          "ai-chat-composer",
+          "ai-chat-create",
+          "ai-chat-settings",
+        ],
+      ],
+      ["message", ["ai-chat-message"]],
+    ] as const) {
+      const record = social.entities.find(
+        (item) => item.entityType === "model" && item.entity === entity,
+      )!;
+      for (const variant of variants)
+        expect(
+          record.storyFiles?.some((file) =>
+            file.includes(`/singlepage/${variant}/`),
+          ),
+        ).toBe(true);
+    }
+    for (const entity of ["chats-to-threads", "threads-to-messages"]) {
+      const relation = social.entities.find(
+        (item) => item.entityType === "relation" && item.entity === entity,
+      )!;
+      expect(
+        relation.storyFiles?.some((file) =>
+          file.includes("/singlepage/ai-chat-find/"),
+        ),
+      ).toBe(true);
+    }
+    const message = social.entities.find(
+      (item) => item.entityType === "model" && item.entity === "message",
     )!;
     expect(
-      relation.storyFiles?.some((file) =>
-        file.includes("/singlepage/ai-chat-workspace/"),
-      ) ?? false,
-    ).toBe(false);
-    expect(
-      chat.storyFiles?.some((file) =>
-        file.includes("/singlepage/ai-chat-workspace/"),
+      message.storyFiles?.some((file) =>
+        file.includes("/ai-chat-conversation/"),
       ),
     ).toBe(false);
   });

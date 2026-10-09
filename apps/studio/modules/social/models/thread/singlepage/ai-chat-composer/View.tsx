@@ -5,10 +5,8 @@ import {
   Button,
   Icon,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
-import {
-  type IProjectDocument,
-  type IProjectFile,
-} from "../../../../../../workspace/utils/products/ai-chat-workspace";
+import { type IProjectFile } from "../../../../../../workspace/utils/products/ai-chat-workspace";
+import type { IAIChatSource } from "../../../../../../workspace/utils/products/ai-chat-models";
 import { readProjectFiles } from "../../../../../../workspace/utils/products/ai-chat-files";
 import { ProjectPendingFile } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/View";
 
@@ -21,9 +19,12 @@ export interface IComposerProps {
   files: IProjectFile[];
   onFiles: (files: IProjectFile[]) => void;
   onRemoveFile: (id: string) => void;
-  document?: Pick<IProjectDocument, "title" | "sections">;
-  workingSections?: string[];
-  onWorkingSections?: (sections: string[]) => void;
+  knowledge?: {
+    title: string;
+    sources: IAIChatSource[];
+    selectedSourceIds: string[];
+    onChange: (ids: string[]) => void;
+  };
 }
 
 export function ProjectComposer({
@@ -35,11 +36,13 @@ export function ProjectComposer({
   files,
   onFiles,
   onRemoveFile,
-  document,
-  workingSections = [],
-  onWorkingSections,
+  knowledge,
 }: IComposerProps) {
   const id = useId();
+  const workingSources =
+    knowledge?.sources.filter((source) =>
+      knowledge.selectedSourceIds.includes(source.id),
+    ) ?? [];
   const picker = useRef<HTMLInputElement>(null);
   const mounted = useRef(true);
   const [reading, setReading] = useState(false);
@@ -79,12 +82,12 @@ export function ProjectComposer({
   return (
     <form
       onSubmit={submit}
-      className={`flex min-h-0 shrink-0 flex-col border-t border-sps-line bg-sps-white p-4 ${document ? "max-h-[min(24rem,60%)]" : "max-h-[min(24rem,50%)]"}`}
+      className={`flex min-h-0 shrink-0 flex-col border-t border-sps-line bg-sps-white p-4 ${knowledge ? "max-h-[min(24rem,60%)]" : "max-h-[min(24rem,50%)]"}`}
     >
       <label htmlFor={id} className="sr-only">
         {label}
       </label>
-      {document && onWorkingSections && (
+      {knowledge && (
         <div className="mb-3 shrink-0">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <span className="text-xs text-sps-muted">Working on</span>
@@ -97,10 +100,10 @@ export function ProjectComposer({
                 >
                   <Icon name="file-text" className="size-4" />
                   <span className="truncate">
-                    {workingSections.length === 1
-                      ? workingSections[0]
-                      : workingSections.length
-                        ? `${workingSections.length} sections`
+                    {workingSources.length === 1
+                      ? workingSources[0].title
+                      : workingSources.length
+                        ? `${workingSources.length} sections`
                         : "Whole document"}
                   </span>
                   <Icon name="caret-down" className="size-4" />
@@ -114,11 +117,11 @@ export function ProjectComposer({
                   className="z-50 max-h-80 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg border border-sps-line bg-sps-white p-1 font-sps text-sps-graphite shadow-md"
                 >
                   <DropdownMenu.Label className="px-3 py-2 text-xs font-semibold text-sps-muted">
-                    {document.title}.md · choose one or more sections
+                    {knowledge.title}.md · choose one or more sections
                   </DropdownMenu.Label>
                   <DropdownMenu.CheckboxItem
-                    checked={!workingSections.length}
-                    onCheckedChange={() => onWorkingSections([])}
+                    checked={!workingSources.length}
+                    onCheckedChange={() => knowledge.onChange([])}
                     onSelect={(event) => event.preventDefault()}
                     className="relative flex min-h-10 cursor-pointer items-center rounded-md py-2 pl-8 pr-3 text-sm outline-none data-highlighted:bg-sps-grey"
                   >
@@ -128,16 +131,16 @@ export function ProjectComposer({
                     Whole document
                   </DropdownMenu.CheckboxItem>
                   <DropdownMenu.Separator className="my-1 h-px bg-sps-line" />
-                  {document.sections.map((section) => (
+                  {knowledge.sources.map((source) => (
                     <DropdownMenu.CheckboxItem
-                      key={section.title}
-                      checked={workingSections.includes(section.title)}
+                      key={source.id}
+                      checked={knowledge.selectedSourceIds.includes(source.id)}
                       onCheckedChange={(checked) =>
-                        onWorkingSections(
+                        knowledge.onChange(
                           checked
-                            ? [...workingSections, section.title]
-                            : workingSections.filter(
-                                (title) => title !== section.title,
+                            ? [...knowledge.selectedSourceIds, source.id]
+                            : knowledge.selectedSourceIds.filter(
+                                (id) => id !== source.id,
                               ),
                         )
                       }
@@ -147,7 +150,7 @@ export function ProjectComposer({
                       <DropdownMenu.ItemIndicator className="absolute left-2">
                         <Icon name="check" className="size-4" />
                       </DropdownMenu.ItemIndicator>
-                      {section.title}
+                      {source.title}
                     </DropdownMenu.CheckboxItem>
                   ))}
                 </DropdownMenu.Content>

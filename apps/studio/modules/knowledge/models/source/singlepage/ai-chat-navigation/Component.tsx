@@ -10,6 +10,7 @@ export function Component() {
           sources: [
             {
               id: "pottery:brief:customers",
+              slug: "pottery:brief:customers-and-value",
               title: "Customers and value",
               content: "",
               variant: "ai-chat-section",

@@ -6,7 +6,6 @@ import {
   projectProfilesForUser,
   projectKnowledge,
   projectProfileIdFromHref,
-  projectWorkChats,
 } from "./ai-chat-models";
 import { aiChatAccount } from "./ai-chat-account-fixture";
 import {
@@ -143,14 +142,6 @@ test("source sections and navigation belong to the selected project profile", ()
       apiProps: { params: { filters: { and: [] } } },
     }),
   ).toEqual([]);
-  const chats = projectWorkChats({
-    ...project,
-    topics: [{ id: "work", title: "Campaign", documentIds: [], messages: [] }],
-  });
-  expect(chats.profilesToChats).toEqual([
-    { id: "pottery:work", profileId: "pottery", chatId: "work" },
-  ]);
-  expect(chats.chats[0]).not.toHaveProperty("sources");
 });
 
 test("route IDs select profiles without falling back to an unrelated project", () => {

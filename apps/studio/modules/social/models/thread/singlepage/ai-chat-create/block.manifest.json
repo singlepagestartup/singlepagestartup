@@ -1,0 +1,27 @@
+{
+  "id": "social.thread.ai-chat-create",
+  "title": "ai-chat-create",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Local Thread creation form using Profile knowledge.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.thread",
+    "pageName": "social",
+    "variantName": "ai-chat-create",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "thread",
+    "variant": "ai-chat-create"
+  },
+  "contentSlots": []
+}

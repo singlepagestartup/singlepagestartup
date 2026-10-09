@@ -36,6 +36,7 @@ export interface IProfileSourceRelation {
 }
 export interface IAIChatSource {
   id: string;
+  slug: string;
   variant: string;
   title: string;
   content: string;
@@ -59,6 +60,7 @@ export interface ISourceFileRelation {
 export interface ISourceBundle {
   id: string;
   sourceIds: string[];
+  sourceSlugs: string[];
 }
 export interface ISourceAttachmentView
   extends Omit<IProjectAsset, "file" | "section" | "delivery"> {
@@ -174,6 +176,7 @@ export function projectKnowledge(project: IProjectProfile): IProjectKnowledge {
   const sources = project.documents.flatMap((document) =>
     document.sections.map((section) => ({
       id: sourceId(document.id, section.title),
+      slug: projectSourceSlug(project.id, document.id, section.title),
       variant: "ai-chat-section" as const,
       title: section.title,
       content: document.values[section.title] ?? "",
@@ -238,6 +241,9 @@ export function projectKnowledge(project: IProjectProfile): IProjectKnowledge {
       sourceIds: document.sections.map((section) =>
         sourceId(document.id, section.title),
       ),
+      sourceSlugs: document.sections.map((section) =>
+        projectSourceSlug(project.id, document.id, section.title),
+      ),
     })),
     relations: sources.map((source) => ({
       id: `${source.id}:profile`,
@@ -247,17 +253,14 @@ export function projectKnowledge(project: IProjectProfile): IProjectKnowledge {
   };
 }
 
-export function projectWorkChats(project: IProjectProfile): IProjectLinks {
-  return {
-    chats: project.topics.map((topic) => ({
-      id: topic.id,
-      title: topic.title,
-      variant: "ai-chat-work",
-    })),
-    profilesToChats: project.topics.map((topic) => ({
-      id: `${project.id}:${topic.id}`,
-      profileId: project.id,
-      chatId: topic.id,
-    })),
-  };
+export function projectSourceSlug(
+  profileId: string,
+  documentId: string,
+  title: string,
+): string {
+  const section = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return `${encodeURIComponent(profileId)}:${encodeURIComponent(documentId)}:${section}`;
 }

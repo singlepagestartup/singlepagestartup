@@ -6,7 +6,7 @@
     "entities": 157,
     "variants": 1843,
     "coveredVariants": 45,
-    "representedEntities": 42
+    "representedEntities": 44
   },
   "modules": [
     {
@@ -9025,7 +9025,8 @@
           ],
           "storyFiles": [
             "apps/studio/modules/social/models/chat/singlepage/ai-chat-navigation/Component.stories.tsx",
-            "apps/studio/modules/social/models/chat/singlepage/ai-chat-preview/Component.stories.tsx"
+            "apps/studio/modules/social/models/chat/singlepage/ai-chat-preview/Component.stories.tsx",
+            "apps/studio/modules/social/models/chat/singlepage/ai-chat-workspace/Component.stories.tsx"
           ]
         },
         {
@@ -9108,7 +9109,7 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/social/models/message/singlepage/ai-chat-conversation/Component.stories.tsx",
+            "apps/studio/modules/social/models/message/singlepage/ai-chat-message/Component.stories.tsx",
             "apps/studio/modules/social/models/message/singlepage/bubble-default/Component.stories.tsx"
           ]
         },
@@ -9231,6 +9232,7 @@
           ],
           "storyFiles": [
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-agent/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/ai-chat-navigation/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-project-select/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-project/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-user-menu/Component.stories.tsx",
@@ -9430,7 +9432,11 @@
           ],
           "storyFiles": [
             "apps/studio/modules/social/models/thread/singlepage/ai-chat-composer/Component.stories.tsx",
+            "apps/studio/modules/social/models/thread/singlepage/ai-chat-conversation/Component.stories.tsx",
+            "apps/studio/modules/social/models/thread/singlepage/ai-chat-create/Component.stories.tsx",
+            "apps/studio/modules/social/models/thread/singlepage/ai-chat-settings/Component.stories.tsx",
             "apps/studio/modules/social/models/thread/singlepage/ai-chat-sidebar-item/Component.stories.tsx",
+            "apps/studio/modules/social/models/thread/singlepage/ai-chat-workspace/Component.stories.tsx",
             "apps/studio/modules/social/models/thread/singlepage/list-default/Component.stories.tsx"
           ]
         },
@@ -9815,7 +9821,9 @@
               "coveredBy": []
             }
           ],
-          "storyFiles": []
+          "storyFiles": [
+            "apps/studio/modules/social/relations/chats-to-threads/singlepage/ai-chat-find/Component.stories.tsx"
+          ]
         },
         {
           "module": "social",
@@ -10923,7 +10931,9 @@
               "coveredBy": []
             }
           ],
-          "storyFiles": []
+          "storyFiles": [
+            "apps/studio/modules/social/relations/threads-to-messages/singlepage/ai-chat-find/Component.stories.tsx"
+          ]
         }
       ]
     },
