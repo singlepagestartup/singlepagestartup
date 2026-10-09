@@ -1,18 +1,18 @@
 "use client";
-import { Component as HostModulePage } from "../../../../../modules/host/models/page/index";
+import { Component as HostModulePage } from "../../../../../modules/host/page/index";
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
 
 import {
   AccountProvider,
   type IAIChatAccount,
-} from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-account/Account";
+} from "../../../../../modules/rbac/subject/singlepage/ai-chat-account/Account";
 import {
   ProfilesProvider,
   useProfiles,
   type IProfilesProviderProps,
-} from "../../../../../modules/social/models/profile/singlepage/ai-chat-project/Profiles";
-import { ProjectProvider } from "../../../../../modules/social/models/profile/singlepage/ai-chat-project/Profile";
-import { NavigationProvider } from "../../../../../modules/host/models/layout/singlepage/ai-chat/Navigation";
+} from "../../../../../modules/social/profile/singlepage/ai-chat-project/Profiles";
+import { ProjectProvider } from "../../../../../modules/social/profile/singlepage/ai-chat-project/Profile";
+import { NavigationProvider } from "../../../../../modules/host/layout/singlepage/ai-chat/Navigation";
 import { aiChatAccount } from "../../../../utils/products/ai-chat-account-fixture";
 import { aiChatWorkspaceFixture } from "../../../../utils/products/ai-chat-workspace-fixture";
 import {

@@ -74,14 +74,14 @@ test("AI Chat public model entries have no runtime import cycles", () => {
     visited.add(file);
   }
   for (const file of files(modules).filter((file) =>
-    /\/(?:models|relations)\/[^/]+\/Component\.tsx$/.test(file),
+    /\/modules\/[^/]+\/[^/]+\/Component\.tsx$/.test(file),
   ))
     visit(file);
   expect(
     visited.has(
       path.join(
         modules,
-        "social/models/profile/singlepage/ai-chat-project-item/Component.tsx",
+        "social/profile/singlepage/ai-chat-project-item/Component.tsx",
       ),
     ),
   ).toBe(true);
@@ -119,19 +119,14 @@ test("cross-model Component imports use entity entries and native names", () => 
       );
       if (!imported) continue;
       const target = resolve(file, node.moduleSpecifier.text);
-      const match = target.match(
-        /\/modules\/([^/]+)\/(models|relations)\/([^/]+)\/(.*)$/,
-      );
+      const match = target.match(/\/modules\/([^/]+)\/([^/]+)\/(.*)$/);
       if (!match) continue;
-      const [, module, kind, entity, suffix] = match;
-      const owner = path.join(modules, module, kind, entity);
+      const [, module, entity, suffix] = match;
+      const owner = path.join(modules, module, entity);
       // A variant uses private siblings; importing its own dispatcher creates a cycle.
       if (!file.endsWith(".stories.tsx") && file.startsWith(owner + path.sep))
         continue;
-      const alias =
-        kind === "relations"
-          ? pascal(entity)
-          : pascal(module) + "Module" + pascal(entity);
+      const alias = pascal(module) + "Module" + pascal(entity);
       if (suffix !== "index.ts" || imported.name.text !== alias)
         violations.push(
           `${path.relative(studio, file)} → ${node.moduleSpecifier.text} as ${imported.name.text}`,
@@ -143,7 +138,7 @@ test("cross-model Component imports use entity entries and native names", () => 
 
 test("entity registries overlay startup variants after singlepage variants", () => {
   for (const entry of files(modules).filter((file) =>
-    /\/(?:models|relations)\/[^/]+\/Component\.tsx$/.test(file),
+    /\/modules\/[^/]+\/[^/]+\/Component\.tsx$/.test(file),
   )) {
     const source = readFileSync(entry, "utf8");
     expect(source).not.toMatch(/\bswitch\s*\(/);
@@ -186,6 +181,7 @@ test("Studio module stories display models without relation or API filter contra
   );
   for (const file of sources) {
     expect(file.includes("/relations/")).toBe(false);
+    expect(file.includes("/models/")).toBe(false);
     const source = readFileSync(file, "utf8");
     expect(source).not.toContain("apiProps");
     expect(source).not.toContain('variant="find"');

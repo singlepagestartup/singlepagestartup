@@ -39,7 +39,6 @@ test("every native model has a public entry, both layers and local stories; Tele
         root,
         "apps/studio/modules",
         entity.module,
-        collection,
         entity.entity,
       );
       for (const file of [
@@ -82,7 +81,6 @@ test("every native model has a public entry, both layers and local stories; Tele
                   root,
                   "apps/studio/modules",
                   field.target.module,
-                  "models",
                   field.target.entity,
                   "singlepage/admin-v2-table/data.json",
                 ),
@@ -218,7 +216,6 @@ test("scaffolding preserves authored data and UI and skips relations and Telegra
     directory,
     "apps/studio/modules",
     entity.module,
-    "models",
     entity.entity,
     "singlepage/admin-v2-table",
   );
@@ -228,6 +225,11 @@ test("scaffolding preserves authored data and UI and skips relations and Telegra
     "export function Component() { return <p>Owned records</p>; }",
   );
   scaffoldEntity(directory, entity);
+  expect(
+    existsSync(
+      path.join(directory, "apps/studio/modules", entity.module, "models"),
+    ),
+  ).toBe(false);
   expect(readFileSync(path.join(table, "data.json"), "utf8")).toBe(
     '{"owned": true}',
   );

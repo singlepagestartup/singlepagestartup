@@ -1,0 +1,21 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "variantName": "ai-chat-landing",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "website-builder.widget.ai-chat-landing",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "website-builder/widget/singlepage/ai-chat-landing",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "ai-chat-landing",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "ai-chat-landing",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/website-builder/widget/singlepage/ai-chat-landing/Component.tsx",
+    "sps.code.story": "apps/studio/modules/website-builder/widget/singlepage/ai-chat-landing/Component.stories.tsx"
+  }
+}

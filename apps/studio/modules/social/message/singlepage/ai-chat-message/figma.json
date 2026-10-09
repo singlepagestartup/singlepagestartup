@@ -1,0 +1,21 @@
+{
+  "componentName": "social.message",
+  "pageName": "social",
+  "variantName": "ai-chat-message",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.message.ai-chat-message",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/message/singlepage/ai-chat-message",
+    "sps.figma.component": "social.message",
+    "sps.figma.variant": "ai-chat-message",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "message",
+    "sps.source.variant": "ai-chat-message",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/message/singlepage/ai-chat-message/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/message/singlepage/ai-chat-message/Component.stories.tsx"
+  }
+}

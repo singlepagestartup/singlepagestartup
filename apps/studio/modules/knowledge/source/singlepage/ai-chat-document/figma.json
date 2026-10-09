@@ -1,0 +1,21 @@
+{
+  "componentName": "knowledge.source",
+  "pageName": "knowledge",
+  "variantName": "ai-chat-document",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "knowledge.source.ai-chat-document",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "knowledge/source/singlepage/ai-chat-document",
+    "sps.figma.component": "knowledge.source",
+    "sps.figma.variant": "ai-chat-document",
+    "sps.source.module": "knowledge",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "source",
+    "sps.source.variant": "ai-chat-document",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/knowledge/source/singlepage/ai-chat-document/Component.tsx",
+    "sps.code.story": "apps/studio/modules/knowledge/source/singlepage/ai-chat-document/Component.stories.tsx"
+  }
+}

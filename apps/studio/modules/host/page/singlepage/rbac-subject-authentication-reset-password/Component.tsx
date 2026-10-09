@@ -1,0 +1,20 @@
+import { IdentityResetPasswordDefault } from "../../../../rbac/identity/singlepage/reset-password-default/Component";
+import { FooterCompact } from "../../../../website-builder/widget/singlepage/footer-compact/Component";
+import { HostNavbarDefault } from "../shared/HostNavbarDefault";
+
+export function RbacIdentityResetPasswordDefault() {
+  return (
+    <main
+      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
+      data-ds-page="host.page.rbac-subject-authentication-reset-password"
+    >
+      <HostNavbarDefault activeHref="/reset-password" />
+      <section className="w-full py-12">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <IdentityResetPasswordDefault />
+        </div>
+      </section>
+      <FooterCompact />
+    </main>
+  );
+}

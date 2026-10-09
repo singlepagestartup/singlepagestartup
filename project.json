@@ -30,7 +30,7 @@
           "tsc -p apps/studio/tsconfig.json --noEmit",
           "bun tools/studio/validate-manifests.ts",
           "bun tools/studio/design-system/validate.ts",
-          "bun test tools/studio/design-system apps/studio/workspace/design/singlepage/interface-kit/RecordProjection.test.tsx apps/studio/modules/social/models/skill/singlepage/admin-v2-card/Component.test.tsx apps/studio/modules/host/models/page/singlepage/composition/HostRecords/Provider.test.tsx",
+          "bun test tools/studio/design-system apps/studio/workspace/design/singlepage/interface-kit/RecordProjection.test.tsx apps/studio/modules/social/skill/singlepage/admin-v2-card/Component.test.tsx apps/studio/modules/host/page/singlepage/composition/HostRecords/Provider.test.tsx",
           "bun tools/studio/workspace/validate.ts --active-layer singlepage --self-check",
           "bun tools/studio/workspace/validate.ts --active-layer startup",
           "npm run agents:editorial:test",

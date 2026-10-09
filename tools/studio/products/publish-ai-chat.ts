@@ -81,20 +81,20 @@ publish(
 );
 
 const copies = {
-  page: "website-builder/models/widget/ai-chat-landing",
-  register: "rbac/models/identity/ai-chat-register",
-  login: "rbac/models/identity/ai-chat-login",
-  settings: "rbac/models/subject/ai-chat-settings",
-  help: "website-builder/models/widget/ai-chat-help",
-  tokens: "ecommerce/models/order/ai-chat-tokens",
+  page: "website-builder/widget/ai-chat-landing",
+  register: "rbac/identity/ai-chat-register",
+  login: "rbac/identity/ai-chat-login",
+  settings: "rbac/subject/ai-chat-settings",
+  help: "website-builder/widget/ai-chat-help",
+  tokens: "ecommerce/order/ai-chat-tokens",
 };
 for (const [name, owner] of Object.entries(copies)) {
-  const [module, kind, entity, variant] = owner.split("/");
+  const [module, entity, variant] = owner.split("/");
   const text = readFileSync(path.join(source, `${name}.md`), "utf8");
   const copy =
     name === "page" ? parseAIChatWebsite(text) : parseAIChatServicePage(text);
   publish(
-    `apps/studio/modules/${module}/${kind}/${entity}/singlepage/${variant}/content.json`,
+    `apps/studio/modules/${module}/${entity}/singlepage/${variant}/content.json`,
     JSON.stringify(servicePaths(copy), null, 2) + "\n",
   );
 }
@@ -139,12 +139,12 @@ publish(
   JSON.stringify(guidePublication, null, 2) + "\n",
 );
 publish(
-  "apps/studio/modules/social/models/profile/singlepage/ai-chat-project/definitions.json",
+  "apps/studio/modules/social/profile/singlepage/ai-chat-project/definitions.json",
   JSON.stringify(definitions, null, 2) + "\n",
 );
 const materials = readFileSync(path.join(source, "new-project.md"), "utf8");
 publish(
-  "apps/studio/modules/social/models/profile/singlepage/ai-chat-create/disclosure.json",
+  "apps/studio/modules/social/profile/singlepage/ai-chat-create/disclosure.json",
   JSON.stringify(
     materials.slice(
       materials.indexOf("## How your materials are processed and stored"),

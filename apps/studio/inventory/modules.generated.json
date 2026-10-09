@@ -96,9 +96,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/agent/models/agent/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/agent/models/agent/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/agent/models/agent/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/agent/agent/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/agent/agent/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/agent/agent/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -185,9 +185,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/agent/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/agent/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/agent/models/widget/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/agent/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/agent/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/agent/widget/singlepage/list/Component.stories.tsx"
           ]
         }
       ]
@@ -279,9 +279,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/analytic/models/metric/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/analytic/models/metric/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/analytic/models/metric/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/analytic/metric/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/analytic/metric/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/analytic/metric/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -368,9 +368,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/analytic/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/analytic/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/analytic/models/widget/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/analytic/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/analytic/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/analytic/widget/singlepage/list/Component.stories.tsx"
           ]
         }
       ]
@@ -474,9 +474,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/billing/models/currency/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/billing/models/currency/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/billing/models/currency/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/billing/currency/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/billing/currency/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/billing/currency/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -563,9 +563,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/billing/models/invoice/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/billing/models/invoice/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/billing/models/invoice/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/billing/invoice/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/billing/invoice/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/billing/invoice/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -652,9 +652,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/billing/models/payment-intent/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/billing/models/payment-intent/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/billing/models/payment-intent/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/billing/payment-intent/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/billing/payment-intent/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/billing/payment-intent/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -741,9 +741,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/billing/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/billing/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/billing/models/widget/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/billing/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/billing/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/billing/widget/singlepage/list/Component.stories.tsx"
           ]
         }
       ]
@@ -853,17 +853,17 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/blog/models/article/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/blog/models/article/singlepage/admin-v2-list/Component.stories.tsx",
-            "apps/studio/modules/blog/models/article/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/blog/models/article/singlepage/card/Component.stories.tsx",
-            "apps/studio/modules/blog/models/article/singlepage/cover/Component.stories.tsx",
-            "apps/studio/modules/blog/models/article/singlepage/detail/Component.stories.tsx",
-            "apps/studio/modules/blog/models/article/singlepage/featured/Component.stories.tsx",
-            "apps/studio/modules/blog/models/article/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/blog/models/article/singlepage/overview-default/Component.stories.tsx",
-            "apps/studio/modules/blog/models/article/singlepage/related-default/Component.stories.tsx",
-            "apps/studio/modules/blog/models/article/singlepage/row/Component.stories.tsx"
+            "apps/studio/modules/blog/article/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/blog/article/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/blog/article/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/blog/article/singlepage/card/Component.stories.tsx",
+            "apps/studio/modules/blog/article/singlepage/cover/Component.stories.tsx",
+            "apps/studio/modules/blog/article/singlepage/detail/Component.stories.tsx",
+            "apps/studio/modules/blog/article/singlepage/featured/Component.stories.tsx",
+            "apps/studio/modules/blog/article/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/blog/article/singlepage/overview-default/Component.stories.tsx",
+            "apps/studio/modules/blog/article/singlepage/related-default/Component.stories.tsx",
+            "apps/studio/modules/blog/article/singlepage/row/Component.stories.tsx"
           ]
         },
         {
@@ -956,10 +956,10 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/blog/models/category/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/blog/models/category/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/blog/models/category/singlepage/button-default/Component.stories.tsx",
-            "apps/studio/modules/blog/models/category/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/blog/category/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/blog/category/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/blog/category/singlepage/button-default/Component.stories.tsx",
+            "apps/studio/modules/blog/category/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -1084,15 +1084,15 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/blog/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/blog/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/blog/models/widget/singlepage/article-find-by-id-tag-find-default/Component.stories.tsx",
-            "apps/studio/modules/blog/models/widget/singlepage/article-find-card-default/Component.stories.tsx",
-            "apps/studio/modules/blog/models/widget/singlepage/article-find-default/Component.stories.tsx",
-            "apps/studio/modules/blog/models/widget/singlepage/article-find-featured/Component.stories.tsx",
-            "apps/studio/modules/blog/models/widget/singlepage/article-overview-default/Component.stories.tsx",
-            "apps/studio/modules/blog/models/widget/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/blog/models/widget/singlepage/tag-find-button/Component.stories.tsx"
+            "apps/studio/modules/blog/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/blog/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/blog/widget/singlepage/article-find-by-id-tag-find-default/Component.stories.tsx",
+            "apps/studio/modules/blog/widget/singlepage/article-find-card-default/Component.stories.tsx",
+            "apps/studio/modules/blog/widget/singlepage/article-find-default/Component.stories.tsx",
+            "apps/studio/modules/blog/widget/singlepage/article-find-featured/Component.stories.tsx",
+            "apps/studio/modules/blog/widget/singlepage/article-overview-default/Component.stories.tsx",
+            "apps/studio/modules/blog/widget/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/blog/widget/singlepage/tag-find-button/Component.stories.tsx"
           ]
         }
       ]
@@ -1196,9 +1196,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/broadcast/models/channel/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/broadcast/models/channel/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/broadcast/models/channel/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/broadcast/channel/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/broadcast/channel/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/broadcast/channel/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -1285,9 +1285,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/broadcast/models/message/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/broadcast/models/message/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/broadcast/models/message/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/broadcast/message/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/broadcast/message/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/broadcast/message/singlepage/list/Component.stories.tsx"
           ]
         }
       ]
@@ -1381,10 +1381,10 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/crm/models/form/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/crm/models/form/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/crm/models/form/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/crm/models/form/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/crm/form/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/crm/form/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/crm/form/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/crm/form/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -1495,12 +1495,12 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/crm/models/input/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/crm/models/input/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/crm/models/input/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/crm/models/input/singlepage/select-option-default/Component.stories.tsx",
-            "apps/studio/modules/crm/models/input/singlepage/text-default/Component.stories.tsx",
-            "apps/studio/modules/crm/models/input/singlepage/textarea-default/Component.stories.tsx"
+            "apps/studio/modules/crm/input/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/crm/input/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/crm/input/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/crm/input/singlepage/select-option-default/Component.stories.tsx",
+            "apps/studio/modules/crm/input/singlepage/text-default/Component.stories.tsx",
+            "apps/studio/modules/crm/input/singlepage/textarea-default/Component.stories.tsx"
           ]
         },
         {
@@ -1589,10 +1589,10 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/crm/models/option/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/crm/models/option/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/crm/models/option/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/crm/models/option/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/crm/option/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/crm/option/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/crm/option/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/crm/option/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -1681,10 +1681,10 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/crm/models/request/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/crm/models/request/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/crm/models/request/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/crm/models/request/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/crm/request/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/crm/request/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/crm/request/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/crm/request/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -1773,10 +1773,10 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/crm/models/step/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/crm/models/step/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/crm/models/step/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/crm/models/step/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/crm/step/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/crm/step/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/crm/step/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/crm/step/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -1871,10 +1871,10 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/crm/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/crm/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/crm/models/widget/singlepage/form-list-default/Component.stories.tsx",
-            "apps/studio/modules/crm/models/widget/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/crm/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/crm/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/crm/widget/singlepage/form-list-default/Component.stories.tsx",
+            "apps/studio/modules/crm/widget/singlepage/list/Component.stories.tsx"
           ]
         }
       ]
@@ -1970,11 +1970,11 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/ecommerce/models/attribute/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/attribute/singlepage/admin-v2-form/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/attribute/singlepage/admin-v2-select-input/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/attribute/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/attribute/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/ecommerce/attribute/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/attribute/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/attribute/singlepage/admin-v2-select-input/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/attribute/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/attribute/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -2061,9 +2061,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/ecommerce/models/attribute-key/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/attribute-key/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/attribute-key/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/ecommerce/attribute-key/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/attribute-key/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/attribute-key/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -2162,9 +2162,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/ecommerce/models/category/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/category/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/category/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/ecommerce/category/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/category/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/category/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -2281,15 +2281,15 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/ecommerce/models/order/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/order/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/order/singlepage/ai-chat-tokens/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/order/singlepage/checkout-confirmation-default/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/order/singlepage/checkout-details-default/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/order/singlepage/checkout-payment-default/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/order/singlepage/checkout-stepper-default/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/order/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/order/singlepage/summary-default/Component.stories.tsx"
+            "apps/studio/modules/ecommerce/order/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/order/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/order/singlepage/ai-chat-tokens/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/order/singlepage/checkout-confirmation-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/order/singlepage/checkout-details-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/order/singlepage/checkout-payment-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/order/singlepage/checkout-stepper-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/order/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/order/singlepage/summary-default/Component.stories.tsx"
           ]
         },
         {
@@ -2409,21 +2409,21 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/ecommerce/models/product/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/admin-v2-form/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/admin-v2-list/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/admin-v2-select-input/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/card-related/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/card/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/cart-default/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/gallery/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/overview-cta/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/overview-default/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/overview-purchase/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/pinned/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/product/singlepage/tier/Component.stories.tsx"
+            "apps/studio/modules/ecommerce/product/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/admin-v2-select-input/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/card-related/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/card/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/cart-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/gallery/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/overview-cta/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/overview-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/overview-purchase/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/pinned/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/tier/Component.stories.tsx"
           ]
         },
         {
@@ -2516,9 +2516,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/ecommerce/models/store/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/store/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/store/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/ecommerce/store/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/store/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/store/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -2649,12 +2649,12 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/ecommerce/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/widget/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/widget/singlepage/product-find-card/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/widget/singlepage/product-find-tiers/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/models/widget/singlepage/product-overview-default/Component.stories.tsx"
+            "apps/studio/modules/ecommerce/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/widget/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/widget/singlepage/product-find-card/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/widget/singlepage/product-find-tiers/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/widget/singlepage/product-overview-default/Component.stories.tsx"
           ]
         }
       ]
@@ -2746,13 +2746,13 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/file-storage/models/file/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/file-storage/models/file/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-asset/Component.stories.tsx",
-            "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-attachments/Component.stories.tsx",
-            "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-pending/Component.stories.tsx",
-            "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-preview/Component.stories.tsx",
-            "apps/studio/modules/file-storage/models/file/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/file-storage/file/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/file-storage/file/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/file-storage/file/singlepage/ai-chat-asset/Component.stories.tsx",
+            "apps/studio/modules/file-storage/file/singlepage/ai-chat-attachments/Component.stories.tsx",
+            "apps/studio/modules/file-storage/file/singlepage/ai-chat-pending/Component.stories.tsx",
+            "apps/studio/modules/file-storage/file/singlepage/ai-chat-preview/Component.stories.tsx",
+            "apps/studio/modules/file-storage/file/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -2839,9 +2839,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/file-storage/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/file-storage/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/file-storage/models/widget/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/file-storage/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/file-storage/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/file-storage/widget/singlepage/list/Component.stories.tsx"
           ]
         }
       ]
@@ -2939,15 +2939,15 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/host/models/layout/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/host/models/layout/singlepage/admin-v2-form/Component.stories.tsx",
-            "apps/studio/modules/host/models/layout/singlepage/admin-v2-list/Component.stories.tsx",
-            "apps/studio/modules/host/models/layout/singlepage/admin-v2-select-input/Component.stories.tsx",
-            "apps/studio/modules/host/models/layout/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/host/models/layout/singlepage/ai-chat-header/Component.stories.tsx",
-            "apps/studio/modules/host/models/layout/singlepage/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/host/models/layout/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/host/models/layout/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/host/layout/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/admin-v2-select-input/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/ai-chat-header/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -3040,13 +3040,13 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/host/models/metadata/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/host/models/metadata/singlepage/admin-v2-form/Component.stories.tsx",
-            "apps/studio/modules/host/models/metadata/singlepage/admin-v2-list/Component.stories.tsx",
-            "apps/studio/modules/host/models/metadata/singlepage/admin-v2-select-input/Component.stories.tsx",
-            "apps/studio/modules/host/models/metadata/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/host/models/metadata/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/host/models/metadata/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/host/metadata/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/host/metadata/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/host/metadata/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/host/metadata/singlepage/admin-v2-select-input/Component.stories.tsx",
+            "apps/studio/modules/host/metadata/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/host/metadata/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/host/metadata/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -3151,46 +3151,46 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/host/models/page/singlepage/admin-dashboard/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/admin-entity-drawer/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/admin-model-edit/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/admin-model-list/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/admin-module-dashboard/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/admin-preview-dialog/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/admin-settings/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/admin-v2-form/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/admin-v2-list/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/admin-v2-select-input/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ai-chat-help/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ai-chat-login/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ai-chat-projects-new/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ai-chat-projects-project-id-settings/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ai-chat-projects-project-id-threads-new/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ai-chat-projects-project-id/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ai-chat-register/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ai-chat-settings/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ai-chat-tokens/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/blog-articles-blog-articles-slug/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/blog-authors-social-profiles-slug/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/blog/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/composition/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ecommerce-products-ecommerce-products-slug/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/ecommerce-products/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/privacy/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/rbac-subject-authentication-reset-password/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/rbac-subject-authentication-select-method/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/rbac-subject-settings/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-payment/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/root/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/social-chats-social-chats-id-threads-social-threads-id/Component.stories.tsx",
-            "apps/studio/modules/host/models/page/singlepage/terms/Component.stories.tsx"
+            "apps/studio/modules/host/page/singlepage/admin-dashboard/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/admin-entity-drawer/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/admin-model-edit/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/admin-model-list/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/admin-module-dashboard/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/admin-preview-dialog/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/admin-settings/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/admin-v2-select-input/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ai-chat-help/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ai-chat-login/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ai-chat-projects-new/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ai-chat-projects-project-id-settings/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ai-chat-projects-project-id-threads-new/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ai-chat-projects-project-id/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ai-chat-register/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ai-chat-settings/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ai-chat-tokens/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/blog-articles-blog-articles-slug/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/blog-authors-social-profiles-slug/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/blog/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/composition/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ecommerce-products-ecommerce-products-slug/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/ecommerce-products/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/privacy/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/rbac-subject-authentication-reset-password/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/rbac-subject-authentication-select-method/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/rbac-subject-settings/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-payment/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/root/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/social-chats-social-chats-id-threads-social-threads-id/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/terms/Component.stories.tsx"
           ]
         },
         {
@@ -3283,13 +3283,13 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/host/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/host/models/widget/singlepage/admin-v2-form/Component.stories.tsx",
-            "apps/studio/modules/host/models/widget/singlepage/admin-v2-list/Component.stories.tsx",
-            "apps/studio/modules/host/models/widget/singlepage/admin-v2-select-input/Component.stories.tsx",
-            "apps/studio/modules/host/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/host/models/widget/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/host/models/widget/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/host/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/host/widget/singlepage/admin-v2-form/Component.stories.tsx",
+            "apps/studio/modules/host/widget/singlepage/admin-v2-list/Component.stories.tsx",
+            "apps/studio/modules/host/widget/singlepage/admin-v2-select-input/Component.stories.tsx",
+            "apps/studio/modules/host/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/host/widget/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/host/widget/singlepage/list/Component.stories.tsx"
           ]
         }
       ]
@@ -3381,9 +3381,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/knowledge/models/chunk/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/knowledge/models/chunk/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/knowledge/models/chunk/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/knowledge/chunk/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/knowledge/chunk/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/knowledge/chunk/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -3482,12 +3482,12 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/knowledge/models/source/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/knowledge/models/source/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/knowledge/models/source/singlepage/ai-chat-card/Component.stories.tsx",
-            "apps/studio/modules/knowledge/models/source/singlepage/ai-chat-document-link/Component.stories.tsx",
-            "apps/studio/modules/knowledge/models/source/singlepage/ai-chat-document/Component.stories.tsx",
-            "apps/studio/modules/knowledge/models/source/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/knowledge/source/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/knowledge/source/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/knowledge/source/singlepage/ai-chat-card/Component.stories.tsx",
+            "apps/studio/modules/knowledge/source/singlepage/ai-chat-document-link/Component.stories.tsx",
+            "apps/studio/modules/knowledge/source/singlepage/ai-chat-document/Component.stories.tsx",
+            "apps/studio/modules/knowledge/source/singlepage/list/Component.stories.tsx"
           ]
         }
       ]
@@ -3579,9 +3579,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/notification/models/notification/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/notification/models/notification/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/notification/models/notification/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/notification/notification/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/notification/notification/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/notification/notification/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -3668,9 +3668,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/notification/models/template/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/notification/models/template/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/notification/models/template/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/notification/template/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/notification/template/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/notification/template/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -3757,9 +3757,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/notification/models/topic/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/notification/models/topic/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/notification/models/topic/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/notification/topic/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/notification/topic/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/notification/topic/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -3846,9 +3846,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/notification/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/notification/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/notification/models/widget/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/notification/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/notification/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/notification/widget/singlepage/list/Component.stories.tsx"
           ]
         }
       ]
@@ -3940,9 +3940,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/rbac/models/action/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/action/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/action/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/rbac/action/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/rbac/action/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/rbac/action/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -4117,17 +4117,17 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/rbac/models/identity/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/identity/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/identity/singlepage/ai-chat-login/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/identity/singlepage/ai-chat-register/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/identity/singlepage/card-default/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/identity/singlepage/find-default/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/identity/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/identity/singlepage/login-default/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/identity/singlepage/password-reset-default/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/identity/singlepage/register-default/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/identity/singlepage/reset-password-default/Component.stories.tsx"
+            "apps/studio/modules/rbac/identity/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/ai-chat-login/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/ai-chat-register/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/card-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/find-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/login-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/password-reset-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/register-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/reset-password-default/Component.stories.tsx"
           ]
         },
         {
@@ -4137,9 +4137,9 @@
           "componentRoot": "libs/modules/rbac/models/permission/frontend/component",
           "variants": [],
           "storyFiles": [
-            "apps/studio/modules/rbac/models/permission/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/permission/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/permission/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/rbac/permission/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/rbac/permission/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/rbac/permission/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -4226,9 +4226,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/rbac/models/role/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/role/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/role/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/rbac/role/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/rbac/role/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/rbac/role/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -4489,19 +4489,19 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/rbac/models/subject/singlepage/account-menu-default/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/admin-v2-settings/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/ai-chat-account/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/ai-chat-settings/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/me-crm-form-deafult/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/me-delete/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/me-identity-find-information/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/me-information/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/me-profile-information/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/subject/singlepage/me-social-module-profile-find-information/Component.stories.tsx"
+            "apps/studio/modules/rbac/subject/singlepage/account-menu-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/admin-v2-settings/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/ai-chat-account/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/ai-chat-settings/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/me-crm-form-deafult/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/me-delete/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/me-identity-find-information/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/me-information/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/me-profile-information/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/me-social-module-profile-find-information/Component.stories.tsx"
           ]
         },
         {
@@ -4654,10 +4654,10 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/rbac/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/widget/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/rbac/models/widget/singlepage/subject-me-account-settings/Component.stories.tsx"
+            "apps/studio/modules/rbac/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/rbac/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/rbac/widget/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/rbac/widget/singlepage/subject-me-account-settings/Component.stories.tsx"
           ]
         }
       ]
@@ -4755,9 +4755,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/social/models/action/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/social/models/action/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/models/action/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/action/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/social/action/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/social/action/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -4844,9 +4844,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/social/models/attribute/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/social/models/attribute/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/models/attribute/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/attribute/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/social/attribute/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/social/attribute/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -4933,9 +4933,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/social/models/attribute-key/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/social/models/attribute-key/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/models/attribute-key/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/attribute-key/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/social/attribute-key/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/social/attribute-key/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -5022,12 +5022,12 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/social/models/chat/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/social/models/chat/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/models/chat/singlepage/ai-chat-navigation/Component.stories.tsx",
-            "apps/studio/modules/social/models/chat/singlepage/ai-chat-preview/Component.stories.tsx",
-            "apps/studio/modules/social/models/chat/singlepage/ai-chat-products/Component.stories.tsx",
-            "apps/studio/modules/social/models/chat/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/chat/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/social/chat/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/social/chat/singlepage/ai-chat-navigation/Component.stories.tsx",
+            "apps/studio/modules/social/chat/singlepage/ai-chat-preview/Component.stories.tsx",
+            "apps/studio/modules/social/chat/singlepage/ai-chat-products/Component.stories.tsx",
+            "apps/studio/modules/social/chat/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -5114,11 +5114,11 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/social/models/message/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/social/models/message/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/models/message/singlepage/ai-chat-message/Component.stories.tsx",
-            "apps/studio/modules/social/models/message/singlepage/bubble-default/Component.stories.tsx",
-            "apps/studio/modules/social/models/message/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/message/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/social/message/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/social/message/singlepage/ai-chat-message/Component.stories.tsx",
+            "apps/studio/modules/social/message/singlepage/bubble-default/Component.stories.tsx",
+            "apps/studio/modules/social/message/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -5243,27 +5243,27 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/social/models/profile/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/ai-chat-agent-avatar/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/ai-chat-agent-select/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/ai-chat-agent/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/ai-chat-create/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/ai-chat-project-item/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/ai-chat-project-overview/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/ai-chat-project-select/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/ai-chat-project/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/ai-chat-settings/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/ai-chat-sidebar/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/ai-chat-user-menu/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/article-find-by-id-comment-form-default/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/author-find-by-id-overview-default/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/author/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/byline/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/card/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/compact/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/find-row/Component.stories.tsx",
-            "apps/studio/modules/social/models/profile/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/profile/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-agent-avatar/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-agent-select/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-agent/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-create/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-project-item/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-project-overview/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-project-select/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-project/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-settings/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-sidebar/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-user-menu/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/article-find-by-id-comment-form-default/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/author-find-by-id-overview-default/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/author/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/byline/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/card/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/compact/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/find-row/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -5374,10 +5374,10 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/social/models/skill/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/social/models/skill/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/models/skill/singlepage/ai-chat-products/Component.stories.tsx",
-            "apps/studio/modules/social/models/skill/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/skill/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/social/skill/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/social/skill/singlepage/ai-chat-products/Component.stories.tsx",
+            "apps/studio/modules/social/skill/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -5464,16 +5464,16 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/social/models/thread/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/social/models/thread/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/models/thread/singlepage/ai-chat-composer/Component.stories.tsx",
-            "apps/studio/modules/social/models/thread/singlepage/ai-chat-conversation/Component.stories.tsx",
-            "apps/studio/modules/social/models/thread/singlepage/ai-chat-create/Component.stories.tsx",
-            "apps/studio/modules/social/models/thread/singlepage/ai-chat-products/Component.stories.tsx",
-            "apps/studio/modules/social/models/thread/singlepage/ai-chat-settings/Component.stories.tsx",
-            "apps/studio/modules/social/models/thread/singlepage/ai-chat-sidebar-item/Component.stories.tsx",
-            "apps/studio/modules/social/models/thread/singlepage/list-default/Component.stories.tsx",
-            "apps/studio/modules/social/models/thread/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/thread/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/ai-chat-composer/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/ai-chat-conversation/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/ai-chat-create/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/ai-chat-products/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/ai-chat-settings/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/ai-chat-sidebar-item/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/list-default/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -5582,12 +5582,12 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/social/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/social/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/models/widget/singlepage/chat-list-default/Component.stories.tsx",
-            "apps/studio/modules/social/models/widget/singlepage/chat-overview-default/Component.stories.tsx",
-            "apps/studio/modules/social/models/widget/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/social/models/widget/singlepage/profile-article-find-by-id-comment-find-default/Component.stories.tsx"
+            "apps/studio/modules/social/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/social/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/social/widget/singlepage/chat-list-default/Component.stories.tsx",
+            "apps/studio/modules/social/widget/singlepage/chat-overview-default/Component.stories.tsx",
+            "apps/studio/modules/social/widget/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/social/widget/singlepage/profile-article-find-by-id-comment-find-default/Component.stories.tsx"
           ]
         }
       ]
@@ -5681,10 +5681,10 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/startup/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/startup/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/startup/models/widget/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/startup/models/widget/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/startup/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/startup/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/startup/widget/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/startup/widget/singlepage/list/Component.stories.tsx"
           ]
         }
       ]
@@ -5824,13 +5824,13 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/website-builder/models/button/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/button/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/button/singlepage/ai-chat-header/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/button/singlepage/link/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/button/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/button/singlepage/primary/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/button/singlepage/secondary/Component.stories.tsx"
+            "apps/studio/modules/website-builder/button/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/website-builder/button/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/website-builder/button/singlepage/ai-chat-header/Component.stories.tsx",
+            "apps/studio/modules/website-builder/button/singlepage/link/Component.stories.tsx",
+            "apps/studio/modules/website-builder/button/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/website-builder/button/singlepage/primary/Component.stories.tsx",
+            "apps/studio/modules/website-builder/button/singlepage/secondary/Component.stories.tsx"
           ]
         },
         {
@@ -5919,11 +5919,11 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/website-builder/models/buttons-array/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/buttons-array/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/buttons-array/singlepage/ai-chat-header/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/buttons-array/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/buttons-array/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/website-builder/buttons-array/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/website-builder/buttons-array/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/website-builder/buttons-array/singlepage/ai-chat-header/Component.stories.tsx",
+            "apps/studio/modules/website-builder/buttons-array/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/buttons-array/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -6010,15 +6010,15 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/website-builder/models/feature/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/feature/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/feature/singlepage/badge-default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/feature/singlepage/card/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/feature/singlepage/dropdown/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/feature/singlepage/list-item-default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/feature/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/feature/singlepage/status-default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/feature/singlepage/testimotional/Component.stories.tsx"
+            "apps/studio/modules/website-builder/feature/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/website-builder/feature/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/website-builder/feature/singlepage/badge-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/feature/singlepage/card/Component.stories.tsx",
+            "apps/studio/modules/website-builder/feature/singlepage/dropdown/Component.stories.tsx",
+            "apps/studio/modules/website-builder/feature/singlepage/list-item-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/feature/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/website-builder/feature/singlepage/status-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/feature/singlepage/testimotional/Component.stories.tsx"
           ]
         },
         {
@@ -6105,10 +6105,10 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/website-builder/models/logotype/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/logotype/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/logotype/singlepage/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/logotype/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/website-builder/logotype/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/website-builder/logotype/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/website-builder/logotype/singlepage/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/website-builder/logotype/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -6195,9 +6195,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/website-builder/models/slide/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/slide/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/slide/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/website-builder/slide/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/website-builder/slide/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/website-builder/slide/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -6284,9 +6284,9 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/website-builder/models/slider/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/slider/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/slider/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/website-builder/slider/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/website-builder/slider/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/website-builder/slider/singlepage/list/Component.stories.tsx"
           ]
         },
         {
@@ -6410,32 +6410,32 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/website-builder/models/widget/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/admin-v2-navigation/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/admin-v2-rich-editor/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/ai-chat-header/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/ai-chat-help/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/ai-chat-landing/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-buttons-array-find-default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-cta/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-faq/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-card/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-grid/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-row/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-feature-find-testimotionals/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-files-find-default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-hero/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-page-header/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-rich/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/content-testimonials/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/footer-compact/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/footer-default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/singlepage/navbar-default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/models/widget/startup/content-default/Component.stories.tsx"
+            "apps/studio/modules/website-builder/widget/singlepage/admin-v2-card/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/admin-v2-navigation/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/admin-v2-rich-editor/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-header/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-help/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-landing/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-buttons-array-find-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-cta/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-faq/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-feature-find-card/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-feature-find-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-feature-find-grid/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-feature-find-row/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-feature-find-testimotionals/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-files-find-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-hero/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-page-header/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-rich/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-testimonials/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/footer-compact/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/footer-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/navbar-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/startup/content-default/Component.stories.tsx"
           ]
         }
       ]

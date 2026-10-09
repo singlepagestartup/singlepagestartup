@@ -1,0 +1,21 @@
+{
+  "componentName": "notification.widget",
+  "pageName": "notification",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "notification.widget.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "notification/widget/singlepage/list",
+    "sps.figma.component": "notification.widget",
+    "sps.figma.variant": "list",
+    "sps.source.module": "notification",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/notification/widget/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/notification/widget/singlepage/list/Component.stories.tsx"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.widget",
+  "pageName": "ecommerce",
+  "variantName": "product-overview-default",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.widget.product-overview-default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/widget/singlepage/product-overview-default",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "product-overview-default",
+    "sps.code.component": "apps/studio/modules/ecommerce/widget/singlepage/product-overview-default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/widget/singlepage/product-overview-default/Component.stories.tsx",
+    "sps.figma.component": "ecommerce.widget",
+    "sps.figma.variant": "product-overview-default",
+    "sps.contractVersion": "0.1.0"
+  }
+}

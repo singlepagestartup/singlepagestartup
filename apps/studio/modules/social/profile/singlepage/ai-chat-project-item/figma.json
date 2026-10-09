@@ -1,0 +1,21 @@
+{
+  "componentName": "social.profile",
+  "pageName": "social",
+  "variantName": "ai-chat-project-item",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.profile.ai-chat-project-item",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/profile/singlepage/ai-chat-project-item",
+    "sps.figma.component": "social.profile",
+    "sps.figma.variant": "ai-chat-project-item",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "profile",
+    "sps.source.variant": "ai-chat-project-item",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/profile/singlepage/ai-chat-project-item/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/profile/singlepage/ai-chat-project-item/Component.stories.tsx"
+  }
+}

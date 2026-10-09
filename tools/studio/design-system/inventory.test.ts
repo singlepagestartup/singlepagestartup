@@ -71,8 +71,8 @@ describe("Studio module directories", () => {
     const root = await fixtureRoot();
     const missing = await missingModuleDirectories(inventory, root);
     expect(missing).toEqual([
-      "apps/studio/modules/startup/models/widget/singlepage",
-      "apps/studio/modules/startup/models/widget/startup",
+      "apps/studio/modules/startup/widget/singlepage",
+      "apps/studio/modules/startup/widget/startup",
     ]);
 
     expect(await scaffoldModuleDirectories(inventory, root)).toEqual(missing);
@@ -89,7 +89,7 @@ describe("Studio module directories", () => {
     const root = await fixtureRoot();
     const component = path.join(
       root,
-      "apps/studio/modules/startup/models/widget/startup/hero/Component.tsx",
+      "apps/studio/modules/startup/widget/startup/hero/Component.tsx",
     );
     const custom = path.join(root, "apps/studio/modules/custom/note.md");
     for (const file of [component, custom]) {

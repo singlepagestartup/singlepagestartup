@@ -1,0 +1,21 @@
+{
+  "componentName": "analytic.widget",
+  "pageName": "analytic",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "analytic.widget.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "analytic/widget/singlepage/list",
+    "sps.figma.component": "analytic.widget",
+    "sps.figma.variant": "list",
+    "sps.source.module": "analytic",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/analytic/widget/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/analytic/widget/singlepage/list/Component.stories.tsx"
+  }
+}

@@ -2,12 +2,12 @@ import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { aiChatProjectFixture } from "./ai-chat-workspace-fixture";
 import { appendThreadExchange } from "./ai-chat-threads";
-import { Component as ChatWorkspace } from "../../../modules/social/models/chat/singlepage/ai-chat-products/index";
-import { SourceProvider } from "../../../modules/knowledge/models/source/singlepage/ai-chat-document/Source";
-import { FilesProvider } from "../../../modules/file-storage/models/file/singlepage/ai-chat-attachments/Files";
+import { Component as ChatWorkspace } from "../../../modules/social/chat/singlepage/ai-chat-products/index";
+import { SourceProvider } from "../../../modules/knowledge/source/singlepage/ai-chat-document/Source";
+import { FilesProvider } from "../../../modules/file-storage/file/singlepage/ai-chat-attachments/Files";
 import { AIChatPreview } from "../../products/singlepage/ai-chat/website/Preview";
 import { aiChatAccount } from "./ai-chat-account-fixture";
-import { productsAgent } from "../../../modules/social/models/profile/singlepage/ai-chat-agent/index";
+import { productsAgent } from "../../../modules/social/profile/singlepage/ai-chat-agent/index";
 import { aiChatProductsSourceFixture } from "./ai-chat-workspace-fixture";
 
 test("the active prototype composes one Products Thread and one Source without aggregates", () => {

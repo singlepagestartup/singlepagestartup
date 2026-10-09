@@ -18,7 +18,7 @@ assets:
     source_or_tool: "Existing repository file inspected on 2026-08-09; original source and creation tool unknown."
 
   - id: singlepage-legacy-pixel-wordmark
-    path: apps/studio/modules/website-builder/models/widget/singlepage/footer-default/assets/singlepagestartup-logo.svg
+    path: apps/studio/modules/website-builder/widget/singlepage/footer-default/assets/singlepagestartup-logo.svg
     source_type: client
     evidence: false
     rights_status: "Unknown authorship, font/path license, and trademark clearance; unapproved legacy reference."

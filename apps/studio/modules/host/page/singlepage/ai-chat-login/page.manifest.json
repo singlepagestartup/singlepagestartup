@@ -1,0 +1,30 @@
+{
+  "id": "ai-chat-login",
+  "title": "ai-chat-login",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat page recipe for /ai-chat/login.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ai-chat-login",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.ai-chat-header",
+      "path": "../../../layout/singlepage/ai-chat-header"
+    },
+    {
+      "id": "rbac.identity.ai-chat-login",
+      "path": "../../../../rbac/identity/singlepage/ai-chat-login"
+    }
+  ]
+}

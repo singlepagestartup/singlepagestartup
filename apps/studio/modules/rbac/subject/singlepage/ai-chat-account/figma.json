@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "variantName": "ai-chat-account",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.subject.ai-chat-account",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/subject/singlepage/ai-chat-account",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "ai-chat-account",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "ai-chat-account",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/subject/singlepage/ai-chat-account/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/subject/singlepage/ai-chat-account/Component.stories.tsx"
+  }
+}

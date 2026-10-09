@@ -1,0 +1,21 @@
+{
+  "componentName": "analytic.metric",
+  "pageName": "analytic",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "analytic.metric.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "analytic/metric/singlepage/list",
+    "sps.figma.component": "analytic.metric",
+    "sps.figma.variant": "list",
+    "sps.source.module": "analytic",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "metric",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/analytic/metric/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/analytic/metric/singlepage/list/Component.stories.tsx"
+  }
+}

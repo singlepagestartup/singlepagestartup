@@ -1,1 +1,1 @@
-export * from "../../../../../../modules/file-storage/models/file/singlepage/ai-chat-attachments/index";
+export * from "../../../../../../modules/file-storage/file/singlepage/ai-chat-attachments/index";

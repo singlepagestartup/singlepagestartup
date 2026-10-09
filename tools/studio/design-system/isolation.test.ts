@@ -52,7 +52,7 @@ test("detects production aliases and relative imports, including type dependenci
   expect(
     forbidden(
       path.join(studio, "runtime/view.ts"),
-      "../modules/host/models/page/interface",
+      "../modules/host/page/interface",
     ),
   ).toBe(false);
 });

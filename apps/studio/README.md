@@ -154,10 +154,11 @@ apps/studio/
   system.manifest.json        Studio roots and module inventory pointer
 ```
 
-Reusable module blocks continue to mirror `libs/modules`:
+Studio models live directly inside each module. Production keeps its separate
+`models` and `relations` directories in `libs/modules`.
 
 ```text
-apps/studio/modules/<module>/models/<model>/<layer>/<variant>/
+apps/studio/modules/<module>/<model>/<layer>/<variant>/
   Component.tsx
   Component.stories.tsx
   block.manifest.json
@@ -165,7 +166,7 @@ apps/studio/modules/<module>/models/<model>/<layer>/<variant>/
 ```
 
 Host pages remain under
-`apps/studio/modules/host/models/page/<layer>/<page-variant>/`. Existing Host page IDs are preserved. Domain variant IDs follow their component names.
+`apps/studio/modules/host/page/<layer>/<page-variant>/`. Existing Host page IDs are preserved. Domain variant IDs follow their component names.
 
 ## Local AI Chat components
 
@@ -175,12 +176,12 @@ public types or helpers. Fixture data and interactive examples live in
 `Component.stories.tsx`. Product website previews compose these components and
 editable Markdown content.
 
-AI Chat callers import each model from `models/<model>/index.ts` and choose the
+AI Chat callers import each model from `<module>/<model>/index.ts` and choose the
 view with `variant`. Each entry's discriminated props retain the required inputs
 of its variants. Singlepage and startup maps assemble those variants locally.
 
 ```tsx
-import { Component as SocialModuleProfile } from ".../social/models/profile";
+import { Component as SocialModuleProfile } from ".../social/profile";
 
 <SocialModuleProfile variant="ai-chat-user-menu" data={profile} balance={balance} page="chat" />;
 ```
@@ -257,10 +258,10 @@ Inventory records model stories and visual variant coverage per layer. Coverage
 checks require all four Host models and their management views.
 
 The Startup module has a Widget scaffold at
-`apps/studio/modules/startup/models/widget/singlepage/default/`, visible in
+`apps/studio/modules/startup/widget/singlepage/default/`, visible in
 Storybook as `Modules/Startup/Models/Widget/Singlepage/default`. A downstream
 project adds its own variants under
-`apps/studio/modules/startup/models/widget/startup/<variant>/`, with a component,
+`apps/studio/modules/startup/widget/startup/<variant>/`, with a component,
 story, block manifest, and Figma metadata as shown above. The first `startup` in
 this path names the business module; the second names the project-owned layer.
 Run `npm run studio:inventory` after adding a production model to

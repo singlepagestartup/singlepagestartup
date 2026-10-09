@@ -1,0 +1,26 @@
+{
+  "id": "ai-chat",
+  "title": "ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat page recipe for /ai-chat/.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.ai-chat-landing",
+      "path": "../../../../website-builder/widget/singlepage/ai-chat-landing"
+    }
+  ]
+}

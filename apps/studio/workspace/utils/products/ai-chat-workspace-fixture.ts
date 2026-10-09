@@ -4,7 +4,7 @@ import {
   prepareProjectDocuments,
   type IProjectProfile,
 } from "./ai-chat-workspace";
-import definitions from "../../../modules/social/models/profile/singlepage/ai-chat-project/definitions.json";
+import definitions from "../../../modules/social/profile/singlepage/ai-chat-project/definitions.json";
 export function aiChatProjectFixture(): IProjectProfile {
   const project = createProjectProfile("pottery", "Pottery workshops");
   project.notes =

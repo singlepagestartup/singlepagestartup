@@ -473,7 +473,6 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
     root,
     "apps/studio/modules",
     entity.module,
-    collection,
     entity.entity,
   );
   const nativeRoot = path.join(
@@ -599,27 +598,29 @@ export async function generateCatalog(root = process.cwd()) {
   for (const module of inventory.modules)
     for (const entity of module.entities) scaffoldEntity(root, entity);
   // Existing Studio-only visual models retain their own variants and public entries.
-  for (const module of readdirSync(path.join(root, "apps/studio/modules"))) {
-    if (EXCLUDED_MODULES.has(module)) continue;
-    for (const kind of ["models"]) {
-      const collection = path.join(root, "apps/studio/modules", module, kind);
-      if (!existsSync(collection)) continue;
-      for (const entity of readdirSync(collection)) {
-        const directory = path.join(collection, entity);
-        if (
-          existsSync(path.join(directory, "singlepage")) &&
-          readdirSync(path.join(directory, "singlepage"), {
-            withFileTypes: true,
-          }).some(
-            (entry) =>
-              entry.isDirectory() &&
-              existsSync(
-                path.join(directory, "singlepage", entry.name, "Component.tsx"),
-              ),
-          )
+  for (const module of readdirSync(path.join(root, "apps/studio/modules"), {
+    withFileTypes: true,
+  })) {
+    if (!module.isDirectory() || EXCLUDED_MODULES.has(module.name)) continue;
+    const moduleDirectory = path.join(root, "apps/studio/modules", module.name);
+    for (const entity of readdirSync(moduleDirectory, {
+      withFileTypes: true,
+    })) {
+      if (!entity.isDirectory()) continue;
+      const directory = path.join(moduleDirectory, entity.name);
+      if (
+        existsSync(path.join(directory, "singlepage")) &&
+        readdirSync(path.join(directory, "singlepage"), {
+          withFileTypes: true,
+        }).some(
+          (entry) =>
+            entry.isDirectory() &&
+            existsSync(
+              path.join(directory, "singlepage", entry.name, "Component.tsx"),
+            ),
         )
-          assembleEntity(directory);
-      }
+      )
+        assembleEntity(directory);
     }
   }
   console.log(

@@ -4,8 +4,8 @@ import { projectProfileIdFromHref } from "./ai-chat-models";
 import { aiChatAccount } from "./ai-chat-account-fixture";
 import { aiChatWorkspaceFixture } from "./ai-chat-workspace-fixture";
 import { createProjectProfile } from "./ai-chat-workspace";
-import { AccountProvider } from "../../../modules/rbac/models/subject/singlepage/ai-chat-account/Account";
-import { Component as SubjectAccount } from "../../../modules/rbac/models/subject/singlepage/ai-chat-account/index";
+import { AccountProvider } from "../../../modules/rbac/subject/singlepage/ai-chat-account/Account";
+import { Component as SubjectAccount } from "../../../modules/rbac/subject/singlepage/ai-chat-account/index";
 import { AIChatPreview } from "../../products/singlepage/ai-chat/website/Preview";
 
 test("account menu renders the supplied profile and balance, with an empty fallback", () => {

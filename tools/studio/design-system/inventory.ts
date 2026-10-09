@@ -74,7 +74,6 @@ export function moduleDirectoryPaths(
               inventory.studioRoot,
               "modules",
               entity.module,
-              entity.entityType === "model" ? "models" : "relations",
               entity.entity,
               layer,
             ),
@@ -312,7 +311,7 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
   const blockManifests = await readBlockManifests();
   const pageManifestPaths: string[] = [];
   await walk(
-    path.join(DESIGN_SYSTEM_ROOT, "modules", "host", "models", "page"),
+    path.join(DESIGN_SYSTEM_ROOT, "modules", "host", "page"),
     "page.manifest.json",
     pageManifestPaths,
   );
@@ -405,13 +404,7 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
   )) {
     const stories: string[] = [];
     await walk(
-      path.join(
-        DESIGN_SYSTEM_ROOT,
-        "modules",
-        entity.module,
-        entity.entityType === "model" ? "models" : "relations",
-        entity.entity,
-      ),
+      path.join(DESIGN_SYSTEM_ROOT, "modules", entity.module, entity.entity),
       /\.stories\.(ts|tsx|mdx)$/,
       stories,
     );
