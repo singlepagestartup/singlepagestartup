@@ -10,8 +10,8 @@
   },
   "blocks": [
     {
-      "id": "website-builder.widget.navbar-default",
-      "path": "../../../../website-builder/widget/singlepage/navbar-default"
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
     },
     {
       "id": "website-builder.widget.content-page-header",
@@ -28,10 +28,6 @@
     {
       "id": "blog.widget.tag-find-button",
       "path": "../../../../blog/widget/singlepage/tag-find-button"
-    },
-    {
-      "id": "website-builder.widget.footer-compact",
-      "path": "../../../../website-builder/widget/singlepage/footer-compact"
     }
   ],
   "figma": {

@@ -1,15 +1,13 @@
+import { Component as HostModuleLayout } from "../../../layout";
 import {
   Component as SocialModuleWidget,
   defaultSocialWidgetChatListDefaultProps,
 } from "../../../../social/widget";
-import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
 import {
   createPreviewAttachmentStore,
   type SocialPreviewAttachment,
 } from "../../../../social/widget/singlepage/chat-overview-default/utils";
 import { useCallback, useEffect, useState } from "react";
-
-import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 
 export function ChatDefault() {
   const [imageStore] = useState(() => createPreviewAttachmentStore());
@@ -67,33 +65,37 @@ export function ChatDefault() {
   );
   const selectedChat = chats.find((chat) => chat.id === selectedId) ?? chats[0];
   return (
-    <main
-      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
-      data-ds-page="host.page.social-chats-social-chats-id-threads-social-threads-id"
-      data-ds-route="/social/chats/[social.chats.id]/threads/[social.threads.id]"
+    <HostModuleLayout
+      variant="website"
+      activeHref="/social/chats/[social.chats.id]/threads/[social.threads.id]"
+      footer="compact"
     >
-      <HostNavbarDefault activeHref="/social/chats/[social.chats.id]/threads/[social.threads.id]" />
-      <section
-        className="grid w-full overflow-hidden border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] md:grid-cols-[256px_minmax(0,1fr)]"
-        data-ds-imports="social.widget.chat-list-default social.widget.chat-overview-default"
+      <main
+        className="min-w-0"
+        data-ds-page="host.page.social-chats-social-chats-id-threads-social-threads-id"
+        data-ds-route="/social/chats/[social.chats.id]/threads/[social.threads.id]"
       >
-        <SocialModuleWidget
-          variant="chat-list-default"
-          chats={chats}
-          chatImages={chatImages}
-          selectedId={selectedId}
-          onSelectChat={selectChat}
-          onCreateChat={createChat}
-        />
-        <SocialModuleWidget
-          variant="chat-overview-default"
-          chat={selectedChat}
-          chatImage={chatImages[selectedChat.id]}
-          onChatImageChange={(file) => changeChatImage(selectedChat.id, file)}
-          onChatChange={updateChat}
-        />
-      </section>
-      <WebsiteBuilderModuleWidget variant="footer-compact" />
-    </main>
+        <section
+          className="grid w-full overflow-hidden border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] md:grid-cols-[256px_minmax(0,1fr)]"
+          data-ds-imports="social.widget.chat-list-default social.widget.chat-overview-default"
+        >
+          <SocialModuleWidget
+            variant="chat-list-default"
+            chats={chats}
+            chatImages={chatImages}
+            selectedId={selectedId}
+            onSelectChat={selectChat}
+            onCreateChat={createChat}
+          />
+          <SocialModuleWidget
+            variant="chat-overview-default"
+            chat={selectedChat}
+            chatImage={chatImages[selectedChat.id]}
+            onChatImageChange={(file) => changeChatImage(selectedChat.id, file)}
+            onChatChange={updateChat}
+          />
+        </section>
+      </main>
+    </HostModuleLayout>
   );
 }

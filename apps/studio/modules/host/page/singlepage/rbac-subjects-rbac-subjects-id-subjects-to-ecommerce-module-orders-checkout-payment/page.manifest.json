@@ -10,8 +10,8 @@
   },
   "blocks": [
     {
-      "id": "website-builder.widget.navbar-default",
-      "path": "../../../../website-builder/widget/singlepage/navbar-default"
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
     },
     {
       "id": "ecommerce.order.checkout-stepper-default",
@@ -24,10 +24,6 @@
     {
       "id": "ecommerce.order.summary-default",
       "path": "../../../../ecommerce/order/singlepage/summary-default"
-    },
-    {
-      "id": "website-builder.widget.footer-compact",
-      "path": "../../../../website-builder/widget/singlepage/footer-compact"
     }
   ],
   "figma": {

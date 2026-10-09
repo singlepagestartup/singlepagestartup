@@ -2,7 +2,7 @@
   "$schema": "../../../../../block.schema.json",
   "id": "website-builder.widget.navbar-default",
   "title": "Website Builder Widget / Navbar / Default",
-  "description": "Singlepage draft block for the current home page navbar default section.",
+  "description": "Website navigation composed from Logotype and Buttons Array, with supplied Cart and Subject views.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
@@ -17,19 +17,14 @@
   },
   "contentSlots": [
     {
-      "name": "brand",
-      "type": "text",
-      "required": false
+      "name": "cartButton",
+      "type": "component",
+      "description": "Cart view supplied by Host Layout."
     },
     {
-      "name": "links",
-      "type": "list",
-      "required": false
-    },
-    {
-      "name": "actions",
-      "type": "list",
-      "required": false
+      "name": "subjectAccount",
+      "type": "component",
+      "description": "Subject account view supplied by Host Layout."
     }
   ],
   "figma": {

@@ -3,6 +3,7 @@ import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as AiChatHeader } from "./ai-chat-header/index";
 import { Component as Default } from "./default/index";
 import { Component as List } from "./list/index";
+import { Component as NavbarDefault } from "./navbar-default/index";
 
 export const variants = {
   "admin-v2-card": AdminV2Card,
@@ -10,4 +11,5 @@ export const variants = {
   "ai-chat-header": AiChatHeader,
   default: Default,
   list: List,
+  "navbar-default": NavbarDefault,
 };

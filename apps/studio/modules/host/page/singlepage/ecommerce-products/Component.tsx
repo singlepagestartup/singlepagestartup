@@ -1,21 +1,25 @@
+import { Component as HostModuleLayout } from "../../../layout";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
 import { Component as EcommerceModuleWidget } from "../../../../ecommerce/widget";
-import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 import { SectionStack } from "../../../../../workspace/design/singlepage/interface-kit/SectionStack";
 
 export function EcommerceProductFindCard() {
   return (
-    <main
-      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
-      data-ds-page="host.page.ecommerce-products"
-      data-ds-route="/ecommerce/products"
+    <HostModuleLayout
+      variant="website"
+      activeHref="/ecommerce/products"
+      footer="compact"
     >
-      <HostNavbarDefault activeHref="/ecommerce/products" />
-      <SectionStack>
-        <WebsiteBuilderModuleWidget variant="content-page-header" />
-        <EcommerceModuleWidget variant="product-find-card" />
-      </SectionStack>
-      <WebsiteBuilderModuleWidget variant="footer-compact" />
-    </main>
+      <main
+        className="min-w-0"
+        data-ds-page="host.page.ecommerce-products"
+        data-ds-route="/ecommerce/products"
+      >
+        <SectionStack>
+          <WebsiteBuilderModuleWidget variant="content-page-header" />
+          <EcommerceModuleWidget variant="product-find-card" />
+        </SectionStack>
+      </main>
+    </HostModuleLayout>
   );
 }

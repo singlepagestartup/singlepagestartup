@@ -13,9 +13,10 @@ import {
   kit,
 } from "../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import type { IAIChatWebsiteContent } from "../../../../../workspace/utils/products/ai-chat-content";
+import defaultContent from "../../../../../workspace/utils/products/ai-chat-website.generated.json";
 
 export interface IChatPreviewProps {
-  content: IAIChatWebsiteContent;
+  content?: IAIChatWebsiteContent;
 }
 export interface IThreadRowProps {
   name: string;
@@ -82,7 +83,9 @@ const ThreadRow = memo(function ThreadRow({
 });
 
 /** Artifact-derived local prototype: prepared files and scripted replies, no AI calls. */
-export function Component({ content }: IChatPreviewProps) {
+export function Component({
+  content = defaultContent,
+}: IChatPreviewProps = {}) {
   const id = useId();
   const label = content.labels;
   const sequence = useRef(0);

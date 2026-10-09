@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.navbar-account",
+  "title": "navbar-account",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Website account access and authenticated profile menu.",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "navbar-account"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "navbar-account",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -12,6 +12,8 @@ export interface ButtonsArrayItem {
   icon?: ModuleIcon;
   size?: "sm" | "xs";
   tone?: "default" | "muted";
+  inverse?: boolean;
+  target?: "_self" | "_top";
 }
 
 export interface ButtonsArrayDefaultProps {
@@ -67,6 +69,7 @@ export function ButtonsArrayDefault(props?: Partial<ButtonsArrayDefaultProps>) {
             <WebsiteBuilderModuleButton
               variant="link"
               href={button.href}
+              target={button.target}
               key={`${button.variant}:${button.href}:${button.label}`}
               label={button.label}
               size={button.size}
@@ -79,6 +82,8 @@ export function ButtonsArrayDefault(props?: Partial<ButtonsArrayDefaultProps>) {
           <WebsiteBuilderModuleButton
             variant="secondary"
             href={button.href}
+            target={button.target}
+            inverse={button.inverse}
             icon={button.icon}
             key={`${button.variant}:${button.href}:${button.label}`}
             label={button.label}
@@ -87,6 +92,7 @@ export function ButtonsArrayDefault(props?: Partial<ButtonsArrayDefaultProps>) {
           <WebsiteBuilderModuleButton
             variant="primary"
             href={button.href}
+            target={button.target}
             icon={button.icon}
             key={`${button.variant}:${button.href}:${button.label}`}
             label={button.label}

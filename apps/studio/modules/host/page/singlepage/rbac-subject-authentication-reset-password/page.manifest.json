@@ -10,16 +10,12 @@
   },
   "blocks": [
     {
-      "id": "website-builder.widget.navbar-default",
-      "path": "../../../../website-builder/widget/singlepage/navbar-default"
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
     },
     {
       "id": "rbac.identity.reset-password-default",
       "path": "../../../../rbac/identity/singlepage/reset-password-default"
-    },
-    {
-      "id": "website-builder.widget.footer-compact",
-      "path": "../../../../website-builder/widget/singlepage/footer-compact"
     }
   ],
   "figma": {

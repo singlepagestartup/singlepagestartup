@@ -10,16 +10,12 @@
   },
   "blocks": [
     {
-      "id": "website-builder.widget.navbar-default",
-      "path": "../../../../website-builder/widget/singlepage/navbar-default"
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
     },
     {
       "id": "social.profile.author-find-by-id-overview-default",
       "path": "../../../../social/profile/singlepage/author-find-by-id-overview-default"
-    },
-    {
-      "id": "website-builder.widget.footer-compact",
-      "path": "../../../../website-builder/widget/singlepage/footer-compact"
     }
   ],
   "figma": {

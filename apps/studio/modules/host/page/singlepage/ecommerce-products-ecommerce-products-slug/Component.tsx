@@ -1,7 +1,7 @@
 import { Component as EcommerceModuleCart } from "../../../../ecommerce/cart";
 import { defaultProductOverviewDefaultProps } from "../../../../ecommerce/product";
 import { Component as HostModuleWidget } from "../../../widget";
-import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+import { Component as HostModuleLayout } from "../../../layout";
 import { useCallback, useState } from "react";
 
 import {
@@ -85,50 +85,50 @@ export function EcommerceCartFlowDefault() {
   }, []);
 
   return (
-    <main
-      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
-      data-ds-page="host.page.ecommerce-products-ecommerce-products-slug"
+    <HostModuleLayout
+      variant="website"
+      activeHref="/ecommerce/products"
+      cartButton={
+        <EcommerceModuleCart
+          variant="button-default"
+          count={cartCount}
+          onClick={() => setIsCartOpen(true)}
+        />
+      }
+      cartDrawer={
+        <EcommerceModuleCart
+          variant="drawer-default"
+          items={items}
+          isOpen={isCartOpen}
+          onClear={() => setItems([])}
+          onClose={() => setIsCartOpen(false)}
+          onDecrease={handleDecrease}
+          onIncrease={handleIncrease}
+          onRemove={handleRemove}
+        />
+      }
     >
-      <WebsiteBuilderModuleWidget
-        variant="navbar-default"
-        activeHref="/ecommerce/products"
-        cartButton={
-          <EcommerceModuleCart
-            variant="button-default"
-            count={cartCount}
-            onClick={() => setIsCartOpen(true)}
-          />
-        }
-        cartCount={cartCount}
-        onCartClick={() => setIsCartOpen(true)}
-      />
-      <HostModuleWidget
-        variant="default"
-        externalModule="ecommerce"
-        productProps={{
-          related: productOverviewRelatedProducts,
-          purchase: {
-            id: websiteDevelopmentCartItem.id,
-            slug: websiteDevelopmentCartItem.slug,
-            image: websiteDevelopmentCartItem.image,
-            title: websiteDevelopmentCartItem.title,
-            priceLabel: websiteDevelopmentCartItem.priceLabel,
-            price: websiteDevelopmentCartItem.price,
-            onAddToCart: handleAddToCart,
-          },
-        }}
-      />
-      <WebsiteBuilderModuleWidget variant="footer-compact" />
-      <EcommerceModuleCart
-        variant="drawer-default"
-        items={items}
-        isOpen={isCartOpen}
-        onClear={() => setItems([])}
-        onClose={() => setIsCartOpen(false)}
-        onDecrease={handleDecrease}
-        onIncrease={handleIncrease}
-        onRemove={handleRemove}
-      />
-    </main>
+      <main
+        className="min-w-0"
+        data-ds-page="host.page.ecommerce-products-ecommerce-products-slug"
+      >
+        <HostModuleWidget
+          variant="default"
+          externalModule="ecommerce"
+          productProps={{
+            related: productOverviewRelatedProducts,
+            purchase: {
+              id: websiteDevelopmentCartItem.id,
+              slug: websiteDevelopmentCartItem.slug,
+              image: websiteDevelopmentCartItem.image,
+              title: websiteDevelopmentCartItem.title,
+              priceLabel: websiteDevelopmentCartItem.priceLabel,
+              price: websiteDevelopmentCartItem.price,
+              onAddToCart: handleAddToCart,
+            },
+          }}
+        />
+      </main>
+    </HostModuleLayout>
   );
 }

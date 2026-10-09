@@ -1,0 +1,19 @@
+{
+  "title": "SinglePageStartup",
+  "paragraphs": [],
+  "items": [],
+  "links": [
+    {
+      "text": "Start with my files",
+      "href": "/ai-chat/register"
+    },
+    {
+      "text": "Sign in",
+      "href": "/ai-chat/login"
+    },
+    {
+      "text": "Code Framework",
+      "href": "https://github.com/singlepagestartup/singlepagestartup"
+    }
+  ]
+}

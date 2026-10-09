@@ -14,8 +14,15 @@ interface IHeaderButton {
   title: string;
   url: string;
   icon: IconName;
+  target?: "_self";
 }
 const buttons: Record<string, IHeaderButton> = {
+  "ai-chat-try": {
+    title: "Try the chat",
+    url: "#workflow",
+    icon: "play",
+    target: "_self",
+  },
   "ai-chat-help": { title: "Help", url: "/ai-chat/help", icon: "question" },
   "ai-chat-login": {
     title: "Sign in",
@@ -45,6 +52,7 @@ export const Component = memo(function Component({
       data-id={id}
       data-variant="ai-chat-header"
       href={data.url}
+      target={data.target}
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm ${kit.focus} ${active ? "bg-sps-graphite font-semibold text-white" : "text-sps-muted hover:bg-sps-grey"}`}

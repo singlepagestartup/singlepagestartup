@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.widget.ai-chat-footer",
+  "title": "ai-chat-footer",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat footer with Logotype and Buttons Array models.",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "ai-chat-footer"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "ai-chat-footer",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

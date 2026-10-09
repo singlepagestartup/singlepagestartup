@@ -10,8 +10,8 @@
   },
   "blocks": [
     {
-      "id": "website-builder.widget.navbar-default",
-      "path": "../../../../website-builder/widget/singlepage/navbar-default"
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
     },
     {
       "id": "website-builder.widget.content-hero",
@@ -52,14 +52,6 @@
     {
       "id": "website-builder.widget.content-feature-find-row",
       "path": "../../../../website-builder/widget/singlepage/content-feature-find-row"
-    },
-    {
-      "id": "website-builder.widget.footer-default",
-      "path": "../../../../website-builder/widget/singlepage/footer-default"
-    },
-    {
-      "id": "website-builder.widget.footer-compact",
-      "path": "../../../../website-builder/widget/singlepage/footer-compact"
     }
   ],
   "figma": {

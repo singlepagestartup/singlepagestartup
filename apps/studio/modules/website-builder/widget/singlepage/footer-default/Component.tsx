@@ -3,7 +3,7 @@ import {
   type ButtonsArrayItem,
 } from "../../../buttons-array";
 
-import { BrandMark } from "../../../../../workspace/utils/components/BrandMark";
+import { Component as WebsiteBuilderModuleLogotype } from "../../../logotype";
 
 interface FooterColumn {
   title: string;
@@ -65,7 +65,7 @@ export function FooterDefault(props?: Partial<FooterDefaultProps>) {
   );
 
   return (
-    <div
+    <footer
       className="w-full border-t border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]"
       data-ds-block="website-builder.widget.footer-default"
       data-ds-layer="singlepage"
@@ -73,16 +73,7 @@ export function FooterDefault(props?: Partial<FooterDefaultProps>) {
       <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-5">
           <div className="min-w-0 sm:col-span-2 lg:col-span-1">
-            <a
-              className="inline-flex min-h-11 max-w-full items-center gap-3 rounded-xl no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)]"
-              href="/"
-              aria-label={brand}
-            >
-              <BrandMark />
-              <span className="text-sm font-semibold text-[var(--workspace-brand-foreground)]">
-                {brand}
-              </span>
-            </a>
+            <WebsiteBuilderModuleLogotype variant="default" brand={brand} />
             <p className="mt-5 max-w-xs text-sm leading-6 text-[var(--workspace-brand-muted)]">
               {description}
             </p>
@@ -109,6 +100,6 @@ export function FooterDefault(props?: Partial<FooterDefaultProps>) {
           />
         </div>
       </div>
-    </div>
+    </footer>
   );
 }

@@ -5,7 +5,7 @@
     "modules": 15,
     "entities": 61,
     "variants": 838,
-    "coveredVariants": 163,
+    "coveredVariants": 164,
     "representedEntities": 61
   },
   "modules": [
@@ -2947,7 +2947,8 @@
             "apps/studio/modules/host/layout/singlepage/ai-chat-header/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/ai-chat/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/host/layout/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/host/layout/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/website/Component.stories.tsx"
           ]
         },
         {
@@ -4496,13 +4497,15 @@
             "apps/studio/modules/rbac/subject/singlepage/admin-v2-table/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/ai-chat-account/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/ai-chat-settings/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/ai-chat-sign-in/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-crm-form-deafult/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-delete/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-identity-find-information/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-information/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-profile-information/Component.stories.tsx",
-            "apps/studio/modules/rbac/subject/singlepage/me-social-module-profile-find-information/Component.stories.tsx"
+            "apps/studio/modules/rbac/subject/singlepage/me-social-module-profile-find-information/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/navbar-account/Component.stories.tsx"
           ]
         },
         {
@@ -5832,6 +5835,7 @@
             "apps/studio/modules/website-builder/button/singlepage/ai-chat-header/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/link/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/website-builder/button/singlepage/navigation/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/primary/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/secondary/Component.stories.tsx"
           ]
@@ -5926,7 +5930,8 @@
             "apps/studio/modules/website-builder/buttons-array/singlepage/admin-v2-table/Component.stories.tsx",
             "apps/studio/modules/website-builder/buttons-array/singlepage/ai-chat-header/Component.stories.tsx",
             "apps/studio/modules/website-builder/buttons-array/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/buttons-array/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/website-builder/buttons-array/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/website-builder/buttons-array/singlepage/navbar-default/Component.stories.tsx"
           ]
         },
         {
@@ -6098,7 +6103,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/logotype/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "website-builder.logotype.default"
+              ]
             },
             {
               "variant": "find",
@@ -6111,6 +6118,7 @@
             "apps/studio/modules/website-builder/logotype/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/website-builder/logotype/singlepage/admin-v2-table/Component.stories.tsx",
             "apps/studio/modules/website-builder/logotype/singlepage/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/website-builder/logotype/singlepage/default/Component.stories.tsx",
             "apps/studio/modules/website-builder/logotype/singlepage/list/Component.stories.tsx"
           ]
         },
@@ -6417,9 +6425,13 @@
             "apps/studio/modules/website-builder/widget/singlepage/admin-v2-navigation/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/admin-v2-rich-editor/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-continue/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-footer/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/ai-chat-header/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/ai-chat-help/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-landing/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-hero/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-landing-header/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-try/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-buttons-array-find-default/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-cta/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-default/Component.stories.tsx",

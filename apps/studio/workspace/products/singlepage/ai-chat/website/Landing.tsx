@@ -1,6 +1,4 @@
-import { Component as WebsiteBuilderModuleWidget } from "../../../../../modules/website-builder/widget/index";
-
-import { Component as SocialModuleChat } from "../../../../../modules/social/chat/index";
+import { Component as HostModulePage } from "../../../../../modules/host/page";
 
 import sourceText from "./page.md?raw";
 import { parseAIChatWebsite } from "./content";
@@ -10,12 +8,9 @@ import { aiChatAccount } from "../../../../utils/products/ai-chat-account-fixtur
 export default function Landing({ text }: { text?: string } = {}) {
   return (
     <AccountProvider account={aiChatAccount}>
-      <WebsiteBuilderModuleWidget
-        variant="ai-chat-landing"
+      <HostModulePage
+        variant="ai-chat"
         content={parseAIChatWebsite(text ?? sourceText)}
-        chatPreview={(content) => (
-          <SocialModuleChat variant="ai-chat-preview" content={content} />
-        )}
       />
     </AccountProvider>
   );

@@ -8,6 +8,7 @@ export interface ButtonPrimaryProps {
   label: string;
   href: string;
   icon?: ModuleIcon;
+  target?: "_self" | "_top";
 }
 
 export const defaultButtonPrimaryProps: ButtonPrimaryProps = {
@@ -27,6 +28,7 @@ export function ButtonPrimary(props?: Partial<ButtonPrimaryProps>) {
       data-ds-block="website-builder.button.primary"
       data-ds-layer="singlepage"
       href={href}
+      target={props?.target}
     >
       {label}
       <Icon className="h-5 w-5 shrink-0" />

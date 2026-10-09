@@ -10,8 +10,8 @@
   },
   "blocks": [
     {
-      "id": "website-builder.widget.navbar-default",
-      "path": "../../../../website-builder/widget/singlepage/navbar-default"
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
     },
     {
       "id": "host.widget.default",
@@ -24,10 +24,6 @@
     {
       "id": "blog.widget.article-overview-default",
       "path": "../../../../blog/widget/singlepage/article-overview-default"
-    },
-    {
-      "id": "website-builder.widget.footer-compact",
-      "path": "../../../../website-builder/widget/singlepage/footer-compact"
     }
   ],
   "figma": {

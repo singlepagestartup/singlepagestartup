@@ -1,7 +1,6 @@
-import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+import { Component as HostModuleLayout } from "../../../layout";
 import { FileText } from "../../../../../workspace/utils/components/ModuleIcons";
 
-import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 import { LegalPage, type LegalSection } from "../shared/LegalPage";
 
 const COMPANY = "[Company Name]";
@@ -203,20 +202,17 @@ const termsSections: LegalSection[] = [
 
 export function TermsPage() {
   return (
-    <main
-      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
-      data-ds-page="host.page.terms"
-    >
-      <HostNavbarDefault />
-      <LegalPage
-        breadcrumbLabel="Terms of Service"
-        description="The terms that govern access to and use of SinglePageStartup services."
-        icon={FileText}
-        sections={termsSections}
-        title="Terms of Service"
-        updatedAt={LAST_UPDATED}
-      />
-      <WebsiteBuilderModuleWidget variant="footer-compact" />
-    </main>
+    <HostModuleLayout variant="website" footer="compact">
+      <main className="min-w-0" data-ds-page="host.page.terms">
+        <LegalPage
+          breadcrumbLabel="Terms of Service"
+          description="The terms that govern access to and use of SinglePageStartup services."
+          icon={FileText}
+          sections={termsSections}
+          title="Terms of Service"
+          updatedAt={LAST_UPDATED}
+        />
+      </main>
+    </HostModuleLayout>
   );
 }

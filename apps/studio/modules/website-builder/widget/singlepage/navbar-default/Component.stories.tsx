@@ -19,9 +19,10 @@ export const Default: Story = {
   name: "default",
 };
 
-export const Authenticated: Story = {
-  name: "authenticated",
+export const WithSlots: Story = {
+  name: "with account and cart slots",
   args: {
-    isAuthenticated: true,
+    subjectAccount: <button type="button">Profile slot</button>,
+    cartButton: <button type="button">Cart slot</button>,
   },
 };

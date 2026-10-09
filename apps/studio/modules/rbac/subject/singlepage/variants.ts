@@ -4,6 +4,7 @@ import { Component as AdminV2Settings } from "./admin-v2-settings/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as AiChatAccount } from "./ai-chat-account/index";
 import { Component as AiChatSettings } from "./ai-chat-settings/index";
+import { Component as AiChatSignIn } from "./ai-chat-sign-in/index";
 import { Component as List } from "./list/index";
 import { Component as MeCrmFormDeafult } from "./me-crm-form-deafult/index";
 import { Component as MeDelete } from "./me-delete/index";
@@ -11,6 +12,7 @@ import { Component as MeIdentityFindInformation } from "./me-identity-find-infor
 import { Component as MeInformation } from "./me-information/index";
 import { Component as MeProfileInformation } from "./me-profile-information/index";
 import { Component as MeSocialModuleProfileFindInformation } from "./me-social-module-profile-find-information/index";
+import { Component as NavbarAccount } from "./navbar-account/index";
 
 export const variants = {
   "account-menu-default": AccountMenuDefault,
@@ -19,6 +21,7 @@ export const variants = {
   "admin-v2-table": AdminV2Table,
   "ai-chat-account": AiChatAccount,
   "ai-chat-settings": AiChatSettings,
+  "ai-chat-sign-in": AiChatSignIn,
   list: List,
   "me-crm-form-deafult": MeCrmFormDeafult,
   "me-delete": MeDelete,
@@ -27,4 +30,5 @@ export const variants = {
   "me-profile-information": MeProfileInformation,
   "me-social-module-profile-find-information":
     MeSocialModuleProfileFindInformation,
+  "navbar-account": NavbarAccount,
 };

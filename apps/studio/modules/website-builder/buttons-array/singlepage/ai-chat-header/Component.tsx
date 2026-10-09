@@ -6,6 +6,7 @@ export interface IHeaderButtonsProps {
   onNavigate?: () => void;
 }
 const buttonIds: Record<string, string> = {
+  "ai-chat-try": "ai-chat-try",
   "ai-chat-help": "ai-chat-help",
   "ai-chat-login": "ai-chat-login",
   "ai-chat-register": "ai-chat-register",

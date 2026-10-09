@@ -3,6 +3,7 @@ export interface ButtonLinkProps {
   href: string;
   size?: "sm" | "xs";
   tone?: "default" | "muted";
+  target?: "_self" | "_top";
 }
 
 export const defaultButtonLinkProps: ButtonLinkProps = {
@@ -29,6 +30,7 @@ export function ButtonLink(props?: Partial<ButtonLinkProps>) {
       data-ds-block="website-builder.button.link"
       data-ds-layer="singlepage"
       href={href}
+      target={props?.target}
     >
       {label}
     </a>

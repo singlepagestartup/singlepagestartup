@@ -81,18 +81,47 @@ publish(
 );
 
 const copies = {
-  page: "website-builder/widget/ai-chat-landing",
   register: "rbac/identity/ai-chat-register",
   login: "rbac/identity/ai-chat-login",
   settings: "rbac/subject/ai-chat-settings",
   help: "website-builder/widget/ai-chat-help",
   tokens: "ecommerce/order/ai-chat-tokens",
 };
+const website = servicePaths(
+  parseAIChatWebsite(readFileSync(path.join(source, "page.md"), "utf8")),
+) as ReturnType<typeof parseAIChatWebsite>;
+publish(
+  "apps/studio/workspace/utils/products/ai-chat-website.generated.json",
+  JSON.stringify(website, null, 2) + "\n",
+);
+const landingCopies = {
+  "ai-chat-hero": {
+    hero: website.hero,
+    labels: {
+      "hero-photo-alt": website.labels["hero-photo-alt"],
+      "navigation-foundation": website.labels["navigation-foundation"],
+    },
+  },
+  "ai-chat-try": {
+    workflow: website.workflow,
+    uploadNote: website.labels["demo-upload-note"],
+  },
+  "ai-chat-continue": {
+    continue: website.continue,
+    terms: website.terms,
+    startLink: website.hero.links[0],
+  },
+  "ai-chat-footer": website.footer,
+};
+for (const [variant, copy] of Object.entries(landingCopies))
+  publish(
+    `apps/studio/modules/website-builder/widget/singlepage/${variant}/content.json`,
+    JSON.stringify(copy, null, 2) + "\n",
+  );
 for (const [name, owner] of Object.entries(copies)) {
   const [module, entity, variant] = owner.split("/");
   const text = readFileSync(path.join(source, `${name}.md`), "utf8");
-  const copy =
-    name === "page" ? parseAIChatWebsite(text) : parseAIChatServicePage(text);
+  const copy = parseAIChatServicePage(text);
   publish(
     `apps/studio/modules/${module}/${entity}/singlepage/${variant}/content.json`,
     JSON.stringify(servicePaths(copy), null, 2) + "\n",

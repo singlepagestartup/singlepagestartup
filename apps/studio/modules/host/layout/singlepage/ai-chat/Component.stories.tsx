@@ -1,10 +1,14 @@
 import { Component as HostModuleLayout } from "../../index";
+import { Component as RbacModuleSubject } from "../../../../rbac/subject";
 
 import type { Meta, StoryObj } from "@storybook/react";
 function Example() {
   return (
-    <HostModuleLayout variant="ai-chat">
-      <p className="p-5">AI Chat page content slot</p>
+    <HostModuleLayout
+      variant="ai-chat"
+      subjectAccount={<RbacModuleSubject variant="ai-chat-sign-in" />}
+    >
+      <main className="p-5">AI Chat page content slot</main>
     </HostModuleLayout>
   );
 }

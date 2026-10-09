@@ -1,7 +1,6 @@
-import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+import { Component as HostModuleLayout } from "../../../layout";
 import { Shield } from "../../../../../workspace/utils/components/ModuleIcons";
 
-import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 import { LegalPage, type LegalSection } from "../shared/LegalPage";
 
 const COMPANY = "[Company Name]";
@@ -243,20 +242,17 @@ const privacySections: LegalSection[] = [
 
 export function PrivacyPage() {
   return (
-    <main
-      className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
-      data-ds-page="host.page.privacy"
-    >
-      <HostNavbarDefault />
-      <LegalPage
-        breadcrumbLabel="Privacy Policy"
-        description="How SinglePageStartup collects, uses, protects, and shares information across the service."
-        icon={Shield}
-        sections={privacySections}
-        title="Privacy Policy"
-        updatedAt={LAST_UPDATED}
-      />
-      <WebsiteBuilderModuleWidget variant="footer-compact" />
-    </main>
+    <HostModuleLayout variant="website" footer="compact">
+      <main className="min-w-0" data-ds-page="host.page.privacy">
+        <LegalPage
+          breadcrumbLabel="Privacy Policy"
+          description="How SinglePageStartup collects, uses, protects, and shares information across the service."
+          icon={Shield}
+          sections={privacySections}
+          title="Privacy Policy"
+          updatedAt={LAST_UPDATED}
+        />
+      </main>
+    </HostModuleLayout>
   );
 }

@@ -1,6 +1,6 @@
 import { Component as SocialModuleChat } from "../../index";
 
-import content from "../../../../website-builder/widget/singlepage/ai-chat-landing/content.json";
+import content from "../../../../../workspace/utils/products/ai-chat-website.generated.json";
 import type { Meta, StoryObj } from "@storybook/react";
 import { AccountProvider } from "../../../../rbac/subject/singlepage/ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../workspace/utils/products/ai-chat-account-fixture";

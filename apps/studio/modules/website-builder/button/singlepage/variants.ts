@@ -3,6 +3,7 @@ import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as AiChatHeader } from "./ai-chat-header/index";
 import { Component as Link } from "./link/index";
 import { Component as List } from "./list/index";
+import { Component as Navigation } from "./navigation/index";
 import { Component as Primary } from "./primary/index";
 import { Component as Secondary } from "./secondary/index";
 
@@ -12,6 +13,7 @@ export const variants = {
   "ai-chat-header": AiChatHeader,
   link: Link,
   list: List,
+  navigation: Navigation,
   primary: Primary,
   secondary: Secondary,
 };

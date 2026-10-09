@@ -228,10 +228,27 @@ tokens, project creation, project content, project settings and thread creation.
 Pages use the public model entries. The website Preview adapter handles local
 navigation between those pages.
 
-Layout `ai-chat-header` owns its themed container and the Website Builder header.
+Layout `ai-chat` composes Website Builder `ai-chat-landing-header` and
+`ai-chat-footer`. Its Subject slot is supplied by Page. The landing header uses
+the same `ai-chat` Logotype as the service screens. Try the chat is a Button
+record displayed through Buttons Array. Page places `ai-chat-hero`, `ai-chat-try`
+and `ai-chat-continue` inside the Layout, and supplies Social Chat as the `children`
+of `ai-chat-try`. Each Widget has its own generated content fixture. The Social
+preview reads `utils/products/ai-chat-website.generated.json`; editable website
+documents pass their content override through Host Page.
+
+Layout `ai-chat-header` owns its themed container, Website Builder header and footer.
 Pages supply `profileSelect` and `subjectAccount` slots. The header directly
 composes Logotype, Buttons Array and Button models; Help is a Button example.
 Website Builder imports no Social, RBAC or Host components.
+
+Public Home, Blog, Services, account, checkout and legal Pages use Layout
+`website`. It composes Website Builder `navbar-default` and a full or compact
+footer, and supplies Subject `navbar-account` and Cart views. A Page with its
+own cart state can supply `cartButton` and `cartDrawer`; `subjectAccount` can
+also be supplied. Navbar uses Logotype and Buttons Array → Button for navigation.
+Account state and its dropdown belong to Subject. Admin Panel is visible in
+that dropdown after sign-in. The compact footer contains no admin link.
 
 Profile `ai-chat-project-overview` owns the responsive project frame, sidebar and
 mobile drawer. Chat `ai-chat-products` composes the prepared Thread directly.

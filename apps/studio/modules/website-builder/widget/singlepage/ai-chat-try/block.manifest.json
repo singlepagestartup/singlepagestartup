@@ -1,27 +1,27 @@
 {
-  "id": "website-builder.widget.ai-chat-landing",
-  "title": "ai-chat-landing",
+  "id": "website-builder.widget.ai-chat-try",
+  "title": "ai-chat-try",
   "layer": "singlepage",
   "state": "draft",
-  "description": "AI Chat widget view.",
-  "files": {
-    "component": "Component.tsx",
-    "story": "Component.stories.tsx"
-  },
-  "figma": {
-    "componentName": "website-builder.widget",
-    "pageName": "website-builder",
-    "variantName": "ai-chat-landing",
-    "nodeId": null,
-    "variantNodeId": null,
-    "syncStatus": "not-created",
-    "metadataFile": "figma.json"
-  },
+  "description": "AI Chat trial section with children supplied by Host Page.",
   "source": {
     "module": "website-builder",
     "entityType": "model",
     "entity": "widget",
-    "variant": "ai-chat-landing"
+    "variant": "ai-chat-try"
   },
-  "contentSlots": []
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "ai-chat-try",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
 }

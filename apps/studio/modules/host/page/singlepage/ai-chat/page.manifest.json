@@ -3,7 +3,7 @@
   "title": "ai-chat",
   "layer": "singlepage",
   "state": "draft",
-  "description": "AI Chat page recipe for /ai-chat/.",
+  "description": "AI Chat landing composed through Host Layout and Website Builder sections with Social Chat children.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
@@ -19,8 +19,28 @@
   },
   "blocks": [
     {
-      "id": "website-builder.widget.ai-chat-landing",
-      "path": "../../../../website-builder/widget/singlepage/ai-chat-landing"
+      "id": "host.layout.ai-chat",
+      "path": "../../../layout/singlepage/ai-chat"
+    },
+    {
+      "id": "website-builder.widget.ai-chat-hero",
+      "path": "../../../../website-builder/widget/singlepage/ai-chat-hero"
+    },
+    {
+      "id": "website-builder.widget.ai-chat-try",
+      "path": "../../../../website-builder/widget/singlepage/ai-chat-try"
+    },
+    {
+      "id": "website-builder.widget.ai-chat-continue",
+      "path": "../../../../website-builder/widget/singlepage/ai-chat-continue"
+    },
+    {
+      "id": "social.chat.ai-chat-preview",
+      "path": "../../../../social/chat/singlepage/ai-chat-preview"
+    },
+    {
+      "id": "rbac.subject.ai-chat-sign-in",
+      "path": "../../../../rbac/subject/singlepage/ai-chat-sign-in"
     }
   ]
 }

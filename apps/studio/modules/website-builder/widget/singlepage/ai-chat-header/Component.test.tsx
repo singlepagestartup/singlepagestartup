@@ -151,12 +151,9 @@ describe("Website Builder header composition", () => {
 
   test("landing and contact widgets receive higher models as slots", () => {
     const landing = renderToStaticMarkup(
-      <WebsiteBuilderModuleWidget
-        variant="ai-chat-landing"
-        chatPreview={(content) => (
-          <aside>{content.workflow.title} preview slot</aside>
-        )}
-      />,
+      <WebsiteBuilderModuleWidget variant="ai-chat-try">
+        <aside>Chat preview slot</aside>
+      </WebsiteBuilderModuleWidget>,
     );
     expect(landing).toContain("preview slot</aside>");
     const contact = renderToStaticMarkup(
@@ -210,7 +207,12 @@ describe("Website Builder header composition", () => {
         html.match(/data-ds-block="website-builder.widget.ai-chat-header"/g)
           ?.length,
       ).toBe(1);
-      expect(html.match(/aria-label="SPS AI Chat home"/g)?.length).toBe(1);
+      const header = html.match(/<header\b[\s\S]*?<\/header>/)?.[0] ?? "";
+      expect(header.match(/aria-label="SPS AI Chat home"/g)?.length).toBe(1);
+      expect(
+        html.match(/data-ds-block="website-builder.widget.ai-chat-footer"/g)
+          ?.length,
+      ).toBe(1);
       const variant =
         "ai-chat-" +
         route.replace("pottery", "project-id").replaceAll("/", "-");
