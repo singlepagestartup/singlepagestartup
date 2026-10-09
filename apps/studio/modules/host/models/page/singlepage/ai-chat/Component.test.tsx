@@ -7,6 +7,9 @@ import { Component as Page } from "./index";
 import { isAIChatRoute } from "./utils";
 import { documentAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
 import { ProjectAgentPicker } from "../../../../../social/models/profile/singlepage/ai-chat-agent/index";
+import { FilesProvider } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
+import { SourceProvider } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/Source";
+import { ThreadProvider } from "../../../../../social/models/thread/singlepage/ai-chat-workspace/Thread";
 import { Component as ProjectConversation } from "../../../../../social/models/thread/singlepage/ai-chat-conversation/index";
 
 const root = path.resolve(import.meta.dir, "../../../../../../../..");
@@ -132,9 +135,23 @@ describe("Local AI Chat components", () => {
         agent: documentAgent("brief"),
       },
     ];
-    for (const agent of [null, documentAgent("strategy")]) {
+    {
       const html = renderToStaticMarkup(
-        <ProjectConversation messages={messages} agent={agent} />,
+        <FilesProvider>
+          <SourceProvider profileId="history">
+            <ThreadProvider
+              data={{
+                id: "history:products",
+                slug: "history:products",
+                title: "Products.md",
+                variant: "ai-chat-workspace",
+              }}
+              initialMessages={messages}
+            >
+              <ProjectConversation />
+            </ThreadProvider>
+          </SourceProvider>
+        </FilesProvider>,
       );
       expect(html).toContain("AI assistant");
       expect(html).toContain("About Account Manager");

@@ -11,63 +11,22 @@ import { Component as ProjectSectionAssets } from "../../../../../file-storage/m
 import {
   sourceUserContext,
   sourceMaterials,
-  editSourceUserContext,
-  sourceAttachmentAssets,
 } from "../../../../../../workspace/utils/products/ai-chat-knowledge";
-import type {
-  IAIChatSource,
-  IAIChatFile,
-  ISourceFileRelation,
-  ISourceAttachmentView,
-} from "../../../../../../workspace/utils/products/ai-chat-models";
-import type { IProjectFile } from "../../../../../../workspace/utils/products/ai-chat-workspace";
+import { useSource } from "../ai-chat-editor/Source";
 
 export interface ISourceSectionProps {
-  data: IAIChatSource;
-  label?: string;
-  discussing: boolean;
-  files: IAIChatFile[];
-  fileRelations: ISourceFileRelation[];
-  attachmentViews: ISourceAttachmentView[];
-  availableFiles: IProjectFile[];
-  onEdit: (sourceId: string, content: string) => void;
-  onDiscuss: (sourceId: string) => void;
-  onAttach: (file: IProjectFile, sourceId: string) => void;
-  onUpload: (files: IProjectFile[], sourceId: string) => void;
-  onAssetRemove: (fileId: string, sourceId: string) => void;
-  helpLabel?: string;
-  onHelp?: (button: HTMLButtonElement, title: string) => void;
+  discussing?: boolean;
+  onDiscuss?: () => void;
 }
-
 export const Component = memo(function Component({
-  data,
-  label = data.title,
-  discussing,
-  files,
-  fileRelations,
-  attachmentViews,
-  availableFiles,
-  onEdit,
+  discussing = false,
   onDiscuss,
-  onAttach,
-  onUpload,
-  onAssetRemove,
-  helpLabel,
-  onHelp,
 }: ISourceSectionProps) {
+  const { source: data, fileLinks, edit: onEdit, attach, detach } = useSource();
   const id = useId();
   const edit = useCallback(
-    (_: string, value: string) =>
-      onEdit(data.id, editSourceUserContext(data.content, value)),
-    [data.id, data.content, onEdit],
-  );
-  const attach = useCallback(
-    (file: IProjectFile, _: string) => onAttach(file, data.id),
-    [data.id, onAttach],
-  );
-  const upload = useCallback(
-    (files: IProjectFile[], _: string) => onUpload(files, data.id),
-    [data.id, onUpload],
+    (_: string, value: string) => onEdit(value),
+    [onEdit],
   );
   const materials = sourceMaterials(data.content);
   return (
@@ -82,13 +41,11 @@ export const Component = memo(function Component({
     >
       <MarkdownField
         id={id}
-        label={label}
+        label={data.title}
         section={data.title}
         value={sourceUserContext(data.content)}
         placeholder={data.description ?? "Add your context and notes."}
         onChange={edit}
-        helpLabel={helpLabel}
-        onHelp={onHelp}
       />
       {materials && (
         <details className="mt-3 rounded-lg border border-sps-line p-3 text-xs">
@@ -104,17 +61,19 @@ export const Component = memo(function Component({
           </MarkdownDocument>
         </details>
       )}
-      <button
-        type="button"
-        onClick={() => onDiscuss(data.id)}
-        className={`${kit.plain} mt-1 min-h-9 px-0 text-xs`}
-      >
-        <Icon name="chat-circle" className="size-4" />
-        {discussing ? "Discussing in chat" : "Discuss this section"}
-      </button>
+      {onDiscuss && (
+        <button
+          type="button"
+          onClick={onDiscuss}
+          className={`${kit.plain} mt-1 min-h-9 px-0 text-xs`}
+        >
+          <Icon name="chat-circle" className="size-4" />
+          {discussing ? "Discussing in chat" : "Discuss this section"}
+        </button>
+      )}
       <SourceFiles
         variant="find"
-        data={fileRelations}
+        data={fileLinks}
         apiProps={{
           params: {
             filters: {
@@ -126,16 +85,11 @@ export const Component = memo(function Component({
         {(relations) => (
           <ProjectSectionAssets
             section={data.title}
-            assets={sourceAttachmentAssets(
-              data.title,
-              relations,
-              files,
-              attachmentViews,
-            )}
-            sources={availableFiles}
+            fileIds={[...relations]
+              .sort((a, b) => a.orderIndex - b.orderIndex)
+              .map((link) => link.fileStorageModuleFileId)}
             onAttach={attach}
-            onUpload={upload}
-            onRemove={(fileId) => onAssetRemove(fileId, data.id)}
+            onRemove={detach}
           />
         )}
       </SourceFiles>

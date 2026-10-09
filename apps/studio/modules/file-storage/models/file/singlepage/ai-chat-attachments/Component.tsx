@@ -1,5 +1,6 @@
 "use client";
-import { memo, useId, useRef, useState } from "react";
+import { memo, useEffect, useId, useRef, useState } from "react";
+import { useFiles } from "./Files";
 import {
   Button,
   Icon,
@@ -23,10 +24,8 @@ export interface IPendingFileProps {
 }
 export interface ISectionAssetsProps {
   section: string;
-  assets: IProjectAsset[];
-  sources: IProjectFile[];
-  onAttach: (file: IProjectFile, section: string) => void;
-  onUpload: (files: IProjectFile[], section: string) => void;
+  fileIds: string[];
+  onAttach: (ids: string[]) => void;
   onRemove: (fileId: string) => void;
 }
 
@@ -131,34 +130,72 @@ export function ProjectAssetPreview({ asset }: { asset: IProjectAsset }) {
   );
 }
 
+interface IFileAttachmentProps {
+  id: string;
+  onRemove: (id: string) => void;
+}
+const FileAttachment = memo(function FileAttachment({
+  id,
+  onRemove,
+}: IFileAttachmentProps) {
+  const { files } = useFiles();
+  const file = files.find((record) => record.id === id);
+  if (!file) return null;
+  return (
+    <article className="space-y-2" aria-label={`${file.name} attachment`}>
+      <ProjectFilePreview file={file} />
+      <Button
+        variant="plain"
+        className="min-h-9 px-2 text-xs"
+        onClick={() => onRemove(id)}
+        aria-label={`Detach ${file.name}`}
+      >
+        Detach
+      </Button>
+    </article>
+  );
+});
 export function Component({
   section,
-  assets,
-  sources,
+  fileIds,
   onAttach,
-  onUpload,
   onRemove,
 }: ISectionAssetsProps) {
+  const { files: sources, register } = useFiles();
+  const linked = fileIds.filter((id) => sources.some((file) => file.id === id));
   const id = useId();
   const input = useRef<HTMLInputElement>(null);
   const [selected, setSelected] = useState("");
   const [reading, setReading] = useState(false);
   const [error, setError] = useState("");
-  const available = sources.filter(
-    (source) => !assets.some((asset) => asset.file.id === source.id),
-  );
+  const available = sources.filter((source) => !linked.includes(source.id));
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   async function upload(files: FileList | null) {
     if (!files?.length) return;
     setReading(true);
     setError("");
     try {
-      onUpload(await readProjectFiles(files, id), section);
+      const uploaded = await readProjectFiles(files, id);
+      if (mounted.current) {
+        register(uploaded);
+        onAttach(uploaded.map((file) => file.id));
+      } else
+        uploaded.forEach(
+          (file) => file.fileUrl && URL.revokeObjectURL(file.fileUrl),
+        );
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Could not add these files.",
-      );
+      if (mounted.current)
+        setError(
+          cause instanceof Error ? cause.message : "Could not add these files.",
+        );
     } finally {
-      setReading(false);
+      if (mounted.current) setReading(false);
     }
   }
   return (
@@ -166,23 +203,9 @@ export function Component({
       aria-label={`${section} files`}
       className="mt-3 space-y-3 border-t border-sps-line pt-3"
     >
-      <p className={`text-xs ${kit.muted}`}>Files · {assets.length}</p>
-      {assets.map((asset) => (
-        <article
-          key={asset.file.id}
-          className="space-y-2"
-          aria-label={`${asset.file.name} attachment`}
-        >
-          <ProjectFilePreview file={asset.file} />
-          <Button
-            variant="plain"
-            className="min-h-9 px-2 text-xs"
-            onClick={() => onRemove(asset.file.id)}
-            aria-label={`Detach ${asset.file.name}`}
-          >
-            Detach
-          </Button>
-        </article>
+      <p className={`text-xs ${kit.muted}`}>Files · {linked.length}</p>
+      {linked.map((id) => (
+        <FileAttachment key={id} id={id} onRemove={onRemove} />
       ))}
       <div className="flex flex-wrap gap-2">
         <Button
@@ -232,7 +255,7 @@ export function Component({
                 disabled={!available.some((file) => file.id === selected)}
                 onClick={() => {
                   const file = available.find((file) => file.id === selected);
-                  if (file) onAttach(file, section);
+                  if (file) onAttach([file.id]);
                   setSelected("");
                 }}
               >

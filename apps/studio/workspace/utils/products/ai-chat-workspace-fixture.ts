@@ -21,7 +21,11 @@ export function aiChatProjectFixture(): IProjectProfile {
 }
 
 export function aiChatWorkspaceFixture() {
-  const project = aiChatProjectFixture();
+  const project = {
+    id: "pottery",
+    name: "Pottery workshops",
+    variant: "ai-chat-project" as const,
+  };
   return {
     initialProjects: [project],
     initialLinks: linkProjectProfile(
@@ -63,4 +67,43 @@ export function aiChatSourceFixture(): IProjectProfile {
   project.documents[0].values[section] =
     "## Контекст пользователя\n<!-- knowledge:user -->\nPottery workshops\n<!-- /knowledge:user -->\n\n## Сведения из материалов\nSix places per weekend workshop.\n\n## Общее описание\nSmall-group workshops for first-time potters.";
   return project;
+}
+
+export function aiChatProductsSourceFixture() {
+  const source = {
+    id: "pottery:products:products",
+    slug: "pottery:products:products",
+    variant: "ai-chat-section",
+    title: "Products",
+    content: "Weekend pottery workshops for first-time potters.",
+    description:
+      "Describe the products, their customers, value and current availability.",
+  };
+  const files = [
+    {
+      id: "workshop-notes",
+      name: "Workshop notes.txt",
+      text: "Six places per weekend workshop.",
+    },
+    {
+      id: "audience-notes",
+      name: "Audience notes.txt",
+      text: "Adults trying pottery for the first time.",
+    },
+  ].map((file) => ({
+    ...file,
+    size: new TextEncoder().encode(file.text).length,
+    mimeType: "text/plain",
+    fileUrl: `data:text/plain;charset=utf-8,${encodeURIComponent(file.text)}`,
+  }));
+  return {
+    source,
+    files,
+    links: files.map((file, orderIndex) => ({
+      id: `${source.id}:file:${file.id}`,
+      sourceId: source.id,
+      fileStorageModuleFileId: file.id,
+      orderIndex,
+    })),
+  };
 }

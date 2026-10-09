@@ -14,6 +14,17 @@ import {
   type IProjectAgent,
 } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
 
+import {
+  Component as ProductsSkill,
+  productsSkill,
+} from "../../../skill/singlepage/ai-chat-products/index";
+export const productsAgent: IProjectAgent = {
+  id: "products-agent",
+  name: "Product assistant",
+  description: "Works with the project's Products knowledge.",
+  role: productsSkill.description,
+};
+
 export interface IAgentProfileProps {
   agent: IProjectAgent | null;
   onClose: () => void;
@@ -82,7 +93,11 @@ export function Component({ agent, onClose }: IAgentProfileProps) {
             </Dialog.Description>
           </div>
           <div className="min-h-0 overflow-y-auto p-5">
-            <MarkdownDocument hideTitle>{agent?.role ?? ""}</MarkdownDocument>
+            {agent?.id === productsAgent.id ? (
+              <ProductsSkill />
+            ) : (
+              <MarkdownDocument hideTitle>{agent?.role ?? ""}</MarkdownDocument>
+            )}
           </div>
         </Dialog.Content>
       </Dialog.Portal>

@@ -1,1 +1,1 @@
-export { Component, type IComposerProps } from "./Component";
+export { Component } from "./Component";

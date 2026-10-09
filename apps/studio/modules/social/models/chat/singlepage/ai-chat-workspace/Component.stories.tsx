@@ -1,19 +1,17 @@
 import { Component } from "./index";
-import { projectThreadGraph } from "../../../../../../workspace/utils/products/ai-chat-threads";
-import { aiChatProjectFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 import type { Meta, StoryObj } from "@storybook/react";
+import { FilesProvider } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
+import { SourceProvider } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/Source";
 
 function Example() {
-  const graph = projectThreadGraph(aiChatProjectFixture());
   return (
-    <Component
-      data={graph.chat}
-      threads={graph.threads}
-      relations={graph.chatThreads}
-      selectedThreadId={graph.threads[0].id}
-    >
-      {(thread) => <p className="p-4">{thread?.title}</p>}
-    </Component>
+    <FilesProvider>
+      <SourceProvider profileId="pottery">
+        <div className="@container/workspace flex h-160 flex-col overflow-hidden">
+          <Component profileId="pottery" />
+        </div>
+      </SourceProvider>
+    </FilesProvider>
   );
 }
 

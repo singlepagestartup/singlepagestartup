@@ -1,27 +1,22 @@
 import { Component } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
-
+import { FilesProvider } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
+import { SourceProvider } from "../ai-chat-editor/Source";
+import { aiChatProductsSourceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 function Example() {
+  const { source, files, links } = aiChatProductsSourceFixture();
   return (
-    <div className="w-64 rounded-xl bg-sps-graphite p-4">
-      <Component
-        data={{
-          id: "brief",
-          title: "Brief",
-          sources: [
-            {
-              id: "pottery:brief:customers",
-              slug: "pottery:brief:customers-and-value",
-              title: "Customers and value",
-              content: "",
-              variant: "ai-chat-section",
-            },
-          ],
-        }}
-        selected
-        onSelect={() => {}}
-      />
-    </div>
+    <FilesProvider initialFiles={files}>
+      <SourceProvider
+        profileId="pottery"
+        initialSource={source}
+        initialFileLinks={links}
+      >
+        <div className="w-64 bg-sps-graphite p-4">
+          <Component selected onSelect={() => {}} />
+        </div>
+      </SourceProvider>
+    </FilesProvider>
   );
 }
 

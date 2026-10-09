@@ -106,7 +106,7 @@ export function findLocalRelations<T>(props: ILocalFindProps<T>): T[] {
 export function linkProjectProfile(
   data: IProjectLinks,
   userProfileId: string,
-  project: IProjectProfile,
+  project: Pick<IProjectProfile, "id" | "name">,
 ): IProjectLinks {
   const chatId = `${project.id}:project-chat`;
   return {
@@ -122,11 +122,9 @@ export function linkProjectProfile(
   };
 }
 
-export function projectProfilesForUser(
-  userProfileId: string,
-  projects: IProjectProfile[],
-  links: IProjectLinks,
-): IProjectProfile[] {
+export function projectProfilesForUser<
+  T extends Pick<IProjectProfile, "id" | "name" | "variant">,
+>(userProfileId: string, projects: T[], links: IProjectLinks): T[] {
   const userLinks = findLocalRelations({
     variant: "find",
     data: links.profilesToChats,

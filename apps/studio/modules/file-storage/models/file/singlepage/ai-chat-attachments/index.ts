@@ -7,3 +7,5 @@ export {
   ProjectFilePreview,
   ProjectAssetPreview,
 } from "./Component";
+
+export { FilesProvider, useFiles } from "./Files";

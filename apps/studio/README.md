@@ -169,6 +169,7 @@ editable Markdown content.
 | Social Profile          | Current-user menu, project workspace, project selector and agents |
 | Social Chat             | Resolve the selected Thread through Chat-to-Thread links          |
 | Social Thread           | Conversation, Working On, composer, creation and settings         |
+| Social Skill            | One product-planning instruction                                  |
 | Social Message          | One message, role attribution, context and attachments            |
 | RBAC / Social relations | Subject profiles, profile chats, Sources, Threads and Messages    |
 | Knowledge Source        | Document bundle navigation and editable sections                  |
@@ -188,58 +189,45 @@ project selector. The route ID selects an accessible Profile; a missing link
 renders an unavailable state. Creation adds a local project Profile, its chat
 and the two Profile-to-Chat links. Account pages return to the selected Profile.
 
-Social Profile `ai-chat-project` composes its settings, navigation and Chat.
-The local `profiles-to-chats` find view resolves one project Chat. Chat
-`ai-chat-workspace` selects a linked Thread through `chats-to-threads/ai-chat-find`.
-Brief, Strategy, Brand, Design, Products and added product discussions have separate
-Threads. Work conversations are also Threads of that Chat. An unlinked selection
-renders an unavailable state.
+The active project prototype has one Products.md document, one prepared Thread,
+one Knowledge Source and one product assistant using Social Skill `ai-chat-products`.
+Creation needs a profile name; the Thread is available immediately. Separate product
+creation and additional conversations remain later design work.
 
-Thread `ai-chat-workspace` owns its header, conversation, proposal and composer,
-plus the Source editor for document discussions. Its conversation resolves ordered
-Messages through `threads-to-messages/ai-chat-find` and renders one
-`message/ai-chat-message` per record. Thread creation and settings have separate
-variants. A work Thread uses Profile knowledge without Working On or a document
-selection form. Threads can start before materials or documents are filled in.
-The initial setup provides Start a thread and scaffolds the document sections
-without requiring material analysis. Responses and Markdown exports use current
-knowledge. Message history retains the context captured when each message was
-sent; there is no reviewed-version snapshot or review gate.
+Profile `ai-chat-project` owns its name, settings and responsive navigation. It
+composes File and Source providers with one Chat. The outer workspace stores only
+profile identities and access links. It passes no documents, Sources, messages or
+agent catalog through Profile and Chat. Chat `ai-chat-workspace` resolves the
+prepared Products Thread through `chats-to-threads/ai-chat-find`.
 
-Knowledge navigation uses `profiles-to-knowledge-module-sources` and Source
-components. Each document block renders `knowledge.source/ai-chat-section` with
-its Source ID, slug, title, content and description. Brief/Strategy grouping uses
-separate local bundle membership by Source slug. The Profile passes its linked
-Sources to Thread; document Threads filter that group, and Working On selects
-Source IDs within it. Source has no documentId or nested Files.
+Thread's local `Thread.tsx` provider owns messages, draft text, pending File IDs,
+Working On, pane selection and proposals. Conversation resolves ordered Messages
+through `threads-to-messages/ai-chat-find`; each Message view renders one record.
+Composer reads the Thread directly. Working On offers Whole document or the one
+Products Source. Sending captures current knowledge and files; later edits and
+detach preserve message history. Proposals update Source after the user applies
+them. These responses are local previews, without AI API calls.
 
-The Profile-to-Source find view scopes the editor as well as navigation.
-Each Source finds its Files through Knowledge
-`sources-to-file-storage-module-files/ai-chat-find`, filtering by sourceId.
-Links carry sourceId, fileStorageModuleFileId and orderIndex; the Source/File
-pair is unique. File views resolve independent File records. Detaching preserves
-the File pool and other Source links. Delivery Files also have explicit links.
-Every linked File appears in one Files list with upload and detach actions.
-Existing original and delivery Files remain independent links in that list.
+Knowledge's `Source.tsx` provider owns the Source record and its File relations.
+It resolves the Profile-to-Source link through the existing find variant. Source
+has ID, slug, title, content and description; it has no documentId or nested Files.
+The editor and document navigation read this record directly. The section changes
+user context while preserving analyzed material descriptions. Plain text remains
+editable without files or markers. Chunks remain derived retrieval records.
 
-The section editor changes the user-context block in Source.content and keeps
-file-derived descriptions visible and unchanged. Plain text Sources remain
-editable without files or markers. The marker contract mirrors the production
-Knowledge content format through a local helper, without importing it.
+File's `Files.tsx` provider owns records and uploaded Blob URLs within each project.
+Source-to-File find filters links by sourceId and orders them by orderIndex; each
+Source/File pair is unique. File views receive IDs and resolve records locally.
+Upload supports multiple files; detach preserves the File pool so an existing
+File can be attached again. Message attachments use the same pool. Providers stay
+mounted when switching projects or opening settings, retaining separate state.
 
-`projectKnowledge` is the local adapter from the existing editor state to these
-records and links. Source/File persistence, attachment analysis and vector
-indexing are not connected in Studio. Future adapters must save Source content
-before file mutations, retain original Files, and use production analysis and
-index-freshness behavior. Editable sections are Sources; Chunks remain derived
-retrieval records, not editor blocks.
-
-Local relation views accept `variant="find"` and scope their records through
-`apiProps.params.filters.and`. Data is supplied through props and fixtures;
-these views do not fetch production APIs. `projectThreadGraph` adapts the existing editor state into Chat, Thread, Message
-and relation records. Selection metadata stays outside model fields. The Profile
-still coordinates aggregate state updates through local callbacks. API adapters,
-independent persistence and chunk indexing remain later work.
+Relation views use `variant="find"` and `apiProps.params.filters.and`. Model-local
+providers and story fixtures simulate data access in Studio. The earlier aggregate
+helpers remain for adapter examples/tests; the active page does not use
+`projectKnowledge`, `projectThreadGraph` or the project-wide message updater.
+Durable storage, production SDK integration, attachment analysis, vector indexing
+and tool execution remain later work. No production imports are allowed.
 
 Local helpers and example data live in `workspace/utils/products`, visual primitives
 in `workspace/design/singlepage/interface-kit/ai-chat`, and styles in `runtime`.

@@ -1,43 +1,26 @@
 import { Component } from "./index";
-import { useState } from "react";
-import { aiChatSourceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 import type { Meta, StoryObj } from "@storybook/react";
+import { useState } from "react";
+import { FilesProvider } from "./Files";
+import { aiChatProductsSourceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
-
 function Example() {
-  const fixture = aiChatSourceFixture();
-  const section = fixture.documents[0].sections[0].title;
-  const [assets, setAssets] = useState(fixture.documents[0].assets ?? []);
-  const [sources, setSources] = useState(fixture.sources);
+  const { files } = aiChatProductsSourceFixture();
+  const [ids, setIds] = useState(files.map((file) => file.id));
   return (
-    <Component
-      section={section}
-      assets={assets}
-      sources={sources}
-      onAttach={(file) =>
-        setAssets((current) => [
-          ...current,
-          { id: `${section}:${file.id}`, section, file },
-        ])
-      }
-      onUpload={(files) => {
-        setSources((current) => [...current, ...files]);
-        setAssets((current) => [
-          ...current,
-          ...files.map((file) => ({
-            id: `${section}:${file.id}`,
-            section,
-            file,
-          })),
-        ]);
-      }}
-      onRemove={(fileId) =>
-        setAssets((current) =>
-          current.filter((asset) => asset.file.id !== fileId),
-        )
-      }
-    />
+    <FilesProvider initialFiles={files}>
+      <Component
+        section="Products"
+        fileIds={ids}
+        onAttach={(next) =>
+          setIds((current) => [...new Set([...current, ...next])])
+        }
+        onRemove={(id) =>
+          setIds((current) => current.filter((value) => value !== id))
+        }
+      />
+    </FilesProvider>
   );
 }
 

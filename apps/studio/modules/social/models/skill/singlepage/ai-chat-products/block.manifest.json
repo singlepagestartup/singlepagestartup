@@ -1,0 +1,27 @@
+{
+  "id": "social.skill.ai-chat-products",
+  "title": "ai-chat-products",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "One local product-planning skill for the Products thread.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.skill",
+    "pageName": "social",
+    "variantName": "ai-chat-products",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "skill",
+    "variant": "ai-chat-products"
+  },
+  "contentSlots": []
+}

@@ -5,44 +5,29 @@ import {
   Button,
   Icon,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
-import { type IProjectFile } from "../../../../../../workspace/utils/products/ai-chat-workspace";
-import type { IAIChatSource } from "../../../../../../workspace/utils/products/ai-chat-models";
 import { readProjectFiles } from "../../../../../../workspace/utils/products/ai-chat-files";
 import { ProjectPendingFile } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/index";
 
-export interface IComposerProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSend: () => void;
-  label: string;
-  placeholder: string;
-  files: IProjectFile[];
-  onFiles: (files: IProjectFile[]) => void;
-  onRemoveFile: (id: string) => void;
-  knowledge?: {
-    title: string;
-    sources: IAIChatSource[];
-    selectedSourceIds: string[];
-    onChange: (ids: string[]) => void;
-  };
-}
-
-export function Component({
-  value,
-  onChange,
-  onSend,
-  label,
-  placeholder,
-  files,
-  onFiles,
-  onRemoveFile,
-  knowledge,
-}: IComposerProps) {
+import { useThread } from "../ai-chat-workspace/Thread";
+import { useSource } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/Source";
+import { useFiles } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
+export function Component() {
+  const {
+    draft: value,
+    setDraft: onChange,
+    send: onSend,
+    fileIds,
+    attach,
+    remove: onRemoveFile,
+    workingOn,
+    setWorkingOn,
+  } = useThread();
+  const { source } = useSource();
+  const { files: records, register } = useFiles();
+  const files = records.filter((file) => fileIds.includes(file.id));
+  const label = "Message the product assistant";
+  const placeholder = "Discuss products or request a change.";
   const id = useId();
-  const workingSources =
-    knowledge?.sources.filter((source) =>
-      knowledge.selectedSourceIds.includes(source.id),
-    ) ?? [];
   const picker = useRef<HTMLInputElement>(null);
   const mounted = useRef(true);
   const [reading, setReading] = useState(false);
@@ -59,8 +44,10 @@ export function Component({
     setError("");
     try {
       const uploaded = await readProjectFiles(selected, id);
-      if (mounted.current) onFiles(uploaded);
-      else
+      if (mounted.current) {
+        register(uploaded);
+        attach(uploaded.map((file) => file.id));
+      } else
         uploaded.forEach(
           (file) => file.fileUrl && URL.revokeObjectURL(file.fileUrl),
         );
@@ -82,12 +69,12 @@ export function Component({
   return (
     <form
       onSubmit={submit}
-      className={`flex min-h-0 shrink-0 flex-col border-t border-sps-line bg-sps-white p-4 ${knowledge ? "max-h-[min(24rem,60%)]" : "max-h-[min(24rem,50%)]"}`}
+      className={`flex min-h-0 shrink-0 flex-col border-t border-sps-line bg-sps-white p-4 max-h-[min(24rem,60%)]`}
     >
       <label htmlFor={id} className="sr-only">
         {label}
       </label>
-      {knowledge && (
+      {
         <div className="mb-3 shrink-0">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <span className="text-xs text-sps-muted">Working on</span>
@@ -100,11 +87,7 @@ export function Component({
                 >
                   <Icon name="file-text" className="size-4" />
                   <span className="truncate">
-                    {workingSources.length === 1
-                      ? workingSources[0].title
-                      : workingSources.length
-                        ? `${workingSources.length} sections`
-                        : "Whole document"}
+                    {workingOn === "source" ? source.title : "Whole document"}
                   </span>
                   <Icon name="caret-down" className="size-4" />
                 </Button>
@@ -117,48 +100,36 @@ export function Component({
                   className="z-50 max-h-80 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg border border-sps-line bg-sps-white p-1 font-sps text-sps-graphite shadow-md"
                 >
                   <DropdownMenu.Label className="px-3 py-2 text-xs font-semibold text-sps-muted">
-                    {knowledge.title}.md · choose one or more sections
+                    Products.md · working context
                   </DropdownMenu.Label>
-                  <DropdownMenu.CheckboxItem
-                    checked={!workingSources.length}
-                    onCheckedChange={() => knowledge.onChange([])}
-                    onSelect={(event) => event.preventDefault()}
-                    className="relative flex min-h-10 cursor-pointer items-center rounded-md py-2 pl-8 pr-3 text-sm outline-none data-highlighted:bg-sps-grey"
+                  <DropdownMenu.RadioGroup
+                    value={workingOn}
+                    onValueChange={(value) =>
+                      setWorkingOn(value as "whole" | "source")
+                    }
                   >
-                    <DropdownMenu.ItemIndicator className="absolute left-2">
-                      <Icon name="check" className="size-4" />
-                    </DropdownMenu.ItemIndicator>
-                    Whole document
-                  </DropdownMenu.CheckboxItem>
-                  <DropdownMenu.Separator className="my-1 h-px bg-sps-line" />
-                  {knowledge.sources.map((source) => (
-                    <DropdownMenu.CheckboxItem
-                      key={source.id}
-                      checked={knowledge.selectedSourceIds.includes(source.id)}
-                      onCheckedChange={(checked) =>
-                        knowledge.onChange(
-                          checked
-                            ? [...knowledge.selectedSourceIds, source.id]
-                            : knowledge.selectedSourceIds.filter(
-                                (id) => id !== source.id,
-                              ),
-                        )
-                      }
-                      onSelect={(event) => event.preventDefault()}
-                      className="relative flex min-h-10 cursor-pointer items-center rounded-md py-2 pl-8 pr-3 text-sm outline-none data-highlighted:bg-sps-grey"
-                    >
-                      <DropdownMenu.ItemIndicator className="absolute left-2">
-                        <Icon name="check" className="size-4" />
-                      </DropdownMenu.ItemIndicator>
-                      {source.title}
-                    </DropdownMenu.CheckboxItem>
-                  ))}
+                    {[
+                      { value: "whole", label: "Whole document" },
+                      { value: "source", label: source.title },
+                    ].map((item) => (
+                      <DropdownMenu.RadioItem
+                        key={item.value}
+                        value={item.value}
+                        className="relative flex min-h-10 cursor-pointer items-center rounded-md py-2 pl-8 pr-3 text-sm outline-none data-highlighted:bg-sps-grey"
+                      >
+                        <DropdownMenu.ItemIndicator className="absolute left-2">
+                          <Icon name="check" className="size-4" />
+                        </DropdownMenu.ItemIndicator>
+                        {item.label}
+                      </DropdownMenu.RadioItem>
+                    ))}
+                  </DropdownMenu.RadioGroup>
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
             </DropdownMenu.Root>
           </div>
         </div>
-      )}
+      }
       <div className="flex min-h-0 flex-col rounded-2xl border border-sps-line p-2 focus-within:border-sps-graphite">
         <div className="min-h-0 overflow-y-auto">
           {files.length > 0 && (

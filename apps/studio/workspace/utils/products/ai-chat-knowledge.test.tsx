@@ -9,6 +9,8 @@ import {
   sourceUserContext,
   sourceAttachmentAssets,
 } from "./ai-chat-knowledge";
+import { SourceProvider } from "../../../modules/knowledge/models/source/singlepage/ai-chat-editor/Source";
+import { FilesProvider } from "../../../modules/file-storage/models/file/singlepage/ai-chat-attachments/Files";
 import { Component as SourceSection } from "../../../modules/knowledge/models/source/singlepage/ai-chat-section/index";
 
 const files: IProjectFile[] = [
@@ -193,35 +195,34 @@ test("Source variant renders multiple scoped Files and excludes another section'
       "## Контекст пользователя\n<!-- knowledge:user -->\nNotes\n<!-- /knowledge:user -->\n\n## Сведения из материалов\nRead-only description",
   };
   const html = renderToStaticMarkup(
-    <SourceSection
-      data={data}
-      discussing={false}
-      files={[
-        ...graph.files,
+    <FilesProvider
+      initialFiles={[
+        ...files,
         {
           id: "foreign",
-          file: "/foreign.txt",
-          alt: "Foreign material.txt",
+          name: "Foreign material.txt",
+          text: "Other source",
           size: 10,
+          fileUrl: "/foreign.txt",
         },
       ]}
-      fileRelations={[
-        ...graph.sourceFiles,
-        {
-          id: "foreign-link",
-          sourceId: "other",
-          fileStorageModuleFileId: "foreign",
-          orderIndex: 0,
-        },
-      ]}
-      attachmentViews={graph.attachmentViews}
-      availableFiles={[]}
-      onEdit={() => {}}
-      onDiscuss={() => {}}
-      onAttach={() => {}}
-      onUpload={() => {}}
-      onAssetRemove={() => {}}
-    />,
+    >
+      <SourceProvider
+        profileId="pottery"
+        initialSource={data}
+        initialFileLinks={[
+          ...graph.sourceFiles,
+          {
+            id: "foreign-link",
+            sourceId: "other",
+            fileStorageModuleFileId: "foreign",
+            orderIndex: 0,
+          },
+        ]}
+      >
+        <SourceSection />
+      </SourceProvider>
+    </FilesProvider>,
   );
   expect(html).toContain('data-id="pottery:brief:Project and products"');
   expect(html).toContain("Workshop notes.txt");

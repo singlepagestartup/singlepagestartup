@@ -1,5 +1,6 @@
 export {
   Component,
+  productsAgent,
   type IAgentProfileProps,
   type IAgentAvatarProps,
   type IAgentPickerProps,

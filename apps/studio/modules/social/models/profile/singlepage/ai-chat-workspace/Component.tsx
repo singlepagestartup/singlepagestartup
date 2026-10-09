@@ -1,7 +1,6 @@
 "use client";
 import {
   useCallback,
-  useEffect,
   useId,
   useLayoutEffect,
   useMemo,
@@ -12,10 +11,7 @@ import {
   Button,
   Icon,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
-import {
-  createProjectProfile,
-  type IProjectProfile,
-} from "../../../../../../workspace/utils/products/ai-chat-workspace";
+import { type IProjectProfile } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import { AccountHeader } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
 import {
   CreateProjectScreen,
@@ -35,7 +31,7 @@ export interface IProjectWorkspaceProps {
   data: IAIChatUserProfile;
   initialLinks?: IProjectLinks;
   onNavigateHref?: (href: string) => void;
-  initialProjects?: IProjectProfile[];
+  initialProjects?: Pick<IProjectProfile, "id" | "name" | "variant">[];
   initialProjectId?: string;
   text?: string;
   navigationHref?: string;
@@ -51,7 +47,9 @@ export function Component({
 }: IProjectWorkspaceProps) {
   const id = useId();
   const sequence = useRef(0);
-  const [projects, setProjects] = useState<IProjectProfile[]>(initialProjects);
+  const [projects, setProjects] = useState(() =>
+    initialProjects.map(({ id, name, variant }) => ({ id, name, variant })),
+  );
   const [links, setLinks] = useState(initialLinks);
   const availableProjects = useMemo(
     () => projectProfilesForUser(data.id, projects, links),
@@ -68,30 +66,6 @@ export function Component({
     routeId === "new" || (!requestedId && !availableProjects.length),
   );
   const [disclosureOpen, setDisclosureOpen] = useState(false);
-  const fileUrls = useRef(new Set<string>());
-  useEffect(() => {
-    for (const project of projects) {
-      const files = [
-        ...project.sources,
-        ...project.documents.flatMap((document) => document.draftFiles ?? []),
-        ...project.topics.flatMap((topic) => topic.draftFiles ?? []),
-        ...project.documents.flatMap((document) =>
-          (document.assets ?? []).flatMap((asset) =>
-            asset.delivery ? [asset.file, asset.delivery] : [asset.file],
-          ),
-        ),
-      ];
-      files.forEach((file) => {
-        if (file.fileUrl) fileUrls.current.add(file.fileUrl);
-      });
-    }
-  }, [projects]);
-  useEffect(
-    () => () => {
-      fileUrls.current.forEach((url) => URL.revokeObjectURL(url));
-    },
-    [],
-  );
   useLayoutEffect(() => {
     if (
       navigationHref?.startsWith("/ai-chat/projects/new") &&
@@ -104,21 +78,19 @@ export function Component({
     }
     if (navigationHref?.includes("how-your-materials")) setDisclosureOpen(true);
   }, [navigationHref, requestedId]);
-  const updateProject = useCallback(
-    (
-      projectId: string,
-      update: (project: IProjectProfile) => IProjectProfile,
-    ) => {
-      setProjects((current) =>
-        current.map((project) =>
-          project.id === projectId ? update(project) : project,
-        ),
-      );
-    },
-    [],
-  );
+  const renameProject = useCallback((id: string, name: string) => {
+    setProjects((current) =>
+      current.map((profile) =>
+        profile.id === id ? { ...profile, name } : profile,
+      ),
+    );
+  }, []);
   function createProject(name: string) {
-    const project = createProjectProfile(`${id}-${++sequence.current}`, name);
+    const project = {
+      id: `${id}-${++sequence.current}`,
+      name,
+      variant: "ai-chat-project" as const,
+    };
     setProjects((current) => [...current, project]);
     setLinks((current) => linkProjectProfile(current, data.id, project));
     setSelected(project.id);
@@ -219,12 +191,9 @@ export function Component({
       {availableProjects.map((project) => (
         <div key={project.id} hidden={creating || selected !== project.id}>
           <ProjectProfile
-            project={project}
+            data={project}
             active={!creating && selected === project.id}
-            navigationHref={
-              selected === project.id ? navigationHref : undefined
-            }
-            onUpdate={updateProject}
+            onRename={renameProject}
           />
         </div>
       ))}

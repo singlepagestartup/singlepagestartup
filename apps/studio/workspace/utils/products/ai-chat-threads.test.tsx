@@ -6,21 +6,14 @@ import {
   projectThreadGraph,
   threadSources,
   orderedThreadMessages,
+  appendThreadExchange,
 } from "./ai-chat-threads";
-import { documentAgent } from "./ai-chat-agent-resolver";
 import { Component as ChatWorkspace } from "../../../modules/social/models/chat/singlepage/ai-chat-workspace/index";
-import { Component as ThreadWorkspace } from "../../../modules/social/models/thread/singlepage/ai-chat-workspace/index";
-
-const composer = {
-  value: "",
-  onChange: () => {},
-  onSend: () => {},
-  label: "Message",
-  placeholder: "Write a message",
-  files: [],
-  onFiles: () => {},
-  onRemoveFile: () => {},
-};
+import { SourceProvider } from "../../../modules/knowledge/models/source/singlepage/ai-chat-editor/Source";
+import { FilesProvider } from "../../../modules/file-storage/models/file/singlepage/ai-chat-attachments/Files";
+import { Component as ProjectProfile } from "../../../modules/social/models/profile/singlepage/ai-chat-project/index";
+import { productsAgent } from "../../../modules/social/models/profile/singlepage/ai-chat-agent/index";
+import { aiChatProductsSourceFixture } from "./ai-chat-workspace-fixture";
 
 test("Brief and Strategy have separate Threads and messages inside the project's Chat", () => {
   const project = aiChatProjectFixture();
@@ -112,81 +105,13 @@ test("Source slug selection keeps bundle order and excludes other profiles and d
   ).toBe(false);
 });
 
-test("Chat does not render an unlinked or missing Thread", () => {
-  const graph = projectThreadGraph(aiChatProjectFixture());
-  for (const relations of [
-    [],
-    graph.chatThreads.map((link) => ({ ...link, chatId: "foreign-chat" })),
-  ]) {
-    const html = renderToStaticMarkup(
-      <ChatWorkspace
-        data={graph.chat}
-        threads={graph.threads}
-        relations={relations}
-        selectedThreadId={graph.threads[0].id}
-      >
-        {(thread) => <p>{thread?.title}</p>}
-      </ChatWorkspace>,
-    );
-    expect(html).toContain("Thread unavailable");
-    expect(html).not.toContain("Brief.md");
-  }
+test("the active prototype composes one Products Thread and one Source without aggregates", () => {
   const html = renderToStaticMarkup(
-    <ChatWorkspace
-      data={graph.chat}
-      threads={[]}
-      relations={graph.chatThreads}
-      selectedThreadId={graph.threads[0].id}
-    >
-      {(thread) => <p>{thread?.title}</p>}
-    </ChatWorkspace>,
-  );
-  expect(html).toContain("Thread unavailable");
-});
-
-test("Thread renders linked Messages and the Brief Sources; work Threads have no Working On", () => {
-  const project = aiChatProjectFixture();
-  const graph = projectThreadGraph(project);
-  const knowledge = projectKnowledge(project);
-  const document = project.documents[0];
-  const thread = graph.threads[0];
-  const sourceSlugs = knowledge.bundles.find(
-    (bundle) => bundle.id === document.id,
-  )!.sourceSlugs;
-  const editor = {
-    document,
-    files: knowledge.files,
-    fileRelations: knowledge.sourceFiles,
-    attachmentViews: knowledge.attachmentViews,
-    sources: project.sources,
-    onEdit: () => {},
-    onAttach: () => {},
-    onUpload: () => {},
-    onAssetRemove: () => {},
-  };
-  const content = renderToStaticMarkup(
-    <ChatWorkspace
-      data={graph.chat}
-      threads={graph.threads}
-      relations={graph.chatThreads}
-      selectedThreadId={thread.id}
-    >
-      {(selected) =>
-        selected && (
-          <ThreadWorkspace
-            data={selected}
-            messages={graph.messages}
-            relations={graph.threadMessages}
-            knowledge={knowledge.sources}
-            sourceSlugs={sourceSlugs}
-            agent={documentAgent("brief")}
-            composer={composer}
-            editor={editor}
-            onWorkingSources={() => {}}
-          />
-        )
-      }
-    </ChatWorkspace>,
+    <FilesProvider>
+      <SourceProvider profileId="pottery">
+        <ChatWorkspace profileId="pottery" />
+      </SourceProvider>
+    </FilesProvider>,
   );
   for (const marker of [
     "social.chat.ai-chat-workspace",
@@ -194,24 +119,80 @@ test("Thread renders linked Messages and the Brief Sources; work Threads have no
     "social.message.ai-chat-message",
     "knowledge.source.ai-chat-section",
   ])
-    expect(content).toContain(`data-ds-block="${marker}"`);
-  expect(content).toContain(`data-thread-id="${thread.id}"`);
-  expect(content).toContain('data-id="brief-intro"');
-  expect(content).not.toContain('data-id="strategy-intro"');
-  expect(content).toContain('aria-label="Working on"');
-  const work = renderToStaticMarkup(
-    <ThreadWorkspace
-      data={thread}
-      messages={graph.messages}
-      relations={graph.threadMessages}
-      knowledge={knowledge.sources}
-      sourceSlugs={knowledge.sources.map((source) => source.slug)}
-      agent={null}
-      composer={composer}
-    />,
+    expect(html).toContain(`data-ds-block="${marker}"`);
+  expect(html.match(/data-model="thread"/g)).toHaveLength(1);
+  expect(html.match(/data-model="source"/g)).toHaveLength(1);
+  expect(html).toContain('data-thread-id="pottery:thread:document:products"');
+  expect(html).toContain(
+    'data-knowledge-source-ids="pottery:products:products"',
   );
-  expect(work).not.toContain('aria-label="Working on"');
-  expect(work).toContain(
-    `data-knowledge-source-ids="${knowledge.sources.map((source) => source.id).join(" ")}"`,
+  expect(html).toContain('aria-label="Working on"');
+  expect(html).toContain("Product assistant");
+  for (const obsolete of [
+    "Brief.md",
+    "Strategy.md",
+    "Brand.md",
+    "Design.md",
+    "Account Manager",
+    "Save reviewed version",
+  ])
+    expect(html).not.toContain(obsolete);
+});
+
+test("new profile identity is sufficient to prepare Products; profile IDs isolate model records", () => {
+  const render = (id: string) =>
+    renderToStaticMarkup(
+      <ProjectProfile
+        data={{ id, name: "Empty project" }}
+        active
+        onRename={() => {}}
+      />,
+    );
+  const first = render("first");
+  const second = render("second");
+  expect(first).toContain('data-id="first:thread:document:products:intro"');
+  expect(first).not.toContain("second:products");
+  expect(second).toContain('data-id="second:thread:document:products:intro"');
+  expect(second).not.toContain("first:products");
+  expect(first).not.toContain("New thread");
+  expect(first).not.toContain("Analyze materials");
+});
+
+test("sending snapshots one knowledge and linked files; later edits and detach preserve history", () => {
+  const { source, files } = aiChatProductsSourceFixture();
+  const history = appendThreadExchange([], {
+    ids: { user: "user", assistant: "assistant" },
+    text: "Improve this",
+    source,
+    files: [files[0]],
+    sourceFiles: files,
+    workingOn: "source",
+    agent: productsAgent,
+  });
+  expect(history[0].workingOn?.sections).toEqual(["Products"]);
+  expect(history[1].filesUsed?.map((file) => file.id)).toEqual([
+    "workshop-notes",
+    "audience-notes",
+  ]);
+  expect(history[1].context).toHaveLength(1);
+  const original = source.content;
+  source.content = "Changed knowledge";
+  files[0].text = "Changed file";
+  expect(history[1].context![0].text).toBe(original);
+  expect(history[1].filesUsed![0].text).toBe(
+    "Six places per weekend workshop.",
   );
+  const next = appendThreadExchange(history, {
+    ids: { user: "user-2", assistant: "assistant-2" },
+    text: "Use the whole document",
+    source,
+    files: [],
+    sourceFiles: [],
+    workingOn: "whole",
+    agent: productsAgent,
+  });
+  expect(next[2].workingOn?.sections).toEqual([]);
+  expect(next[3].context![0].text).toBe("Changed knowledge");
+  expect(next[3].filesUsed?.map((file) => file.id)).toEqual(["workshop-notes"]);
+  expect(history).toHaveLength(2);
 });

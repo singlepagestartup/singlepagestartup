@@ -1,17 +1,18 @@
 import { Component } from "./index";
-import { useState } from "react";
-import { aiChatProjectFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 import type { Meta, StoryObj } from "@storybook/react";
+import { useState } from "react";
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
-
 function Example() {
-  const [project, setProject] = useState(aiChatProjectFixture);
+  const [data, setData] = useState({
+    id: "pottery",
+    name: "Pottery workshops",
+  });
   return (
     <Component
-      project={project}
+      data={data}
       active
-      onUpdate={(_, update) => setProject(update)}
+      onRename={(id, name) => setData({ id, name })}
     />
   );
 }

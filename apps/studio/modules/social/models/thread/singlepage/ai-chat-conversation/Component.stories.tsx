@@ -1,18 +1,24 @@
 import { Component } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
-
+import { FilesProvider } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
+import { SourceProvider } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/Source";
+import { ThreadProvider } from "../ai-chat-workspace/Thread";
 function Example() {
   return (
-    <Component
-      messages={[
-        { id: "welcome", role: "assistant", text: "Who is the workshop for?" },
-        {
-          id: "audience",
-          role: "user",
-          text: "Adults trying pottery for the first time.",
-        },
-      ]}
-    />
+    <FilesProvider>
+      <SourceProvider profileId="pottery">
+        <ThreadProvider
+          data={{
+            id: "pottery:thread:document:products",
+            slug: "pottery:document:products",
+            title: "Products.md",
+            variant: "ai-chat-workspace",
+          }}
+        >
+          <Component />
+        </ThreadProvider>
+      </SourceProvider>
+    </FilesProvider>
   );
 }
 
