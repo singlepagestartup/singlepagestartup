@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Component as HostModuleLayout } from "../../../../../host/models/layout/index";
 import { Component as SocialModuleProfile } from "../../../../../social/models/profile/index";
+import { Component as WebsiteBuilderModuleWidget } from "../../index";
 import { Component as Header } from "./index";
 import { AIChatPreview } from "../../../../../../workspace/products/singlepage/ai-chat/website/Preview";
 
@@ -68,20 +69,21 @@ describe("Website Builder header composition", () => {
     expect(html).toContain("Second project");
   });
 
-  test("Header's transitive graph stays in Website Builder and has no import cycles", () => {
+  test("Widget public entry stays in Website Builder and has no import cycles", () => {
     const visited = new Set<string>();
     const active = new Set<string>();
     function visit(file: string) {
       expect(active.has(file)).toBe(false);
       if (visited.has(file)) return;
       expect(file.startsWith(studio + path.sep)).toBe(true);
-      if (file.includes(`${path.sep}modules${path.sep}`))
-        expect(
-          file.startsWith(
-            path.join(studio, "modules/website-builder") + path.sep,
-          ),
-        ).toBe(true);
-      if (file.endsWith(".json")) return;
+      if (
+        file.includes(`${path.sep}modules${path.sep}`) &&
+        !file.startsWith(
+          path.join(studio, "modules/website-builder") + path.sep,
+        )
+      )
+        throw new Error(`Website Builder imports higher module: ${file}`);
+      if (!/\.[jt]sx?$/.test(file)) return;
       active.add(file);
       for (const { fileName } of ts.preProcessFile(
         readFileSync(file, "utf8"),
@@ -90,7 +92,7 @@ describe("Website Builder header composition", () => {
       ).importedFiles) {
         expect(fileName.startsWith("@sps/")).toBe(false);
         if (!fileName.startsWith(".")) continue;
-        const target = path.resolve(path.dirname(file), fileName);
+        const target = path.resolve(path.dirname(file), fileName.split("?")[0]);
         const resolved = [
           target,
           target + ".ts",
@@ -107,7 +109,7 @@ describe("Website Builder header composition", () => {
       active.delete(file);
       visited.add(file);
     }
-    visit(path.join(import.meta.dir, "Component.tsx"));
+    visit(path.join(studio, "modules/website-builder/models/widget/index.ts"));
     for (const model of [
       "logotype/singlepage/ai-chat",
       "buttons-array/singlepage/ai-chat-header",
@@ -162,6 +164,36 @@ describe("Website Builder header composition", () => {
     );
     const help = renderToStaticMarkup(<Header page="help" />);
     expect(help).toContain('aria-current="page"');
+  });
+
+  test("landing and contact widgets receive higher models as slots", () => {
+    const landing = renderToStaticMarkup(
+      <WebsiteBuilderModuleWidget
+        variant="ai-chat-landing"
+        chatPreview={(content) => (
+          <aside>{content.workflow.title} preview slot</aside>
+        )}
+      />,
+    );
+    expect(landing).toContain("preview slot</aside>");
+    const contact = renderToStaticMarkup(
+      <WebsiteBuilderModuleWidget
+        variant="content-feature-find-row"
+        contactForm={<form>Subject form slot</form>}
+      />,
+    );
+    expect(contact).toContain("<form>Subject form slot</form>");
+  });
+
+  test("help gets the current project address from its caller", () => {
+    const html = renderToStaticMarkup(
+      <WebsiteBuilderModuleWidget
+        variant="ai-chat-help"
+        projectHref="/ai-chat/projects/selected-project"
+      />,
+    );
+    expect(html).toContain('href="/ai-chat/projects/selected-project"');
+    expect(html).not.toContain('href="/ai-chat/projects/example"');
   });
 
   test("auth headers use Button records for opposite account action", () => {

@@ -1,0 +1,21 @@
+{
+  "componentName": "notification.notifications-to-templates",
+  "pageName": "notification",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "notification.notifications-to-templates.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "notification/relations/notifications-to-templates/singlepage/admin-v2-table",
+    "sps.figma.component": "notification.notifications-to-templates",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "notification",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "notifications-to-templates",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/notification/relations/notifications-to-templates/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/notification/relations/notifications-to-templates/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

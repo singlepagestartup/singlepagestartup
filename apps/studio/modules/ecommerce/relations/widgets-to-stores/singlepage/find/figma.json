@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.widgets-to-stores",
+  "pageName": "ecommerce",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.widgets-to-stores.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/relations/widgets-to-stores/singlepage/find",
+    "sps.figma.component": "ecommerce.widgets-to-stores",
+    "sps.figma.variant": "find",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "widgets-to-stores",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/relations/widgets-to-stores/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/relations/widgets-to-stores/singlepage/find/Component.stories.tsx"
+  }
+}

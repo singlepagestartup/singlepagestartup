@@ -1,0 +1,100 @@
+{
+  "schema": {
+    "module": "billing",
+    "entity": "currency",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "isDefault",
+        "label": "Is Default",
+        "kind": "boolean",
+        "nullable": false,
+        "default": false
+      },
+      {
+        "key": "symbol",
+        "label": "Symbol",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "6e9c58f6-0064-4f02-ad77-2c6e39b700c5",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "isDefault": false,
+      "symbol": "Symbol example 1",
+      "title": "currency example 1",
+      "adminTitle": "currency example 1",
+      "slug": "currency-example-1"
+    },
+    {
+      "id": "fcb423e1-473f-4d43-a0ff-bb2dcf80727f",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "isDefault": false,
+      "symbol": "Symbol example 2",
+      "title": "currency example 2",
+      "adminTitle": "currency example 2",
+      "slug": "currency-example-2"
+    },
+    {
+      "id": "fd2da6e6-3295-438f-a560-4fa26a309a6f",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "isDefault": false,
+      "symbol": "Symbol example 3",
+      "title": "currency example 3",
+      "adminTitle": "currency example 3",
+      "slug": "currency-example-3"
+    }
+  ]
+}

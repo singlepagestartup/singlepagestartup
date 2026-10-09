@@ -1,0 +1,21 @@
+{
+  "componentName": "analytic.metric",
+  "pageName": "analytic",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "analytic.metric.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "analytic/models/metric/singlepage/find",
+    "sps.figma.component": "analytic.metric",
+    "sps.figma.variant": "find",
+    "sps.source.module": "analytic",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "metric",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/analytic/models/metric/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/analytic/models/metric/singlepage/find/Component.stories.tsx"
+  }
+}

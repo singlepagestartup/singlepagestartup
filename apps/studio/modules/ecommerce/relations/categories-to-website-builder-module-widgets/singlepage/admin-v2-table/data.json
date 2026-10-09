@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "ecommerce",
+    "entity": "categories-to-website-builder-module-widgets",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "categoryId",
+        "label": "Category Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "ecommerce",
+          "entity": "category"
+        }
+      },
+      {
+        "key": "websiteBuilderModuleWidgetId",
+        "label": "Website Builder Module Widget Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "widget"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "66578178-722c-4632-a59e-d6b51b5af47b",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "categoryId": "13eca0d6-09a2-4687-abc4-920c079b449e",
+      "websiteBuilderModuleWidgetId": "cbda4e32-f16a-42cc-aeb5-447db2d06657"
+    },
+    {
+      "id": "3881ff1b-7179-416d-a05b-677d37f4a5bc",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "categoryId": "8b48b67c-02db-4455-ab11-63e385dbe2e7",
+      "websiteBuilderModuleWidgetId": "25e1e952-3583-45bd-a6b7-8491a5a83cbd"
+    },
+    {
+      "id": "65bb7b2a-7a3f-4401-a17f-600435bc4d6e",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "categoryId": "c7b24082-24be-49ca-a748-b2775df1e121",
+      "websiteBuilderModuleWidgetId": "4709c80a-6386-44e2-aec0-8004eba02540"
+    }
+  ]
+}

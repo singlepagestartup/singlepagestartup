@@ -1,0 +1,137 @@
+{
+  "schema": {
+    "module": "knowledge",
+    "entity": "source",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "content",
+        "label": "Content",
+        "kind": "text",
+        "nullable": false,
+        "default": ""
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "contentHash",
+        "label": "Content Hash",
+        "kind": "text",
+        "nullable": false,
+        "default": ""
+      },
+      {
+        "key": "indexedContentHash",
+        "label": "Indexed Content Hash",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "lastIndexedAt",
+        "label": "Last Indexed At",
+        "kind": "timestamp",
+        "nullable": true
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "29d0ea8c-9f73-4ff8-a6cf-e9c232b0c34a",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "adminTitle": "source example 1",
+      "slug": "source-example-1",
+      "title": "source example 1",
+      "content": "",
+      "description": null,
+      "contentHash": "",
+      "indexedContentHash": null,
+      "lastIndexedAt": null
+    },
+    {
+      "id": "5265d427-b593-4193-a164-9e7fcb84836b",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "adminTitle": "source example 2",
+      "slug": "source-example-2",
+      "title": "source example 2",
+      "content": "",
+      "description": null,
+      "contentHash": "",
+      "indexedContentHash": null,
+      "lastIndexedAt": null
+    },
+    {
+      "id": "5d225017-9edf-4212-ac56-6b8c6c197460",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "adminTitle": "source example 3",
+      "slug": "source-example-3",
+      "title": "source example 3",
+      "content": "",
+      "description": null,
+      "contentHash": "",
+      "indexedContentHash": null,
+      "lastIndexedAt": null
+    }
+  ]
+}

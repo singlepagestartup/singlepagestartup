@@ -1,0 +1,21 @@
+{
+  "componentName": "blog.widgets-to-articles",
+  "pageName": "blog",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "blog.widgets-to-articles.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "blog/relations/widgets-to-articles/singlepage/admin-v2-table",
+    "sps.figma.component": "blog.widgets-to-articles",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "blog",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "widgets-to-articles",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/blog/relations/widgets-to-articles/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/blog/relations/widgets-to-articles/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

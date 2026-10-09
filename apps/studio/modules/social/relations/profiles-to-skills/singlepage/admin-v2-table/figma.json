@@ -1,0 +1,21 @@
+{
+  "componentName": "social.profiles-to-skills",
+  "pageName": "social",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.profiles-to-skills.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/relations/profiles-to-skills/singlepage/admin-v2-table",
+    "sps.figma.component": "social.profiles-to-skills",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "social",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "profiles-to-skills",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/relations/profiles-to-skills/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/relations/profiles-to-skills/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

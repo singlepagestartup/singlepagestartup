@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "chats-to-actions",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "chatId",
+        "label": "Chat Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "social",
+          "entity": "chat"
+        }
+      },
+      {
+        "key": "actionId",
+        "label": "Action Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "social",
+          "entity": "action"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "2558a9cd-7126-4a95-ad78-0834e82ffd7a",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "chatId": "60eef9fe-d550-4e6c-a676-7a8e2f75fbfa",
+      "actionId": "ded9b35d-db14-4e7c-a07d-92e971c3df34"
+    },
+    {
+      "id": "fc4879b9-ded0-4788-a4f1-35241073866c",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "chatId": "21bc24f5-c10a-4b2c-a81e-a81139784a92",
+      "actionId": "332b3969-6e0d-4178-a795-4b607db4e1a1"
+    },
+    {
+      "id": "f9b253c5-afe4-402d-ae46-6b1be766f6a7",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "chatId": "f01939e3-f3a8-49d0-a556-9a9d346d1e96",
+      "actionId": "dd9d7f08-4091-4ba6-aed8-af015d7397eb"
+    }
+  ]
+}

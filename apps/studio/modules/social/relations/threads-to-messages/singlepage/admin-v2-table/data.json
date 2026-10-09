@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "threads-to-messages",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "threadId",
+        "label": "Thread Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "social",
+          "entity": "thread"
+        }
+      },
+      {
+        "key": "messageId",
+        "label": "Message Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "social",
+          "entity": "message"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "76252132-69d3-43f2-a964-a047ddbfe3c6",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "threadId": "5b7450ce-2b3a-464e-a131-5536a401bede",
+      "messageId": "019b1fc0-e84a-45d0-aec0-fd945147d19b"
+    },
+    {
+      "id": "21b17596-d25d-4060-ab93-346563458257",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "threadId": "b3fd521c-dc85-452c-af9c-0c155bd2613c",
+      "messageId": "206ca1f4-ca6e-4f4d-a41d-56554cd24e0a"
+    },
+    {
+      "id": "5d4b6207-f033-4730-a18b-2a6d092f50a3",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "threadId": "0c3fc9db-ede4-4858-a157-68e0bc2aefb0",
+      "messageId": "d1bb8605-ca01-4b3c-ab0f-4001f762c953"
+    }
+  ]
+}

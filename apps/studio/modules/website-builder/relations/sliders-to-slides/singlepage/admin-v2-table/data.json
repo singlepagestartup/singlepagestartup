@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "website-builder",
+    "entity": "sliders-to-slides",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "sliderId",
+        "label": "Slider Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "slider"
+        }
+      },
+      {
+        "key": "slideId",
+        "label": "Slide Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "slide"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "edc8cd7a-da98-485f-a73b-eadf16454763",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "sliderId": "379b2963-3455-4c9c-a3f2-0300e61f1920",
+      "slideId": "70724cee-3a95-473d-a007-861a4c16da0c"
+    },
+    {
+      "id": "b985a8b3-a637-425e-ab4b-2c7db38b3b66",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "sliderId": "1917f8c3-1929-47a1-a324-18c51fb906a7",
+      "slideId": "3f677b6c-d46d-40ca-a41e-b6561d4f3f95"
+    },
+    {
+      "id": "112e9247-0669-46ef-af73-c907b0921c65",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "sliderId": "870445a7-e737-4131-a151-ea8fba8b8e20",
+      "slideId": "0adc49eb-bd5e-4552-a50a-2d4e7c923386"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "schema": {
+    "module": "website-builder",
+    "entity": "logotype",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "url",
+        "label": "Url",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "className": null,
+      "url": null,
+      "id": "fecc4e66-e091-4bd9-ac75-9cf84cb04a11",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": {
+        "en": "logotype example 1"
+      },
+      "adminTitle": "logotype example 1",
+      "slug": "logotype-example-1"
+    },
+    {
+      "className": null,
+      "url": null,
+      "id": "04f71465-80cd-4667-a230-3a9e5324320d",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": {
+        "en": "logotype example 2"
+      },
+      "adminTitle": "logotype example 2",
+      "slug": "logotype-example-2"
+    },
+    {
+      "className": null,
+      "url": null,
+      "id": "056875c2-9dab-4ea7-a9fe-4363448aed8d",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": {
+        "en": "logotype example 3"
+      },
+      "adminTitle": "logotype example 3",
+      "slug": "logotype-example-3"
+    }
+  ]
+}

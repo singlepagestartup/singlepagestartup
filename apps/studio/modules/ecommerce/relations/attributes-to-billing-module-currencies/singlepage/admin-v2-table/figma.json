@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.attributes-to-billing-module-currencies",
+  "pageName": "ecommerce",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.attributes-to-billing-module-currencies.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/relations/attributes-to-billing-module-currencies/singlepage/admin-v2-table",
+    "sps.figma.component": "ecommerce.attributes-to-billing-module-currencies",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "attributes-to-billing-module-currencies",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/relations/attributes-to-billing-module-currencies/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/relations/attributes-to-billing-module-currencies/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

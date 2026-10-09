@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "profiles-to-website-builder-module-widgets",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "profileId",
+        "label": "Profile Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "social",
+          "entity": "profile"
+        }
+      },
+      {
+        "key": "websiteBuilderModuleWidgetId",
+        "label": "Website Builder Module Widget Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "widget"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "f3f097a8-46ec-474a-a5cb-4c7a7e47b801",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "profileId": "f92ecd7e-d9d3-48b7-a587-0ef4af63432c",
+      "websiteBuilderModuleWidgetId": "cbda4e32-f16a-42cc-aeb5-447db2d06657"
+    },
+    {
+      "id": "71accff2-a431-46eb-a146-80246ead95e2",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "profileId": "c21d0d98-ab91-4af1-a9c9-f18bba93586a",
+      "websiteBuilderModuleWidgetId": "25e1e952-3583-45bd-a6b7-8491a5a83cbd"
+    },
+    {
+      "id": "704b819b-5368-4c6a-a876-77cd565e03d4",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "profileId": "e4392e12-240c-4c14-aef5-9fe634eb958f",
+      "websiteBuilderModuleWidgetId": "4709c80a-6386-44e2-aec0-8004eba02540"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "componentName": "website-builder.features-to-buttons-arrays",
+  "pageName": "website-builder",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "website-builder.features-to-buttons-arrays.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "website-builder/relations/features-to-buttons-arrays/singlepage/find",
+    "sps.figma.component": "website-builder.features-to-buttons-arrays",
+    "sps.figma.variant": "find",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "features-to-buttons-arrays",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/website-builder/relations/features-to-buttons-arrays/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/website-builder/relations/features-to-buttons-arrays/singlepage/find/Component.stories.tsx"
+  }
+}

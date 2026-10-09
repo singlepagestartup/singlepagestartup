@@ -1,0 +1,27 @@
+{
+  "id": "blog.widgets-to-categories.admin-v2-table",
+  "title": "blog widgets-to-categories / admin-v2-table",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "relation",
+    "entity": "widgets-to-categories",
+    "variant": "admin-v2-table"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "blog.widgets-to-categories",
+    "pageName": "blog",
+    "variantName": "admin-v2-table",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

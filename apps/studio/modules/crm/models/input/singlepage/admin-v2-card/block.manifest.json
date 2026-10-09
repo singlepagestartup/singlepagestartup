@@ -1,0 +1,27 @@
+{
+  "id": "crm.input.admin-v2-card",
+  "title": "crm input / admin-v2-card",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "input",
+    "variant": "admin-v2-card"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "crm.input",
+    "pageName": "crm",
+    "variantName": "admin-v2-card",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

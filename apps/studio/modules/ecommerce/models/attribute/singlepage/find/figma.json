@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.attribute",
+  "pageName": "ecommerce",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.attribute.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/models/attribute/singlepage/find",
+    "sps.figma.component": "ecommerce.attribute",
+    "sps.figma.variant": "find",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "attribute",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/models/attribute/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/models/attribute/singlepage/find/Component.stories.tsx"
+  }
+}

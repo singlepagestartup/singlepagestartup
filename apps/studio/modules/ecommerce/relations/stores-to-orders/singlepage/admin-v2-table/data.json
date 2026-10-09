@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "ecommerce",
+    "entity": "stores-to-orders",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "storeId",
+        "label": "Store Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "ecommerce",
+          "entity": "store"
+        }
+      },
+      {
+        "key": "orderId",
+        "label": "Order Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "ecommerce",
+          "entity": "order"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "45461c1e-a8c3-4637-a33f-6739cc40126e",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "storeId": "d5cdfaf1-f714-4045-acb3-346073168c99",
+      "orderId": "f5aff0ee-06d8-45e7-a123-0236e4ac3bba"
+    },
+    {
+      "id": "26e3d8f0-b181-4b5e-afcd-a0cf2f350406",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "storeId": "33cb7570-df19-4645-aa81-fbd93e0bad1c",
+      "orderId": "89214e48-c443-45ed-aa81-6789e1c7fd62"
+    },
+    {
+      "id": "3d727208-5127-4b62-a8fc-e4b37b09a28a",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "storeId": "c8770171-9ff2-46c7-aa1b-e45ed5807df0",
+      "orderId": "c994228f-441e-48d4-a884-671cbdaf392b"
+    }
+  ]
+}

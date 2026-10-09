@@ -1,0 +1,21 @@
+{
+  "componentName": "knowledge.sources-to-file-storage-module-files",
+  "pageName": "knowledge",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "knowledge.sources-to-file-storage-module-files.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "knowledge/relations/sources-to-file-storage-module-files/singlepage/admin-v2-table",
+    "sps.figma.component": "knowledge.sources-to-file-storage-module-files",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "knowledge",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "sources-to-file-storage-module-files",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/knowledge/relations/sources-to-file-storage-module-files/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/knowledge/relations/sources-to-file-storage-module-files/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

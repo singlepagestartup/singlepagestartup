@@ -1,0 +1,21 @@
+{
+  "componentName": "billing.invoice",
+  "pageName": "billing",
+  "variantName": "admin-v2-card",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "billing.invoice.admin-v2-card",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "billing/models/invoice/singlepage/admin-v2-card",
+    "sps.figma.component": "billing.invoice",
+    "sps.figma.variant": "admin-v2-card",
+    "sps.source.module": "billing",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "invoice",
+    "sps.source.variant": "admin-v2-card",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/billing/models/invoice/singlepage/admin-v2-card/Component.tsx",
+    "sps.code.story": "apps/studio/modules/billing/models/invoice/singlepage/admin-v2-card/Component.stories.tsx"
+  }
+}

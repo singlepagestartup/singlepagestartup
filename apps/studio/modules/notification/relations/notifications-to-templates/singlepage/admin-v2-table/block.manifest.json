@@ -1,0 +1,27 @@
+{
+  "id": "notification.notifications-to-templates.admin-v2-table",
+  "title": "notification notifications-to-templates / admin-v2-table",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "notification",
+    "entityType": "relation",
+    "entity": "notifications-to-templates",
+    "variant": "admin-v2-table"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "notification.notifications-to-templates",
+    "pageName": "notification",
+    "variantName": "admin-v2-table",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

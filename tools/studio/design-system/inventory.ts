@@ -58,24 +58,27 @@ const OUTPUT_PATH = path.join(
   "modules.generated.json",
 );
 const SKIP_DIRS = new Set(["node_modules", ".git", ".nx", "dist"]);
+export const EXCLUDED_MODULES = new Set(["telegram"]);
 
 export function moduleDirectoryPaths(
   inventory: GeneratedModuleInventory,
 ): string[] {
-  return inventory.modules.flatMap((moduleRecord) =>
-    moduleRecord.entities.flatMap((entity) =>
-      ["singlepage", "startup"].map((layer) =>
-        path.join(
-          inventory.studioRoot,
-          "modules",
-          entity.module,
-          entity.entityType === "model" ? "models" : "relations",
-          entity.entity,
-          layer,
+  return inventory.modules
+    .filter((moduleRecord) => !EXCLUDED_MODULES.has(moduleRecord.name))
+    .flatMap((moduleRecord) =>
+      moduleRecord.entities.flatMap((entity) =>
+        ["singlepage", "startup"].map((layer) =>
+          path.join(
+            inventory.studioRoot,
+            "modules",
+            entity.module,
+            entity.entityType === "model" ? "models" : "relations",
+            entity.entity,
+            layer,
+          ),
         ),
       ),
-    ),
-  );
+    );
 }
 
 export async function scaffoldModuleDirectories(
@@ -346,7 +349,7 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
 
   for (const filePath of variantFiles.sort()) {
     const parsed = parseEntityFromVariantsPath(filePath);
-    if (!parsed) {
+    if (!parsed || EXCLUDED_MODULES.has(parsed.module)) {
       continue;
     }
 

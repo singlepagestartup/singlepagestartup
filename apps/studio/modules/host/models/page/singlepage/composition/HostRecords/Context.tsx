@@ -4,7 +4,9 @@ import {
   useContext,
   useState,
   type ReactNode,
+  type ComponentType,
 } from "react";
+import type { IHostRelationManagerProps } from "./Relations";
 import {
   createHostStudioState,
   type IHostStudioState,
@@ -15,10 +17,12 @@ export interface IHostStudioProviderProps {
   state?: IHostStudioState;
   initialState?: IHostStudioState;
   onStateChange?: (state: IHostStudioState) => void;
+  RelationManager?: ComponentType<IHostRelationManagerProps>;
 }
 interface IHostStudioContext {
   state: IHostStudioState;
   update: (change: (state: IHostStudioState) => IHostStudioState) => void;
+  RelationManager?: ComponentType<IHostRelationManagerProps>;
 }
 const HostStudioContext = createContext<IHostStudioContext | null>(null);
 export function HostStudioProvider({
@@ -26,6 +30,7 @@ export function HostStudioProvider({
   state: controlled,
   initialState,
   onStateChange,
+  RelationManager,
 }: IHostStudioProviderProps) {
   const [local, setLocal] = useState(
     () => initialState ?? createHostStudioState(),
@@ -40,7 +45,7 @@ export function HostStudioProvider({
     [controlled, onStateChange],
   );
   return (
-    <HostStudioContext.Provider value={{ state, update }}>
+    <HostStudioContext.Provider value={{ state, update, RelationManager }}>
       {children}
     </HostStudioContext.Provider>
   );

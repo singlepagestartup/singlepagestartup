@@ -1,0 +1,27 @@
+{
+  "id": "ecommerce.category.admin-v2-card",
+  "title": "ecommerce category / admin-v2-card",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "category",
+    "variant": "admin-v2-card"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "ecommerce.category",
+    "pageName": "ecommerce",
+    "variantName": "admin-v2-card",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

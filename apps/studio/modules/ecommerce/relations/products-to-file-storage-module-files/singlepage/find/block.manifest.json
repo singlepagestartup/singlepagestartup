@@ -1,0 +1,27 @@
+{
+  "id": "ecommerce.products-to-file-storage-module-files.find",
+  "title": "ecommerce products-to-file-storage-module-files / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "relation",
+    "entity": "products-to-file-storage-module-files",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "ecommerce.products-to-file-storage-module-files",
+    "pageName": "ecommerce",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

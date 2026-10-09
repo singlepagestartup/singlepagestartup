@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "website-builder",
+    "entity": "slides-to-buttons-arrays",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "slideId",
+        "label": "Slide Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "slide"
+        }
+      },
+      {
+        "key": "buttonsArrayId",
+        "label": "Buttons Array Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "buttons-array"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "bcc56d19-c946-40f3-a43e-d5422202e924",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "slideId": "70724cee-3a95-473d-a007-861a4c16da0c",
+      "buttonsArrayId": "28670e23-5835-4871-abd1-f0ba5ccc3900"
+    },
+    {
+      "id": "bd440697-ab99-4639-af60-05e57d1a6ac5",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "slideId": "3f677b6c-d46d-40ca-a41e-b6561d4f3f95",
+      "buttonsArrayId": "cd91b7e1-44fc-4c35-a4db-cd939217faa8"
+    },
+    {
+      "id": "d06f6508-2848-46c4-ad0e-3922c0d2da8d",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "slideId": "0adc49eb-bd5e-4552-a50a-2d4e7c923386",
+      "buttonsArrayId": "2f195e0a-833d-4a61-a189-df36ab99fe38"
+    }
+  ]
+}

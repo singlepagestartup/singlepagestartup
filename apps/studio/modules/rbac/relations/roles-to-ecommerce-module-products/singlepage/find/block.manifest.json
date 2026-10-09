@@ -1,0 +1,27 @@
+{
+  "id": "rbac.roles-to-ecommerce-module-products.find",
+  "title": "rbac roles-to-ecommerce-module-products / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "relation",
+    "entity": "roles-to-ecommerce-module-products",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.roles-to-ecommerce-module-products",
+    "pageName": "rbac",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

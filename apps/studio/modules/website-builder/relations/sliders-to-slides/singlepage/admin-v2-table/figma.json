@@ -1,0 +1,21 @@
+{
+  "componentName": "website-builder.sliders-to-slides",
+  "pageName": "website-builder",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "website-builder.sliders-to-slides.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "website-builder/relations/sliders-to-slides/singlepage/admin-v2-table",
+    "sps.figma.component": "website-builder.sliders-to-slides",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "sliders-to-slides",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/website-builder/relations/sliders-to-slides/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/website-builder/relations/sliders-to-slides/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

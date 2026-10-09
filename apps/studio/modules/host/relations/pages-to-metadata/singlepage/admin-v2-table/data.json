@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "host",
+    "entity": "pages-to-metadata",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "pageId",
+        "label": "Page Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "host",
+          "entity": "page"
+        }
+      },
+      {
+        "key": "metadataId",
+        "label": "Metadata Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "host",
+          "entity": "metadata"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "3d9bb1e7-bc19-4696-a92c-c4e203370929",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "pageId": "b1c9d8d1-6a1b-413f-a3ce-296c18e541a3",
+      "metadataId": "825124cc-1518-4fde-a1a4-90a0a414bd8a"
+    },
+    {
+      "id": "f9209b57-b8fd-4f42-ad46-b373d9b0cd37",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "pageId": "d3c21332-aede-44ec-ac6d-bb646da21ff5",
+      "metadataId": "6e2afd97-57c2-4667-ac90-5e8bfece1037"
+    },
+    {
+      "id": "a3984a8e-5805-40e4-a3d3-5fbf8f0b0491",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "pageId": "70412fef-7b2e-4d9b-a0d4-c08071bd675c",
+      "metadataId": "5bc6af0b-2227-4850-a378-ce5226bb92f1"
+    }
+  ]
+}

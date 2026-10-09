@@ -1,0 +1,21 @@
+{
+  "componentName": "billing.widget",
+  "pageName": "billing",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "billing.widget.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "billing/models/widget/singlepage/find",
+    "sps.figma.component": "billing.widget",
+    "sps.figma.variant": "find",
+    "sps.source.module": "billing",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/billing/models/widget/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/billing/models/widget/singlepage/find/Component.stories.tsx"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "componentName": "notification.topics-to-notifications",
+  "pageName": "notification",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "notification.topics-to-notifications.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "notification/relations/topics-to-notifications/singlepage/find",
+    "sps.figma.component": "notification.topics-to-notifications",
+    "sps.figma.variant": "find",
+    "sps.source.module": "notification",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "topics-to-notifications",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/notification/relations/topics-to-notifications/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/notification/relations/topics-to-notifications/singlepage/find/Component.stories.tsx"
+  }
+}

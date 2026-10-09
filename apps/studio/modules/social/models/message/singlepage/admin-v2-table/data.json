@@ -1,0 +1,119 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "message",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "subtitle",
+        "label": "Subtitle",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "sourceSystemId",
+        "label": "Source System Id",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "interaction",
+        "label": "Interaction",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "metadata",
+        "label": "Metadata",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "019b1fc0-e84a-45d0-aec0-fd945147d19b",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "message example 1",
+      "subtitle": null,
+      "description": null,
+      "sourceSystemId": null,
+      "interaction": {},
+      "metadata": {}
+    },
+    {
+      "id": "206ca1f4-ca6e-4f4d-a41d-56554cd24e0a",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "message example 2",
+      "subtitle": null,
+      "description": null,
+      "sourceSystemId": null,
+      "interaction": {},
+      "metadata": {}
+    },
+    {
+      "id": "d1bb8605-ca01-4b3c-ab0f-4001f762c953",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "message example 3",
+      "subtitle": null,
+      "description": null,
+      "sourceSystemId": null,
+      "interaction": {},
+      "metadata": {}
+    }
+  ]
+}

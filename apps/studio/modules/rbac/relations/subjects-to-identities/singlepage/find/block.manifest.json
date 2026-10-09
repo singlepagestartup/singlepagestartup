@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subjects-to-identities.find",
+  "title": "rbac subjects-to-identities / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "relation",
+    "entity": "subjects-to-identities",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subjects-to-identities",
+    "pageName": "rbac",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

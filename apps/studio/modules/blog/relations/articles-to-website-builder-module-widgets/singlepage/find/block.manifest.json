@@ -1,0 +1,27 @@
+{
+  "id": "blog.articles-to-website-builder-module-widgets.find",
+  "title": "blog articles-to-website-builder-module-widgets / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "relation",
+    "entity": "articles-to-website-builder-module-widgets",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "blog.articles-to-website-builder-module-widgets",
+    "pageName": "blog",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -17,6 +17,7 @@ import {
 
 export interface IHelpProps {
   copy?: IAIChatServicePageContent;
+  projectHref?: string;
 }
 
 export interface IHelpErrors {
@@ -25,7 +26,10 @@ export interface IHelpErrors {
   result?: string;
 }
 
-export function Component({ copy = defaultCopy }: IHelpProps = {}) {
+export function Component({
+  copy = defaultCopy,
+  projectHref,
+}: IHelpProps = {}) {
   const { sections, labels } = copy;
   const id = useId();
   const [topic, setTopic] = useState("");
@@ -51,7 +55,7 @@ export function Component({ copy = defaultCopy }: IHelpProps = {}) {
   }
 
   return (
-    <ServicePage copy={copy}>
+    <ServicePage copy={copy} projectHref={projectHref}>
       <div className="grid min-w-0 items-start gap-6 @3xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <PageSection section={sections.request} icon="chat-circle">
           {submitted ? (

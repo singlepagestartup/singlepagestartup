@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "blog",
+    "entity": "widgets-to-categories",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "widgetId",
+        "label": "Widget Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "blog",
+          "entity": "widget"
+        }
+      },
+      {
+        "key": "categoryId",
+        "label": "Category Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "blog",
+          "entity": "category"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "b067ebc5-a396-4bb5-aa13-f734cd401998",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "widgetId": "67604737-0583-4b6b-ae77-fac6d16ed746",
+      "categoryId": "57bf22b1-62de-429e-a7fb-5a9136961a96"
+    },
+    {
+      "id": "4060bca4-7972-4473-afc7-7fb0f0c2e386",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "widgetId": "2f35c006-af96-4fad-accd-e3a0c405858c",
+      "categoryId": "be7a3601-0014-49e8-aecd-498bc95575b6"
+    },
+    {
+      "id": "2ff867a3-41fd-4aa3-af3d-c13d7bb8ccb8",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "widgetId": "31984c38-1777-445c-a00f-d6dbe7d52b7b",
+      "categoryId": "7dc88103-4627-4f0e-a11e-81607012dcea"
+    }
+  ]
+}

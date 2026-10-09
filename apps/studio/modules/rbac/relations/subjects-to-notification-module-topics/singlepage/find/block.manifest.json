@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subjects-to-notification-module-topics.find",
+  "title": "rbac subjects-to-notification-module-topics / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "relation",
+    "entity": "subjects-to-notification-module-topics",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subjects-to-notification-module-topics",
+    "pageName": "rbac",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,5 +1,5 @@
 "use client";
-import { Component as SocialModuleChat } from "../../../../../social/models/chat/index";
+import type { ReactNode } from "react";
 import {
   Icon,
   kit,
@@ -9,6 +9,7 @@ import type { IAIChatWebsiteContent } from "../../../../../../workspace/utils/pr
 
 export interface IAIChatLandingProps {
   content?: IAIChatWebsiteContent;
+  chatPreview?: (content: IAIChatWebsiteContent) => ReactNode;
 }
 
 const display = "font-sps font-semibold tracking-normal";
@@ -18,7 +19,10 @@ const focus =
 const section = "mx-auto max-w-6xl px-5 @3xl:px-8";
 
 /** Public landing view with module-owned copy and controlled content overrides. */
-export function Component({ content = defaultCopy }: IAIChatLandingProps = {}) {
+export function Component({
+  content = defaultCopy,
+  chatPreview,
+}: IAIChatLandingProps = {}) {
   const mainLink = content.hero.links[0];
   return (
     <div
@@ -128,7 +132,7 @@ export function Component({ content = defaultCopy }: IAIChatLandingProps = {}) {
               {content.labels["demo-upload-note"]}
             </p>
           </div>
-          <SocialModuleChat variant="ai-chat-preview" content={content} />
+          {chatPreview?.(content)}
         </section>
         <section className={`${section} pb-10`}>
           <div className="flex flex-wrap items-center justify-between gap-6 border-t border-sps-line py-8">

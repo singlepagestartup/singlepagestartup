@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.orders-to-products",
+  "pageName": "ecommerce",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.orders-to-products.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/relations/orders-to-products/singlepage/admin-v2-table",
+    "sps.figma.component": "ecommerce.orders-to-products",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "orders-to-products",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/relations/orders-to-products/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/relations/orders-to-products/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

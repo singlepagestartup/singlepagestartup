@@ -1,0 +1,64 @@
+{
+  "schema": {
+    "module": "crm",
+    "entity": "request",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "payload",
+        "label": "Payload",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "c6896241-7288-41f5-a12a-0d6da72913f8",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "payload": {}
+    },
+    {
+      "id": "27b77293-9695-4a42-aab1-d0b6c97783d3",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "payload": {}
+    },
+    {
+      "id": "72acd77d-e1a3-4d58-a5fb-6d11102d2d45",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "payload": {}
+    }
+  ]
+}

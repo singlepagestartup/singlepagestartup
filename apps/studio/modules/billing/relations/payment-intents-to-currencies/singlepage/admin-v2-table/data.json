@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "billing",
+    "entity": "payment-intents-to-currencies",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "paymentIntentId",
+        "label": "Payment Intent Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "billing",
+          "entity": "payment-intent"
+        }
+      },
+      {
+        "key": "currencyId",
+        "label": "Currency Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "billing",
+          "entity": "currency"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "0f6dcb04-dbaa-438c-ab9e-56840da5252e",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "paymentIntentId": "0d4f37aa-b633-4623-a778-cb916da66de0",
+      "currencyId": "6e9c58f6-0064-4f02-ad77-2c6e39b700c5"
+    },
+    {
+      "id": "af13576a-f7d8-49d2-aa25-9a6e3aa68463",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "paymentIntentId": "bf8311ba-e9e1-4e7f-a9d7-b01ca2f42eb0",
+      "currencyId": "fcb423e1-473f-4d43-a0ff-bb2dcf80727f"
+    },
+    {
+      "id": "df4b085c-fc60-477a-a09d-d709ea1eca55",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "paymentIntentId": "a28f4286-4966-4234-a49f-94578bbf4af0",
+      "currencyId": "fd2da6e6-3295-438f-a560-4fa26a309a6f"
+    }
+  ]
+}

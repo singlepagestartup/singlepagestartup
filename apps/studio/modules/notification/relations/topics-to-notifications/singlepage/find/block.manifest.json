@@ -1,0 +1,27 @@
+{
+  "id": "notification.topics-to-notifications.find",
+  "title": "notification topics-to-notifications / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "notification",
+    "entityType": "relation",
+    "entity": "topics-to-notifications",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "notification.topics-to-notifications",
+    "pageName": "notification",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

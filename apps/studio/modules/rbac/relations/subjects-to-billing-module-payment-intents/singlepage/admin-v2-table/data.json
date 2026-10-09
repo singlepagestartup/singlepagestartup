@@ -1,0 +1,95 @@
+{
+  "schema": {
+    "module": "rbac",
+    "entity": "subjects-to-billing-module-payment-intents",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "subjectId",
+        "label": "Subject Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "rbac",
+          "entity": "subject"
+        }
+      },
+      {
+        "key": "billingModulePaymentIntentId",
+        "label": "Billing Module Payment Intent Id",
+        "kind": "uuid",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "4c8c19d3-ba10-464d-a85c-9ad896864a46",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "subjectId": "aec49411-15f5-4727-a4f2-4b4129e0e681",
+      "billingModulePaymentIntentId": "82eff046-5322-4d80-a58d-64c63bcd30f2"
+    },
+    {
+      "id": "659d9102-50e2-45f7-a269-2f471c46ce26",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "subjectId": "1327f822-3f06-4df7-a618-de56ee1ba282",
+      "billingModulePaymentIntentId": "5095611c-1743-4ad8-ad57-af2ab6845148"
+    },
+    {
+      "id": "d0139f46-28aa-4245-acbd-32169ff4d753",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "subjectId": "7eb64a61-5805-450e-a282-ae9e2615d510",
+      "billingModulePaymentIntentId": "9e572124-d4f7-403c-a12b-cde8eb647d6f"
+    }
+  ]
+}

@@ -1,0 +1,225 @@
+{
+  "schema": {
+    "module": "host",
+    "entity": "metadata",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "keywords",
+        "label": "Keywords",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "author",
+        "label": "Author",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "viewport",
+        "label": "Viewport",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "opengraphTitle",
+        "label": "Opengraph Title",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "opengraphDescription",
+        "label": "Opengraph Description",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "opengraphUrl",
+        "label": "Opengraph Url",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "opengraphType",
+        "label": "Opengraph Type",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "opengraphSiteName",
+        "label": "Opengraph Site Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "opengraphLocale",
+        "label": "Opengraph Locale",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "twitterCard",
+        "label": "Twitter Card",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "twitterSite",
+        "label": "Twitter Site",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "twitterCreator",
+        "label": "Twitter Creator",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "twitterTitle",
+        "label": "Twitter Title",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "twitterDescription",
+        "label": "Twitter Description",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "twitterUrl",
+        "label": "Twitter Url",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "twitterDomain",
+        "label": "Twitter Domain",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "twitterAppCountry",
+        "label": "Twitter App Country",
+        "kind": "text",
+        "nullable": true
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "825124cc-1518-4fde-a1a4-90a0a414bd8a",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "metadata example 1",
+      "description": null,
+      "keywords": null,
+      "author": null,
+      "viewport": null,
+      "opengraphTitle": null,
+      "opengraphDescription": null,
+      "opengraphUrl": null,
+      "opengraphType": null,
+      "opengraphSiteName": null,
+      "opengraphLocale": null,
+      "twitterCard": null,
+      "twitterSite": null,
+      "twitterCreator": null,
+      "twitterTitle": null,
+      "twitterDescription": null,
+      "twitterUrl": null,
+      "twitterDomain": null,
+      "twitterAppCountry": null
+    },
+    {
+      "id": "6e2afd97-57c2-4667-ac90-5e8bfece1037",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "metadata example 2",
+      "description": null,
+      "keywords": null,
+      "author": null,
+      "viewport": null,
+      "opengraphTitle": null,
+      "opengraphDescription": null,
+      "opengraphUrl": null,
+      "opengraphType": null,
+      "opengraphSiteName": null,
+      "opengraphLocale": null,
+      "twitterCard": null,
+      "twitterSite": null,
+      "twitterCreator": null,
+      "twitterTitle": null,
+      "twitterDescription": null,
+      "twitterUrl": null,
+      "twitterDomain": null,
+      "twitterAppCountry": null
+    },
+    {
+      "id": "5bc6af0b-2227-4850-a378-ce5226bb92f1",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "metadata example 3",
+      "description": null,
+      "keywords": null,
+      "author": null,
+      "viewport": null,
+      "opengraphTitle": null,
+      "opengraphDescription": null,
+      "opengraphUrl": null,
+      "opengraphType": null,
+      "opengraphSiteName": null,
+      "opengraphLocale": null,
+      "twitterCard": null,
+      "twitterSite": null,
+      "twitterCreator": null,
+      "twitterTitle": null,
+      "twitterDescription": null,
+      "twitterUrl": null,
+      "twitterDomain": null,
+      "twitterAppCountry": null
+    }
+  ]
+}

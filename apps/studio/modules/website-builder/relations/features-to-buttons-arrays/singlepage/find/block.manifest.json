@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.features-to-buttons-arrays.find",
+  "title": "website-builder features-to-buttons-arrays / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "relation",
+    "entity": "features-to-buttons-arrays",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.features-to-buttons-arrays",
+    "pageName": "website-builder",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

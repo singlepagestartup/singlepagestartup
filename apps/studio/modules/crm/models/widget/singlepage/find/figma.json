@@ -1,0 +1,21 @@
+{
+  "componentName": "crm.widget",
+  "pageName": "crm",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "crm.widget.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "crm/models/widget/singlepage/find",
+    "sps.figma.component": "crm.widget",
+    "sps.figma.variant": "find",
+    "sps.source.module": "crm",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/crm/models/widget/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/crm/models/widget/singlepage/find/Component.stories.tsx"
+  }
+}

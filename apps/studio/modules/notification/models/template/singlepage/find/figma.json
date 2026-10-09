@@ -1,0 +1,21 @@
+{
+  "componentName": "notification.template",
+  "pageName": "notification",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "notification.template.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "notification/models/template/singlepage/find",
+    "sps.figma.component": "notification.template",
+    "sps.figma.variant": "find",
+    "sps.source.module": "notification",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "template",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/notification/models/template/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/notification/models/template/singlepage/find/Component.stories.tsx"
+  }
+}

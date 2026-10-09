@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "crm",
+    "entity": "widgets-to-forms",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "widgetId",
+        "label": "Widget Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "crm",
+          "entity": "widget"
+        }
+      },
+      {
+        "key": "formId",
+        "label": "Form Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "crm",
+          "entity": "form"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "5b86d3af-2f9a-4a62-a304-28163a30ac8c",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "orderIndex": 0,
+      "variant": "default",
+      "className": null,
+      "widgetId": "6d10b1f6-aded-422d-a8ef-8fd9d42b7d86",
+      "formId": "e175c45e-07fe-461a-a0e1-35dfac415e09"
+    },
+    {
+      "id": "2486b5c4-926f-45f5-ad9e-43834ec42665",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "orderIndex": 1,
+      "variant": "default",
+      "className": null,
+      "widgetId": "39370f9e-0470-4096-aac0-f7454dfc5ece",
+      "formId": "d96a2c25-3795-45fe-a5c5-cdc70f7e0798"
+    },
+    {
+      "id": "c3f08de2-6001-429b-a721-93331e081691",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "orderIndex": 2,
+      "variant": "default",
+      "className": null,
+      "widgetId": "ad2bb3b9-bcce-4fb2-a6c3-a19fafe81017",
+      "formId": "fc7cd92f-7545-48c2-a88c-d31c2c64f203"
+    }
+  ]
+}

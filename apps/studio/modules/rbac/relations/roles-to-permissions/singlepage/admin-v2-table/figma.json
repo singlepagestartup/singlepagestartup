@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.roles-to-permissions",
+  "pageName": "rbac",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.roles-to-permissions.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/relations/roles-to-permissions/singlepage/admin-v2-table",
+    "sps.figma.component": "rbac.roles-to-permissions",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "roles-to-permissions",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/relations/roles-to-permissions/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/relations/roles-to-permissions/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

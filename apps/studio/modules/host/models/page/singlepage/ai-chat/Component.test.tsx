@@ -48,7 +48,7 @@ describe("Local AI Chat components", () => {
       if (visited.has(file)) return;
       visited.add(file);
       expect(file.startsWith(studio + path.sep)).toBe(true);
-      if (file.endsWith(".json")) return;
+      if (!/\.[jt]sx?$/.test(file)) return;
       for (const { fileName } of ts.preProcessFile(
         readFileSync(file, "utf8"),
         true,
@@ -56,7 +56,7 @@ describe("Local AI Chat components", () => {
       ).importedFiles) {
         expect(fileName.startsWith("@sps/")).toBe(false);
         if (!fileName.startsWith(".")) continue;
-        const target = path.resolve(path.dirname(file), fileName);
+        const target = path.resolve(path.dirname(file), fileName.split("?")[0]);
         const resolved = [
           target,
           target + ".ts",

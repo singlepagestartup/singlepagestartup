@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "notification",
+    "entity": "topics-to-notifications",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "topicId",
+        "label": "Topic Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "notification",
+          "entity": "topic"
+        }
+      },
+      {
+        "key": "notificationId",
+        "label": "Notification Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "notification",
+          "entity": "notification"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "90b5418e-122c-4e26-a360-a9a7e781ae27",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "topicId": "aa3562e4-0a05-4e7b-ae1d-5a1d9988839a",
+      "notificationId": "20df49d6-31f4-4eca-aa39-4225896f0a69"
+    },
+    {
+      "id": "b1f9c021-3dd1-4807-ae31-06d0b4c7cd36",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "topicId": "5d3325db-89f1-4002-a6fc-602e4dd4bbe2",
+      "notificationId": "72e69a99-72c2-43ae-af1c-eff54a191639"
+    },
+    {
+      "id": "56147864-5117-4d17-a8b2-69b07cb546af",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "topicId": "4ff64eae-ab63-4245-af39-bccde44be07e",
+      "notificationId": "75f3e362-05a9-450a-ac38-b52d29e33a97"
+    }
+  ]
+}

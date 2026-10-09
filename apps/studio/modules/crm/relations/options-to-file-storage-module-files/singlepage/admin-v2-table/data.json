@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "crm",
+    "entity": "options-to-file-storage-module-files",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "optionId",
+        "label": "Option Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "crm",
+          "entity": "option"
+        }
+      },
+      {
+        "key": "fileStorageModuleFileId",
+        "label": "File Storage Module File Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "file-storage",
+          "entity": "file"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "9feec07f-42c5-44e4-a3b5-467b245ff1dc",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "optionId": "1aba319e-ac3a-420c-acbe-6f1be9ef0124",
+      "fileStorageModuleFileId": "419f5780-8433-43c1-afb9-a32c6be1a79d"
+    },
+    {
+      "id": "40296811-a246-4567-ad13-870654df25b8",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "optionId": "d66eaccb-bfe0-4b87-a484-a2ebbfa2049a",
+      "fileStorageModuleFileId": "8a5fb3ae-dad4-45ae-a3be-ff10d1a2281d"
+    },
+    {
+      "id": "ba1c504b-042e-4649-a966-e27ee471e555",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "optionId": "09197f96-b109-46ca-a6fc-6d7d82c92a04",
+      "fileStorageModuleFileId": "2239cc1b-ea20-4313-a367-ee1c3ab48be1"
+    }
+  ]
+}

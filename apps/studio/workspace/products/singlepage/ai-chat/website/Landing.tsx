@@ -1,5 +1,7 @@
 import { Component as WebsiteBuilderModuleWidget } from "../../../../../modules/website-builder/models/widget/index";
 
+import { Component as SocialModuleChat } from "../../../../../modules/social/models/chat/index";
+
 import sourceText from "./page.md?raw";
 import { parseAIChatWebsite } from "./content";
 import { AccountProvider } from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-account/Account";
@@ -11,6 +13,9 @@ export default function Landing({ text }: { text?: string } = {}) {
       <WebsiteBuilderModuleWidget
         variant="ai-chat-landing"
         content={parseAIChatWebsite(text ?? sourceText)}
+        chatPreview={(content) => (
+          <SocialModuleChat variant="ai-chat-preview" content={content} />
+        )}
       />
     </AccountProvider>
   );

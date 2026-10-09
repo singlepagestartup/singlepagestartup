@@ -7,7 +7,10 @@ import {
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import defaultCopy from "./content.json";
-import { useAIChatAccount } from "../ai-chat-account/Account";
+import {
+  useAIChatAccount,
+  useAIChatProjectHref,
+} from "../ai-chat-account/Account";
 import type { IAIChatServicePageContent } from "../../../../../../workspace/utils/products/ai-chat-content";
 import {
   Feedback,
@@ -24,6 +27,7 @@ export interface ISettingsProps {
 export function Component({ copy = defaultCopy }: ISettingsProps = {}) {
   const aiChatAccount = useAIChatAccount();
   const { sections, labels } = copy;
+  const projectHref = useAIChatProjectHref();
   const id = useId();
   const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
@@ -54,7 +58,7 @@ export function Component({ copy = defaultCopy }: ISettingsProps = {}) {
   }
 
   return (
-    <ServicePage copy={copy}>
+    <ServicePage copy={copy} projectHref={projectHref}>
       <div className="grid min-w-0 gap-5">
         <PageSection section={sections.account} icon="lock-key">
           <form className="mt-6 grid max-w-xl gap-5" onSubmit={saveAccount}>

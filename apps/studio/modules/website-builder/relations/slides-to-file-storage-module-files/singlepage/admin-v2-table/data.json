@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "website-builder",
+    "entity": "slides-to-file-storage-module-files",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "slideId",
+        "label": "Slide Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "slide"
+        }
+      },
+      {
+        "key": "fileStorageModuleFileId",
+        "label": "File Storage Module File Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "file-storage",
+          "entity": "file"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "893e421b-8463-4976-ad51-57c73d5a92d7",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "slideId": "70724cee-3a95-473d-a007-861a4c16da0c",
+      "fileStorageModuleFileId": "419f5780-8433-43c1-afb9-a32c6be1a79d"
+    },
+    {
+      "id": "fe18c06a-74be-4054-a78d-afded20b4b0b",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "slideId": "3f677b6c-d46d-40ca-a41e-b6561d4f3f95",
+      "fileStorageModuleFileId": "8a5fb3ae-dad4-45ae-a3be-ff10d1a2281d"
+    },
+    {
+      "id": "0bea3a8b-d3ee-4f1f-a06c-42ca9c19b449",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "slideId": "0adc49eb-bd5e-4552-a50a-2d4e7c923386",
+      "fileStorageModuleFileId": "2239cc1b-ea20-4313-a367-ee1c3ab48be1"
+    }
+  ]
+}

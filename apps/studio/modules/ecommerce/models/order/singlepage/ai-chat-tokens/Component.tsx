@@ -1,6 +1,9 @@
 "use client";
 import { useId, useState } from "react";
-import { useAIChatAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
+import {
+  useAIChatAccount,
+  useAIChatProjectHref,
+} from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
 import {
   Button,
   Icon,
@@ -22,6 +25,7 @@ export interface ITokensProps {
 export function Component({ copy = defaultCopy }: ITokensProps = {}) {
   const aiChatAccount = useAIChatAccount();
   const { sections, labels } = copy;
+  const projectHref = useAIChatProjectHref();
   const id = useId();
   const [selected, setSelected] = useState<string | null>(null);
   const [reviewing, setReviewing] = useState(false);
@@ -31,7 +35,7 @@ export function Component({ copy = defaultCopy }: ITokensProps = {}) {
   const number = (value: number) =>
     value.toLocaleString("en-US", { maximumFractionDigits: 2 });
   return (
-    <ServicePage copy={copy}>
+    <ServicePage copy={copy} projectHref={projectHref}>
       <div className="grid min-w-0 items-start gap-6 @[900px]:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-6">
           <section className="rounded-2xl bg-sps-graphite p-6 text-white">

@@ -1,0 +1,95 @@
+{
+  "schema": {
+    "module": "rbac",
+    "entity": "subjects-to-notification-module-topics",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "subjectId",
+        "label": "Subject Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "rbac",
+          "entity": "subject"
+        }
+      },
+      {
+        "key": "notificationModuleTopicId",
+        "label": "Notification Module Topic Id",
+        "kind": "uuid",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "7c31a934-cf30-4c3a-a24d-7338262af9f1",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "subjectId": "aec49411-15f5-4727-a4f2-4b4129e0e681",
+      "notificationModuleTopicId": "28e788eb-6dda-4d3c-ab67-d9851f34c75a"
+    },
+    {
+      "id": "8c0fbfcb-0d0e-4c0a-a1a0-cd20ea3270b1",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "subjectId": "1327f822-3f06-4df7-a618-de56ee1ba282",
+      "notificationModuleTopicId": "707ec506-32af-458f-add2-5a5415e0ea82"
+    },
+    {
+      "id": "6060b54b-eeda-47a5-a8e2-c664ba65e56d",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "subjectId": "7eb64a61-5805-450e-a282-ae9e2615d510",
+      "notificationModuleTopicId": "80b03218-4a66-453f-ac73-4707d743e6e4"
+    }
+  ]
+}

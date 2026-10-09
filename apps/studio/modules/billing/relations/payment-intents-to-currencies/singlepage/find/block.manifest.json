@@ -1,0 +1,27 @@
+{
+  "id": "billing.payment-intents-to-currencies.find",
+  "title": "billing payment-intents-to-currencies / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "billing",
+    "entityType": "relation",
+    "entity": "payment-intents-to-currencies",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "billing.payment-intents-to-currencies",
+    "pageName": "billing",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

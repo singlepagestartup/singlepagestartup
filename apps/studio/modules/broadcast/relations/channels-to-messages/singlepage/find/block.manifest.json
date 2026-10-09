@@ -1,0 +1,27 @@
+{
+  "id": "broadcast.channels-to-messages.find",
+  "title": "broadcast channels-to-messages / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "broadcast",
+    "entityType": "relation",
+    "entity": "channels-to-messages",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "broadcast.channels-to-messages",
+    "pageName": "broadcast",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

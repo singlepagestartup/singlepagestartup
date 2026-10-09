@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "blog",
+    "entity": "articles-to-file-storage-module-files",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "articleId",
+        "label": "Article Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "blog",
+          "entity": "article"
+        }
+      },
+      {
+        "key": "fileStorageModuleFileId",
+        "label": "File Storage Module File Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "file-storage",
+          "entity": "file"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "e274a0bf-df57-4dbe-afd3-738d1100ccc2",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "articleId": "0ec98a3c-6e99-4b81-a730-0d36ed1f4fed",
+      "fileStorageModuleFileId": "419f5780-8433-43c1-afb9-a32c6be1a79d"
+    },
+    {
+      "id": "29971008-c6fc-4cca-a335-49cc643f27d6",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "articleId": "95811553-6412-4430-a8db-0c1be5631d80",
+      "fileStorageModuleFileId": "8a5fb3ae-dad4-45ae-a3be-ff10d1a2281d"
+    },
+    {
+      "id": "fbfcf0bb-ad64-4c00-a48d-a25515926c08",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "articleId": "7de719b9-6c7f-4925-a97f-0d4d7dae93f0",
+      "fileStorageModuleFileId": "2239cc1b-ea20-4313-a367-ee1c3ab48be1"
+    }
+  ]
+}

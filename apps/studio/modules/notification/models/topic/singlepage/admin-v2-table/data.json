@@ -1,0 +1,91 @@
+{
+  "schema": {
+    "module": "notification",
+    "entity": "topic",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "type",
+        "label": "Type",
+        "kind": "text",
+        "nullable": false,
+        "default": "info"
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "aa3562e4-0a05-4e7b-ae1d-5a1d9988839a",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "topic example 1",
+      "type": "info",
+      "adminTitle": "topic example 1",
+      "slug": "topic-example-1"
+    },
+    {
+      "id": "5d3325db-89f1-4002-a6fc-602e4dd4bbe2",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "topic example 2",
+      "type": "info",
+      "adminTitle": "topic example 2",
+      "slug": "topic-example-2"
+    },
+    {
+      "id": "4ff64eae-ab63-4245-af39-bccde44be07e",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "topic example 3",
+      "type": "info",
+      "adminTitle": "topic example 3",
+      "slug": "topic-example-3"
+    }
+  ]
+}

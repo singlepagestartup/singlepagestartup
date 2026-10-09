@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "chats-to-threads",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "chatId",
+        "label": "Chat Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "social",
+          "entity": "chat"
+        }
+      },
+      {
+        "key": "threadId",
+        "label": "Thread Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "social",
+          "entity": "thread"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "8117dfab-d98d-4bd6-ab2a-22b1ae7ed68e",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "chatId": "60eef9fe-d550-4e6c-a676-7a8e2f75fbfa",
+      "threadId": "5b7450ce-2b3a-464e-a131-5536a401bede"
+    },
+    {
+      "id": "590c3872-1fe4-4444-a29e-41d56b23e69e",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "chatId": "21bc24f5-c10a-4b2c-a81e-a81139784a92",
+      "threadId": "b3fd521c-dc85-452c-af9c-0c155bd2613c"
+    },
+    {
+      "id": "fda1d323-db2e-46a6-abda-52393b5c9190",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "chatId": "f01939e3-f3a8-49d0-a556-9a9d346d1e96",
+      "threadId": "0c3fc9db-ede4-4858-a157-68e0bc2aefb0"
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "profiles-to-chats",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "profileId",
+        "label": "Profile Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "social",
+          "entity": "profile"
+        }
+      },
+      {
+        "key": "chatId",
+        "label": "Chat Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "social",
+          "entity": "chat"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "e19b5bf5-05f4-42af-ac57-41cb9bdf79e6",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "profileId": "f92ecd7e-d9d3-48b7-a587-0ef4af63432c",
+      "chatId": "60eef9fe-d550-4e6c-a676-7a8e2f75fbfa"
+    },
+    {
+      "id": "bc334aba-e8ae-4cd4-acec-127b468e4e9f",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "profileId": "c21d0d98-ab91-4af1-a9c9-f18bba93586a",
+      "chatId": "21bc24f5-c10a-4b2c-a81e-a81139784a92"
+    },
+    {
+      "id": "0bf7dc29-8bb4-4421-a9d8-8db46a8480e7",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "profileId": "e4392e12-240c-4c14-aef5-9fe634eb958f",
+      "chatId": "f01939e3-f3a8-49d0-a556-9a9d346d1e96"
+    }
+  ]
+}

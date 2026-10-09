@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.categories-to-file-storage-module-files",
+  "pageName": "ecommerce",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.categories-to-file-storage-module-files.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/relations/categories-to-file-storage-module-files/singlepage/find",
+    "sps.figma.component": "ecommerce.categories-to-file-storage-module-files",
+    "sps.figma.variant": "find",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "categories-to-file-storage-module-files",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/relations/categories-to-file-storage-module-files/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/relations/categories-to-file-storage-module-files/singlepage/find/Component.stories.tsx"
+  }
+}

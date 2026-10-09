@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "rbac",
+    "entity": "subjects-to-roles",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "subjectId",
+        "label": "Subject Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "rbac",
+          "entity": "subject"
+        }
+      },
+      {
+        "key": "roleId",
+        "label": "Role Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "rbac",
+          "entity": "role"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "91775fa7-fe57-4cdc-ab2d-9d18d051c661",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "subjectId": "aec49411-15f5-4727-a4f2-4b4129e0e681",
+      "roleId": "33d6f66a-939e-40eb-a8a4-3dfc63564569"
+    },
+    {
+      "id": "3913337e-3aae-432e-a9f0-8686acd0c86c",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "subjectId": "1327f822-3f06-4df7-a618-de56ee1ba282",
+      "roleId": "6565bb16-696a-4310-a6c8-6eb0a93e4b81"
+    },
+    {
+      "id": "0bd8ab05-d1ad-4388-a634-8860fb11a254",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "subjectId": "7eb64a61-5805-450e-a282-ae9e2615d510",
+      "roleId": "9d4716fb-877c-445c-a75f-dadc4b5b7dad"
+    }
+  ]
+}

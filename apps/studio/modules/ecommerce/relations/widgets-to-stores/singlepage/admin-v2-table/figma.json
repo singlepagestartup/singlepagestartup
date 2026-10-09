@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.widgets-to-stores",
+  "pageName": "ecommerce",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.widgets-to-stores.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/relations/widgets-to-stores/singlepage/admin-v2-table",
+    "sps.figma.component": "ecommerce.widgets-to-stores",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "widgets-to-stores",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/relations/widgets-to-stores/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/relations/widgets-to-stores/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

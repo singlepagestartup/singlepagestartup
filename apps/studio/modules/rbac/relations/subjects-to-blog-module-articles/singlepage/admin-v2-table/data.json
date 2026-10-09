@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "rbac",
+    "entity": "subjects-to-blog-module-articles",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "subjectId",
+        "label": "Subject Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "rbac",
+          "entity": "subject"
+        }
+      },
+      {
+        "key": "blogModuleArticleId",
+        "label": "Blog Module Article Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "blog",
+          "entity": "article"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "24399413-1a8d-483a-a347-a9a744aab65d",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "subjectId": "aec49411-15f5-4727-a4f2-4b4129e0e681",
+      "blogModuleArticleId": "0ec98a3c-6e99-4b81-a730-0d36ed1f4fed"
+    },
+    {
+      "id": "85e9cadc-9900-424a-a602-79ef32b84076",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "subjectId": "1327f822-3f06-4df7-a618-de56ee1ba282",
+      "blogModuleArticleId": "95811553-6412-4430-a8db-0c1be5631d80"
+    },
+    {
+      "id": "8f43fc93-3162-4767-a873-33ce751b4b5c",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "subjectId": "7eb64a61-5805-450e-a282-ae9e2615d510",
+      "blogModuleArticleId": "7de719b9-6c7f-4925-a97f-0d4d7dae93f0"
+    }
+  ]
+}

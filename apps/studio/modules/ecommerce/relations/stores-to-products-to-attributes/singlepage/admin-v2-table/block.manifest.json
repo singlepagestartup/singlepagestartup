@@ -1,0 +1,27 @@
+{
+  "id": "ecommerce.stores-to-products-to-attributes.admin-v2-table",
+  "title": "ecommerce stores-to-products-to-attributes / admin-v2-table",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "relation",
+    "entity": "stores-to-products-to-attributes",
+    "variant": "admin-v2-table"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "ecommerce.stores-to-products-to-attributes",
+    "pageName": "ecommerce",
+    "variantName": "admin-v2-table",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

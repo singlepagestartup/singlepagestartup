@@ -1,0 +1,27 @@
+{
+  "id": "social.profiles-to-ecommerce-module-products.find",
+  "title": "social profiles-to-ecommerce-module-products / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "relation",
+    "entity": "profiles-to-ecommerce-module-products",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "social.profiles-to-ecommerce-module-products",
+    "pageName": "social",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

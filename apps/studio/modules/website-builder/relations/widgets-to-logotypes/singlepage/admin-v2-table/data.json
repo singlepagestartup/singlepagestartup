@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "website-builder",
+    "entity": "widgets-to-logotypes",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "widgetId",
+        "label": "Widget Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "widget"
+        }
+      },
+      {
+        "key": "logotypeId",
+        "label": "Logotype Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "logotype"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "17516da8-f9e3-46c0-a19a-fcfc441f30ec",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "widgetId": "cbda4e32-f16a-42cc-aeb5-447db2d06657",
+      "logotypeId": "fecc4e66-e091-4bd9-ac75-9cf84cb04a11"
+    },
+    {
+      "id": "e3ef0290-74a2-4247-acd8-d88e95a330fb",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "widgetId": "25e1e952-3583-45bd-a6b7-8491a5a83cbd",
+      "logotypeId": "04f71465-80cd-4667-a230-3a9e5324320d"
+    },
+    {
+      "id": "9dc90f3d-fbbb-4f69-a1f5-1f9e72c2e980",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "widgetId": "4709c80a-6386-44e2-aec0-8004eba02540",
+      "logotypeId": "056875c2-9dab-4ea7-a9fe-4363448aed8d"
+    }
+  ]
+}

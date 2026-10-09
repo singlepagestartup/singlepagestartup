@@ -1,11 +1,20 @@
 import { Component as WebsiteBuilderModuleWidget } from "../../index";
 
+import { Component as SocialModuleChat } from "../../../../../social/models/chat/index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 
 function Example() {
-  return <WebsiteBuilderModuleWidget variant="ai-chat-landing" />;
+  return (
+    <WebsiteBuilderModuleWidget
+      variant="ai-chat-landing"
+      chatPreview={(content) => (
+        <SocialModuleChat variant="ai-chat-preview" content={content} />
+      )}
+    />
+  );
 }
 
 const meta = {

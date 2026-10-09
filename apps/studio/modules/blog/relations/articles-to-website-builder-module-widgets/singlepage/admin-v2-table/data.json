@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "blog",
+    "entity": "articles-to-website-builder-module-widgets",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "articleId",
+        "label": "Article Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "blog",
+          "entity": "article"
+        }
+      },
+      {
+        "key": "websiteBuilderModuleWidgetId",
+        "label": "Website Builder Module Widget Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "widget"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "29531757-4b4a-48b9-ab50-5a07acc9877d",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "articleId": "0ec98a3c-6e99-4b81-a730-0d36ed1f4fed",
+      "websiteBuilderModuleWidgetId": "cbda4e32-f16a-42cc-aeb5-447db2d06657"
+    },
+    {
+      "id": "20d41be2-c82d-4e71-a4b9-2e6283358634",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "articleId": "95811553-6412-4430-a8db-0c1be5631d80",
+      "websiteBuilderModuleWidgetId": "25e1e952-3583-45bd-a6b7-8491a5a83cbd"
+    },
+    {
+      "id": "a55db3c9-3272-4ae8-a15d-e2832d8128c2",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "articleId": "7de719b9-6c7f-4925-a97f-0d4d7dae93f0",
+      "websiteBuilderModuleWidgetId": "4709c80a-6386-44e2-aec0-8004eba02540"
+    }
+  ]
+}

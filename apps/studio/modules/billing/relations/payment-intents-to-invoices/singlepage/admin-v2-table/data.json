@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "billing",
+    "entity": "payment-intents-to-invoices",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "paymentIntentId",
+        "label": "Payment Intent Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "billing",
+          "entity": "payment-intent"
+        }
+      },
+      {
+        "key": "invoiceId",
+        "label": "Invoice Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "billing",
+          "entity": "invoice"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "28b3ccc7-ada2-43c5-a746-479fc80cdb57",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "paymentIntentId": "0d4f37aa-b633-4623-a778-cb916da66de0",
+      "invoiceId": "4960a552-3455-4eb5-a4fa-8aa126ee9056"
+    },
+    {
+      "id": "c3a63cae-26f2-45de-a6e3-2cb8f8c84fe5",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "paymentIntentId": "bf8311ba-e9e1-4e7f-a9d7-b01ca2f42eb0",
+      "invoiceId": "134f87d9-e294-4929-abfb-6d367578a544"
+    },
+    {
+      "id": "2cf48383-5583-4009-a97f-85994ed52e80",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "paymentIntentId": "a28f4286-4966-4234-a49f-94578bbf4af0",
+      "invoiceId": "6b4ac83b-afce-406a-a89c-cfe142e79b72"
+    }
+  ]
+}

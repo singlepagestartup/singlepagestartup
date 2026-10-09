@@ -1,0 +1,21 @@
+{
+  "componentName": "crm.forms-to-requests",
+  "pageName": "crm",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "crm.forms-to-requests.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "crm/relations/forms-to-requests/singlepage/find",
+    "sps.figma.component": "crm.forms-to-requests",
+    "sps.figma.variant": "find",
+    "sps.source.module": "crm",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "forms-to-requests",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/crm/relations/forms-to-requests/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/crm/relations/forms-to-requests/singlepage/find/Component.stories.tsx"
+  }
+}

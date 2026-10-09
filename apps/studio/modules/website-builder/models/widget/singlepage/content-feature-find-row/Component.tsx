@@ -5,7 +5,7 @@ import {
   type ModuleIcon,
 } from "../../../../../../workspace/utils/components/ModuleIcons";
 
-import { SubjectMeCrmFormDefault } from "../../../../../rbac/models/subject/singlepage/me-crm-form-deafult/Component";
+import type { ReactNode } from "react";
 
 interface ContactItem {
   label: string;
@@ -24,13 +24,13 @@ export const defaultContentFeatureFindRowProps = {
   ] satisfies ContactItem[],
 };
 
-export type ContentFeatureFindRowProps =
-  typeof defaultContentFeatureFindRowProps;
+export interface ContentFeatureFindRowProps
+  extends Partial<typeof defaultContentFeatureFindRowProps> {
+  contactForm?: ReactNode;
+}
 
-export function ContentFeatureFindRow(
-  props?: Partial<ContentFeatureFindRowProps>,
-) {
-  const { eyebrow, title, description, contacts } = {
+export function ContentFeatureFindRow(props?: ContentFeatureFindRowProps) {
+  const { eyebrow, title, description, contacts, contactForm } = {
     ...defaultContentFeatureFindRowProps,
     ...props,
   };
@@ -69,9 +69,7 @@ export function ContentFeatureFindRow(
               ))}
             </div>
           </div>
-          <div className="min-w-0 p-6 sm:p-10">
-            <SubjectMeCrmFormDefault embedded />
-          </div>
+          <div className="min-w-0 p-6 sm:p-10">{contactForm}</div>
         </div>
       </div>
     </div>

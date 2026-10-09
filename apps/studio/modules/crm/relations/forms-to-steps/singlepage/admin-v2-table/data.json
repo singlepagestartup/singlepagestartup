@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "crm",
+    "entity": "forms-to-steps",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "formId",
+        "label": "Form Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "crm",
+          "entity": "form"
+        }
+      },
+      {
+        "key": "stepId",
+        "label": "Step Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "crm",
+          "entity": "step"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "ca8f5d01-0bea-42b1-a447-2f32bd9bd719",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "formId": "e175c45e-07fe-461a-a0e1-35dfac415e09",
+      "stepId": "2a282881-e215-4f63-a083-c07390dd36b3"
+    },
+    {
+      "id": "fd5ccedf-b3c6-42f4-a00c-c8c1bf300bea",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "formId": "d96a2c25-3795-45fe-a5c5-cdc70f7e0798",
+      "stepId": "b48a0ef3-43aa-48b0-abe6-344ae12b8026"
+    },
+    {
+      "id": "6125ba18-6aa6-49d8-a56b-daf16878372d",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "formId": "fc7cd92f-7545-48c2-a88c-d31c2c64f203",
+      "stepId": "534a1029-35a0-4e37-a04f-d53768b7cc04"
+    }
+  ]
+}

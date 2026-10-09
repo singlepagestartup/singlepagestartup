@@ -1,0 +1,21 @@
+{
+  "componentName": "knowledge.chunk",
+  "pageName": "knowledge",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "knowledge.chunk.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "knowledge/models/chunk/singlepage/find",
+    "sps.figma.component": "knowledge.chunk",
+    "sps.figma.variant": "find",
+    "sps.source.module": "knowledge",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "chunk",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/knowledge/models/chunk/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/knowledge/models/chunk/singlepage/find/Component.stories.tsx"
+  }
+}

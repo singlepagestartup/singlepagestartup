@@ -1,0 +1,27 @@
+{
+  "id": "social.profiles-to-attributes.find",
+  "title": "social profiles-to-attributes / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "relation",
+    "entity": "profiles-to-attributes",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "social.profiles-to-attributes",
+    "pageName": "social",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

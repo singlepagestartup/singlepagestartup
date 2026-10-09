@@ -1,0 +1,21 @@
+{
+  "componentName": "host.layouts-to-widgets",
+  "pageName": "host",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.layouts-to-widgets.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/relations/layouts-to-widgets/singlepage/find",
+    "sps.figma.component": "host.layouts-to-widgets",
+    "sps.figma.variant": "find",
+    "sps.source.module": "host",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "layouts-to-widgets",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/relations/layouts-to-widgets/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/relations/layouts-to-widgets/singlepage/find/Component.stories.tsx"
+  }
+}

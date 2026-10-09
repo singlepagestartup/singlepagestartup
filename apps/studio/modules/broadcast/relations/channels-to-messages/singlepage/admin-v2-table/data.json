@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "broadcast",
+    "entity": "channels-to-messages",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "channelId",
+        "label": "Channel Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "broadcast",
+          "entity": "channel"
+        }
+      },
+      {
+        "key": "messageId",
+        "label": "Message Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "broadcast",
+          "entity": "message"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "01a9b072-14d8-4a19-a161-e69488d73319",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "channelId": "e2b7c152-8e1f-4db4-a250-03c214010776",
+      "messageId": "e8e3d676-0d72-452e-ab83-76cc9c421b25"
+    },
+    {
+      "id": "5d7ca24c-26e4-4c17-a5df-afc3f839fb15",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "channelId": "804063a0-d29f-49c8-a719-b1ce59958cd8",
+      "messageId": "661466de-553e-4b41-a1de-051ceb94d0ab"
+    },
+    {
+      "id": "9c241e46-fc3a-4944-a166-9225a0bd2f2d",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "channelId": "1d09a8be-b512-4301-a5a0-f1648c95b5be",
+      "messageId": "0699d28a-c537-4321-ae43-58efb010955b"
+    }
+  ]
+}

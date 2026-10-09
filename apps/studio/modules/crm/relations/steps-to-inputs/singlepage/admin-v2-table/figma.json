@@ -1,0 +1,21 @@
+{
+  "componentName": "crm.steps-to-inputs",
+  "pageName": "crm",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "crm.steps-to-inputs.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "crm/relations/steps-to-inputs/singlepage/admin-v2-table",
+    "sps.figma.component": "crm.steps-to-inputs",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "crm",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "steps-to-inputs",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/crm/relations/steps-to-inputs/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/crm/relations/steps-to-inputs/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "skill",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "text",
+        "nullable": false,
+        "default": ""
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "7dc8ed0f-bdc9-4d5c-a3dc-ebfab3a1eb77",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "skill example 1",
+      "description": "",
+      "adminTitle": "skill example 1",
+      "slug": "skill-example-1"
+    },
+    {
+      "id": "262df973-a038-4e70-ab1a-99939e6ff816",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "skill example 2",
+      "description": "",
+      "adminTitle": "skill example 2",
+      "slug": "skill-example-2"
+    },
+    {
+      "id": "84dff4b4-b12e-48dc-adda-4e7c77cec65b",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "skill example 3",
+      "description": "",
+      "adminTitle": "skill example 3",
+      "slug": "skill-example-3"
+    }
+  ]
+}

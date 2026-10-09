@@ -1,0 +1,123 @@
+{
+  "schema": {
+    "module": "billing",
+    "entity": "invoice",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "status",
+        "label": "Status",
+        "kind": "text",
+        "nullable": false,
+        "default": "draft"
+      },
+      {
+        "key": "paymentUrl",
+        "label": "Payment Url",
+        "kind": "text",
+        "nullable": false,
+        "default": ""
+      },
+      {
+        "key": "successUrl",
+        "label": "Success Url",
+        "kind": "text",
+        "nullable": false,
+        "default": ""
+      },
+      {
+        "key": "cancelUrl",
+        "label": "Cancel Url",
+        "kind": "text",
+        "nullable": false,
+        "default": ""
+      },
+      {
+        "key": "amount",
+        "label": "Amount",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "providerId",
+        "label": "Provider Id",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "provider",
+        "label": "Provider",
+        "kind": "text",
+        "nullable": true,
+        "default": "stripe"
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "4960a552-3455-4eb5-a4fa-8aa126ee9056",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "status": "draft",
+      "paymentUrl": "",
+      "successUrl": "",
+      "cancelUrl": "",
+      "amount": 0,
+      "providerId": null,
+      "provider": "stripe"
+    },
+    {
+      "id": "134f87d9-e294-4929-abfb-6d367578a544",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "status": "draft",
+      "paymentUrl": "",
+      "successUrl": "",
+      "cancelUrl": "",
+      "amount": 0,
+      "providerId": null,
+      "provider": "stripe"
+    },
+    {
+      "id": "6b4ac83b-afce-406a-a89c-cfe142e79b72",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "status": "draft",
+      "paymentUrl": "",
+      "successUrl": "",
+      "cancelUrl": "",
+      "amount": 0,
+      "providerId": null,
+      "provider": "stripe"
+    }
+  ]
+}

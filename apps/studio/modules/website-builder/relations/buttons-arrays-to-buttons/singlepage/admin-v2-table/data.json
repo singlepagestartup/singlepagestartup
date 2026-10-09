@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "website-builder",
+    "entity": "buttons-arrays-to-buttons",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "buttonsArrayId",
+        "label": "Buttons Array Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "buttons-array"
+        }
+      },
+      {
+        "key": "buttonId",
+        "label": "Button Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "button"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "baba0e90-d45d-49f5-aa7a-41a173a4a2e1",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "buttonsArrayId": "28670e23-5835-4871-abd1-f0ba5ccc3900",
+      "buttonId": "41b3ee1b-d6aa-4008-ac1a-aee46a339f83"
+    },
+    {
+      "id": "055d0780-0763-4f7c-a88f-d0fd4feb7196",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "buttonsArrayId": "cd91b7e1-44fc-4c35-a4db-cd939217faa8",
+      "buttonId": "78d2aca9-2689-4803-a6fb-9c877dc9654e"
+    },
+    {
+      "id": "60dbf444-7e03-442b-ac09-474dca438d54",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "buttonsArrayId": "2f195e0a-833d-4a61-a189-df36ab99fe38",
+      "buttonId": "0606d7d2-256f-4d9e-a46e-6ddad48b9d78"
+    }
+  ]
+}

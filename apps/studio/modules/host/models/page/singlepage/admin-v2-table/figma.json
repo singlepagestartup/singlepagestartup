@@ -1,0 +1,21 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/models/page/singlepage/admin-v2-table",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/models/page/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/models/page/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

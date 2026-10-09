@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "rbac",
+    "entity": "subjects-to-actions",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "subjectId",
+        "label": "Subject Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "rbac",
+          "entity": "subject"
+        }
+      },
+      {
+        "key": "actionId",
+        "label": "Action Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "rbac",
+          "entity": "action"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "3a1dd731-bae6-47e0-a643-8ccc43fae537",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "subjectId": "aec49411-15f5-4727-a4f2-4b4129e0e681",
+      "actionId": "fac6468b-08ed-4116-ad76-226d59501d4f"
+    },
+    {
+      "id": "19c72a4b-b862-49dd-a62b-5a0405b651d4",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "subjectId": "1327f822-3f06-4df7-a618-de56ee1ba282",
+      "actionId": "a1273470-adea-4349-a1a2-7286a9456745"
+    },
+    {
+      "id": "131213ae-b71e-4449-a75a-9b95563dcea6",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "subjectId": "7eb64a61-5805-450e-a282-ae9e2615d510",
+      "actionId": "2d7d30ad-934e-4023-ad86-9a966d8324e3"
+    }
+  ]
+}

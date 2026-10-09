@@ -1,0 +1,21 @@
+{
+  "componentName": "agent.agent",
+  "pageName": "agent",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "agent.agent.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "agent/models/agent/singlepage/find",
+    "sps.figma.component": "agent.agent",
+    "sps.figma.variant": "find",
+    "sps.source.module": "agent",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "agent",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/agent/models/agent/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/agent/models/agent/singlepage/find/Component.stories.tsx"
+  }
+}

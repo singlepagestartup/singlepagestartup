@@ -47,6 +47,7 @@
     "studio:init": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:init --",
     "studio:validate": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:validate --",
     "studio:inventory": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:inventory --",
+    "studio:catalog": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:catalog --",
     "studio:design-system:dev": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:design-system:dev --",
     "studio:storybook": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:storybook --",
     "studio:storybook:build": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:studio:storybook:build --",

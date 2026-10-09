@@ -1,12 +1,13 @@
 "use client";
 import {
+  createContext,
+  useContext,
   useId,
   useState,
   type InputHTMLAttributes,
   type ReactNode,
 } from "react";
 import { MarkdownDocument } from "./Markdown";
-import { useAIChatProjectHref } from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-account/Account";
 import { Button, Icon, kit, SquareImage, type IconName } from "./primitives";
 import type {
   IAIChatServicePageContent,
@@ -17,6 +18,7 @@ interface IServicePageProps {
   copy: IAIChatServicePageContent;
   children: ReactNode;
   showIntro?: boolean;
+  projectHref?: string;
 }
 
 interface IAccountPageProps {
@@ -51,32 +53,36 @@ interface IFeedbackProps {
   kind?: "success" | "error" | "info";
 }
 
+const ProjectHrefContext = createContext("/ai-chat/projects/new");
+
 export function ServicePage({
   copy,
   children,
   showIntro = true,
+  projectHref = "/ai-chat/projects/new",
 }: IServicePageProps) {
-  const projectHref = useAIChatProjectHref();
   return (
-    <div
-      data-sps-theme="singlepage"
-      className="@container min-w-0 bg-sps-grey text-sps-graphite font-sps"
-    >
-      <main className="mx-auto max-w-6xl px-5 py-7 @[640px]:px-8 @[640px]:py-10">
-        <a
-          href={copy.labels["back-href"].replace(
-            "/ai-chat/projects/example",
-            projectHref,
-          )}
-          className={`mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-sps-muted hover:text-sps-graphite ${kit.focus}`}
-        >
-          <Icon name="arrow-left" />
-          {copy.labels["back-label"]}
-        </a>
-        {showIntro ? <PageIntro section={copy.sections.hero} /> : null}
-        {children}
-      </main>
-    </div>
+    <ProjectHrefContext.Provider value={projectHref}>
+      <div
+        data-sps-theme="singlepage"
+        className="@container min-w-0 bg-sps-grey text-sps-graphite font-sps"
+      >
+        <main className="mx-auto max-w-6xl px-5 py-7 @[640px]:px-8 @[640px]:py-10">
+          <a
+            href={copy.labels["back-href"].replace(
+              "/ai-chat/projects/example",
+              projectHref,
+            )}
+            className={`mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-sps-muted hover:text-sps-graphite ${kit.focus}`}
+          >
+            <Icon name="arrow-left" />
+            {copy.labels["back-label"]}
+          </a>
+          {showIntro ? <PageIntro section={copy.sections.hero} /> : null}
+          {children}
+        </main>
+      </div>
+    </ProjectHrefContext.Provider>
   );
 }
 
@@ -172,7 +178,7 @@ export function SectionText({
   tone = "light",
   size = "sm",
 }: ISectionTextProps) {
-  const projectHref = useAIChatProjectHref();
+  const projectHref = useContext(ProjectHrefContext);
   return (
     <div
       className={`space-y-3 ${size === "xs" ? "text-xs [&>div]:text-xs [&>div]:leading-relaxed" : "text-sm"} leading-relaxed [&_p]:m-0 [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-4 [&_strong]:font-semibold ${tone === "dark" ? "text-white/80 [&_a]:text-white [&_strong]:text-white" : "text-sps-muted [&_a]:text-sps-graphite [&_strong]:text-sps-graphite"}`}

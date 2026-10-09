@@ -27,7 +27,6 @@ import {
   type IRecordField,
 } from "../../../../../../../workspace/design/singlepage/interface-kit/Records";
 import { useHostStudio } from "./Context";
-import { HostRelationManager } from "./Relations";
 import { HostRecordPreview } from "./Preview";
 
 export interface IHostModelListProps {
@@ -201,7 +200,7 @@ export function HostModelForm({
   onSaved,
   embedded = false,
 }: IHostModelFormProps) {
-  const { state, update } = useHostStudio();
+  const { state, update, RelationManager } = useHostStudio();
   const [draft, setDraft] = useState(record);
   const [language, setLanguage] = useState("en");
   const [feedback, setFeedback] = useState("");
@@ -320,12 +319,12 @@ export function HostModelForm({
           </fieldset>
         )}
       </RecordForm>
-      {ownerRelations.length > 0 && (
+      {ownerRelations.length > 0 && RelationManager && (
         <div className="grid gap-5 border-t border-[var(--workspace-brand-line)] p-5">
           <h3 className="font-semibold">Connected records</h3>
           {exists ? (
             ownerRelations.map((relation) => (
-              <HostRelationManager
+              <RelationManager
                 key={relation}
                 relation={relation}
                 ownerId={record.id}

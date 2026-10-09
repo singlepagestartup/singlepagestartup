@@ -1,0 +1,27 @@
+{
+  "id": "ecommerce.products-to-website-builder-module-widgets.find",
+  "title": "ecommerce products-to-website-builder-module-widgets / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "relation",
+    "entity": "products-to-website-builder-module-widgets",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "ecommerce.products-to-website-builder-module-widgets",
+    "pageName": "ecommerce",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

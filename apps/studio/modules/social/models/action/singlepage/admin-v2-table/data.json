@@ -1,0 +1,73 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "action",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "expiresAt",
+        "label": "Expires At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "payload",
+        "label": "Payload",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "ded9b35d-db14-4e7c-a07d-92e971c3df34",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "expiresAt": "2026-01-01T00:00:00.000Z",
+      "payload": {}
+    },
+    {
+      "id": "332b3969-6e0d-4178-a795-4b607db4e1a1",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "expiresAt": "2026-01-01T00:00:00.000Z",
+      "payload": {}
+    },
+    {
+      "id": "dd9d7f08-4091-4ba6-aed8-af015d7397eb",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "expiresAt": "2026-01-01T00:00:00.000Z",
+      "payload": {}
+    }
+  ]
+}

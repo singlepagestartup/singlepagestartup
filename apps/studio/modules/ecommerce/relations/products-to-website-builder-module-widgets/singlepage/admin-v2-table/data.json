@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "ecommerce",
+    "entity": "products-to-website-builder-module-widgets",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "productId",
+        "label": "Product Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "ecommerce",
+          "entity": "product"
+        }
+      },
+      {
+        "key": "websiteBuilderModuleWidgetId",
+        "label": "Website Builder Module Widget Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "website-builder",
+          "entity": "widget"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "78952d78-8174-4fd9-aa5f-6949255e9e4c",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "productId": "fb74f941-d8a8-4f0a-a20d-4b53ad0537ec",
+      "websiteBuilderModuleWidgetId": "cbda4e32-f16a-42cc-aeb5-447db2d06657"
+    },
+    {
+      "id": "d7e3adc7-bd90-4a43-ac72-39071133d33d",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "productId": "783bbfd8-4d2c-4f44-a022-6759d33cfd1c",
+      "websiteBuilderModuleWidgetId": "25e1e952-3583-45bd-a6b7-8491a5a83cbd"
+    },
+    {
+      "id": "7d2318f3-b5b3-48d9-affd-ccac1d62656a",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "productId": "235e7f65-d427-4740-a4db-4453dffbeeed",
+      "websiteBuilderModuleWidgetId": "4709c80a-6386-44e2-aec0-8004eba02540"
+    }
+  ]
+}

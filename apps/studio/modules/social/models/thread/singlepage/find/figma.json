@@ -1,0 +1,21 @@
+{
+  "componentName": "social.thread",
+  "pageName": "social",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.thread.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/models/thread/singlepage/find",
+    "sps.figma.component": "social.thread",
+    "sps.figma.variant": "find",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "thread",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/models/thread/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/models/thread/singlepage/find/Component.stories.tsx"
+  }
+}

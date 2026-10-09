@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.subjects-to-identities",
+  "pageName": "rbac",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.subjects-to-identities.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/relations/subjects-to-identities/singlepage/find",
+    "sps.figma.component": "rbac.subjects-to-identities",
+    "sps.figma.variant": "find",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "subjects-to-identities",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/relations/subjects-to-identities/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/relations/subjects-to-identities/singlepage/find/Component.stories.tsx"
+  }
+}

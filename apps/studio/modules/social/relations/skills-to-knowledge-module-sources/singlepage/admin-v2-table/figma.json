@@ -1,0 +1,21 @@
+{
+  "componentName": "social.skills-to-knowledge-module-sources",
+  "pageName": "social",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.skills-to-knowledge-module-sources.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/relations/skills-to-knowledge-module-sources/singlepage/admin-v2-table",
+    "sps.figma.component": "social.skills-to-knowledge-module-sources",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "social",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "skills-to-knowledge-module-sources",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/relations/skills-to-knowledge-module-sources/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/relations/skills-to-knowledge-module-sources/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "profiles-to-messages",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "profileId",
+        "label": "Profile Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "social",
+          "entity": "profile"
+        }
+      },
+      {
+        "key": "messageId",
+        "label": "Message Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "social",
+          "entity": "message"
+        }
+      },
+      {
+        "key": "isRead",
+        "label": "Is Read",
+        "kind": "boolean",
+        "nullable": false,
+        "default": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "8ef35acd-be99-40d6-a6a5-bfc39f9bdb72",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "profileId": "f92ecd7e-d9d3-48b7-a587-0ef4af63432c",
+      "messageId": "019b1fc0-e84a-45d0-aec0-fd945147d19b",
+      "isRead": false
+    },
+    {
+      "id": "28e94deb-a980-47a9-a85c-e497b289bb36",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "profileId": "c21d0d98-ab91-4af1-a9c9-f18bba93586a",
+      "messageId": "206ca1f4-ca6e-4f4d-a41d-56554cd24e0a",
+      "isRead": false
+    },
+    {
+      "id": "9874ae3e-a1eb-4ac1-a22c-7a9a7d4e50a4",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "profileId": "e4392e12-240c-4c14-aef5-9fe634eb958f",
+      "messageId": "d1bb8605-ca01-4b3c-ab0f-4001f762c953",
+      "isRead": false
+    }
+  ]
+}

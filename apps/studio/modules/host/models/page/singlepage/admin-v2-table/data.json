@@ -1,0 +1,112 @@
+{
+  "schema": {
+    "module": "host",
+    "entity": "page",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": false,
+        "default": "Page"
+      },
+      {
+        "key": "url",
+        "label": "Url",
+        "kind": "text",
+        "nullable": false,
+        "default": "/"
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "text",
+        "nullable": true,
+        "default": "Description"
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "language",
+        "label": "Language",
+        "kind": "text",
+        "nullable": false,
+        "default": "en"
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "b1c9d8d1-6a1b-413f-a3ce-296c18e541a3",
+      "title": "page example 1",
+      "url": "/",
+      "description": "Description",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "className": null,
+      "language": "en",
+      "adminTitle": "page example 1"
+    },
+    {
+      "id": "d3c21332-aede-44ec-ac6d-bb646da21ff5",
+      "title": "page example 2",
+      "url": "/",
+      "description": "Description",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "className": null,
+      "language": "en",
+      "adminTitle": "page example 2"
+    },
+    {
+      "id": "70412fef-7b2e-4d9b-a0d4-c08071bd675c",
+      "title": "page example 3",
+      "url": "/",
+      "description": "Description",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "className": null,
+      "language": "en",
+      "adminTitle": "page example 3"
+    }
+  ]
+}

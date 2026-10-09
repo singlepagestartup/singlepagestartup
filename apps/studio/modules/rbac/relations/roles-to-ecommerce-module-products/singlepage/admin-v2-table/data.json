@@ -1,0 +1,95 @@
+{
+  "schema": {
+    "module": "rbac",
+    "entity": "roles-to-ecommerce-module-products",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "roleId",
+        "label": "Role Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "rbac",
+          "entity": "role"
+        }
+      },
+      {
+        "key": "ecommerceModuleProductId",
+        "label": "Ecommerce Module Product Id",
+        "kind": "uuid",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "aa2b5bd0-d6a0-46d7-a0ae-bb9ada416ec4",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "roleId": "33d6f66a-939e-40eb-a8a4-3dfc63564569",
+      "ecommerceModuleProductId": "48ef5602-f1cd-4415-a3e6-17d8e2b18fda"
+    },
+    {
+      "id": "a08d6797-c44a-4d7b-a0ae-7d8bef3a8296",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "roleId": "6565bb16-696a-4310-a6c8-6eb0a93e4b81",
+      "ecommerceModuleProductId": "c66237e1-da8a-4541-ad3b-abae38319cdd"
+    },
+    {
+      "id": "ec738af5-a01b-4bc9-ab20-8a383157705e",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "roleId": "9d4716fb-877c-445c-a75f-dadc4b5b7dad",
+      "ecommerceModuleProductId": "c5b1345a-672e-4c96-aa07-b349fc12ad7e"
+    }
+  ]
+}

@@ -14,7 +14,7 @@ function files(directory: string): string[] {
 }
 
 function resolve(file: string, specifier: string) {
-  const target = path.resolve(path.dirname(file), specifier);
+  const target = path.resolve(path.dirname(file), specifier.split("?")[0]);
   const resolved = [
     target,
     target + ".ts",
@@ -28,6 +28,7 @@ function resolve(file: string, specifier: string) {
 }
 
 function runtimeImports(file: string) {
+  if (!/\.[jt]sx?$/.test(file)) return [];
   const tree = ts.createSourceFile(
     file,
     readFileSync(file, "utf8"),

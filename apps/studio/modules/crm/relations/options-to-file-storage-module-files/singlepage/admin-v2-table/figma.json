@@ -1,0 +1,21 @@
+{
+  "componentName": "crm.options-to-file-storage-module-files",
+  "pageName": "crm",
+  "variantName": "admin-v2-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "crm.options-to-file-storage-module-files.admin-v2-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "crm/relations/options-to-file-storage-module-files/singlepage/admin-v2-table",
+    "sps.figma.component": "crm.options-to-file-storage-module-files",
+    "sps.figma.variant": "admin-v2-table",
+    "sps.source.module": "crm",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "options-to-file-storage-module-files",
+    "sps.source.variant": "admin-v2-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/crm/relations/options-to-file-storage-module-files/singlepage/admin-v2-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/crm/relations/options-to-file-storage-module-files/singlepage/admin-v2-table/Component.stories.tsx"
+  }
+}

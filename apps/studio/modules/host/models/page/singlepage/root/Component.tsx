@@ -12,6 +12,8 @@ import { FooterDefault } from "../../../../../website-builder/models/widget/sing
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 import { SectionStack } from "../../../../../../workspace/design/singlepage/interface-kit/SectionStack";
 
+import { Component as RbacModuleSubject } from "../../../../../rbac/models/subject/index";
+
 export function HomeDefault() {
   return (
     <main
@@ -29,7 +31,11 @@ export function HomeDefault() {
         <ContentFeatureFindTestimotionals />
         <ArticleFindDefault />
         <ContentCta />
-        <ContentFeatureFindRow />
+        <ContentFeatureFindRow
+          contactForm={
+            <RbacModuleSubject variant="me-crm-form-deafult" embedded />
+          }
+        />
       </SectionStack>
       <FooterDefault />
     </main>

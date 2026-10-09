@@ -1,0 +1,21 @@
+{
+  "componentName": "file-storage.file",
+  "pageName": "file-storage",
+  "variantName": "find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "file-storage.file.find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "file-storage/models/file/singlepage/find",
+    "sps.figma.component": "file-storage.file",
+    "sps.figma.variant": "find",
+    "sps.source.module": "file-storage",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "file",
+    "sps.source.variant": "find",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/file-storage/models/file/singlepage/find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/file-storage/models/file/singlepage/find/Component.stories.tsx"
+  }
+}

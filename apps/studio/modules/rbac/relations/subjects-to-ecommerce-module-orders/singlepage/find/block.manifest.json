@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subjects-to-ecommerce-module-orders.find",
+  "title": "rbac subjects-to-ecommerce-module-orders / find",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "relation",
+    "entity": "subjects-to-ecommerce-module-orders",
+    "variant": "find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subjects-to-ecommerce-module-orders",
+    "pageName": "rbac",
+    "variantName": "find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

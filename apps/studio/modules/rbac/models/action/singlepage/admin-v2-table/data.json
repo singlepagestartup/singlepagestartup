@@ -1,0 +1,82 @@
+{
+  "schema": {
+    "module": "rbac",
+    "entity": "action",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "expiresAt",
+        "label": "Expires At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "payload",
+        "label": "Payload",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "consumedAt",
+        "label": "Consumed At",
+        "kind": "timestamp",
+        "nullable": true
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "fac6468b-08ed-4116-ad76-226d59501d4f",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "expiresAt": "2026-01-01T00:00:00.000Z",
+      "payload": {},
+      "consumedAt": null
+    },
+    {
+      "id": "a1273470-adea-4349-a1a2-7286a9456745",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "expiresAt": "2026-01-01T00:00:00.000Z",
+      "payload": {},
+      "consumedAt": null
+    },
+    {
+      "id": "2d7d30ad-934e-4023-ad86-9a966d8324e3",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "expiresAt": "2026-01-01T00:00:00.000Z",
+      "payload": {},
+      "consumedAt": null
+    }
+  ]
+}

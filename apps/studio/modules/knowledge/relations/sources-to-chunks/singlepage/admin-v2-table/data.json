@@ -1,0 +1,99 @@
+{
+  "schema": {
+    "module": "knowledge",
+    "entity": "sources-to-chunks",
+    "entityType": "relation",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "orderIndex",
+        "label": "Order Index",
+        "kind": "integer",
+        "nullable": false,
+        "default": 0
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "sourceId",
+        "label": "Source Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "knowledge",
+          "entity": "source"
+        }
+      },
+      {
+        "key": "chunkId",
+        "label": "Chunk Id",
+        "kind": "uuid",
+        "nullable": false,
+        "target": {
+          "module": "knowledge",
+          "entity": "chunk"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "bbc13c32-038b-417b-a814-5ba625fc9ef8",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 0,
+      "className": null,
+      "sourceId": "29d0ea8c-9f73-4ff8-a6cf-e9c232b0c34a",
+      "chunkId": "81305d3f-1c22-4bad-a0db-28ad73758e63"
+    },
+    {
+      "id": "42071202-f782-4d5e-abf8-f62f240d52fa",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 1,
+      "className": null,
+      "sourceId": "5265d427-b593-4193-a164-9e7fcb84836b",
+      "chunkId": "a31a256f-af31-42ef-a7e3-44d99af9ff3d"
+    },
+    {
+      "id": "f99992f4-f77c-4d7e-a8c0-bf697f220bb0",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "orderIndex": 2,
+      "className": null,
+      "sourceId": "5d225017-9edf-4212-ac56-6b8c6c197460",
+      "chunkId": "88709c2a-5f41-45f0-a4c1-c1a3d04fc215"
+    }
+  ]
+}

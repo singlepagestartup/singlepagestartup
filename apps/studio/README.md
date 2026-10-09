@@ -14,7 +14,7 @@ helpers live in `apps/studio/workspace/utils/`.
 The workspace-specific operating guide is
 `apps/studio/workspace/README.md` and is also rendered as
 `Workspace/README` in Storybook.
-Each story imports its corresponding `singlepage` and `startup` sources directly;
+Workspace stories resolve their corresponding `singlepage` and `startup` sources;
 Studio does not create a second content inventory.
 `apps/studio/workspace/utils/index/<layer>.yaml` remains the artifact/dependency
 registry and points to those files. No repository-root `workspace/` directory
@@ -50,6 +50,7 @@ npm run studio:dev -- runnable/startup/singlepagestartup
 npm run studio:init -- runnable/startup/landing-v1
 npm run studio:validate
 npm run studio:inventory
+npm run studio:catalog
 npm run studio:storybook
 npm run studio:storybook:build
 npm run studio:presentation:export
@@ -77,6 +78,30 @@ production module variant contracts and Studio manifests. It also creates missin
 keeping empty directories in Git with `.gitkeep`. Existing components and project
 overrides are preserved. Both Storybook commands run this preparation before
 starting or building. Workspace documents are not copied into generated JSON.
+
+`studio:catalog` adds local record projections for all production models and
+relations except Telegram. Run it in the full checkout when adding an entity.
+It reads schema syntax without importing or executing production code. Synthetic
+records, serialized dates and foreign keys live in each entity's
+`singlepage/admin-v2-table/data.json`; their local contract is in `interface.ts`.
+The command preserves existing data and variant implementations. Changes to a
+schema require updating the owned fixture and interface; catalog tests report
+their mismatch.
+
+Every model and relation has a public `Component` exported by `index.ts`. Its
+`variants.ts` merges `singlepage/variants.ts` and `startup/variants.ts`, with
+startup taking precedence. Existing visual variants remain available through
+these entries. The catalog adds `admin-v2-table` and `find`, and models also have
+`admin-v2-card`. This covers entity navigation and record inspection; the remaining
+production variants stay in inventory for further visual design.
+
+The local `find` accepts `apiProps.params.filters.and` entries with `column`,
+`method` and `value`. Its render callback receives `{ data }`. Existing AI Chat
+find variants retain their own local provider contracts. Cross-model calls use
+the public model entry; private variants of the same entity may import siblings.
+Stories for new projections use the public entry and include filtered and empty
+find results. Neither the views nor the standalone Storybook build requires
+production libraries or a running API.
 
 `studio:presentation:export` builds the resolved semantic React/HTML presentation,
 resolves `singlepage` or `startup` from repository identity, and writes a
