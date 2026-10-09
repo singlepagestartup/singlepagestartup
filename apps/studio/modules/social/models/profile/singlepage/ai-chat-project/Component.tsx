@@ -13,6 +13,7 @@ import {
 import { Component as ProfileChats } from "../../../../relations/profiles-to-chats/singlepage/ai-chat-find/index";
 import { Component as ChatWorkspace } from "../../../chat/singlepage/ai-chat-workspace/index";
 import { ThreadHeader } from "../../../thread/singlepage/ai-chat-workspace/index";
+import { Component as ThreadCreate } from "../../../thread/singlepage/ai-chat-create/index";
 import { FilesProvider } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
 import { SourceProvider } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/Source";
 import { SourceDownload } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/index";
@@ -34,6 +35,7 @@ export function Component(props: IProjectProfileProps) {
 function ProfileContent({ data, active, onRename }: IProjectProfileProps) {
   const id = useId();
   const [settings, setSettings] = useState(false);
+  const [creatingThread, setCreatingThread] = useState(false);
   const [name, setName] = useState(data.name);
   const [saved, setSaved] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -53,10 +55,17 @@ function ProfileContent({ data, active, onRename }: IProjectProfileProps) {
   }, []);
   const openSettings = useCallback(() => {
     setSettings(true);
+    setCreatingThread(false);
     setMobileOpen(false);
   }, []);
   const openDocument = useCallback(() => {
     setSettings(false);
+    setCreatingThread(false);
+    setMobileOpen(false);
+  }, []);
+  const openThreadCreate = useCallback(() => {
+    setSettings(false);
+    setCreatingThread(true);
     setMobileOpen(false);
   }, []);
   const sidebarContent = (
@@ -64,8 +73,10 @@ function ProfileContent({ data, active, onRename }: IProjectProfileProps) {
       name={data.name}
       mobile={isMobile}
       settingsSelected={settings}
+      creatingThread={creatingThread}
       onSettings={openSettings}
       onDocument={openDocument}
+      onNewThread={openThreadCreate}
     />
   );
   const toggle = isMobile ? (
@@ -146,6 +157,19 @@ function ProfileContent({ data, active, onRename }: IProjectProfileProps) {
             </aside>
           )}
           <div className="flex min-h-0 min-w-0 flex-col">
+            {creatingThread && (
+              <section
+                aria-label="Create thread"
+                className="flex min-h-0 flex-1 flex-col"
+              >
+                <ThreadHeader
+                  title="New thread"
+                  label="Thread"
+                  navigation={toggle}
+                />
+                <ThreadCreate onCancel={openDocument} />
+              </section>
+            )}
             {settings && (
               <section
                 aria-label="Project settings"
@@ -192,8 +216,8 @@ function ProfileContent({ data, active, onRename }: IProjectProfileProps) {
               </section>
             )}
             <div
-              hidden={settings}
-              className={`${settings ? "hidden" : "flex"} min-h-0 flex-1 flex-col`}
+              hidden={settings || creatingThread}
+              className={`${settings || creatingThread ? "hidden" : "flex"} min-h-0 flex-1 flex-col`}
             >
               <ProfileChats
                 variant="find"

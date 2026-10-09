@@ -192,7 +192,9 @@ and the two Profile-to-Chat links. Account pages return to the selected Profile.
 The active project prototype has one Products.md document, one prepared Thread,
 one Knowledge Source and one product assistant using Social Skill `ai-chat-products`.
 Creation needs a profile name; the Thread is available immediately. Separate product
-creation and additional conversations remain later design work.
+creation remains later design work. New thread opens a local creation preview with
+a name, one agent selector and Cancel. Submitting only shows preview feedback;
+it does not create Thread, Chat or Message records.
 
 Profile `ai-chat-project` owns its name, settings and responsive navigation. It
 composes File and Source providers with one Chat. The outer workspace stores only
@@ -220,7 +222,7 @@ Source-to-File find filters links by sourceId and orders them by orderIndex; eac
 Source/File pair is unique. File views receive IDs and resolve records locally.
 Upload supports multiple files; detach preserves the File pool so an existing
 File can be attached again. Message attachments use the same pool. Providers stay
-mounted when switching projects or opening settings, retaining separate state.
+mounted when switching projects or opening settings/the creation preview, retaining separate state.
 
 Relation views use `variant="find"` and `apiProps.params.filters.and`. Model-local
 providers and story fixtures simulate data access in Studio. The earlier aggregate

@@ -6,7 +6,7 @@
 
 ## Текущее устройство
 
-Активная страница содержит один Products.md, один подготовленный Thread, один Knowledge Source и одного Product assistant с Social Skill `ai-chat-products`. Working On предлагает Whole document и Products. Создание Profile сразу готовит эти модели. Кнопка New thread видна в навигации проекта; создание треда пока не реализовано. Дополнительных документов, карточек и выбора агентов на этой странице нет. Отдельные старые варианты и агрегатные адаптеры остаются примерами и тестами; активная страница их не использует.
+Активная страница содержит один Products.md, один подготовленный Thread, один Knowledge Source и одного Product assistant с Social Skill `ai-chat-products`. Working On предлагает Whole document и Products. Создание Profile сразу готовит эти модели. New thread открывает страницу создания: название, выбор Product assistant, просмотр его навыка, Create thread и Cancel. Submit показывает только feedback предпросмотра; Thread/Chat/Message records не создаются. Cancel возвращает в Products. Дополнительных документов, карточек и выбора агентов на этой странице нет. Отдельные старые варианты и агрегатные адаптеры остаются примерами и тестами; активная страница их не использует.
 
 Studio содержит собственные интерфейсы, React components, stories и локальные операции. Production imports, SDK и статика не нужны для сборки. Все 43 варианта AI Chat реализованы в Component.tsx; index.ts экспортирует Component, типы и нужные helpers. View.tsx удалены, прежние story IDs и маршруты сохранены.
 
@@ -23,7 +23,7 @@ Profile ai-chat-workspace хранит только `{id, name, variant}` и с�
 
 Каждое отправленное сообщение сохраняет снимок текущего Source и использованных Files; последующие правки и detach историю не меняют. Предложение применяется явно к Source. Если после отправки Source изменён вручную, применение отклоняется с подсказкой отправить новое сообщение. Review gates отсутствуют. Cmd/Ctrl Enter отправляет сообщение, обычный Enter остаётся переносом строки.
 
-Мобильный sidebar открывается под navbar; navbar и его меню доступны. Thread header sticky. Conversation имеет минимальную мобильную высоту 50dvh. Chat/Document переключаются на узком экране, на широком видны рядом. Thread остаётся смонтированным при переходе в настройки, сохраняя черновик и историю.
+Мобильный sidebar открывается под navbar; navbar и его меню доступны. Thread header sticky. Conversation имеет минимальную мобильную высоту 50dvh. Chat/Document переключаются на узком экране, на широком видны рядом. Thread остаётся смонтированным при переходе в настройки и форму создания, сохраняя черновик и историю.
 
 Независимые persistence, API, tools и векторный поиск остаются последующей работой. Studio не анализирует и не индексирует вложения; ответы и предложения — локальная демонстрация. Source не содержит documentId или вложенный массив Files. Chunks остаются производными записями поиска.
 
@@ -33,7 +33,7 @@ Profile ai-chat-workspace хранит только `{id, name, variant}` и с�
 
 `npm run studio:validate` успешен. Report-mode pipeline показывает четыре approval gaps в параллельно редактируемых бизнес-документах и ноль structural gaps; статусы подтверждения не менялись. Логи: `/private/tmp/studio-slim-tests-final.log`, `/private/tmp/studio-slim-types-final.log`, `/private/tmp/studio-slim-validate.log`, `/private/tmp/studio-slim-storybook-final.log`.
 
-Browser проверяет один Products/Thread/Source, два Working On options, один агент и навык, Ctrl/Meta Enter, редактор и применение proposal, два uploads и scoped detach с сохранённой историей. Переключение проектов сохраняет независимые знания, Files, историю и черновики. Новый Profile сразу получает Products. Mobile проверяет доступность navbar при открытом sidebar, переключение Chat/Document и отсутствие горизонтального overflow. Console errors/warnings отсутствуют. Скриншот: `/private/tmp/studio-products-models-ui.jpg`. Storybook работает на 4321; временный browser tab закрыт, viewport override снят.
+Browser проверяет один Products/Thread/Source, два Working On options, один агент и навык, Ctrl/Meta Enter, редактор и применение proposal, два uploads и scoped detach с сохранённой историей. Переключение проектов сохраняет независимые знания, Files, историю и черновики. Новый Profile сразу получает Products. Mobile проверяет доступность navbar при открытом sidebar, переключение Chat/Document и отсутствие горизонтального overflow. Console errors/warnings отсутствуют. Последующий шаг формы создания проверен отдельно: Studio TypeScript, 10 scoped tests, desktop/mobile переходы, выбор агента и просмотр навыка, submit без новой записи, Cancel и отсутствие console errors/warnings. Скриншоты: `/private/tmp/studio-products-models-ui.jpg` и `/private/tmp/studio-thread-create-preview.png`. Storybook работает на 4321; временный browser tab закрыт, viewport override снят.
 
 Host сохраняет четыре локальные модели и пять отношений с CRUD, composition и nested editors. Предыдущая production Host build прошла с NODE_OPTIONS=--max-old-space-size=8192; Next lint отключён текущей конфигурацией. Лог: `/private/tmp/studio-correction-host-final.log`. Текущий шаг production не меняет и Host build не повторяет. Ранее вошедшие в PR Knowledge/MCP изменения сохраняются.
 

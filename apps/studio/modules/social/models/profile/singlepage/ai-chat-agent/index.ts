@@ -6,4 +6,6 @@ export {
   type IAgentPickerProps,
   ProjectAgentAvatar,
   ProjectAgentPicker,
+  ThreadAgentSelect,
+  type IThreadAgentSelectProps,
 } from "./Component";

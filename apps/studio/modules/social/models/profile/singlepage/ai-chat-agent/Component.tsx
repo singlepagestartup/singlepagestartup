@@ -39,6 +39,42 @@ export interface IAgentPickerProps {
   onChange: (agent: IProjectAgent | null) => void;
   onSave: (agent: IProjectAgent) => void;
 }
+export interface IThreadAgentSelectProps {
+  onChange: (selected: boolean) => void;
+}
+
+export function ThreadAgentSelect({ onChange }: IThreadAgentSelectProps) {
+  const [agentId, setAgentId] = useState("");
+  const [profile, setProfile] = useState<IProjectAgent | null>(null);
+  return (
+    <fieldset className="min-w-0 space-y-3">
+      <legend className={kit.label}>Agent</legend>
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <Select
+            aria-label="Thread agent"
+            placeholder="Select an agent"
+            value={agentId}
+            onValueChange={(value) => {
+              setAgentId(value);
+              onChange(value === productsAgent.id);
+            }}
+            options={[{ value: productsAgent.id, label: productsAgent.name }]}
+          />
+        </div>
+        {agentId && (
+          <ProjectAgentAvatar agent={productsAgent} onSelect={setProfile} />
+        )}
+      </div>
+      <p className="text-xs leading-5 text-sps-muted">
+        {agentId
+          ? productsAgent.description
+          : "Choose the agent for this conversation."}
+      </p>
+      <Component agent={profile} onClose={() => setProfile(null)} />
+    </fieldset>
+  );
+}
 
 export function ProjectAgentAvatar({ agent, onSelect }: IAgentAvatarProps) {
   return (

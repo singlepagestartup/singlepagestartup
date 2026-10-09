@@ -2,7 +2,7 @@ import { Component } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
 
 function Example() {
-  return <Component onCreate={() => {}} />;
+  return <Component onCancel={() => {}} />;
 }
 
 const meta = {
