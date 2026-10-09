@@ -9,7 +9,7 @@ import {
   sourceUserContext,
   sourceAttachmentAssets,
 } from "./ai-chat-knowledge";
-import { SourceSection } from "../../../modules/knowledge/models/source/singlepage/ai-chat-section/View";
+import { Component as SourceSection } from "../../../modules/knowledge/models/source/singlepage/ai-chat-section/index";
 
 const files: IProjectFile[] = [
   {

@@ -1,1 +1,1 @@
-export { SubjectAccount as Component } from "./View";
+export { Component, type ISubjectAccountProps } from "./Component";

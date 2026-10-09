@@ -1,1 +1,5 @@
-export { default as Component } from "./View";
+export {
+  Component,
+  type IRegisterProps,
+  type IRegisterErrors,
+} from "./Component";

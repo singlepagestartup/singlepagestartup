@@ -1,1 +1,1 @@
-export { SourceDocumentNavigation as Component } from "./View";
+export { Component, type ISourceDocumentNavigationProps } from "./Component";

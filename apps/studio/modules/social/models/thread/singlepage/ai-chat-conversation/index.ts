@@ -1,1 +1,1 @@
-export { ProjectConversation as Component } from "./View";
+export { Component, type IConversationProps } from "./Component";

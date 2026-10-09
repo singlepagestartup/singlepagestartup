@@ -1,1 +1,1 @@
-export { ProjectThreadButton as Component } from "./View";
+export { Component, type IThreadButtonProps } from "./Component";

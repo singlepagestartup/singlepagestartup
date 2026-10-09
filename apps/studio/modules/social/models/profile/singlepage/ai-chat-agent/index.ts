@@ -1,1 +1,8 @@
-export { ProjectAgentProfile as Component } from "./View";
+export {
+  Component,
+  type IAgentProfileProps,
+  type IAgentAvatarProps,
+  type IAgentPickerProps,
+  ProjectAgentAvatar,
+  ProjectAgentPicker,
+} from "./Component";

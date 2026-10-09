@@ -1,1 +1,1 @@
-export { SourceFiles as Component } from "./View";
+export { Component, type ISourceFilesProps } from "./Component";

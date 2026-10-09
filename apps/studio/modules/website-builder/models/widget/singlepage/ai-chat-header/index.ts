@@ -1,1 +1,5 @@
-export { default as Component } from "./View";
+export {
+  Component,
+  type IHeaderNavigationProps,
+  type IAccountHeaderProps,
+} from "./Component";

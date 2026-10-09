@@ -1,25 +1,13 @@
-import { Component as View } from "./index";
-import { projectThreadGraph } from "../../../../../../workspace/utils/products/ai-chat-threads";
-import { aiChatProjectFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
-export function Component() {
-  const graph = projectThreadGraph(aiChatProjectFixture());
-  return (
-    <View
-      variant="find"
-      data={graph.threadMessages}
-      apiProps={{
-        params: {
-          filters: {
-            and: [
-              { column: "threadId", method: "eq", value: graph.threads[0].id },
-            ],
-          },
-        },
-      }}
-    >
-      {(relations) => (
-        <pre className="p-4 text-sm">{JSON.stringify(relations, null, 2)}</pre>
-      )}
-    </View>
-  );
+import { Fragment, type ReactNode } from "react";
+import {
+  findLocalRelations,
+  type ILocalFindProps,
+} from "../../../../../../workspace/utils/products/ai-chat-models";
+import type { IThreadMessageRelation } from "../../../../../../workspace/utils/products/ai-chat-threads";
+export interface IThreadMessagesProps
+  extends ILocalFindProps<IThreadMessageRelation> {
+  children: (relations: IThreadMessageRelation[]) => ReactNode;
+}
+export function Component(props: IThreadMessagesProps) {
+  return <Fragment>{props.children(findLocalRelations(props))}</Fragment>;
 }

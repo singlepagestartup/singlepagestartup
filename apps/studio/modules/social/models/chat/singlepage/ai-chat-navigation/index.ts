@@ -1,1 +1,1 @@
-export { ChatNavigation as Component } from "./View";
+export { Component, type IChatNavigationProps } from "./Component";

@@ -1,11 +1,17 @@
+import { Component } from "./index";
+import content from "../../../../../website-builder/models/widget/singlepage/ai-chat-landing/content.json";
 import type { Meta, StoryObj } from "@storybook/react";
-import { Component } from "./Component";
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
+
+function Example() {
+  return <Component content={content} />;
+}
+
 const meta = {
   id: "modules-social-models-chat-singlepage-ai-chat-preview",
   title: "Modules/Social/Models/Chat/Singlepage/ai-chat-preview",
-  component: Component,
+  component: Example,
   parameters: { layout: "fullscreen" },
   decorators: [
     (Story) => (
@@ -14,6 +20,6 @@ const meta = {
       </AccountProvider>
     ),
   ],
-} satisfies Meta<typeof Component>;
+} satisfies Meta<typeof Example>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};

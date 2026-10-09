@@ -1,1 +1,1 @@
-export { ChatThreads as Component } from "./View";
+export { Component, type IChatThreadsProps } from "./Component";

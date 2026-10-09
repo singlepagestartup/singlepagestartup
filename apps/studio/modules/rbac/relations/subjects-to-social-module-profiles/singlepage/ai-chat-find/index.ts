@@ -1,1 +1,1 @@
-export { SubjectProfiles as Component } from "./View";
+export { Component, type ISubjectProfilesProps } from "./Component";

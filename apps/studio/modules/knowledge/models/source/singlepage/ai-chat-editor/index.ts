@@ -1,1 +1,1 @@
-export { ProjectSourceEditor as Component } from "./View";
+export { Component, type IDocumentEditorProps } from "./Component";

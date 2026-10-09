@@ -1,4 +1,4 @@
-export { ProjectComposer } from "../../../../../../modules/social/models/thread/singlepage/ai-chat-composer/View";
-export { ProjectConversation } from "../../../../../../modules/social/models/thread/singlepage/ai-chat-conversation/View";
-export { ProjectSourceEditor } from "../../../../../../modules/knowledge/models/source/singlepage/ai-chat-editor/View";
-export { ProjectThreadButton } from "../../../../../../modules/social/models/thread/singlepage/ai-chat-sidebar-item/View";
+export { Component as ProjectComposer } from "../../../../../../modules/social/models/thread/singlepage/ai-chat-composer/index";
+export { Component as ProjectConversation } from "../../../../../../modules/social/models/thread/singlepage/ai-chat-conversation/index";
+export { Component as ProjectSourceEditor } from "../../../../../../modules/knowledge/models/source/singlepage/ai-chat-editor/index";
+export { Component as ProjectThreadButton } from "../../../../../../modules/social/models/thread/singlepage/ai-chat-sidebar-item/index";

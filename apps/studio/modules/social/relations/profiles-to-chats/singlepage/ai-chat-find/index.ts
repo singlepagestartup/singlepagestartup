@@ -1,1 +1,1 @@
-export { ProfileChats as Component } from "./View";
+export { Component, type IProfileChatsProps } from "./Component";

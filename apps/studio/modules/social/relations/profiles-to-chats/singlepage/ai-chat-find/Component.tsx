@@ -1,26 +1,15 @@
-import { Component as View } from "./index";
-export function Component() {
-  return (
-    <View
-      variant="find"
-      data={[
-        {
-          id: "profile-chat",
-          profileId: "current-user",
-          chatId: "pottery:project-chat",
-        },
-      ]}
-      apiProps={{
-        params: {
-          filters: {
-            and: [{ column: "profileId", method: "eq", value: "current-user" }],
-          },
-        },
-      }}
-    >
-      {(relations) => (
-        <pre className="p-4 text-sm">{JSON.stringify(relations, null, 2)}</pre>
-      )}
-    </View>
-  );
+import { Fragment, type ReactNode } from "react";
+import {
+  findLocalRelations,
+  type ILocalFindProps,
+  type IProfileChatRelation,
+} from "../../../../../../workspace/utils/products/ai-chat-models";
+
+export interface IProfileChatsProps
+  extends ILocalFindProps<IProfileChatRelation> {
+  children: (relations: IProfileChatRelation[]) => ReactNode;
+}
+
+export function Component(props: IProfileChatsProps) {
+  return <Fragment>{props.children(findLocalRelations(props))}</Fragment>;
 }

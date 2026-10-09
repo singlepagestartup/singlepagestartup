@@ -1,1 +1,9 @@
-export { ProjectSectionAssets as Component } from "./View";
+export {
+  Component,
+  type IFilePreviewProps,
+  type IPendingFileProps,
+  type ISectionAssetsProps,
+  ProjectPendingFile,
+  ProjectFilePreview,
+  ProjectAssetPreview,
+} from "./Component";

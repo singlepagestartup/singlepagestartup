@@ -1,1 +1,1 @@
-export { ThreadCreate as Component } from "./View";
+export { Component, type IThreadCreateProps } from "./Component";

@@ -2,9 +2,9 @@
 
 Статус: декомпозиция разговоров реализована и проверена; code review ожидается. План: `thoughts/shared/plans/singlepagestartup/2026-10-09-studio-isolation.md`.
 
-PR: https://github.com/singlepagestartup/singlepagestartup/pull/371. Локальная ветка: `codex/studio-host-models`; PR branch: `codex/ai-chat-ui-review`. Проверенный HEAD до текущего шага: `4cbcf4d0f8740c68a12776873272b3f55c5358c5`. Коммит текущего шага: `refactor(studio): compose project chats from threads and messages`; SHA смотреть через `git log -1`. Публикация относится к существующей ветке PR, без merge.
+PR: https://github.com/singlepagestartup/singlepagestartup/pull/371. Локальная ветка: `codex/studio-host-models`; PR branch: `codex/ai-chat-ui-review`. Декомпозиция разговоров: `38ec894cee9798e85f25ecd7855b4a30f0a0497c`. Текущий шаг упрощает точки входа компонентов; его SHA смотреть через `git log -1`. Публикация относится к существующей ветке PR, без merge.
 
-Studio содержит собственные React views, локальные интерфейсы, примеры и callbacks. Прототип не импортирует libs, Host, production SDK или production статику. Модельные варианты находятся в `apps/studio/modules`; чистые адаптеры — в `workspace/utils/products`. Production в текущем шаге не изменён. Последующие Knowledge/MCP изменения, вошедшие в PR до исправления Studio, сохраняются.
+Studio содержит собственные React components, локальные интерфейсы, примеры и callbacks. Прототип не импортирует libs, Host, production SDK или production статику. Модельные варианты находятся в `apps/studio/modules`; чистые адаптеры — в `workspace/utils/products`. Production в текущем шаге не изменён. Последующие Knowledge/MCP изменения, вошедшие в PR до исправления Studio, сохраняются.
 
 RBAC Subject разрешает текущий пользовательский Profile через subjects-to-social-module-profiles. Меню пользователя находится в Profile `ai-chat-user-menu`. Project selector и контейнер проектов — Profile `ai-chat-project-select` и `ai-chat-workspace`. Доступ к проекту требует профиль пользователя, profiles-to-chats, Chat/Profile variants и ID маршрута; чужой или отсутствующий профиль показывает unavailable. Header получает selector через slot.
 
@@ -22,6 +22,10 @@ Browser: независимый черновик Brief/Strategy; Working On с S
 
 Host имеет локальные четыре модели и пять связей, composition UI, CRUD и вложенные editors. Предыдущая production Host-сборка прошла с NODE_OPTIONS=--max-old-space-size=8192; Next lint отключён текущей конфигурацией. Лог /private/tmp/studio-correction-host-final.log. В текущем шаге production не изменён и Host build не повторялся.
 
-Не включать чужие изменения: .agents/.claude/.codex README, AGENTS.md, CLAUDE.md, review-pr workflow/skill, workspace business/brand/strategy/design и singlepagestartup product, pre-development cursors, ISSUE-372 материалы, PR #368 description и apps/api/public/file-storage/static uploads. Текущий commit включает только Studio Threads/relations/graph/views, их тесты, generated inventory, Studio README, этот handoff, план и PR #371 description.
+Не включать чужие изменения: .agents/.claude/.codex README, AGENTS.md, CLAUDE.md, review-pr workflow/skill, workspace business/brand/strategy/design и singlepagestartup product, pre-development cursors, ISSUE-372 материалы, PR #368 description и apps/api/public/file-storage/static uploads. Текущий commit включает только точки входа компонентов Studio, stories, обновлённые adapters/imports и тесты, Studio README, этот handoff, план и PR #371 description.
 
 Следующий шаг: code review PR #371. Production перенос остаётся отдельной задачей.
+
+Структура всех 42 вариантов AI Chat упрощена: реализация и публичные интерфейсы находятся в Component.tsx, index.ts экспортирует Component и необходимые типы/вспомогательные компоненты. Примеры с fixture data и локальным состоянием находятся в Component.stories.tsx. View.tsx удалены; импорты между вариантами, website adapters и тесты используют index.ts. Проверка composed graph перенесена в host/page/ai-chat/Component.test.tsx.
+
+Проверки после упрощения: 259 тестов, Studio TypeScript, изолированная Storybook build, content --check, inventory/manifests/design-system и code-placement проходят. Логи: /private/tmp/studio-component-tests.log, /private/tmp/studio-component-types.log, /private/tmp/studio-component-build.log.

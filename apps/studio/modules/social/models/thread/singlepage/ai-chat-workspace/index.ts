@@ -1,1 +1,6 @@
-export { ThreadWorkspace as Component } from "./View";
+export {
+  Component,
+  type IThreadHeaderProps,
+  type IThreadWorkspaceProps,
+  ThreadHeader,
+} from "./Component";

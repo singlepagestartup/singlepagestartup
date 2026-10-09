@@ -1,1 +1,1 @@
-export { UserProfileMenu as Component } from "./View";
+export { Component, type IUserProfileMenuProps } from "./Component";

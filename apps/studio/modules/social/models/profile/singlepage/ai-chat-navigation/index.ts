@@ -1,1 +1,1 @@
-export { ProfileNavigation as Component } from "./View";
+export { Component, type IProfileNavigationProps } from "./Component";

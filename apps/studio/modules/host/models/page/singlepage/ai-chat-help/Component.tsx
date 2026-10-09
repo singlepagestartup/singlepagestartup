@@ -1,6 +1,4 @@
-import { Component as Page } from "./index";
-import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
-const stayInStory = (_url: string) => {};
-export function Component() {
-  return <Page account={aiChatAccount} onNavigate={stayInStory} />;
+import { Component as Page, type IAIChatPageProps } from "../ai-chat/index";
+export function Component(props: IAIChatPageProps = {}) {
+  return <Page {...props} url={props.url ?? "/ai-chat/help"} />;
 }

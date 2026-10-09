@@ -1,116 +1,160 @@
-import { useEffect, useState } from "react";
-import { Component as View } from "./index";
-import { projectKnowledge } from "../../../../../../workspace/utils/products/ai-chat-models";
-import { aiChatSourceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
-import { attachProjectAsset } from "../../../../../../workspace/utils/products/ai-chat-workspace";
-export function Component() {
-  const [project, setProject] = useState(aiChatSourceFixture);
-  useEffect(() => {
-    const files = aiChatSourceFixture().sources.map((file) => ({
-      ...file,
-      fileUrl: URL.createObjectURL(
-        new Blob([file.text], { type: file.mimeType }),
-      ),
-    }));
-    const records = new Map(files.map((file) => [file.id, file]));
-    setProject((current) => ({
-      ...current,
-      sources: files,
-      documents: current.documents.map((document) => ({
-        ...document,
-        assets: document.assets?.map((asset) => ({
-          ...asset,
-          file: records.get(asset.file.id) ?? asset.file,
-        })),
-      })),
-    }));
-    return () => files.forEach((file) => URL.revokeObjectURL(file.fileUrl!));
-  }, []);
+"use client";
+import { memo, useCallback, useId } from "react";
+import {
+  Icon,
+  kit,
+} from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
+import { MarkdownDocument } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/Markdown";
+import { MarkdownField } from "../ai-chat-editor/MarkdownField";
+import { Component as SourceFiles } from "../../../../relations/sources-to-file-storage-module-files/singlepage/ai-chat-find/index";
+import { Component as ProjectSectionAssets } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/index";
+import {
+  sourceUserContext,
+  sourceMaterials,
+  editSourceUserContext,
+  sourceAttachmentAssets,
+} from "../../../../../../workspace/utils/products/ai-chat-knowledge";
+import type {
+  IAIChatSource,
+  IAIChatFile,
+  ISourceFileRelation,
+  ISourceAttachmentView,
+} from "../../../../../../workspace/utils/products/ai-chat-models";
+import type {
+  IProjectFile,
+  IProjectAsset,
+} from "../../../../../../workspace/utils/products/ai-chat-workspace";
 
-  const [discussing, setDiscussing] = useState(false);
-  const graph = projectKnowledge(project);
-  const source = graph.sources[0];
-  return (
-    <div className="mx-auto max-w-xl p-4">
-      <View
-        data={source}
-        discussing={discussing}
-        files={graph.files}
-        fileRelations={graph.sourceFiles}
-        attachmentViews={graph.attachmentViews}
-        availableFiles={project.sources}
-        onEdit={(_, content) =>
-          setProject((current) => ({
-            ...current,
-            documents: current.documents.map((document, index) =>
-              index === 0
-                ? {
-                    ...document,
-                    values: { ...document.values, [source.title]: content },
-                  }
-                : document,
-            ),
-          }))
-        }
-        onDiscuss={() => setDiscussing(true)}
-        onAttach={(file, _, kind) =>
-          setProject((current) => ({
-            ...current,
-            documents: current.documents.map((document, index) =>
-              index === 0
-                ? attachProjectAsset(
-                    document,
-                    file,
-                    source.title,
-                    kind,
-                    `${file.id}:attachment`,
-                  )
-                : document,
-            ),
-          }))
-        }
-        onUpload={(files, _, kind) =>
-          setProject((current) => ({
-            ...current,
-            sources: [...current.sources, ...files],
-            documents: current.documents.map((document, index) =>
-              index === 0
-                ? files.reduce(
-                    (document, file) =>
-                      attachProjectAsset(
-                        document,
-                        file,
-                        source.title,
-                        kind,
-                        `${file.id}:attachment`,
-                      ),
-                    document,
-                  )
-                : document,
-            ),
-          }))
-        }
-        onAssetChange={(id, update) =>
-          setProject((current) => ({
-            ...current,
-            documents: current.documents.map((document) => ({
-              ...document,
-              assets: document.assets?.map((asset) =>
-                asset.id === id ? { ...asset, ...update } : asset,
-              ),
-            })),
-          }))
-        }
-        onAssetRemove={(id) =>
-          setProject((current) => ({
-            ...current,
-            documents: current.documents.map((document) => ({
-              ...document,
-              assets: document.assets?.filter((asset) => asset.id !== id),
-            })),
-          }))
-        }
-      />
-    </div>
-  );
+export interface ISourceSectionProps {
+  data: IAIChatSource;
+  label?: string;
+  discussing: boolean;
+  files: IAIChatFile[];
+  fileRelations: ISourceFileRelation[];
+  attachmentViews: ISourceAttachmentView[];
+  availableFiles: IProjectFile[];
+  onEdit: (sourceId: string, content: string) => void;
+  onDiscuss: (sourceId: string) => void;
+  onAttach: (
+    file: IProjectFile,
+    sourceId: string,
+    kind: IProjectAsset["kind"],
+  ) => void;
+  onUpload: (
+    files: IProjectFile[],
+    sourceId: string,
+    kind: IProjectAsset["kind"],
+  ) => void;
+  onAssetChange: (id: string, update: Partial<IProjectAsset>) => void;
+  onAssetRemove: (id: string) => void;
+  helpLabel?: string;
+  onHelp?: (button: HTMLButtonElement, title: string) => void;
 }
+
+export const Component = memo(function Component({
+  data,
+  label = data.title,
+  discussing,
+  files,
+  fileRelations,
+  attachmentViews,
+  availableFiles,
+  onEdit,
+  onDiscuss,
+  onAttach,
+  onUpload,
+  onAssetChange,
+  onAssetRemove,
+  helpLabel,
+  onHelp,
+}: ISourceSectionProps) {
+  const id = useId();
+  const edit = useCallback(
+    (_: string, value: string) =>
+      onEdit(data.id, editSourceUserContext(data.content, value)),
+    [data.id, data.content, onEdit],
+  );
+  const attach = useCallback(
+    (file: IProjectFile, _: string, kind: IProjectAsset["kind"]) =>
+      onAttach(file, data.id, kind),
+    [data.id, onAttach],
+  );
+  const upload = useCallback(
+    (files: IProjectFile[], _: string, kind: IProjectAsset["kind"]) =>
+      onUpload(files, data.id, kind),
+    [data.id, onUpload],
+  );
+  const materials = sourceMaterials(data.content);
+  return (
+    <article
+      data-module="knowledge"
+      data-model="source"
+      data-id={data.id}
+      data-variant="ai-chat-section"
+      data-ds-block="knowledge.source.ai-chat-section"
+      aria-label={data.title}
+      className="rounded-xl border border-sps-line bg-sps-white p-3"
+    >
+      <MarkdownField
+        id={id}
+        label={label}
+        section={data.title}
+        value={sourceUserContext(data.content)}
+        placeholder={data.description ?? "Add your context and notes."}
+        onChange={edit}
+        helpLabel={helpLabel}
+        onHelp={onHelp}
+      />
+      {materials && (
+        <details className="mt-3 rounded-lg border border-sps-line p-3 text-xs">
+          <summary className={`min-h-9 cursor-pointer ${kit.focus}`}>
+            Analyzed materials
+          </summary>
+          <MarkdownDocument
+            disableRawHTML
+            externalLinksNewTab
+            className="text-sm leading-6"
+          >
+            {materials}
+          </MarkdownDocument>
+        </details>
+      )}
+      <button
+        type="button"
+        onClick={() => onDiscuss(data.id)}
+        className={`${kit.plain} mt-1 min-h-9 px-0 text-xs`}
+      >
+        <Icon name="chat-circle" className="size-4" />
+        {discussing ? "Discussing in chat" : "Discuss this section"}
+      </button>
+      <SourceFiles
+        variant="find"
+        data={fileRelations}
+        apiProps={{
+          params: {
+            filters: {
+              and: [{ column: "sourceId", method: "eq", value: data.id }],
+            },
+          },
+        }}
+      >
+        {(relations) => (
+          <ProjectSectionAssets
+            section={data.title}
+            assets={sourceAttachmentAssets(
+              data.title,
+              relations,
+              files,
+              attachmentViews,
+            )}
+            sources={availableFiles}
+            onAttach={attach}
+            onUpload={upload}
+            onChange={onAssetChange}
+            onRemove={onAssetRemove}
+          />
+        )}
+      </SourceFiles>
+    </article>
+  );
+});

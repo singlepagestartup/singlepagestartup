@@ -1,1 +1,1 @@
-export { default as Component } from "./View";
+export { Component, type IHelpProps, type IHelpErrors } from "./Component";

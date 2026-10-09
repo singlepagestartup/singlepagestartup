@@ -1,119 +1,230 @@
-import { useState } from "react";
-import { Component as View } from "./index";
-import { aiChatProjectFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
-import { projectKnowledge } from "../../../../../../workspace/utils/products/ai-chat-models";
-import { projectThreadGraph } from "../../../../../../workspace/utils/products/ai-chat-threads";
-import { documentAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
+"use client";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import {
-  sendProjectMessage,
-  reviewProjectDocument,
+  Button,
+  Icon,
+  kit,
+} from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
+import type { IProjectAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
+import type {
+  IProjectDocument,
+  IProjectMessage,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
-export function Component() {
-  const [project, setProject] = useState(aiChatProjectFixture);
-  const [value, setValue] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
-  const [pane, setPane] = useState<"chat" | "document">("chat");
-  const graph = projectThreadGraph(project);
-  const knowledge = projectKnowledge(project);
-  const document = project.documents[0];
-  const bundle = knowledge.bundles.find((bundle) => bundle.id === document.id)!;
+import type { IAIChatSource } from "../../../../../../workspace/utils/products/ai-chat-models";
+import {
+  orderedThreadMessages,
+  threadSources,
+  type IAIChatThread,
+  type IThreadMessageRelation,
+} from "../../../../../../workspace/utils/products/ai-chat-threads";
+import { Component as ThreadMessages } from "../../../../relations/threads-to-messages/singlepage/ai-chat-find/index";
+import { Component as ProjectConversation } from "../ai-chat-conversation/index";
+import {
+  Component as ProjectComposer,
+  type IComposerProps,
+} from "../ai-chat-composer/index";
+import {
+  Component as ProjectSourceEditor,
+  type IDocumentEditorProps,
+} from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/index";
+
+export interface IThreadHeaderProps {
+  title: string;
+  label: string;
+  navigation?: ReactNode;
+  actions?: ReactNode;
+}
+export interface IThreadWorkspaceProps {
+  data: IAIChatThread;
+  messages: IProjectMessage[];
+  relations: IThreadMessageRelation[];
+  agent: IProjectAgent | null;
+  knowledge: IAIChatSource[];
+  sourceSlugs: string[];
+  composer: Omit<IComposerProps, "knowledge">;
+  navigation?: ReactNode;
+  actions?: ReactNode;
+  editor?: Omit<IDocumentEditorProps, "data" | "sections" | "onSection">;
+  workingSourceIds?: string[];
+  onWorkingSources?: (ids: string[]) => void;
+  pane?: "chat" | "document";
+  onPane?: (pane: "chat" | "document") => void;
+  proposal?: IProjectDocument["proposal"];
+  onApplyProposal?: () => void;
+  onDismissProposal?: () => void;
+  children?: ReactNode;
+}
+
+export function ThreadHeader({
+  title,
+  label,
+  navigation,
+  actions,
+}: IThreadHeaderProps) {
   return (
-    <div className="@container/workspace p-4">
-      <div className="@container/chat flex h-160 min-h-0 flex-col overflow-hidden rounded-xl border border-sps-line bg-sps-white">
-        <View
-          data={graph.threads[0]}
-          messages={graph.messages}
-          relations={graph.threadMessages}
-          agent={documentAgent(document.id)}
-          knowledge={knowledge.sources}
-          sourceSlugs={bundle.sourceSlugs}
-          pane={pane}
-          onPane={setPane}
-          workingSourceIds={selected}
-          onWorkingSources={setSelected}
-          proposal={document.proposal}
-          onDismissProposal={() =>
-            setProject((current) => ({
-              ...current,
-              documents: current.documents.map((item) =>
-                item.id === document.id
-                  ? { ...item, proposal: undefined }
-                  : item,
-              ),
-            }))
-          }
-          onApplyProposal={() => {
-            if (!document.proposal) return;
-            const proposal = document.proposal;
-            setProject((current) => ({
-              ...current,
-              documents: current.documents.map((item) =>
-                item.id === document.id
-                  ? {
-                      ...item,
-                      values: {
-                        ...item.values,
-                        [proposal.section]: proposal.text,
-                      },
-                      proposal: undefined,
-                    }
-                  : item,
-              ),
-            }));
-            setPane("document");
-          }}
-          composer={{
-            value,
-            onChange: setValue,
-            onSend: () => {
-              setProject((current) =>
-                sendProjectMessage(current, document.id, {
-                  userId: crypto.randomUUID(),
-                  assistantId: crypto.randomUUID(),
-                  text: value,
-                  sections: knowledge.sources
-                    .filter((source) => selected.includes(source.id))
-                    .map((source) => source.title),
-                  reply:
-                    "Review the proposed update before saving the document.",
-                }),
-              );
-              setValue("");
-            },
-            label: "Message the AI agent",
-            placeholder: "Discuss this document or request a change.",
-            files: [],
-            onFiles: () => {},
-            onRemoveFile: () => {},
-          }}
-          editor={{
-            document,
-            files: knowledge.files,
-            fileRelations: knowledge.sourceFiles,
-            attachmentViews: knowledge.attachmentViews,
-            sources: project.sources,
-            onEdit: (title, text) =>
-              setProject((current) => ({
-                ...current,
-                documents: current.documents.map((item) =>
-                  item.id === document.id
-                    ? { ...item, values: { ...item.values, [title]: text } }
-                    : item,
-                ),
-              })),
-            onReview: () =>
-              setProject((current) => ({
-                ...current,
-                documents: current.documents.map((item) =>
-                  item.id === document.id ? reviewProjectDocument(item) : item,
-                ),
-              })),
-            onAttach: () => {},
-            onUpload: () => {},
-            onAssetChange: () => {},
-            onAssetRemove: () => {},
-          }}
-        />
+    <header className="sticky top-18 z-10 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-sps-line bg-sps-white p-4 @[760px]/workspace:top-0">
+      <div className="flex min-w-0 items-center gap-3">
+        {navigation}
+        <div className="min-w-0">
+          <p className={`text-xs ${kit.muted}`}>{label}</p>
+          <h2 className="mt-1 break-words text-base font-semibold">{title}</h2>
+        </div>
+      </div>
+      {actions}
+    </header>
+  );
+}
+
+export function Component({
+  data,
+  messages,
+  relations,
+  agent,
+  knowledge,
+  sourceSlugs,
+  composer,
+  navigation,
+  actions,
+  editor,
+  workingSourceIds = [],
+  onWorkingSources,
+  pane = "chat",
+  onPane,
+  proposal,
+  onApplyProposal,
+  onDismissProposal,
+  children,
+}: IThreadWorkspaceProps) {
+  const sources = useMemo(
+    () => threadSources(knowledge, sourceSlugs),
+    [knowledge, sourceSlugs],
+  );
+  const selected = sources.filter((source) =>
+    workingSourceIds.includes(source.id),
+  );
+  const proposalView = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (pane === "chat" && proposal)
+      proposalView.current?.scrollIntoView({ block: "nearest" });
+  }, [pane, proposal]);
+  return (
+    <div
+      data-ds-block="social.thread.ai-chat-workspace"
+      data-module="social"
+      data-model="thread"
+      data-id={data.id}
+      data-thread-id={data.id}
+      data-variant="ai-chat-workspace"
+      data-knowledge-source-ids={sources.map((source) => source.id).join(" ")}
+      className="flex min-h-0 min-w-0 flex-1 flex-col"
+      aria-label={data.title}
+    >
+      <ThreadHeader
+        title={data.title}
+        label={editor ? "Document thread" : "Project thread"}
+        navigation={navigation}
+        actions={
+          <>
+            {editor && onPane && (
+              <div className="flex rounded-lg bg-sps-grey p-1 @[900px]/chat:hidden">
+                {(["chat", "document"] as const).map((item) => (
+                  <button
+                    type="button"
+                    key={item}
+                    aria-pressed={pane === item}
+                    onClick={() => onPane(item)}
+                    className={`min-h-9 rounded-md px-3 text-xs font-semibold ${kit.focus} ${pane === item ? "bg-sps-white" : kit.muted}`}
+                  >
+                    {item === "chat" ? "Chat" : "Document"}
+                  </button>
+                ))}
+              </div>
+            )}
+            {actions}
+          </>
+        }
+      />
+      <div
+        className={`grid min-h-0 min-w-0 flex-1 ${editor ? "@[900px]/chat:grid-cols-[minmax(0,1fr)_360px]" : ""}`}
+      >
+        <div
+          className={`${!editor || pane === "chat" ? "flex" : "hidden"} min-h-0 min-w-0 flex-col overflow-y-auto @[900px]/chat:flex`}
+        >
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <ThreadMessages
+              variant="find"
+              data={relations}
+              apiProps={{
+                params: {
+                  filters: {
+                    and: [{ column: "threadId", method: "eq", value: data.id }],
+                  },
+                },
+              }}
+            >
+              {(links) => (
+                <ProjectConversation
+                  className="min-h-[50dvh] @[760px]/workspace:min-h-0"
+                  messages={orderedThreadMessages(messages, links)}
+                  agent={agent}
+                  showContext={Boolean(editor)}
+                />
+              )}
+            </ThreadMessages>
+            {proposal && (
+              <div
+                ref={proposalView}
+                className="mx-4 mb-4 rounded-xl border border-sps-line bg-sps-grey p-4"
+              >
+                <p className="text-xs font-semibold">
+                  Proposed update · {proposal.section}
+                </p>
+                <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6">
+                  {proposal.text}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button onClick={onApplyProposal}>
+                    <Icon name="pencil-simple" className="size-4" />
+                    Apply to draft
+                  </Button>
+                  <Button variant="plain" onClick={onDismissProposal}>
+                    Dismiss
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+          <ProjectComposer
+            {...composer}
+            knowledge={
+              editor && onWorkingSources
+                ? {
+                    title: editor.document.title,
+                    sources,
+                    selectedSourceIds: selected.map((source) => source.id),
+                    onChange: onWorkingSources,
+                  }
+                : undefined
+            }
+          />
+          {children}
+        </div>
+        {editor && (
+          <div
+            className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-sps-line @[900px]/chat:block @[900px]/chat:border-l`}
+          >
+            <ProjectSourceEditor
+              {...editor}
+              data={sources}
+              sections={selected.map((source) => source.title)}
+              onSection={(title) => {
+                const source = sources.find((source) => source.title === title);
+                if (source) onWorkingSources?.([source.id]);
+                onPane?.("chat");
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

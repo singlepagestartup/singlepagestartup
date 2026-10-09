@@ -40,3 +40,5 @@ Studio содержит собственные React views, интерфейсы
 В коде Studio нет импортов из libs, apps/host или production aliases. Production не импортирует Studio. Storybook собирается из локальных Studio views. Сохраняются документы, чаты, настройка агентов, мобильный sidebar и Host composition. Проверки выявляют нарушение границы до сборки.
 
 Ход работы: `thoughts/shared/handoffs/singlepagestartup/studio-isolation-2026-10-09.md`.
+
+- [x] Реализация всех 42 вариантов AI Chat находится в Component.tsx; index.ts экспортирует компонент, публичные типы и необходимые вспомогательные компоненты. Fixture examples находятся в Component.stories.tsx. View.tsx удалены, импорты и тесты используют index.ts; адреса stories сохранены.

@@ -1,10 +1,29 @@
+import { Component } from "./index";
+import { useState } from "react";
+import type { IProjectTopic } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import type { Meta, StoryObj } from "@storybook/react";
-import { Component } from "./Component";
+
+function Example() {
+  const [topic, setTopic] = useState<IProjectTopic>({
+    id: "work",
+    title: "Workshop campaign",
+    documentIds: [],
+    messages: [],
+  });
+  return (
+    <Component
+      topic={topic}
+      onSave={(title) => setTopic({ ...topic, title })}
+      onDelete={() => {}}
+    />
+  );
+}
+
 const meta = {
   id: "modules-social-models-thread-singlepage-ai-chat-settings",
   title: "Modules/Social/Models/Thread/Singlepage/ai-chat-settings",
-  component: Component,
+  component: Example,
   parameters: { layout: "fullscreen" },
-} satisfies Meta<typeof Component>;
+} satisfies Meta<typeof Example>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};

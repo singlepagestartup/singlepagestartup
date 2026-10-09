@@ -1,1 +1,1 @@
-export { ThreadMessages as Component } from "./View";
+export { Component, type IThreadMessagesProps } from "./Component";

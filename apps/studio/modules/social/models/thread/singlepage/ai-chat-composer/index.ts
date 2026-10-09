@@ -1,1 +1,1 @@
-export { ProjectComposer as Component } from "./View";
+export { Component, type IComposerProps } from "./Component";

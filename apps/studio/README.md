@@ -154,13 +154,15 @@ Host pages remain under
 `apps/studio/modules/host/models/page/<layer>/<page-variant>/`. Existing stable
 component/page IDs are preserved across the Studio rename.
 
-## Local AI Chat views
+## Local AI Chat components
 
-AI Chat prototypes live entirely in Studio. Each variant keeps a local `View.tsx`
-with props and callbacks, while `Component.tsx` supplies a small Storybook example.
-Product website previews use those local views and editable Markdown content.
+AI Chat prototypes live entirely in Studio. `Component.tsx` contains each variant's
+implementation, props and callbacks. `index.ts` exports the component and its
+public types or helpers. Fixture data and interactive examples live in
+`Component.stories.tsx`. Product website previews compose these components and
+editable Markdown content.
 
-| Owner                   | View responsibility                                               |
+| Owner                   | Component responsibility                                          |
 | ----------------------- | ----------------------------------------------------------------- |
 | Host Page               | Page composition and local navigation                             |
 | RBAC Identity / Subject | Registration, login, account settings and account provider        |

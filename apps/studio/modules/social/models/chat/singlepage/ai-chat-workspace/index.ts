@@ -1,1 +1,1 @@
-export { ChatWorkspace as Component } from "./View";
+export { Component, type IChatWorkspaceProps } from "./Component";

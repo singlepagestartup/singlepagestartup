@@ -3,16 +3,16 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 import { renderToStaticMarkup } from "react-dom/server";
-import Page from "./View";
+import { Component as Page } from "./index";
 import { isAIChatRoute } from "./utils";
 import { documentAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
-import { ProjectAgentPicker } from "../../../../../social/models/profile/singlepage/ai-chat-agent/View";
-import { ProjectConversation } from "../../../../../social/models/thread/singlepage/ai-chat-conversation/View";
+import { ProjectAgentPicker } from "../../../../../social/models/profile/singlepage/ai-chat-agent/index";
+import { Component as ProjectConversation } from "../../../../../social/models/thread/singlepage/ai-chat-conversation/index";
 
 const root = path.resolve(import.meta.dir, "../../../../../../../..");
 const studio = path.join(root, "apps/studio");
 
-describe("Local AI Chat views", () => {
+describe("Local AI Chat components", () => {
   test("recognizes prototype routes without intercepting unrelated pages", () => {
     for (const url of [
       "/ai-chat/",
@@ -35,7 +35,7 @@ describe("Local AI Chat views", () => {
       expect(isAIChatRoute(url)).toBe(false);
   });
 
-  test("the composed view graph resolves entirely within Studio", () => {
+  test("the composed component graph resolves entirely within Studio", () => {
     const visited = new Set<string>();
     function visit(file: string) {
       if (visited.has(file)) return;
@@ -64,11 +64,11 @@ describe("Local AI Chat views", () => {
         if (resolved) visit(resolved);
       }
     }
-    visit(path.join(import.meta.dir, "View.tsx"));
+    visit(path.join(import.meta.dir, "Component.tsx"));
     expect(visited.size).toBeGreaterThan(20);
   });
 
-  test("page views render local assets and prototype navigation", () => {
+  test("page components render local assets and prototype navigation", () => {
     for (const url of [
       "/ai-chat/",
       "/ai-chat/register",

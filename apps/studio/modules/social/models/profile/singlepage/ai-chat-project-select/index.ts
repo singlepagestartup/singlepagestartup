@@ -1,1 +1,5 @@
-export { ProjectProfileSelect as Component } from "./View";
+export {
+  Component,
+  type IProjectProfileOption,
+  type IProjectProfileSelectProps,
+} from "./Component";

@@ -1,11 +1,16 @@
+import { Component } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
-import { Component } from "./Component";
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
+
+function Example() {
+  return <Component />;
+}
+
 const meta = {
   id: "modules-ecommerce-models-order-singlepage-ai-chat-tokens",
   title: "Modules/Ecommerce/Models/Order/Singlepage/ai-chat-tokens",
-  component: Component,
+  component: Example,
   parameters: { layout: "fullscreen" },
   decorators: [
     (Story) => (
@@ -14,6 +19,6 @@ const meta = {
       </AccountProvider>
     ),
   ],
-} satisfies Meta<typeof Component>;
+} satisfies Meta<typeof Example>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};

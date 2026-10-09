@@ -14,8 +14,8 @@ import {
 } from "./ai-chat-workspace-fixture";
 import { createProjectProfile } from "./ai-chat-workspace";
 import { AccountProvider } from "../../../modules/rbac/models/subject/singlepage/ai-chat-settings/Account";
-import { SubjectAccount } from "../../../modules/rbac/models/subject/singlepage/ai-chat-account/View";
-import Page from "../../../modules/host/models/page/singlepage/ai-chat/View";
+import { Component as SubjectAccount } from "../../../modules/rbac/models/subject/singlepage/ai-chat-account/index";
+import { Component as Page } from "../../../modules/host/models/page/singlepage/ai-chat/index";
 
 test("account menu resolves only the current subject's user profile", () => {
   const account = {

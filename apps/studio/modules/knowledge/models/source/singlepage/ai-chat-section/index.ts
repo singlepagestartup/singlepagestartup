@@ -1,1 +1,1 @@
-export { SourceSection as Component } from "./View";
+export { Component, type ISourceSectionProps } from "./Component";

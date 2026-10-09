@@ -1,1 +1,1 @@
-export { ThreadSettings as Component } from "./View";
+export { Component, type IThreadSettingsProps } from "./Component";

@@ -52,8 +52,8 @@ interface IFeedbackProps {
   kind?: "success" | "error" | "info";
 }
 
-export { default as AccountHeader } from "../../../../../modules/website-builder/models/widget/singlepage/ai-chat-header/View";
-import AccountHeader from "../../../../../modules/website-builder/models/widget/singlepage/ai-chat-header/View";
+export { Component as AccountHeader } from "../../../../../modules/website-builder/models/widget/singlepage/ai-chat-header/index";
+import { Component as AccountHeader } from "../../../../../modules/website-builder/models/widget/singlepage/ai-chat-header/index";
 
 export function ServicePage({
   copy,

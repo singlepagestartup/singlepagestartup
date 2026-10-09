@@ -1,1 +1,1 @@
-export { ProfileSources as Component } from "./View";
+export { Component, type IProfileSourcesProps } from "./Component";

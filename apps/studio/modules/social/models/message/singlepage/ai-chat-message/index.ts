@@ -1,1 +1,1 @@
-export { ProjectMessageRow as Component } from "./View";
+export { Component, type IProjectMessageRowProps } from "./Component";

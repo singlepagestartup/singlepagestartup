@@ -1,10 +1,15 @@
+import { Component } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
-import { Component } from "./Component";
+
+function Example() {
+  return <Component canCreate onCreate={() => {}} />;
+}
+
 const meta = {
   id: "modules-social-models-thread-singlepage-ai-chat-create",
   title: "Modules/Social/Models/Thread/Singlepage/ai-chat-create",
-  component: Component,
+  component: Example,
   parameters: { layout: "fullscreen" },
-} satisfies Meta<typeof Component>;
+} satisfies Meta<typeof Example>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};
