@@ -14,12 +14,10 @@ import {
   getIdentityProviderMeta,
   type IdentityAction,
   type RbacIdentity,
-  type RbacSubjectToIdentity,
 } from "../../../../shared";
 
 export interface IdentityCardDefaultProps {
   identity: RbacIdentity;
-  relation?: RbacSubjectToIdentity;
   lastOperationLabel?: string;
   onAction?: (identity: RbacIdentity, action: IdentityAction) => void;
   embedded?: boolean;
@@ -34,13 +32,6 @@ export const defaultIdentityCardDefaultProps: IdentityCardDefaultProps = {
     variant: "default",
     createdAt: "2025-03-09T13:17:10.100Z",
     updatedAt: "2026-02-12T10:41:33.004Z",
-  },
-  relation: {
-    id: "b887f4ef-fca1-46cc-9f39-c988f9b0b3d5",
-    subjectId: "973e0fde-4786-413e-bc8f-2eecf4488e9d",
-    identityId: "f3b3934d-3199-4f04-9e8e-99c4ab0a47a1",
-    orderIndex: 0,
-    variant: "default",
   },
 };
 
@@ -75,7 +66,6 @@ export const IdentityCardDefault = memo(function IdentityCardDefault(
 ) {
   const {
     identity,
-    relation,
     lastOperationLabel,
     onAction,
     embedded = false,
@@ -172,23 +162,6 @@ export const IdentityCardDefault = memo(function IdentityCardDefault(
               value={formatRbacDateTime(identity.updatedAt)}
             />
           </dl>
-          {relation ? (
-            <div className="mt-5 border-t border-[var(--workspace-brand-line)] pt-5">
-              <h4 className="mb-3 text-sm font-semibold text-[var(--workspace-brand-foreground)]">
-                Account link
-              </h4>
-              <dl className="grid min-w-0 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-                <IdentityDetail label="Relation ID" value={relation.id} />
-                <IdentityDetail label="Subject ID" value={relation.subjectId} />
-                <IdentityDetail
-                  label="Identity ID"
-                  value={relation.identityId}
-                />
-                <IdentityDetail label="Order" value={relation.orderIndex} />
-                <IdentityDetail label="Variant" value={relation.variant} />
-              </dl>
-            </div>
-          ) : null}
         </div>
       </details>
       <ConfirmationDialog

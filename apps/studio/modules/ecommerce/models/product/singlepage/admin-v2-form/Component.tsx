@@ -13,23 +13,16 @@ import {
 } from "../../../../../../workspace/design/singlepage/interface-kit/primitives";
 import { RecordForm } from "../../../../../../workspace/design/singlepage/interface-kit/Records";
 import { studioProducts, type IStudioProduct } from "../../shared";
-export interface IProductRelationSection {
-  id: string;
-  title: string;
-  render: (props: { product: IStudioProduct }) => ReactNode;
-}
 export interface IProductAdminFormProps {
   product?: IStudioProduct;
   onSave?: (product: IStudioProduct) => void;
-  relations?: ReactNode;
-  relationSections?: IProductRelationSection[];
+  attributes?: ReactNode;
   embedded?: boolean;
 }
 export function EcommerceProductAdminV2Form({
   product = studioProducts[0],
   onSave,
-  relations,
-  relationSections,
+  attributes,
   embedded = false,
 }: IProductAdminFormProps = {}) {
   const [draft, setDraft] = useState(product);
@@ -37,20 +30,6 @@ export function EcommerceProductAdminV2Form({
   const [status, setStatus] = useState("");
   const [activeTab, setActiveTab] = useState("details");
   const id = useId();
-  const sections =
-    relationSections ??
-    (relations
-      ? [
-          {
-            id: "products-to-attributes",
-            title: "Attributes",
-            render: () => relations,
-          },
-        ]
-      : []);
-  const [activeRelation, setActiveRelation] = useState("");
-  const selectedRelation =
-    sections.find((section) => section.id === activeRelation) ?? sections[0];
   return (
     <section
       className={
@@ -100,11 +79,8 @@ export function EcommerceProductAdminV2Form({
             className="mb-5 w-fit max-w-full"
           >
             <SectionTabsTrigger value="details">Details</SectionTabsTrigger>
-            <SectionTabsTrigger
-              value="relations"
-              disabled={!sections.length || !product.id}
-            >
-              Relations{sections.length ? ` (${sections.length})` : ""}
+            <SectionTabsTrigger value="attributes" disabled={!attributes}>
+              Attributes
             </SectionTabsTrigger>
           </SectionTabsList>
           <SectionTabsContent
@@ -235,43 +211,11 @@ export function EcommerceProductAdminV2Form({
             </div>
           </SectionTabsContent>
           <SectionTabsContent
-            value="relations"
+            value="attributes"
             forceMount
             className="data-[state=inactive]:hidden focus:outline-none"
           >
-            {selectedRelation && (
-              <SectionTabsRoot
-                value={selectedRelation.id}
-                onValueChange={setActiveRelation}
-                className="grid min-w-0 gap-5"
-              >
-                <SectionTabsList
-                  aria-label="Product relation groups"
-                  className="w-fit max-w-full gap-2 bg-transparent p-0"
-                >
-                  {sections.map((section) => (
-                    <SectionTabsTrigger
-                      key={section.id}
-                      value={section.id}
-                      className="rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] data-[state=active]:border-[var(--workspace-brand-foreground)] data-[state=active]:bg-[var(--workspace-brand-background)]"
-                    >
-                      {section.title}
-                    </SectionTabsTrigger>
-                  ))}
-                </SectionTabsList>
-                {sections.map((section) => (
-                  <SectionTabsContent
-                    key={section.id}
-                    value={section.id}
-                    forceMount
-                    className="min-w-0 data-[state=inactive]:hidden focus:outline-none"
-                    aria-label={`${section.title} relations`}
-                  >
-                    {section.render({ product })}
-                  </SectionTabsContent>
-                ))}
-              </SectionTabsRoot>
-            )}
+            {attributes}
           </SectionTabsContent>
         </SectionTabsRoot>
       </RecordForm>

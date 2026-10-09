@@ -12,20 +12,17 @@ import {
   defaultSettingsIdentities,
   defaultRbacProfiles,
   defaultSettingsSubject,
-  defaultRbacSubjectToIdentities,
   defaultRbacUser,
   type RbacAccountProfile,
   type RbacAccountUser,
   type RbacIdentity,
   type RbacSubject,
-  type RbacSubjectToIdentity,
 } from "../../../../shared";
 
 export interface SubjectMeAccountSettingsProps {
   subject: RbacSubject;
   user: RbacAccountUser;
   identities: RbacIdentity[];
-  identityRelations: RbacSubjectToIdentity[];
   profiles: RbacAccountProfile[];
   eyebrow: string;
   title: string;
@@ -38,7 +35,6 @@ export const defaultSubjectMeAccountSettingsProps: SubjectMeAccountSettingsProps
     subject: defaultSettingsSubject,
     user: defaultRbacUser,
     identities: defaultSettingsIdentities,
-    identityRelations: defaultRbacSubjectToIdentities,
     profiles: defaultRbacProfiles,
     eyebrow: "RBAC account",
     title: "Settings",
@@ -49,15 +45,10 @@ export const defaultSubjectMeAccountSettingsProps: SubjectMeAccountSettingsProps
 export function SubjectMeAccountSettings(
   props?: Partial<SubjectMeAccountSettingsProps>,
 ) {
-  const {
-    subject,
-    identities,
-    identityRelations,
-    profiles,
-    title,
-    description,
-    logoutLabel,
-  } = { ...defaultSubjectMeAccountSettingsProps, ...props };
+  const { subject, identities, profiles, title, description, logoutLabel } = {
+    ...defaultSubjectMeAccountSettingsProps,
+    ...props,
+  };
 
   const [activeSection, setActiveSection] = useState("profile");
   const navigationId = useId();
@@ -75,12 +66,7 @@ export function SubjectMeAccountSettings(
     {
       id: "sign-in",
       label: "Sign-in methods",
-      content: (
-        <SubjectMeIdentityFindInformation
-          identities={identities}
-          relations={identityRelations}
-        />
-      ),
+      content: <SubjectMeIdentityFindInformation identities={identities} />,
     },
   ];
 

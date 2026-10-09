@@ -4,8 +4,11 @@ import { Component as HostModuleLayout } from "../../index";
 const meta = {
   title: "Modules/Host/Models/Layout/Singlepage/admin-v2-table",
   component: HostModuleLayout,
-  args: { variant: "admin-v2-table" },
+  argTypes: { empty: { control: "boolean" } },
+  args: { variant: "admin-v2-table", empty: false },
 } satisfies Meta<typeof HostModuleLayout>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const Empty: Story = { args: { empty: true } };

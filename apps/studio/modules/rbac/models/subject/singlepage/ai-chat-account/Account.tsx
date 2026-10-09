@@ -1,13 +1,9 @@
 "use client";
 import { createContext, useContext, type ReactNode } from "react";
-import type {
-  IAIChatUserProfile,
-  ISubjectProfileRelation,
-} from "../../../../../../workspace/utils/products/ai-chat-models";
+import type { IAIChatUserProfile } from "../../../../../../workspace/utils/products/ai-chat-models";
 export interface IAIChatAccount {
   subject?: { id: string };
-  profiles?: IAIChatUserProfile[];
-  subjectsToProfiles?: ISubjectProfileRelation[];
+  profile?: IAIChatUserProfile;
   email?: string;
   balance: { free: number; purchased: number } | null;
 }

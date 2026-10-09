@@ -5,13 +5,13 @@ import { FilesProvider } from "../../../../../file-storage/models/file/singlepag
 import { SourceProvider } from "../ai-chat-document/Source";
 import { aiChatProductsSourceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 function Example() {
-  const { source, files, links } = aiChatProductsSourceFixture();
+  const { source, files, fileIds } = aiChatProductsSourceFixture();
   return (
     <FilesProvider initialFiles={files}>
       <SourceProvider
         profileId="pottery"
         initialSource={source}
-        initialFileLinks={links}
+        initialFileIds={fileIds}
       >
         <div className="w-64 bg-sps-graphite p-4">
           <KnowledgeModuleSource

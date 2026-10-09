@@ -7,7 +7,6 @@ export default function ProjectWorkspace({
       initialHref={navigationHref.replace(/^\/projects/, "/ai-chat/projects")}
       profiles={{
         initialProjects: [],
-        initialLinks: { chats: [], profilesToChats: [] },
       }}
     />
   );

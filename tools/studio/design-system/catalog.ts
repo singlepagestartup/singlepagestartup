@@ -466,8 +466,9 @@ function pascal(value: string) {
 }
 
 export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
-  if (EXCLUDED_MODULES.has(entity.module)) return;
-  const collection = entity.entityType === "model" ? "models" : "relations";
+  if (entity.entityType !== "model" || EXCLUDED_MODULES.has(entity.module))
+    return;
+  const collection = "models";
   const directory = path.join(
     root,
     "apps/studio/modules",
@@ -542,17 +543,11 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
     root,
     "apps/studio/workspace/design/singlepage/interface-kit/RecordProjection",
   );
-  const alias =
-    entity.entityType === "model"
-      ? `${pascal(entity.module)}Module${pascal(entity.entity)}`
-      : pascal(entity.entity);
+  const alias = `${pascal(entity.module)}Module${pascal(entity.entity)}`;
   const existing = variantAliases(
     path.join(directory, "singlepage/variants.ts"),
   );
-  for (const variant of (entity.entityType === "model"
-    ? ["admin-v2-table", "admin-v2-card", "find"]
-    : ["admin-v2-table", "find"]
-  ).filter(
+  for (const variant of ["admin-v2-table", "admin-v2-card", "list"].filter(
     (variant) => !existing.has(variant) || existing.get(variant) === variant,
   )) {
     const folder = path.join(directory, "singlepage", variant);
@@ -561,17 +556,16 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
     const interfaceImport = relative(folder, path.join(table, "interface"));
     const code =
       variant === "admin-v2-table"
-        ? `import { RecordTable } from "${uiImport}";\nimport fixture from "${dataImport}";\nimport type { IRecord } from "${interfaceImport}";\n\nexport function Component() {\n  return <RecordTable<IRecord> schema={fixture.schema} data={fixture.records} />;\n}`
+        ? `import { RecordTable } from "${uiImport}";\nimport fixture from "${dataImport}";\nimport type { IRecord } from "${interfaceImport}";\n\nexport interface IComponentProps { empty?: boolean; }\nexport function Component({ empty = false }: IComponentProps) {\n  return <RecordTable<IRecord> schema={fixture.schema} data={empty ? [] : fixture.records} />;\n}`
         : variant === "admin-v2-card"
           ? `import { RecordCard, type IProjectionProps } from "${uiImport}";\nimport fixture from "${dataImport}";\nimport type { IRecord } from "${interfaceImport}";\n\nexport interface IComponentProps extends IProjectionProps<IRecord> {}\n\nexport function Component({ data, id, className }: IComponentProps) {\n  const record = data ?? (id ? fixture.records.find((item) => item.id === id) : fixture.records[0]);\n  if (!record) return <p>Record unavailable in this local preview.</p>;\n  return <RecordCard schema={fixture.schema} data={record} className={className} />;\n}`
-          : `import { RecordFind, type IProjectionFindProps } from "${uiImport}";\nimport fixture from "${dataImport}";\nimport type { IRecord } from "${interfaceImport}";\n\nexport interface IComponentProps extends IProjectionFindProps<IRecord> {}\n\nexport function Component(props: IComponentProps) {\n  return <RecordFind<IRecord> schema={fixture.schema} records={fixture.records} {...props} />;\n}`;
+          : `import { RecordList, type IProjectionListProps } from "${uiImport}";\nimport fixture from "${dataImport}";\nimport type { IRecord } from "${interfaceImport}";\n\nexport interface IComponentProps extends IProjectionListProps<IRecord> {}\nexport function Component({ data = fixture.records, ...props }: IComponentProps) {\n  return <RecordList<IRecord> schema={fixture.schema} records={data} {...props} />;\n}`;
     write(path.join(folder, "Component.tsx"), code, true);
     write(
       path.join(folder, "index.ts"),
-      `export { Component } from "./Component";`,
+      'export { Component } from "./Component";',
       true,
     );
-    const filterKey = fields.find((field) => field.target)?.key ?? "id";
     const title = (value: string) =>
       value
         .split("-")
@@ -583,10 +577,16 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
         : entity.module === "rbac"
           ? "RBAC"
           : title(entity.module);
-    const storyTitle = `Modules/${moduleTitle}/${entity.entityType === "model" ? "Models" : "Relations"}/${title(entity.entity)}/Singlepage/${variant}`;
+    const storyTitle = `Modules/${moduleTitle}/Models/${title(entity.entity)}/Singlepage/${variant}`;
+    const controls =
+      variant === "list"
+        ? '  argTypes: { count: { control: { type: "number", min: 0, max: 50 } }, empty: { control: "boolean" } },\n'
+        : variant === "admin-v2-table"
+          ? '  argTypes: { empty: { control: "boolean" } },\n'
+          : '  argTypes: { id: { control: "text" } },\n';
     write(
       path.join(folder, "Component.stories.tsx"),
-      `import type { Meta, StoryObj } from "@storybook/react-vite";\nimport { Component as ${alias} } from "../../index";\n${variant === "find" || variant === "admin-v2-card" ? `import fixture from "${dataImport}";\n` : ""}\nconst meta = {\n  title: ${JSON.stringify(storyTitle)},\n  component: ${alias},\n  args: { variant: ${JSON.stringify(variant)}${variant === "admin-v2-card" ? ", id: fixture.records[0].id" : ""} },\n${variant === "admin-v2-card" ? '  argTypes: { id: { control: "text" } },\n' : ""}} satisfies Meta<typeof ${alias}>;\nexport default meta;\ntype Story = StoryObj<typeof meta>;\nexport const Default: Story = {};\n${variant === "find" ? `export const Filtered: Story = { args: { apiProps: { params: { filters: { and: [{ column: ${JSON.stringify(filterKey)}, method: "eq", value: fixture.records[0].${filterKey} }] } } } } };\nexport const Empty: Story = { args: { apiProps: { params: { filters: { and: [{ column: "id", method: "eq", value: "missing" }] } } } } };\n` : ""}`,
+      `import type { Meta, StoryObj } from "@storybook/react-vite";\nimport { Component as ${alias} } from "../../index";\n${variant === "admin-v2-card" ? `import fixture from "${dataImport}";\n` : ""}const meta = {\n  title: ${JSON.stringify(storyTitle)},\n  component: ${alias},\n  args: { variant: ${JSON.stringify(variant)}${variant === "admin-v2-card" ? ", id: fixture.records[0].id" : variant === "list" ? ", count: 3, empty: false" : ", empty: false"} },\n${controls}} satisfies Meta<typeof ${alias}>;\nexport default meta;\ntype Story = StoryObj<typeof meta>;\nexport const Default: Story = {};\n${variant !== "admin-v2-card" ? "export const Empty: Story = { args: { empty: true } };\n" : ""}${variant === "list" ? "export const Many: Story = { args: { count: 20 } };\n" : ""}`,
       true,
     );
     metadata(root, folder, entity, variant);
@@ -601,7 +601,7 @@ export async function generateCatalog(root = process.cwd()) {
   // Existing Studio-only visual models retain their own variants and public entries.
   for (const module of readdirSync(path.join(root, "apps/studio/modules"))) {
     if (EXCLUDED_MODULES.has(module)) continue;
-    for (const kind of ["models", "relations"]) {
+    for (const kind of ["models"]) {
       const collection = path.join(root, "apps/studio/modules", module, kind);
       if (!existsSync(collection)) continue;
       for (const entity of readdirSync(collection)) {

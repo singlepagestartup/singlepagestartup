@@ -1,5 +1,3 @@
-import { linkProjectProfile } from "./ai-chat-models";
-import { aiChatAccount } from "./ai-chat-account-fixture";
 import {
   attachProjectAsset,
   createProjectProfile,
@@ -28,11 +26,6 @@ export function aiChatWorkspaceFixture() {
   };
   return {
     initialProjects: [project],
-    initialLinks: linkProjectProfile(
-      { chats: [], profilesToChats: [] },
-      aiChatAccount.profiles[0].id,
-      project,
-    ),
   };
 }
 
@@ -99,11 +92,6 @@ export function aiChatProductsSourceFixture() {
   return {
     source,
     files,
-    links: files.map((file, orderIndex) => ({
-      id: `${source.id}:file:${file.id}`,
-      sourceId: source.id,
-      fileStorageModuleFileId: file.id,
-      orderIndex,
-    })),
+    fileIds: files.map((file) => file.id),
   };
 }

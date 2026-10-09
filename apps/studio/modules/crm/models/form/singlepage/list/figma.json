@@ -1,0 +1,21 @@
+{
+  "componentName": "crm.form",
+  "pageName": "crm",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "crm.form.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "crm/models/form/singlepage/list",
+    "sps.figma.component": "crm.form",
+    "sps.figma.variant": "list",
+    "sps.source.module": "crm",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "form",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/crm/models/form/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/crm/models/form/singlepage/list/Component.stories.tsx"
+  }
+}

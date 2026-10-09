@@ -1,8 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  HOST_STUDIO_FIELDS,
-  HOST_STUDIO_RELATIONS,
-} from "../../../../../../../workspace/utils/host-studio/constants";
+import { HOST_STUDIO_FIELDS } from "../../../../../../../workspace/utils/host-studio/constants";
 import {
   createHostModel,
   hostFieldValue,
@@ -12,7 +9,6 @@ import {
   validateHostModel,
   type HostModel,
   type HostRecord,
-  type HostRelation,
 } from "../../../../../../../workspace/utils/host-studio/index";
 import {
   Button,
@@ -200,14 +196,11 @@ export function HostModelForm({
   onSaved,
   embedded = false,
 }: IHostModelFormProps) {
-  const { state, update, RelationManager } = useHostStudio();
+  const { state, update } = useHostStudio();
   const [draft, setDraft] = useState(record);
   const [language, setLanguage] = useState("en");
   const [feedback, setFeedback] = useState("");
   const exists = state.models[model].some((item) => item.id === record.id);
-  const ownerRelations = (
-    Object.keys(HOST_STUDIO_RELATIONS) as HostRelation[]
-  ).filter((key) => HOST_STUDIO_RELATIONS[key].owner === model);
   const patch = (key: string, value: string | null) =>
     setDraft((current) => ({ ...current, [key]: value }));
   return (
@@ -319,25 +312,6 @@ export function HostModelForm({
           </fieldset>
         )}
       </RecordForm>
-      {ownerRelations.length > 0 && RelationManager && (
-        <div className="grid gap-5 border-t border-[var(--workspace-brand-line)] p-5">
-          <h3 className="font-semibold">Connected records</h3>
-          {exists ? (
-            ownerRelations.map((relation) => (
-              <RelationManager
-                key={relation}
-                relation={relation}
-                ownerId={record.id}
-                embedded
-              />
-            ))
-          ) : (
-            <p className={`text-sm ${kit.muted}`}>
-              Save this {model} before linking records.
-            </p>
-          )}
-        </div>
-      )}
     </section>
   );
 }

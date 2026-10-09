@@ -2,8 +2,14 @@ import { RecordTable } from "../../../../../../workspace/design/singlepage/inter
 import fixture from "./data.json";
 import type { IRecord } from "./interface";
 
-export function Component() {
+export interface IComponentProps {
+  empty?: boolean;
+}
+export function Component({ empty = false }: IComponentProps) {
   return (
-    <RecordTable<IRecord> schema={fixture.schema} data={fixture.records} />
+    <RecordTable<IRecord>
+      schema={fixture.schema}
+      data={empty ? [] : fixture.records}
+    />
   );
 }

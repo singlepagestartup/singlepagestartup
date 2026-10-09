@@ -1,22 +1,18 @@
 import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
-import { HostStudioProvider, HostModelForm } from "./index";
+import { HostStudioProvider, HostModelForm, HostWorkbench } from "./index";
 import { createHostStudioState } from "../../../../../../../workspace/utils/host-studio/index";
 
-test("Host forms render the relation manager supplied by their composition", () => {
+test("Host forms and navigation show models without relation management", () => {
   const state = createHostStudioState();
   const html = renderToStaticMarkup(
-    <HostStudioProvider
-      initialState={state}
-      RelationManager={({ relation, ownerId }) => (
-        <output>
-          {relation}:{ownerId}
-        </output>
-      )}
-    >
+    <HostStudioProvider initialState={state}>
       <HostModelForm model="page" record={state.models.page[0]} />
+      <HostWorkbench />
     </HostStudioProvider>,
   );
-  expect(html).toContain(`pages-to-layouts:${state.models.page[0].id}`);
-  expect(html).toContain(`pages-to-metadata:${state.models.page[0].id}`);
+  expect(html).toContain("Studio journal");
+  expect(html).toContain("Host views");
+  expect(html).not.toContain("Connected records");
+  expect(html).not.toContain("pages-to-layouts");
 });

@@ -1,9 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  defaultRbacIdentities,
-  defaultRbacSubjectToIdentities,
-} from "../../../../shared";
+import { defaultRbacIdentities } from "../../../../shared";
 import { IdentityCardDefault } from "./Component";
 
 const meta = {
@@ -11,7 +8,6 @@ const meta = {
   component: IdentityCardDefault,
   args: {
     identity: defaultRbacIdentities[0],
-    relation: defaultRbacSubjectToIdentities[0],
   },
 } satisfies Meta<typeof IdentityCardDefault>;
 
@@ -26,7 +22,6 @@ export const Default: Story = {
 export const External: Story = {
   args: {
     identity: defaultRbacIdentities[1],
-    relation: defaultRbacSubjectToIdentities[1],
   },
   name: "external",
 };

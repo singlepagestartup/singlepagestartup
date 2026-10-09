@@ -12,13 +12,6 @@ export const Empty: Story = {
   args: {
     initialState: {
       models: { page: [], layout: [], widget: [], metadata: [] },
-      relations: {
-        "pages-to-layouts": [],
-        "pages-to-widgets": [],
-        "pages-to-metadata": [],
-        "layouts-to-widgets": [],
-        "widgets-to-external-widgets": [],
-      },
     },
   },
 };

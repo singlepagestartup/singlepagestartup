@@ -67,14 +67,12 @@ const inventory: GeneratedModuleInventory = {
 };
 
 describe("Studio module directories", () => {
-  test("prepares both layers for models and relations in a fresh child project", async () => {
+  test("prepares both layers only for models in a fresh child project", async () => {
     const root = await fixtureRoot();
     const missing = await missingModuleDirectories(inventory, root);
     expect(missing).toEqual([
       "apps/studio/modules/startup/models/widget/singlepage",
       "apps/studio/modules/startup/models/widget/startup",
-      "apps/studio/modules/social/relations/profiles-to-blog-module-articles/singlepage",
-      "apps/studio/modules/social/relations/profiles-to-blog-module-articles/startup",
     ]);
 
     expect(await scaffoldModuleDirectories(inventory, root)).toEqual(missing);
@@ -129,16 +127,16 @@ describe("Studio module directories", () => {
 });
 
 describe("Host Studio coverage", () => {
-  test("all four models and five relations have discoverable stories", async () => {
+  test("all four models have discoverable stories", async () => {
     const actual = await collectModuleInventory();
     const host = actual.modules.find((record) => record.name === "host")!;
-    expect(host.entities).toHaveLength(9);
+    expect(host.entities).toHaveLength(4);
     expect(
       host.entities.filter((entity) => !entity.storyFiles?.length),
     ).toEqual([]);
     for (const entity of host.entities) {
-      const management =
-        entity.entityType === "model" ? "admin-v2-list" : "admin-v2-manager";
+      expect(entity.entityType).toBe("model");
+      const management = "admin-v2-list";
       expect(
         entity.storyFiles?.some((file) => file.includes(`/${management}/`)),
       ).toBe(true);
@@ -212,16 +210,9 @@ describe("AI Chat project ownership", () => {
           ),
         ).toBe(true);
     }
-    for (const entity of ["chats-to-threads", "threads-to-messages"]) {
-      const relation = social.entities.find(
-        (item) => item.entityType === "relation" && item.entity === entity,
-      )!;
-      expect(
-        relation.storyFiles?.some((file) =>
-          file.includes("/singlepage/ai-chat-find/"),
-        ),
-      ).toBe(true);
-    }
+    expect(
+      social.entities.every((entity) => entity.entityType === "model"),
+    ).toBe(true);
     const message = social.entities.find(
       (item) => item.entityType === "model" && item.entity === "message",
     )!;
@@ -234,7 +225,7 @@ describe("AI Chat project ownership", () => {
 });
 
 describe("AI Chat Source ownership", () => {
-  test("discovers Source section and its existing File relation", async () => {
+  test("discovers Source and File model views", async () => {
     const inventory = await collectModuleInventory();
     const knowledge = inventory.modules.find(
       (module) => module.name === "knowledge",
@@ -242,19 +233,20 @@ describe("AI Chat Source ownership", () => {
     const source = knowledge.entities.find(
       (entity) => entity.entityType === "model" && entity.entity === "source",
     )!;
-    const relation = knowledge.entities.find(
-      (entity) =>
-        entity.entityType === "relation" &&
-        entity.entity === "sources-to-file-storage-module-files",
-    )!;
     expect(
       source.storyFiles?.some((file) =>
         file.includes("/singlepage/ai-chat-card/"),
       ),
     ).toBe(true);
     expect(
-      relation.storyFiles?.some((file) =>
-        file.includes("/singlepage/ai-chat-find/"),
+      knowledge.entities.every((entity) => entity.entityType === "model"),
+    ).toBe(true);
+    const file = inventory.modules
+      .find((module) => module.name === "file-storage")!
+      .entities.find((entity) => entity.entity === "file")!;
+    expect(
+      file.storyFiles?.some((story) =>
+        story.includes("/singlepage/ai-chat-attachments/"),
       ),
     ).toBe(true);
   });

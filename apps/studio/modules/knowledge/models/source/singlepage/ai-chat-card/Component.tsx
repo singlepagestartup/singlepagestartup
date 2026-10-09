@@ -1,5 +1,4 @@
 "use client";
-import { Component as SourcesToFileStorageModuleFiles } from "../../../../relations/sources-to-file-storage-module-files/index";
 import { Component as FileStorageModuleFile } from "../../../../../file-storage/models/file/index";
 import { memo, useCallback, useId } from "react";
 import {
@@ -23,7 +22,7 @@ export const Component = memo(function Component({
   discussing = false,
   onDiscuss,
 }: ISourceCardProps) {
-  const { source: data, fileLinks, edit: onEdit, attach, detach } = useSource();
+  const { source: data, fileIds, edit: onEdit, attach, detach } = useSource();
   const id = useId();
   const edit = useCallback(
     (_: string, value: string) => onEdit(value),
@@ -72,29 +71,13 @@ export const Component = memo(function Component({
           {discussing ? "Discussing in chat" : "Discuss this section"}
         </button>
       )}
-      <SourcesToFileStorageModuleFiles
-        variant="find"
-        data={fileLinks}
-        apiProps={{
-          params: {
-            filters: {
-              and: [{ column: "sourceId", method: "eq", value: data.id }],
-            },
-          },
-        }}
-      >
-        {(relations) => (
-          <FileStorageModuleFile
-            variant="ai-chat-attachments"
-            section={data.title}
-            fileIds={[...relations]
-              .sort((a, b) => a.orderIndex - b.orderIndex)
-              .map((link) => link.fileStorageModuleFileId)}
-            onAttach={attach}
-            onRemove={detach}
-          />
-        )}
-      </SourcesToFileStorageModuleFiles>
+      <FileStorageModuleFile
+        variant="ai-chat-attachments"
+        section={data.title}
+        fileIds={fileIds}
+        onAttach={attach}
+        onRemove={detach}
+      />
     </article>
   );
 });

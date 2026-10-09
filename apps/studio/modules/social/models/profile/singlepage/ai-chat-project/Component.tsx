@@ -1,5 +1,4 @@
 "use client";
-import { Component as ProfilesToChats } from "../../../../relations/profiles-to-chats/index";
 import type { ReactNode } from "react";
 
 import { ProjectProvider } from "./Profile";
@@ -9,7 +8,7 @@ export interface IProjectProfileProps {
   children: ReactNode;
 }
 export function Component({ profileId, children }: IProjectProfileProps) {
-  const { projects, links } = useProfiles();
+  const { projects } = useProfiles();
   if (!projects.some((profile) => profile.id === profileId))
     return (
       <main role="status" className="p-6">
@@ -17,33 +16,13 @@ export function Component({ profileId, children }: IProjectProfileProps) {
       </main>
     );
   return (
-    <ProfilesToChats
-      variant="find"
-      data={links.profilesToChats}
-      apiProps={{
-        params: {
-          filters: {
-            and: [{ column: "profileId", method: "eq", value: profileId }],
-          },
-        },
-      }}
-    >
-      {(relations) =>
-        relations.some(
-          (link) => link.chatId === `${profileId}:project-chat`,
-        ) ? (
-          <ProjectProvider profileId={profileId}>
-            <div
-              data-ds-block="social.profile.ai-chat-project"
-              data-profile-id={profileId}
-            >
-              {children}
-            </div>
-          </ProjectProvider>
-        ) : (
-          <main role="status">Chat unavailable.</main>
-        )
-      }
-    </ProfilesToChats>
+    <ProjectProvider profileId={profileId}>
+      <div
+        data-ds-block="social.profile.ai-chat-project"
+        data-profile-id={profileId}
+      >
+        {children}
+      </div>
+    </ProjectProvider>
   );
 }

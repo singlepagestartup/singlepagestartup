@@ -154,7 +154,7 @@ export function BlogArticleAdminV2List() {
               ? "Edit article"
               : "New article"
         }
-        description="Article fields. Profiles and other connected records are managed through their relations."
+        description="Edit the article fields in this local preview."
       >
         {preview && (
           <div className="p-5 sm:p-6">

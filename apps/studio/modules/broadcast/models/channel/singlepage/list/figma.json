@@ -1,0 +1,21 @@
+{
+  "componentName": "broadcast.channel",
+  "pageName": "broadcast",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "broadcast.channel.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "broadcast/models/channel/singlepage/list",
+    "sps.figma.component": "broadcast.channel",
+    "sps.figma.variant": "list",
+    "sps.source.module": "broadcast",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "channel",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/broadcast/models/channel/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/broadcast/models/channel/singlepage/list/Component.stories.tsx"
+  }
+}

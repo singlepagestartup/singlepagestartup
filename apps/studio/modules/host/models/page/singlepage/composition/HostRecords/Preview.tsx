@@ -1,16 +1,9 @@
 import { type ReactNode } from "react";
 import {
-  composeHostPage,
   hostRecordLabel,
-  sortHostLinks,
   type HostModel,
-  type HostRelation,
 } from "../../../../../../../workspace/utils/host-studio/index";
-import {
-  HOST_STUDIO_MODELS,
-  HOST_STUDIO_RELATIONS,
-} from "../../../../../../../workspace/utils/host-studio/constants";
-import { HostWidgetsToExternalWidgets } from "../../../../../relations/widgets-to-external-widgets/singlepage/default/Component";
+import { Component as BlogModuleWidget } from "../../../../../../blog/models/widget/index";
 import {
   Button,
   kit,
@@ -47,8 +40,6 @@ export function HostRecordPreview({
       </Empty>
     );
   if (model === "page") {
-    const composition = composeHostPage(state, id);
-    if (!composition) return null;
     return (
       <div
         className="grid min-w-0 gap-5"
@@ -56,78 +47,28 @@ export function HostRecordPreview({
         data-page-id={id}
       >
         <header className={kit.card}>
-          <p className={`text-sm ${kit.muted}`}>
-            {composition.page.url} · {composition.page.language}
-          </p>
-          <h2 className="mt-2 text-xl font-semibold">
-            {composition.page.title}
-          </h2>
-          <p className={`mt-2 text-sm ${kit.muted}`}>
-            {composition.page.description}
-          </p>
-        </header>
-        {composition.metadata.map(({ link, metadata }) => (
-          <div key={link.id} data-relation-id={link.id}>
-            <HostRecordPreview model="metadata" id={metadata.id} />
-          </div>
-        ))}
-        {!composition.metadata.length && (
-          <Empty>No metadata linked to this page.</Empty>
-        )}
-        {composition.layouts.map(({ link, layout, before, after }) => (
-          <section
-            key={link.id}
-            className={`${kit.card} grid gap-5`}
-            data-relation-id={link.id}
-            data-layout-id={layout.id}
-          >
-            <p className={`text-xs ${kit.muted}`}>
-              Layout: {hostRecordLabel(layout)}
+          <h2 className="text-xl font-semibold">{hostRecordLabel(record)}</h2>
+          {"url" in record && (
+            <p className={`mt-2 text-sm ${kit.muted}`}>
+              {record.url} · {record.language}
             </p>
-            {before.map((item) => (
-              <div key={item.id} data-slot="default" data-relation-id={item.id}>
-                <HostRecordPreview
-                  model="widget"
-                  id={item.widgetId}
-                  language={composition.page.language}
-                />
-              </div>
-            ))}
-            <div className="grid gap-5" data-slot="page">
-              {composition.widgets.map((item) => (
-                <div key={item.id} data-relation-id={item.id}>
-                  <HostRecordPreview
-                    model="widget"
-                    id={item.widgetId}
-                    language={composition.page.language}
-                  />
-                </div>
-              ))}
-              {!composition.widgets.length && (
-                <Empty>No page widgets linked.</Empty>
-              )}
-            </div>
-            {after.map((item) => (
-              <div
-                key={item.id}
-                data-slot="additional"
-                data-relation-id={item.id}
-              >
-                <HostRecordPreview
-                  model="widget"
-                  id={item.widgetId}
-                  language={composition.page.language}
-                />
-              </div>
-            ))}
-          </section>
+          )}
+        </header>
+        {state.models.metadata.map((metadata) => (
+          <HostRecordPreview
+            key={metadata.id}
+            model="metadata"
+            id={metadata.id}
+          />
         ))}
-        {!composition.layouts.length && (
-          <Empty>
-            No default layout linked. The runtime Page renders its widgets
-            inside a linked Layout.
-          </Empty>
-        )}
+        {state.models.layout.map((layout) => (
+          <HostRecordPreview
+            key={layout.id}
+            model="layout"
+            id={layout.id}
+            language={language}
+          />
+        ))}
       </div>
     );
   }
@@ -189,35 +130,18 @@ export function HostRecordPreview({
       </section>
     );
   if (model === "layout") {
-    const links = sortHostLinks(
-      state.relations["layouts-to-widgets"].filter(
-        (item) => item.layoutId === id,
-      ),
-    );
     return (
       <section
         className={`${kit.card} grid gap-5`}
         data-ds-block="host.layout.default"
       >
         <h3 className="font-semibold">{hostRecordLabel(record)}</h3>
-        {links
-          .filter((item) => item.variant === "default")
-          .map((item) => (
+        {children ??
+          state.models.widget.map((widget) => (
             <HostRecordPreview
-              key={item.id}
+              key={widget.id}
               model="widget"
-              id={item.widgetId}
-              language={language}
-            />
-          ))}
-        {children ?? <Empty>Page content slot</Empty>}
-        {links
-          .filter((item) => item.variant === "additional")
-          .map((item) => (
-            <HostRecordPreview
-              key={item.id}
-              model="widget"
-              id={item.widgetId}
+              id={widget.id}
               language={language}
             />
           ))}
@@ -225,64 +149,21 @@ export function HostRecordPreview({
     );
   }
   if (model === "widget" && "subtitle" in record) {
-    const links = sortHostLinks(
-      state.relations["widgets-to-external-widgets"].filter(
-        (item) => item.widgetId === id && item.variant === "default",
-      ),
-    );
     return (
       <section
         className={`${kit.card} grid min-w-0 gap-4`}
         data-ds-block="host.widget.default"
         data-widget-id={id}
       >
-        <div>
-          <p className={`text-xs ${kit.muted}`}>
-            {record.adminTitle} · {record.slug}
+        <h3 className="text-lg font-semibold">
+          {record.title?.[language] || record.adminTitle}
+        </h3>
+        {record.description?.[language] && (
+          <p className={`text-sm ${kit.muted}`}>
+            {record.description[language]}
           </p>
-          <h3 className="mt-2 text-lg font-semibold">
-            {record.title?.[language] || record.adminTitle}
-          </h3>
-          {record.subtitle?.[language] && (
-            <p className="mt-1 text-sm">{record.subtitle[language]}</p>
-          )}
-          {record.description?.[language] && (
-            <p className={`mt-2 whitespace-pre-wrap text-sm ${kit.muted}`}>
-              {record.description[language]}
-            </p>
-          )}
-        </div>
-        {links.map((link) => (
-          <div key={link.id} data-relation-id={link.id}>
-            {link.externalModule === "blog" &&
-            link.externalWidgetId === "preview-blog-overview-widget" ? (
-              <HostWidgetsToExternalWidgets
-                link={{
-                  ...link,
-                  className: link.className ?? undefined,
-                  externalModule: "blog",
-                  variant: "article-overview-default",
-                }}
-              />
-            ) : link.externalModule === "ecommerce" &&
-              link.externalWidgetId === "preview-ecommerce-overview-widget" ? (
-              <HostWidgetsToExternalWidgets
-                link={{
-                  ...link,
-                  className: link.className ?? undefined,
-                  externalModule: "ecommerce",
-                  variant: "product-overview-default",
-                }}
-              />
-            ) : (
-              <Empty>
-                Studio renderer unavailable: {link.externalModule} /{" "}
-                {link.externalWidgetId}. The link is retained.
-              </Empty>
-            )}
-          </div>
-        ))}
-        {!links.length && <Empty>No external widgets linked.</Empty>}
+        )}
+        <BlogModuleWidget variant="article-overview-default" />
       </section>
     );
   }

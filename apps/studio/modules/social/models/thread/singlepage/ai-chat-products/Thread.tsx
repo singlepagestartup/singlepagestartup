@@ -43,7 +43,7 @@ export function ThreadProvider({
   children,
   initialMessages,
 }: IThreadProviderProps) {
-  const { source, fileLinks, edit } = useSource();
+  const { source, fileIds: sourceFileIds, edit } = useSource();
   const { files } = useFiles();
   const [messages, setMessages] = useState<IProjectMessage[]>(
     () =>
@@ -80,9 +80,7 @@ export function ThreadProvider({
     const text = draft.trim();
     const pending = files.filter((file) => fileIds.includes(file.id));
     if (!text && !pending.length) return;
-    const sourceFileIds = fileLinks
-      .filter((link) => link.sourceId === source.id)
-      .map((link) => link.fileStorageModuleFileId);
+
     const sourceFiles = files.filter((file) => sourceFileIds.includes(file.id));
     const ids = { user: crypto.randomUUID(), assistant: crypto.randomUUID() };
     setMessages((current) =>

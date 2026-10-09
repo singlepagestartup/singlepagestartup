@@ -1,13 +1,11 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { IdentityCardDefault } from "../card-default/Component";
 import {
   defaultRbacIdentities,
-  defaultRbacSubjectToIdentities,
   getIdentityOperationLabel,
   type IdentityAction,
   type RbacIdentity,
-  type RbacSubjectToIdentity,
 } from "../../../../shared";
 
 export interface IdentityFindDefaultProps {
@@ -15,7 +13,6 @@ export interface IdentityFindDefaultProps {
   description: string;
   emptyLabel: string;
   identities: RbacIdentity[];
-  relations: RbacSubjectToIdentity[];
 }
 
 export const defaultIdentityFindDefaultProps: IdentityFindDefaultProps = {
@@ -24,11 +21,10 @@ export const defaultIdentityFindDefaultProps: IdentityFindDefaultProps = {
     "Each identity is an independent login method. Actions differ by provider type.",
   emptyLabel: "No identities linked to this subject.",
   identities: defaultRbacIdentities,
-  relations: defaultRbacSubjectToIdentities,
 };
 
 export function IdentityFindDefault(props?: Partial<IdentityFindDefaultProps>) {
-  const { title, description, emptyLabel, identities, relations } = {
+  const { title, description, emptyLabel, identities } = {
     ...defaultIdentityFindDefaultProps,
     ...props,
   };
@@ -36,11 +32,6 @@ export function IdentityFindDefault(props?: Partial<IdentityFindDefaultProps>) {
     identityId: string;
     label: string;
   } | null>(null);
-
-  const sortedRelations = useMemo(
-    () => [...relations].sort((a, b) => a.orderIndex - b.orderIndex),
-    [relations],
-  );
 
   const handleAction = useCallback(
     (identity: RbacIdentity, action: IdentityAction) => {
@@ -70,29 +61,22 @@ export function IdentityFindDefault(props?: Partial<IdentityFindDefaultProps>) {
       </div>
 
       <div className="mt-6 space-y-4">
-        {sortedRelations.length === 0 ? (
+        {identities.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 text-center text-sm text-[var(--workspace-brand-muted)]">
             {emptyLabel}
           </div>
         ) : (
-          sortedRelations.map((relation) => {
-            const identity = identities.find(
-              (item) => item.id === relation.identityId,
-            );
-
-            if (!identity) return null;
-
+          identities.map((identity) => {
             return (
               <IdentityCardDefault
                 identity={identity}
-                key={relation.id}
+                key={identity.id}
                 lastOperationLabel={
                   lastOperation?.identityId === identity.id
                     ? lastOperation.label
                     : undefined
                 }
                 onAction={handleAction}
-                relation={relation}
               />
             );
           })

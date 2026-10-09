@@ -1,5 +1,4 @@
 "use client";
-import { Component as ProfilesToKnowledgeModuleSources } from "../../../../../social/relations/profiles-to-knowledge-module-sources/index";
 import {
   createContext,
   useContext,
@@ -7,15 +6,12 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import type {
-  IAIChatSource,
-  ISourceFileRelation,
-} from "../../../../../../workspace/utils/products/ai-chat-models";
+import type { IAIChatSource } from "../../../../../../workspace/utils/products/ai-chat-models";
 import { editSourceUserContext } from "../../../../../../workspace/utils/products/ai-chat-knowledge";
 
 interface ISourceContext {
   source: IAIChatSource;
-  fileLinks: ISourceFileRelation[];
+  fileIds: string[];
   edit: (value: string) => void;
   attach: (fileIds: string[]) => void;
   detach: (fileId: string) => void;
@@ -24,14 +20,14 @@ interface ISourceProviderProps {
   profileId: string;
   children: ReactNode;
   initialSource?: IAIChatSource;
-  initialFileLinks?: ISourceFileRelation[];
+  initialFileIds?: string[];
 }
 const SourceContext = createContext<ISourceContext | null>(null);
 export function SourceProvider({
   profileId,
   children,
   initialSource,
-  initialFileLinks = [],
+  initialFileIds = [],
 }: ISourceProviderProps) {
   const [source, setSource] = useState<IAIChatSource>(
     () =>
@@ -45,7 +41,7 @@ export function SourceProvider({
           "Describe the products, their customers, value and current availability.",
       },
   );
-  const [fileLinks, setFileLinks] = useState(initialFileLinks);
+  const [fileIds, setFileIds] = useState(initialFileIds);
   const edit = useCallback(
     (value: string) =>
       setSource((current) => ({
@@ -56,68 +52,18 @@ export function SourceProvider({
   );
   const attach = useCallback(
     (ids: string[]) =>
-      setFileLinks((current) => {
-        const linked = new Set(
-          current
-            .filter((link) => link.sourceId === source.id)
-            .map((link) => link.fileStorageModuleFileId),
-        );
-        let order = Math.max(
-          -1,
-          ...current
-            .filter((link) => link.sourceId === source.id)
-            .map((link) => link.orderIndex),
-        );
-        const added = [...new Set(ids)]
-          .filter((id) => !linked.has(id))
-          .map((id) => ({
-            id: `${source.id}:file:${id}`,
-            sourceId: source.id,
-            fileStorageModuleFileId: id,
-            orderIndex: ++order,
-          }));
-        return [...current, ...added];
-      }),
-    [source.id],
+      setFileIds((current) => [...new Set([...current, ...ids])]),
+    [],
   );
   const detach = useCallback(
     (id: string) =>
-      setFileLinks((current) =>
-        current.filter(
-          (link) =>
-            link.sourceId !== source.id || link.fileStorageModuleFileId !== id,
-        ),
-      ),
-    [source.id],
+      setFileIds((current) => current.filter((fileId) => fileId !== id)),
+    [],
   );
   return (
-    <ProfilesToKnowledgeModuleSources
-      variant="find"
-      data={[
-        {
-          id: `${source.id}:profile`,
-          profileId,
-          knowledgeModuleSourceId: source.id,
-        },
-      ]}
-      apiProps={{
-        params: {
-          filters: {
-            and: [{ column: "profileId", method: "eq", value: profileId }],
-          },
-        },
-      }}
-    >
-      {(links) =>
-        links.some((link) => link.knowledgeModuleSourceId === source.id) ? (
-          <SourceContext.Provider
-            value={{ source, fileLinks, edit, attach, detach }}
-          >
-            {children}
-          </SourceContext.Provider>
-        ) : null
-      }
-    </ProfilesToKnowledgeModuleSources>
+    <SourceContext.Provider value={{ source, fileIds, edit, attach, detach }}>
+      {children}
+    </SourceContext.Provider>
   );
 }
 export function useSource() {

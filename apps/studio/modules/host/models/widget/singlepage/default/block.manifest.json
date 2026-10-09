@@ -2,7 +2,7 @@
   "$schema": "../../../../../../block.schema.json",
   "id": "host.widget.default",
   "title": "Host Widget / Default",
-  "description": "Scopes and orders local external widget relations by their host widget ID.",
+  "description": "Displays a local Blog or Ecommerce Widget model chosen by a view prop.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
@@ -25,9 +25,5 @@
     "nodeId": null,
     "variantNodeId": null
   },
-  "tags": [
-    "host",
-    "widget",
-    "default"
-  ]
+  "tags": ["host", "widget", "default"]
 }

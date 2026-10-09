@@ -176,3 +176,19 @@ test("entity registries overlay startup variants after singlepage variants", () 
       ).toEqual(["singlepageVariants", "startupVariants"]);
   }
 });
+
+test("Studio module stories display models without relation or API filter contracts", () => {
+  const sources = files(modules).filter(
+    (file) =>
+      /\.(ts|tsx)$/.test(file) &&
+      !file.endsWith(".test.tsx") &&
+      !file.endsWith(".test.ts"),
+  );
+  for (const file of sources) {
+    expect(file.includes("/relations/")).toBe(false);
+    const source = readFileSync(file, "utf8");
+    expect(source).not.toContain("apiProps");
+    expect(source).not.toContain('variant="find"');
+    expect(source).not.toContain("findLocalRelations");
+  }
+});

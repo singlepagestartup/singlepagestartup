@@ -1,0 +1,21 @@
+{
+  "componentName": "knowledge.source",
+  "pageName": "knowledge",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "knowledge.source.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "knowledge/models/source/singlepage/list",
+    "sps.figma.component": "knowledge.source",
+    "sps.figma.variant": "list",
+    "sps.source.module": "knowledge",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "source",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/knowledge/models/source/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/knowledge/models/source/singlepage/list/Component.stories.tsx"
+  }
+}

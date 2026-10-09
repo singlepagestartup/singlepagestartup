@@ -1,4 +1,3 @@
-import { Component as ButtonsArraysToButtons } from "../../../../relations/buttons-arrays-to-buttons/index";
 import { Component as WebsiteBuilderModuleButton } from "../../../button/index";
 
 export interface IHeaderButtonsProps {
@@ -23,31 +22,12 @@ export function Component({ id, activeHref, onNavigate }: IHeaderButtonsProps) {
       data-variant="ai-chat-header"
       className="flex items-center gap-1"
     >
-      <ButtonsArraysToButtons
-        variant="find"
-        data={[
-          { id: `${id}:button`, buttonsArrayId: id, buttonId, orderIndex: 0 },
-        ]}
-        apiProps={{
-          params: {
-            filters: {
-              and: [{ column: "buttonsArrayId", method: "eq", value: id }],
-            },
-          },
-        }}
-      >
-        {(relations) =>
-          relations.map((relation) => (
-            <WebsiteBuilderModuleButton
-              variant="ai-chat-header"
-              key={relation.id}
-              id={relation.buttonId}
-              activeHref={activeHref}
-              onNavigate={onNavigate}
-            />
-          ))
-        }
-      </ButtonsArraysToButtons>
+      <WebsiteBuilderModuleButton
+        variant="ai-chat-header"
+        id={buttonId}
+        activeHref={activeHref}
+        onNavigate={onNavigate}
+      />
     </div>
   );
 }

@@ -7,7 +7,7 @@ function Example() {
   return (
     <SocialModuleProfile
       variant="ai-chat-user-menu"
-      data={aiChatAccount.profiles[0]}
+      data={aiChatAccount.profile}
       email={aiChatAccount.email}
       balance={aiChatAccount.balance}
       page="chat"

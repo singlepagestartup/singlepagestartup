@@ -4,8 +4,11 @@ import { Component as BlogModuleArticle } from "../../index";
 const meta = {
   title: "Modules/Blog/Models/Article/Singlepage/admin-v2-table",
   component: BlogModuleArticle,
-  args: { variant: "admin-v2-table" },
+  argTypes: { empty: { control: "boolean" } },
+  args: { variant: "admin-v2-table", empty: false },
 } satisfies Meta<typeof BlogModuleArticle>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const Empty: Story = { args: { empty: true } };

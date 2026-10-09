@@ -105,7 +105,6 @@ export function SubjectMeProfileInformation(
       className="min-w-0 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-6"
       data-ds-block="rbac.subject.me-profile-information"
       data-profile-id={profile.id}
-      data-subject-profile-relation-id={profile.relationId}
       data-ds-layer="singlepage"
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -146,13 +145,7 @@ export function SubjectMeProfileInformation(
           );
         }}
       >
-        <fieldset
-          className="min-w-0 border-0 p-0"
-          data-avatar-relation-id={profile.avatarRelation?.id}
-          data-file-storage-file-id={
-            profile.avatarRelation?.fileStorageModuleFileId
-          }
-        >
+        <fieldset className="min-w-0 border-0 p-0">
           <legend className="text-sm font-medium">Avatar</legend>
           <div className="mt-3 flex flex-wrap items-center gap-4">
             <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-[var(--workspace-brand-background)]">

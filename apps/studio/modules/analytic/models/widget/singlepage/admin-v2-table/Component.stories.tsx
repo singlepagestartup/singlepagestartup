@@ -4,8 +4,11 @@ import { Component as AnalyticModuleWidget } from "../../index";
 const meta = {
   title: "Modules/Analytic/Models/Widget/Singlepage/admin-v2-table",
   component: AnalyticModuleWidget,
-  args: { variant: "admin-v2-table" },
+  argTypes: { empty: { control: "boolean" } },
+  args: { variant: "admin-v2-table", empty: false },
 } satisfies Meta<typeof AnalyticModuleWidget>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const Empty: Story = { args: { empty: true } };

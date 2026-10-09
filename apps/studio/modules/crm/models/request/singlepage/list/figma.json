@@ -1,0 +1,21 @@
+{
+  "componentName": "crm.request",
+  "pageName": "crm",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "crm.request.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "crm/models/request/singlepage/list",
+    "sps.figma.component": "crm.request",
+    "sps.figma.variant": "list",
+    "sps.source.module": "crm",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "request",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/crm/models/request/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/crm/models/request/singlepage/list/Component.stories.tsx"
+  }
+}

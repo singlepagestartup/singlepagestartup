@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.action",
+  "pageName": "rbac",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.action.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/models/action/singlepage/list",
+    "sps.figma.component": "rbac.action",
+    "sps.figma.variant": "list",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "action",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/models/action/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/models/action/singlepage/list/Component.stories.tsx"
+  }
+}

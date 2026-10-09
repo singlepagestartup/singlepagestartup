@@ -17,8 +17,8 @@ import { Component as AuthorFindByIdOverviewDefault } from "./author-find-by-id-
 import { Component as Byline } from "./byline/index";
 import { Component as Card } from "./card/index";
 import { Component as Compact } from "./compact/index";
-import { Component as Find } from "./find/index";
 import { Component as FindRow } from "./find-row/index";
+import { Component as List } from "./list/index";
 
 export const variants = {
   "admin-v2-card": AdminV2Card,
@@ -40,6 +40,6 @@ export const variants = {
   byline: Byline,
   card: Card,
   compact: Compact,
-  find: Find,
   "find-row": FindRow,
+  list: List,
 };

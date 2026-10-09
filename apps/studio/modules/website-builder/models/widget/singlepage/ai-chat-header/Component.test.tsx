@@ -125,21 +125,9 @@ describe("Website Builder header composition", () => {
           ),
         ),
       ).toBe(true);
-    for (const relation of [
-      "widgets-to-logotypes",
-      "widgets-to-buttons-arrays",
-      "buttons-arrays-to-buttons",
-    ])
-      expect(
-        visited.has(
-          path.join(
-            studio,
-            "modules/website-builder/relations",
-            relation,
-            "singlepage/ai-chat-find/Component.tsx",
-          ),
-        ),
-      ).toBe(true);
+    expect([...visited].some((file) => file.includes("/relations/"))).toBe(
+      false,
+    );
   });
 
   test("Header resolves native logo and button models without account/profile providers", () => {

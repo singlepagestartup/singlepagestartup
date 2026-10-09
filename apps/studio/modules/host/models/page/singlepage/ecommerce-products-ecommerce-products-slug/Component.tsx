@@ -8,7 +8,6 @@ import {
 } from "../../../../../ecommerce/models/cart/shared";
 import { defaultProductOverviewDefaultProps } from "../../../../../ecommerce/models/product/singlepage/overview-default/Component";
 import { HostWidgetDefault } from "../../../widget/singlepage/default/Component";
-import { defaultHostExternalProductLink } from "../../../../relations/widgets-to-external-widgets/singlepage/default/Component";
 import { FooterCompact } from "../../../../../website-builder/models/widget/singlepage/footer-compact/Component";
 import { NavbarDefault } from "../../../../../website-builder/models/widget/singlepage/navbar-default/Component";
 
@@ -104,8 +103,7 @@ export function EcommerceCartFlowDefault() {
         onCartClick={() => setIsCartOpen(true)}
       />
       <HostWidgetDefault
-        id={defaultHostExternalProductLink.widgetId}
-        links={[defaultHostExternalProductLink]}
+        externalModule="ecommerce"
         productProps={{
           related: productOverviewRelatedProducts,
           purchase: {

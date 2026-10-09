@@ -1,0 +1,21 @@
+{
+  "componentName": "billing.invoice",
+  "pageName": "billing",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "billing.invoice.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "billing/models/invoice/singlepage/list",
+    "sps.figma.component": "billing.invoice",
+    "sps.figma.variant": "list",
+    "sps.source.module": "billing",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "invoice",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/billing/models/invoice/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/billing/models/invoice/singlepage/list/Component.stories.tsx"
+  }
+}

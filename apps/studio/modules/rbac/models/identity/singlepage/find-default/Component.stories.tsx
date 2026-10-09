@@ -23,6 +23,5 @@ export const Empty: Story = {
   name: "empty",
   args: {
     identities: [],
-    relations: [],
   },
 };

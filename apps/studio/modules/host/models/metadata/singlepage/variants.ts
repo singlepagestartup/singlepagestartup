@@ -4,7 +4,7 @@ import { Component as AdminV2List } from "./admin-v2-list/index";
 import { Component as AdminV2SelectInput } from "./admin-v2-select-input/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as Default } from "./default/index";
-import { Component as Find } from "./find/index";
+import { Component as List } from "./list/index";
 
 export const variants = {
   "admin-v2-card": AdminV2Card,
@@ -13,5 +13,5 @@ export const variants = {
   "admin-v2-select-input": AdminV2SelectInput,
   "admin-v2-table": AdminV2Table,
   default: Default,
-  find: Find,
+  list: List,
 };

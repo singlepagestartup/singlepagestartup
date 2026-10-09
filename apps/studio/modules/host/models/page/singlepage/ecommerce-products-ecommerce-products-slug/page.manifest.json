@@ -18,8 +18,8 @@
       "path": "../../../widget/singlepage/default"
     },
     {
-      "id": "host.widgets-to-external-widgets.default",
-      "path": "../../../../relations/widgets-to-external-widgets/singlepage/default"
+      "id": "host.widget.default",
+      "path": "../../../widget/singlepage/default"
     },
     {
       "id": "ecommerce.widget.product-overview-default",

@@ -5,7 +5,7 @@ import { Component as ArticleFindCardDefault } from "./article-find-card-default
 import { Component as ArticleFindDefault } from "./article-find-default/index";
 import { Component as ArticleFindFeatured } from "./article-find-featured/index";
 import { Component as ArticleOverviewDefault } from "./article-overview-default/index";
-import { Component as Find } from "./find/index";
+import { Component as List } from "./list/index";
 import { Component as TagFindButton } from "./tag-find-button/index";
 
 export const variants = {
@@ -16,6 +16,6 @@ export const variants = {
   "article-find-default": ArticleFindDefault,
   "article-find-featured": ArticleFindFeatured,
   "article-overview-default": ArticleOverviewDefault,
-  find: Find,
+  list: List,
   "tag-find-button": TagFindButton,
 };

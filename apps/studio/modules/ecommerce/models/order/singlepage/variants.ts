@@ -5,7 +5,7 @@ import { Component as CheckoutConfirmationDefault } from "./checkout-confirmatio
 import { Component as CheckoutDetailsDefault } from "./checkout-details-default/index";
 import { Component as CheckoutPaymentDefault } from "./checkout-payment-default/index";
 import { Component as CheckoutStepperDefault } from "./checkout-stepper-default/index";
-import { Component as Find } from "./find/index";
+import { Component as List } from "./list/index";
 import { Component as SummaryDefault } from "./summary-default/index";
 
 export const variants = {
@@ -16,6 +16,6 @@ export const variants = {
   "checkout-details-default": CheckoutDetailsDefault,
   "checkout-payment-default": CheckoutPaymentDefault,
   "checkout-stepper-default": CheckoutStepperDefault,
-  find: Find,
+  list: List,
   "summary-default": SummaryDefault,
 };

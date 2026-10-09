@@ -66,18 +66,20 @@ export function moduleDirectoryPaths(
   return inventory.modules
     .filter((moduleRecord) => !EXCLUDED_MODULES.has(moduleRecord.name))
     .flatMap((moduleRecord) =>
-      moduleRecord.entities.flatMap((entity) =>
-        ["singlepage", "startup"].map((layer) =>
-          path.join(
-            inventory.studioRoot,
-            "modules",
-            entity.module,
-            entity.entityType === "model" ? "models" : "relations",
-            entity.entity,
-            layer,
+      moduleRecord.entities
+        .filter((entity) => entity.entityType === "model")
+        .flatMap((entity) =>
+          ["singlepage", "startup"].map((layer) =>
+            path.join(
+              inventory.studioRoot,
+              "modules",
+              entity.module,
+              entity.entityType === "model" ? "models" : "relations",
+              entity.entity,
+              layer,
+            ),
           ),
         ),
-      ),
     );
 }
 
@@ -349,7 +351,11 @@ export async function collectModuleInventory(): Promise<GeneratedModuleInventory
 
   for (const filePath of variantFiles.sort()) {
     const parsed = parseEntityFromVariantsPath(filePath);
-    if (!parsed || EXCLUDED_MODULES.has(parsed.module)) {
+    if (
+      !parsed ||
+      parsed.entityType !== "model" ||
+      EXCLUDED_MODULES.has(parsed.module)
+    ) {
       continue;
     }
 

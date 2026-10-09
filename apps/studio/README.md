@@ -72,36 +72,25 @@ preserves example state, and the HTML download includes every category. See
 [Design layouts and authoring](workspace/README.md) for layer ownership and
 restyling rules.
 
-`studio:inventory` regenerates `inventory/modules.generated.json` from
-production module variant contracts and Studio manifests. It also creates missing
-`singlepage` and `startup` directories for every discovered model and relation,
-keeping empty directories in Git with `.gitkeep`. Existing components and project
-overrides are preserved. Both Storybook commands run this preparation before
-starting or building. Workspace documents are not copied into generated JSON.
+`studio:inventory` regenerates `inventory/modules.generated.json` from production
+model variant contracts and Studio manifests. It prepares missing `singlepage`
+and `startup` model directories, preserving existing components and overrides.
+Telegram and relations are excluded. Both Storybook commands run this preparation.
 
-`studio:catalog` adds local record projections for all production models and
-relations except Telegram. Run it in the full checkout when adding an entity.
-It reads schema syntax without importing or executing production code. Synthetic
-records, serialized dates and foreign keys live in each entity's
-`singlepage/admin-v2-table/data.json`; their local contract is in `interface.ts`.
-The command preserves existing data and variant implementations. Changes to a
-schema require updating the owned fixture and interface; catalog tests report
-their mismatch.
+`studio:catalog` adds local views for all 61 production models. It reads schema
+syntax without importing or executing production code. Sample records and dates
+live in each model's `singlepage/admin-v2-table/data.json`; `interface.ts` holds
+the local contract. Existing data and authored variants are preserved.
 
-Every model and relation has a public `Component` exported by `index.ts`. Its
-`variants.ts` merges `singlepage/variants.ts` and `startup/variants.ts`, with
-startup taking precedence. Existing visual variants remain available through
-these entries. The catalog adds `admin-v2-table` and `find`, and models also have
-`admin-v2-card`. This covers entity navigation and record inspection; the remaining
-production variants stay in inventory for further visual design.
+Every model exports `Component` through `index.ts`. Its `variants.ts` merges
+`singlepage/variants.ts` and `startup/variants.ts`, with startup taking precedence.
+Callers import the public model entry and select its display with `variant`.
 
-The local `find` accepts `apiProps.params.filters.and` entries with `column`,
-`method` and `value`. Its render callback receives `{ data }`. Existing AI Chat
-find variants retain their own local provider contracts. Cross-model calls use
-the public model entry; private variants of the same entity may import siblings.
-Stories for new projections use the public entry and include filtered and empty
-find results. Neither the views nor the standalone Storybook build requires
-production libraries or a running API.
+The catalog provides `admin-v2-table`, `admin-v2-card` and `list`. Tables expose
+`empty`; lists expose `empty` and `count` through Storybook Controls. List stories
+include Default, Empty and Many (20 cards). Repeated cards use one local example.
+Custom model variants retain their own props and interactive states. Studio
+composes models directly and requires neither production libraries nor an API.
 
 `studio:presentation:export` builds the resolved semantic React/HTML presentation,
 resolves `singlepage` or `startup` from repository identity, and writes a
@@ -168,7 +157,7 @@ apps/studio/
 Reusable module blocks continue to mirror `libs/modules`:
 
 ```text
-apps/studio/modules/<module>/<models|relations>/<entity>/<layer>/<variant>/
+apps/studio/modules/<module>/models/<model>/<layer>/<variant>/
   Component.tsx
   Component.stories.tsx
   block.manifest.json
@@ -186,182 +175,86 @@ public types or helpers. Fixture data and interactive examples live in
 `Component.stories.tsx`. Product website previews compose these components and
 editable Markdown content.
 
-AI Chat callers import each model from its `models/<model>/index.ts` entry and
-choose the view with `variant`. The entry's `IComponentProps` is a discriminated
-union: each variant retains its own required props. Relation entries keep the
-native `variant="find"` contract and the full relation name.
+AI Chat callers import each model from `models/<model>/index.ts` and choose the
+view with `variant`. Each entry's discriminated props retain the required inputs
+of its variants. Singlepage and startup maps assemble those variants locally.
 
 ```tsx
 import { Component as SocialModuleProfile } from ".../social/models/profile";
-import { Component as SubjectsToSocialModuleProfiles } from ".../rbac/relations/subjects-to-social-module-profiles";
 
 <SocialModuleProfile variant="ai-chat-user-menu" data={profile} balance={balance} page="chat" />;
 ```
 
-Model entries currently register the local AI Chat variants. Each entity's
-`singlepage/variants.ts` and `startup/variants.ts` export component maps. The root
-`variants.ts` merges them, with startup overrides last; `Component.tsx` selects
-`variants[props.variant]`. Required props stay tied to the selected variant.
-A variant imports
-its own private siblings directly; it never imports its own model entry, which
-would create a cycle. Cross-model compositions, stories and website adapters
-use the public entries. Providers, record types and pure helpers remain separate
-imports from their owning domain.
+| Model                                                      | Studio responsibility                                |
+| ---------------------------------------------------------- | ---------------------------------------------------- |
+| Host Page / Layout                                         | Separate pages and the frame with header slots       |
+| RBAC Identity / Subject                                    | Authentication, account forms and current account    |
+| Social Profile                                             | Project selector, overview, sidebar, forms and agent |
+| Social Chat / Thread                                       | Prepared Products thread, conversation and composer  |
+| Social Message / Skill                                     | One message and the product-planning instruction     |
+| Knowledge Source                                           | Products content, editor and document navigation     |
+| File Storage File                                          | Upload, attachment list, preview and detach          |
+| Ecommerce Order                                            | Token purchase preview                               |
+| Website Builder Widget / Logotype / Buttons Array / Button | Header, logo, navigation and Help                    |
 
-| Owner                                  | Component responsibility                                          |
-| -------------------------------------- | ----------------------------------------------------------------- |
-| Host Page                              | One concrete screen composed from domain components               |
-| Host Layout                            | Page frame and header                                             |
-| RBAC Identity / Subject                | Registration, login, account settings and account provider        |
-| Social Profile                         | Project overview/sidebar, identities, user menu, forms and agents |
-| Social Chat                            | Resolve the selected Thread through Chat-to-Thread links          |
-| Social Thread                          | Conversation, Working On, composer, creation and settings         |
-| Social Skill                           | One product-planning instruction                                  |
-| Social Message                         | One message, role attribution, context and attachments            |
-| RBAC / Social relations                | Subject profiles, profile chats, Sources, Threads and Messages    |
-| Knowledge Source                       | Document bundle navigation and editable sections                  |
-| Knowledge relation                     | Ordered Source-to-File links filtered by Source ID                |
-| File Storage File                      | File lists, upload, open and detach                               |
-| Ecommerce Order                        | Token purchase preview                                            |
-| Website Builder Widget                 | Header slots, mobile navigation, help and landing page            |
-| Website Builder Logotype               | Logo artwork and home link                                        |
-| Website Builder Buttons Array / Button | Header links through ordered relations                            |
+AccountProvider supplies one user profile and its balance directly to Subject
+`ai-chat-account`. ProfilesProvider supplies local project identities; the project
+selector and sidebar display those examples. A route ID selects the supplied
+profile. Missing examples show an unavailable state. Project creation only adds
+an identity to the local preview.
 
-The current subject resolves its `ai-chat-user` Social Profile through
-`subjects-to-social-module-profiles`. RBAC Subject `ai-chat-account` renders that
-profile's `ai-chat-user-menu`, including token balance and account links. The
-Website Builder header owns its mobile disclosure and receives the rendered
-Profile Select and Subject Account through props supplied by Host Page. It has
-no imports from Social, RBAC or Host, including transitive dependencies.
+The project prototype has one Products.md document, one prepared Thread, one
+Knowledge Source and one product assistant using Skill `ai-chat-products`.
+The New thread page shows a name, agent selection and Cancel. Submit displays
+preview feedback and creates no Thread records.
 
-The user's Profile reaches project chats through `profiles-to-chats`. Only chats
-with `ai-chat-project` and linked Profiles with `ai-chat-project` enter the
-project selector. The route ID selects an accessible Profile; a missing link
-renders an unavailable state. Creation adds a local project Profile, its chat
-and the two Profile-to-Chat links. Account pages return to the selected Profile.
+Each Host Page owns one screen: landing, register, login, account settings, help,
+tokens, project creation, project content, project settings and thread creation.
+Pages use the public model entries. The website Preview adapter handles local
+navigation between those pages.
 
-The active project prototype has one Products.md document, one prepared Thread,
-one Knowledge Source and one product assistant using Social Skill `ai-chat-products`.
-Creation needs a profile name; the Thread is available immediately. Separate product
-creation remains later design work. New thread opens a local creation preview with
-a name, one agent selector and Cancel. Submitting only shows preview feedback;
-it does not create Thread, Chat or Message records.
+Layout `ai-chat-header` owns its themed container and the Website Builder header.
+Pages supply `profileSelect` and `subjectAccount` slots. The header directly
+composes Logotype, Buttons Array and Button models; Help is a Button example.
+Website Builder imports no Social, RBAC or Host components.
 
-Each Host Page renders one screen. `ai-chat` renders landing content; register,
-login, account settings, help and tokens import their respective model views.
-Project Pages are `ai-chat-projects-new`, `ai-chat-projects-project-id`,
-`ai-chat-projects-project-id-settings` and
-`ai-chat-projects-project-id-threads-new`. Settings and New thread are real links
-to separate Page components and Storybook stories. Pages receive a `profileId`
-where needed; they do not accept a URL or select another screen internally.
+Profile `ai-chat-project-overview` owns the responsive project frame, sidebar and
+mobile drawer. Chat `ai-chat-products` composes the prepared Thread directly.
+Thread's local provider owns messages, draft, pending File IDs, Working On, pane
+selection and proposals. Conversation maps those messages to Message views.
+Composer reads the Thread state. Working On selects Whole document or Products.
+Sending snapshots the supplied Source and files; later edits preserve history.
 
-Host Layout `ai-chat` supplies the landing frame. Layout `ai-chat-header` owns
-its own themed container and Website Builder header. All nine Pages with that header use this Layout. Pages
-compose `profileSelect` and `subjectAccount` render props; Layout passes them to
-the widget. The header resolves Logotype through `widgets-to-logotypes`, Buttons
-Array through `widgets-to-buttons-arrays`, and Button through
-`buttons-arrays-to-buttons`, using local `variant="find"` relation components.
-Help is a Button record; the logo artwork belongs to Logotype. Header and its
-model variants have isolated stories; the Layout story composes the real Social
-and RBAC slots at Host level. `ServicePage` renders content only.
+SourceProvider owns one Source and an array of displayed File IDs. Source
+`ai-chat-card` edits user context while preserving analyzed material text. It
+passes File IDs to File `ai-chat-attachments` directly. The Source story exposes
+`empty` and `withFiles` controls. Upload and detach affect only preview state;
+the File pool remains available for reattachment and message attachments.
 
-Social Profile `ai-chat-project-overview` owns the project frame, responsive
-columns, collapse control and mobile drawer. It resolves the Profile scope and
-renders its `ai-chat-sidebar` sibling using `profileId` and `selected`. Each project
-Page uses one Host Layout `ai-chat-header` and passes its Chat, Profile settings
-or Thread creation content to the overview. The content slot receives only the
-sidebar toggle. Shared `PanelHeader` lives in the interface kit.
+Fixtures live in `workspace/utils/products`; visual primitives live in
+`workspace/design/singlepage/interface-kit/ai-chat`. The website keeps model
+providers mounted across local navigation. Studio stores no relation records,
+query filters or SDK adapters. Production storage, retrieval and tools belong to
+`libs/modules` and are connected separately after visual design.
 
-Profile `ai-chat-project/Profiles.tsx` stores project identities and access links.
-The `ai-chat-project` component resolves Profile-to-Chat access and supplies the
-model scope. Profile `ai-chat-project-select` reads available profiles and renders memoized
-`ai-chat-project-item` rows;
-`ai-chat-sidebar` reads the selected profile and renders model navigation links.
-Profile creation and settings have their own `ai-chat-create` and
-`ai-chat-settings` variants. Chat `ai-chat-products` resolves the prepared Products
-Thread through `chats-to-threads/ai-chat-find`; Thread `ai-chat-products` displays
-that conversation and its document. Agent avatar and selection are Profile variants `ai-chat-agent-avatar` and
-`ai-chat-agent-select`. Pending files, previews and asset previews are File
-variants `ai-chat-pending`, `ai-chat-preview` and `ai-chat-asset`.
-Source variants are `ai-chat-document`,
-`ai-chat-card` and `ai-chat-document-link`. No document/message/source arrays or
-agent catalog pass through Profile or Chat.
+`bun tools/studio/products/publish-ai-chat.ts` generates local JSON from editable
+copy and role definitions. Isolation tests reject production imports, including
+types and CSS. Storybook uses its own tsconfig, fonts and image assets.
 
-`workspace/products/singlepage/ai-chat/website/Preview.tsx` is the interactive
-preview adapter. It alone selects the concrete Page for a route and intercepts
-prototype links. Account, Profile, File, Source and Thread providers remain
-mounted independently of the selected Page; the preview retains separate model
-state without hidden Page components. A production router can render the same
-Pages with its own provider bindings later.
+## Host model previews
 
-Thread's local `Thread.tsx` provider owns messages, draft text, pending File IDs,
-Working On, pane selection and proposals. Conversation resolves ordered Messages
-through `threads-to-messages/ai-chat-find`; each Message view renders one record.
-Composer reads the Thread directly. Working On offers Whole document or the one
-Products Source. Sending captures current knowledge and files; later edits and
-detach preserve message history. Proposals update Source after the user applies
-them. These responses are local previews, without AI API calls.
+`Modules/Host/Models/Page/Singlepage/composition` displays local Page, Layout,
+Widget and Metadata examples. Each model also has list, form and select stories.
+`HostStudioProvider` accepts controlled `state`/`onStateChange` or `initialState`.
+Edits affect in-memory examples and reset on reload.
 
-Knowledge's `Source.tsx` provider owns the Source record and its File relations.
-It resolves the Profile-to-Source link through the existing find variant. Source
-has ID, slug, title, content and description; it has no documentId or nested Files.
-The document, card and document link read this record directly. The card changes
-user context while preserving analyzed material descriptions. Plain text remains
-editable without files or markers. Chunks remain derived retrieval records.
+Page preview composes the supplied Metadata and Layout models. Layout displays
+Widget examples; Widget displays a Blog model view. Standalone Host Widget
+`default` selects Blog or Ecommerce through its `externalModule` prop. Metadata
+renders SEO examples inside the canvas and leaves browser metadata alone.
 
-File's `Files.tsx` provider owns records and uploaded Blob URLs within each project.
-Source-to-File find filters links by sourceId and orders them by orderIndex; each
-Source/File pair is unique. File views receive IDs and resolve records locally.
-Upload supports multiple files; detach preserves the File pool so an existing
-File can be attached again. Message attachments use the same pool. The preview keeps providers mounted when switching projects or opening settings/the
-creation page, retaining separate state.
-
-Relation views use `variant="find"` and `apiProps.params.filters.and`. Model-local
-providers and story fixtures simulate data access in Studio. The earlier aggregate
-helpers remain for adapter examples/tests; the active page does not use
-`projectKnowledge`, `projectThreadGraph` or the project-wide message updater.
-Durable storage, production SDK integration, attachment analysis, vector indexing
-and tool execution remain later work. No production imports are allowed.
-
-Local helpers and example data live in `workspace/utils/products`, visual primitives
-in `workspace/design/singlepage/interface-kit/ai-chat`, and styles in `runtime`.
-`bun tools/studio/products/publish-ai-chat.ts` generates local Studio JSON from
-editable copy and role definitions. It does not publish production code or assets.
-`bun test tools/studio/design-system/isolation.test.ts` rejects imports from libs
-and Host, including type imports and CSS sources. Storybook has its own tsconfig
-and serves fonts and images from Studio workspace assets.
-
-## Host model and relation previews
-
-`Modules/Host/Models/Page/Singlepage/composition` provides one local workspace
-for Page, Layout, Widget, Metadata and all five existing Host relations. Each
-model also has `admin-v2-list`, `admin-v2-form` and `admin-v2-select-input`
-stories. Each relation has an `admin-v2-manager` story and appears inside its
-owner's editor. A link editor can create or edit its target in a nested panel.
-Unlink retains both model records; deleting a model removes its incident links.
-
-`HostStudioProvider` accepts `state` with `onStateChange` for controlled data,
-or `initialState` for a local preview. Each model and relation owns its local
-`interface.ts` contract. All mutations affect in-memory state; reloading resets
-the preview. Studio has no dependency on production SDK types or providers.
-
-The page canvas uses the same records and links as the editors. Layout widgets
-with `variant="default"` precede Page widgets; `variant="additional"` widgets
-follow them. Links render by `orderIndex`, with ID as a stable tie-breaker.
-Metadata renders SEO and social examples inside the canvas and does not modify
-the browser's title or meta tags. The canvas labels the records and slots for
-review; it is a composition inspector rather than the production route renderer.
-
-External links retain the module and widget ID. The existing Blog and Ecommerce
-Studio previews resolve `preview-blog-overview-widget` and
-`preview-ecommerce-overview-widget`. Other IDs show an unavailable-renderer
-placeholder until their Studio projection is connected. Existing page recipes
-and Widget previews retain their IDs and behavior.
-
-Inventory includes discoverable `storyFiles` per entity and a
-`representedEntities` total. Variant coverage reads both block and page
-manifests and keeps `singlepage` coverage separate from `startup`. Host coverage
-tests require stories for its four models and five relations.
+Inventory records model stories and visual variant coverage per layer. Coverage
+checks require all four Host models and their management views.
 
 The Startup module has a Widget scaffold at
 `apps/studio/modules/startup/models/widget/singlepage/default/`, visible in
@@ -370,7 +263,7 @@ project adds its own variants under
 `apps/studio/modules/startup/models/widget/startup/<variant>/`, with a component,
 story, block manifest, and Figma metadata as shown above. The first `startup` in
 this path names the business module; the second names the project-owned layer.
-Run `npm run studio:inventory` after adding a production model or relation to
+Run `npm run studio:inventory` after adding a production model to
 prepare its Studio folders. `studio:validate` reports missing layer directories.
 
 ## Workspace presentation

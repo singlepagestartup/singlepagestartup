@@ -1,0 +1,21 @@
+{
+  "componentName": "crm.step",
+  "pageName": "crm",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "crm.step.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "crm/models/step/singlepage/list",
+    "sps.figma.component": "crm.step",
+    "sps.figma.variant": "list",
+    "sps.source.module": "crm",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "step",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/crm/models/step/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/crm/models/step/singlepage/list/Component.stories.tsx"
+  }
+}

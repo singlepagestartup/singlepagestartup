@@ -1,4 +1,4 @@
-export { HostStudioProvider } from "./Provider";
+export { HostStudioProvider } from "./Context";
 export { type IHostStudioProviderProps } from "./Context";
 export {
   HostModelList,
@@ -8,9 +8,5 @@ export {
   type IHostModelFormProps,
   type IHostModelSelectProps,
 } from "./Model";
-export {
-  HostRelationManager,
-  type IHostRelationManagerProps,
-} from "./Relations";
 export { HostRecordPreview, type IHostRecordPreviewProps } from "./Preview";
 export { HostWorkbench } from "./Workbench";

@@ -40,51 +40,6 @@ export const HOST_STUDIO_FIELDS = {
     "twitterAppCountry",
   ],
 } as const;
-export const HOST_STUDIO_RELATIONS = {
-  "pages-to-layouts": {
-    owner: "page",
-    ownerKey: "pageId",
-    target: "layout",
-    targetKey: "layoutId",
-  },
-  "pages-to-widgets": {
-    owner: "page",
-    ownerKey: "pageId",
-    target: "widget",
-    targetKey: "widgetId",
-  },
-  "pages-to-metadata": {
-    owner: "page",
-    ownerKey: "pageId",
-    target: "metadata",
-    targetKey: "metadataId",
-  },
-  "layouts-to-widgets": {
-    owner: "layout",
-    ownerKey: "layoutId",
-    target: "widget",
-    targetKey: "widgetId",
-  },
-  "widgets-to-external-widgets": {
-    owner: "widget",
-    ownerKey: "widgetId",
-    target: null,
-    targetKey: "externalWidgetId",
-  },
-} as const;
-export const HOST_STUDIO_EXTERNAL_MODULES = [
-  "analytic",
-  "billing",
-  "blog",
-  "crm",
-  "ecommerce",
-  "file-storage",
-  "notification",
-  "rbac",
-  "social",
-  "startup",
-  "website-builder",
-] as const;
 export const HOST_STUDIO_SAMPLE_IDS = {
   page: "00000000-0000-4000-8000-000000000001",
   layout: "00000000-0000-4000-8000-000000000002",

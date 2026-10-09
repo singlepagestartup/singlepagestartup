@@ -19,9 +19,9 @@ import { Component as ContentHero } from "./content-hero/index";
 import { Component as ContentPageHeader } from "./content-page-header/index";
 import { Component as ContentRich } from "./content-rich/index";
 import { Component as ContentTestimonials } from "./content-testimonials/index";
-import { Component as Find } from "./find/index";
 import { Component as FooterCompact } from "./footer-compact/index";
 import { Component as FooterDefault } from "./footer-default/index";
+import { Component as List } from "./list/index";
 import { Component as NavbarDefault } from "./navbar-default/index";
 
 export const variants = {
@@ -46,8 +46,8 @@ export const variants = {
   "content-page-header": ContentPageHeader,
   "content-rich": ContentRich,
   "content-testimonials": ContentTestimonials,
-  find: Find,
   "footer-compact": FooterCompact,
   "footer-default": FooterDefault,
+  list: List,
   "navbar-default": NavbarDefault,
 };

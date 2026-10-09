@@ -1,0 +1,21 @@
+{
+  "componentName": "agent.agent",
+  "pageName": "agent",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "agent.agent.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "agent/models/agent/singlepage/list",
+    "sps.figma.component": "agent.agent",
+    "sps.figma.variant": "list",
+    "sps.source.module": "agent",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "agent",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/agent/models/agent/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/agent/models/agent/singlepage/list/Component.stories.tsx"
+  }
+}

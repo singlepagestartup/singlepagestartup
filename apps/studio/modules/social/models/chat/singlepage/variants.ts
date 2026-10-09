@@ -3,7 +3,7 @@ import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as AiChatNavigation } from "./ai-chat-navigation/index";
 import { Component as AiChatPreview } from "./ai-chat-preview/index";
 import { Component as AiChatProducts } from "./ai-chat-products/index";
-import { Component as Find } from "./find/index";
+import { Component as List } from "./list/index";
 
 export const variants = {
   "admin-v2-card": AdminV2Card,
@@ -11,5 +11,5 @@ export const variants = {
   "ai-chat-navigation": AiChatNavigation,
   "ai-chat-preview": AiChatPreview,
   "ai-chat-products": AiChatProducts,
-  find: Find,
+  list: List,
 };

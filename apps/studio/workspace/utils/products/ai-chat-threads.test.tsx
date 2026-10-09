@@ -1,111 +1,14 @@
 import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { aiChatProjectFixture } from "./ai-chat-workspace-fixture";
-import { projectKnowledge, findLocalRelations } from "./ai-chat-models";
-import {
-  projectThreadGraph,
-  threadSources,
-  orderedThreadMessages,
-  appendThreadExchange,
-} from "./ai-chat-threads";
+import { appendThreadExchange } from "./ai-chat-threads";
 import { Component as ChatWorkspace } from "../../../modules/social/models/chat/singlepage/ai-chat-products/index";
 import { SourceProvider } from "../../../modules/knowledge/models/source/singlepage/ai-chat-document/Source";
 import { FilesProvider } from "../../../modules/file-storage/models/file/singlepage/ai-chat-attachments/Files";
 import { AIChatPreview } from "../../products/singlepage/ai-chat/website/Preview";
-import { linkProjectProfile } from "./ai-chat-models";
 import { aiChatAccount } from "./ai-chat-account-fixture";
 import { productsAgent } from "../../../modules/social/models/profile/singlepage/ai-chat-agent/index";
 import { aiChatProductsSourceFixture } from "./ai-chat-workspace-fixture";
-
-test("Brief and Strategy have separate Threads and messages inside the project's Chat", () => {
-  const project = aiChatProjectFixture();
-  project.topics = [
-    {
-      id: "work",
-      title: "Campaign",
-      documentIds: ["brief"],
-      messages: [{ id: "work-message", role: "user", text: "Work message" }],
-    },
-  ];
-  const graph = projectThreadGraph(project);
-  expect(graph.chat.id).toBe("pottery:project-chat");
-  expect(graph.threads).toHaveLength(project.documents.length + 1);
-  expect(graph.profileChats).toEqual([
-    {
-      id: "pottery:project-chat:project",
-      profileId: project.id,
-      chatId: graph.chat.id,
-    },
-  ]);
-  expect(graph.chatThreads.every((link) => link.chatId === graph.chat.id)).toBe(
-    true,
-  );
-  expect(graph.chat).not.toHaveProperty("sources");
-  const brief = graph.selections.find((item) => item.localId === "brief")!;
-  const strategy = graph.selections.find(
-    (item) => item.localId === "strategy",
-  )!;
-  const messages = (threadId: string) =>
-    orderedThreadMessages(
-      graph.messages,
-      findLocalRelations({
-        variant: "find",
-        data: graph.threadMessages,
-        apiProps: {
-          params: {
-            filters: {
-              and: [{ column: "threadId", method: "eq", value: threadId }],
-            },
-          },
-        },
-      }),
-    );
-  expect(messages(brief.threadId).map((message) => message.id)).toEqual([
-    "brief-intro",
-  ]);
-  expect(messages(strategy.threadId).map((message) => message.id)).toEqual([
-    "strategy-intro",
-  ]);
-  expect(messages(brief.threadId)).not.toContainEqual(
-    graph.messages.find((message) => message.id === "work-message"),
-  );
-  const links = graph.threadMessages.filter(
-    (link) => link.threadId === brief.threadId,
-  );
-  expect(
-    orderedThreadMessages(graph.messages, [
-      {
-        id: "missing",
-        threadId: brief.threadId,
-        messageId: "missing",
-        orderIndex: -1,
-      },
-      ...links,
-      ...links,
-    ]),
-  ).toHaveLength(1);
-});
-
-test("Source slug selection keeps bundle order and excludes other profiles and documents", () => {
-  const project = aiChatProjectFixture();
-  const own = projectKnowledge(project);
-  const foreign = projectKnowledge({ ...project, id: "foreign" });
-  const brief = own.bundles.find((bundle) => bundle.id === "brief")!;
-  const actual = threadSources([...foreign.sources, ...own.sources].reverse(), [
-    ...brief.sourceSlugs,
-    "missing",
-    brief.sourceSlugs[0],
-  ]);
-  expect(actual.map((source) => source.slug)).toEqual(brief.sourceSlugs);
-  expect(actual.every((source) => brief.sourceIds.includes(source.id))).toBe(
-    true,
-  );
-  expect(
-    actual.some((source) =>
-      foreign.sources.some((other) => other.id === source.id),
-    ),
-  ).toBe(false);
-});
 
 test("the active prototype composes one Products Thread and one Source without aggregates", () => {
   const html = renderToStaticMarkup(
@@ -150,11 +53,6 @@ test("new profile identity is sufficient to prepare Products; profile IDs isolat
           initialProjects: [
             { id, name: "Empty project", variant: "ai-chat-project" },
           ],
-          initialLinks: linkProjectProfile(
-            { chats: [], profilesToChats: [] },
-            aiChatAccount.profiles[0].id,
-            { id, name: "Empty project" },
-          ),
         }}
       />,
     );

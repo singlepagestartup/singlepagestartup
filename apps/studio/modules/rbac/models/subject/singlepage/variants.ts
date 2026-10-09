@@ -4,7 +4,7 @@ import { Component as AdminV2Settings } from "./admin-v2-settings/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as AiChatAccount } from "./ai-chat-account/index";
 import { Component as AiChatSettings } from "./ai-chat-settings/index";
-import { Component as Find } from "./find/index";
+import { Component as List } from "./list/index";
 import { Component as MeCrmFormDeafult } from "./me-crm-form-deafult/index";
 import { Component as MeDelete } from "./me-delete/index";
 import { Component as MeIdentityFindInformation } from "./me-identity-find-information/index";
@@ -19,7 +19,7 @@ export const variants = {
   "admin-v2-table": AdminV2Table,
   "ai-chat-account": AiChatAccount,
   "ai-chat-settings": AiChatSettings,
-  find: Find,
+  list: List,
   "me-crm-form-deafult": MeCrmFormDeafult,
   "me-delete": MeDelete,
   "me-identity-find-information": MeIdentityFindInformation,

@@ -1,4 +1,4 @@
-import { memo, useMemo, type ReactNode } from "react";
+import { memo, useMemo } from "react";
 import { Records, type IRecordField } from "./Records";
 import { kit } from "./primitives";
 
@@ -23,19 +23,11 @@ export interface IProjectionProps<T extends { id: string }> {
   className?: string;
 }
 
-export interface IProjectionFindProps<T extends { id: string }> {
-  apiProps?: {
-    params?: {
-      filters?: {
-        and?: Array<{
-          column: keyof T;
-          method: "eq" | "ne" | "in" | "notIn" | "like" | "ilike";
-          value: unknown;
-        }>;
-      };
-    };
-  };
-  children?: (props: { data: T[] }) => ReactNode;
+export interface IProjectionListProps<T extends { id: string }> {
+  data?: T[];
+  count?: number;
+  empty?: boolean;
+  className?: string;
 }
 
 function valueLabel(value: unknown): string {
@@ -124,42 +116,32 @@ function RecordCardView<T extends { id: string }>({
 }
 export const RecordCard = memo(RecordCardView) as typeof RecordCardView;
 
-export function RecordFind<T extends { id: string }>({
+export function RecordList<T extends { id: string }>({
   schema,
   records,
-  apiProps,
-  children,
-}: IProjectionFindProps<T> & { schema: IProjectionSchema; records: T[] }) {
-  const data = useMemo(() => {
-    const filters = apiProps?.params?.filters?.and ?? [];
-    return records.filter((record) =>
-      filters.every((filter) => {
-        const actual = record[filter.column];
-        if (filter.method === "eq") return actual === filter.value;
-        if (filter.method === "ne") return actual !== filter.value;
-        if (filter.method === "in")
-          return Array.isArray(filter.value) && filter.value.includes(actual);
-        if (filter.method === "notIn")
-          return Array.isArray(filter.value) && !filter.value.includes(actual);
-        const text = String(actual ?? "");
-        const pattern = String(filter.value ?? "")
-          .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-          .replace(/%/g, ".*")
-          .replace(/_/g, ".");
-        return new RegExp(
-          `^${pattern}$`,
-          filter.method === "ilike" ? "i" : "",
-        ).test(text);
-      }),
+  count = 3,
+  empty = false,
+  className,
+}: IProjectionListProps<T> & { schema: IProjectionSchema; records: T[] }) {
+  const length =
+    empty || !records.length || !Number.isFinite(count)
+      ? 0
+      : Math.max(0, Math.floor(count));
+  if (!length)
+    return (
+      <p role="status" className="p-5">
+        No records to display.
+      </p>
     );
-  }, [records, apiProps]);
   return (
-    <>
-      {children ? (
-        children({ data })
-      ) : (
-        <RecordTable schema={schema} data={data} />
-      )}
-    </>
+    <div className={`grid min-w-0 gap-4 p-4 sm:grid-cols-2 ${className ?? ""}`}>
+      {Array.from({ length }, (_, index) => (
+        <RecordCard
+          key={`${records[0].id}:${index}`}
+          schema={schema}
+          data={records[0]}
+        />
+      ))}
+    </div>
   );
 }

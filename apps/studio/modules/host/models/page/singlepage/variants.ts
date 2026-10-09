@@ -4,7 +4,6 @@ import { Component as AdminModelEdit } from "./admin-model-edit/index";
 import { Component as AdminModelList } from "./admin-model-list/index";
 import { Component as AdminModuleDashboard } from "./admin-module-dashboard/index";
 import { Component as AdminPreviewDialog } from "./admin-preview-dialog/index";
-import { Component as AdminRelationManager } from "./admin-relation-manager/index";
 import { Component as AdminSettings } from "./admin-settings/index";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Form } from "./admin-v2-form/index";
@@ -28,7 +27,7 @@ import { Component as Composition } from "./composition/index";
 import { Component as Default } from "./default/index";
 import { Component as EcommerceProducts } from "./ecommerce-products/index";
 import { Component as EcommerceProductsEcommerceProductsSlug } from "./ecommerce-products-ecommerce-products-slug/index";
-import { Component as Find } from "./find/index";
+import { Component as List } from "./list/index";
 import { Component as Privacy } from "./privacy/index";
 import { Component as RbacSubjectAuthenticationResetPassword } from "./rbac-subject-authentication-reset-password/index";
 import { Component as RbacSubjectAuthenticationSelectMethod } from "./rbac-subject-authentication-select-method/index";
@@ -47,7 +46,6 @@ export const variants = {
   "admin-model-list": AdminModelList,
   "admin-module-dashboard": AdminModuleDashboard,
   "admin-preview-dialog": AdminPreviewDialog,
-  "admin-relation-manager": AdminRelationManager,
   "admin-settings": AdminSettings,
   "admin-v2-card": AdminV2Card,
   "admin-v2-form": AdminV2Form,
@@ -72,7 +70,7 @@ export const variants = {
   "ecommerce-products": EcommerceProducts,
   "ecommerce-products-ecommerce-products-slug":
     EcommerceProductsEcommerceProductsSlug,
-  find: Find,
+  list: List,
   privacy: Privacy,
   "rbac-subject-authentication-reset-password":
     RbacSubjectAuthenticationResetPassword,

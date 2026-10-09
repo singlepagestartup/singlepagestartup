@@ -1,0 +1,27 @@
+{
+  "id": "broadcast.channel.list",
+  "title": "broadcast channel / list",
+  "description": "Local records for Studio component design.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "broadcast",
+    "entityType": "model",
+    "entity": "channel",
+    "variant": "list"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "broadcast.channel",
+    "pageName": "broadcast",
+    "variantName": "list",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

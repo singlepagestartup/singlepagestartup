@@ -25,15 +25,16 @@ afterEach(() => {
     rmSync(directory, { recursive: true, force: true });
 });
 
-test("every native entity has a public entry, both layers and local stories; Telegram is excluded", async () => {
+test("every native model has a public entry, both layers and local stories; Telegram is excluded", async () => {
   const inventory = await collectModuleInventory();
   expect(inventory.modules.some((module) => module.name === "telegram")).toBe(
     false,
   );
-  expect(inventory.totals.entities).toBe(153);
+  expect(inventory.totals.entities).toBe(61);
   for (const module of inventory.modules)
     for (const entity of module.entities) {
-      const collection = entity.entityType === "model" ? "models" : "relations";
+      expect(entity.entityType).toBe("model");
+      const collection = "models";
       const directory = path.join(
         root,
         "apps/studio/modules",
@@ -193,7 +194,7 @@ test("assembling keeps variant aliases, startup overrides and authored files", (
   );
 });
 
-test("scaffolding preserves authored data and UI and skips Telegram", async () => {
+test("scaffolding preserves authored data and UI and skips relations and Telegram", async () => {
   const directory = mkdtempSync(path.join(tmpdir(), "studio-catalog-"));
   temporary.push(directory);
   const inventory = await collectModuleInventory();
@@ -233,6 +234,37 @@ test("scaffolding preserves authored data and UI and skips Telegram", async () =
   expect(readFileSync(path.join(table, "Component.tsx"), "utf8")).toContain(
     "Owned records",
   );
+  expect(
+    readFileSync(path.join(table, "../list/Component.stories.tsx"), "utf8"),
+  ).toContain("count: { control:");
+  const model = path.dirname(path.dirname(table));
+  const own = path.join(model, "singlepage/owned-list");
+  mkdirSync(own, { recursive: true });
+  writeFileSync(
+    path.join(own, "Component.tsx"),
+    "export function Component() { return <p>Owned list</p>; }",
+  );
+  rmSync(path.join(model, "singlepage/list"), { recursive: true });
+  writeFileSync(
+    path.join(model, "singlepage/variants.ts"),
+    'import { Component as Owned } from "./owned-list/Component"; export const variants = { "list": Owned };',
+  );
+  scaffoldEntity(directory, entity);
+  expect(existsSync(path.join(model, "singlepage/list"))).toBe(false);
+  expect(
+    readFileSync(path.join(model, "singlepage/variants.ts"), "utf8"),
+  ).toContain('"list":');
+  scaffoldEntity(directory, {
+    ...entity,
+    entityType: "relation",
+    entity: "ignored-relation",
+  });
+  expect(
+    existsSync(
+      path.join(directory, "apps/studio/modules", entity.module, "relations"),
+    ),
+  ).toBe(false);
+  expect(existsSync(path.join(table, "../find"))).toBe(false);
   scaffoldEntity(directory, { ...entity, module: "telegram" });
   expect(existsSync(path.join(directory, "apps/studio/modules/telegram"))).toBe(
     false,

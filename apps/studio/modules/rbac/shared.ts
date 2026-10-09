@@ -27,28 +27,13 @@ export interface RbacIdentity {
   updatedAt: string;
 }
 
-export interface RbacSubjectToIdentity {
-  id: string;
-  subjectId: string;
-  identityId: string;
-  orderIndex: number;
-  variant: string;
-}
-
 export interface RbacAccountProfile {
   id: string;
   title: string;
   subtitle: string;
   description?: string;
   slug: string;
-  relationId: string;
   avatar?: string;
-  avatarRelation?: {
-    id: string;
-    profileId: string;
-    fileStorageModuleFileId: string;
-    orderIndex: number;
-  };
 }
 
 export interface RbacAccountUser {
@@ -225,30 +210,6 @@ export const defaultRbacIdentities: RbacIdentity[] = [
   },
 ];
 
-export const defaultRbacSubjectToIdentities: RbacSubjectToIdentity[] = [
-  {
-    id: "b887f4ef-fca1-46cc-9f39-c988f9b0b3d5",
-    subjectId: defaultRbacSubject.id,
-    identityId: defaultRbacIdentities[0]?.id ?? "",
-    orderIndex: 0,
-    variant: "default",
-  },
-  {
-    id: "f8082360-6ccf-44e8-a1b1-c6fc7e2f7d57",
-    subjectId: defaultRbacSubject.id,
-    identityId: defaultRbacIdentities[1]?.id ?? "",
-    orderIndex: 1,
-    variant: "default",
-  },
-  {
-    id: "baad8824-6f51-49da-a0a7-ff8f5f5d6285",
-    subjectId: defaultRbacSubject.id,
-    identityId: defaultRbacIdentities[2]?.id ?? "",
-    orderIndex: 2,
-    variant: "default",
-  },
-];
-
 export const defaultRbacProfiles: RbacAccountProfile[] = [
   {
     id: "2f6f62e1-5c1a-4fa3-983e-08469b11fa89",
@@ -258,7 +219,6 @@ export const defaultRbacProfiles: RbacAccountProfile[] = [
       "Sarah leads product strategy for SPS, turning reusable modules into fast startup prototypes.",
     slug: "sarah-kim",
     avatar: defaultRbacUser.avatar,
-    relationId: "9f1c43fd-cbd8-4f59-b55f-3637804f5f32",
   },
 ];
 

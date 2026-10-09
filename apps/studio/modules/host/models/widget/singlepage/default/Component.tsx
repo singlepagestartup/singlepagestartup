@@ -1,46 +1,37 @@
-import {
-  HostWidgetsToExternalWidgets,
-  defaultHostExternalArticleLink,
-  type HostExternalWidgetLink,
-  type HostWidgetsToExternalWidgetsProps,
-} from "../../../../relations/widgets-to-external-widgets/singlepage/default/Component";
+import { Component as BlogModuleWidget } from "../../../../../blog/models/widget/index";
+import { Component as EcommerceModuleWidget } from "../../../../../ecommerce/models/widget/index";
+import type { ArticleOverviewDefaultProps } from "../../../../../blog/models/widget/singlepage/article-overview-default/Component";
+import type { ProductOverviewDefaultProps } from "../../../../../ecommerce/models/widget/singlepage/product-overview-default/Component";
 
 export interface HostWidgetDefaultProps {
-  id: string;
-  links: HostExternalWidgetLink[];
-  articleProps?: HostWidgetsToExternalWidgetsProps["articleProps"];
-  productProps?: HostWidgetsToExternalWidgetsProps["productProps"];
+  externalModule?: "blog" | "ecommerce";
+  className?: string;
+  articleProps?: Partial<ArticleOverviewDefaultProps>;
+  productProps?: Partial<ProductOverviewDefaultProps>;
 }
-
-export const defaultHostWidgetProps: HostWidgetDefaultProps = {
-  id: defaultHostExternalArticleLink.widgetId,
-  links: [defaultHostExternalArticleLink],
-};
-
-export function HostWidgetDefault(props: Partial<HostWidgetDefaultProps> = {}) {
-  const { id, links, articleProps, productProps } = {
-    ...defaultHostWidgetProps,
-    ...props,
-  };
-  const scopedLinks = links
-    .filter((link) => link.widgetId === id)
-    .sort((a, b) => a.orderIndex - b.orderIndex);
-
+export function HostWidgetDefault({
+  externalModule = "blog",
+  className,
+  articleProps,
+  productProps,
+}: HostWidgetDefaultProps = {}) {
   return (
     <div
       data-ds-block="host.widget.default"
-      data-ds-imports="host.widgets-to-external-widgets.default"
       data-ds-layer="singlepage"
-      data-widget-id={id}
+      className={className}
     >
-      {scopedLinks.map((link) => (
-        <HostWidgetsToExternalWidgets
-          key={link.id}
-          link={link}
-          articleProps={articleProps}
-          productProps={productProps}
+      {externalModule === "blog" ? (
+        <BlogModuleWidget
+          variant="article-overview-default"
+          {...articleProps}
         />
-      ))}
+      ) : (
+        <EcommerceModuleWidget
+          variant="product-overview-default"
+          {...productProps}
+        />
+      )}
     </div>
   );
 }
