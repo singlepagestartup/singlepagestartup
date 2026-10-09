@@ -1,4 +1,5 @@
 "use client";
+import { Component as KnowledgeModuleSource } from "../../../../../knowledge/models/source/index";
 import { useEffect, useRef, type ReactNode } from "react";
 import {
   Button,
@@ -6,7 +7,7 @@ import {
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import { useSource } from "../../../../../knowledge/models/source/singlepage/ai-chat-document/Source";
-import { Component as SourceDocument } from "../../../../../knowledge/models/source/singlepage/ai-chat-document/index";
+
 import { Component as Conversation } from "../ai-chat-conversation/index";
 import { Component as Composer } from "../ai-chat-composer/index";
 import { PanelHeader } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
@@ -103,7 +104,8 @@ export function Component({ navigation }: IProductsThreadProps) {
         <div
           className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-sps-line @[900px]/chat:block @[900px]/chat:border-l`}
         >
-          <SourceDocument
+          <KnowledgeModuleSource
+            variant="ai-chat-document"
             discussing={workingOn === "source"}
             onDiscuss={discuss}
           />

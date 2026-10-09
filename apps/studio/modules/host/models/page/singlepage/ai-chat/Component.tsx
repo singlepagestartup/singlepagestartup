@@ -1,9 +1,10 @@
-import { Component as Layout } from "../../../layout/singlepage/ai-chat/index";
-import { Component as Landing } from "../../../../../website-builder/models/widget/singlepage/ai-chat-landing/index";
+import { Component as HostModuleLayout } from "../../../layout/index";
+import { Component as WebsiteBuilderModuleWidget } from "../../../../../website-builder/models/widget/index";
+
 export function Component() {
   return (
-    <Layout>
-      <Landing />
-    </Layout>
+    <HostModuleLayout variant="ai-chat">
+      <WebsiteBuilderModuleWidget variant="ai-chat-landing" />
+    </HostModuleLayout>
   );
 }

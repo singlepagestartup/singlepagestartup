@@ -1,8 +1,9 @@
 "use client";
+import { Component as ChatsToThreads } from "../../../../relations/chats-to-threads/index";
+import { Component as SocialModuleThread } from "../../../thread/index";
 import { ProductsThreadProvider } from "../../../thread/singlepage/ai-chat-products/Thread";
 import type { ReactNode } from "react";
-import { Component as ChatThreads } from "../../../../relations/chats-to-threads/singlepage/ai-chat-find/index";
-import { Component as ProductsThread } from "../../../thread/singlepage/ai-chat-products/index";
+
 export interface IProductsChatProps {
   profileId: string;
   navigation?: ReactNode;
@@ -21,7 +22,7 @@ export function Component({ profileId, navigation }: IProductsChatProps) {
       className="@container/chat flex min-h-0 min-w-0 flex-1 flex-col"
       aria-label="Active chat"
     >
-      <ChatThreads
+      <ChatsToThreads
         variant="find"
         data={[
           {
@@ -42,13 +43,16 @@ export function Component({ profileId, navigation }: IProductsChatProps) {
         {(links) =>
           links.some((link) => link.threadId === threadId) ? (
             <ProductsThreadProvider profileId={profileId}>
-              <ProductsThread navigation={navigation} />
+              <SocialModuleThread
+                variant="ai-chat-products"
+                navigation={navigation}
+              />
             </ProductsThreadProvider>
           ) : (
             <p role="status">Thread unavailable.</p>
           )
         }
-      </ChatThreads>
+      </ChatsToThreads>
     </section>
   );
 }

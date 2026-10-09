@@ -895,9 +895,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/blog/models/article/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "blog.article.related-default"
-              ]
+              "coveredBy": ["blog.article.related-default"]
             },
             {
               "variant": "find",
@@ -1098,9 +1096,7 @@
               "variant": "article-overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/blog/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "blog.widget.article-overview-default"
-              ]
+              "coveredBy": ["blog.widget.article-overview-default"]
             },
             {
               "variant": "article-overview-ecommerce-module-product-list-default",
@@ -1960,9 +1956,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/form/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "crm.form.default"
-              ]
+              "coveredBy": ["crm.form.default"]
             },
             {
               "variant": "find",
@@ -2057,25 +2051,19 @@
               "variant": "select-option-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/input/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "crm.input.select-option-default"
-              ]
+              "coveredBy": ["crm.input.select-option-default"]
             },
             {
               "variant": "text-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/input/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "crm.input.text-default"
-              ]
+              "coveredBy": ["crm.input.text-default"]
             },
             {
               "variant": "textarea-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/input/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "crm.input.textarea-default"
-              ]
+              "coveredBy": ["crm.input.textarea-default"]
             }
           ],
           "storyFiles": [
@@ -2154,9 +2142,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/option/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "crm.option.default"
-              ]
+              "coveredBy": ["crm.option.default"]
             },
             {
               "variant": "find",
@@ -2239,9 +2225,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/request/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "crm.request.default"
-              ]
+              "coveredBy": ["crm.request.default"]
             },
             {
               "variant": "find",
@@ -2324,9 +2308,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/step/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "crm.step.default"
-              ]
+              "coveredBy": ["crm.step.default"]
             },
             {
               "variant": "find",
@@ -2421,9 +2403,7 @@
               "variant": "form-list-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "crm.widget.form-list-default"
-              ]
+              "coveredBy": ["crm.widget.form-list-default"]
             }
           ],
           "storyFiles": [
@@ -2958,17 +2938,13 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "ecommerce.attribute.admin-v2-form"
-              ]
+              "coveredBy": ["ecommerce.attribute.admin-v2-form"]
             },
             {
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "ecommerce.attribute.admin-v2-select-input"
-              ]
+              "coveredBy": ["ecommerce.attribute.admin-v2-select-input"]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -3338,17 +3314,13 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "ecommerce.product.admin-v2-form"
-              ]
+              "coveredBy": ["ecommerce.product.admin-v2-form"]
             },
             {
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "ecommerce.product.admin-v2-select-input"
-              ]
+              "coveredBy": ["ecommerce.product.admin-v2-select-input"]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -3372,9 +3344,7 @@
               "variant": "cart-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "ecommerce.product.cart-default"
-              ]
+              "coveredBy": ["ecommerce.product.cart-default"]
             },
             {
               "variant": "currency-toggle-group-default",
@@ -3618,9 +3588,7 @@
               "variant": "product-overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "ecommerce.widget.product-overview-default"
-              ]
+              "coveredBy": ["ecommerce.widget.product-overview-default"]
             },
             {
               "variant": "store-list-default",
@@ -5081,7 +5049,10 @@
             }
           ],
           "storyFiles": [
-            "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-attachments/Component.stories.tsx"
+            "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-asset/Component.stories.tsx",
+            "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-attachments/Component.stories.tsx",
+            "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-pending/Component.stories.tsx",
+            "apps/studio/modules/file-storage/models/file/singlepage/ai-chat-preview/Component.stories.tsx"
           ]
         },
         {
@@ -5279,17 +5250,13 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/layout/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.layout.admin-v2-form"
-              ]
+              "coveredBy": ["host.layout.admin-v2-form"]
             },
             {
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/layout/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.layout.admin-v2-select-input"
-              ]
+              "coveredBy": ["host.layout.admin-v2-select-input"]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -5313,9 +5280,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/layout/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.layout.default"
-              ]
+              "coveredBy": ["host.layout.default"]
             },
             {
               "variant": "find",
@@ -5374,17 +5339,13 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/metadata/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.metadata.admin-v2-form"
-              ]
+              "coveredBy": ["host.metadata.admin-v2-form"]
             },
             {
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/metadata/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.metadata.admin-v2-select-input"
-              ]
+              "coveredBy": ["host.metadata.admin-v2-select-input"]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -5408,9 +5369,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/metadata/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.metadata.default"
-              ]
+              "coveredBy": ["host.metadata.default"]
             },
             {
               "variant": "find",
@@ -5466,17 +5425,13 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.page.admin-v2-form"
-              ]
+              "coveredBy": ["host.page.admin-v2-form"]
             },
             {
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.page.admin-v2-select-input"
-              ]
+              "coveredBy": ["host.page.admin-v2-select-input"]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -5500,9 +5455,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/page/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.page.default"
-              ]
+              "coveredBy": ["host.page.default"]
             },
             {
               "variant": "find",
@@ -5604,17 +5557,13 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.widget.admin-v2-form"
-              ]
+              "coveredBy": ["host.widget.admin-v2-form"]
             },
             {
               "variant": "admin-v2-select-input",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.widget.admin-v2-select-input"
-              ]
+              "coveredBy": ["host.widget.admin-v2-select-input"]
             },
             {
               "variant": "admin-v2-sidebar-item",
@@ -5638,9 +5587,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.widget.default"
-              ]
+              "coveredBy": ["host.widget.default"]
             },
             {
               "variant": "find",
@@ -5998,9 +5945,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "host.widgets-to-external-widgets.default"
-              ]
+              "coveredBy": ["host.widgets-to-external-widgets.default"]
             },
             {
               "variant": "find",
@@ -6042,9 +5987,7 @@
               "variant": "default",
               "scope": "singlepage/default/ecommerce/order/singlepage",
               "variantsFile": "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/ecommerce/order/singlepage/variants.ts",
-              "coveredBy": [
-                "host.widgets-to-external-widgets.default"
-              ]
+              "coveredBy": ["host.widgets-to-external-widgets.default"]
             },
             {
               "variant": "cart-default",
@@ -6062,9 +6005,7 @@
               "variant": "default",
               "scope": "singlepage/default/ecommerce/product/singlepage",
               "variantsFile": "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/ecommerce/product/singlepage/variants.ts",
-              "coveredBy": [
-                "host.widgets-to-external-widgets.default"
-              ]
+              "coveredBy": ["host.widgets-to-external-widgets.default"]
             },
             {
               "variant": "overview-default",
@@ -6226,9 +6167,7 @@
               "variant": "default",
               "scope": "singlepage/default/startup/widget/singlepage",
               "variantsFile": "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/startup/widget/singlepage/variants.ts",
-              "coveredBy": [
-                "host.widgets-to-external-widgets.default"
-              ]
+              "coveredBy": ["host.widgets-to-external-widgets.default"]
             },
             {
               "variant": "navbar-default",
@@ -9230,14 +9169,15 @@
               "variant": "overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.profile.author-find-by-id-overview-default"
-              ]
+              "coveredBy": ["social.profile.author-find-by-id-overview-default"]
             }
           ],
           "storyFiles": [
+            "apps/studio/modules/social/models/profile/singlepage/ai-chat-agent-avatar/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/ai-chat-agent-select/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-agent/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-create/Component.stories.tsx",
+            "apps/studio/modules/social/models/profile/singlepage/ai-chat-project-item/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-project-select/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-project/Component.stories.tsx",
             "apps/studio/modules/social/models/profile/singlepage/ai-chat-settings/Component.stories.tsx",
@@ -9518,17 +9458,13 @@
               "variant": "chat-list-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.widget.chat-list-default"
-              ]
+              "coveredBy": ["social.widget.chat-list-default"]
             },
             {
               "variant": "chat-overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.widget.chat-overview-default"
-              ]
+              "coveredBy": ["social.widget.chat-overview-default"]
             },
             {
               "variant": "default",
@@ -11018,9 +10954,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/startup/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "startup.widget.default"
-              ]
+              "coveredBy": ["startup.widget.default"]
             },
             {
               "variant": "find",
@@ -11407,9 +11341,7 @@
               "variant": "link",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/button/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "website-builder.button.link"
-              ]
+              "coveredBy": ["website-builder.button.link"]
             },
             {
               "variant": "outline",
@@ -11421,17 +11353,13 @@
               "variant": "primary",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/button/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "website-builder.button.primary"
-              ]
+              "coveredBy": ["website-builder.button.primary"]
             },
             {
               "variant": "secondary",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/button/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "website-builder.button.secondary"
-              ]
+              "coveredBy": ["website-builder.button.secondary"]
             }
           ],
           "storyFiles": [
@@ -11511,9 +11439,7 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/buttons-array/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "website-builder.buttons-array.default"
-              ]
+              "coveredBy": ["website-builder.buttons-array.default"]
             },
             {
               "variant": "find",
@@ -11971,9 +11897,7 @@
               "variant": "navbar-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "website-builder.widget.navbar-default"
-              ]
+              "coveredBy": ["website-builder.widget.navbar-default"]
             }
           ],
           "storyFiles": [

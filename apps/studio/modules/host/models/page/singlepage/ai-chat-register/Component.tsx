@@ -1,9 +1,10 @@
-import { Component as Layout } from "../../../layout/singlepage/ai-chat-header/index";
-import { Component as Register } from "../../../../../rbac/models/identity/singlepage/ai-chat-register/index";
+import { Component as HostModuleLayout } from "../../../layout/index";
+import { Component as RbacModuleIdentity } from "../../../../../rbac/models/identity/index";
+
 export function Component() {
   return (
-    <Layout page="register">
-      <Register />
-    </Layout>
+    <HostModuleLayout variant="ai-chat-header" page="register">
+      <RbacModuleIdentity variant="ai-chat-register" />
+    </HostModuleLayout>
   );
 }

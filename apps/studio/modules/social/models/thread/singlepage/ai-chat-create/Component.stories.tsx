@@ -1,8 +1,14 @@
-import { Component } from "./index";
+import { Component as SocialModuleThread } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 
 function Example() {
-  return <Component cancelHref="/ai-chat/projects/pottery" />;
+  return (
+    <SocialModuleThread
+      variant="ai-chat-create"
+      cancelHref="/ai-chat/projects/pottery"
+    />
+  );
 }
 
 const meta = {

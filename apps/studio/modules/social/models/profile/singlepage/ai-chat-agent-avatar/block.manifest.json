@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.ai-chat-agent-avatar",
+  "title": "ai-chat-agent-avatar",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Agent profile button.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "ai-chat-agent-avatar",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "ai-chat-agent-avatar"
+  },
+  "contentSlots": []
+}

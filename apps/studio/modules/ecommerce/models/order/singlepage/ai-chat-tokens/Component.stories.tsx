@@ -1,10 +1,11 @@
-import { Component } from "./index";
+import { Component as EcommerceModuleOrder } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 
 function Example() {
-  return <Component />;
+  return <EcommerceModuleOrder variant="ai-chat-tokens" />;
 }
 
 const meta = {

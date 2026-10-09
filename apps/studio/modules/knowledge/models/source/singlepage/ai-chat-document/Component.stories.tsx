@@ -1,4 +1,5 @@
-import { Component } from "./index";
+import { Component as KnowledgeModuleSource } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
@@ -15,7 +16,7 @@ function Example() {
         initialFileLinks={links}
       >
         <div className="mx-auto max-w-xl p-4">
-          <Component />
+          <KnowledgeModuleSource variant="ai-chat-document" />
         </div>
       </SourceProvider>
     </FilesProvider>

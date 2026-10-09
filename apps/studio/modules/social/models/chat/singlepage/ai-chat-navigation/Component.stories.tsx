@@ -1,10 +1,12 @@
-import { Component } from "./index";
+import { Component as SocialModuleChat } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 
 function Example() {
   return (
     <div className="w-64 rounded-xl bg-sps-graphite p-4">
-      <Component
+      <SocialModuleChat
+        variant="ai-chat-navigation"
         data={{
           id: "work-chat",
           title: "Workshop campaign",

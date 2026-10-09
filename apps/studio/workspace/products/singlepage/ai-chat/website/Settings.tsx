@@ -1,6 +1,6 @@
-import { Component as SubjectAccount } from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-account/index";
-import { Component as Layout } from "../../../../../modules/host/models/layout/singlepage/ai-chat-header/index";
-import { Component } from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-settings/index";
+import { Component as RbacModuleSubject } from "../../../../../modules/rbac/models/subject/index";
+import { Component as HostModuleLayout } from "../../../../../modules/host/models/layout/index";
+
 import sourceText from "./settings.md?raw";
 import { parseAIChatServicePage } from "./content";
 import { AccountProvider } from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-account/Account";
@@ -9,14 +9,22 @@ import { aiChatAccount } from "../../../../utils/products/ai-chat-account-fixtur
 export default function Settings({ text }: { text?: string } = {}) {
   return (
     <AccountProvider account={aiChatAccount}>
-      <Layout
+      <HostModuleLayout
+        variant="ai-chat-header"
         page="settings"
         subjectAccount={({ onNavigate }) => (
-          <SubjectAccount page="settings" onNavigate={onNavigate} />
+          <RbacModuleSubject
+            variant="ai-chat-account"
+            page="settings"
+            onNavigate={onNavigate}
+          />
         )}
       >
-        <Component copy={parseAIChatServicePage(text ?? sourceText)} />
-      </Layout>
+        <RbacModuleSubject
+          variant="ai-chat-settings"
+          copy={parseAIChatServicePage(text ?? sourceText)}
+        />
+      </HostModuleLayout>
     </AccountProvider>
   );
 }

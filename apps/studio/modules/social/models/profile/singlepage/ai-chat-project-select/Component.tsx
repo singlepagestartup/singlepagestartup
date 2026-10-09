@@ -1,12 +1,11 @@
 "use client";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { memo } from "react";
 import { useProfiles } from "../ai-chat-project/Profiles";
+import { Component as ProjectItem } from "../ai-chat-project-item/index";
 import {
   Icon,
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
-import type { IProjectIdentity } from "../ai-chat-project/Profiles";
 export interface IProjectSelectProps {
   profileId?: string;
   onNavigate?: () => void;
@@ -14,30 +13,7 @@ export interface IProjectSelectProps {
 }
 const itemClass =
   "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-sps-grey";
-const ProjectItem = memo(function ProjectItem({
-  data,
-  selected,
-  onNavigate,
-}: {
-  data: IProjectIdentity;
-  selected: boolean;
-  onNavigate?: () => void;
-}) {
-  return (
-    <DropdownMenu.Item asChild>
-      <a
-        href={`/ai-chat/projects/${encodeURIComponent(data.id)}`}
-        onClick={onNavigate}
-        className={itemClass}
-        aria-current={selected ? "page" : undefined}
-      >
-        <Icon name="folder-open" />
-        <span className="min-w-0 flex-1 truncate">{data.name}</span>
-        {selected && <Icon name="check" className="size-4" />}
-      </a>
-    </DropdownMenu.Item>
-  );
-});
+
 export function Component({
   profileId,
   onNavigate,

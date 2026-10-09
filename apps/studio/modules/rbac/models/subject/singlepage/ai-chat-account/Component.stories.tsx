@@ -1,4 +1,5 @@
-import { Component } from "./index";
+import { Component as RbacModuleSubject } from "../../index";
+
 import { AccountProvider } from "../ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 import type { Meta, StoryObj } from "@storybook/react";
@@ -6,7 +7,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 function Example() {
   return (
     <AccountProvider account={aiChatAccount}>
-      <Component page="chat" />
+      <RbacModuleSubject variant="ai-chat-account" page="chat" />
     </AccountProvider>
   );
 }

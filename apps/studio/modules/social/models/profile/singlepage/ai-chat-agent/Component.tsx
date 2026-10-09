@@ -1,4 +1,5 @@
 "use client";
+import { Component as SocialModuleSkill } from "../../../skill/index";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useState, type FormEvent } from "react";
 import {
@@ -14,10 +15,8 @@ import {
   type IProjectAgent,
 } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
 
-import {
-  Component as ProductsSkill,
-  productsSkill,
-} from "../../../skill/singlepage/ai-chat-products/index";
+import { Component as ProjectAgentAvatar } from "../ai-chat-agent-avatar/index";
+import { productsSkill } from "../../../skill/singlepage/ai-chat-products/index";
 export const productsAgent: IProjectAgent = {
   id: "products-agent",
   name: "Product assistant",
@@ -29,65 +28,11 @@ export interface IAgentProfileProps {
   agent: IProjectAgent | null;
   onClose: () => void;
 }
-export interface IAgentAvatarProps {
-  agent: IProjectAgent;
-  onSelect: (agent: IProjectAgent) => void;
-}
 export interface IAgentPickerProps {
   agent: IProjectAgent | null;
   agents: IProjectAgent[];
   onChange: (agent: IProjectAgent | null) => void;
   onSave: (agent: IProjectAgent) => void;
-}
-export interface IThreadAgentSelectProps {
-  onChange: (selected: boolean) => void;
-}
-
-export function ThreadAgentSelect({ onChange }: IThreadAgentSelectProps) {
-  const [agentId, setAgentId] = useState("");
-  const [profile, setProfile] = useState<IProjectAgent | null>(null);
-  return (
-    <fieldset className="min-w-0 space-y-3">
-      <legend className={kit.label}>Agent</legend>
-      <div className="flex items-center gap-2">
-        <div className="min-w-0 flex-1">
-          <Select
-            aria-label="Thread agent"
-            placeholder="Select an agent"
-            value={agentId}
-            onValueChange={(value) => {
-              setAgentId(value);
-              onChange(value === productsAgent.id);
-            }}
-            options={[{ value: productsAgent.id, label: productsAgent.name }]}
-          />
-        </div>
-        {agentId && (
-          <ProjectAgentAvatar agent={productsAgent} onSelect={setProfile} />
-        )}
-      </div>
-      <p className="text-xs leading-5 text-sps-muted">
-        {agentId
-          ? productsAgent.description
-          : "Choose the agent for this conversation."}
-      </p>
-      <Component agent={profile} onClose={() => setProfile(null)} />
-    </fieldset>
-  );
-}
-
-export function ProjectAgentAvatar({ agent, onSelect }: IAgentAvatarProps) {
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(agent)}
-      aria-label={`About ${agent.name}`}
-      title={`About ${agent.name}`}
-      className={`grid size-8 shrink-0 place-items-center rounded-lg bg-sps-green text-sps-graphite transition hover:bg-sps-green/80 ${kit.focus}`}
-    >
-      <Icon name="robot" className="size-4" />
-    </button>
-  );
 }
 
 export function Component({ agent, onClose }: IAgentProfileProps) {
@@ -130,7 +75,7 @@ export function Component({ agent, onClose }: IAgentProfileProps) {
           </div>
           <div className="min-h-0 overflow-y-auto p-5">
             {agent?.id === productsAgent.id ? (
-              <ProductsSkill />
+              <SocialModuleSkill variant="ai-chat-products" />
             ) : (
               <MarkdownDocument hideTitle>{agent?.role ?? ""}</MarkdownDocument>
             )}

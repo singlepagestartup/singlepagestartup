@@ -1,10 +1,12 @@
-import { Component } from "./index";
+import { Component as SocialModuleProfile } from "../../index";
+
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 import type { Meta, StoryObj } from "@storybook/react";
 
 function Example() {
   return (
-    <Component
+    <SocialModuleProfile
+      variant="ai-chat-user-menu"
       data={aiChatAccount.profiles[0]}
       email={aiChatAccount.email}
       balance={aiChatAccount.balance}

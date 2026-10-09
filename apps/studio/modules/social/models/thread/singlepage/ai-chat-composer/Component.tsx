@@ -6,7 +6,7 @@ import {
   Icon,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import { readProjectFiles } from "../../../../../../workspace/utils/products/ai-chat-files";
-import { ProjectPendingFile } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/index";
+import { Component as FileStorageModuleFile } from "../../../../../file-storage/models/file/index";
 
 import { useThread } from "../ai-chat-products/Thread";
 import { useSource } from "../../../../../knowledge/models/source/singlepage/ai-chat-document/Source";
@@ -138,7 +138,8 @@ export function Component() {
               className="mb-2 grid max-h-36 gap-2 overflow-y-auto p-1 @[640px]:grid-cols-2"
             >
               {files.map((file) => (
-                <ProjectPendingFile
+                <FileStorageModuleFile
+                  variant="ai-chat-pending"
                   key={file.id}
                   file={file}
                   onRemove={onRemoveFile}

@@ -1,9 +1,10 @@
-import { Component } from "./index";
+import { Component as SourcesToFileStorageModuleFiles } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 
 function Example() {
   return (
-    <Component
+    <SourcesToFileStorageModuleFiles
       variant="find"
       data={[
         {
@@ -24,7 +25,7 @@ function Example() {
       {(relations) => (
         <pre className="p-4">{JSON.stringify(relations, null, 2)}</pre>
       )}
-    </Component>
+    </SourcesToFileStorageModuleFiles>
   );
 }
 

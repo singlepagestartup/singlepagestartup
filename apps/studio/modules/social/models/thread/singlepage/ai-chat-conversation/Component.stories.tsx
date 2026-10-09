@@ -1,4 +1,5 @@
-import { Component } from "./index";
+import { Component as SocialModuleThread } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 import { FilesProvider } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
 import { SourceProvider } from "../../../../../knowledge/models/source/singlepage/ai-chat-document/Source";
@@ -15,7 +16,7 @@ function Example() {
             variant: "ai-chat-products",
           }}
         >
-          <Component />
+          <SocialModuleThread variant="ai-chat-conversation" />
         </ThreadProvider>
       </SourceProvider>
     </FilesProvider>

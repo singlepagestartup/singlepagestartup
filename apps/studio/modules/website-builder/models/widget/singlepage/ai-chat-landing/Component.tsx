@@ -1,11 +1,11 @@
 "use client";
+import { Component as SocialModuleChat } from "../../../../../social/models/chat/index";
 import {
   Icon,
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import defaultCopy from "./content.json";
 import type { IAIChatWebsiteContent } from "../../../../../../workspace/utils/products/ai-chat-content";
-import { Component as ChatPreview } from "../../../../../social/models/chat/singlepage/ai-chat-preview/index";
 
 export interface IAIChatLandingProps {
   content?: IAIChatWebsiteContent;
@@ -128,7 +128,7 @@ export function Component({ content = defaultCopy }: IAIChatLandingProps = {}) {
               {content.labels["demo-upload-note"]}
             </p>
           </div>
-          <ChatPreview content={content} />
+          <SocialModuleChat variant="ai-chat-preview" content={content} />
         </section>
         <section className={`${section} pb-10`}>
           <div className="flex flex-wrap items-center justify-between gap-6 border-t border-sps-line py-8">

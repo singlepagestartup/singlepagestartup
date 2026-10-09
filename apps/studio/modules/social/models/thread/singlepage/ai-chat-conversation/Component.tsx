@@ -1,11 +1,12 @@
 "use client";
+import { Component as ThreadsToMessages } from "../../../../relations/threads-to-messages/index";
+import { Component as SocialModuleProfile } from "../../../profile/index";
+import { Component as SocialModuleMessage } from "../../../message/index";
 import { useCallback, useRef, useEffect, useState } from "react";
 import { type IProjectAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
 import { useThread } from "../ai-chat-products/Thread";
 import { orderedThreadMessages } from "../../../../../../workspace/utils/products/ai-chat-threads";
-import { Component as ThreadMessages } from "../../../../relations/threads-to-messages/singlepage/ai-chat-find/index";
-import { Component as ProjectAgentProfile } from "../../../profile/singlepage/ai-chat-agent/index";
-import { Component as ProjectMessageRow } from "../../../message/singlepage/ai-chat-message/index";
+
 export interface IConversationProps {
   className?: string;
 }
@@ -31,7 +32,7 @@ export function Component({ className = "" }: IConversationProps) {
         aria-live="polite"
         className={`${className} space-y-6 p-4 @[640px]:p-6`}
       >
-        <ThreadMessages
+        <ThreadsToMessages
           variant="find"
           data={messages.map((message, orderIndex) => ({
             id: `${thread.id}:${message.id}`,
@@ -49,7 +50,8 @@ export function Component({ className = "" }: IConversationProps) {
         >
           {(links) =>
             orderedThreadMessages(messages, links).map((message) => (
-              <ProjectMessageRow
+              <SocialModuleMessage
+                variant="ai-chat-message"
                 key={message.id}
                 message={message}
                 agent={message.agent ?? null}
@@ -58,10 +60,14 @@ export function Component({ className = "" }: IConversationProps) {
               />
             ))
           }
-        </ThreadMessages>
+        </ThreadsToMessages>
         <div ref={end} />
       </div>
-      <ProjectAgentProfile agent={profile} onClose={() => setProfile(null)} />
+      <SocialModuleProfile
+        variant="ai-chat-agent"
+        agent={profile}
+        onClose={() => setProfile(null)}
+      />
     </>
   );
 }

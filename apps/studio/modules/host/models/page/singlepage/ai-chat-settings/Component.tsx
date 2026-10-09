@@ -1,15 +1,20 @@
-import { Component as Layout } from "../../../layout/singlepage/ai-chat-header/index";
-import { Component as AccountSettings } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/index";
-import { Component as SubjectAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/index";
+import { Component as HostModuleLayout } from "../../../layout/index";
+import { Component as RbacModuleSubject } from "../../../../../rbac/models/subject/index";
+
 export function Component() {
   return (
-    <Layout
+    <HostModuleLayout
+      variant="ai-chat-header"
       page="settings"
       subjectAccount={({ onNavigate }) => (
-        <SubjectAccount page="settings" onNavigate={onNavigate} />
+        <RbacModuleSubject
+          variant="ai-chat-account"
+          page="settings"
+          onNavigate={onNavigate}
+        />
       )}
     >
-      <AccountSettings />
-    </Layout>
+      <RbacModuleSubject variant="ai-chat-settings" />
+    </HostModuleLayout>
   );
 }

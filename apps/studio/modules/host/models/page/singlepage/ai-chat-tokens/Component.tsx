@@ -1,15 +1,21 @@
-import { Component as Layout } from "../../../layout/singlepage/ai-chat-header/index";
-import { Component as Tokens } from "../../../../../ecommerce/models/order/singlepage/ai-chat-tokens/index";
-import { Component as SubjectAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/index";
+import { Component as HostModuleLayout } from "../../../layout/index";
+import { Component as EcommerceModuleOrder } from "../../../../../ecommerce/models/order/index";
+import { Component as RbacModuleSubject } from "../../../../../rbac/models/subject/index";
+
 export function Component() {
   return (
-    <Layout
+    <HostModuleLayout
+      variant="ai-chat-header"
       page="tokens"
       subjectAccount={({ onNavigate }) => (
-        <SubjectAccount page="tokens" onNavigate={onNavigate} />
+        <RbacModuleSubject
+          variant="ai-chat-account"
+          page="tokens"
+          onNavigate={onNavigate}
+        />
       )}
     >
-      <Tokens />
-    </Layout>
+      <EcommerceModuleOrder variant="ai-chat-tokens" />
+    </HostModuleLayout>
   );
 }

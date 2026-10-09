@@ -1,6 +1,7 @@
 "use client";
+import { Component as ProfilesToChats } from "../../../../relations/profiles-to-chats/index";
 import type { ReactNode } from "react";
-import { Component as ProfileChats } from "../../../../relations/profiles-to-chats/singlepage/ai-chat-find/index";
+
 import { ProjectProvider } from "./Profile";
 import { useProfiles } from "./Profiles";
 export interface IProjectProfileProps {
@@ -16,7 +17,7 @@ export function Component({ profileId, children }: IProjectProfileProps) {
       </main>
     );
   return (
-    <ProfileChats
+    <ProfilesToChats
       variant="find"
       data={links.profilesToChats}
       apiProps={{
@@ -43,6 +44,6 @@ export function Component({ profileId, children }: IProjectProfileProps) {
           <main role="status">Chat unavailable.</main>
         )
       }
-    </ProfileChats>
+    </ProfilesToChats>
   );
 }

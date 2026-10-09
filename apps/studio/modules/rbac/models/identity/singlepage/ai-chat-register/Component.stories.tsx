@@ -1,10 +1,11 @@
-import { Component } from "./index";
+import { Component as RbacModuleIdentity } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 import { AccountProvider } from "../../../subject/singlepage/ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 
 function Example() {
-  return <Component />;
+  return <RbacModuleIdentity variant="ai-chat-register" />;
 }
 
 const meta = {

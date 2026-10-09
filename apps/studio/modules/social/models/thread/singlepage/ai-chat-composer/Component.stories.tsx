@@ -1,4 +1,5 @@
-import { Component } from "./index";
+import { Component as SocialModuleThread } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
@@ -17,7 +18,7 @@ function Example() {
             variant: "ai-chat-products",
           }}
         >
-          <Component />
+          <SocialModuleThread variant="ai-chat-composer" />
         </ThreadProvider>
       </SourceProvider>
     </FilesProvider>

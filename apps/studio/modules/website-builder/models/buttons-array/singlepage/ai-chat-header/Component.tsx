@@ -1,5 +1,5 @@
-import { Component as ArrayButtons } from "../../../../relations/buttons-arrays-to-buttons/singlepage/ai-chat-find/index";
-import { Component as Button } from "../../../button/singlepage/ai-chat-header/index";
+import { Component as ButtonsArraysToButtons } from "../../../../relations/buttons-arrays-to-buttons/index";
+import { Component as WebsiteBuilderModuleButton } from "../../../button/index";
 
 export interface IHeaderButtonsProps {
   id: string;
@@ -23,7 +23,7 @@ export function Component({ id, activeHref, onNavigate }: IHeaderButtonsProps) {
       data-variant="ai-chat-header"
       className="flex items-center gap-1"
     >
-      <ArrayButtons
+      <ButtonsArraysToButtons
         variant="find"
         data={[
           { id: `${id}:button`, buttonsArrayId: id, buttonId, orderIndex: 0 },
@@ -38,7 +38,8 @@ export function Component({ id, activeHref, onNavigate }: IHeaderButtonsProps) {
       >
         {(relations) =>
           relations.map((relation) => (
-            <Button
+            <WebsiteBuilderModuleButton
+              variant="ai-chat-header"
               key={relation.id}
               id={relation.buttonId}
               activeHref={activeHref}
@@ -46,7 +47,7 @@ export function Component({ id, activeHref, onNavigate }: IHeaderButtonsProps) {
             />
           ))
         }
-      </ArrayButtons>
+      </ButtonsArraysToButtons>
     </div>
   );
 }

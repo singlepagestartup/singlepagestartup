@@ -1,24 +1,35 @@
-import { Component } from "./index";
-import { Component as ProfileSelect } from "../../../../../social/models/profile/singlepage/ai-chat-project-select/index";
+import { Component as HostModuleLayout } from "../../index";
+import { Component as SocialModuleProfile } from "../../../../../social/models/profile/index";
+import { Component as RbacModuleSubject } from "../../../../../rbac/models/subject/index";
+
 import { ProfilesProvider } from "../../../../../social/models/profile/singlepage/ai-chat-project/Profiles";
-import { Component as SubjectAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/index";
+
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 import { aiChatWorkspaceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 import type { Meta, StoryObj } from "@storybook/react";
 function Example() {
   return (
-    <Component
+    <HostModuleLayout
+      variant="ai-chat-header"
       page="chat"
       profileSelect={(props) => (
-        <ProfileSelect profileId="pottery" {...props} />
+        <SocialModuleProfile
+          variant="ai-chat-project-select"
+          profileId="pottery"
+          {...props}
+        />
       )}
       subjectAccount={({ onNavigate }) => (
-        <SubjectAccount page="chat" onNavigate={onNavigate} />
+        <RbacModuleSubject
+          variant="ai-chat-account"
+          page="chat"
+          onNavigate={onNavigate}
+        />
       )}
     >
       <main className="mx-auto max-w-6xl p-5">Page content slot</main>
-    </Component>
+    </HostModuleLayout>
   );
 }
 const meta = {

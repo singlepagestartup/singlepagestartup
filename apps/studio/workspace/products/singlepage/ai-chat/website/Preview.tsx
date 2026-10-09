@@ -1,15 +1,7 @@
 "use client";
+import { Component as HostModulePage } from "../../../../../modules/host/models/page/index";
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
-import { Component as Landing } from "../../../../../modules/host/models/page/singlepage/ai-chat/index";
-import { Component as Register } from "../../../../../modules/host/models/page/singlepage/ai-chat-register/index";
-import { Component as Login } from "../../../../../modules/host/models/page/singlepage/ai-chat-login/index";
-import { Component as AccountSettings } from "../../../../../modules/host/models/page/singlepage/ai-chat-settings/index";
-import { Component as Help } from "../../../../../modules/host/models/page/singlepage/ai-chat-help/index";
-import { Component as Tokens } from "../../../../../modules/host/models/page/singlepage/ai-chat-tokens/index";
-import { Component as ProjectCreate } from "../../../../../modules/host/models/page/singlepage/ai-chat-projects-new/index";
-import { Component as Products } from "../../../../../modules/host/models/page/singlepage/ai-chat-projects-project-id/index";
-import { Component as ProjectSettings } from "../../../../../modules/host/models/page/singlepage/ai-chat-projects-project-id-settings/index";
-import { Component as ThreadCreate } from "../../../../../modules/host/models/page/singlepage/ai-chat-projects-project-id-threads-new/index";
+
 import {
   AccountProvider,
   type IAIChatAccount,
@@ -32,34 +24,36 @@ export interface IAIChatPreviewProps {
   account?: IAIChatAccount;
   profiles?: Omit<IProfilesProviderProps, "children">;
 }
-const servicePages: Partial<Record<IAIChatRoute["page"], typeof Landing>> = {
-  landing: Landing,
-  register: Register,
-  login: Login,
-  "account-settings": AccountSettings,
-  help: Help,
-  tokens: Tokens,
-  "project-create": ProjectCreate,
-};
-const projectPages: Partial<Record<IAIChatRoute["page"], typeof Products>> = {
-  products: Products,
-  "project-settings": ProjectSettings,
-  "thread-create": ThreadCreate,
-};
+const servicePages = {
+  landing: "ai-chat",
+  register: "ai-chat-register",
+  login: "ai-chat-login",
+  "account-settings": "ai-chat-settings",
+  help: "ai-chat-help",
+  tokens: "ai-chat-tokens",
+  "project-create": "ai-chat-projects-new",
+} as const;
+const projectPages = {
+  products: "ai-chat-projects-project-id",
+  "project-settings": "ai-chat-projects-project-id-settings",
+  "thread-create": "ai-chat-projects-project-id-threads-new",
+} as const;
 function Pages({ route }: { route: IAIChatRoute | undefined }) {
   const { projects } = useProfiles();
   if (!route) return <main role="status">Page unavailable.</main>;
-  const Service = servicePages[route.page as keyof typeof servicePages];
-  const Project = projectPages[route.page as keyof typeof projectPages];
+  const serviceVariant = servicePages[route.page as keyof typeof servicePages];
+  const projectVariant = projectPages[route.page as keyof typeof projectPages];
   const available = projects.some((profile) => profile.id === route.profileId);
   return (
     <>
-      {Service && <Service />}
-      {Project && !available && <Project profileId={route.profileId!} />}
+      {serviceVariant && <HostModulePage variant={serviceVariant} />}
+      {projectVariant && !available && (
+        <HostModulePage variant={projectVariant} profileId={route.profileId!} />
+      )}
       {projects.map((profile) => (
         <ProjectProvider key={profile.id} profileId={profile.id}>
-          {Project && profile.id === route.profileId ? (
-            <Project profileId={profile.id} />
+          {projectVariant && profile.id === route.profileId ? (
+            <HostModulePage variant={projectVariant} profileId={profile.id} />
           ) : null}
         </ProjectProvider>
       ))}

@@ -1,4 +1,5 @@
-import { Component } from "./index";
+import { Component as KnowledgeModuleSource } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 import { FilesProvider } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
 import { SourceProvider } from "../ai-chat-document/Source";
@@ -13,7 +14,11 @@ function Example() {
         initialFileLinks={links}
       >
         <div className="w-64 bg-sps-graphite p-4">
-          <Component selected href="/ai-chat/projects/pottery" />
+          <KnowledgeModuleSource
+            variant="ai-chat-document-link"
+            selected
+            href="/ai-chat/projects/pottery"
+          />
         </div>
       </SourceProvider>
     </FilesProvider>

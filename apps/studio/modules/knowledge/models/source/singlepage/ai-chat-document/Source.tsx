@@ -1,4 +1,5 @@
 "use client";
+import { Component as ProfilesToKnowledgeModuleSources } from "../../../../../social/relations/profiles-to-knowledge-module-sources/index";
 import {
   createContext,
   useContext,
@@ -11,7 +12,6 @@ import type {
   ISourceFileRelation,
 } from "../../../../../../workspace/utils/products/ai-chat-models";
 import { editSourceUserContext } from "../../../../../../workspace/utils/products/ai-chat-knowledge";
-import { Component as ProfileSources } from "../../../../../social/relations/profiles-to-knowledge-module-sources/singlepage/ai-chat-find/index";
 
 interface ISourceContext {
   source: IAIChatSource;
@@ -91,7 +91,7 @@ export function SourceProvider({
     [source.id],
   );
   return (
-    <ProfileSources
+    <ProfilesToKnowledgeModuleSources
       variant="find"
       data={[
         {
@@ -117,7 +117,7 @@ export function SourceProvider({
           </SourceContext.Provider>
         ) : null
       }
-    </ProfileSources>
+    </ProfilesToKnowledgeModuleSources>
   );
 }
 export function useSource() {

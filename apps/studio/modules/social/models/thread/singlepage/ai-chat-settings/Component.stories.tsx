@@ -1,4 +1,5 @@
-import { Component } from "./index";
+import { Component as SocialModuleThread } from "../../index";
+
 import { useState } from "react";
 import type { IProjectTopic } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import type { Meta, StoryObj } from "@storybook/react";
@@ -11,7 +12,8 @@ function Example() {
     messages: [],
   });
   return (
-    <Component
+    <SocialModuleThread
+      variant="ai-chat-settings"
       topic={topic}
       onSave={(title) => setTopic({ ...topic, title })}
       onDelete={() => {}}

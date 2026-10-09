@@ -1,9 +1,10 @@
-import { Component } from "./index";
+import { Component as ProfilesToChats } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 
 function Example() {
   return (
-    <Component
+    <ProfilesToChats
       variant="find"
       data={[
         {
@@ -23,7 +24,7 @@ function Example() {
       {(relations) => (
         <pre className="p-4 text-sm">{JSON.stringify(relations, null, 2)}</pre>
       )}
-    </Component>
+    </ProfilesToChats>
   );
 }
 

@@ -1,13 +1,13 @@
 "use client";
+import { Component as WebsiteBuilderModuleLogotype } from "../../../logotype/index";
+import { Component as WebsiteBuilderModuleButtonsArray } from "../../../buttons-array/index";
+import { Component as WidgetsToLogotypes } from "../../../../relations/widgets-to-logotypes/index";
+import { Component as WidgetsToButtonsArrays } from "../../../../relations/widgets-to-buttons-arrays/index";
 import { useCallback, useId, useRef, useState, type ReactNode } from "react";
 import {
   Icon,
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
-import { Component as Logotype } from "../../../logotype/singlepage/ai-chat/index";
-import { Component as ButtonsArray } from "../../../buttons-array/singlepage/ai-chat-header/index";
-import { Component as WidgetLogotypes } from "../../../../relations/widgets-to-logotypes/singlepage/ai-chat-find/index";
-import { Component as WidgetButtonsArrays } from "../../../../relations/widgets-to-buttons-arrays/singlepage/ai-chat-find/index";
 
 export interface IHeaderNavigationProps {
   onNavigate: () => void;
@@ -60,7 +60,7 @@ export function Component({
       <div
         className={`mx-auto flex max-w-6xl items-center justify-between gap-2 @[800px]:gap-5 ${auth ? "flex-wrap" : "h-full"}`}
       >
-        <WidgetLogotypes
+        <WidgetsToLogotypes
           variant="find"
           data={[
             {
@@ -81,11 +81,14 @@ export function Component({
           {(relations) =>
             relations.map((relation) =>
               relation.logotypeId === "ai-chat-logotype" ? (
-                <Logotype key={relation.id} />
+                <WebsiteBuilderModuleLogotype
+                  variant="ai-chat"
+                  key={relation.id}
+                />
               ) : null,
             )
           }
-        </WidgetLogotypes>
+        </WidgetsToLogotypes>
         <nav
           aria-label={auth ? "Account access" : "Account navigation"}
           className="flex shrink-0 items-center justify-end gap-1"
@@ -104,7 +107,7 @@ export function Component({
                 : `${navigationOpen ? "flex" : "hidden"} absolute inset-x-0 top-full flex-col items-start gap-1 border-b border-sps-line bg-sps-white px-4 py-3 shadow-lg @[800px]:static @[800px]:flex @[800px]:flex-row @[800px]:items-center @[800px]:border-0 @[800px]:p-0 @[800px]:shadow-none`
             }
           >
-            <WidgetButtonsArrays
+            <WidgetsToButtonsArrays
               variant="find"
               data={[
                 {
@@ -126,7 +129,8 @@ export function Component({
             >
               {(relations) =>
                 relations.map((relation) => (
-                  <ButtonsArray
+                  <WebsiteBuilderModuleButtonsArray
+                    variant="ai-chat-header"
                     key={relation.id}
                     id={relation.buttonsArrayId}
                     activeHref={`/ai-chat/${page}`}
@@ -134,7 +138,7 @@ export function Component({
                   />
                 ))
               }
-            </WidgetButtonsArrays>
+            </WidgetsToButtonsArrays>
             {!auth && profileSelect?.(navigationProps)}
           </div>
           {!auth && subjectAccount?.(navigationProps)}

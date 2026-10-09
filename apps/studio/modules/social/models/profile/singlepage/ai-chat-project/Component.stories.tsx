@@ -1,4 +1,5 @@
-import { Component } from "./index";
+import { Component as SocialModuleProfile } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
 import { ProfilesProvider } from "../ai-chat-project/Profiles";
@@ -11,9 +12,9 @@ function Example() {
     <AccountProvider account={aiChatAccount}>
       <ProfilesProvider {...aiChatWorkspaceFixture()}>
         <ProjectProvider profileId="pottery">
-          <Component profileId="pottery">
+          <SocialModuleProfile variant="ai-chat-project" profileId="pottery">
             <p className="p-4">Project profile content slot</p>
-          </Component>
+          </SocialModuleProfile>
         </ProjectProvider>
       </ProfilesProvider>
     </AccountProvider>

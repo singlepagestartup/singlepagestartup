@@ -1,30 +1,39 @@
 "use client";
-import { Component as Layout } from "../../../layout/singlepage/ai-chat-header/index";
-import { Component as ProjectLayout } from "../../../layout/singlepage/ai-chat-project/index";
-import { Component as ProjectProfile } from "../../../../../social/models/profile/singlepage/ai-chat-project/index";
-import { Component as Sidebar } from "../../../../../social/models/profile/singlepage/ai-chat-sidebar/index";
-import { Component as ProjectSelect } from "../../../../../social/models/profile/singlepage/ai-chat-project-select/index";
-import { Component as ProfileSettings } from "../../../../../social/models/profile/singlepage/ai-chat-settings/index";
+import { Component as HostModuleLayout } from "../../../layout/index";
+import { Component as SocialModuleProfile } from "../../../../../social/models/profile/index";
+import { Component as RbacModuleSubject } from "../../../../../rbac/models/subject/index";
+
 import { PanelHeader } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
-import { Component as SubjectAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/index";
+
 export interface IProjectPageProps {
   profileId: string;
 }
 export function Component({ profileId }: IProjectPageProps) {
   return (
-    <Layout
+    <HostModuleLayout
+      variant="ai-chat-header"
       page="chat"
       profileSelect={(props) => (
-        <ProjectSelect profileId={profileId} {...props} />
+        <SocialModuleProfile
+          variant="ai-chat-project-select"
+          profileId={profileId}
+          {...props}
+        />
       )}
       subjectAccount={({ onNavigate }) => (
-        <SubjectAccount page="chat" onNavigate={onNavigate} />
+        <RbacModuleSubject
+          variant="ai-chat-account"
+          page="chat"
+          onNavigate={onNavigate}
+        />
       )}
     >
-      <ProjectProfile profileId={profileId}>
-        <ProjectLayout
+      <SocialModuleProfile variant="ai-chat-project" profileId={profileId}>
+        <HostModuleLayout
+          variant="ai-chat-project"
           sidebar={(mobile) => (
-            <Sidebar
+            <SocialModuleProfile
+              variant="ai-chat-sidebar"
               profileId={profileId}
               selected="settings"
               mobile={mobile}
@@ -41,11 +50,14 @@ export function Component({ profileId }: IProjectPageProps) {
                 label="Project"
                 navigation={navigation}
               />
-              <ProfileSettings profileId={profileId} />
+              <SocialModuleProfile
+                variant="ai-chat-settings"
+                profileId={profileId}
+              />
             </section>
           )}
-        </ProjectLayout>
-      </ProjectProfile>
-    </Layout>
+        </HostModuleLayout>
+      </SocialModuleProfile>
+    </HostModuleLayout>
   );
 }

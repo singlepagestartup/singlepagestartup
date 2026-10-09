@@ -1,4 +1,5 @@
-import { Component } from "./index";
+import { Component as FileStorageModuleFile } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { FilesProvider } from "./Files";
@@ -10,7 +11,8 @@ function Example() {
   const [ids, setIds] = useState(files.map((file) => file.id));
   return (
     <FilesProvider initialFiles={files}>
-      <Component
+      <FileStorageModuleFile
+        variant="ai-chat-attachments"
         section="Products"
         fileIds={ids}
         onAttach={(next) =>

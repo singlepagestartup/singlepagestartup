@@ -9,7 +9,7 @@ import {
   TextField,
   Feedback,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
-import { ThreadAgentSelect } from "../../../profile/singlepage/ai-chat-agent/index";
+import { Component as SocialModuleProfile } from "../../../profile/index";
 export interface IThreadCreateProps {
   cancelHref: string;
 }
@@ -41,7 +41,8 @@ export function Component({ cancelHref }: IThreadCreateProps) {
         maxLength={100}
         placeholder="What do you want to work on?"
       />
-      <ThreadAgentSelect
+      <SocialModuleProfile
+        variant="ai-chat-agent-select"
         onChange={(selected) => {
           setHasAgent(selected);
           setPreviewed(false);

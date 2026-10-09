@@ -1,10 +1,12 @@
-import { Component } from "./index";
+import { Component as SocialModuleMessage } from "../../index";
+
 import { documentAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
 import type { Meta, StoryObj } from "@storybook/react";
 
 function Example() {
   return (
-    <Component
+    <SocialModuleMessage
+      variant="ai-chat-message"
       message={{
         id: "brief-intro",
         role: "assistant",

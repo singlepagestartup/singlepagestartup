@@ -8,13 +8,10 @@ import {
   type IProjectMessage,
   type IProjectDocumentContext,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
-import {
-  ProjectAssetPreview,
-  ProjectFilePreview,
-} from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/index";
+import { Component as FileStorageModuleFile } from "../../../../../file-storage/models/file/index";
 
 import { type IProjectAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
-import { ProjectAgentAvatar } from "../../../profile/singlepage/ai-chat-agent/index";
+import { Component as SocialModuleProfile } from "../../../profile/index";
 
 export interface IProjectMessageRowProps {
   message: IProjectMessage;
@@ -40,7 +37,11 @@ export const Component = memo(function Component({
     >
       {message.role === "assistant" &&
         (replyingAgent ? (
-          <ProjectAgentAvatar agent={replyingAgent} onSelect={onSelect} />
+          <SocialModuleProfile
+            variant="ai-chat-agent-avatar"
+            agent={replyingAgent}
+            onSelect={onSelect}
+          />
         ) : (
           <span
             aria-hidden="true"
@@ -76,7 +77,12 @@ export const Component = memo(function Component({
             className="mt-3 grid gap-2 @[640px]:grid-cols-2"
           >
             {message.files!.map((file) => (
-              <ProjectFilePreview key={file.id} file={file} compact />
+              <FileStorageModuleFile
+                variant="ai-chat-preview"
+                key={file.id}
+                file={file}
+                compact
+              />
             ))}
           </div>
         )}
@@ -88,7 +94,11 @@ export const Component = memo(function Component({
             <div className="mt-2 grid gap-2 @[640px]:grid-cols-2">
               {message.filesUsed!.map((file) => (
                 <div key={file.id} className="min-w-0 space-y-2">
-                  <ProjectFilePreview file={file} compact />
+                  <FileStorageModuleFile
+                    variant="ai-chat-preview"
+                    file={file}
+                    compact
+                  />
                   {file.text && (
                     <p className="max-h-32 overflow-y-auto whitespace-pre-wrap break-words leading-5">
                       {file.text}
@@ -145,7 +155,11 @@ function ConversationContext({ documents, label }: IConversationContextProps) {
             {Boolean(document.assets?.length) && (
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {document.assets!.map((asset) => (
-                  <ProjectAssetPreview key={asset.id} asset={asset} />
+                  <FileStorageModuleFile
+                    variant="ai-chat-asset"
+                    key={asset.id}
+                    asset={asset}
+                  />
                 ))}
               </div>
             )}

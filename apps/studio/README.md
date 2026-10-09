@@ -161,6 +161,24 @@ public types or helpers. Fixture data and interactive examples live in
 `Component.stories.tsx`. Product website previews compose these components and
 editable Markdown content.
 
+AI Chat callers import each model from its `models/<model>/index.ts` entry and
+choose the view with `variant`. The entry's `IComponentProps` is a discriminated
+union: each variant retains its own required props. Relation entries keep the
+native `variant="find"` contract and the full relation name.
+
+```tsx
+import { Component as SocialModuleProfile } from ".../social/models/profile";
+import { Component as SubjectsToSocialModuleProfiles } from ".../rbac/relations/subjects-to-social-module-profiles";
+
+<SocialModuleProfile variant="ai-chat-user-menu" data={profile} balance={balance} page="chat" />;
+```
+
+Model entries currently register the local AI Chat variants. A variant imports
+its own private siblings directly; it never imports its own model entry, which
+would create a cycle. Cross-model compositions, stories and website adapters
+use the public entries. Providers, record types and pure helpers remain separate
+imports from their owning domain.
+
 | Owner                                  | Component responsibility                                           |
 | -------------------------------------- | ------------------------------------------------------------------ |
 | Host Page                              | One concrete screen composed from domain components                |
@@ -208,8 +226,8 @@ Project Pages are `ai-chat-projects-new`, `ai-chat-projects-project-id`,
 to separate Page components and Storybook stories. Pages receive a `profileId`
 where needed; they do not accept a URL or select another screen internally.
 
-Host Layout `ai-chat` supplies the page frame. Layout `ai-chat-header` adds the
-Website Builder header. All nine Pages with that header use this Layout. Pages
+Host Layout `ai-chat` supplies the landing frame. Layout `ai-chat-header` owns
+its own themed container and Website Builder header. All nine Pages with that header use this Layout. Pages
 compose `profileSelect` and `subjectAccount` render props; Layout passes them to
 the widget. The header resolves Logotype through `widgets-to-logotypes`, Buttons
 Array through `widgets-to-buttons-arrays`, and Button through
@@ -220,18 +238,22 @@ and RBAC slots at Host level. `ServicePage` renders content only.
 
 Layout `ai-chat-project` owns the
 responsive columns, collapse control and mobile drawer; its sidebar and body are
-slots. Each project Page imports Profile `ai-chat-sidebar` directly and composes
+slots. Each project Page selects Social Profile `ai-chat-sidebar` through the model entry and composes
 its own Chat, Profile settings or Thread creation content. Shared `PanelHeader`
 lives in the interface kit.
 
 Profile `ai-chat-project/Profiles.tsx` stores project identities and access links.
 The `ai-chat-project` component resolves Profile-to-Chat access and supplies the
-model scope. Profile `ai-chat-project-select` reads available profiles directly;
+model scope. Profile `ai-chat-project-select` reads available profiles and renders memoized
+`ai-chat-project-item` rows;
 `ai-chat-sidebar` reads the selected profile and renders model navigation links.
 Profile creation and settings have their own `ai-chat-create` and
 `ai-chat-settings` variants. Chat `ai-chat-products` resolves the prepared Products
 Thread through `chats-to-threads/ai-chat-find`; Thread `ai-chat-products` displays
-that conversation and its document. Source variants are `ai-chat-document`,
+that conversation and its document. Agent avatar and selection are Profile variants `ai-chat-agent-avatar` and
+`ai-chat-agent-select`. Pending files, previews and asset previews are File
+variants `ai-chat-pending`, `ai-chat-preview` and `ai-chat-asset`.
+Source variants are `ai-chat-document`,
 `ai-chat-card` and `ai-chat-document-link`. No document/message/source arrays or
 agent catalog pass through Profile or Chat.
 

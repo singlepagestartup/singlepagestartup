@@ -1,9 +1,11 @@
-import { Component } from "./index";
+import { Component as WebsiteBuilderModuleWidget } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 function Example() {
   return (
     <div className="@container min-h-56 font-sps">
-      <Component
+      <WebsiteBuilderModuleWidget
+        variant="ai-chat-header"
         page="chat"
         profileSelect={({ onNavigate }) => (
           <button type="button" onClick={onNavigate} className="min-h-11 px-3">

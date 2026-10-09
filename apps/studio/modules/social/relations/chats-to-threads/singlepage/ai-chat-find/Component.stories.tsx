@@ -1,4 +1,5 @@
-import { Component } from "./index";
+import { Component as ChatsToThreads } from "../../index";
+
 import { projectThreadGraph } from "../../../../../../workspace/utils/products/ai-chat-threads";
 import { aiChatProjectFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 import type { Meta, StoryObj } from "@storybook/react";
@@ -6,7 +7,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 function Example() {
   const graph = projectThreadGraph(aiChatProjectFixture());
   return (
-    <Component
+    <ChatsToThreads
       variant="find"
       data={graph.chatThreads}
       apiProps={{
@@ -20,7 +21,7 @@ function Example() {
       {(relations) => (
         <pre className="p-4 text-sm">{JSON.stringify(relations, null, 2)}</pre>
       )}
-    </Component>
+    </ChatsToThreads>
   );
 }
 

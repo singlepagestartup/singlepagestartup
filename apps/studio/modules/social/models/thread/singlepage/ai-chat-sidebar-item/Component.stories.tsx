@@ -1,4 +1,5 @@
-import { Component } from "./index";
+import { Component as SocialModuleThread } from "../../index";
+
 import { useCallback, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
@@ -12,7 +13,8 @@ function Example() {
   );
   return (
     <div className="max-w-sm rounded-2xl bg-sps-graphite p-4 text-white">
-      <Component
+      <SocialModuleThread
+        variant="ai-chat-sidebar-item"
         id="brief"
         name="Brief.md"
         selected={selected}

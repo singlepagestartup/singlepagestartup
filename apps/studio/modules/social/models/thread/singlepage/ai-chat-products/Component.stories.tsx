@@ -1,4 +1,5 @@
-import { Component } from "./index";
+import { Component as SocialModuleThread } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 import { FilesProvider } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
 import { ProductsThreadProvider } from "./Thread";
@@ -10,7 +11,7 @@ function Example() {
       <SourceProvider profileId="pottery">
         <div className="@container/workspace @container/chat flex h-160 flex-col overflow-hidden bg-sps-white">
           <ProductsThreadProvider profileId="pottery">
-            <Component />
+            <SocialModuleThread variant="ai-chat-products" />
           </ProductsThreadProvider>
         </div>
       </SourceProvider>

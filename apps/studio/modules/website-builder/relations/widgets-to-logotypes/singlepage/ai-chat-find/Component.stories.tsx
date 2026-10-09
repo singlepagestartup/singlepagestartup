@@ -1,8 +1,9 @@
-import { Component } from "./index";
+import { Component as WidgetsToLogotypes } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 function Example() {
   return (
-    <Component
+    <WidgetsToLogotypes
       variant="find"
       data={[
         {
@@ -25,7 +26,7 @@ function Example() {
       {(relations) => (
         <pre className="p-4 text-sm">{JSON.stringify(relations, null, 2)}</pre>
       )}
-    </Component>
+    </WidgetsToLogotypes>
   );
 }
 const meta = {

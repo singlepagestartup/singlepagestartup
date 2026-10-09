@@ -1,12 +1,16 @@
-import { Component } from "./index";
+import { Component as HostModuleLayout } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 function Example() {
   return (
-    <Component sidebar={() => <p>Project sidebar slot</p>}>
+    <HostModuleLayout
+      variant="ai-chat-project"
+      sidebar={() => <p>Project sidebar slot</p>}
+    >
       {(navigation) => (
         <div className="p-5">{navigation}Project page content slot</div>
       )}
-    </Component>
+    </HostModuleLayout>
   );
 }
 const meta = {

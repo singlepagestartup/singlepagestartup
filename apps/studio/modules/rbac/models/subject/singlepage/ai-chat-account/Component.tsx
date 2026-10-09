@@ -1,7 +1,8 @@
 "use client";
+import { Component as SubjectsToSocialModuleProfiles } from "../../../../relations/subjects-to-social-module-profiles/index";
+import { Component as SocialModuleProfile } from "../../../../../social/models/profile/index";
 import { useAIChatAccount } from "../ai-chat-account/Account";
-import { Component as SubjectProfiles } from "../../../../relations/subjects-to-social-module-profiles/singlepage/ai-chat-find/index";
-import { Component as UserProfileMenu } from "../../../../../social/models/profile/singlepage/ai-chat-user-menu/index";
+
 import { Icon } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 export interface ISubjectAccountProps {
   page: string;
@@ -11,7 +12,7 @@ export interface ISubjectAccountProps {
 export function Component({ page, balance, onNavigate }: ISubjectAccountProps) {
   const account = useAIChatAccount();
   return (
-    <SubjectProfiles
+    <SubjectsToSocialModuleProfiles
       variant="find"
       data={account.subjectsToProfiles ?? []}
       apiProps={{
@@ -39,7 +40,8 @@ export function Component({ page, balance, onNavigate }: ISubjectAccountProps) {
               ),
           );
         return profile ? (
-          <UserProfileMenu
+          <SocialModuleProfile
+            variant="ai-chat-user-menu"
             data={profile}
             email={account.email}
             balance={balance === undefined ? account.balance : balance}
@@ -57,6 +59,6 @@ export function Component({ page, balance, onNavigate }: ISubjectAccountProps) {
           </button>
         );
       }}
-    </SubjectProfiles>
+    </SubjectsToSocialModuleProfiles>
   );
 }

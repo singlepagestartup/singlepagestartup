@@ -1,4 +1,6 @@
 "use client";
+import { Component as SourcesToFileStorageModuleFiles } from "../../../../relations/sources-to-file-storage-module-files/index";
+import { Component as FileStorageModuleFile } from "../../../../../file-storage/models/file/index";
 import { memo, useCallback, useId } from "react";
 import {
   Icon,
@@ -6,8 +8,7 @@ import {
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import { MarkdownDocument } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/Markdown";
 import { MarkdownField } from "../ai-chat-document/MarkdownField";
-import { Component as SourceFiles } from "../../../../relations/sources-to-file-storage-module-files/singlepage/ai-chat-find/index";
-import { Component as ProjectSectionAssets } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/index";
+
 import {
   sourceUserContext,
   sourceMaterials,
@@ -71,7 +72,7 @@ export const Component = memo(function Component({
           {discussing ? "Discussing in chat" : "Discuss this section"}
         </button>
       )}
-      <SourceFiles
+      <SourcesToFileStorageModuleFiles
         variant="find"
         data={fileLinks}
         apiProps={{
@@ -83,7 +84,8 @@ export const Component = memo(function Component({
         }}
       >
         {(relations) => (
-          <ProjectSectionAssets
+          <FileStorageModuleFile
+            variant="ai-chat-attachments"
             section={data.title}
             fileIds={[...relations]
               .sort((a, b) => a.orderIndex - b.orderIndex)
@@ -92,7 +94,7 @@ export const Component = memo(function Component({
             onRemove={detach}
           />
         )}
-      </SourceFiles>
+      </SourcesToFileStorageModuleFiles>
     </article>
   );
 });

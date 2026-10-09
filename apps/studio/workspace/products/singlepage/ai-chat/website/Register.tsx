@@ -1,5 +1,6 @@
-import { Component as Layout } from "../../../../../modules/host/models/layout/singlepage/ai-chat-header/index";
-import { Component } from "../../../../../modules/rbac/models/identity/singlepage/ai-chat-register/index";
+import { Component as HostModuleLayout } from "../../../../../modules/host/models/layout/index";
+import { Component as RbacModuleIdentity } from "../../../../../modules/rbac/models/identity/index";
+
 import sourceText from "./register.md?raw";
 import { parseAIChatServicePage } from "./content";
 import { AccountProvider } from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-account/Account";
@@ -8,9 +9,12 @@ import { aiChatAccount } from "../../../../utils/products/ai-chat-account-fixtur
 export default function Register({ text }: { text?: string } = {}) {
   return (
     <AccountProvider account={aiChatAccount}>
-      <Layout page="register">
-        <Component copy={parseAIChatServicePage(text ?? sourceText)} />
-      </Layout>
+      <HostModuleLayout variant="ai-chat-header" page="register">
+        <RbacModuleIdentity
+          variant="ai-chat-register"
+          copy={parseAIChatServicePage(text ?? sourceText)}
+        />
+      </HostModuleLayout>
     </AccountProvider>
   );
 }

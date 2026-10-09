@@ -85,3 +85,13 @@ Studio содержит собственные React views, интерфейсы
 - [x] Зафиксировать результат и обновить PR #371. Production остаётся отдельной реализацией.
 
 Результат Header: семь новых вариантов и девять Pages с общим Layout. 264 теста в 32 файлах, TypeScript и изолированная сборка Storybook проходят. Browser проверяет desktop/mobile меню, account navigation и границу sidebar/navbar. SHA и опубликованный PR head доступны в Git и PR #371.
+
+## Общий вход моделей и имена связей
+
+- [x] Layout `ai-chat-header` содержит собственный frame и не импортирует соседний Layout.
+- [x] Пункт проекта — memoized Social Profile `ai-chat-project-item`; селектор использует этот вариант. Project остаётся Profile, отдельной модели project в Social нет.
+- [x] Общие локальные Component/index модели выбирают AI Chat вариант по типизированному `variant`. Внешние вызовы используют имя ModuleModel; relation aliases совпадают с именами связей.
+- [x] Pages, активные доменные компоненты, stories и website previews используют общие входы. Внутренние варианты одной модели остаются прямыми импортами внутри этой модели.
+- [x] Проверить типы, import graph/cycles, model dispatch, relation scoping, stories и browser desktop/mobile. Обновить tracking, metadata и PR #371 отдельным Studio commit.
+
+Результат: 16 общих входов моделей и девять отношений с native aliases. Шесть выделенных вариантов: пункт проекта, аватар и выбор агента, pending File, File preview и asset preview. Их stories используют общий вход. Cross-model вызовы выбирают variant; внутренние siblings не импортируют собственный dispatcher. 268 тестов, TypeScript в checkout и isolated copy, metadata/content checks, изолированная Storybook сборка и desktop/mobile браузер проходят.

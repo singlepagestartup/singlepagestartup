@@ -1,11 +1,12 @@
 "use client";
+import { Component as KnowledgeModuleSource } from "../../../../../knowledge/models/source/index";
 import { useId, useState } from "react";
 import { useProfiles } from "../ai-chat-project/Profiles";
 import {
   Icon,
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
-import { Component as DocumentLink } from "../../../../../knowledge/models/source/singlepage/ai-chat-document-link/index";
+
 export interface IProfileSidebarProps {
   profileId: string;
   selected: "products" | "settings" | "thread-create";
@@ -59,7 +60,8 @@ export function Component({
             />
           </button>
           <div id={`${id}-document-list`} hidden={!open} className="ml-3 mt-1">
-            <DocumentLink
+            <KnowledgeModuleSource
+              variant="ai-chat-document-link"
               selected={!settingsSelected && !creatingThread}
               href={href}
             />

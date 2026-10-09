@@ -1,8 +1,8 @@
 # Локальные модели AI Chat в Studio
 
-Статус: отдельные Pages, доменные компоненты и Header реализованы и проверены. Website Builder Header содержит Logotype и Buttons Array → Button через свои relations. Profile Select и Subject Account страницы передают через props в отдельный Host Layout `ai-chat-header`. Production перенос остаётся отдельной задачей. SHA Studio коммита и опубликованный PR head проверять в Git и PR #371.
+Статус: общие входы моделей AI Chat реализованы; типы, 268 тестов в 33 файлах, изолированная сборка Storybook и браузер проверены. Header Layout содержит собственный frame; пункт проекта, аватар/выбор агента и файловые previews имеют отдельные варианты. Этот шаг изменяет Studio, tools/studio и инженерные документы. Публикация — в PR #371, без merge. SHA последнего коммита смотреть в Git и PR.
 
-Локальная ветка: `codex/studio-host-models`. PR: https://github.com/singlepagestartup/singlepagestartup/pull/371, branch `codex/ai-chat-ui-review`. SHA последнего Studio коммита смотреть в Git. Baseline перед Header: локально `bc6be4fd6dd0dfc589bb99924d59698430413f16`, в PR `c123d3d01e087e4606a5f4853b6b3a60adca0e23`. PR открыт, без merge.
+Локальная ветка: `codex/studio-host-models`. PR: https://github.com/singlepagestartup/singlepagestartup/pull/371, branch `codex/ai-chat-ui-review`. SHA последнего Studio коммита смотреть в Git. Baseline перед общими входами: локально `5b6c60b3a8`, в PR `ada1dd3f25`. PR открыт, без merge.
 
 ## Страницы и композиция
 
@@ -17,13 +17,23 @@ Host Page содержит десять самостоятельных комп�
 - `ai-chat-projects-project-id-settings`: настройки Social Profile проекта.
 - `ai-chat-projects-project-id-threads-new`: форма создания Thread без создания записи.
 
-Page принимает только profileId, если это экран проекта. Page не разбирает URL и не переключает экраны. Его Component.tsx содержит 9–53 строки. Sidebar импортируется непосредственно из Social Profile. Host Layout `ai-chat` содержит общий frame, `ai-chat-header` — Website Builder Header, `ai-chat-project` — responsive columns и мобильный drawer. Shared PanelHeader находится в interface-kit/ai-chat/ServiceDocument.tsx.
+Page принимает только profileId, если это экран проекта. Page не разбирает URL и не переключает экраны. Его Component.tsx содержит 10–64 строки. Sidebar вызывается через общий вход Social Profile с variant="ai-chat-sidebar". Host Layout `ai-chat` содержит landing frame, `ai-chat-header` — собственный frame и Website Builder Header, `ai-chat-project` — responsive columns и мобильный drawer. Shared PanelHeader находится в interface-kit/ai-chat/ServiceDocument.tsx.
 
 Website Builder Header использует `widgets-to-logotypes/ai-chat-find` и `widgets-to-buttons-arrays/ai-chat-find`; Buttons Array использует `buttons-arrays-to-buttons/ai-chat-find`. Каждый find фильтрует parent ID через `apiProps.params.filters.and` и сортирует links по orderIndex. SVG находится в Logotype `ai-chat`, Help — в Button `ai-chat-header`. Header импортирует только Website Builder и нейтральный interface kit; тест обходит весь транзитивный граф и проверяет отсутствие циклов.
 
-Host Page создаёт Social Profile Select и RBAC Subject Account, передаёт render props `profileSelect` и `subjectAccount` в Layout `ai-chat-header`. Layout импортирует Header и передаёт slots. Header не хранит account balance; баланс принадлежит Subject Account. Все девять Pages с этим header используют данный Layout. ServicePage содержит только страницу; website adapters с редактируемым Markdown также используют Layout. Header story имеет заглушки slots, Layout story — реальные модели Social/RBAC. Все семь новых вариантов имеют stories, manifests и Figma metadata. Общий find helper вынесен в `workspace/utils/products/ai-chat-relations.ts`; старые imports из ai-chat-models поддерживает re-export.
+Host Page создаёт Social Profile Select и RBAC Subject Account, передаёт render props `profileSelect` и `subjectAccount` в Layout `ai-chat-header`. Layout импортирует общий вход Widget, выбирает variant="ai-chat-header" и передаёт slots. Header не хранит account balance; баланс принадлежит Subject Account. Все девять Pages с этим header используют данный Layout. ServicePage содержит только страницу; website adapters с редактируемым Markdown также используют Layout. Header story имеет заглушки slots, Layout story — реальные модели Social/RBAC. Варианты Header и всех выделенных частей имеют stories, manifests и Figma metadata. Общий find helper вынесен в `workspace/utils/products/ai-chat-relations.ts`; старые imports из ai-chat-models поддерживает re-export.
 
 Router для локальной демонстрации находится в `workspace/products/singlepage/ai-chat/website/Preview.tsx`; чистый разбор маршрутов — в workspace/utils/products/ai-chat-routes.ts. Preview переключает самостоятельные Pages, хранит последний project href и перехватывает ссылки. Все десять страниц имеют собственные Storybook stories. Прежние Host Page story IDs сохранены; новые stories — `/ai-chat/projects/[project-id]/settings` и `/ai-chat/projects/[project-id]/threads/new`.
+
+## Общие входы и имена
+
+В существующих каталогах 16 моделей и девяти отношений есть Component.tsx и index.ts для AI Chat. Внешний вызов импортирует Component из models/<model>/index и задаёт variant. Alias показывает модуль и модель: SocialModuleProfile, HostModuleLayout, KnowledgeModuleSource. Alias отношения совпадает с его полным именем: SubjectsToSocialModuleProfiles, ProfilesToKnowledgeModuleSources, SourcesToFileStorageModuleFiles.
+
+IComponentProps модели — discriminated union по variant с исходными props каждого варианта; any и центрального URL routing нет. Отношения сохраняют variant="find" и apiProps.params.filters.and. Private siblings внутри одной модели импортируются напрямую, без собственного общего входа; тест проверяет весь runtime graph на циклы. Providers, типы записей и утилиты остаются в своих доменных файлах.
+
+Проект остаётся Social Profile. Вариант ai-chat-project-item содержит memoized строку селектора с profile ID, selected и onNavigate. Аватар и выбор агента — ai-chat-agent-avatar и ai-chat-agent-select. Файлы — ai-chat-pending, ai-chat-preview и ai-chat-asset. Их прежние named component exports удалены; внешние вызовы выбирают эти варианты через общий вход. ProjectAgentPicker и productsAgent остаются в ai-chat-agent, providers не перемещаются. Общие входы сейчас регистрируют только локальные AI Chat варианты; scaffold остальных Studio вариантов не меняется.
+
+Проверки этого шага: 268 тестов/33 файла, tsc в checkout и в /private/tmp/studio-isolation-fixture, inventory, design-system validation, content check и code-placement. Isolated Storybook build: /private/tmp/studio-model-entry-build.log, output /private/tmp/studio-model-entry-storybook. В копии нет libs, apps/host и root tsconfig. Browser: record identity/selected у project item, account Settings/return link, выбор агента/Skill, mobile menu и drawer ниже navbar. Ошибок приложения нет; Storybook предупреждает о будущем обязательном ariaLabel в PopoverProvider.
 
 ## Модели и состояние
 

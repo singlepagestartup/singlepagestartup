@@ -1,25 +1,33 @@
 "use client";
-import { Component as Layout } from "../../../layout/singlepage/ai-chat-header/index";
+import { Component as HostModuleLayout } from "../../../layout/index";
+import { Component as SocialModuleProfile } from "../../../../../social/models/profile/index";
+import { Component as RbacModuleSubject } from "../../../../../rbac/models/subject/index";
+
 import { useNavigate } from "../../../layout/singlepage/ai-chat/Navigation";
-import { Component as ProjectSelect } from "../../../../../social/models/profile/singlepage/ai-chat-project-select/index";
-import {
-  Component as ProfileCreate,
-  ProjectProcessingDisclosure,
-} from "../../../../../social/models/profile/singlepage/ai-chat-create/index";
+
+import { ProjectProcessingDisclosure } from "../../../../../social/models/profile/singlepage/ai-chat-create/index";
 import { useProfiles } from "../../../../../social/models/profile/singlepage/ai-chat-project/Profiles";
-import { Component as SubjectAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/index";
+
 export function Component() {
   const navigate = useNavigate();
   const { create, projects } = useProfiles();
   return (
-    <Layout
+    <HostModuleLayout
+      variant="ai-chat-header"
       page="chat"
-      profileSelect={(props) => <ProjectSelect {...props} />}
+      profileSelect={(props) => (
+        <SocialModuleProfile variant="ai-chat-project-select" {...props} />
+      )}
       subjectAccount={({ onNavigate }) => (
-        <SubjectAccount page="chat" onNavigate={onNavigate} />
+        <RbacModuleSubject
+          variant="ai-chat-account"
+          page="chat"
+          onNavigate={onNavigate}
+        />
       )}
     >
-      <ProfileCreate
+      <SocialModuleProfile
+        variant="ai-chat-create"
         onCreate={(name) => {
           const id = create(name);
           if (id) navigate(`/ai-chat/projects/${encodeURIComponent(id)}`);
@@ -36,6 +44,6 @@ export function Component() {
       <div className="mx-auto max-w-3xl px-5">
         <ProjectProcessingDisclosure id="how-your-materials-are-processed-and-stored" />
       </div>
-    </Layout>
+    </HostModuleLayout>
   );
 }

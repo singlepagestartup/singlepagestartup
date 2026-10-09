@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.ai-chat-project-item",
+  "title": "ai-chat-project-item",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Project selection item.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "ai-chat-project-item",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "ai-chat-project-item"
+  },
+  "contentSlots": []
+}

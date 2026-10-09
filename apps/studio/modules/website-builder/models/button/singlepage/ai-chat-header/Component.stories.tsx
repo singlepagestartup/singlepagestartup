@@ -1,7 +1,10 @@
-import { Component } from "./index";
+import { Component as WebsiteBuilderModuleButton } from "../../index";
+
 import type { Meta, StoryObj } from "@storybook/react";
 function Example() {
-  return <Component id="ai-chat-help" />;
+  return (
+    <WebsiteBuilderModuleButton variant="ai-chat-header" id="ai-chat-help" />
+  );
 }
 const meta = {
   id: "modules-website-builder-models-button-singlepage-ai-chat-header",
