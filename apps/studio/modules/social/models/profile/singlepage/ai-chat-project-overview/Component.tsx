@@ -1,4 +1,9 @@
 "use client";
+import { Component as ProfileScope } from "../ai-chat-project/index";
+import {
+  Component as ProfileSidebar,
+  type IProfileSidebarProps,
+} from "../ai-chat-sidebar/index";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   useId,
@@ -12,11 +17,29 @@ import {
   Icon,
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
-export interface IProjectLayoutProps {
-  sidebar: (mobile: boolean) => ReactNode;
+export interface IProjectOverviewProps {
+  profileId: string;
+  selected: IProfileSidebarProps["selected"];
   children: (navigation: ReactNode) => ReactNode;
 }
-export function Component({ sidebar, children }: IProjectLayoutProps) {
+export function Component({
+  profileId,
+  selected,
+  children,
+}: IProjectOverviewProps) {
+  return (
+    <ProfileScope profileId={profileId}>
+      <ProjectOverview profileId={profileId} selected={selected}>
+        {children}
+      </ProjectOverview>
+    </ProfileScope>
+  );
+}
+function ProjectOverview({
+  profileId,
+  selected,
+  children,
+}: IProjectOverviewProps) {
   const id = useId();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -67,7 +90,11 @@ export function Component({ sidebar, children }: IProjectLayoutProps) {
       >
         <div
           id="documents"
-          data-ds-block="host.layout.ai-chat-project"
+          data-ds-block="social.profile.ai-chat-project-overview"
+          data-module="social"
+          data-model="profile"
+          data-id={profileId}
+          data-variant="ai-chat-project-overview"
           className={`grid min-w-0 overflow-clip @[760px]:overflow-hidden @[760px]:h-160 rounded-2xl border border-sps-line bg-sps-white ${sidebarOpen ? "@[760px]:grid-cols-[210px_minmax(0,1fr)]" : "grid-cols-1"}`}
         >
           {isMobile ? (
@@ -94,7 +121,11 @@ export function Component({ sidebar, children }: IProjectLayoutProps) {
                     <Icon name="x" />
                   </button>
                 </Dialog.Close>
-                {sidebar(true)}
+                <ProfileSidebar
+                  profileId={profileId}
+                  selected={selected}
+                  mobile
+                />
               </Dialog.Content>
             </Dialog.Portal>
           ) : (
@@ -104,7 +135,7 @@ export function Component({ sidebar, children }: IProjectLayoutProps) {
               className={`${sidebarOpen ? "block" : "hidden"} min-w-0 overflow-y-auto bg-sps-graphite p-4 text-white`}
               aria-label="Project conversations"
             >
-              {sidebar(false)}
+              <ProfileSidebar profileId={profileId} selected={selected} />
             </aside>
           )}
           <div className="flex min-h-0 min-w-0 flex-col">

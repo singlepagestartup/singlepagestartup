@@ -162,6 +162,31 @@ describe("Local AI Chat components", () => {
     expect(create).not.toContain('data-model="thread"');
   });
 
+  test("project screens have one Host Layout and a Social Profile overview", () => {
+    for (const url of [
+      "/ai-chat/projects/pottery",
+      "/ai-chat/projects/pottery/settings",
+      "/ai-chat/projects/pottery/threads/new",
+    ]) {
+      const html = renderToStaticMarkup(<AIChatPreview initialHref={url} />);
+      expect(html.match(/data-ds-block="host\.layout\.[^"]+"/g)).toEqual([
+        'data-ds-block="host.layout.ai-chat-header"',
+      ]);
+      expect(html).toContain(
+        'data-ds-block="social.profile.ai-chat-project-overview"',
+      );
+      expect(html).toContain('data-model="profile" data-id="pottery"');
+      expect(html).toContain('aria-label="Show sidebar"');
+    }
+    const inaccessible = renderToStaticMarkup(
+      <AIChatPreview initialHref="/ai-chat/projects/foreign" />,
+    );
+    expect(inaccessible).toContain("Project profile unavailable");
+    expect(inaccessible).not.toContain(
+      'data-ds-block="social.profile.ai-chat-project-overview"',
+    );
+  });
+
   test("no-agent selection omits preset-specific actions", () => {
     const html = renderToStaticMarkup(
       <ProjectAgentPicker

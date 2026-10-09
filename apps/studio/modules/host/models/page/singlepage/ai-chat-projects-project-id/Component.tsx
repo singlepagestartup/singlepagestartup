@@ -27,26 +27,18 @@ export function Component({ profileId }: IProjectPageProps) {
         />
       )}
     >
-      <SocialModuleProfile variant="ai-chat-project" profileId={profileId}>
-        <HostModuleLayout
-          variant="ai-chat-project"
-          sidebar={(mobile) => (
-            <SocialModuleProfile
-              variant="ai-chat-sidebar"
-              profileId={profileId}
-              selected="products"
-              mobile={mobile}
-            />
-          )}
-        >
-          {(navigation) => (
-            <SocialModuleChat
-              variant="ai-chat-products"
-              profileId={profileId}
-              navigation={navigation}
-            />
-          )}
-        </HostModuleLayout>
+      <SocialModuleProfile
+        variant="ai-chat-project-overview"
+        profileId={profileId}
+        selected="products"
+      >
+        {(navigation) => (
+          <SocialModuleChat
+            variant="ai-chat-products"
+            profileId={profileId}
+            navigation={navigation}
+          />
+        )}
       </SocialModuleProfile>
     </HostModuleLayout>
   );

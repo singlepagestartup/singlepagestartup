@@ -23,8 +23,8 @@
       "path": "../../../../../host/models/layout/singlepage/ai-chat-header"
     },
     {
-      "id": "host.layout.ai-chat-project",
-      "path": "../../../../../host/models/layout/singlepage/ai-chat-project"
+      "id": "social.profile.ai-chat-project-overview",
+      "path": "../../../../../social/models/profile/singlepage/ai-chat-project-overview"
     },
     {
       "id": "social.profile.ai-chat-project",

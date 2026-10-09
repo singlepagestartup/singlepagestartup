@@ -173,30 +173,34 @@ import { Component as SubjectsToSocialModuleProfiles } from ".../rbac/relations/
 <SocialModuleProfile variant="ai-chat-user-menu" data={profile} balance={balance} page="chat" />;
 ```
 
-Model entries currently register the local AI Chat variants. A variant imports
+Model entries currently register the local AI Chat variants. Each entity's
+`singlepage/variants.ts` and `startup/variants.ts` export component maps. The root
+`variants.ts` merges them, with startup overrides last; `Component.tsx` selects
+`variants[props.variant]`. Required props stay tied to the selected variant.
+A variant imports
 its own private siblings directly; it never imports its own model entry, which
 would create a cycle. Cross-model compositions, stories and website adapters
 use the public entries. Providers, record types and pure helpers remain separate
 imports from their owning domain.
 
-| Owner                                  | Component responsibility                                           |
-| -------------------------------------- | ------------------------------------------------------------------ |
-| Host Page                              | One concrete screen composed from domain components                |
-| Host Layout                            | Page frame, responsive columns and mobile sidebar drawer           |
-| RBAC Identity / Subject                | Registration, login, account settings and account provider         |
-| Social Profile                         | User menu, project identities, sidebar, selector, forms and agents |
-| Social Chat                            | Resolve the selected Thread through Chat-to-Thread links           |
-| Social Thread                          | Conversation, Working On, composer, creation and settings          |
-| Social Skill                           | One product-planning instruction                                   |
-| Social Message                         | One message, role attribution, context and attachments             |
-| RBAC / Social relations                | Subject profiles, profile chats, Sources, Threads and Messages     |
-| Knowledge Source                       | Document bundle navigation and editable sections                   |
-| Knowledge relation                     | Ordered Source-to-File links filtered by Source ID                 |
-| File Storage File                      | File lists, upload, open and detach                                |
-| Ecommerce Order                        | Token purchase preview                                             |
-| Website Builder Widget                 | Header slots, mobile navigation, help and landing page             |
-| Website Builder Logotype               | Logo artwork and home link                                         |
-| Website Builder Buttons Array / Button | Header links through ordered relations                             |
+| Owner                                  | Component responsibility                                          |
+| -------------------------------------- | ----------------------------------------------------------------- |
+| Host Page                              | One concrete screen composed from domain components               |
+| Host Layout                            | Page frame and header                                             |
+| RBAC Identity / Subject                | Registration, login, account settings and account provider        |
+| Social Profile                         | Project overview/sidebar, identities, user menu, forms and agents |
+| Social Chat                            | Resolve the selected Thread through Chat-to-Thread links          |
+| Social Thread                          | Conversation, Working On, composer, creation and settings         |
+| Social Skill                           | One product-planning instruction                                  |
+| Social Message                         | One message, role attribution, context and attachments            |
+| RBAC / Social relations                | Subject profiles, profile chats, Sources, Threads and Messages    |
+| Knowledge Source                       | Document bundle navigation and editable sections                  |
+| Knowledge relation                     | Ordered Source-to-File links filtered by Source ID                |
+| File Storage File                      | File lists, upload, open and detach                               |
+| Ecommerce Order                        | Token purchase preview                                            |
+| Website Builder Widget                 | Header slots, mobile navigation, help and landing page            |
+| Website Builder Logotype               | Logo artwork and home link                                        |
+| Website Builder Buttons Array / Button | Header links through ordered relations                            |
 
 The current subject resolves its `ai-chat-user` Social Profile through
 `subjects-to-social-module-profiles`. RBAC Subject `ai-chat-account` renders that
@@ -236,11 +240,12 @@ Help is a Button record; the logo artwork belongs to Logotype. Header and its
 model variants have isolated stories; the Layout story composes the real Social
 and RBAC slots at Host level. `ServicePage` renders content only.
 
-Layout `ai-chat-project` owns the
-responsive columns, collapse control and mobile drawer; its sidebar and body are
-slots. Each project Page selects Social Profile `ai-chat-sidebar` through the model entry and composes
-its own Chat, Profile settings or Thread creation content. Shared `PanelHeader`
-lives in the interface kit.
+Social Profile `ai-chat-project-overview` owns the project frame, responsive
+columns, collapse control and mobile drawer. It resolves the Profile scope and
+renders its `ai-chat-sidebar` sibling using `profileId` and `selected`. Each project
+Page uses one Host Layout `ai-chat-header` and passes its Chat, Profile settings
+or Thread creation content to the overview. The content slot receives only the
+sidebar toggle. Shared `PanelHeader` lives in the interface kit.
 
 Profile `ai-chat-project/Profiles.tsx` stores project identities and access links.
 The `ai-chat-project` component resolves Profile-to-Chat access and supplies the

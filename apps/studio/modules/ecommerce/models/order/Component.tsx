@@ -1,15 +1,15 @@
-import type { ComponentProps } from "react";
-import { Component as AiChatTokens } from "./singlepage/ai-chat-tokens/index";
+import type { ComponentProps, ComponentType } from "react";
+import { variants } from "./variants";
 
-export type IComponentProps = { variant: "ai-chat-tokens" } & ComponentProps<
-  typeof AiChatTokens
->;
+export type IComponentProps = {
+  [Variant in keyof typeof variants]: { variant: Variant } & ComponentProps<
+    (typeof variants)[Variant]
+  >;
+}[keyof typeof variants];
 
 export function Component(props: IComponentProps) {
-  switch (props.variant) {
-    case "ai-chat-tokens": {
-      const { variant, ...data } = props;
-      return <AiChatTokens {...data} />;
-    }
-  }
+  // The public discriminated union pairs each variant with its own props.
+  const Comp = variants[props.variant] as ComponentType<IComponentProps>;
+  if (!Comp) return <></>;
+  return <Comp {...props} />;
 }

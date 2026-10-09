@@ -139,3 +139,39 @@ test("cross-model Component imports use entity entries and native names", () => 
   }
   expect(violations).toEqual([]);
 });
+
+test("entity registries overlay startup variants after singlepage variants", () => {
+  for (const entry of files(modules).filter((file) =>
+    /\/(?:models|relations)\/[^/]+\/Component\.tsx$/.test(file),
+  )) {
+    const source = readFileSync(entry, "utf8");
+    expect(source).not.toMatch(/\bswitch\s*\(/);
+    const registry = path.join(path.dirname(entry), "variants.ts");
+    expect(runtimeImports(entry)).toEqual([registry]);
+    expect(runtimeImports(registry)).toEqual([
+      path.join(path.dirname(entry), "singlepage/variants.ts"),
+      path.join(path.dirname(entry), "startup/variants.ts"),
+    ]);
+    const tree = ts.createSourceFile(
+      registry,
+      readFileSync(registry, "utf8"),
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    const declaration = tree.statements
+      .filter(ts.isVariableStatement)
+      .flatMap((statement) => statement.declarationList.declarations)
+      .find((declaration) => declaration.name.getText(tree) === "variants");
+    expect(declaration?.initializer).toBeDefined();
+    const value = declaration!.initializer!;
+    expect(ts.isObjectLiteralExpression(value)).toBe(true);
+    if (ts.isObjectLiteralExpression(value))
+      expect(
+        value.properties.map((property) =>
+          ts.isSpreadAssignment(property)
+            ? property.expression.getText(tree)
+            : property.getText(tree),
+        ),
+      ).toEqual(["singlepageVariants", "startupVariants"]);
+  }
+});

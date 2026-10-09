@@ -1,20 +1,15 @@
-import type { ComponentProps } from "react";
-import { Component as AiChatLogin } from "./singlepage/ai-chat-login/index";
-import { Component as AiChatRegister } from "./singlepage/ai-chat-register/index";
+import type { ComponentProps, ComponentType } from "react";
+import { variants } from "./variants";
 
-export type IComponentProps =
-  | ({ variant: "ai-chat-login" } & ComponentProps<typeof AiChatLogin>)
-  | ({ variant: "ai-chat-register" } & ComponentProps<typeof AiChatRegister>);
+export type IComponentProps = {
+  [Variant in keyof typeof variants]: { variant: Variant } & ComponentProps<
+    (typeof variants)[Variant]
+  >;
+}[keyof typeof variants];
 
 export function Component(props: IComponentProps) {
-  switch (props.variant) {
-    case "ai-chat-login": {
-      const { variant, ...data } = props;
-      return <AiChatLogin {...data} />;
-    }
-    case "ai-chat-register": {
-      const { variant, ...data } = props;
-      return <AiChatRegister {...data} />;
-    }
-  }
+  // The public discriminated union pairs each variant with its own props.
+  const Comp = variants[props.variant] as ComponentType<IComponentProps>;
+  if (!Comp) return <></>;
+  return <Comp {...props} />;
 }

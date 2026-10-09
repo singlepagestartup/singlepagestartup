@@ -95,3 +95,12 @@ Studio содержит собственные React views, интерфейсы
 - [x] Проверить типы, import graph/cycles, model dispatch, relation scoping, stories и browser desktop/mobile. Обновить tracking, metadata и PR #371 отдельным Studio commit.
 
 Результат: 16 общих входов моделей и девять отношений с native aliases. Шесть выделенных вариантов: пункт проекта, аватар и выбор агента, pending File, File preview и asset preview. Их stories используют общий вход. Cross-model вызовы выбирают variant; внутренние siblings не импортируют собственный dispatcher. 268 тестов, TypeScript в checkout и isolated copy, metadata/content checks, изолированная Storybook сборка и desktop/mobile браузер проходят.
+
+## Profile overview и объектные варианты
+
+- [x] Перенести project columns, sidebar toggle и mobile drawer из Host Layout в Social Profile ai-chat-project-overview. Page использует один Header Layout и overview с profileId, selected и content slot.
+- [x] Удалить Host Layout ai-chat-project и обновить его stories/metadata bindings на Social Profile overview. Сохранить доступ, состояния моделей, навигацию и мобильную иерархию.
+- [x] Собрать общие входы 16 моделей и девяти отношений через singlepage/variants.ts, startup/variants.ts и variants.ts по образцу production. Сохранить типы props по variant и private sibling imports.
+- [x] Проверить отсутствие вложенных Layout и циклов, реестры/типизацию, routes, metadata/content, isolated Storybook и браузер. Обновить handoff и PR.
+
+Результат: Social Profile overview владеет project frame и sidebar/drawer. Project Pages имеют один Header Layout. В 16 моделях и девяти отношениях variants собираются из singlepage/startup, startup последний, обязательные props сохраняются по variant. 270 тестов/33 файла, TypeScript checkout/isolated, metadata/content/code-placement и изолированная Storybook сборка проходят. Desktop/mobile навигация проверена; drawer начинается у нижней границы navbar. Логи и screenshot — в handoff. Production в этом шаге не менялся.

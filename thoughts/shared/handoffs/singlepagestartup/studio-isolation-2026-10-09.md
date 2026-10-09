@@ -1,6 +1,6 @@
 # Локальные модели AI Chat в Studio
 
-Статус: общие входы моделей AI Chat реализованы; типы, 268 тестов в 33 файлах, изолированная сборка Storybook и браузер проверены. Header Layout содержит собственный frame; пункт проекта, аватар/выбор агента и файловые previews имеют отдельные варианты. Этот шаг изменяет Studio, tools/studio и инженерные документы. Публикация — в PR #371, без merge. SHA последнего коммита смотреть в Git и PR.
+Статус: Social Profile `ai-chat-project-overview` содержит project frame, sidebar toggle и mobile drawer. На каждой project Page один Host Layout `ai-chat-header`. Общие входы 16 моделей и девяти отношений выбирают вариант из объекта, собранного из singlepage/startup; startup переопределяет singlepage. 270 тестов, TypeScript и изолированная Storybook сборка проходят. SHA смотреть в Git и PR #371. Production-код остаётся отдельной реализацией.
 
 Локальная ветка: `codex/studio-host-models`. PR: https://github.com/singlepagestartup/singlepagestartup/pull/371, branch `codex/ai-chat-ui-review`. SHA последнего Studio коммита смотреть в Git. Baseline перед общими входами: локально `5b6c60b3a8`, в PR `ada1dd3f25`. PR открыт, без merge.
 
@@ -17,7 +17,7 @@ Host Page содержит десять самостоятельных комп�
 - `ai-chat-projects-project-id-settings`: настройки Social Profile проекта.
 - `ai-chat-projects-project-id-threads-new`: форма создания Thread без создания записи.
 
-Page принимает только profileId, если это экран проекта. Page не разбирает URL и не переключает экраны. Его Component.tsx содержит 10–64 строки. Sidebar вызывается через общий вход Social Profile с variant="ai-chat-sidebar". Host Layout `ai-chat` содержит landing frame, `ai-chat-header` — собственный frame и Website Builder Header, `ai-chat-project` — responsive columns и мобильный drawer. Shared PanelHeader находится в interface-kit/ai-chat/ServiceDocument.tsx.
+Page принимает только profileId, если это экран проекта. Page не разбирает URL и не переключает экраны. Его Component.tsx содержит 10–64 строки. Page вызывает Social Profile `ai-chat-project-overview` с profileId, selected и content slot. Overview разрешает доступ через свой ai-chat-project sibling и содержит ai-chat-sidebar, responsive columns и мобильный drawer. Host Layout `ai-chat` содержит landing frame, `ai-chat-header` — собственный page frame и Website Builder Header. Вложенных Host Layout на project Pages нет. Shared PanelHeader находится в interface-kit/ai-chat/ServiceDocument.tsx.
 
 Website Builder Header использует `widgets-to-logotypes/ai-chat-find` и `widgets-to-buttons-arrays/ai-chat-find`; Buttons Array использует `buttons-arrays-to-buttons/ai-chat-find`. Каждый find фильтрует parent ID через `apiProps.params.filters.and` и сортирует links по orderIndex. SVG находится в Logotype `ai-chat`, Help — в Button `ai-chat-header`. Header импортирует только Website Builder и нейтральный interface kit; тест обходит весь транзитивный граф и проверяет отсутствие циклов.
 
@@ -29,11 +29,11 @@ Router для локальной демонстрации находится в 
 
 В существующих каталогах 16 моделей и девяти отношений есть Component.tsx и index.ts для AI Chat. Внешний вызов импортирует Component из models/<model>/index и задаёт variant. Alias показывает модуль и модель: SocialModuleProfile, HostModuleLayout, KnowledgeModuleSource. Alias отношения совпадает с его полным именем: SubjectsToSocialModuleProfiles, ProfilesToKnowledgeModuleSources, SourcesToFileStorageModuleFiles.
 
-IComponentProps модели — discriminated union по variant с исходными props каждого варианта; any и центрального URL routing нет. Отношения сохраняют variant="find" и apiProps.params.filters.and. Private siblings внутри одной модели импортируются напрямую, без собственного общего входа; тест проверяет весь runtime graph на циклы. Providers, типы записей и утилиты остаются в своих доменных файлах.
+Каждая модель и связь содержит singlepage/variants.ts, startup/variants.ts и корневой variants.ts. Корневой объект собирает singlepage, затем startup; Component выбирает variants[props.variant]. IComponentProps выводится из итогового объекта как discriminated union с исходными props каждого варианта; any и центрального URL routing нет. Record interface.ts не менялся. Отношения сохраняют variant="find" и apiProps.params.filters.and. Private siblings внутри одной модели импортируются напрямую, без собственного общего входа; тест проверяет весь runtime graph на циклы. Providers, типы записей и утилиты остаются в своих доменных файлах.
 
 Проект остаётся Social Profile. Вариант ai-chat-project-item содержит memoized строку селектора с profile ID, selected и onNavigate. Аватар и выбор агента — ai-chat-agent-avatar и ai-chat-agent-select. Файлы — ai-chat-pending, ai-chat-preview и ai-chat-asset. Их прежние named component exports удалены; внешние вызовы выбирают эти варианты через общий вход. ProjectAgentPicker и productsAgent остаются в ai-chat-agent, providers не перемещаются. Общие входы сейчас регистрируют только локальные AI Chat варианты; scaffold остальных Studio вариантов не меняется.
 
-Проверки этого шага: 268 тестов/33 файла, tsc в checkout и в /private/tmp/studio-isolation-fixture, inventory, design-system validation, content check и code-placement. Isolated Storybook build: /private/tmp/studio-model-entry-build.log, output /private/tmp/studio-model-entry-storybook. В копии нет libs, apps/host и root tsconfig. Browser: record identity/selected у project item, account Settings/return link, выбор агента/Skill, mobile menu и drawer ниже navbar. Ошибок приложения нет; Storybook предупреждает о будущем обязательном ariaLabel в PopoverProvider.
+Предыдущая проверка общих входов: 268 тестов/33 файла, tsc в checkout и в /private/tmp/studio-isolation-fixture, inventory, design-system validation, content check и code-placement. Isolated Storybook build: /private/tmp/studio-model-entry-build.log, output /private/tmp/studio-model-entry-storybook. В копии нет libs, apps/host и root tsconfig. Browser: record identity/selected у project item, account Settings/return link, выбор агента/Skill, mobile menu и drawer ниже navbar. Ошибок приложения нет; Storybook предупреждает о будущем обязательном ariaLabel в PopoverProvider.
 
 ## Модели и состояние
 
@@ -46,6 +46,7 @@ RBAC Subject account provider находится в `rbac/models/subject/singlep
 - `ai-chat-project/Profiles.tsx` хранит identities `{id, name, variant}`, access links, create и rename. Доступ определяется текущим Subject/Profile, profiles-to-chats и вариантами Chat/Profile.
 - `ai-chat-project/Component.tsx` разрешает Profile-to-Chat find и предоставляет model scope. Profile.tsx связывает providers с profileId. Внутреннего UI routing нет.
 - `ai-chat-project-select` читает доступные identities в своей модели и показывает ссылки на проекты и создание.
+- `ai-chat-project-overview` владеет project frame, своим sidebar и drawer. В content slot передаётся только toggle навигации. Profile scope монтирует frame только при разрешённом доступе.
 - `ai-chat-sidebar` читает один Profile; Settings, Products и New thread — реальные ссылки на отдельные Pages.
 - `ai-chat-create` и `ai-chat-settings` содержат соответствующие формы Profile.
 
@@ -65,7 +66,7 @@ Preview сохраняет scopes providers по Profile ID при смене с
 
 ## Проверки
 
-264 теста в 32 файлах проходят: `bun test tools/studio apps/studio/workspace apps/studio/modules/host/models/page/singlepage/ai-chat/Component.test.tsx apps/studio/modules/website-builder/models/widget/singlepage/ai-chat-header/Component.test.tsx`. Есть проверка самостоятельности страниц, scoped access, model ownership, файлов, истории и импортной границы. TypeScript Studio проходит в checkout и изолированной копии. Content --check, inventory, Design system metadata и code-placement проходят. Storybook build выполнен из копии только apps/studio + tools/studio + package.json, без libs/apps/host/root tsconfig, с установленными сторонними зависимостями через node_modules.
+270 тестов в 33 файлах проходят: `bun test tools/studio apps/studio/workspace apps/studio/modules/host/models/page/singlepage/ai-chat/Component.test.tsx apps/studio/modules/website-builder/models/widget/singlepage/ai-chat-header/Component.test.tsx`. Есть проверка самостоятельности страниц, scoped access, model ownership, файлов, истории и импортной границы. TypeScript Studio проходит в checkout и изолированной копии. Content --check, inventory, Design system metadata и code-placement проходят. Storybook build выполнен из копии только apps/studio + tools/studio + package.json, без libs/apps/host/root tsconfig, с установленными сторонними зависимостями через node_modules.
 
 `npm run studio:validate` успешен. Report-mode pipeline показывает четыре approval gaps в параллельно редактируемых бизнес-документах и ноль structural gaps; confirmation states не менялись. Логи Header: `/private/tmp/studio-header-tests.log`, `/private/tmp/studio-header-build.log`. TypeScript проходит в checkout и изолированной копии; Storybook output — `/private/tmp/studio-header-storybook`.
 
@@ -78,3 +79,13 @@ Browser подтверждает отдельные Pages, переименов�
 В локальной ветке находится отдельный production-коммит `94f63c6a75` про JEV. Он сохранён локально и отсутствует в PR #371. Публиковать только новые Studio commits через cherry-pick в checkout `codex/studio-products-review` поверх PR head; не пушить всю локальную ветку. Проверить отсутствие 94f63c6a75 в ancestry публикуемого HEAD, совпадение Studio/документов, нормальный push в codex/ai-chat-ui-review и actual PR head/body. Не использовать force push.
 
 Чужие изменения исключены: .agents/.claude/.codex README, AGENTS.md, CLAUDE.md, review-pr workflow/skill, workspace business/brand/strategy/design, singlepagestartup product, pre-development cursors, ISSUE-372, PR #368 description, apps/api uploads. Текущий шаг включает только Studio компоненты, их tools/tests/metadata, Studio README, этот handoff, план и PR #371 description.
+
+## Profile overview и объектные варианты
+
+Host Layout ai-chat-project удалён. Его project frame, toggle и drawer находятся в social/models/profile/singlepage/ai-chat-project-overview; stories, manifest, Figma metadata и три Page manifests указывают на эту модель. Каждая из трёх project Pages использует единственный Host Layout ai-chat-header. Public entry принимает variant=ai-chat-project-overview, profileId, selected и content slot. Scope и Sidebar — private siblings Profile, без импорта собственного dispatcher.
+
+В 25 entity entries объекты singlepage/startup собираются в root variants.ts. Startup spread последний. Component выбирает вариант динамически; mapped IComponentProps сохраняет обязательные props каждого варианта. Native relation find и полные aliases сохранены. Тесты проверяют registry precedence, отсутствие runtime cycles и один Host Layout с native Profile overview на project Pages, включая отказ чужому Profile.
+
+Проверки: 270 тестов/33 файла; TypeScript checkout и /private/tmp/studio-isolation-fixture; inventory и metadata; content --check; code-placement и diff --check. Isolated Storybook: /private/tmp/studio-profile-overview-build.log и /private/tmp/studio-profile-overview-storybook. В fixture только Studio/tools и сторонние node_modules, без libs/apps/host/root tsconfig.
+
+Browser: desktop collapse/reopen, Products → Profile settings → Products → New thread, выбор Product assistant. На мобильном drawer начинается у bottom navbar = 71.9921875 CSS px; Profile button доступна, переход к New thread закрывает drawer, scrollWidth = clientWidth. DOM содержит один host.layout.ai-chat-header и social.profile.ai-chat-project-overview с data-id pottery. Warning/error logs пусты. Viewport override снят, user tab оставлен на story New thread. Screenshot: /private/tmp/studio-profile-overview-composition.png. Storybook работает на 4321.

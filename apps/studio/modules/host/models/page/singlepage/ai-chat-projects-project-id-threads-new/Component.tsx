@@ -29,35 +29,27 @@ export function Component({ profileId }: IProjectPageProps) {
         />
       )}
     >
-      <SocialModuleProfile variant="ai-chat-project" profileId={profileId}>
-        <HostModuleLayout
-          variant="ai-chat-project"
-          sidebar={(mobile) => (
-            <SocialModuleProfile
-              variant="ai-chat-sidebar"
-              profileId={profileId}
-              selected="thread-create"
-              mobile={mobile}
+      <SocialModuleProfile
+        variant="ai-chat-project-overview"
+        profileId={profileId}
+        selected="thread-create"
+      >
+        {(navigation) => (
+          <section
+            aria-label="New thread"
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <PanelHeader
+              title="New thread"
+              label="Thread"
+              navigation={navigation}
             />
-          )}
-        >
-          {(navigation) => (
-            <section
-              aria-label="New thread"
-              className="flex min-h-0 flex-1 flex-col"
-            >
-              <PanelHeader
-                title="New thread"
-                label="Thread"
-                navigation={navigation}
-              />
-              <SocialModuleThread
-                variant="ai-chat-create"
-                cancelHref={`/ai-chat/projects/${encodeURIComponent(profileId)}`}
-              />
-            </section>
-          )}
-        </HostModuleLayout>
+            <SocialModuleThread
+              variant="ai-chat-create"
+              cancelHref={`/ai-chat/projects/${encodeURIComponent(profileId)}`}
+            />
+          </section>
+        )}
       </SocialModuleProfile>
     </HostModuleLayout>
   );

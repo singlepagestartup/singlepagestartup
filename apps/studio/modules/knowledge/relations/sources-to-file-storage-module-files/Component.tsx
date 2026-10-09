@@ -1,6 +1,15 @@
-import type { ComponentProps } from "react";
-import { Component as Find } from "./singlepage/ai-chat-find/index";
-export interface IComponentProps extends ComponentProps<typeof Find> {}
+import type { ComponentProps, ComponentType } from "react";
+import { variants } from "./variants";
+
+export type IComponentProps = {
+  [Variant in keyof typeof variants]: { variant: Variant } & ComponentProps<
+    (typeof variants)[Variant]
+  >;
+}[keyof typeof variants];
+
 export function Component(props: IComponentProps) {
-  return <Find {...props} />;
+  // The public discriminated union pairs each variant with its own props.
+  const Comp = variants[props.variant] as ComponentType<IComponentProps>;
+  if (!Comp) return <></>;
+  return <Comp {...props} />;
 }
