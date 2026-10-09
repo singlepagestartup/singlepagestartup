@@ -250,8 +250,10 @@ also be supplied. Navbar uses Logotype and Buttons Array → Button for navigati
 Account state and its dropdown belong to Subject. Admin Panel is visible in
 that dropdown after sign-in. The compact footer contains no admin link.
 
-Profile `ai-chat-project-overview` owns the responsive project frame, sidebar and
-mobile drawer. Chat `ai-chat-products` composes the prepared Thread directly.
+Profile `ai-chat-project-overview` owns one sidebar and a responsive project
+frame. Tailwind container queries control the frame's columns, navigation
+controls and sidebar position; local state controls opening and dismissal.
+Chat `ai-chat-products` composes the prepared Thread directly.
 Thread's local provider owns messages, draft, pending File IDs, Working On, pane
 selection and proposals. Conversation maps those messages to Message views.
 Composer reads the Thread state. Working On selects Whole document or Products.

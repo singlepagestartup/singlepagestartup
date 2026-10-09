@@ -10,13 +10,8 @@ import {
 export interface IProfileSidebarProps {
   profileId: string;
   selected: "products" | "settings" | "thread-create";
-  mobile?: boolean;
 }
-export function Component({
-  profileId,
-  selected,
-  mobile,
-}: IProfileSidebarProps) {
+export function Component({ profileId, selected }: IProfileSidebarProps) {
   const id = useId();
   const { projects } = useProfiles();
   const name =
@@ -27,9 +22,7 @@ export function Component({
   const [open, setOpen] = useState(true);
   return (
     <>
-      <h1
-        className={`mb-3 break-words text-lg font-semibold ${mobile ? "pr-10" : ""}`}
-      >
+      <h1 className="mb-3 break-words pr-10 text-lg font-semibold @[760px]/workspace:pr-0">
         {name}
       </h1>
       <nav aria-label="Project navigation" className="space-y-1">

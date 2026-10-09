@@ -63,14 +63,8 @@ export function Component({ copy = defaultCopy }: IRegisterProps = {}) {
         section={copy.sections.account}
         icon="user-plus"
         descriptionSize="xs"
-        className="flex flex-1 flex-col"
-        contentClassName="flex flex-1 flex-col"
       >
-        <form
-          noValidate
-          onSubmit={submit}
-          className="grid flex-1 content-between gap-5"
-        >
+        <form noValidate onSubmit={submit} className="grid content-start gap-5">
           <TextField
             id={`${id}-email`}
             name="email"
