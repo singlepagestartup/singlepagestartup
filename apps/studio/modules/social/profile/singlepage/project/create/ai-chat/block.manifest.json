@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.project-create-ai-chat",
+  "title": "project-create-ai-chat",
+  "description": "Create a local project Profile example.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "project-create-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "project-create-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

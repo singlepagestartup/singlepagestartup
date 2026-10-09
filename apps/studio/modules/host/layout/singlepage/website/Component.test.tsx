@@ -11,28 +11,28 @@ const studio = path.resolve(import.meta.dir, "../../../../..");
 test("landing Page places native widgets inside one Layout and injects Subject and Social Chat", () => {
   const html = renderToStaticMarkup(<HostModulePage variant="ai-chat" />);
   expect(html.match(/data-ds-block="host\.layout\.[^"]+"/g)).toEqual([
-    'data-ds-block="host.layout.ai-chat"',
+    'data-ds-block="host.layout.landing-ai-chat"',
   ]);
   const header = html.match(/<header\b[\s\S]*?<\/header>/)?.[0] ?? "";
   for (const block of [
-    "website-builder.widget.ai-chat-landing-header",
-    "website-builder.logotype.ai-chat",
-    "website-builder.buttons-array.ai-chat-header",
-    "website-builder.button.ai-chat-header",
+    "website-builder.widget.header-landing-ai-chat",
+    "website-builder.logotype.brand-ai-chat",
+    "website-builder.buttons-array.header-ai-chat",
+    "website-builder.button.header-ai-chat",
     "rbac.subject.account",
   ])
     expect(header).toContain(`data-ds-block="${block}"`);
   expect(header).toContain('href="#workflow"');
   expect(header).toContain('href="/ai-chat/login"');
   expect(html).toContain(
-    'data-ds-block="website-builder.widget.ai-chat-footer"',
+    'data-ds-block="website-builder.widget.footer-ai-chat"',
   );
   const main = html.match(/<main\b[\s\S]*?<\/main>/)?.[0] ?? "";
-  for (const block of ["ai-chat-hero", "ai-chat-try", "ai-chat-continue"])
+  for (const block of ["hero-ai-chat", "try-ai-chat", "continue-ai-chat"])
     expect(main).toContain(`data-ds-block="website-builder.widget.${block}"`);
   expect(main).toContain("Check materials");
   expect(main).not.toContain(
-    'data-ds-block="website-builder.widget.ai-chat-landing-header"',
+    'data-ds-block="website-builder.widget.header-landing-ai-chat"',
   );
   expect(main).not.toContain("<footer");
 });

@@ -200,17 +200,17 @@ import { Component as SocialModuleProfile } from ".../social/profile";
 <SocialModuleProfile variant="account-menu" data={profile} balance={balance} page="chat" />;
 ```
 
-| Model                                                      | Studio responsibility                                |
-| ---------------------------------------------------------- | ---------------------------------------------------- |
-| Host Page / Layout                                         | Separate pages and the frame with header slots       |
-| RBAC Identity / Subject                                    | Authentication, account forms and current account    |
-| Social Profile                                             | Project selector, overview, sidebar, forms and agent |
-| Social Chat / Thread                                       | Prepared Products thread, conversation and composer  |
-| Social Message / Skill                                     | One message and the product-planning instruction     |
-| Knowledge Source                                           | Products content, editor and document navigation     |
-| File Storage File                                          | Upload, attachment list, preview and detach          |
-| Ecommerce Order                                            | Token purchase preview                               |
-| Website Builder Widget / Logotype / Buttons Array / Button | Header, logo, navigation and Help                    |
+| Model                                                      | Studio responsibility                                   |
+| ---------------------------------------------------------- | ------------------------------------------------------- |
+| Host Page / Layout                                         | Separate pages and the frame with header slots          |
+| RBAC Identity / Subject                                    | Authentication, account forms and current account       |
+| Social Profile                                             | Project selector, overview, sidebar, forms and agent    |
+| Social Chat / Thread                                       | Chat and Thread overviews                               |
+| Social Message / Skill                                     | Message overview/list and knowledge-editing instruction |
+| Knowledge Source                                           | Products content, editor and document navigation        |
+| File Storage File                                          | Upload, attachment list, preview and detach             |
+| Ecommerce Order                                            | Token purchase preview                                  |
+| Website Builder Widget / Logotype / Buttons Array / Button | Header, logo, navigation and Help                       |
 
 AccountProvider supplies one user profile and its balance directly to Subject
 `account`. ProfilesProvider supplies local project identities; the project
@@ -219,7 +219,7 @@ profile. Missing examples show an unavailable state. Project creation only adds
 an identity to the local preview.
 
 The project prototype has one Products.md document, one prepared Thread, one
-Knowledge Source and one product assistant using Skill `ai-chat-products`.
+Knowledge Source and one knowledge assistant using Skill `overview-ai-chat`.
 The New thread page shows a name, agent selection and Cancel. Submit displays
 preview feedback and creates no Thread records.
 
@@ -228,16 +228,16 @@ tokens, project creation, project content, project settings and thread creation.
 Pages use the public model entries. The website Preview adapter handles local
 navigation between those pages.
 
-Layout `ai-chat` composes Website Builder `ai-chat-landing-header` and
-`ai-chat-footer`. Its Subject slot is supplied by Page. The landing header uses
-the same `ai-chat` Logotype as the service screens. Try the chat is a Button
-record displayed through Buttons Array. Page places `ai-chat-hero`, `ai-chat-try`
-and `ai-chat-continue` inside the Layout, and supplies Social Chat as the `children`
-of `ai-chat-try`. Each Widget has its own generated content fixture. The Social
+Layout `landing-ai-chat` composes Website Builder `header-landing-ai-chat` and
+`footer-ai-chat`. Its Subject slot is supplied by Page. The landing header uses
+the same `brand-ai-chat` Logotype as the service screens. Try the chat is a Button
+record displayed through Buttons Array. Page places `hero-ai-chat`, `try-ai-chat`
+and `continue-ai-chat` inside the Layout, and supplies Social Chat as the `children`
+of `try-ai-chat`. Each Widget has its own generated content fixture. The Social
 preview reads `utils/products/ai-chat-website.generated.json`; editable website
 documents pass their content override through Host Page.
 
-Layout `ai-chat-header` owns its themed container, Website Builder header and footer.
+Layout `service-ai-chat` owns its themed container, Website Builder header and footer.
 Pages supply `profileSelect` and `subjectAccount` slots. The header directly
 composes Logotype, Buttons Array and Button models; Help is a Button example.
 Website Builder imports no Social, RBAC or Host components.
@@ -250,24 +250,31 @@ also be supplied. Navbar uses Logotype and Buttons Array → Button for navigati
 Account state and its dropdown belong to Subject. Admin Panel is visible in
 that dropdown after sign-in. The compact footer contains no admin link.
 
-Profile `ai-chat-project-overview` owns one sidebar and a responsive project
+Studio variants name their purpose first and presentation last: `overview-ai-chat`
+displays one model, `list-ai-chat` displays records, and
+`project-select-item-ai-chat` identifies a Project Select item. Folders group
+purpose as in `singlepage/project/select/item/ai-chat`. Host Page variants and
+story IDs follow their route names. Project scope is a local state wrapper;
+project overview displays the selected profile.
+
+Profile `project-overview-ai-chat` owns one sidebar and a responsive project
 frame. Tailwind container queries control the frame's columns, navigation
 controls and sidebar position; local state controls opening and dismissal.
-Chat `ai-chat-overview` composes Thread `ai-chat-overview`. Products is the
+Chat `overview-ai-chat` composes Thread `overview-ai-chat`. Products is the
 Knowledge Source example's title. Thread derives its
 identity and title from the supplied Source. The Thread provider retains local
 state across project page navigation and reuses an existing scope.
 Thread's local provider owns messages, draft, pending File IDs, Working On, pane
-selection and proposals. Thread `ai-chat-conversation` maps records to Social
-Message `ai-chat-message` views. RBAC Subject `ai-chat-message-create` owns the
+selection and proposals. Message `list-ai-chat` maps records to Social
+Message `overview-ai-chat` views. RBAC Subject `message-create-ai-chat` owns the
 sending form and reads that Thread state. Host Page supplies it through the
 Chat/Thread `messageCreate` slot, keeping Social independent of RBAC. Working On
 selects Whole document or the supplied Source's title.
 Sending snapshots the supplied Source and files; later edits preserve history.
 
 SourceProvider owns one Source and an array of displayed File IDs. Source
-`ai-chat-card` edits user context while preserving analyzed material text. It
-passes File IDs to File `ai-chat-attachments` directly. The Source story exposes
+`overview-ai-chat` edits user context while preserving analyzed material text. It
+passes File IDs to File `list-attachments-ai-chat` directly. The Source story exposes
 `empty` and `withFiles` controls. Upload and detach affect only preview state;
 the File pool remains available for reattachment and message attachments.
 

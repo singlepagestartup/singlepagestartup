@@ -9,9 +9,9 @@ import { aiChatAccount } from "../../../../utils/products/ai-chat-account-fixtur
 export default function Register({ text }: { text?: string } = {}) {
   return (
     <AccountProvider account={aiChatAccount}>
-      <HostModuleLayout variant="ai-chat-header" page="register">
+      <HostModuleLayout variant="service-ai-chat" page="register">
         <RbacModuleIdentity
-          variant="ai-chat-register"
+          variant="authentication-register-ai-chat"
           copy={parseAIChatServicePage(text ?? sourceText)}
         />
       </HostModuleLayout>

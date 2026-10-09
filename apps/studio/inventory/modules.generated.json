@@ -2283,11 +2283,11 @@
           "storyFiles": [
             "apps/studio/modules/ecommerce/order/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/order/singlepage/ai-chat-tokens/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/checkout-confirmation-default/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/checkout-details-default/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/checkout-payment-default/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/checkout-stepper-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/order/singlepage/checkout/tokens/ai-chat/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/summary-default/Component.stories.tsx"
           ]
@@ -2748,11 +2748,11 @@
           "storyFiles": [
             "apps/studio/modules/file-storage/file/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/file-storage/file/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/file-storage/file/singlepage/ai-chat-asset/Component.stories.tsx",
-            "apps/studio/modules/file-storage/file/singlepage/ai-chat-attachments/Component.stories.tsx",
-            "apps/studio/modules/file-storage/file/singlepage/ai-chat-pending/Component.stories.tsx",
-            "apps/studio/modules/file-storage/file/singlepage/ai-chat-preview/Component.stories.tsx",
-            "apps/studio/modules/file-storage/file/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/file-storage/file/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/file-storage/file/singlepage/list/attachments/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/file-storage/file/singlepage/list/item/asset/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/file-storage/file/singlepage/list/item/pending/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/file-storage/file/singlepage/overview/ai-chat/Component.stories.tsx"
           ]
         },
         {
@@ -2944,10 +2944,10 @@
             "apps/studio/modules/host/layout/singlepage/admin-v2-list/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/admin-v2-select-input/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/host/layout/singlepage/ai-chat-header/Component.stories.tsx",
-            "apps/studio/modules/host/layout/singlepage/ai-chat/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/landing/ai-chat/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/service/ai-chat/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/website/Component.stories.tsx"
           ]
         },
@@ -3485,11 +3485,11 @@
           "storyFiles": [
             "apps/studio/modules/knowledge/source/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/knowledge/source/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/knowledge/source/singlepage/ai-chat-card/Component.stories.tsx",
-            "apps/studio/modules/knowledge/source/singlepage/ai-chat-document-link/Component.stories.tsx",
-            "apps/studio/modules/knowledge/source/singlepage/ai-chat-document/Component.stories.tsx",
-            "apps/studio/modules/knowledge/source/singlepage/ai-chat-download/Component.stories.tsx",
-            "apps/studio/modules/knowledge/source/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/knowledge/source/singlepage/download/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/knowledge/source/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/knowledge/source/singlepage/list/item/document/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/knowledge/source/singlepage/overview/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/knowledge/source/singlepage/overview/document/ai-chat/Component.stories.tsx"
           ]
         }
       ]
@@ -4122,8 +4122,8 @@
             "apps/studio/modules/rbac/identity/singlepage/account-change/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/rbac/identity/singlepage/ai-chat-login/Component.stories.tsx",
-            "apps/studio/modules/rbac/identity/singlepage/ai-chat-register/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/authentication/login/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/authentication/register/ai-chat/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/card-default/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/find-default/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/list/Component.stories.tsx",
@@ -4498,14 +4498,14 @@
             "apps/studio/modules/rbac/subject/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/admin-v2-settings/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/rbac/subject/singlepage/ai-chat-message-create/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-crm-form-deafult/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-delete/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-identity-find-information/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-information/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-profile-information/Component.stories.tsx",
-            "apps/studio/modules/rbac/subject/singlepage/me-social-module-profile-find-information/Component.stories.tsx"
+            "apps/studio/modules/rbac/subject/singlepage/me-social-module-profile-find-information/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/message/create/ai-chat/Component.stories.tsx"
           ]
         },
         {
@@ -5028,10 +5028,10 @@
           "storyFiles": [
             "apps/studio/modules/social/chat/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/social/chat/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/chat/singlepage/ai-chat-navigation/Component.stories.tsx",
-            "apps/studio/modules/social/chat/singlepage/ai-chat-overview/Component.stories.tsx",
-            "apps/studio/modules/social/chat/singlepage/ai-chat-preview/Component.stories.tsx",
-            "apps/studio/modules/social/chat/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/chat/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/social/chat/singlepage/list/item/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/chat/singlepage/overview/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/chat/singlepage/overview/preview/ai-chat/Component.stories.tsx"
           ]
         },
         {
@@ -5120,9 +5120,10 @@
           "storyFiles": [
             "apps/studio/modules/social/message/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/social/message/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/message/singlepage/ai-chat-message/Component.stories.tsx",
             "apps/studio/modules/social/message/singlepage/bubble-default/Component.stories.tsx",
-            "apps/studio/modules/social/message/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/message/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/social/message/singlepage/list/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/message/singlepage/overview/ai-chat/Component.stories.tsx"
           ]
         },
         {
@@ -5250,17 +5251,9 @@
             "apps/studio/modules/social/profile/singlepage/account-menu/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/ai-chat-agent-avatar/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/ai-chat-agent-select/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/ai-chat-agent/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/ai-chat-create/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/ai-chat-processing/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/ai-chat-project-item/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/ai-chat-project-overview/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/ai-chat-project-select/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/ai-chat-project/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/ai-chat-settings/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/ai-chat-sidebar/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/agent/avatar/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/agent/overview/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/agent/select/ai-chat/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/article-find-by-id-comment-form-default/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/author-find-by-id-overview-default/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/author/Component.stories.tsx",
@@ -5268,7 +5261,15 @@
             "apps/studio/modules/social/profile/singlepage/card/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/compact/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/find-row/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/profile/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/project/create/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/project/overview/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/project/processing/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/project/scope/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/project/select/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/project/select/item/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/project/settings/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/project/sidebar/ai-chat/Component.stories.tsx"
           ]
         },
         {
@@ -5381,8 +5382,8 @@
           "storyFiles": [
             "apps/studio/modules/social/skill/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/social/skill/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/skill/singlepage/ai-chat-products/Component.stories.tsx",
-            "apps/studio/modules/social/skill/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/skill/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/social/skill/singlepage/overview/ai-chat/Component.stories.tsx"
           ]
         },
         {
@@ -5471,14 +5472,13 @@
           "storyFiles": [
             "apps/studio/modules/social/thread/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/social/thread/singlepage/ai-chat-conversation/Component.stories.tsx",
-            "apps/studio/modules/social/thread/singlepage/ai-chat-create/Component.stories.tsx",
-            "apps/studio/modules/social/thread/singlepage/ai-chat-overview/Component.stories.tsx",
-            "apps/studio/modules/social/thread/singlepage/ai-chat-settings/Component.stories.tsx",
-            "apps/studio/modules/social/thread/singlepage/ai-chat-sidebar-item/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/chat-settings/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/create/ai-chat/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/list-default/Component.stories.tsx",
-            "apps/studio/modules/social/thread/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/social/thread/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/list/item/sidebar/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/overview/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/settings/ai-chat/Component.stories.tsx"
           ]
         },
         {
@@ -5831,7 +5831,7 @@
           "storyFiles": [
             "apps/studio/modules/website-builder/button/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/button/singlepage/ai-chat-header/Component.stories.tsx",
+            "apps/studio/modules/website-builder/button/singlepage/header/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/link/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/website-builder/button/singlepage/navigation/Component.stories.tsx",
@@ -5927,8 +5927,8 @@
           "storyFiles": [
             "apps/studio/modules/website-builder/buttons-array/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/website-builder/buttons-array/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/buttons-array/singlepage/ai-chat-header/Component.stories.tsx",
             "apps/studio/modules/website-builder/buttons-array/singlepage/default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/buttons-array/singlepage/header/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/buttons-array/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/website-builder/buttons-array/singlepage/navbar-default/Component.stories.tsx"
           ]
@@ -6116,7 +6116,7 @@
           "storyFiles": [
             "apps/studio/modules/website-builder/logotype/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/website-builder/logotype/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/logotype/singlepage/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/website-builder/logotype/singlepage/brand/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/logotype/singlepage/default/Component.stories.tsx",
             "apps/studio/modules/website-builder/logotype/singlepage/list/Component.stories.tsx"
           ]
@@ -6424,13 +6424,6 @@
             "apps/studio/modules/website-builder/widget/singlepage/admin-v2-navigation/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/admin-v2-rich-editor/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-continue/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-footer/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-header/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-help/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-hero/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-landing-header/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/ai-chat-try/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-buttons-array-find-default/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-cta/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-default/Component.stories.tsx",
@@ -6445,10 +6438,17 @@
             "apps/studio/modules/website-builder/widget/singlepage/content-page-header/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-rich/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-testimonials/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/continue/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/footer-compact/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/footer-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/footer/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/header/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/header/landing/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/help/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/hero/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/navbar-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/try/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/startup/content-default/Component.stories.tsx"
           ]
         }

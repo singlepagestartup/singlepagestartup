@@ -1,17 +1,17 @@
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
-import { Component as AiChatAgent } from "./ai-chat-agent/index";
-import { Component as AiChatAgentAvatar } from "./ai-chat-agent-avatar/index";
-import { Component as AiChatAgentSelect } from "./ai-chat-agent-select/index";
-import { Component as AiChatCreate } from "./ai-chat-create/index";
-import { Component as AiChatProcessing } from "./ai-chat-processing/index";
-import { Component as AiChatProject } from "./ai-chat-project/index";
-import { Component as AiChatProjectItem } from "./ai-chat-project-item/index";
-import { Component as AiChatProjectOverview } from "./ai-chat-project-overview/index";
-import { Component as AiChatProjectSelect } from "./ai-chat-project-select/index";
-import { Component as AiChatSettings } from "./ai-chat-settings/index";
-import { Component as AiChatSidebar } from "./ai-chat-sidebar/index";
-import { Component as AiChatUserMenu } from "./account-menu/index";
+import { Component as AgentOverviewAiChat } from "./agent/overview/ai-chat/index";
+import { Component as AgentAvatarAiChat } from "./agent/avatar/ai-chat/index";
+import { Component as AgentSelectAiChat } from "./agent/select/ai-chat/index";
+import { Component as ProjectCreateAiChat } from "./project/create/ai-chat/index";
+import { Component as ProjectProcessingAiChat } from "./project/processing/ai-chat/index";
+import { Component as ProjectScopeAiChat } from "./project/scope/ai-chat/index";
+import { Component as ProjectSelectItemAiChat } from "./project/select/item/ai-chat/index";
+import { Component as ProjectOverviewAiChat } from "./project/overview/ai-chat/index";
+import { Component as ProjectSelectAiChat } from "./project/select/ai-chat/index";
+import { Component as ProjectSettingsAiChat } from "./project/settings/ai-chat/index";
+import { Component as ProjectSidebarAiChat } from "./project/sidebar/ai-chat/index";
+import { Component as AccountMenu } from "./account-menu/index";
 import { Component as ArticleFindByIdCommentFormDefault } from "./article-find-by-id-comment-form-default/index";
 import { Component as Author } from "./author/index";
 import { Component as AuthorFindByIdOverviewDefault } from "./author-find-by-id-overview-default/index";
@@ -24,18 +24,18 @@ import { Component as List } from "./list/index";
 export const variants = {
   "admin-v2-card": AdminV2Card,
   "admin-v2-table": AdminV2Table,
-  "ai-chat-agent": AiChatAgent,
-  "ai-chat-agent-avatar": AiChatAgentAvatar,
-  "ai-chat-agent-select": AiChatAgentSelect,
-  "ai-chat-create": AiChatCreate,
-  "ai-chat-processing": AiChatProcessing,
-  "ai-chat-project": AiChatProject,
-  "ai-chat-project-item": AiChatProjectItem,
-  "ai-chat-project-overview": AiChatProjectOverview,
-  "ai-chat-project-select": AiChatProjectSelect,
-  "ai-chat-settings": AiChatSettings,
-  "ai-chat-sidebar": AiChatSidebar,
-  "account-menu": AiChatUserMenu,
+  "agent-overview-ai-chat": AgentOverviewAiChat,
+  "agent-avatar-ai-chat": AgentAvatarAiChat,
+  "agent-select-ai-chat": AgentSelectAiChat,
+  "project-create-ai-chat": ProjectCreateAiChat,
+  "project-processing-ai-chat": ProjectProcessingAiChat,
+  "project-scope-ai-chat": ProjectScopeAiChat,
+  "project-select-item-ai-chat": ProjectSelectItemAiChat,
+  "project-overview-ai-chat": ProjectOverviewAiChat,
+  "project-select-ai-chat": ProjectSelectAiChat,
+  "project-settings-ai-chat": ProjectSettingsAiChat,
+  "project-sidebar-ai-chat": ProjectSidebarAiChat,
+  "account-menu": AccountMenu,
   "article-find-by-id-comment-form-default": ArticleFindByIdCommentFormDefault,
   author: Author,
   "author-find-by-id-overview-default": AuthorFindByIdOverviewDefault,

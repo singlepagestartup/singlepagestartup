@@ -4,27 +4,27 @@ import { aiChatProjectFixture } from "./ai-chat-workspace-fixture";
 import { appendThreadExchange } from "./ai-chat-threads";
 import { Component as SocialModuleChat } from "../../../modules/social/chat";
 import { Component as RbacModuleSubject } from "../../../modules/rbac/subject";
-import { SourceProvider } from "../../../modules/knowledge/source/singlepage/ai-chat-document/Source";
-import { FilesProvider } from "../../../modules/file-storage/file/singlepage/ai-chat-attachments/Files";
+import { SourceProvider } from "../../../modules/knowledge/source/singlepage/overview/document/ai-chat/Source";
+import { FilesProvider } from "../../../modules/file-storage/file/singlepage/list/attachments/ai-chat/Files";
 import { AIChatPreview } from "../../products/singlepage/ai-chat/website/Preview";
 import { aiChatAccount } from "./ai-chat-account-fixture";
-import { productsAgent } from "../../../modules/social/profile/singlepage/ai-chat-agent/index";
-import { aiChatProductsSourceFixture } from "./ai-chat-workspace-fixture";
+import { knowledgeAgent } from "../../../modules/social/profile/singlepage/agent/overview/ai-chat/index";
+import { aiChatSourceFixture } from "./ai-chat-workspace-fixture";
 import {
   ThreadProvider,
   useThread,
-} from "../../../modules/social/thread/singlepage/ai-chat-overview/Thread";
+} from "../../../modules/social/thread/singlepage/overview/ai-chat/Thread";
 
 test("knowledge titles define the overview and message context instead of Products", () => {
-  const { source } = aiChatProductsSourceFixture();
+  const { source } = aiChatSourceFixture();
   source.title = "Strategy";
   source.description = "Discuss the strategy knowledge.";
   const html = renderToStaticMarkup(
     <FilesProvider>
       <SourceProvider profileId="pottery" initialSource={source}>
         <SocialModuleChat
-          variant="ai-chat-overview"
-          messageCreate={<RbacModuleSubject variant="ai-chat-message-create" />}
+          variant="overview-ai-chat"
+          messageCreate={<RbacModuleSubject variant="message-create-ai-chat" />}
         />
       </SourceProvider>
     </FilesProvider>,
@@ -40,7 +40,7 @@ test("knowledge titles define the overview and message context instead of Produc
     files: [],
     sourceFiles: [],
     workingOn: "source",
-    agent: productsAgent,
+    agent: knowledgeAgent,
   });
   expect(messages[0].workingOn?.documentName).toBe("Strategy.md");
   expect(messages[1].context![0].name).toBe("Strategy.md · Strategy");
@@ -81,18 +81,18 @@ test("the overview composes Thread messages, one Source and a Subject creation f
     <FilesProvider>
       <SourceProvider profileId="pottery">
         <SocialModuleChat
-          variant="ai-chat-overview"
-          messageCreate={<RbacModuleSubject variant="ai-chat-message-create" />}
+          variant="overview-ai-chat"
+          messageCreate={<RbacModuleSubject variant="message-create-ai-chat" />}
         />
       </SourceProvider>
     </FilesProvider>,
   );
   for (const marker of [
-    "social.chat.ai-chat-overview",
-    "social.thread.ai-chat-overview",
-    "social.message.ai-chat-message",
-    "knowledge.source.ai-chat-card",
-    "rbac.subject.ai-chat-message-create",
+    "social.chat.overview-ai-chat",
+    "social.thread.overview-ai-chat",
+    "social.message.overview-ai-chat",
+    "knowledge.source.overview-ai-chat",
+    "rbac.subject.message-create-ai-chat",
   ])
     expect(html).toContain(`data-ds-block="${marker}"`);
   expect(html.match(/data-model="thread"/g)).toHaveLength(1);
@@ -102,7 +102,7 @@ test("the overview composes Thread messages, one Source and a Subject creation f
     'data-knowledge-source-ids="pottery:products:products"',
   );
   expect(html).toContain('aria-label="Working on"');
-  expect(html).toContain("Product assistant");
+  expect(html).toContain("Knowledge assistant");
   for (const obsolete of [
     "Brief.md",
     "Strategy.md",
@@ -121,7 +121,7 @@ test("new profile identity is sufficient to prepare Products; profile IDs isolat
         initialHref={`/ai-chat/projects/${id}`}
         profiles={{
           initialProjects: [
-            { id, name: "Empty project", variant: "ai-chat-project" },
+            { id, name: "Empty project", variant: "project-scope-ai-chat" },
           ],
         }}
       />,
@@ -136,7 +136,7 @@ test("new profile identity is sufficient to prepare Products; profile IDs isolat
 });
 
 test("sending snapshots one knowledge and linked files; later edits and detach preserve history", () => {
-  const { source, files } = aiChatProductsSourceFixture();
+  const { source, files } = aiChatSourceFixture();
   const history = appendThreadExchange([], {
     ids: { user: "user", assistant: "assistant" },
     text: "Improve this",
@@ -144,7 +144,7 @@ test("sending snapshots one knowledge and linked files; later edits and detach p
     files: [files[0]],
     sourceFiles: files,
     workingOn: "source",
-    agent: productsAgent,
+    agent: knowledgeAgent,
   });
   expect(history[0].workingOn?.sections).toEqual(["Products"]);
   expect(history[1].filesUsed?.map((file) => file.id)).toEqual([
@@ -166,7 +166,7 @@ test("sending snapshots one knowledge and linked files; later edits and detach p
     files: [],
     sourceFiles: [],
     workingOn: "whole",
-    agent: productsAgent,
+    agent: knowledgeAgent,
   });
   expect(next[2].workingOn?.sections).toEqual([]);
   expect(next[3].context![0].text).toBe("Changed knowledge");

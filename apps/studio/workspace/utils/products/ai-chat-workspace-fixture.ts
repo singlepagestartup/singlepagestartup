@@ -4,7 +4,7 @@ import {
   prepareProjectDocuments,
   type IProjectProfile,
 } from "./ai-chat-workspace";
-import definitions from "../../../modules/social/profile/singlepage/ai-chat-project/definitions.json";
+import definitions from "../../../modules/social/profile/singlepage/project/scope/ai-chat/definitions.json";
 export function aiChatProjectFixture(): IProjectProfile {
   const project = createProjectProfile("pottery", "Pottery workshops");
   project.notes =
@@ -22,7 +22,7 @@ export function aiChatWorkspaceFixture() {
   const project = {
     id: "pottery",
     name: "Pottery workshops",
-    variant: "ai-chat-project" as const,
+    variant: "project-scope-ai-chat" as const,
   };
   return {
     initialProjects: [project],
@@ -30,7 +30,7 @@ export function aiChatWorkspaceFixture() {
 }
 
 /** A standalone Source example with two original Files and existing analyzed content. */
-export function aiChatSourceFixture(): IProjectProfile {
+export function aiChatProjectSourceFixture(): IProjectProfile {
   const project = aiChatProjectFixture();
   const files = [
     {
@@ -62,11 +62,11 @@ export function aiChatSourceFixture(): IProjectProfile {
   return project;
 }
 
-export function aiChatProductsSourceFixture() {
+export function aiChatSourceFixture() {
   const source = {
     id: "pottery:products:products",
     slug: "pottery:products:products",
-    variant: "ai-chat-card",
+    variant: "overview-ai-chat",
     title: "Products",
     content: "Weekend pottery workshops for first-time potters.",
     description:

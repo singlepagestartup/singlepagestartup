@@ -1,15 +1,15 @@
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
-import { Component as AiChatNavigation } from "./ai-chat-navigation/index";
-import { Component as AiChatPreview } from "./ai-chat-preview/index";
-import { Component as AiChatOverview } from "./ai-chat-overview/index";
+import { Component as ListItemAiChat } from "./list/item/ai-chat/index";
+import { Component as OverviewPreviewAiChat } from "./overview/preview/ai-chat/index";
+import { Component as OverviewAiChat } from "./overview/ai-chat/index";
 import { Component as List } from "./list/index";
 
 export const variants = {
   "admin-v2-card": AdminV2Card,
   "admin-v2-table": AdminV2Table,
-  "ai-chat-navigation": AiChatNavigation,
-  "ai-chat-preview": AiChatPreview,
-  "ai-chat-overview": AiChatOverview,
+  "list-item-ai-chat": ListItemAiChat,
+  "overview-preview-ai-chat": OverviewPreviewAiChat,
+  "overview-ai-chat": OverviewAiChat,
   list: List,
 };

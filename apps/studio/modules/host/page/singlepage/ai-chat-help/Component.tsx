@@ -8,7 +8,7 @@ export function Component() {
   const projectHref = useAIChatProjectHref();
   return (
     <HostModuleLayout
-      variant="ai-chat-header"
+      variant="service-ai-chat"
       page="help"
       subjectAccount={({ onNavigate }) => (
         <RbacModuleSubject
@@ -20,7 +20,7 @@ export function Component() {
       )}
     >
       <WebsiteBuilderModuleWidget
-        variant="ai-chat-help"
+        variant="help-ai-chat"
         projectHref={projectHref}
       />
     </HostModuleLayout>

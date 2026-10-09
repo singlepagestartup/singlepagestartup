@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.widget.header-ai-chat",
+  "title": "header-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Header resolves Logotype and Buttons Array through Website Builder relations. Page supplies Profile Select and Subject Account render props through Host Layout.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "header-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "header-ai-chat"
+  },
+  "contentSlots": []
+}

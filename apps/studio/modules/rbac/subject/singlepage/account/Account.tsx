@@ -76,7 +76,7 @@ export function useStudioAccount() {
             id: context.account.profile?.id ?? stored.slug,
             title: stored.name,
             avatar: stored.avatar,
-            variant: "ai-chat-user",
+            variant: "user-ai-chat",
           }
         : context.account.profile
       : undefined,

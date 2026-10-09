@@ -81,7 +81,7 @@ test("public Studio model entries have no runtime import cycles", () => {
     visited.has(
       path.join(
         modules,
-        "social/profile/singlepage/ai-chat-project-item/Component.tsx",
+        "social/profile/singlepage/project/select/item/ai-chat/Component.tsx",
       ),
     ),
   ).toBe(true);
@@ -123,9 +123,8 @@ test("cross-model Component imports use entity entries and native names", () => 
       if (file.startsWith(owner + path.sep)) continue;
       // Providers and private helpers are separate from registered model views.
       const variantView =
-        /^(singlepage|startup)\/[^/]+\/(Component\.tsx|index\.ts)$/.test(
-          suffix,
-        );
+        /^(singlepage|startup)\/.+\/(Component\.tsx|index\.ts)$/.test(suffix) &&
+        existsSync(path.join(path.dirname(target), "block.manifest.json"));
       const imported = bindings.elements.find((element) => {
         if (element.isTypeOnly) return false;
         const name = element.propertyName?.text ?? element.name.text;
@@ -244,4 +243,29 @@ test("Studio module stories display models without relation or API filter contra
     expect(source).not.toContain('variant="find"');
     expect(source).not.toContain("findLocalRelations");
   }
+});
+
+test("AI Chat model variants put purpose before visual style and mirror nested folders", () => {
+  let checked = 0;
+  for (const file of files(modules).filter((file) =>
+    file.endsWith("/block.manifest.json"),
+  )) {
+    const block = JSON.parse(readFileSync(file, "utf8"));
+    const { module, entity, variant } = block.source;
+    // Page keys describe URLs; model display variants describe their purpose.
+    if (
+      (module === "host" && entity === "page") ||
+      !variant.includes("ai-chat")
+    )
+      continue;
+    expect(variant.startsWith("ai-chat")).toBe(false);
+    expect(variant.endsWith("-ai-chat")).toBe(true);
+    const variantPath = path.relative(
+      path.join(modules, module, entity, "singlepage"),
+      path.dirname(file),
+    );
+    expect(variantPath.split(path.sep).join("-")).toBe(variant);
+    checked++;
+  }
+  expect(checked).toBe(45);
 });

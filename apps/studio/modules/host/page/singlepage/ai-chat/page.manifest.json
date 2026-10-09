@@ -19,24 +19,24 @@
   },
   "blocks": [
     {
-      "id": "host.layout.ai-chat",
-      "path": "../../../layout/singlepage/ai-chat"
+      "id": "host.layout.landing-ai-chat",
+      "path": "../../../layout/singlepage/landing/ai-chat"
     },
     {
-      "id": "website-builder.widget.ai-chat-hero",
-      "path": "../../../../website-builder/widget/singlepage/ai-chat-hero"
+      "id": "website-builder.widget.hero-ai-chat",
+      "path": "../../../../website-builder/widget/singlepage/hero/ai-chat"
     },
     {
-      "id": "website-builder.widget.ai-chat-try",
-      "path": "../../../../website-builder/widget/singlepage/ai-chat-try"
+      "id": "website-builder.widget.try-ai-chat",
+      "path": "../../../../website-builder/widget/singlepage/try/ai-chat"
     },
     {
-      "id": "website-builder.widget.ai-chat-continue",
-      "path": "../../../../website-builder/widget/singlepage/ai-chat-continue"
+      "id": "website-builder.widget.continue-ai-chat",
+      "path": "../../../../website-builder/widget/singlepage/continue/ai-chat"
     },
     {
-      "id": "social.chat.ai-chat-preview",
-      "path": "../../../../social/chat/singlepage/ai-chat-preview"
+      "id": "social.chat.overview-preview-ai-chat",
+      "path": "../../../../social/chat/singlepage/overview/preview/ai-chat"
     },
     {
       "id": "rbac.subject.account",

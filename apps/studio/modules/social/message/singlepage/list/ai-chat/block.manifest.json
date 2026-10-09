@@ -1,0 +1,27 @@
+{
+  "id": "social.message.list-ai-chat",
+  "title": "list-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Message list scoped to the current Thread; each row displays a Message overview.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.message",
+    "pageName": "social",
+    "variantName": "list-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "message",
+    "variant": "list-ai-chat"
+  },
+  "contentSlots": []
+}

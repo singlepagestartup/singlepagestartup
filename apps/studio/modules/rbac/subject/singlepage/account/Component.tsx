@@ -38,7 +38,7 @@ export function Component({
         id: "current-user",
         title: user.name,
         avatar: user.avatar,
-        variant: "ai-chat-user" as const,
+        variant: "user-ai-chat" as const,
       }
     : (session.account.profile ?? aiChatAccount.profile);
   const settingsHref = showTokens

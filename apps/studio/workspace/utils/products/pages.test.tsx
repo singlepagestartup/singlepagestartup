@@ -298,7 +298,7 @@ describe("product pages", () => {
     expect(html).toContain("Lesson introduction");
     expect(html).toMatch(/disabled=""[^>]*>Layout</);
     const root = new URL(
-      "../../../../../tools/studio/products/fixtures/startup/",
+      "../../../../../tools/studio/products/fixtures/startup",
       import.meta.url,
     ).pathname;
     await validateProductSectionFiles(
@@ -548,7 +548,7 @@ describe("product pages", () => {
    */
   test("validates nested files from the selected catalog directory", async () => {
     const root = new URL(
-      "../../../../../tools/studio/products/fixtures/startup/",
+      "../../../../../tools/studio/products/fixtures/startup",
       import.meta.url,
     ).pathname;
     await validateProductSectionFiles(catalog("startup"), root);

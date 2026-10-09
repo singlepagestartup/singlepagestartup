@@ -1,7 +1,7 @@
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Settings } from "./admin-v2-settings/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
-import { Component as AiChatMessageCreate } from "./ai-chat-message-create/index";
+import { Component as MessageCreateAiChat } from "./message/create/ai-chat/index";
 import { Component as Account } from "./account/index";
 import { Component as AccountData } from "./account-data/index";
 import { Component as List } from "./list/index";
@@ -16,7 +16,7 @@ export const variants = {
   "admin-v2-card": AdminV2Card,
   "admin-v2-settings": AdminV2Settings,
   "admin-v2-table": AdminV2Table,
-  "ai-chat-message-create": AiChatMessageCreate,
+  "message-create-ai-chat": MessageCreateAiChat,
   account: Account,
   "account-data": AccountData,
   list: List,

@@ -5,7 +5,7 @@ export interface IAIChatThread {
   id: string;
   slug: string;
   title: string;
-  variant: "ai-chat-overview";
+  variant: "overview-ai-chat";
 }
 interface IThreadExchange {
   ids: { user: string; assistant: string };

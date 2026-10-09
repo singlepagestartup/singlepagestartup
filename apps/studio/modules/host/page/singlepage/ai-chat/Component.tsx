@@ -11,7 +11,7 @@ export interface IAIChatPageProps {
 export function Component({ content }: IAIChatPageProps = {}) {
   return (
     <HostModuleLayout
-      variant="ai-chat"
+      variant="landing-ai-chat"
       subjectAccount={<RbacModuleSubject variant="account" showTokens />}
       footerContent={content?.footer}
     >
@@ -22,11 +22,11 @@ export function Component({ content }: IAIChatPageProps = {}) {
         className="outline-none"
       >
         <WebsiteBuilderModuleWidget
-          variant="ai-chat-hero"
+          variant="hero-ai-chat"
           content={content && { hero: content.hero, labels: content.labels }}
         />
         <WebsiteBuilderModuleWidget
-          variant="ai-chat-try"
+          variant="try-ai-chat"
           content={
             content && {
               workflow: content.workflow,
@@ -34,10 +34,13 @@ export function Component({ content }: IAIChatPageProps = {}) {
             }
           }
         >
-          <SocialModuleChat variant="ai-chat-preview" content={content} />
+          <SocialModuleChat
+            variant="overview-preview-ai-chat"
+            content={content}
+          />
         </WebsiteBuilderModuleWidget>
         <WebsiteBuilderModuleWidget
-          variant="ai-chat-continue"
+          variant="continue-ai-chat"
           content={
             content && {
               continue: content.continue,

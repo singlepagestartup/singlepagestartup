@@ -81,11 +81,11 @@ publish(
 );
 
 const copies = {
-  register: "rbac/identity/ai-chat-register",
-  login: "rbac/identity/ai-chat-login",
+  register: "rbac/identity/authentication/register/ai-chat",
+  login: "rbac/identity/authentication/login/ai-chat",
   settings: "rbac/subject/account-data",
-  help: "website-builder/widget/ai-chat-help",
-  tokens: "ecommerce/order/ai-chat-tokens",
+  help: "website-builder/widget/help/ai-chat",
+  tokens: "ecommerce/order/checkout/tokens/ai-chat",
 };
 const website = servicePaths(
   parseAIChatWebsite(readFileSync(path.join(source, "page.md"), "utf8")),
@@ -95,23 +95,23 @@ publish(
   JSON.stringify(website, null, 2) + "\n",
 );
 const landingCopies = {
-  "ai-chat-hero": {
+  "hero/ai-chat": {
     hero: website.hero,
     labels: {
       "hero-photo-alt": website.labels["hero-photo-alt"],
       "navigation-foundation": website.labels["navigation-foundation"],
     },
   },
-  "ai-chat-try": {
+  "try/ai-chat": {
     workflow: website.workflow,
     uploadNote: website.labels["demo-upload-note"],
   },
-  "ai-chat-continue": {
+  "continue/ai-chat": {
     continue: website.continue,
     terms: website.terms,
     startLink: website.hero.links[0],
   },
-  "ai-chat-footer": website.footer,
+  "footer/ai-chat": website.footer,
 };
 for (const [variant, copy] of Object.entries(landingCopies))
   publish(
@@ -119,11 +119,11 @@ for (const [variant, copy] of Object.entries(landingCopies))
     JSON.stringify(copy, null, 2) + "\n",
   );
 for (const [name, owner] of Object.entries(copies)) {
-  const [module, entity, variant] = owner.split("/");
+  const [module, entity, ...variant] = owner.split("/");
   const text = readFileSync(path.join(source, `${name}.md`), "utf8");
   const copy = parseAIChatServicePage(text);
   publish(
-    `apps/studio/modules/${module}/${entity}/singlepage/${variant}/content.json`,
+    `apps/studio/modules/${module}/${entity}/singlepage/${variant.join("/")}/content.json`,
     JSON.stringify(servicePaths(copy), null, 2) + "\n",
   );
 }
@@ -168,12 +168,12 @@ publish(
   JSON.stringify(guidePublication, null, 2) + "\n",
 );
 publish(
-  "apps/studio/modules/social/profile/singlepage/ai-chat-project/definitions.json",
+  "apps/studio/modules/social/profile/singlepage/project/scope/ai-chat/definitions.json",
   JSON.stringify(definitions, null, 2) + "\n",
 );
 const materials = readFileSync(path.join(source, "new-project.md"), "utf8");
 publish(
-  "apps/studio/modules/social/profile/singlepage/ai-chat-processing/disclosure.json",
+  "apps/studio/modules/social/profile/singlepage/project/processing/ai-chat/disclosure.json",
   JSON.stringify(
     materials.slice(
       materials.indexOf("## How your materials are processed and stored"),

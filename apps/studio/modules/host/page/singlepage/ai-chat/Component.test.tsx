@@ -6,11 +6,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { AIChatPreview } from "../../../../../workspace/products/singlepage/ai-chat/website/Preview";
 import { isAIChatRoute } from "../../../../../workspace/utils/products/ai-chat-routes";
 import { documentAgent } from "../../../../../workspace/utils/products/ai-chat-agent-resolver";
-import { ProjectAgentPicker } from "../../../../social/profile/singlepage/ai-chat-agent/index";
-import { FilesProvider } from "../../../../file-storage/file/singlepage/ai-chat-attachments/Files";
-import { SourceProvider } from "../../../../knowledge/source/singlepage/ai-chat-document/Source";
-import { ThreadProvider } from "../../../../social/thread/singlepage/ai-chat-overview/Thread";
-import { Component as ProjectConversation } from "../../../../social/thread/singlepage/ai-chat-conversation/index";
+import { ProjectAgentPicker } from "../../../../social/profile/singlepage/agent/overview/ai-chat/index";
+import { FilesProvider } from "../../../../file-storage/file/singlepage/list/attachments/ai-chat/Files";
+import { SourceProvider } from "../../../../knowledge/source/singlepage/overview/document/ai-chat/Source";
+import { ThreadProvider } from "../../../../social/thread/singlepage/overview/ai-chat/Thread";
+import { Component as MessageList } from "../../../../social/message/singlepage/list/ai-chat/index";
 
 const root = path.resolve(import.meta.dir, "../../../../../../..");
 const studio = path.join(root, "apps/studio");
@@ -150,13 +150,13 @@ describe("Local AI Chat components", () => {
       <AIChatPreview initialHref="/ai-chat/projects/pottery/settings" />,
     );
     expect(settings).toContain(
-      'data-ds-block="social.profile.ai-chat-settings"',
+      'data-ds-block="social.profile.project-settings-ai-chat"',
     );
     expect(settings).not.toContain('data-model="thread"');
     const create = renderToStaticMarkup(
       <AIChatPreview initialHref="/ai-chat/projects/pottery/threads/new" />,
     );
-    expect(create).toContain('data-ds-block="social.thread.ai-chat-create"');
+    expect(create).toContain('data-ds-block="social.thread.create-ai-chat"');
     expect(create).toContain("Thread name");
     expect(create).toContain("Thread agent");
     expect(create).not.toContain('data-model="thread"');
@@ -170,10 +170,10 @@ describe("Local AI Chat components", () => {
     ]) {
       const html = renderToStaticMarkup(<AIChatPreview initialHref={url} />);
       expect(html.match(/data-ds-block="host\.layout\.[^"]+"/g)).toEqual([
-        'data-ds-block="host.layout.ai-chat-header"',
+        'data-ds-block="host.layout.service-ai-chat"',
       ]);
       expect(html).toContain(
-        'data-ds-block="social.profile.ai-chat-project-overview"',
+        'data-ds-block="social.profile.project-overview-ai-chat"',
       );
       expect(html).toContain('data-model="profile" data-id="pottery"');
       expect(html).toContain('aria-label="Show sidebar"');
@@ -183,7 +183,7 @@ describe("Local AI Chat components", () => {
     );
     expect(inaccessible).toContain("Project profile unavailable");
     expect(inaccessible).not.toContain(
-      'data-ds-block="social.profile.ai-chat-project-overview"',
+      'data-ds-block="social.profile.project-overview-ai-chat"',
     );
   });
 
@@ -225,11 +225,11 @@ describe("Local AI Chat components", () => {
                 id: "history:products",
                 slug: "history:products",
                 title: "Products.md",
-                variant: "ai-chat-overview",
+                variant: "overview-ai-chat",
               }}
               initialMessages={messages}
             >
-              <ProjectConversation />
+              <MessageList />
             </ThreadProvider>
           </SourceProvider>
         </FilesProvider>,

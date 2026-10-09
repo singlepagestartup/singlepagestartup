@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.project-settings-ai-chat",
+  "title": "project-settings-ai-chat",
+  "description": "Settings for the selected project Profile.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "project-settings-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "project-settings-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

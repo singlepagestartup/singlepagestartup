@@ -173,39 +173,33 @@ describe("AI Chat project ownership", () => {
     const profile = social.entities.find(
       (entity) => entity.entityType === "model" && entity.entity === "profile",
     )!;
-    for (const variant of [
-      "ai-chat-project-select",
-      "ai-chat-sidebar",
-      "ai-chat-create",
-      "ai-chat-settings",
-      "ai-chat-project",
+    for (const folder of [
+      "project/select/ai-chat",
+      "project/select/item/ai-chat",
+      "project/sidebar/ai-chat",
+      "project/create/ai-chat",
+      "project/settings/ai-chat",
+      "project/scope/ai-chat",
+      "project/overview/ai-chat",
       "account-menu",
     ])
       expect(
         profile.storyFiles?.some((file) =>
-          file.includes(`/singlepage/${variant}/`),
+          file.includes(`/singlepage/${folder}/`),
         ),
       ).toBe(true);
-    for (const [entity, variants] of [
-      ["chat", ["ai-chat-overview"]],
-      [
-        "thread",
-        [
-          "ai-chat-overview",
-          "ai-chat-conversation",
-          "ai-chat-create",
-          "ai-chat-settings",
-        ],
-      ],
-      ["message", ["ai-chat-message"]],
+    for (const [entity, folders] of [
+      ["chat", ["overview/ai-chat"]],
+      ["thread", ["overview/ai-chat", "create/ai-chat", "settings/ai-chat"]],
+      ["message", ["overview/ai-chat", "list/ai-chat"]],
     ] as const) {
       const record = social.entities.find(
         (item) => item.entityType === "model" && item.entity === entity,
       )!;
-      for (const variant of variants)
+      for (const folder of folders)
         expect(
           record.storyFiles?.some((file) =>
-            file.includes(`/singlepage/${variant}/`),
+            file.includes(`/singlepage/${folder}/`),
           ),
         ).toBe(true);
     }
@@ -217,7 +211,7 @@ describe("AI Chat project ownership", () => {
       .entities.find((entity) => entity.entity === "subject")!;
     expect(
       subject.storyFiles?.some((file) =>
-        file.includes("/ai-chat-message-create/"),
+        file.includes("/message/create/ai-chat/"),
       ),
     ).toBe(true);
     expect(
@@ -225,13 +219,9 @@ describe("AI Chat project ownership", () => {
         entity.storyFiles?.some((file) => file.includes("/ai-chat-composer/")),
       ),
     ).toBe(false);
-    const message = social.entities.find(
-      (item) => item.entityType === "model" && item.entity === "message",
-    )!;
+    const thread = social.entities.find((item) => item.entity === "thread")!;
     expect(
-      message.storyFiles?.some((file) =>
-        file.includes("/ai-chat-conversation/"),
-      ),
+      thread.storyFiles?.some((file) => file.includes("/list/ai-chat/")),
     ).toBe(false);
   });
 });
@@ -247,7 +237,7 @@ describe("AI Chat Source ownership", () => {
     )!;
     expect(
       source.storyFiles?.some((file) =>
-        file.includes("/singlepage/ai-chat-card/"),
+        file.includes("/singlepage/overview/ai-chat/"),
       ),
     ).toBe(true);
     expect(
@@ -258,7 +248,7 @@ describe("AI Chat Source ownership", () => {
       .entities.find((entity) => entity.entity === "file")!;
     expect(
       file.storyFiles?.some((story) =>
-        story.includes("/singlepage/ai-chat-attachments/"),
+        story.includes("/singlepage/list/attachments/ai-chat/"),
       ),
     ).toBe(true);
   });

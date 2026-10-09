@@ -12,13 +12,13 @@ export interface IProjectPageProps {
 export function Component({ profileId }: IProjectPageProps) {
   return (
     <HostModuleLayout
-      variant="ai-chat-header"
+      variant="service-ai-chat"
       page="chat"
       profileSelect={(props) => (
         <SocialModuleProfile
           profileId={profileId}
           {...props}
-          variant="ai-chat-project-select"
+          variant="project-select-ai-chat"
         />
       )}
       subjectAccount={({ onNavigate }) => (
@@ -31,7 +31,7 @@ export function Component({ profileId }: IProjectPageProps) {
       )}
     >
       <SocialModuleProfile
-        variant="ai-chat-project-overview"
+        variant="project-overview-ai-chat"
         profileId={profileId}
         selected="thread-create"
       >
@@ -46,7 +46,7 @@ export function Component({ profileId }: IProjectPageProps) {
               navigation={navigation}
             />
             <SocialModuleThread
-              variant="ai-chat-create"
+              variant="create-ai-chat"
               cancelHref={`/ai-chat/projects/${encodeURIComponent(profileId)}`}
             />
           </section>

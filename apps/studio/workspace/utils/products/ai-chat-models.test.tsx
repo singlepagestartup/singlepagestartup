@@ -51,7 +51,9 @@ test("route IDs select profiles from the supplied examples", () => {
       initialHref="/ai-chat/projects/pottery"
     />,
   );
-  expect(ownHtml).toContain('data-ds-block="social.profile.ai-chat-project"');
+  expect(ownHtml).toContain(
+    'data-ds-block="social.profile.project-scope-ai-chat"',
+  );
   expect(ownHtml).toContain('data-profile-id="pottery"');
   expect(ownHtml).not.toContain("Project profile unavailable");
 });

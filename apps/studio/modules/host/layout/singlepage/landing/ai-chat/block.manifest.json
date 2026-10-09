@@ -1,0 +1,27 @@
+{
+  "id": "host.layout.landing-ai-chat",
+  "title": "landing-ai-chat",
+  "description": "AI Chat landing layout with Website Builder header/footer and a supplied Subject account slot.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "layout",
+    "variant": "landing-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.layout",
+    "pageName": "host",
+    "variantName": "landing-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

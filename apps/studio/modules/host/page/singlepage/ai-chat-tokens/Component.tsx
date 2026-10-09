@@ -5,7 +5,7 @@ import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 export function Component() {
   return (
     <HostModuleLayout
-      variant="ai-chat-header"
+      variant="service-ai-chat"
       page="tokens"
       subjectAccount={({ onNavigate }) => (
         <RbacModuleSubject
@@ -16,7 +16,7 @@ export function Component() {
         />
       )}
     >
-      <EcommerceModuleOrder variant="ai-chat-tokens" />
+      <EcommerceModuleOrder variant="checkout-tokens-ai-chat" />
     </HostModuleLayout>
   );
 }

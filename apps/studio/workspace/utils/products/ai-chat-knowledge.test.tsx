@@ -6,9 +6,9 @@ import {
   sourceMaterials,
   sourceUserContext,
 } from "./ai-chat-knowledge";
-import { SourceProvider } from "../../../modules/knowledge/source/singlepage/ai-chat-document/Source";
-import { FilesProvider } from "../../../modules/file-storage/file/singlepage/ai-chat-attachments/Files";
-import { Component as SourceSection } from "../../../modules/knowledge/source/singlepage/ai-chat-card/index";
+import { SourceProvider } from "../../../modules/knowledge/source/singlepage/overview/document/ai-chat/Source";
+import { FilesProvider } from "../../../modules/file-storage/file/singlepage/list/attachments/ai-chat/Files";
+import { Component as SourceSection } from "../../../modules/knowledge/source/singlepage/overview/ai-chat/index";
 
 const files: IProjectFile[] = [
   {
@@ -48,7 +48,7 @@ test("Source variant renders multiple scoped Files and excludes another section'
   const data = {
     id: "pottery:brief:Project and products",
     slug: "project-and-products",
-    variant: "ai-chat-card",
+    variant: "overview-ai-chat",
     title: "Project and products",
     content:
       "## Контекст пользователя\n<!-- knowledge:user -->\nNotes\n<!-- /knowledge:user -->\n\n## Сведения из материалов\nRead-only description",

@@ -2,8 +2,8 @@ import { Component as AccountChange } from "./account-change";
 import { Component as ProviderConnect } from "./provider-connect";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
-import { Component as AiChatLogin } from "./ai-chat-login/index";
-import { Component as AiChatRegister } from "./ai-chat-register/index";
+import { Component as AuthenticationLoginAiChat } from "./authentication/login/ai-chat/index";
+import { Component as AuthenticationRegisterAiChat } from "./authentication/register/ai-chat/index";
 import { Component as CardDefault } from "./card-default/index";
 import { Component as FindDefault } from "./find-default/index";
 import { Component as List } from "./list/index";
@@ -17,8 +17,8 @@ export const variants = {
   "provider-connect": ProviderConnect,
   "admin-v2-card": AdminV2Card,
   "admin-v2-table": AdminV2Table,
-  "ai-chat-login": AiChatLogin,
-  "ai-chat-register": AiChatRegister,
+  "authentication-login-ai-chat": AuthenticationLoginAiChat,
+  "authentication-register-ai-chat": AuthenticationRegisterAiChat,
   "card-default": CardDefault,
   "find-default": FindDefault,
   list: List,

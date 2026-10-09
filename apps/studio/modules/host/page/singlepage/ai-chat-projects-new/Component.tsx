@@ -3,19 +3,19 @@ import { Component as HostModuleLayout } from "../../../layout/index";
 import { Component as SocialModuleProfile } from "../../../../social/profile/index";
 import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 
-import { useNavigate } from "../../../layout/singlepage/ai-chat/Navigation";
+import { useNavigate } from "../../../layout/singlepage/landing/ai-chat/Navigation";
 
-import { useProfiles } from "../../../../social/profile/singlepage/ai-chat-project/Profiles";
+import { useProfiles } from "../../../../social/profile/singlepage/project/scope/ai-chat/Profiles";
 
 export function Component() {
   const navigate = useNavigate();
   const { create, projects } = useProfiles();
   return (
     <HostModuleLayout
-      variant="ai-chat-header"
+      variant="service-ai-chat"
       page="chat"
       profileSelect={(props) => (
-        <SocialModuleProfile {...props} variant="ai-chat-project-select" />
+        <SocialModuleProfile {...props} variant="project-select-ai-chat" />
       )}
       subjectAccount={({ onNavigate }) => (
         <RbacModuleSubject
@@ -27,7 +27,7 @@ export function Component() {
       )}
     >
       <SocialModuleProfile
-        variant="ai-chat-create"
+        variant="project-create-ai-chat"
         onCreate={(name) => {
           const id = create(name);
           if (id) navigate(`/ai-chat/projects/${encodeURIComponent(id)}`);
@@ -43,7 +43,7 @@ export function Component() {
       />
       <div className="mx-auto max-w-3xl px-5">
         <SocialModuleProfile
-          variant="ai-chat-processing"
+          variant="project-processing-ai-chat"
           id="how-your-materials-are-processed-and-stored"
         />
       </div>

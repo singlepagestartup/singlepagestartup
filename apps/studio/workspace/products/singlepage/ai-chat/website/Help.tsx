@@ -11,7 +11,7 @@ export default function Help({ text }: { text?: string } = {}) {
   return (
     <AccountProvider account={aiChatAccount}>
       <HostModuleLayout
-        variant="ai-chat-header"
+        variant="service-ai-chat"
         page="help"
         subjectAccount={({ onNavigate }) => (
           <RbacModuleSubject
@@ -23,7 +23,7 @@ export default function Help({ text }: { text?: string } = {}) {
         )}
       >
         <WebsiteBuilderModuleWidget
-          variant="ai-chat-help"
+          variant="help-ai-chat"
           copy={parseAIChatServicePage(text ?? sourceText)}
         />
       </HostModuleLayout>

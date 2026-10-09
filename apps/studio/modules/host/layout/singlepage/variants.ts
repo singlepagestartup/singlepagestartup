@@ -3,8 +3,8 @@ import { Component as AdminV2Form } from "./admin-v2-form/index";
 import { Component as AdminV2List } from "./admin-v2-list/index";
 import { Component as AdminV2SelectInput } from "./admin-v2-select-input/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
-import { Component as AiChat } from "./ai-chat/index";
-import { Component as AiChatHeader } from "./ai-chat-header/index";
+import { Component as LandingAiChat } from "./landing/ai-chat/index";
+import { Component as ServiceAiChat } from "./service/ai-chat/index";
 import { Component as Default } from "./default/index";
 import { Component as List } from "./list/index";
 import { Component as Website } from "./website/index";
@@ -15,8 +15,8 @@ export const variants = {
   "admin-v2-list": AdminV2List,
   "admin-v2-select-input": AdminV2SelectInput,
   "admin-v2-table": AdminV2Table,
-  "ai-chat": AiChat,
-  "ai-chat-header": AiChatHeader,
+  "landing-ai-chat": LandingAiChat,
+  "service-ai-chat": ServiceAiChat,
   default: Default,
   list: List,
   website: Website,
