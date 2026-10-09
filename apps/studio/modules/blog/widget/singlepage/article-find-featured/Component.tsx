@@ -1,37 +1,22 @@
-import {
-  ArticleFeatured,
-  defaultArticleFeaturedProps,
-  type ArticleFeaturedProps,
-} from "../../../article/singlepage/featured/Component";
+import { Component as BlogModuleArticle } from "../../../article";
 
 const articleOverviewStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
 
-type ArticleFindFeaturedItem = ArticleFeaturedProps & {
-  id: string;
+export interface ArticleFindFeaturedProps {
+  count: number;
+  /** Removes introduction spacing when composed immediately after a header. */
+  compact?: boolean;
+}
+
+export const defaultArticleFindFeaturedProps: ArticleFindFeaturedProps = {
+  count: 1,
 };
 
-export const defaultArticleFindFeaturedProps = {
-  articles: [
-    {
-      id: "featured-1",
-      ...defaultArticleFeaturedProps,
-    },
-  ] as ArticleFindFeaturedItem[],
-};
-
-export type ArticleFindFeaturedProps =
-  typeof defaultArticleFindFeaturedProps & {
-    /** Removes introduction spacing when composed immediately after a header. */
-    compact?: boolean;
-  };
-
-export function ArticleFindFeatured(props?: Partial<ArticleFindFeaturedProps>) {
-  const { articles, compact = false } = {
-    ...defaultArticleFindFeaturedProps,
-    ...props,
-  };
-
+export function ArticleFindFeatured({
+  count = 1,
+  compact = false,
+}: Partial<ArticleFindFeaturedProps> = {}) {
   return (
     <section
       className={`w-full ${compact ? "" : "pt-8"}`}
@@ -41,20 +26,11 @@ export function ArticleFindFeatured(props?: Partial<ArticleFindFeaturedProps>) {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-6">
-          {articles.map((article) => (
-            <ArticleFeatured
-              key={article.id}
-              href={article.href ?? articleOverviewStoryHref}
-              slug={article.slug}
-              title={article.title}
-              excerpt={article.excerpt}
-              coverImage={article.coverImage}
-              category={article.category}
-              authorName={article.authorName}
-              authorSlug={article.authorSlug}
-              authorAvatar={article.authorAvatar}
-              date={article.date}
-              readTime={article.readTime}
+          {Array.from({ length: count }, (_, index) => (
+            <BlogModuleArticle
+              key={`featured-${index}`}
+              variant="featured"
+              href={articleOverviewStoryHref}
               target="_top"
             />
           ))}

@@ -1,7 +1,8 @@
 import {
-  ButtonsArrayDefault,
+  Component as WebsiteBuilderModuleButtonsArray,
   type ButtonsArrayItem,
-} from "../../../buttons-array/singlepage/default/Component";
+} from "../../../buttons-array";
+
 import { BrandMark } from "../../../../../workspace/utils/components/BrandMark";
 
 interface StudioLink {
@@ -44,7 +45,11 @@ export function FooterCompact(props?: Partial<FooterCompactProps>) {
           <BrandMark size="sm" />
           <span>{copyright}</span>
         </div>
-        <ButtonsArrayDefault ariaLabel="Utility" buttons={utilityButtons} />
+        <WebsiteBuilderModuleButtonsArray
+          variant="default"
+          ariaLabel="Utility"
+          buttons={utilityButtons}
+        />
       </div>
     </div>
   );

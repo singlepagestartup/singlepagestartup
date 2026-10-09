@@ -1,10 +1,7 @@
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+import { Component as BlogModuleWidget } from "../../../../blog/widget";
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 import { SectionStack } from "../../../../../workspace/design/singlepage/interface-kit/SectionStack";
-import { FooterCompact } from "../../../../website-builder/widget/singlepage/footer-compact/Component";
-import { ContentPageHeader } from "../../../../website-builder/widget/singlepage/content-page-header/Component";
-import { ArticleFindFeatured } from "../../../../blog/widget/singlepage/article-find-featured/Component";
-import { ArticleFindCardDefault } from "../../../../blog/widget/singlepage/article-find-card-default/Component";
-import { TagFindButton } from "../../../../blog/widget/singlepage/tag-find-button/Component";
 
 export function BlogFindArticleCard() {
   return (
@@ -14,17 +11,18 @@ export function BlogFindArticleCard() {
     >
       <HostNavbarDefault />
       <SectionStack>
-        <ContentPageHeader
+        <WebsiteBuilderModuleWidget
+          variant="content-page-header"
           compact
           eyebrow="Blog"
           title="Insights, Guides & Updates"
           description="Tutorials, engineering deep-dives, case studies, and product announcements from the team."
         />
-        <ArticleFindFeatured compact />
-        <ArticleFindCardDefault />
-        <TagFindButton />
+        <BlogModuleWidget variant="article-find-featured" compact />
+        <BlogModuleWidget variant="article-find-card-default" />
+        <BlogModuleWidget variant="tag-find-button" />
       </SectionStack>
-      <FooterCompact />
+      <WebsiteBuilderModuleWidget variant="footer-compact" />
     </main>
   );
 }

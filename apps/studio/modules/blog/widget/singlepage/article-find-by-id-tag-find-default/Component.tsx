@@ -1,3 +1,4 @@
+import { Component as BlogModuleTag } from "../../../tag";
 /**
  * blog.widget.article-find-by-id-tag-find-default
  *
@@ -5,8 +6,6 @@
  * widget). Composes blog.tag.button-default chips instead of re-implementing them.
  */
 import { Tag } from "../../../../../workspace/utils/components/ModuleIcons";
-
-import { TagButtonDefault } from "../../../tag/singlepage/button-default/Component";
 
 export const defaultArticleFindByIdTagFindProps = {
   title: "Tags",
@@ -36,7 +35,12 @@ export function ArticleFindByIdTagFind(
       </div>
       <div className="flex flex-wrap gap-2">
         {tags.map((tag) => (
-          <TagButtonDefault key={tag} label={tag} href={`/blog/tags/${tag}`} />
+          <BlogModuleTag
+            variant="button-default"
+            key={tag}
+            label={tag}
+            href={`/blog/tags/${tag}`}
+          />
         ))}
       </div>
     </div>

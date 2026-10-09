@@ -4,6 +4,7 @@ import { Component as AiChatAgent } from "./ai-chat-agent/index";
 import { Component as AiChatAgentAvatar } from "./ai-chat-agent-avatar/index";
 import { Component as AiChatAgentSelect } from "./ai-chat-agent-select/index";
 import { Component as AiChatCreate } from "./ai-chat-create/index";
+import { Component as AiChatProcessing } from "./ai-chat-processing/index";
 import { Component as AiChatProject } from "./ai-chat-project/index";
 import { Component as AiChatProjectItem } from "./ai-chat-project-item/index";
 import { Component as AiChatProjectOverview } from "./ai-chat-project-overview/index";
@@ -27,6 +28,7 @@ export const variants = {
   "ai-chat-agent-avatar": AiChatAgentAvatar,
   "ai-chat-agent-select": AiChatAgentSelect,
   "ai-chat-create": AiChatCreate,
+  "ai-chat-processing": AiChatProcessing,
   "ai-chat-project": AiChatProject,
   "ai-chat-project-item": AiChatProjectItem,
   "ai-chat-project-overview": AiChatProjectOverview,

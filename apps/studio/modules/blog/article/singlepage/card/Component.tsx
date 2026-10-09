@@ -1,11 +1,10 @@
+import { Component as SocialModuleProfile } from "../../../../social/profile";
 import { kit } from "../../../../../workspace/design/singlepage/interface-kit/primitives";
 /**
  * Model-owned article link. Balanced, editorial and compact are presentation
  * choices over the same article props; widgets compose this component.
  * The footer separates the Social profile byline from reading metadata.
  */
-
-import { ProfileByline } from "../../../../social/profile/singlepage/byline/Component";
 
 type ArticleCardTarget = "_blank" | "_parent" | "_self" | "_top";
 
@@ -57,7 +56,8 @@ export function ArticleCard(props?: Partial<ArticleCardProps>) {
   const metadata = (
     <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-[var(--workspace-brand-line)] pt-4">
       <div className="min-w-0">
-        <ProfileByline
+        <SocialModuleProfile
+          variant="byline"
           name={authorName}
           avatar={authorAvatar}
           href={null}

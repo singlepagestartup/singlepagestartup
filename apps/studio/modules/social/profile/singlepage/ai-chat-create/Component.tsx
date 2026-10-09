@@ -6,39 +6,11 @@ import {
   kit,
   SquareImage,
 } from "../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
-import { MarkdownDocument } from "../../../../../workspace/design/singlepage/interface-kit/ai-chat/Markdown";
 import { TextField } from "../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
-import disclosure from "./disclosure.json";
 export interface IProfileCreateProps {
   onCreate: (name: string) => void;
   onCancel?: () => void;
 }
-interface IProjectProcessingDisclosureProps {
-  id: string;
-  open?: boolean;
-}
-export function ProjectProcessingDisclosure({
-  id,
-  open,
-}: IProjectProcessingDisclosureProps) {
-  return (
-    <details
-      id={id}
-      open={open}
-      className={`my-5 text-xs leading-6 ${kit.muted}`}
-    >
-      <summary
-        className={`min-h-9 cursor-pointer underline underline-offset-4 ${kit.focus}`}
-      >
-        How your materials are processed and stored
-      </summary>
-      <div className={`${kit.card} mt-3 text-sm`}>
-        <MarkdownDocument>{disclosure}</MarkdownDocument>
-      </div>
-    </details>
-  );
-}
-
 export function Component({ onCreate, onCancel }: IProfileCreateProps) {
   const [name, setName] = useState("");
   function submit(event: FormEvent) {

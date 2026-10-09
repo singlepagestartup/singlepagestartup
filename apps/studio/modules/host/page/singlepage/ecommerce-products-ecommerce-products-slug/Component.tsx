@@ -1,15 +1,13 @@
+import { Component as EcommerceModuleCart } from "../../../../ecommerce/cart";
+import { defaultProductOverviewDefaultProps } from "../../../../ecommerce/product";
+import { Component as HostModuleWidget } from "../../../widget";
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
 import { useCallback, useState } from "react";
 
-import { CartButtonDefault } from "../../../../ecommerce/cart/singlepage/button-default/Component";
-import { CartDrawerDefault } from "../../../../ecommerce/cart/singlepage/drawer-default/Component";
 import {
   type CartItem,
   websiteDevelopmentCartItem,
 } from "../../../../ecommerce/cart/shared";
-import { defaultProductOverviewDefaultProps } from "../../../../ecommerce/product/singlepage/overview-default/Component";
-import { HostWidgetDefault } from "../../../widget/singlepage/default/Component";
-import { FooterCompact } from "../../../../website-builder/widget/singlepage/footer-compact/Component";
-import { NavbarDefault } from "../../../../website-builder/widget/singlepage/navbar-default/Component";
 
 function getItemCount(items: CartItem[]) {
   return items.reduce((sum, item) => sum + item.quantity, 0);
@@ -91,10 +89,12 @@ export function EcommerceCartFlowDefault() {
       className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased"
       data-ds-page="host.page.ecommerce-products-ecommerce-products-slug"
     >
-      <NavbarDefault
+      <WebsiteBuilderModuleWidget
+        variant="navbar-default"
         activeHref="/ecommerce/products"
         cartButton={
-          <CartButtonDefault
+          <EcommerceModuleCart
+            variant="button-default"
             count={cartCount}
             onClick={() => setIsCartOpen(true)}
           />
@@ -102,7 +102,8 @@ export function EcommerceCartFlowDefault() {
         cartCount={cartCount}
         onCartClick={() => setIsCartOpen(true)}
       />
-      <HostWidgetDefault
+      <HostModuleWidget
+        variant="default"
         externalModule="ecommerce"
         productProps={{
           related: productOverviewRelatedProducts,
@@ -117,8 +118,9 @@ export function EcommerceCartFlowDefault() {
           },
         }}
       />
-      <FooterCompact />
-      <CartDrawerDefault
+      <WebsiteBuilderModuleWidget variant="footer-compact" />
+      <EcommerceModuleCart
+        variant="drawer-default"
         items={items}
         isOpen={isCartOpen}
         onClear={() => setItems([])}

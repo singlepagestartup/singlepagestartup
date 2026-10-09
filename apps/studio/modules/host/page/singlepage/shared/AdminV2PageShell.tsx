@@ -1,6 +1,5 @@
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
 import type { ReactNode } from "react";
-
-import { WebsiteBuilderAdminV2Navigation } from "../../../../website-builder/widget/singlepage/admin-v2-navigation/Component";
 
 export interface AdminV2PageShellProps {
   activePath: string;
@@ -20,7 +19,10 @@ export function AdminV2PageShell({
   return (
     <main className="min-h-screen bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased">
       <div className="grid min-h-screen grid-rows-[auto_1fr] lg:grid-cols-[280px_1fr] lg:grid-rows-1">
-        <WebsiteBuilderAdminV2Navigation activePath={activePath} />
+        <WebsiteBuilderModuleWidget
+          variant="admin-v2-navigation"
+          activePath={activePath}
+        />
         <section className="min-w-0 p-4 sm:p-6 lg:p-8">
           <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>

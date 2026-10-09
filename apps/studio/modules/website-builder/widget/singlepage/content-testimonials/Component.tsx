@@ -1,4 +1,4 @@
-import { FeatureTestimotional } from "../../../feature/singlepage/testimotional/Component";
+import { Component as WebsiteBuilderModuleFeature } from "../../../feature";
 
 export interface ContentTestimonialItem {
   avatar: string;
@@ -63,7 +63,12 @@ export function ContentTestimonials(props?: Partial<ContentTestimonialsProps>) {
           data-ds-imports="website-builder.feature.testimotional"
         >
           {testimonials.map((t) => (
-            <FeatureTestimotional key={t.name} {...t} rating={5} />
+            <WebsiteBuilderModuleFeature
+              key={t.name}
+              {...t}
+              variant="testimotional"
+              rating={5}
+            />
           ))}
         </div>
       </div>

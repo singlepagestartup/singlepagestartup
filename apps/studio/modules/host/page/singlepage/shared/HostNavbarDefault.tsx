@@ -1,7 +1,10 @@
+import { Component as EcommerceModuleCart } from "../../../../ecommerce/cart";
+import {
+  Component as WebsiteBuilderModuleWidget,
+  type NavbarDefaultProps,
+} from "../../../../website-builder/widget";
 import { useCallback, useEffect, useState } from "react";
 
-import { CartButtonDefault } from "../../../../ecommerce/cart/singlepage/button-default/Component";
-import { CartDrawerDefault } from "../../../../ecommerce/cart/singlepage/drawer-default/Component";
 import {
   defaultCartItems,
   getCartTotals,
@@ -12,10 +15,6 @@ import {
   RBAC_STUDIO_AUTH_CHANGE_EVENT,
   readRbacStudioAuthUser,
 } from "../../../../rbac/shared";
-import {
-  NavbarDefault,
-  type NavbarDefaultProps,
-} from "../../../../website-builder/widget/singlepage/navbar-default/Component";
 
 const authorProfileStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-blog-authors-social-profiles-slug--default";
@@ -84,8 +83,9 @@ export function HostNavbarDefault(props?: Partial<NavbarDefaultProps>) {
 
   return (
     <>
-      <NavbarDefault
+      <WebsiteBuilderModuleWidget
         {...props}
+        variant="navbar-default"
         authUser={
           authUser
             ? {
@@ -99,14 +99,19 @@ export function HostNavbarDefault(props?: Partial<NavbarDefaultProps>) {
             : props?.authUser
         }
         cartButton={
-          <CartButtonDefault count={cartCount} onClick={handleCartClick} />
+          <EcommerceModuleCart
+            variant="button-default"
+            count={cartCount}
+            onClick={handleCartClick}
+          />
         }
         cartCount={cartCount}
         isAuthenticated={isAuthenticated}
         onCartClick={handleCartClick}
         onLogout={handleLogout}
       />
-      <CartDrawerDefault
+      <EcommerceModuleCart
+        variant="drawer-default"
         items={items}
         isOpen={isCartOpen}
         onClose={handleClose}

@@ -1,7 +1,8 @@
 import {
-  ButtonsArrayDefault,
+  Component as WebsiteBuilderModuleButtonsArray,
   type ButtonsArrayItem,
-} from "../../../buttons-array/singlepage/default/Component";
+} from "../../../buttons-array";
+
 import { BrandMark } from "../../../../../workspace/utils/components/BrandMark";
 
 interface FooterColumn {
@@ -87,7 +88,8 @@ export function FooterDefault(props?: Partial<FooterDefaultProps>) {
             </p>
           </div>
           {columnGroups.map((column) => (
-            <ButtonsArrayDefault
+            <WebsiteBuilderModuleButtonsArray
+              variant="default"
               ariaLabel={column.title}
               buttons={column.buttons}
               key={column.title}
@@ -100,7 +102,11 @@ export function FooterDefault(props?: Partial<FooterDefaultProps>) {
           <p className="text-xs leading-5 text-[var(--workspace-brand-muted)]">
             {copyright}
           </p>
-          <ButtonsArrayDefault ariaLabel="Legal" buttons={legalButtons} />
+          <WebsiteBuilderModuleButtonsArray
+            variant="default"
+            ariaLabel="Legal"
+            buttons={legalButtons}
+          />
         </div>
       </div>
     </div>

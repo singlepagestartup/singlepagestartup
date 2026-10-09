@@ -1,4 +1,5 @@
-import { EcommerceProductAdminV2List } from "../../../../ecommerce/product/singlepage/admin-v2-list/Component";
+import { Component as EcommerceModuleProduct } from "../../../../ecommerce/product";
+
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
 export function AdminModelList() {
@@ -10,7 +11,7 @@ export function AdminModelList() {
         title="Products"
         description="Search product records, create a product or open one for editing."
       >
-        <EcommerceProductAdminV2List />
+        <EcommerceModuleProduct variant="admin-v2-list" />
       </AdminV2PageShell>
     </div>
   );

@@ -6,7 +6,7 @@ import {
   TextField,
   Feedback,
 } from "../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
-import { SourceDownload } from "../../../../knowledge/source/singlepage/ai-chat-document/index";
+import { Component as KnowledgeModuleSource } from "../../../../knowledge/source";
 export interface IProfileSettingsProps {
   profileId: string;
 }
@@ -50,7 +50,10 @@ export function Component({ profileId }: IProfileSettingsProps) {
       </form>
       {saved && <Feedback>Project name saved.</Feedback>}
       <div className="border-t border-sps-line pt-5">
-        <SourceDownload label="Export Products.md" />
+        <KnowledgeModuleSource
+          variant="ai-chat-download"
+          label="Export Products.md"
+        />
       </div>
     </div>
   );

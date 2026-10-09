@@ -2,7 +2,7 @@
   "$schema": "../../../../../block.schema.json",
   "id": "blog.widget.article-find-featured",
   "title": "Widget / Article Find Featured",
-  "description": "Singlepage draft widget that maps a list of featured articles through blog.article.featured.",
+  "description": "Local featured Article views repeated by count. Article owns its sample content.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
@@ -15,13 +15,7 @@
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
   },
-  "contentSlots": [
-    {
-      "name": "articles",
-      "type": "list",
-      "required": true
-    }
-  ],
+  "contentSlots": [],
   "figma": {
     "componentName": "blog.widget",
     "pageName": "blog",

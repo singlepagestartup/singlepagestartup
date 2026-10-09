@@ -1,3 +1,4 @@
+import { Component as BlogModuleWidget } from "../../../widget";
 import type { Meta, StoryObj } from "@storybook/react";
 
 import {
@@ -12,6 +13,18 @@ const meta = {
     layout: "fullscreen",
   },
   args: defaultArticleOverviewDefaultProps,
+  argTypes: { tagsCard: { control: false } },
+  render: (args) => (
+    <ArticleOverviewDefault
+      {...args}
+      tagsCard={
+        <BlogModuleWidget
+          variant="article-find-by-id-tag-find-default"
+          tags={args?.tags}
+        />
+      }
+    />
+  ),
 } satisfies Meta<typeof ArticleOverviewDefault>;
 
 export default meta;

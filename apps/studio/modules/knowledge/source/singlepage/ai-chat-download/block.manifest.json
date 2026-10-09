@@ -1,0 +1,27 @@
+{
+  "id": "knowledge.source.ai-chat-download",
+  "title": "ai-chat-download",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Download the local Products knowledge as Markdown.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "knowledge.source",
+    "pageName": "knowledge",
+    "variantName": "ai-chat-download",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "knowledge",
+    "entityType": "model",
+    "entity": "source",
+    "variant": "ai-chat-download"
+  },
+  "contentSlots": []
+}

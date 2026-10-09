@@ -85,6 +85,20 @@ the local contract. Existing data and authored variants are preserved.
 Every model exports `Component` through `index.ts`. Its `variants.ts` merges
 `singlepage/variants.ts` and `startup/variants.ts`, with startup taking precedence.
 Callers import the public model entry and select its display with `variant`.
+Cross-model views always use this entry. Private sibling imports remain inside
+one model; providers and helpers keep their state-specific entry points.
+
+```tsx
+import { Component as BlogModuleArticle } from "../../../article";
+
+Array.from({ length: count }, (_, index) => <BlogModuleArticle key={`featured-${index}`} variant="featured" />);
+```
+
+Put an explicit model `variant` after any prop spreads: `<Model {...props}
+variant="featured" />`. Use a separate display prop such as `appearance` for
+states within that variant. Bidirectional compositions use ReactNode slots:
+Host supplies an author's Article list; Blog Widget supplies the Article tags
+card. This keeps model entry imports acyclic.
 
 The catalog provides `admin-v2-table`, `admin-v2-card` and `list`. Tables expose
 `empty`; lists expose `empty` and `count` through Storybook Controls. List stories
@@ -176,7 +190,7 @@ public types or helpers. Fixture data and interactive examples live in
 `Component.stories.tsx`. Product website previews compose these components and
 editable Markdown content.
 
-AI Chat callers import each model from `<module>/<model>/index.ts` and choose the
+Studio callers import each model from `<module>/<model>/index.ts` and choose the
 view with `variant`. Each entry's discriminated props retain the required inputs
 of its variants. Singlepage and startup maps assemble those variants locally.
 

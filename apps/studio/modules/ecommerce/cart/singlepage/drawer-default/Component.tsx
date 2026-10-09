@@ -1,3 +1,4 @@
+import { Component as EcommerceModuleProduct } from "../../../product";
 import { ConfirmationDialog } from "../../../../../workspace/design/singlepage/interface-kit/Confirmation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useEffect, useState } from "react";
@@ -8,7 +9,6 @@ import {
   X,
 } from "../../../../../workspace/utils/components/ModuleIcons";
 
-import { ProductCartDefault } from "../../../product/singlepage/cart-default/Component";
 import {
   defaultCartItems,
   formatCartMoney,
@@ -139,7 +139,8 @@ export function CartDrawerDefault(props?: Partial<CartDrawerDefaultProps>) {
                   <ul className="divide-y divide-[var(--workspace-brand-line)]">
                     {items.map((item) => (
                       <li key={item.id} className="py-5 first:pt-0 last:pb-0">
-                        <ProductCartDefault
+                        <EcommerceModuleProduct
+                          variant="cart-default"
                           href={productOverviewStoryHref}
                           item={item}
                           onDecrease={onDecrease}

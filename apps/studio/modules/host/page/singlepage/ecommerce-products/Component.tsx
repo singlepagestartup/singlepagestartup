@@ -1,8 +1,7 @@
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+import { Component as EcommerceModuleWidget } from "../../../../ecommerce/widget";
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 import { SectionStack } from "../../../../../workspace/design/singlepage/interface-kit/SectionStack";
-import { FooterCompact } from "../../../../website-builder/widget/singlepage/footer-compact/Component";
-import { ContentPageHeader } from "../../../../website-builder/widget/singlepage/content-page-header/Component";
-import { ProductFindCard } from "../../../../ecommerce/widget/singlepage/product-find-card/Component";
 
 export function EcommerceProductFindCard() {
   return (
@@ -13,10 +12,10 @@ export function EcommerceProductFindCard() {
     >
       <HostNavbarDefault activeHref="/ecommerce/products" />
       <SectionStack>
-        <ContentPageHeader />
-        <ProductFindCard />
+        <WebsiteBuilderModuleWidget variant="content-page-header" />
+        <EcommerceModuleWidget variant="product-find-card" />
       </SectionStack>
-      <FooterCompact />
+      <WebsiteBuilderModuleWidget variant="footer-compact" />
     </main>
   );
 }

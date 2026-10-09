@@ -47,7 +47,7 @@
       "required": true
     },
     {
-      "name": "variant",
+      "name": "appearance",
       "type": "text",
       "required": false
     },

@@ -1,14 +1,14 @@
 import {
+  Component as SocialModuleWidget,
+  defaultSocialWidgetChatListDefaultProps,
+} from "../../../../social/widget";
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+import {
   createPreviewAttachmentStore,
   type SocialPreviewAttachment,
 } from "../../../../social/widget/singlepage/chat-overview-default/utils";
 import { useCallback, useEffect, useState } from "react";
-import {
-  defaultSocialWidgetChatListDefaultProps,
-  SocialWidgetChatListDefault,
-} from "../../../../social/widget/singlepage/chat-list-default/Component";
-import { SocialWidgetChatOverviewDefault } from "../../../../social/widget/singlepage/chat-overview-default/Component";
-import { FooterCompact } from "../../../../website-builder/widget/singlepage/footer-compact/Component";
+
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 
 export function ChatDefault() {
@@ -77,21 +77,23 @@ export function ChatDefault() {
         className="grid w-full overflow-hidden border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] md:grid-cols-[256px_minmax(0,1fr)]"
         data-ds-imports="social.widget.chat-list-default social.widget.chat-overview-default"
       >
-        <SocialWidgetChatListDefault
+        <SocialModuleWidget
+          variant="chat-list-default"
           chats={chats}
           chatImages={chatImages}
           selectedId={selectedId}
           onSelectChat={selectChat}
           onCreateChat={createChat}
         />
-        <SocialWidgetChatOverviewDefault
+        <SocialModuleWidget
+          variant="chat-overview-default"
           chat={selectedChat}
           chatImage={chatImages[selectedChat.id]}
           onChatImageChange={(file) => changeChatImage(selectedChat.id, file)}
           onChatChange={updateChat}
         />
       </section>
-      <FooterCompact />
+      <WebsiteBuilderModuleWidget variant="footer-compact" />
     </main>
   );
 }

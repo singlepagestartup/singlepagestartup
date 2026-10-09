@@ -1,6 +1,6 @@
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
 import { FileText } from "../../../../../workspace/utils/components/ModuleIcons";
 
-import { FooterCompact } from "../../../../website-builder/widget/singlepage/footer-compact/Component";
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 import { LegalPage, type LegalSection } from "../shared/LegalPage";
 
@@ -216,7 +216,7 @@ export function TermsPage() {
         title="Terms of Service"
         updatedAt={LAST_UPDATED}
       />
-      <FooterCompact />
+      <WebsiteBuilderModuleWidget variant="footer-compact" />
     </main>
   );
 }

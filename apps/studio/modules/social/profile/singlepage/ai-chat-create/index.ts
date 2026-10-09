@@ -1,5 +1,1 @@
-export {
-  Component,
-  ProjectProcessingDisclosure,
-  type IProfileCreateProps,
-} from "./Component";
+export { Component, type IProfileCreateProps } from "./Component";

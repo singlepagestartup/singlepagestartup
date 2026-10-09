@@ -1,8 +1,6 @@
+import { Component as CrmModuleInput } from "../../../input";
 import type { CrmInputRecord, CrmStepRecord } from "../../../shared/demo-crm";
 import { defaultCrmForm } from "../../../shared/demo-crm";
-import { CrmInputSelectOptionDefault } from "../../../input/singlepage/select-option-default/Component";
-import { CrmInputTextDefault } from "../../../input/singlepage/text-default/Component";
-import { CrmInputTextareaDefault } from "../../../input/singlepage/textarea-default/Component";
 
 export interface CrmStepDefaultProps {
   step: CrmStepRecord;
@@ -27,7 +25,8 @@ function CrmStepInput({
 }) {
   if (input.variant === "textarea-default") {
     return (
-      <CrmInputTextareaDefault
+      <CrmModuleInput
+        variant="textarea-default"
         disabled={disabled}
         input={input}
         namePrefix={namePrefix}
@@ -37,7 +36,8 @@ function CrmStepInput({
 
   if (input.variant === "select-option-default") {
     return (
-      <CrmInputSelectOptionDefault
+      <CrmModuleInput
+        variant="select-option-default"
         disabled={disabled}
         input={input}
         namePrefix={namePrefix}
@@ -46,7 +46,8 @@ function CrmStepInput({
   }
 
   return (
-    <CrmInputTextDefault
+    <CrmModuleInput
+      variant="text-default"
       disabled={disabled}
       input={input}
       namePrefix={namePrefix}

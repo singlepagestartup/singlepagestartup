@@ -1,8 +1,7 @@
+import { Component as EcommerceModuleOrder } from "../../../../ecommerce/order";
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
 import { SectionStack } from "../../../../../workspace/design/singlepage/interface-kit/SectionStack";
-import { OrderCheckoutPaymentDefault } from "../../../../ecommerce/order/singlepage/checkout-payment-default/Component";
-import { OrderCheckoutStepperDefault } from "../../../../ecommerce/order/singlepage/checkout-stepper-default/Component";
-import { OrderSummaryDefault } from "../../../../ecommerce/order/singlepage/summary-default/Component";
-import { FooterCompact } from "../../../../website-builder/widget/singlepage/footer-compact/Component";
+
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 
 export function EcommerceOrderCheckoutPaymentDefault() {
@@ -13,17 +12,24 @@ export function EcommerceOrderCheckoutPaymentDefault() {
     >
       <HostNavbarDefault activeHref="/checkout" cartCount={1} />
       <SectionStack>
-        <OrderCheckoutStepperDefault currentStep="payment" />
+        <EcommerceModuleOrder
+          variant="checkout-stepper-default"
+          currentStep="payment"
+        />
         <section className="w-full">
           <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 sm:gap-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:px-8">
-            <OrderCheckoutPaymentDefault />
+            <EcommerceModuleOrder variant="checkout-payment-default" />
             <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-              <OrderSummaryDefault compact editable={false} />
+              <EcommerceModuleOrder
+                variant="summary-default"
+                compact
+                editable={false}
+              />
             </div>
           </div>
         </section>
       </SectionStack>
-      <FooterCompact />
+      <WebsiteBuilderModuleWidget variant="footer-compact" />
     </main>
   );
 }

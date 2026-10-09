@@ -14,9 +14,9 @@ export function Component({ profileId }: IProjectPageProps) {
       page="chat"
       profileSelect={(props) => (
         <SocialModuleProfile
-          variant="ai-chat-project-select"
           profileId={profileId}
           {...props}
+          variant="ai-chat-project-select"
         />
       )}
       subjectAccount={({ onNavigate }) => (

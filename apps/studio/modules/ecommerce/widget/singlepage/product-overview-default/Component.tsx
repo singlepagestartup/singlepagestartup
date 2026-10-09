@@ -1,8 +1,8 @@
 import {
-  ProductOverviewDefault,
+  Component as EcommerceModuleProduct,
   defaultProductOverviewDefaultProps,
   type ProductOverviewDefaultProps,
-} from "../../../product/singlepage/overview-default/Component";
+} from "../../../product";
 
 export { defaultProductOverviewDefaultProps };
 export type { ProductOverviewDefaultProps };
@@ -16,7 +16,7 @@ export function ProductOverviewDefaultWidget(
       data-ds-imports="ecommerce.product.overview-default"
       data-ds-layer="singlepage"
     >
-      <ProductOverviewDefault {...props} />
+      <EcommerceModuleProduct {...props} variant="overview-default" />
     </div>
   );
 }

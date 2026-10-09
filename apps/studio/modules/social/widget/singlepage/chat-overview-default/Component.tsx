@@ -1,3 +1,13 @@
+import {
+  Component as SocialModuleMessage,
+  type SocialMessageBubbleDefaultProps,
+} from "../../../message";
+import {
+  Component as SocialModuleThread,
+  defaultSocialThreadListDefaultProps,
+  defaultSocialProfiles,
+  type SocialThreadListDefaultProps,
+} from "../../../thread";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { kit } from "../../../../../workspace/design/singlepage/interface-kit/primitives";
@@ -18,18 +28,6 @@ import {
   Users,
   X,
 } from "../../../../../workspace/utils/components/ModuleIcons";
-
-import {
-  SocialMessageBubbleDefault,
-  type SocialMessageBubbleDefaultProps,
-} from "../../../message/singlepage/bubble-default/Component";
-import {
-  SocialThreadListDefault,
-  SocialChatSettings,
-  defaultSocialThreadListDefaultProps,
-  defaultSocialProfiles,
-  type SocialThreadListDefaultProps,
-} from "../../../thread/singlepage/list-default/Component";
 
 export interface SocialWidgetChatOverviewDefaultProps {
   chat?: SocialWidgetChatListDefaultProps["chats"][number];
@@ -179,7 +177,8 @@ export function SocialWidgetChatOverviewDefault(
       data-ds-layer="singlepage"
     >
       <div className="grid w-full overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] md:h-[calc(100vh-10rem)] md:min-h-[760px] md:grid-cols-[300px_minmax(0,1fr)]">
-        <SocialThreadListDefault
+        <SocialModuleThread
+          variant="list-default"
           chatImage={chatImage}
           title={chat.name}
           description={`${chat.memberIds?.length ?? 5} member${(chat.memberIds?.length ?? 5) === 1 ? "" : "s"} · ${threads.length} thread${threads.length === 1 ? "" : "s"}`}
@@ -245,9 +244,10 @@ export function SocialWidgetChatOverviewDefault(
           )}
           <div className="max-h-[640px] min-h-0 flex-1 space-y-6 overflow-y-auto bg-[var(--workspace-brand-surface)] px-4 py-6 sm:px-7 md:max-h-none">
             {visibleInitial.map((message, index) => (
-              <SocialMessageBubbleDefault
+              <SocialModuleMessage
                 key={`initial-${index}`}
                 {...message}
+                variant="bubble-default"
                 display="timeline"
               />
             ))}
@@ -260,7 +260,8 @@ export function SocialWidgetChatOverviewDefault(
               </p>
             )}
             {visibleSent.map((message) => (
-              <SocialMessageBubbleDefault
+              <SocialModuleMessage
+                variant="bubble-default"
                 key={message.id}
                 author="You"
                 role="You"
@@ -361,7 +362,9 @@ export function SocialWidgetChatOverviewDefault(
         </div>
       </div>
       {settings && (
-        <SocialChatSettings
+        <SocialModuleThread
+          variant="chat-settings"
+          profiles={defaultSocialProfiles}
           open
           onCloseAutoFocus={(event) => {
             event.preventDefault();

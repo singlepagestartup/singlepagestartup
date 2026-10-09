@@ -1,6 +1,5 @@
+import { Component as BlogModuleTag } from "../../../tag";
 import { Tag } from "../../../../../workspace/utils/components/ModuleIcons";
-
-import { TagButtonDefault } from "../../../tag/singlepage/button-default/Component";
 
 interface TagFindButtonItem {
   label: string;
@@ -54,7 +53,8 @@ export function TagFindButton(props?: Partial<TagFindButtonProps>) {
           </div>
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
-              <TagButtonDefault
+              <BlogModuleTag
+                variant="button-default"
                 key={tag.label}
                 label={tag.label}
                 href={tag.href}

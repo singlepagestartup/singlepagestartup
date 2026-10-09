@@ -1,5 +1,6 @@
-import { BlogArticleAdminV2List } from "../../../../blog/article/singlepage/admin-v2-list/Component";
-import { EcommerceProductAdminV2List } from "../../../../ecommerce/product/singlepage/admin-v2-list/Component";
+import { Component as BlogModuleArticle } from "../../../../blog/article";
+import { Component as EcommerceModuleProduct } from "../../../../ecommerce/product";
+
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
 export function AdminModuleDashboard() {
@@ -12,8 +13,8 @@ export function AdminModuleDashboard() {
         description="Explore the models in this module and open a record to edit its fields."
       >
         <div className="grid gap-5 xl:grid-cols-2">
-          <EcommerceProductAdminV2List />
-          <BlogArticleAdminV2List />
+          <EcommerceModuleProduct variant="admin-v2-list" />
+          <BlogModuleArticle variant="admin-v2-list" />
         </div>
       </AdminV2PageShell>
     </div>

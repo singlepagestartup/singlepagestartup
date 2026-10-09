@@ -1,14 +1,13 @@
 import {
+  Component as WebsiteBuilderModuleFeature,
+  type FeatureListItemDefaultProps,
+} from "../../../feature";
+import {
   Database,
   FileText,
   Globe,
   Layers,
 } from "../../../../../workspace/utils/components/ModuleIcons";
-
-import {
-  FeatureListItemDefault,
-  type FeatureListItemDefaultProps,
-} from "../../../feature/singlepage/list-item-default/Component";
 
 const aboutImageUrl = new URL(
   "../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
@@ -80,7 +79,11 @@ export function ContentFilesFindDefault(
               data-ds-imports="website-builder.feature.list-item-default"
             >
               {features.map((item) => (
-                <FeatureListItemDefault key={item.label} {...item} />
+                <WebsiteBuilderModuleFeature
+                  key={item.label}
+                  {...item}
+                  variant="list-item-default"
+                />
               ))}
             </div>
           </div>

@@ -1,12 +1,10 @@
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
 import {
   ArrowRight,
   ChevronRight,
 } from "../../../../../workspace/utils/components/ModuleIcons";
 import { SectionStack } from "../../../../../workspace/design/singlepage/interface-kit/SectionStack";
 
-import { ContentFaq } from "../../../../website-builder/widget/singlepage/content-faq/Component";
-import { ContentFeatureFindGrid } from "../../../../website-builder/widget/singlepage/content-feature-find-grid/Component";
-import { ContentTestimonials } from "../../../../website-builder/widget/singlepage/content-testimonials/Component";
 import { ProductCardRelated } from "../card-related/Component";
 import {
   ProductGallery,
@@ -306,10 +304,10 @@ export function ProductOverviewDefault(
         <ProductOverviewHeroSection hero={hero} />
         <ProductOverviewPurchase {...resolvedPurchase} />
         <ProductOverviewStatsSection stats={stats} />
-        <ContentFeatureFindGrid />
+        <WebsiteBuilderModuleWidget variant="content-feature-find-grid" />
         <ProductGallery images={defaultProductGalleryProps.images} />
-        <ContentTestimonials />
-        <ContentFaq />
+        <WebsiteBuilderModuleWidget variant="content-testimonials" />
+        <WebsiteBuilderModuleWidget variant="content-faq" />
         <ProductOverviewRelatedSection related={related} />
         <ProductOverviewCta onPrimaryAction={addFromCta} {...cta} />
       </SectionStack>

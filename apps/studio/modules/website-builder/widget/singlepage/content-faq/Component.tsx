@@ -1,6 +1,6 @@
+import { Component as WebsiteBuilderModuleButtonsArray } from "../../../buttons-array";
+import { Component as WebsiteBuilderModuleFeature } from "../../../feature";
 import { ArrowRight } from "../../../../../workspace/utils/components/ModuleIcons";
-import { ButtonsArrayDefault } from "../../../buttons-array/singlepage/default/Component";
-import { FeatureDropdown } from "../../../feature/singlepage/dropdown/Component";
 
 export interface ContentFaqItem {
   q: string;
@@ -60,7 +60,8 @@ export function ContentFaq(props?: Partial<ContentFaqProps>) {
               {description}
             </p>
             <div className="mt-5">
-              <ButtonsArrayDefault
+              <WebsiteBuilderModuleButtonsArray
+                variant="default"
                 ariaLabel="FAQ contact actions"
                 buttons={[
                   {
@@ -78,7 +79,8 @@ export function ContentFaq(props?: Partial<ContentFaqProps>) {
             data-ds-imports="website-builder.feature.dropdown"
           >
             {faq.map((item, idx) => (
-              <FeatureDropdown
+              <WebsiteBuilderModuleFeature
+                variant="dropdown"
                 key={item.q}
                 question={item.q}
                 answer={item.a}

@@ -1,3 +1,4 @@
+import { Component as WebsiteBuilderModuleFeature } from "../../../feature";
 import {
   Globe,
   Code,
@@ -5,7 +6,6 @@ import {
   Layers,
   type ModuleIcon,
 } from "../../../../../workspace/utils/components/ModuleIcons";
-import { FeatureCard } from "../../../feature/singlepage/card/Component";
 
 export interface ContentFeatureItem {
   icon: ModuleIcon;
@@ -69,7 +69,8 @@ export function ContentFeatureFindGrid(
           data-ds-imports="website-builder.feature.card"
         >
           {features.map((f) => (
-            <FeatureCard
+            <WebsiteBuilderModuleFeature
+              variant="card"
               key={f.title}
               icon={f.icon}
               title={f.title}

@@ -1,7 +1,7 @@
 import {
-  ProductTier,
+  Component as EcommerceModuleProduct,
   type ProductTierProps,
-} from "../../../product/singlepage/tier/Component";
+} from "../../../product";
 
 export type ProductTierItem = ProductTierProps;
 
@@ -23,7 +23,7 @@ export const defaultProductFindTiersProps = {
         "Basic analytics",
       ],
       cta: "Get started",
-      variant: "default",
+      appearance: "default",
     },
     {
       name: "Startup",
@@ -40,7 +40,7 @@ export const defaultProductFindTiersProps = {
         "API access",
       ],
       cta: "Start free trial",
-      variant: "featured",
+      appearance: "featured",
       badge: "Most popular",
     },
     {
@@ -59,7 +59,7 @@ export const defaultProductFindTiersProps = {
         "SLA guarantee",
       ],
       cta: "Contact sales",
-      variant: "default",
+      appearance: "default",
     },
   ] as ProductTierItem[],
 };
@@ -114,7 +114,8 @@ export function ProductFindTiers(props?: Partial<ProductFindTiersProps>) {
         />
         <div className="grid items-stretch gap-6 lg:grid-cols-3">
           {products.map((product) => (
-            <ProductTier
+            <EcommerceModuleProduct
+              variant="tier"
               key={product.name}
               name={product.name}
               price={product.price}
@@ -122,7 +123,7 @@ export function ProductFindTiers(props?: Partial<ProductFindTiersProps>) {
               description={product.description}
               features={product.features}
               cta={product.cta}
-              variant={product.variant}
+              appearance={product.appearance}
               badge={product.badge}
               featured={product.featured}
             />

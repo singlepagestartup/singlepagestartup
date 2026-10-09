@@ -1,8 +1,9 @@
+import { ArticleFindByIdTagFind } from "../article-find-by-id-tag-find-default/Component";
 import {
-  ArticleOverviewDefault,
+  Component as BlogModuleArticle,
   type ArticleOverviewDefaultProps,
   defaultArticleOverviewDefaultProps,
-} from "../../../article/singlepage/overview-default/Component";
+} from "../../../article";
 
 export { defaultArticleOverviewDefaultProps };
 export type { ArticleOverviewDefaultProps };
@@ -17,7 +18,17 @@ export function ArticleOverviewDefaultWidget(
       data-ds-layer="singlepage"
       data-ds-routes="blog.article.overview-default"
     >
-      <ArticleOverviewDefault {...props} />
+      <BlogModuleArticle
+        {...props}
+        variant="overview-default"
+        tagsCard={
+          props?.tagsCard ?? (
+            <ArticleFindByIdTagFind
+              tags={props?.tags ?? defaultArticleOverviewDefaultProps.tags}
+            />
+          )
+        }
+      />
     </div>
   );
 }

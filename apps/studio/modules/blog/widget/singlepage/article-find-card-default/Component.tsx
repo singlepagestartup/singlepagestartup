@@ -1,3 +1,5 @@
+import { Component as BlogModuleArticle } from "../../../article";
+import { type CategoryButtonDefaultProps } from "../../../category";
 import { useCallback, useState } from "react";
 import {
   Button,
@@ -7,8 +9,6 @@ import {
   CollectionToolbar,
   CollectionPagination,
 } from "../../../../../workspace/design/singlepage/interface-kit/Collections";
-import { ArticleCard } from "../../../article/singlepage/card/Component";
-import { type CategoryButtonDefaultProps } from "../../../category/singlepage/button-default/Component";
 
 const articleOverviewStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
@@ -223,7 +223,8 @@ export function ArticleFindCardDefault(
       {filtered.length > 0 ? (
         <div className="grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
           {visible.map((article) => (
-            <ArticleCard
+            <BlogModuleArticle
+              variant="card"
               key={article.id}
               href={article.href ?? articleOverviewStoryHref}
               slug={article.slug}

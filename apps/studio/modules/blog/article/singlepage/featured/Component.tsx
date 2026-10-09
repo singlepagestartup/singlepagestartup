@@ -1,7 +1,6 @@
+import { Component as SocialModuleProfile } from "../../../../social/profile";
 import { kit } from "../../../../../workspace/design/singlepage/interface-kit/primitives";
 import { ArrowUpRight } from "../../../../../workspace/utils/components/ModuleIcons";
-
-import { ProfileByline } from "../../../../social/profile/singlepage/byline/Component";
 
 type ArticleFeaturedTarget = "_blank" | "_parent" | "_self" | "_top";
 
@@ -79,7 +78,8 @@ export function ArticleFeatured(props?: Partial<ArticleFeaturedProps>) {
         </div>
         <div>
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/20 pt-5 text-xs text-[var(--workspace-brand-muted-on-primary)]">
-            <ProfileByline
+            <SocialModuleProfile
+              variant="byline"
               inverse
               name={authorName}
               avatar={authorAvatar}

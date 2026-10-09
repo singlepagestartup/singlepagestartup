@@ -1,7 +1,7 @@
+import { Component as EcommerceModuleOrder } from "../../../../ecommerce/order";
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
 import { SectionStack } from "../../../../../workspace/design/singlepage/interface-kit/SectionStack";
-import { OrderCheckoutConfirmationDefault } from "../../../../ecommerce/order/singlepage/checkout-confirmation-default/Component";
-import { OrderCheckoutStepperDefault } from "../../../../ecommerce/order/singlepage/checkout-stepper-default/Component";
-import { FooterCompact } from "../../../../website-builder/widget/singlepage/footer-compact/Component";
+
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 
 export function EcommerceOrderCheckoutConfirmationDefault() {
@@ -12,14 +12,17 @@ export function EcommerceOrderCheckoutConfirmationDefault() {
     >
       <HostNavbarDefault activeHref="/checkout" />
       <SectionStack>
-        <OrderCheckoutStepperDefault currentStep="confirmation" />
+        <EcommerceModuleOrder
+          variant="checkout-stepper-default"
+          currentStep="confirmation"
+        />
         <section className="w-full">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <OrderCheckoutConfirmationDefault />
+            <EcommerceModuleOrder variant="checkout-confirmation-default" />
           </div>
         </section>
       </SectionStack>
-      <FooterCompact />
+      <WebsiteBuilderModuleWidget variant="footer-compact" />
     </main>
   );
 }

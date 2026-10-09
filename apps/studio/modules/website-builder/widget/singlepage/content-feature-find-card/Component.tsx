@@ -1,3 +1,4 @@
+import { Component as WebsiteBuilderModuleFeature } from "../../../feature";
 import {
   BarChart3,
   Bell,
@@ -9,7 +10,6 @@ import {
   ShoppingCart,
   type ModuleIcon,
 } from "../../../../../workspace/utils/components/ModuleIcons";
-import { FeatureCard } from "../../../feature/singlepage/card/Component";
 
 interface FeatureItem {
   title: string;
@@ -129,7 +129,8 @@ export function ContentFeatureFindCard(
           data-ds-imports="website-builder.feature.card"
         >
           {features.map((feature) => (
-            <FeatureCard
+            <WebsiteBuilderModuleFeature
+              variant="card"
               key={feature.title}
               icon={feature.icon}
               title={feature.title}

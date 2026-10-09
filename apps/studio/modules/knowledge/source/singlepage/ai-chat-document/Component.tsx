@@ -7,37 +7,9 @@ import {
   Component as SourceCard,
   type ISourceCardProps,
 } from "../ai-chat-card/index";
-import { useSource } from "./Source";
+import { Component as SourceDownload } from "../ai-chat-download";
 
 export interface ISourceDocumentProps extends ISourceCardProps {}
-interface ISourceDownloadProps {
-  label?: string;
-}
-export function SourceDownload({ label = ".md" }: ISourceDownloadProps) {
-  const { source } = useSource();
-  function download() {
-    const url = URL.createObjectURL(
-      new Blob([`# Products\n\n## ${source.title}\n\n${source.content}\n`], {
-        type: "text/markdown;charset=utf-8",
-      }),
-    );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "Products.md";
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-  return (
-    <Button
-      variant="secondary"
-      aria-label="Download Products.md"
-      onClick={download}
-    >
-      <Icon name="arrow-down" />
-      {label}
-    </Button>
-  );
-}
 export function Component(props: ISourceDocumentProps) {
   return (
     <section

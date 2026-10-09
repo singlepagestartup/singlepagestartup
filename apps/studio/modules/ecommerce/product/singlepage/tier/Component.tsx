@@ -17,7 +17,7 @@ export interface ProductTierProps {
   description: string;
   features: string[];
   cta: string;
-  variant?: ProductTierVariant;
+  appearance?: ProductTierVariant;
   badge?: string;
   featured?: boolean;
   className?: string;
@@ -36,7 +36,7 @@ export const defaultProductTierProps: ProductTierProps = {
     "Basic analytics",
   ],
   cta: "Get started",
-  variant: "default",
+  appearance: "default",
 };
 
 export const featuredProductTierProps: ProductTierProps = {
@@ -54,7 +54,7 @@ export const featuredProductTierProps: ProductTierProps = {
     "API access",
   ],
   cta: "Start free trial",
-  variant: "featured",
+  appearance: "featured",
   badge: "Most popular",
 };
 
@@ -66,7 +66,7 @@ export function ProductTier(props?: Partial<ProductTierProps>) {
     description,
     features,
     cta,
-    variant,
+    appearance,
     badge,
     featured,
     className,
@@ -74,7 +74,7 @@ export function ProductTier(props?: Partial<ProductTierProps>) {
     ...defaultProductTierProps,
     ...props,
   };
-  const isFeatured = variant === "featured" || featured === true;
+  const isFeatured = appearance === "featured" || featured === true;
   const cardClassName = [
     "flex h-full min-w-0 flex-col rounded-3xl border p-6 sm:p-8",
     isFeatured

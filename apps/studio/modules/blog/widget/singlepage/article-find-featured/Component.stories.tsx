@@ -12,6 +12,10 @@ const meta = {
     layout: "fullscreen",
   },
   args: defaultArticleFindFeaturedProps,
+  argTypes: {
+    count: { control: { type: "number", min: 0, max: 20, step: 1 } },
+    compact: { control: "boolean" },
+  },
 } satisfies Meta<typeof ArticleFindFeatured>;
 
 export default meta;

@@ -1,4 +1,5 @@
-import { EcommerceProductAdminV2List } from "../../../../ecommerce/product/singlepage/admin-v2-list/Component";
+import { Component as EcommerceModuleProduct } from "../../../../ecommerce/product";
+
 import { studioProducts } from "../../../../ecommerce/product/shared";
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
@@ -11,7 +12,10 @@ export function AdminModelEdit() {
         title="Products"
         description="Open product fields and linked records in stacked editing panels."
       >
-        <EcommerceProductAdminV2List initialProduct={studioProducts[0]} />
+        <EcommerceModuleProduct
+          variant="admin-v2-list"
+          initialProduct={studioProducts[0]}
+        />
       </AdminV2PageShell>
     </div>
   );

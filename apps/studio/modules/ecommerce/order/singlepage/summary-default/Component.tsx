@@ -1,3 +1,4 @@
+import { Component as EcommerceModuleProduct } from "../../../product";
 import {
   Lock,
   ShieldCheck,
@@ -8,7 +9,7 @@ import {
   getCartTotals,
   type CartItem,
 } from "../../../cart/shared";
-import { ProductCartDefault } from "../../../product/singlepage/cart-default/Component";
+
 import { defaultCheckoutItems } from "../../shared";
 
 const productOverviewStoryHref =
@@ -60,7 +61,8 @@ export function OrderSummaryDefault(props?: Partial<OrderSummaryDefaultProps>) {
       <ul className="divide-y divide-[var(--workspace-brand-line)] px-6">
         {items.map((item) => (
           <li key={item.id} className="py-5">
-            <ProductCartDefault
+            <EcommerceModuleProduct
+              variant="cart-default"
               compact={compact}
               href={productOverviewStoryHref}
               item={item}

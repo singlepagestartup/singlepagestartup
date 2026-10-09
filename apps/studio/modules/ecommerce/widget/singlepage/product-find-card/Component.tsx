@@ -1,3 +1,4 @@
+import { Component as EcommerceModuleProduct } from "../../../product";
 import { useCallback, useMemo, useState } from "react";
 import {
   Button,
@@ -7,8 +8,6 @@ import {
   CollectionToolbar,
   CollectionPagination,
 } from "../../../../../workspace/design/singlepage/interface-kit/Collections";
-
-import { ProductCard } from "../../../product/singlepage/card/Component";
 
 export interface ProductFindCategory {
   slug: string;
@@ -310,7 +309,8 @@ export function ProductFindCard(props?: Partial<ProductFindCardProps>) {
       {visibleProducts.length ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {pageProducts.map((product) => (
-            <ProductCard
+            <EcommerceModuleProduct
+              variant="card"
               key={product.id}
               slug={product.slug}
               href={product.href ?? productOverviewStoryHref}

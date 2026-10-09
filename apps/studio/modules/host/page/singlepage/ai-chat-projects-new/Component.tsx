@@ -5,7 +5,6 @@ import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 
 import { useNavigate } from "../../../layout/singlepage/ai-chat/Navigation";
 
-import { ProjectProcessingDisclosure } from "../../../../social/profile/singlepage/ai-chat-create/index";
 import { useProfiles } from "../../../../social/profile/singlepage/ai-chat-project/Profiles";
 
 export function Component() {
@@ -16,7 +15,7 @@ export function Component() {
       variant="ai-chat-header"
       page="chat"
       profileSelect={(props) => (
-        <SocialModuleProfile variant="ai-chat-project-select" {...props} />
+        <SocialModuleProfile {...props} variant="ai-chat-project-select" />
       )}
       subjectAccount={({ onNavigate }) => (
         <RbacModuleSubject
@@ -42,7 +41,10 @@ export function Component() {
         }
       />
       <div className="mx-auto max-w-3xl px-5">
-        <ProjectProcessingDisclosure id="how-your-materials-are-processed-and-stored" />
+        <SocialModuleProfile
+          variant="ai-chat-processing"
+          id="how-your-materials-are-processed-and-stored"
+        />
       </div>
     </HostModuleLayout>
   );

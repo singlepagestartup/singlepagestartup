@@ -1,3 +1,8 @@
+import { Component as SocialModuleProfile } from "../../../../social/profile";
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+import { Component as SocialModuleWidget } from "../../../../social/widget";
+import { Component as EcommerceModuleProduct } from "../../../../ecommerce/product";
+import { Component as BlogModuleTag } from "../../../tag";
 import { useState, type ReactNode } from "react";
 import {
   Button,
@@ -11,15 +16,7 @@ import {
   Share2,
 } from "../../../../../workspace/utils/components/ModuleIcons";
 
-import { ProfileCompact } from "../../../../social/profile/singlepage/compact/Component";
-import { ContentRich } from "../../../../website-builder/widget/singlepage/content-rich/Component";
-import { ProfileArticleFindByIdCommentFormDefault } from "../../../../social/profile/singlepage/article-find-by-id-comment-form-default/Component";
-import { ProfileArticleFindByIdCommentFindDefault } from "../../../../social/widget/singlepage/profile-article-find-by-id-comment-find-default/Component";
-import { ProfileCard } from "../../../../social/profile/singlepage/card/Component";
-import { ProductPinned } from "../../../../ecommerce/product/singlepage/pinned/Component";
 import { ArticleRelatedDefault } from "../related-default/Component";
-import { ArticleFindByIdTagFind } from "../../../widget/singlepage/article-find-by-id-tag-find-default/Component";
-import { TagButtonDefault } from "../../../tag/singlepage/button-default/Component";
 
 const articleOverviewStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
@@ -184,6 +181,7 @@ export const defaultArticleDetailProps = {
 
 export type ArticleDetailProps = typeof defaultArticleDetailProps & {
   cover?: ReactNode;
+  tagsCard?: ReactNode;
 };
 
 export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
@@ -203,6 +201,7 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
     comments,
     relatedArticles,
     cover,
+    tagsCard,
   } = { ...defaultArticleDetailProps, ...props };
   const [saved, setSaved] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
@@ -252,7 +251,8 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
               </h1>
             </div>
             <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-white/20 pt-5">
-              <ProfileCompact
+              <SocialModuleProfile
+                variant="compact"
                 inverse
                 name={authorName}
                 role={authorRole}
@@ -273,14 +273,18 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
             <div className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-8 lg:p-10">
               <div className="mb-8 flex flex-wrap gap-2">
                 {tags.map((tag) => (
-                  <TagButtonDefault
+                  <BlogModuleTag
+                    variant="button-default"
                     key={tag}
                     label={tag}
                     href={`/blog/tags/${tag}`}
                   />
                 ))}
               </div>
-              <ContentRich content={content} />
+              <WebsiteBuilderModuleWidget
+                variant="content-rich"
+                content={content}
+              />
               <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--workspace-brand-line)] pt-6">
                 <Button variant="secondary" onClick={copyLink}>
                   <Share2 className="size-5" />
@@ -315,13 +319,17 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
                 </span>
               </h2>
               <div className="mb-8">
-                <ProfileArticleFindByIdCommentFormDefault />
+                <SocialModuleProfile variant="article-find-by-id-comment-form-default" />
               </div>
-              <ProfileArticleFindByIdCommentFindDefault comments={comments} />
+              <SocialModuleWidget
+                variant="profile-article-find-by-id-comment-find-default"
+                comments={comments}
+              />
             </section>
           </div>
           <aside aria-label="Related resources" className="min-w-0 space-y-6">
-            <ProfileCard
+            <SocialModuleProfile
+              variant="card"
               name={authorName}
               role={authorRole}
               avatar={authorAvatar}
@@ -333,7 +341,8 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
                 <h2 className="mb-4 text-lg font-semibold">Related products</h2>
                 <div className="space-y-4">
                   {pinnedProducts.map((product) => (
-                    <ProductPinned
+                    <EcommerceModuleProduct
+                      variant="pinned"
                       key={product.id}
                       slug={product.slug}
                       title={product.title}
@@ -347,7 +356,7 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
                 </div>
               </section>
             )}
-            <ArticleFindByIdTagFind tags={tags} />
+            {tagsCard}
             {relatedArticles.length > 0 && (
               <section className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5">
                 <h2 className="mb-4 text-lg font-semibold">Keep reading</h2>

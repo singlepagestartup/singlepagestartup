@@ -1,6 +1,6 @@
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
 import { Shield } from "../../../../../workspace/utils/components/ModuleIcons";
 
-import { FooterCompact } from "../../../../website-builder/widget/singlepage/footer-compact/Component";
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 import { LegalPage, type LegalSection } from "../shared/LegalPage";
 
@@ -256,7 +256,7 @@ export function PrivacyPage() {
         title="Privacy Policy"
         updatedAt={LAST_UPDATED}
       />
-      <FooterCompact />
+      <WebsiteBuilderModuleWidget variant="footer-compact" />
     </main>
   );
 }

@@ -1,4 +1,5 @@
-import { WebsiteBuilderAdminV2RichEditor } from "../../../../website-builder/widget/singlepage/admin-v2-rich-editor/Component";
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
 export function AdminPreviewDialog() {
@@ -12,7 +13,7 @@ export function AdminPreviewDialog() {
       >
         <div className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-5">
           <div className="mx-auto max-w-5xl rounded-2xl bg-[var(--workspace-brand-surface)] p-4 ">
-            <WebsiteBuilderAdminV2RichEditor />
+            <WebsiteBuilderModuleWidget variant="admin-v2-rich-editor" />
           </div>
         </div>
       </AdminV2PageShell>

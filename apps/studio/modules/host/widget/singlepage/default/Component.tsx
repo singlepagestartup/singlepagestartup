@@ -23,13 +23,13 @@ export function HostWidgetDefault({
     >
       {externalModule === "blog" ? (
         <BlogModuleWidget
-          variant="article-overview-default"
           {...articleProps}
+          variant="article-overview-default"
         />
       ) : (
         <EcommerceModuleWidget
-          variant="product-overview-default"
           {...productProps}
+          variant="product-overview-default"
         />
       )}
     </div>

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   ArrowLeft,
   Clock,
@@ -7,16 +8,12 @@ import {
   User,
 } from "../../../../../workspace/utils/components/ModuleIcons";
 
-import { ArticleRow } from "../../../../blog/article/singlepage/row/Component";
 import {
   ProfileAuthor,
   type ProfileAuthorProps,
   defaultProfileAuthorProps,
 } from "../author/Component";
 import { ProfileFindRow } from "../find-row/Component";
-
-const articleOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
 
 const blogIndexStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-blog--default";
@@ -28,19 +25,6 @@ const jamesAvatar =
   "https://images.unsplash.com/photo-1629507208649-70919ca33793?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMG1hbiUyMHBvcnRyYWl0JTIwcHJvZmVzc2lvbmFsfGVufDF8fHx8MTc3MTY2ODA0OXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 const marcusAvatar =
   "https://images.unsplash.com/photo-1632670535530-aaf6e90042ca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjcmVhdGl2ZSUyMGRpcmVjdG9yJTIwbWFuJTIwaGVhZHNob3R8ZW58MXx8fHwxNzcxNzE1ODgyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
-
-export interface AuthorArticleItem {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  coverImage: string;
-  category: string;
-  tags: string[];
-  date: string;
-  readTime: string;
-  commentCount: number;
-}
 
 export interface OtherAuthor {
   slug: string;
@@ -69,36 +53,6 @@ export const defaultProfileAuthorFindByIdOverviewDefaultProps = {
     { category: "guides", count: 1, widthClassName: "w-1/2" },
     { category: "case-study", count: 1, widthClassName: "w-1/2" },
   ] as CategoryBreakdown[],
-  articles: [
-    {
-      id: "art-1",
-      slug: "how-to-choose",
-      title: "How to Choose the Right Plan for Your Business",
-      excerpt:
-        "A comprehensive guide to evaluating subscription tiers, comparing features, and making the right decision for your team size and growth trajectory.",
-      coverImage:
-        "https://images.unsplash.com/photo-1723987251277-18fc0a1effd0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXRhJTIwYW5hbHl0aWNzJTIwY2hhcnQlMjBzY3JlZW58ZW58MXx8fHwxNzcxNjg3NTEzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-      category: "guides",
-      tags: ["pricing", "plans", "getting-started"],
-      date: "Feb 18, 2026",
-      readTime: "7 min read",
-      commentCount: 3,
-    },
-    {
-      id: "art-3",
-      slug: "success-story",
-      title: "How NovaBridge Scaled to 100K Users in 6 Months",
-      excerpt:
-        "A deep dive into how NovaBridge used our modular platform to go from prototype to 100,000 active users in half a year.",
-      coverImage:
-        "https://images.unsplash.com/photo-1582005450386-52b25f82d9bb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWNobm9sb2d5JTIwc3RhcnR1cCUyMHRlYW0lMjBtZWV0aW5nfGVufDF8fHx8MTc3MTcxNTM2OXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-      category: "case-study",
-      tags: ["case-study", "scaling", "ecommerce"],
-      date: "Feb 8, 2026",
-      readTime: "9 min read",
-      commentCount: 5,
-    },
-  ] as AuthorArticleItem[],
   otherAuthors: [
     {
       slug: "james-carter",
@@ -122,6 +76,7 @@ export type ProfileAuthorFindByIdOverviewDefaultProps = Omit<
   "profile"
 > & {
   profile: ProfileAuthorProps;
+  articles?: ReactNode;
 };
 
 export function ProfileAuthorFindByIdOverviewDefault(
@@ -223,27 +178,10 @@ export function ProfileAuthorFindByIdOverviewDefault(
                     Articles by {profile.name}
                   </h2>
                   <span className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-2 py-0.5 text-xs text-[var(--workspace-brand-muted)]">
-                    {articles.length} {articles.length === 1 ? "post" : "posts"}
+                    {statArticles} {statArticles === 1 ? "post" : "posts"}
                   </span>
                 </div>
-                <div className="grid gap-4">
-                  {articles.map((article) => (
-                    <ArticleRow
-                      key={article.id}
-                      href={articleOverviewStoryHref}
-                      slug={article.slug}
-                      coverImage={article.coverImage}
-                      category={article.category}
-                      tags={article.tags}
-                      title={article.title}
-                      excerpt={article.excerpt}
-                      date={article.date}
-                      readTime={article.readTime}
-                      commentCount={article.commentCount}
-                      target="_top"
-                    />
-                  ))}
-                </div>
+                <div className="grid gap-4">{articles}</div>
               </section>
             </div>
 

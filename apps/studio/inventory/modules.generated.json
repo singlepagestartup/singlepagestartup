@@ -3487,6 +3487,7 @@
             "apps/studio/modules/knowledge/source/singlepage/ai-chat-card/Component.stories.tsx",
             "apps/studio/modules/knowledge/source/singlepage/ai-chat-document-link/Component.stories.tsx",
             "apps/studio/modules/knowledge/source/singlepage/ai-chat-document/Component.stories.tsx",
+            "apps/studio/modules/knowledge/source/singlepage/ai-chat-download/Component.stories.tsx",
             "apps/studio/modules/knowledge/source/singlepage/list/Component.stories.tsx"
           ]
         }
@@ -5249,6 +5250,7 @@
             "apps/studio/modules/social/profile/singlepage/ai-chat-agent-select/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/ai-chat-agent/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/ai-chat-create/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/ai-chat-processing/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/ai-chat-project-item/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/ai-chat-project-overview/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/ai-chat-project-select/Component.stories.tsx",
@@ -5472,6 +5474,7 @@
             "apps/studio/modules/social/thread/singlepage/ai-chat-products/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/ai-chat-settings/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/ai-chat-sidebar-item/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/chat-settings/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/list-default/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/list/Component.stories.tsx"
           ]

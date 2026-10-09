@@ -1,9 +1,9 @@
+import { Component as CrmModuleStep } from "../../../step";
 import { Button } from "../../../../../workspace/design/singlepage/interface-kit/primitives";
 import { useState } from "react";
 
 import type { CrmFormRecord } from "../../../shared/demo-crm";
 import { defaultCrmForm } from "../../../shared/demo-crm";
-import { CrmStepDefault } from "../../../step/singlepage/default/Component";
 
 export interface CrmFormDefaultProps {
   form: CrmFormRecord;
@@ -55,7 +55,8 @@ export function CrmFormDefault(props?: Partial<CrmFormDefaultProps>) {
       </div>
       <div className="space-y-8">
         {form.steps.map((step) => (
-          <CrmStepDefault
+          <CrmModuleStep
+            variant="default"
             disabled={disabled}
             key={step.id}
             namePrefix={form.id}

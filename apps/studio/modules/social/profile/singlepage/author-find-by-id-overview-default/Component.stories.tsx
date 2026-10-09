@@ -1,3 +1,4 @@
+import { Component as BlogModuleArticle } from "../../../../blog/article";
 import type { Meta, StoryObj } from "@storybook/react";
 
 import {
@@ -11,6 +12,15 @@ const meta = {
   component: ProfileAuthorFindByIdOverviewDefault,
   parameters: { layout: "fullscreen" },
   args: defaultProfileAuthorFindByIdOverviewDefaultProps,
+  argTypes: { articles: { control: false } },
+  render: (args) => (
+    <ProfileAuthorFindByIdOverviewDefault
+      {...args}
+      articles={Array.from({ length: 2 }, (_, index) => (
+        <BlogModuleArticle key={`author-article-${index}`} variant="row" />
+      ))}
+    />
+  ),
 } satisfies Meta<typeof ProfileAuthorFindByIdOverviewDefault>;
 
 export default meta;

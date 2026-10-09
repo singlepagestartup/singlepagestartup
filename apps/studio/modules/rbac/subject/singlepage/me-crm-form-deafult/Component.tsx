@@ -1,6 +1,6 @@
+import { Component as CrmModuleWidget } from "../../../../crm/widget";
 import type { CrmFormRecord } from "../../../../crm/shared/demo-crm";
 import { defaultCrmForm } from "../../../../crm/shared/demo-crm";
-import { CrmWidgetFormListDefault } from "../../../../crm/widget/singlepage/form-list-default/Component";
 
 export const defaultSubjectMeCrmFormDefaultProps = {
   subject: {
@@ -44,7 +44,8 @@ export function SubjectMeCrmFormDefault(
       data-ds-layer="singlepage"
       data-subject-id={subject.id}
     >
-      <CrmWidgetFormListDefault
+      <CrmModuleWidget
+        variant="form-list-default"
         title={title}
         description={description}
         form={crmForm}

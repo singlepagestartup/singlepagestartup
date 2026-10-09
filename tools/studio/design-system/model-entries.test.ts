@@ -59,7 +59,7 @@ function runtimeImports(file: string) {
   });
 }
 
-test("AI Chat public model entries have no runtime import cycles", () => {
+test("public Studio model entries have no runtime import cycles", () => {
   const visited = new Set<string>();
   const active: string[] = [];
   function visit(file: string) {
@@ -95,8 +95,7 @@ test("cross-model Component imports use entity entries and native names", () => 
       .map((word) => word[0].toUpperCase() + word.slice(1))
       .join("");
   for (const file of files(modules).filter(
-    (file) =>
-      /\/singlepage\/ai-chat.*\.tsx$/.test(file) && !file.endsWith(".test.tsx"),
+    (file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file),
   )) {
     const tree = ts.createSourceFile(
       file,
@@ -112,20 +111,27 @@ test("cross-model Component imports use entity entries and native names", () => 
         continue;
       const bindings = node.importClause?.namedBindings;
       if (!bindings || !ts.isNamedImports(bindings)) continue;
-      const imported = bindings.elements.find(
-        (element) =>
-          (element.propertyName?.text ?? element.name.text) === "Component" &&
-          !element.isTypeOnly,
-      );
-      if (!imported) continue;
+      if (node.importClause?.isTypeOnly) continue;
+      const specifier = node.moduleSpecifier.text;
+      if (!specifier.startsWith(".")) continue;
       const target = resolve(file, node.moduleSpecifier.text);
       const match = target.match(/\/modules\/([^/]+)\/([^/]+)\/(.*)$/);
       if (!match) continue;
       const [, module, entity, suffix] = match;
       const owner = path.join(modules, module, entity);
       // A variant uses private siblings; importing its own dispatcher creates a cycle.
-      if (!file.endsWith(".stories.tsx") && file.startsWith(owner + path.sep))
-        continue;
+      if (file.startsWith(owner + path.sep)) continue;
+      // Providers and private helpers are separate from registered model views.
+      const variantView =
+        /^(singlepage|startup)\/[^/]+\/(Component\.tsx|index\.ts)$/.test(
+          suffix,
+        );
+      const imported = bindings.elements.find((element) => {
+        if (element.isTypeOnly) return false;
+        const name = element.propertyName?.text ?? element.name.text;
+        return name === "Component" || (variantView && /^[A-Z]/.test(name));
+      });
+      if (!imported) continue;
       const alias = pascal(module) + "Module" + pascal(entity);
       if (suffix !== "index.ts" || imported.name.text !== alias)
         violations.push(
@@ -170,6 +176,57 @@ test("entity registries overlay startup variants after singlepage variants", () 
         ),
       ).toEqual(["singlepageVariants", "startupVariants"]);
   }
+});
+
+test("explicit model variants cannot be overwritten by display prop spreads", () => {
+  const violations: string[] = [];
+  for (const file of files(modules).filter((file) => file.endsWith(".tsx"))) {
+    const tree = ts.createSourceFile(
+      file,
+      readFileSync(file, "utf8"),
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    const modelNames = new Set(
+      tree.statements.filter(ts.isImportDeclaration).flatMap((node) => {
+        const bindings = node.importClause?.namedBindings;
+        if (!bindings || !ts.isNamedImports(bindings)) return [];
+        return bindings.elements
+          .filter(
+            (item) =>
+              item.propertyName?.text === "Component" &&
+              item.name.text.includes("Module"),
+          )
+          .map((item) => item.name.text);
+      }),
+    );
+    function visit(node: ts.Node) {
+      if (
+        (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) &&
+        ts.isIdentifier(node.tagName) &&
+        modelNames.has(node.tagName.text)
+      ) {
+        const attrs = node.attributes.properties;
+        const variant = attrs.find(
+          (attr) =>
+            ts.isJsxAttribute(attr) && attr.name.getText(tree) === "variant",
+        );
+        if (
+          variant &&
+          attrs.some(
+            (attr) => ts.isJsxSpreadAttribute(attr) && attr.end > variant.end,
+          )
+        ) {
+          violations.push(
+            `${path.relative(studio, file)}: ${node.tagName.text}`,
+          );
+        }
+      }
+      ts.forEachChild(node, visit);
+    }
+    visit(tree);
+  }
+  expect(violations).toEqual([]);
 });
 
 test("Studio module stories display models without relation or API filter contracts", () => {

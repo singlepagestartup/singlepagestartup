@@ -1,5 +1,5 @@
+import { Component as CrmModuleForm } from "../../../form";
 import { defaultCrmForm, type CrmFormRecord } from "../../../shared/demo-crm";
-import { CrmFormDefault } from "../../../form/singlepage/default/Component";
 
 export interface CrmWidgetFormListDefaultProps {
   eyebrow: string;
@@ -33,7 +33,8 @@ export function CrmWidgetFormListDefault(
       data-ds-block="crm.widget.form-list-default"
       data-ds-layer="singlepage"
     >
-      <CrmFormDefault
+      <CrmModuleForm
+        variant="default"
         form={{
           ...form,
           title: props?.title ?? form.title,

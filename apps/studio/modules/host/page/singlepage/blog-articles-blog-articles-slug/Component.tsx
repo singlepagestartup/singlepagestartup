@@ -1,6 +1,6 @@
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+import { Component as HostModuleWidget } from "../../../widget";
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
-import { FooterCompact } from "../../../../website-builder/widget/singlepage/footer-compact/Component";
-import { HostWidgetDefault } from "../../../widget/singlepage/default/Component";
 
 export function BlogFindByIdArticleOverview() {
   return (
@@ -10,8 +10,8 @@ export function BlogFindByIdArticleOverview() {
       data-ds-route="/blog/articles/[blog.articles.slug]"
     >
       <HostNavbarDefault />
-      <HostWidgetDefault />
-      <FooterCompact />
+      <HostModuleWidget variant="default" />
+      <WebsiteBuilderModuleWidget variant="footer-compact" />
     </main>
   );
 }

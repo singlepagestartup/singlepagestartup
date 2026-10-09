@@ -12,7 +12,7 @@ export function Component({ children, ...header }: IAIChatHeaderLayoutProps) {
       data-ds-block="host.layout.ai-chat-header"
       className="@container min-h-screen min-w-0 bg-sps-grey font-sps text-sps-graphite"
     >
-      <WebsiteBuilderModuleWidget variant="ai-chat-header" {...header} />
+      <WebsiteBuilderModuleWidget {...header} variant="ai-chat-header" />
       {children}
     </div>
   );

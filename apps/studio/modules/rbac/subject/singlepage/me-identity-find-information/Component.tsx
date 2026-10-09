@@ -1,6 +1,6 @@
+import { Component as RbacModuleIdentity } from "../../../identity";
 import { useCallback, useState } from "react";
 
-import { IdentityCardDefault } from "../../../identity/singlepage/card-default/Component";
 import {
   defaultRbacIdentities,
   getIdentityOperationLabel,
@@ -74,7 +74,8 @@ export function SubjectMeIdentityFindInformation(
         ) : (
           identities.map((identity) => {
             return (
-              <IdentityCardDefault
+              <RbacModuleIdentity
+                variant="card-default"
                 embedded
                 identity={identity}
                 key={identity.id}

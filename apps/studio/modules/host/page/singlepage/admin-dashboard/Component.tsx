@@ -1,6 +1,7 @@
-import { BlogArticleAdminV2List } from "../../../../blog/article/singlepage/admin-v2-list/Component";
-import { EcommerceProductAdminV2List } from "../../../../ecommerce/product/singlepage/admin-v2-list/Component";
-import { RbacSubjectAdminV2Settings } from "../../../../rbac/subject/singlepage/admin-v2-settings/Component";
+import { Component as BlogModuleArticle } from "../../../../blog/article";
+import { Component as EcommerceModuleProduct } from "../../../../ecommerce/product";
+import { Component as RbacModuleSubject } from "../../../../rbac/subject";
+
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
 export function AdminDashboard() {
@@ -13,10 +14,10 @@ export function AdminDashboard() {
         description="Browse product and article records, then review your account settings."
       >
         <div className="grid gap-5 xl:grid-cols-2">
-          <EcommerceProductAdminV2List />
-          <BlogArticleAdminV2List />
+          <EcommerceModuleProduct variant="admin-v2-list" />
+          <BlogModuleArticle variant="admin-v2-list" />
         </div>
-        <RbacSubjectAdminV2Settings />
+        <RbacModuleSubject variant="admin-v2-settings" />
       </AdminV2PageShell>
     </div>
   );

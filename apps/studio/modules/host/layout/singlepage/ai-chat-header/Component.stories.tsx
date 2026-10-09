@@ -15,9 +15,9 @@ function Example() {
       page="chat"
       profileSelect={(props) => (
         <SocialModuleProfile
-          variant="ai-chat-project-select"
           profileId="pottery"
           {...props}
+          variant="ai-chat-project-select"
         />
       )}
       subjectAccount={({ onNavigate }) => (

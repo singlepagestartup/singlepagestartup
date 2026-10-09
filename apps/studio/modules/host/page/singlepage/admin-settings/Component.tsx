@@ -1,4 +1,5 @@
-import { RbacSubjectAdminV2Settings } from "../../../../rbac/subject/singlepage/admin-v2-settings/Component";
+import { Component as RbacModuleSubject } from "../../../../rbac/subject";
+
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
 export function AdminSettings() {
@@ -10,7 +11,7 @@ export function AdminSettings() {
         title="Workspace settings"
         description="Manage the account and preferences for this workspace."
       >
-        <RbacSubjectAdminV2Settings />
+        <RbacModuleSubject variant="admin-v2-settings" />
       </AdminV2PageShell>
     </div>
   );

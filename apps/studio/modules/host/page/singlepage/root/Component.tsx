@@ -1,14 +1,7 @@
-import { ArticleFindDefault } from "../../../../blog/widget/singlepage/article-find-default/Component";
-import { ProductFindTiers } from "../../../../ecommerce/widget/singlepage/product-find-tiers/Component";
-import { ContentButtonsArrayFindDefault } from "../../../../website-builder/widget/singlepage/content-buttons-array-find-default/Component";
-import { ContentCta } from "../../../../website-builder/widget/singlepage/content-cta/Component";
-import { ContentFeatureFindCard } from "../../../../website-builder/widget/singlepage/content-feature-find-card/Component";
-import { ContentFeatureFindTestimotionals } from "../../../../website-builder/widget/singlepage/content-feature-find-testimotionals/Component";
-import { ContentFeatureFindRow } from "../../../../website-builder/widget/singlepage/content-feature-find-row/Component";
-import { ContentFeatureFindDefault } from "../../../../website-builder/widget/singlepage/content-feature-find-default/Component";
-import { ContentFilesFindDefault } from "../../../../website-builder/widget/singlepage/content-files-find-default/Component";
-import { ContentHero } from "../../../../website-builder/widget/singlepage/content-hero/Component";
-import { FooterDefault } from "../../../../website-builder/widget/singlepage/footer-default/Component";
+import { Component as BlogModuleWidget } from "../../../../blog/widget";
+import { Component as EcommerceModuleWidget } from "../../../../ecommerce/widget";
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 import { SectionStack } from "../../../../../workspace/design/singlepage/interface-kit/SectionStack";
 
@@ -22,22 +15,23 @@ export function HomeDefault() {
     >
       <HostNavbarDefault />
       <SectionStack>
-        <ContentHero />
-        <ContentFeatureFindDefault />
-        <ContentFeatureFindCard />
-        <ContentFilesFindDefault />
-        <ContentButtonsArrayFindDefault />
-        <ProductFindTiers />
-        <ContentFeatureFindTestimotionals />
-        <ArticleFindDefault />
-        <ContentCta />
-        <ContentFeatureFindRow
+        <WebsiteBuilderModuleWidget variant="content-hero" />
+        <WebsiteBuilderModuleWidget variant="content-feature-find-default" />
+        <WebsiteBuilderModuleWidget variant="content-feature-find-card" />
+        <WebsiteBuilderModuleWidget variant="content-files-find-default" />
+        <WebsiteBuilderModuleWidget variant="content-buttons-array-find-default" />
+        <EcommerceModuleWidget variant="product-find-tiers" />
+        <WebsiteBuilderModuleWidget variant="content-feature-find-testimotionals" />
+        <BlogModuleWidget variant="article-find-default" />
+        <WebsiteBuilderModuleWidget variant="content-cta" />
+        <WebsiteBuilderModuleWidget
+          variant="content-feature-find-row"
           contactForm={
             <RbacModuleSubject variant="me-crm-form-deafult" embedded />
           }
         />
       </SectionStack>
-      <FooterDefault />
+      <WebsiteBuilderModuleWidget variant="footer-default" />
     </main>
   );
 }

@@ -1,20 +1,16 @@
 import {
+  Component as WebsiteBuilderModuleButtonsArray,
+  type ButtonsArrayItem,
+} from "../../../buttons-array";
+import {
+  Component as WebsiteBuilderModuleFeature,
+  type FeatureBadgeDefaultProps,
+  type FeatureStatusDefaultProps,
+} from "../../../feature";
+import {
   ArrowRight,
   Play,
 } from "../../../../../workspace/utils/components/ModuleIcons";
-
-import {
-  ButtonsArrayDefault,
-  type ButtonsArrayItem,
-} from "../../../buttons-array/singlepage/default/Component";
-import {
-  FeatureBadgeDefault,
-  type FeatureBadgeDefaultProps,
-} from "../../../feature/singlepage/badge-default/Component";
-import {
-  FeatureStatusDefault,
-  type FeatureStatusDefaultProps,
-} from "../../../feature/singlepage/status-default/Component";
 
 const heroImageUrl = new URL(
   "../../../../../workspace/assets/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
@@ -72,7 +68,7 @@ export function ContentHero(props?: Partial<ContentHeroProps>) {
       <div className="mx-auto grid w-full max-w-7xl gap-0 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
         <div className="flex min-w-0 flex-col items-start justify-center rounded-t-3xl bg-[var(--workspace-brand-primary)] p-6 sm:p-10 lg:rounded-l-3xl lg:rounded-tr-none lg:p-12">
           <div className="mb-6">
-            <FeatureBadgeDefault {...feature} />
+            <WebsiteBuilderModuleFeature {...feature} variant="badge-default" />
           </div>
           <h1 className="max-w-[14ch] text-[2.5rem] font-semibold leading-[1.08] tracking-normal text-white sm:text-5xl xl:text-[4rem]">
             {title}
@@ -81,7 +77,10 @@ export function ContentHero(props?: Partial<ContentHeroProps>) {
             {description}
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3 [&_a]:focus-visible:outline-[var(--workspace-brand-focus-inverse)]">
-            <ButtonsArrayDefault buttons={buttons} />
+            <WebsiteBuilderModuleButtonsArray
+              variant="default"
+              buttons={buttons}
+            />
           </div>
         </div>
         <div className="relative aspect-square min-w-0 overflow-hidden rounded-b-3xl bg-[var(--workspace-brand-surface)] lg:aspect-auto lg:min-h-[36rem] lg:rounded-r-3xl lg:rounded-bl-none">
@@ -90,8 +89,9 @@ export function ContentHero(props?: Partial<ContentHeroProps>) {
             src={mediaSrc}
             alt={mediaAlt}
           />
-          <FeatureStatusDefault
+          <WebsiteBuilderModuleFeature
             {...statusFeature}
+            variant="status-default"
             className="absolute bottom-5 left-5 right-5 border-0 bg-white/95 p-4 backdrop-blur-sm sm:bottom-6 sm:left-6 sm:right-6"
           />
         </div>

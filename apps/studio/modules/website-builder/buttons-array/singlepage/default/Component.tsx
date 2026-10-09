@@ -1,12 +1,9 @@
+import { Component as WebsiteBuilderModuleButton } from "../../../button";
 import {
   ArrowRight,
   Play,
   type ModuleIcon,
 } from "../../../../../workspace/utils/components/ModuleIcons";
-
-import { ButtonLink } from "../../../button/singlepage/link/Component";
-import { ButtonPrimary } from "../../../button/singlepage/primary/Component";
-import { ButtonSecondary } from "../../../button/singlepage/secondary/Component";
 
 export interface ButtonsArrayItem {
   label: string;
@@ -67,7 +64,8 @@ export function ButtonsArrayDefault(props?: Partial<ButtonsArrayDefaultProps>) {
       {buttons.map((button) => {
         if (button.variant === "link") {
           return (
-            <ButtonLink
+            <WebsiteBuilderModuleButton
+              variant="link"
               href={button.href}
               key={`${button.variant}:${button.href}:${button.label}`}
               label={button.label}
@@ -78,14 +76,16 @@ export function ButtonsArrayDefault(props?: Partial<ButtonsArrayDefaultProps>) {
         }
 
         return button.variant === "secondary" ? (
-          <ButtonSecondary
+          <WebsiteBuilderModuleButton
+            variant="secondary"
             href={button.href}
             icon={button.icon}
             key={`${button.variant}:${button.href}:${button.label}`}
             label={button.label}
           />
         ) : (
-          <ButtonPrimary
+          <WebsiteBuilderModuleButton
+            variant="primary"
             href={button.href}
             icon={button.icon}
             key={`${button.variant}:${button.href}:${button.label}`}

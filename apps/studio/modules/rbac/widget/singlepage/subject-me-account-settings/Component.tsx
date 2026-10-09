@@ -1,3 +1,4 @@
+import { Component as RbacModuleSubject } from "../../../subject";
 import { useId, useState } from "react";
 import {
   Button,
@@ -5,9 +6,6 @@ import {
 } from "../../../../../workspace/design/singlepage/interface-kit/primitives";
 import { LogOut } from "../../../../../workspace/utils/components/ModuleIcons";
 
-import { SubjectMeDelete } from "../../../subject/singlepage/me-delete/Component";
-import { SubjectMeIdentityFindInformation } from "../../../subject/singlepage/me-identity-find-information/Component";
-import { SubjectMeSocialModuleProfileFindInformation } from "../../../subject/singlepage/me-social-module-profile-find-information/Component";
 import {
   defaultSettingsIdentities,
   defaultRbacProfiles,
@@ -58,15 +56,27 @@ export function SubjectMeAccountSettings(
       label: "Profile",
       content: (
         <div className="space-y-6">
-          <SubjectMeSocialModuleProfileFindInformation profiles={profiles} />
-          <SubjectMeDelete title="Delete account" subject={subject} />
+          <RbacModuleSubject
+            variant="me-social-module-profile-find-information"
+            profiles={profiles}
+          />
+          <RbacModuleSubject
+            variant="me-delete"
+            title="Delete account"
+            subject={subject}
+          />
         </div>
       ),
     },
     {
       id: "sign-in",
       label: "Sign-in methods",
-      content: <SubjectMeIdentityFindInformation identities={identities} />,
+      content: (
+        <RbacModuleSubject
+          variant="me-identity-find-information"
+          identities={identities}
+        />
+      ),
     },
   ];
 

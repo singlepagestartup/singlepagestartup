@@ -6,6 +6,7 @@ The branch also retains the Knowledge Source, file orchestration, MCP configurat
 
 ## Changes
 
+- Compose cross-model views through public model entries and explicit variants across Blog, CRM, Ecommerce, Host, RBAC, Social and Website Builder. Featured Article lists use `count`; author Article lists and Article tag cards arrive as slots to keep model imports acyclic. Explicit variants follow prop spreads. Product Tier uses `appearance` for its display state. Source download, Profile disclosure and Thread chat settings have separate variants.
 - Remove Studio relation components, relation stories, API-shaped find variants and synthetic query/graph adapters. Inventory and catalog generation prepare models only and preserve owned variants and fixtures.
 - Place Studio models directly in `apps/studio/modules/<module>/<model>`. Update imports, manifests, Figma code paths, asset registry, tooling and generated inventory. Catalog scaffolding uses these paths; production keeps `libs/modules/<module>/models`. Existing Storybook IDs and Figma node IDs remain stable.
 - Provide table, card and list views for each model. Lists repeat one example using `count` and `empty`; tables expose `empty`. Source stories expose `empty` and `withFiles`.
@@ -21,9 +22,10 @@ The branch also retains the Knowledge Source, file orchestration, MCP configurat
 
 Current Studio checks:
 
-- [x] 274 tests across 37 files, including model coverage, registries, generator preservation, isolation, runtime import cycles, header boundaries, model display states and AI Chat behavior.
+- [x] 275 tests across 37 files, including model coverage, registries, generator preservation, isolation, runtime import cycles, header boundaries, model display states and AI Chat behavior.
 - [x] Studio TypeScript, metadata validation, inventory generation, AI Chat content check, code placement and diff checks.
 - [x] Isolated Storybook production build containing Studio and its tools, with no `libs`, `apps/host` or root tsconfig. Installed third-party packages are supplied through node_modules.
+- [x] Browser after the public-entry change: featured count changed to 4 through Controls, Article tags/comments, author rows, three tiers with a featured middle card, CRM fields, Source export, Profile disclosure, chat settings and Products conversation/Source. No errors after fixes. Registration restored.
 - [x] Browser after the directory move: registration, New thread/Cancel/Products navigation and Source editor/files. Browser error logs are empty. Storybook runs on 4321. Earlier checks covered two Working On options, Ctrl+Enter sending, 20-card list changed to 2 through Controls, empty list, Source with two Files and scoped detach.
 
 Earlier retained implementation checks:
@@ -39,9 +41,11 @@ Earlier retained implementation checks:
 
 All new Studio behavior is local preview state. It does not implement durable storage, production data access, authentication/payment mutations, retrieval or tool execution. Production relationships remain in libs/modules. A Products document is a visual grouping of Knowledge; this demo does not restrict future document or agent inventories.
 
-Unrelated uncommitted business documents, uploaded files and production changes are excluded. The latest implementation log is `thoughts/shared/handoffs/singlepagestartup/studio-flat-models-2026-10-09.md`.
+Unrelated uncommitted business documents, uploaded files and production changes are excluded. The latest implementation log is `thoughts/shared/handoffs/singlepagestartup/studio-model-imports-2026-10-09.md`.
 
 ## Downstream migration
+
+- Replace cross-model private variant imports with public `<module>/<model>` Component entries. Select `variant` after prop spreads and preserve owned display props/state. Use `count` for featured examples, `appearance` for Product Tier styling, an `articles` ReactNode slot for author Profile overview and a `tagsCard` slot for Article Detail/Overview. Keep owned author/article data in the caller or model that displays it. Call Source `ai-chat-download`, Profile `ai-chat-processing` and Thread `chat-settings` through model entries; supply settings profiles and update owned disclosure publisher paths to `ai-chat-processing/disclosure.json`. Keep same-model siblings and state providers private so they do not import their own dispatcher. Verify all model imports, runtime cycles, Controls, wrapped variants, article tags, tariffs, forms, AI Chat and isolated Storybook build.
 
 - Move owned Studio components from `apps/studio/modules/<module>/models/<model>` to `apps/studio/modules/<module>/<model>`. Recalculate imports and page block paths; update code paths and sync keys in Figma metadata, asset registry entries, generator overrides and owned commands. Preserve records, assets, variant aliases, Storybook IDs and Figma node IDs. Leave production models and relations under `libs/modules` unchanged. Verify metadata, asset resolution, both variant layers, generator idempotence and an isolated Studio build.
 - Owned Studio variants must use local `<module>/<model>/index` entries with ModuleModel aliases and explicit variants. Assemble singlepage/startup maps with startup last, preserving alias keys and owned data. Migrate generic `find` to `list` with `count`/`empty`, and replace relation wrappers with model composition. Preserve the actual profile, thread, knowledge and file examples through props/provider state before removing relation identifiers. Update owned stories, manifests, Figma bindings and generator overrides. Keep Telegram excluded. Verify coverage, Controls, model boundaries and an isolated Studio build.
