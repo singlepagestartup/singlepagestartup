@@ -19,8 +19,10 @@ Host Login обрабатывает `Identity.onSuccess` и сразу откр�
 Скриншоты: /private/tmp/studio-account-final.png, /private/tmp/studio-account-blog.png,
 /private/tmp/studio-account-mobile.png. Storybook запущен на 4321.
 
-Следующий шаг: коммит и публикация в существующий PR; сохранить собственные SHA
-в итоговом сообщении и проверить удалённый HEAD.
+Публикация завершена: root-коммит `ccb3307dd1`, коммит реализации в PR
+`861f0912a93bc767a8baa657bca4839cdfe64958`. Удалённый HEAD и описание PR проверены.
+Собственных незавершённых изменений UI нет. Последующие изменения продолжаются
+по новым комментариям пользователя; текущая реализация готова к ревью.
 
 Область изменений: только Studio, его assets, проверки tools/studio и эти artifacts. Чужие изменения в production, workspace business docs и agent tooling не включать в коммит.
 
