@@ -1,6 +1,6 @@
 # Studio variant names
 
-Status: implementing
+Status: complete
 
 Overview displays one record; List displays records within its scope. Nested
 folders group purpose, with the AI Chat presentation last. Select items carry
@@ -68,7 +68,7 @@ Project scope retains mounted state across preview navigation.
 - [x] Rename product-specific agent/skill symbols to knowledge names.
 - [x] Update tooling, content publisher, asset paths and generated inventory.
 - [x] Verify model boundaries, types, tests, Storybook and browser navigation.
-- [ ] Publish scoped commits to PR #371 and complete the continuation record.
+- [x] Publish scoped commits to PR #371 and complete the continuation record.
 
 ## Verification
 
@@ -79,3 +79,11 @@ Project scope retains mounted state across preview navigation.
 - At 320px, document width and scroll width both equal 320px; Send is visible. The viewport override is reset.
 - The Message List story is discoverable under Social / Message / Singlepage / list / ai-chat. Browser error logs are empty.
 - Screenshot: `/private/tmp/studio-variant-naming.png`.
+
+## Publication
+
+- Local implementation: `b6f4107a415507fbd33f57712901d0227d9a744f`.
+- PR implementation: `cf954f2f6e9823cfe685df691cb7e4f27ca8eccd`.
+- PR: https://github.com/singlepagestartup/singlepagestartup/pull/371.
+- All 558 changed paths, including deletions, match between local and PR checkouts. The PR checkout is clean and excludes unrelated local history.
+- GitHub confirms the published implementation head and the saved PR description.
