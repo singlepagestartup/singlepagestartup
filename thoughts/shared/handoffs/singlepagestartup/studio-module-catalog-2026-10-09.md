@@ -1,6 +1,6 @@
 # Каталог Studio: продолжение
 
-Статус: реализация и проверки завершены; подготовлена публикация в PR #371. Активная ветка `codex/studio-host-models`, исходный HEAD `a66ffe96db23bd70d726d0df0085b3ccd8deefa3`. Исходный опубликованный PR head — `01546e3c316d8dd959b75e066091b0f54127d9e8`. Актуальные SHA доступны в Git и PR.
+Статус: реализация, проверки и публикация в PR #371 завершены. Активная ветка `codex/studio-host-models`, исходный HEAD `a66ffe96db23bd70d726d0df0085b3ccd8deefa3`. Исходный опубликованный PR head — `01546e3c316d8dd959b75e066091b0f54127d9e8`. Коммит реализации — `f62f92ead8f38a1cce39c46a37c47d035bfd6585`; его опубликованный cherry-pick — `9dfc7700529854ad9364e1f6e92cc0468ed4f447`. Актуальный head доступен в Git и PR.
 
 План: `thoughts/shared/plans/singlepagestartup/2026-10-09-studio-module-catalog.md`. Предыдущая декомпозиция AI Chat: `studio-isolation-2026-10-09.md` в этом каталоге.
 
@@ -32,4 +32,4 @@ Storybook запущен на 4321; dev log — /private/tmp/studio-module-catal
 
 В checkout есть чужие изменения workflow, workspace-артефактов, production Knowledge/RBAC и API-файлов. Их не включать в коммит. Локальная ветка содержит посторонний production-коммит `94f63c6a75`; её целиком не публиковать. Собственные коммиты переносить cherry-pick поверх актуального PR head во временном checkout ветки codex/studio-products-review. Не использовать force push. Проверить actual PR head/body и отсутствие 94f63c6a75 в ancestry.
 
-Список собственных файлов для staging — /private/tmp/studio-catalog-stage-paths.txt. Он содержит только Studio modules/interface-kit/inventory/docs, Studio tooling/tests, команды в package.json/project.json, этот план/handoff и PR #371 description. Перед продолжением проверить git status, log и PR: публикация могла завершиться после записи этого файла. Следующая функциональная задача требует отдельного запроса пользователя.
+Список собственных файлов для staging — /private/tmp/studio-catalog-stage-paths.txt. Он содержит только Studio modules/interface-kit/inventory/docs, Studio tooling/tests, команды в package.json/project.json, этот план/handoff и PR #371 description. Все 3131 файла реализации совпадают между локальным коммитом и опубликованным cherry-pick; посторонний production-коммит отсутствует в ancestry PR. Перед следующей задачей проверить git status, log и PR. Следующая функциональная задача требует отдельного запроса пользователя.
