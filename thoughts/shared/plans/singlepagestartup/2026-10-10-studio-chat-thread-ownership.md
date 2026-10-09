@@ -1,6 +1,6 @@
 # Studio Chat, Thread and Subject ownership
 
-Status: verified locally; publication pending
+Status: complete
 
 ## Structure
 
@@ -24,7 +24,7 @@ preview page navigation; it performs no SDK requests or relation lookups.
 - [x] Make thread labels and message context use the displayed knowledge title.
 - [x] Verify model boundaries, a differently named Source, message sending,
       attachments, Working On, draft/history persistence and responsive layout.
-- [ ] Publish the scoped changes to PR #371 and record the implementation IDs.
+- [x] Publish the scoped changes to PR #371 and record the implementation IDs.
 
 ## Verification
 
@@ -38,6 +38,14 @@ no horizontal overflow. Browser error logs are empty.
 Evidence: `/private/tmp/studio-thread-ownership.png`,
 `/private/tmp/studio-thread-narrow.png`. Logs:
 `/private/tmp/studio-thread-tests.log`, `/private/tmp/studio-thread-build.log`.
+
+## Publication
+
+Local implementation: `196774ccddac5207a2c639bf44d81496c8dd3214`.
+Published implementation: `74c12d0af92deac16fda76b6f64b49926e1dea4a`.
+[PR #371](https://github.com/singlepagestartup/singlepagestartup/pull/371) head
+and description match the scoped publication. All affected files match the
+isolated PR checkout; unrelated production history and dirty files are excluded.
 
 ## Continuation
 

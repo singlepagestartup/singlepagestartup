@@ -1,11 +1,11 @@
 # Studio Chat and Thread continuation
 
-Status: verified locally; publication pending
+Status: complete
 
 ## Current work
 
-Chat and Thread become `ai-chat-overview`; the sending form moves from Social
-Thread Composer to RBAC Subject `ai-chat-message-create`. Host injects the form
+Chat and Thread use `ai-chat-overview`; RBAC Subject `ai-chat-message-create`
+owns the sending form. Host injects the form
 through the Chat/Thread `messageCreate` slot. Conversation remains the Thread's
 message list, composed from Social Message views.
 
@@ -33,8 +33,14 @@ Evidence: `/private/tmp/studio-thread-ownership.png`,
 ## Publication
 
 Local starting HEAD: `a4203c840a38304206442b09e432733e3c0417f7`.
-PR #371 branch: `codex/ai-chat-ui-review`; last verified head:
-`d866962dac2ae4efe880fe044c95707ce67fde04`.
-Publish only explicit scoped commits through an isolated checkout at the current
-PR head. The local branch includes unrelated production history. Preserve all
-foreign dirty workspace, workflow and production files.
+Local implementation: `196774ccddac5207a2c639bf44d81496c8dd3214`.
+Published implementation: `74c12d0af92deac16fda76b6f64b49926e1dea4a`.
+PR #371 branch: `codex/ai-chat-ui-review`. The published head and updated
+description are verified. All affected files match the isolated PR checkout;
+unrelated production commit `94f63c6a75` is excluded.
+
+Future publication must use explicit scoped commits through an isolated checkout
+at the current PR head. The local branch includes unrelated production history.
+Preserve foreign dirty workspace, workflow and production files. The saved PR
+description is `thoughts/shared/prs/371_description.md`; its historical checks
+remain distinct from the current 287-test verification.
