@@ -151,8 +151,7 @@ apps/studio/modules/<module>/<models|relations>/<entity>/<layer>/<variant>/
 ```
 
 Host pages remain under
-`apps/studio/modules/host/models/page/<layer>/<page-variant>/`. Existing stable
-component/page IDs are preserved across the Studio rename.
+`apps/studio/modules/host/models/page/<layer>/<page-variant>/`. Existing Host page IDs are preserved. Domain variant IDs follow their component names.
 
 ## Local AI Chat components
 
@@ -162,21 +161,22 @@ public types or helpers. Fixture data and interactive examples live in
 `Component.stories.tsx`. Product website previews compose these components and
 editable Markdown content.
 
-| Owner                   | Component responsibility                                          |
-| ----------------------- | ----------------------------------------------------------------- |
-| Host Page               | Page composition and local navigation                             |
-| RBAC Identity / Subject | Registration, login, account settings and account provider        |
-| Social Profile          | Current-user menu, project workspace, project selector and agents |
-| Social Chat             | Resolve the selected Thread through Chat-to-Thread links          |
-| Social Thread           | Conversation, Working On, composer, creation and settings         |
-| Social Skill            | One product-planning instruction                                  |
-| Social Message          | One message, role attribution, context and attachments            |
-| RBAC / Social relations | Subject profiles, profile chats, Sources, Threads and Messages    |
-| Knowledge Source        | Document bundle navigation and editable sections                  |
-| Knowledge relation      | Ordered Source-to-File links filtered by Source ID                |
-| File Storage File       | File lists, upload, open and detach                               |
-| Ecommerce Order         | Token purchase preview                                            |
-| Website Builder Widget  | Navigation, help and landing page                                 |
+| Owner                   | Component responsibility                                           |
+| ----------------------- | ------------------------------------------------------------------ |
+| Host Page               | One concrete screen composed from domain components                |
+| Host Layout             | Page frame, responsive columns and mobile sidebar drawer           |
+| RBAC Identity / Subject | Registration, login, account settings and account provider         |
+| Social Profile          | User menu, project identities, sidebar, selector, forms and agents |
+| Social Chat             | Resolve the selected Thread through Chat-to-Thread links           |
+| Social Thread           | Conversation, Working On, composer, creation and settings          |
+| Social Skill            | One product-planning instruction                                   |
+| Social Message          | One message, role attribution, context and attachments             |
+| RBAC / Social relations | Subject profiles, profile chats, Sources, Threads and Messages     |
+| Knowledge Source        | Document bundle navigation and editable sections                   |
+| Knowledge relation      | Ordered Source-to-File links filtered by Source ID                 |
+| File Storage File       | File lists, upload, open and detach                                |
+| Ecommerce Order         | Token purchase preview                                             |
+| Website Builder Widget  | Navigation, help and landing page                                  |
 
 The current subject resolves its `ai-chat-user` Social Profile through
 `subjects-to-social-module-profiles`. RBAC Subject `ai-chat-account` renders that
@@ -196,11 +196,37 @@ creation remains later design work. New thread opens a local creation preview wi
 a name, one agent selector and Cancel. Submitting only shows preview feedback;
 it does not create Thread, Chat or Message records.
 
-Profile `ai-chat-project` owns its name, settings and responsive navigation. It
-composes File and Source providers with one Chat. The outer workspace stores only
-profile identities and access links. It passes no documents, Sources, messages or
-agent catalog through Profile and Chat. Chat `ai-chat-workspace` resolves the
-prepared Products Thread through `chats-to-threads/ai-chat-find`.
+Each Host Page renders one screen. `ai-chat` renders landing content; register,
+login, account settings, help and tokens import their respective model views.
+Project Pages are `ai-chat-projects-new`, `ai-chat-projects-project-id`,
+`ai-chat-projects-project-id-settings` and
+`ai-chat-projects-project-id-threads-new`. Settings and New thread are real links
+to separate Page components and Storybook stories. Pages receive a `profileId`
+where needed; they do not accept a URL or select another screen internally.
+
+Host Layout `ai-chat` supplies the page frame. Layout `ai-chat-project` owns the
+responsive columns, collapse control and mobile drawer; its sidebar and body are
+slots. Each project Page imports Profile `ai-chat-sidebar` directly and composes
+its own Chat, Profile settings or Thread creation content. Shared `PanelHeader`
+lives in the interface kit.
+
+Profile `ai-chat-project/Profiles.tsx` stores project identities and access links.
+The `ai-chat-project` component resolves Profile-to-Chat access and supplies the
+model scope. Profile `ai-chat-project-select` reads available profiles directly;
+`ai-chat-sidebar` reads the selected profile and renders model navigation links.
+Profile creation and settings have their own `ai-chat-create` and
+`ai-chat-settings` variants. Chat `ai-chat-products` resolves the prepared Products
+Thread through `chats-to-threads/ai-chat-find`; Thread `ai-chat-products` displays
+that conversation and its document. Source variants are `ai-chat-document`,
+`ai-chat-card` and `ai-chat-document-link`. No document/message/source arrays or
+agent catalog pass through Profile or Chat.
+
+`workspace/products/singlepage/ai-chat/website/Preview.tsx` is the interactive
+preview adapter. It alone selects the concrete Page for a route and intercepts
+prototype links. Account, Profile, File, Source and Thread providers remain
+mounted independently of the selected Page; the preview retains separate model
+state without hidden Page components. A production router can render the same
+Pages with its own provider bindings later.
 
 Thread's local `Thread.tsx` provider owns messages, draft text, pending File IDs,
 Working On, pane selection and proposals. Conversation resolves ordered Messages
@@ -213,7 +239,7 @@ them. These responses are local previews, without AI API calls.
 Knowledge's `Source.tsx` provider owns the Source record and its File relations.
 It resolves the Profile-to-Source link through the existing find variant. Source
 has ID, slug, title, content and description; it has no documentId or nested Files.
-The editor and document navigation read this record directly. The section changes
+The document, card and document link read this record directly. The card changes
 user context while preserving analyzed material descriptions. Plain text remains
 editable without files or markers. Chunks remain derived retrieval records.
 
@@ -221,8 +247,8 @@ File's `Files.tsx` provider owns records and uploaded Blob URLs within each proj
 Source-to-File find filters links by sourceId and orders them by orderIndex; each
 Source/File pair is unique. File views receive IDs and resolve records locally.
 Upload supports multiple files; detach preserves the File pool so an existing
-File can be attached again. Message attachments use the same pool. Providers stay
-mounted when switching projects or opening settings/the creation preview, retaining separate state.
+File can be attached again. Message attachments use the same pool. The preview keeps providers mounted when switching projects or opening settings/the
+creation page, retaining separate state.
 
 Relation views use `variant="find"` and `apiProps.params.filters.and`. Model-local
 providers and story fixtures simulate data access in Studio. The earlier aggregate

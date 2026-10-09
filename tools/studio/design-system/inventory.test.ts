@@ -177,7 +177,9 @@ describe("AI Chat project ownership", () => {
     )!;
     for (const variant of [
       "ai-chat-project-select",
-      "ai-chat-workspace",
+      "ai-chat-sidebar",
+      "ai-chat-create",
+      "ai-chat-settings",
       "ai-chat-project",
       "ai-chat-user-menu",
     ])
@@ -187,11 +189,11 @@ describe("AI Chat project ownership", () => {
         ),
       ).toBe(true);
     for (const [entity, variants] of [
-      ["chat", ["ai-chat-workspace"]],
+      ["chat", ["ai-chat-products"]],
       [
         "thread",
         [
-          "ai-chat-workspace",
+          "ai-chat-products",
           "ai-chat-conversation",
           "ai-chat-composer",
           "ai-chat-create",
@@ -247,7 +249,7 @@ describe("AI Chat Source ownership", () => {
     )!;
     expect(
       source.storyFiles?.some((file) =>
-        file.includes("/singlepage/ai-chat-section/"),
+        file.includes("/singlepage/ai-chat-card/"),
       ),
     ).toBe(true);
     expect(

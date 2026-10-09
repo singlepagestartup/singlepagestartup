@@ -1,0 +1,27 @@
+{
+  "id": "social.thread.ai-chat-products",
+  "title": "ai-chat-products",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Local Thread workspace composing its messages, knowledge editor and composer.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.thread",
+    "pageName": "social",
+    "variantName": "ai-chat-products",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "thread",
+    "variant": "ai-chat-products"
+  },
+  "contentSlots": []
+}

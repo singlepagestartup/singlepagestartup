@@ -1,44 +1,66 @@
 # Локальные модели AI Chat в Studio
 
-Статус: один Products реализован, проверен и опубликован в [PR #371](https://github.com/singlepagestartup/singlepagestartup/pull/371); code review ожидается. План: `thoughts/shared/plans/singlepagestartup/2026-10-09-studio-isolation.md`. Следующая работа — review и последующее проектирование создания продуктов. Production перенос остаётся отдельной задачей.
+Статус: отдельные страницы и доменные компоненты реализованы и проверены; PR #371 ожидает code review. План: `thoughts/shared/plans/singlepagestartup/2026-10-09-studio-isolation.md`. Дальнейшая работа — review и проектирование создания продуктов. Production перенос остаётся отдельной задачей.
 
-Локальная ветка: `codex/studio-host-models`. Коммит реализации: `9e4c8828a0afe10ab411c1be65c50f4c2b6eccca`. Его эквивалент в PR branch `codex/ai-chat-ui-review`: `c034226c76d0e13159cc64edaaba4f5c4246c543`. SHA последующего коммита документации смотреть в Git. PR остаётся открытым, без merge.
+Локальная ветка: `codex/studio-host-models`. PR: https://github.com/singlepagestartup/singlepagestartup/pull/371, branch `codex/ai-chat-ui-review`. SHA последнего Studio коммита смотреть в Git. Последний baseline перед декомпозицией страниц: локально `c9fde47190`, в PR `16f3e93dccb093ba8f46c55b5d4cec98f7b42197`. PR открыт, без merge.
 
-## Текущее устройство
+## Страницы и композиция
 
-Активная страница содержит один Products.md, один подготовленный Thread, один Knowledge Source и одного Product assistant с Social Skill `ai-chat-products`. Working On предлагает Whole document и Products. Создание Profile сразу готовит эти модели. New thread открывает страницу создания: название, выбор Product assistant, просмотр его навыка, Create thread и Cancel. Submit показывает только feedback предпросмотра; Thread/Chat/Message records не создаются. Cancel возвращает в Products. Дополнительных документов, карточек и выбора агентов на этой странице нет. Отдельные старые варианты и агрегатные адаптеры остаются примерами и тестами; активная страница их не использует.
+Host Page содержит десять самостоятельных компонентов:
 
-Studio содержит собственные интерфейсы, React components, stories и локальные операции. Production imports, SDK и статика не нужны для сборки. Все 43 варианта AI Chat реализованы в Component.tsx; index.ts экспортирует Component, типы и нужные helpers. View.tsx удалены, прежние story IDs и маршруты сохранены.
+- `ai-chat`: landing.
+- `ai-chat-register`, `ai-chat-login`: формы RBAC Identity.
+- `ai-chat-settings`: настройки текущего RBAC Subject.
+- `ai-chat-help`, `ai-chat-tokens`: Help Widget и Ecommerce Order.
+- `ai-chat-projects-new`: создание Social Profile.
+- `ai-chat-projects-project-id`: Products Chat.
+- `ai-chat-projects-project-id-settings`: настройки Social Profile проекта.
+- `ai-chat-projects-project-id-threads-new`: форма создания Thread без создания записи.
 
-RBAC Subject разрешает пользовательский Profile через subjects-to-social-module-profiles. Его меню находится в Profile ai-chat-user-menu. Selector и контейнер проектов — Profile ai-chat-project-select и ai-chat-workspace. Доступ к проекту ограничен пользовательским Profile, profiles-to-chats, вариантами Chat/Profile и ID маршрута. Header получает selector через slot.
+Page принимает только profileId, если это экран проекта. Page не разбирает URL и не переключает экраны. Его Component.tsx содержит 9–51 строку. Sidebar импортируется непосредственно из Social Profile. Host Layout `ai-chat` содержит общий frame, `ai-chat-project` — responsive columns и мобильный drawer. Shared PanelHeader находится в interface-kit/ai-chat/ServiceDocument.tsx.
 
-Profile ai-chat-workspace хранит только `{id, name, variant}` и связи доступа. Profile ai-chat-project получает `{id, name}`, состояние активности и scalar callback переименования; владеет настройками и навигацией. Он монтирует File и Source providers, ограниченные ID Profile. Chat ai-chat-workspace получает Profile ID и slot навигации, разрешает один Thread через chats-to-threads/ai-chat-find. Thread получает одну native запись и slot. Массивы документов, знаний, сообщений, файлов и каталог агентов не проходят через Profile/Chat.
+Router для локальной демонстрации находится в `workspace/products/singlepage/ai-chat/website/Preview.tsx`; чистый разбор маршрутов — в workspace/utils/products/ai-chat-routes.ts. Preview переключает самостоятельные Pages, хранит последний project href и перехватывает ссылки. Все десять страниц имеют собственные Storybook stories. Прежние Host Page story IDs сохранены; новые stories — `/ai-chat/projects/[project-id]/settings` и `/ai-chat/projects/[project-id]/threads/new`.
 
-Владельцы состояния:
+## Модели и состояние
 
-- `social/models/thread/singlepage/ai-chat-workspace/Thread.tsx`: сообщения, черновик, pending File IDs, Working On, pane и proposal. Composer/Conversation получают их через useThread. Conversation разрешает записи через threads-to-messages/find; Message отображает одну запись с исторической атрибуцией.
-- `knowledge/models/source/singlepage/ai-chat-editor/Source.tsx`: одна запись Source, её текст и Source/File links. Profile-to-Source find ограничен profileId. Source section/navigation/editor читают useSource; SourceDownload экспортирует текущий Products.md. Редактор пользовательского контекста сохраняет описания материалов.
-- `file-storage/models/file/singlepage/ai-chat-attachments/Files.tsx`: File records и жизненный цикл созданных Blob URL. File view получает IDs и разрешает records в useFiles. Source-to-File find фильтрует sourceId и сохраняет orderIndex; уникальная пара не добавляется повторно. Detach удаляет только связь, сохраняя File pool и остальные связи.
-- `social/models/skill/singlepage/ai-chat-products`: один native Skill с title/adminTitle/slug/description/variant; modal Product assistant показывает его компонент. Social Skill и profiles-to-skills подтверждены чтением production README/schema, без импорта или изменений production.
+В активном примере один Products.md, один подготовленный Thread, один Knowledge Source и Product assistant с Social Skill `ai-chat-products`. Working On: Whole document или Products. Создание Profile сразу готовит эти модели. New thread открывает отдельный Page: название, выбор Product assistant, просмотр навыка, Create thread и Cancel. Submit показывает feedback предпросмотра; Thread/Chat/Message records не создаются. Cancel возвращает в Products.
 
-Каждое отправленное сообщение сохраняет снимок текущего Source и использованных Files; последующие правки и detach историю не меняют. Предложение применяется явно к Source. Если после отправки Source изменён вручную, применение отклоняется с подсказкой отправить новое сообщение. Review gates отсутствуют. Cmd/Ctrl Enter отправляет сообщение, обычный Enter остаётся переносом строки.
+RBAC Subject account provider находится в `rbac/models/subject/singlepage/ai-chat-account/Account.tsx`. Current Subject разрешает пользовательский Profile через subjects-to-social-module-profiles; меню находится в Profile ai-chat-user-menu. Hook useAIChatProjectHref возвращает последний проект для account links.
 
-Мобильный sidebar открывается под navbar; navbar и его меню доступны. Thread header sticky. Conversation имеет минимальную мобильную высоту 50dvh. Chat/Document переключаются на узком экране, на широком видны рядом. Thread остаётся смонтированным при переходе в настройки и форму создания, сохраняя черновик и историю.
+В Social Profile:
 
-Независимые persistence, API, tools и векторный поиск остаются последующей работой. Studio не анализирует и не индексирует вложения; ответы и предложения — локальная демонстрация. Source не содержит documentId или вложенный массив Files. Chunks остаются производными записями поиска.
+- `ai-chat-project/Profiles.tsx` хранит identities `{id, name, variant}`, access links, create и rename. Доступ определяется текущим Subject/Profile, profiles-to-chats и вариантами Chat/Profile.
+- `ai-chat-project/Component.tsx` разрешает Profile-to-Chat find и предоставляет model scope. Profile.tsx связывает providers с profileId. Внутреннего UI routing нет.
+- `ai-chat-project-select` читает доступные identities в своей модели и показывает ссылки на проекты и создание.
+- `ai-chat-sidebar` читает один Profile; Settings, Products и New thread — реальные ссылки на отдельные Pages.
+- `ai-chat-create` и `ai-chat-settings` содержат соответствующие формы Profile.
 
-## Проверки и продолжение
+Владельцы остальных данных:
 
-259 тестов в 31 файле проходят: `bun test tools/studio apps/studio/workspace apps/studio/modules/host/models/page/singlepage/ai-chat/Component.test.tsx`. TypeScript Studio, content --check, manifests, Design system, code-placement и diff checks проходят. Изолированная сборка Storybook проходит в копии только apps/studio + tools/studio, без libs/apps/host/root tsconfig, со сторонними зависимостями через node_modules.
+- Chat `ai-chat-products` разрешает prepared Thread через chats-to-threads/find; получает только profileId и navigation slot.
+- Thread `ai-chat-products/Thread.tsx` хранит native Thread, messages, draft, pending File IDs, Working On, pane и proposal. Composer/Conversation используют useThread. Conversation разрешает Message через threads-to-messages/find; Message отображает одну запись.
+- Source `ai-chat-document/Source.tsx` хранит Source и Source/File links. Profile-to-Source find ограничен profileId. Source views: ai-chat-document, ai-chat-card и ai-chat-document-link. Редактор пользовательского контекста сохраняет описания материалов.
+- File `ai-chat-attachments/Files.tsx` хранит File records и Blob URL. Source-to-File find фильтрует sourceId, сохраняет порядок и уникальность пары. Detach сохраняет File pool и остальные связи.
+- Skill `ai-chat-products` содержит одну инструкцию работы с продуктами; Product assistant показывает этот Skill в своём modal.
 
-`npm run studio:validate` успешен. Report-mode pipeline показывает четыре approval gaps в параллельно редактируемых бизнес-документах и ноль structural gaps; статусы подтверждения не менялись. Логи: `/private/tmp/studio-slim-tests-final.log`, `/private/tmp/studio-slim-types-final.log`, `/private/tmp/studio-slim-validate.log`, `/private/tmp/studio-slim-storybook-final.log`.
+Preview сохраняет scopes providers по Profile ID при смене страниц. Pages и Thread view размонтируются, данные моделей остаются. Profile/Chat не передают aggregate document/message/source/File arrays или каталог агентов. История хранит снимки Source и Files. Proposal применяется явно; устаревшее после ручной правки предложение отклоняется. Review gates отсутствуют. Cmd/Ctrl Enter отправляет сообщение, обычный Enter вставляет перенос строки.
 
-Browser проверяет один Products/Thread/Source, два Working On options, один агент и навык, Ctrl/Meta Enter, редактор и применение proposal, два uploads и scoped detach с сохранённой историей. Переключение проектов сохраняет независимые знания, Files, историю и черновики. Новый Profile сразу получает Products. Mobile проверяет доступность navbar при открытом sidebar, переключение Chat/Document и отсутствие горизонтального overflow. Console errors/warnings отсутствуют. Последующий шаг формы создания проверен отдельно: Studio TypeScript, 10 scoped tests, desktop/mobile переходы, выбор агента и просмотр навыка, submit без новой записи, Cancel и отсутствие console errors/warnings. Скриншоты: `/private/tmp/studio-products-models-ui.jpg` и `/private/tmp/studio-thread-create-preview.png`. Storybook работает на 4321; временный browser tab закрыт, viewport override снят.
+Мобильный drawer открывается под navbar; navbar доступен и при открытом drawer. PanelHeader sticky. Минимальная мобильная высота Conversation — 50dvh; Chat/Document переключаются на узком экране. На широком экране они видны рядом.
 
-Host сохраняет четыре локальные модели и пять отношений с CRUD, composition и nested editors. Предыдущая production Host build прошла с NODE_OPTIONS=--max-old-space-size=8192; Next lint отключён текущей конфигурацией. Лог: `/private/tmp/studio-correction-host-final.log`. Текущий шаг production не меняет и Host build не повторяет. Ранее вошедшие в PR Knowledge/MCP изменения сохраняются.
+Все реализации находятся в Studio Component.tsx и экспортируются через index.ts; View.tsx отсутствуют. Studio не импортирует production libs, SDK или статику. Старые aggregate adapters остаются отдельными примерами и тестами. Persistence, API, agent tools и векторный поиск — последующие задачи. Studio не анализирует и не индексирует файлы. Source не содержит documentId или вложенный массив Files.
 
-## Git и границы работы
+## Проверки
 
-В общей локальной ветке между предыдущим Studio коммитом и текущим шагом находится отдельный production-коммит `94f63c6a75` про JEV. Он сохранён локально, но отсутствует в PR #371. Для публикации только Studio использован временный checkout поверх прежнего PR head `ea69bb036a`; туда cherry-picked только Studio коммит. Не пушить всю локальную ветку в PR без отдельного запроса на production работу.
+260 тестов в 31 файле проходят: `bun test tools/studio apps/studio/workspace apps/studio/modules/host/models/page/singlepage/ai-chat/Component.test.tsx`. Есть проверка самостоятельности страниц, scoped access, model ownership, файлов, истории и импортной границы. TypeScript Studio проходит в checkout и изолированной копии. Content --check, inventory, Design system metadata и code-placement проходят. Storybook build выполнен из копии только apps/studio + tools/studio + package.json, без libs/apps/host/root tsconfig, с установленными сторонними зависимостями через node_modules.
 
-Не включать чужие изменения: .agents/.claude/.codex README, AGENTS.md, CLAUDE.md, review-pr workflow/skill, workspace business/brand/strategy/design, singlepagestartup product, pre-development cursors, ISSUE-372, PR #368 description, apps/api uploaded files. Текущая реализация включает только 42 Studio файла; сопровождающий коммит — этот handoff, план и PR #371 description.
+`npm run studio:validate` успешен. Report-mode pipeline показывает четыре approval gaps в параллельно редактируемых бизнес-документах и ноль structural gaps; confirmation states не менялись. Логи текущего шага: `/private/tmp/studio-pages-tests-final.log`, `/private/tmp/studio-pages-types-final.log`, `/private/tmp/studio-pages-isolated-types.log`, `/private/tmp/studio-pages-validate.log`, `/private/tmp/studio-pages-build-final.log`.
+
+Browser подтверждает отдельные Pages, переименование профиля, сохранение draft/history/Source при переходах, создание второго Profile с независимой историей, Ctrl Enter и форму создания Thread без новой записи. Мобильный sidebar начинается ровно у нижней границы navbar, аккаунт доступен, горизонтального переполнения нет. Browser console содержит только предупреждение самого Storybook о будущем ariaLabel у PopoverProvider; ошибок приложения нет. Скриншоты: `/private/tmp/studio-pages-mobile-sidebar.png` и `/private/tmp/studio-pages-separate-thread-page.png`. Временный tab закрыт, viewport override снят. Storybook работает на 4321.
+
+Ранее пройденные проверки файлов, proposal, Cmd Enter, account navigation и Host composition записаны в предыдущем Git состоянии handoff. Host сохраняет четыре локальные модели и пять отношений. Предыдущая production Host build прошла с 8 GiB heap; текущий шаг production не меняет и эту сборку не повторяет. Ранее вошедшие в PR Knowledge/MCP изменения сохраняются.
+
+## Git и границы
+
+В локальной ветке находится отдельный production-коммит `94f63c6a75` про JEV. Он сохранён локально и отсутствует в PR #371. Публиковать только новые Studio commits через cherry-pick в checkout `codex/studio-products-review` поверх PR head; не пушить всю локальную ветку. Проверить отсутствие 94f63c6a75 в ancestry публикуемого HEAD, совпадение Studio/документов, нормальный push в codex/ai-chat-ui-review и actual PR head/body. Не использовать force push.
+
+Чужие изменения исключены: .agents/.claude/.codex README, AGENTS.md, CLAUDE.md, review-pr workflow/skill, workspace business/brand/strategy/design, singlepagestartup product, pre-development cursors, ISSUE-372, PR #368 description, apps/api uploads. Текущий шаг включает только Studio компоненты, их tools/tests/metadata, Studio README, этот handoff, план и PR #371 description.

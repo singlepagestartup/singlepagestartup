@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { FilesProvider } from "./Files";
 import { aiChatProductsSourceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
-import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 function Example() {
   const { files } = aiChatProductsSourceFixture();

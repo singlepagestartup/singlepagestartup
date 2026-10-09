@@ -3,7 +3,7 @@
   "title": "ai-chat-project-select",
   "layer": "singlepage",
   "state": "draft",
-  "description": "Project selection from local Social Profile records and callbacks.",
+  "description": "AI Chat project profile workspace, setup and profile selection.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"

@@ -1,5 +1,5 @@
 "use client";
-import { useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useId, useRef, useState, type ReactNode } from "react";
 import {
   Icon,
   kit,
@@ -23,6 +23,7 @@ export function Component({
   const navigationId = useId();
   const navigationTrigger = useRef<HTMLButtonElement>(null);
   const [navigationOpen, setNavigationOpen] = useState(false);
+  const closeNavigation = useCallback(() => setNavigationOpen(false), []);
   const auth = page === "register" || page === "login";
   const nav = auth
     ? [
@@ -191,7 +192,7 @@ export function Component({
             ))}
             {!auth &&
               projectNavigation?.({
-                onNavigate: () => setNavigationOpen(false),
+                onNavigate: closeNavigation,
                 onCloseAutoFocus: (event) => {
                   if (
                     !navigationOpen &&
@@ -207,7 +208,7 @@ export function Component({
             <SubjectAccount
               page={page}
               balance={suppliedBalance}
-              onNavigate={() => setNavigationOpen(false)}
+              onNavigate={closeNavigation}
             />
           )}
           {!auth && (

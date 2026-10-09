@@ -1,0 +1,21 @@
+{
+  "componentName": "social.thread",
+  "pageName": "social",
+  "variantName": "ai-chat-products",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.thread.ai-chat-products",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/models/thread/singlepage/ai-chat-products",
+    "sps.figma.component": "social.thread",
+    "sps.figma.variant": "ai-chat-products",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "thread",
+    "sps.source.variant": "ai-chat-products",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/models/thread/singlepage/ai-chat-products/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/models/thread/singlepage/ai-chat-products/Component.stories.tsx"
+  }
+}

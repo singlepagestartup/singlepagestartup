@@ -1,5 +1,5 @@
 "use client";
-import { useAIChatAccount } from "../ai-chat-settings/Account";
+import { useAIChatAccount } from "../ai-chat-account/Account";
 import { Component as SubjectProfiles } from "../../../../relations/subjects-to-social-module-profiles/singlepage/ai-chat-find/index";
 import { Component as UserProfileMenu } from "../../../../../social/models/profile/singlepage/ai-chat-user-menu/index";
 import { Icon } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";

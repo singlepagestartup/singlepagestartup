@@ -1,45 +1,22 @@
 import { Component as Header } from "./index";
-import { useState } from "react";
 import { Component as ProjectSelect } from "../../../../../social/models/profile/singlepage/ai-chat-project-select/index";
+import { ProfilesProvider } from "../../../../../social/models/profile/singlepage/ai-chat-project/Profiles";
 import type { Meta, StoryObj } from "@storybook/react";
-import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
-
+import { aiChatWorkspaceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 function Example() {
-  const [profiles, setProfiles] = useState([
-    { id: "pottery", title: "Pottery workshops" },
-    { id: "photography", title: "Portrait photography" },
-  ]);
-  const [selected, setSelected] = useState("pottery");
   return (
     <div className="@container font-sps">
       <Header
         page="chat"
         projectNavigation={(props) => (
-          <ProjectSelect
-            data={profiles}
-            value={selected}
-            onChange={(id) => {
-              setSelected(id);
-              props.onNavigate();
-            }}
-            onCreate={() => {
-              const id = `profile-${profiles.length + 1}`;
-              setProfiles((current) => [
-                ...current,
-                { id, title: "New project" },
-              ]);
-              setSelected(id);
-              props.onNavigate();
-            }}
-            onCloseAutoFocus={props.onCloseAutoFocus}
-          />
+          <ProjectSelect profileId="pottery" {...props} />
         )}
       />
     </div>
   );
 }
-
 const meta = {
   id: "modules-website-builder-models-widget-singlepage-ai-chat-header",
   title: "Modules/Website-Builder/Models/Widget/Singlepage/ai-chat-header",
@@ -48,7 +25,9 @@ const meta = {
   decorators: [
     (Story) => (
       <AccountProvider account={aiChatAccount}>
-        <Story />
+        <ProfilesProvider {...aiChatWorkspaceFixture()}>
+          <Story />
+        </ProfilesProvider>
       </AccountProvider>
     ),
   ],

@@ -3,7 +3,7 @@
   "title": "ai-chat-projects-new",
   "layer": "singlepage",
   "state": "draft",
-  "description": "AI Chat page recipe for /ai-chat/projects/new.",
+  "description": "Concrete AI Chat Page: ai-chat-projects-new.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
@@ -19,8 +19,16 @@
   },
   "blocks": [
     {
-      "id": "social.profile.ai-chat-workspace",
-      "path": "../../../../../social/models/profile/singlepage/ai-chat-workspace"
+      "id": "host.layout.ai-chat",
+      "path": "../../../../../host/models/layout/singlepage/ai-chat"
+    },
+    {
+      "id": "social.profile.ai-chat-project-select",
+      "path": "../../../../../social/models/profile/singlepage/ai-chat-project-select"
+    },
+    {
+      "id": "social.profile.ai-chat-create",
+      "path": "../../../../../social/models/profile/singlepage/ai-chat-create"
     }
   ]
 }

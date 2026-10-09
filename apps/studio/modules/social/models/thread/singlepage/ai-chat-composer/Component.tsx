@@ -8,8 +8,8 @@ import {
 import { readProjectFiles } from "../../../../../../workspace/utils/products/ai-chat-files";
 import { ProjectPendingFile } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/index";
 
-import { useThread } from "../ai-chat-workspace/Thread";
-import { useSource } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/Source";
+import { useThread } from "../ai-chat-products/Thread";
+import { useSource } from "../../../../../knowledge/models/source/singlepage/ai-chat-document/Source";
 import { useFiles } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
 export function Component() {
   const {

@@ -1,34 +1,29 @@
 import { Component } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
-import { useState } from "react";
-import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
+import { ProfilesProvider } from "../ai-chat-project/Profiles";
+import { ProjectProvider } from "../ai-chat-project/Profile";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
+import { aiChatWorkspaceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
+
 function Example() {
-  const [data, setData] = useState({
-    id: "pottery",
-    name: "Pottery workshops",
-  });
   return (
-    <Component
-      data={data}
-      active
-      onRename={(id, name) => setData({ id, name })}
-    />
+    <AccountProvider account={aiChatAccount}>
+      <ProfilesProvider {...aiChatWorkspaceFixture()}>
+        <ProjectProvider profileId="pottery">
+          <Component profileId="pottery">
+            <p className="p-4">Project profile content slot</p>
+          </Component>
+        </ProjectProvider>
+      </ProfilesProvider>
+    </AccountProvider>
   );
 }
-
 const meta = {
   id: "modules-social-models-profile-singlepage-ai-chat-project",
   title: "Modules/Social/Models/Profile/Singlepage/ai-chat-project",
   component: Example,
   parameters: { layout: "fullscreen" },
-  decorators: [
-    (Story) => (
-      <AccountProvider account={aiChatAccount}>
-        <Story />
-      </AccountProvider>
-    ),
-  ],
 } satisfies Meta<typeof Example>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};

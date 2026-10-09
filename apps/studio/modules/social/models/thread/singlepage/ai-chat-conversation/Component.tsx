@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useRef, useEffect, useState } from "react";
 import { type IProjectAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
-import { useThread } from "../ai-chat-workspace/Thread";
+import { useThread } from "../ai-chat-products/Thread";
 import { orderedThreadMessages } from "../../../../../../workspace/utils/products/ai-chat-threads";
 import { Component as ThreadMessages } from "../../../../relations/threads-to-messages/singlepage/ai-chat-find/index";
 import { Component as ProjectAgentProfile } from "../../../profile/singlepage/ai-chat-agent/index";

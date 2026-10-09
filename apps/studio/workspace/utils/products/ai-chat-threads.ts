@@ -13,7 +13,7 @@ export interface IAIChatThread {
   id: string;
   slug: string;
   title: string;
-  variant: "ai-chat-workspace";
+  variant: "ai-chat-products";
 }
 export interface IChatThreadRelation {
   id: string;
@@ -67,7 +67,7 @@ export function projectThreadGraph(
       id: threadId,
       slug: `${encodeURIComponent(project.id)}:${kind}:${encodeURIComponent(localId)}`,
       title,
-      variant: "ai-chat-workspace",
+      variant: "ai-chat-products",
     });
     selections.push({ threadId, kind, localId });
     chatThreads.push({

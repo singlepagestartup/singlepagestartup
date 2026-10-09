@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { MarkdownDocument } from "./Markdown";
-import { useAIChatWorkspaceHref } from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { useAIChatProjectHref } from "../../../../../modules/rbac/models/subject/singlepage/ai-chat-account/Account";
 import { Button, Icon, kit, SquareImage, type IconName } from "./primitives";
 import type {
   IAIChatServicePageContent,
@@ -61,7 +61,7 @@ export function ServicePage({
   children,
   showIntro = true,
 }: IServicePageProps) {
-  const workspaceHref = useAIChatWorkspaceHref();
+  const projectHref = useAIChatProjectHref();
   return (
     <div
       data-sps-theme="singlepage"
@@ -72,7 +72,7 @@ export function ServicePage({
         <a
           href={copy.labels["back-href"].replace(
             "/ai-chat/projects/example",
-            workspaceHref,
+            projectHref,
           )}
           className={`mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-sps-muted hover:text-sps-graphite ${kit.focus}`}
         >
@@ -178,14 +178,14 @@ export function SectionText({
   tone = "light",
   size = "sm",
 }: ISectionTextProps) {
-  const workspaceHref = useAIChatWorkspaceHref();
+  const projectHref = useAIChatProjectHref();
   return (
     <div
       className={`space-y-3 ${size === "xs" ? "text-xs [&>div]:text-xs [&>div]:leading-relaxed" : "text-sm"} leading-relaxed [&_p]:m-0 [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-4 [&_strong]:font-semibold ${tone === "dark" ? "text-white/80 [&_a]:text-white [&_strong]:text-white" : "text-sps-muted [&_a]:text-sps-graphite [&_strong]:text-sps-graphite"}`}
     >
       {section.paragraphs.map((paragraph, index) => (
         <MarkdownDocument key={index}>
-          {paragraph.replaceAll("/ai-chat/projects/example", workspaceHref)}
+          {paragraph.replaceAll("/ai-chat/projects/example", projectHref)}
         </MarkdownDocument>
       ))}
     </div>
@@ -362,5 +362,31 @@ export function ServiceDocument({ eyebrow, text }: IServiceDocumentProps) {
         </article>
       </main>
     </div>
+  );
+}
+
+export interface IPanelHeaderProps {
+  title: string;
+  label: string;
+  navigation?: ReactNode;
+  actions?: ReactNode;
+}
+export function PanelHeader({
+  title,
+  label,
+  navigation,
+  actions,
+}: IPanelHeaderProps) {
+  return (
+    <header className="sticky top-18 z-10 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-sps-line bg-sps-white p-4 @[760px]/workspace:top-0">
+      <div className="flex min-w-0 items-center gap-3">
+        {navigation}
+        <div className="min-w-0">
+          <p className={`text-xs ${kit.muted}`}>{label}</p>
+          <h2 className="mt-1 break-words text-base font-semibold">{title}</h2>
+        </div>
+      </div>
+      {actions}
+    </header>
   );
 }

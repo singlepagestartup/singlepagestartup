@@ -1,0 +1,27 @@
+{
+  "id": "host.layout.ai-chat",
+  "title": "layout / ai-chat",
+  "description": "Local AI Chat layout variant: ai-chat.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "layout",
+    "variant": "ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.layout",
+    "pageName": "host",
+    "variantName": "ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

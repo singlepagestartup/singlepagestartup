@@ -2,7 +2,7 @@ import { Component } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
 
 function Example() {
-  return <Component onCancel={() => {}} />;
+  return <Component cancelHref="/ai-chat/projects/pottery" />;
 }
 
 const meta = {

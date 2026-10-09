@@ -144,7 +144,7 @@ publish(
 );
 const materials = readFileSync(path.join(source, "new-project.md"), "utf8");
 publish(
-  "apps/studio/modules/social/models/profile/singlepage/ai-chat-workspace/disclosure.json",
+  "apps/studio/modules/social/models/profile/singlepage/ai-chat-create/disclosure.json",
   JSON.stringify(
     materials.slice(
       materials.indexOf("## How your materials are processed and stored"),

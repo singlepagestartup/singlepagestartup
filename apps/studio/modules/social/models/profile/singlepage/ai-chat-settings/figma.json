@@ -1,0 +1,23 @@
+{
+  "componentName": "social.profile",
+  "pageName": "social",
+  "variantName": "ai-chat-settings",
+  "nodeId": null,
+  "variantNodeId": null,
+  "syncStatus": "not-created",
+  "metadataFile": "figma.json",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.profile.ai-chat-settings",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/models/profile/singlepage/ai-chat-settings",
+    "sps.figma.component": "social.profile",
+    "sps.figma.variant": "ai-chat-settings",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "profile",
+    "sps.source.variant": "ai-chat-settings",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/social/models/profile/singlepage/ai-chat-settings/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/models/profile/singlepage/ai-chat-settings/Component.stories.tsx"
+  }
+}

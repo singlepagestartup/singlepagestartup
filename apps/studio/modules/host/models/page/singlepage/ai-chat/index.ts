@@ -1,1 +1,1 @@
-export { Component, type IAIChatPageProps } from "./Component";
+export { Component } from "./Component";

@@ -1,6 +1,6 @@
 import { Component } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
-import { AccountProvider } from "./Account";
+import { AccountProvider } from "../ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 
 function Example() {

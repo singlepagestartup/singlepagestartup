@@ -10,9 +10,7 @@
     },
     "account": {
       "title": "Create an account",
-      "paragraphs": [
-        "Your free token balance appears in the workspace."
-      ],
+      "paragraphs": ["Your free token balance appears in the workspace."],
       "items": [],
       "links": []
     },

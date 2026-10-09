@@ -1,4 +1,9 @@
-import { Component as Page, type IAIChatPageProps } from "../ai-chat/index";
-export function Component(props: IAIChatPageProps = {}) {
-  return <Page {...props} url={props.url ?? "/ai-chat/settings"} />;
+import { Component as Layout } from "../../../layout/singlepage/ai-chat/index";
+import { Component as AccountSettings } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/index";
+export function Component() {
+  return (
+    <Layout>
+      <AccountSettings />
+    </Layout>
+  );
 }

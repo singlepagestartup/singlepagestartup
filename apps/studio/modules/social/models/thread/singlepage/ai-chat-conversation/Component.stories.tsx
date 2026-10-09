@@ -1,8 +1,8 @@
 import { Component } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
 import { FilesProvider } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
-import { SourceProvider } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/Source";
-import { ThreadProvider } from "../ai-chat-workspace/Thread";
+import { SourceProvider } from "../../../../../knowledge/models/source/singlepage/ai-chat-document/Source";
+import { ThreadProvider } from "../ai-chat-products/Thread";
 function Example() {
   return (
     <FilesProvider>
@@ -12,7 +12,7 @@ function Example() {
             id: "pottery:thread:document:products",
             slug: "pottery:document:products",
             title: "Products.md",
-            variant: "ai-chat-workspace",
+            variant: "ai-chat-products",
           }}
         >
           <Component />

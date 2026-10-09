@@ -1,5 +1,1 @@
-export {
-  Component,
-  type IProjectProfileOption,
-  type IProjectProfileSelectProps,
-} from "./Component";
+export { Component, type IProjectSelectProps } from "./Component";

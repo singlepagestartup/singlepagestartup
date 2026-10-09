@@ -13,9 +13,9 @@ import {
   aiChatWorkspaceFixture,
 } from "./ai-chat-workspace-fixture";
 import { createProjectProfile } from "./ai-chat-workspace";
-import { AccountProvider } from "../../../modules/rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { AccountProvider } from "../../../modules/rbac/models/subject/singlepage/ai-chat-account/Account";
 import { Component as SubjectAccount } from "../../../modules/rbac/models/subject/singlepage/ai-chat-account/index";
-import { Component as Page } from "../../../modules/host/models/page/singlepage/ai-chat/index";
+import { AIChatPreview } from "../../products/singlepage/ai-chat/website/Preview";
 
 test("account menu resolves only the current subject's user profile", () => {
   const account = {
@@ -154,22 +154,20 @@ test("route IDs select profiles without falling back to an unrelated project", (
   const foreign = createProjectProfile("foreign", "Foreign project");
   workspace.initialProjects.push(foreign);
   const html = renderToStaticMarkup(
-    <Page
+    <AIChatPreview
       account={aiChatAccount}
-      workspace={workspace}
-      url="/ai-chat/projects/foreign"
-      onNavigate={() => {}}
+      profiles={workspace}
+      initialHref="/ai-chat/projects/foreign"
     />,
   );
   expect(html).toContain("Project profile unavailable");
   expect(html).not.toContain('data-profile-id="foreign"');
   expect(html).not.toContain("Foreign project");
   const ownHtml = renderToStaticMarkup(
-    <Page
+    <AIChatPreview
       account={aiChatAccount}
-      workspace={workspace}
-      url="/ai-chat/projects/pottery"
-      onNavigate={() => {}}
+      profiles={workspace}
+      initialHref="/ai-chat/projects/pottery"
     />,
   );
   expect(ownHtml).toContain('data-ds-block="social.profile.ai-chat-project"');

@@ -1,7 +1,7 @@
 import { Component } from "./index";
 import { useCallback, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
-import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { AccountProvider } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
 
 function Example() {

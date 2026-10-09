@@ -8,10 +8,12 @@ import {
   orderedThreadMessages,
   appendThreadExchange,
 } from "./ai-chat-threads";
-import { Component as ChatWorkspace } from "../../../modules/social/models/chat/singlepage/ai-chat-workspace/index";
-import { SourceProvider } from "../../../modules/knowledge/models/source/singlepage/ai-chat-editor/Source";
+import { Component as ChatWorkspace } from "../../../modules/social/models/chat/singlepage/ai-chat-products/index";
+import { SourceProvider } from "../../../modules/knowledge/models/source/singlepage/ai-chat-document/Source";
 import { FilesProvider } from "../../../modules/file-storage/models/file/singlepage/ai-chat-attachments/Files";
-import { Component as ProjectProfile } from "../../../modules/social/models/profile/singlepage/ai-chat-project/index";
+import { AIChatPreview } from "../../products/singlepage/ai-chat/website/Preview";
+import { linkProjectProfile } from "./ai-chat-models";
+import { aiChatAccount } from "./ai-chat-account-fixture";
 import { productsAgent } from "../../../modules/social/models/profile/singlepage/ai-chat-agent/index";
 import { aiChatProductsSourceFixture } from "./ai-chat-workspace-fixture";
 
@@ -114,10 +116,10 @@ test("the active prototype composes one Products Thread and one Source without a
     </FilesProvider>,
   );
   for (const marker of [
-    "social.chat.ai-chat-workspace",
-    "social.thread.ai-chat-workspace",
+    "social.chat.ai-chat-products",
+    "social.thread.ai-chat-products",
     "social.message.ai-chat-message",
-    "knowledge.source.ai-chat-section",
+    "knowledge.source.ai-chat-card",
   ])
     expect(html).toContain(`data-ds-block="${marker}"`);
   expect(html.match(/data-model="thread"/g)).toHaveLength(1);
@@ -142,10 +144,18 @@ test("the active prototype composes one Products Thread and one Source without a
 test("new profile identity is sufficient to prepare Products; profile IDs isolate model records", () => {
   const render = (id: string) =>
     renderToStaticMarkup(
-      <ProjectProfile
-        data={{ id, name: "Empty project" }}
-        active
-        onRename={() => {}}
+      <AIChatPreview
+        initialHref={`/ai-chat/projects/${id}`}
+        profiles={{
+          initialProjects: [
+            { id, name: "Empty project", variant: "ai-chat-project" },
+          ],
+          initialLinks: linkProjectProfile(
+            { chats: [], profilesToChats: [] },
+            aiChatAccount.profiles[0].id,
+            { id, name: "Empty project" },
+          ),
+        }}
       />,
     );
   const first = render("first");

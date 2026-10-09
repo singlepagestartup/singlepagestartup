@@ -1,20 +1,8 @@
-import { aiChatWorkspaceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
-import { Component as Page } from "./index";
-import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
+import { AIChatPreview } from "../../../../../../workspace/products/singlepage/ai-chat/website/Preview";
 import type { Meta, StoryObj } from "@storybook/react";
-
-const stayInStory = (_url: string) => {};
 function Example() {
-  return (
-    <Page
-      account={aiChatAccount}
-      onNavigate={stayInStory}
-      workspace={aiChatWorkspaceFixture()}
-      url="/ai-chat/projects/pottery"
-    />
-  );
+  return <AIChatPreview initialHref="/ai-chat/projects/pottery" />;
 }
-
 const meta = {
   id: "modules-host-models-page-singlepage-ai-chat-projects-project-id",
   title: "Modules/Host/Models/Page/Singlepage",

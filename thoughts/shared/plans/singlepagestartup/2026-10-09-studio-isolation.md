@@ -1,6 +1,6 @@
 # Локальная реализация Studio
 
-Статус: один Products реализован, проверен и опубликован в PR #371; code review ожидается. Основание: запрос в текущем чате и review PR #371. Ветка: `codex/studio-host-models`; исходный коммит прототипа: `a826615f6d`.
+Статус: отдельные страницы и доменные компоненты реализованы и проверены. Один Products остаётся активным примером; PR #371 ожидает code review. Основание: запрос в текущем чате и review PR #371. Ветка: `codex/studio-host-models`; исходный коммит прототипа: `a826615f6d`.
 
 Studio содержит собственные React views, интерфейсы, локальные примеры и операции состояния. Profile и Chat передают идентификаторы, параметры отображения и slots. Thread, Source и File владеют своими данными и обработчиками в локальных providers. Каталоги `modules/<module>/{models,relations}/<entity>/singlepage/<variant>` сохраняют владельцев компонентов. RBAC Subject владеет account provider. Общие визуальные элементы находятся в существующем interface-kit, чистые операции — в workspace/utils. Studio не зависит от libs, Host, production SDK и production статики.
 
@@ -63,3 +63,14 @@ Studio содержит собственные React views, интерфейсы
 - [x] Показывать New thread в навигации проекта. Открывать страницу создания с названием, выбором одного агента, просмотром навыка и Cancel. Submit демонстрирует feedback без создания записей.
 
 Новые локальные React providers живут рядом с компонентами соответствующей модели в существующих каталогах variants. В production ничего не переносим. Создание отдельных продуктов проектируем позже; этот шаг оставляет одну карточку знания Products.
+
+## Отдельные страницы и доменные компоненты
+
+- [x] Каждый Host Page отображает один экран: landing, register, login, account settings, help, tokens, project create, Products, project settings, thread create. Последние два получают отдельные маршруты и stories.
+- [x] Host Layout владеет раскладкой и мобильным drawer. Page импортирует sidebar из Social Profile и содержимое из соответствующей модели.
+- [x] Social Profile содержит идентичность, связи доступа, sidebar и формы создания/настройки профиля. Chat связывает Products Thread; Thread отображает разговор; Source отображает документ и карточку знания.
+- [x] Компоненты получают названия по роли: sidebar, project select, products, document, card, document link. В Page и Profile нет внутреннего выбора экрана по URL.
+- [x] Preview-адаптер Storybook переключает отдельные страницы и сохраняет локальные состояния моделей при переходах. Production-код не изменяется.
+- [x] Проверить импортные границы, типы, существующие сценарии, отдельные страницы в браузере и мобильный drawer. Обновить handoff и PR.
+
+Результат: десять конкретных Host Page, два Host Layout, Social Profile sidebar/create/settings/select. Каждый Page Component содержит 9–51 строку. Router находится в website/Preview.tsx; модельные providers сохраняют состояние при смене страниц. Проверки: 260 тестов, TypeScript, studio:validate, metadata/content checks и изолированная сборка Storybook. Browser подтверждает переходы, сохранение данных, форму без новой записи и мобильную иерархию navbar/sidebar.

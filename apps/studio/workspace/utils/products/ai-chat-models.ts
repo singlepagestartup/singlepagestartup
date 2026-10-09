@@ -174,7 +174,7 @@ export function projectKnowledge(project: IProjectProfile): IProjectKnowledge {
     document.sections.map((section) => ({
       id: sourceId(document.id, section.title),
       slug: projectSourceSlug(project.id, document.id, section.title),
-      variant: "ai-chat-section" as const,
+      variant: "ai-chat-card" as const,
       title: section.title,
       content: document.values[section.title] ?? "",
       description: section.prompt,

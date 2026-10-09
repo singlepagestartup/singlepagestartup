@@ -1,6 +1,6 @@
 "use client";
 import { useId, useState } from "react";
-import { useAIChatAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-settings/Account";
+import { useAIChatAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/Account";
 import {
   Button,
   Icon,

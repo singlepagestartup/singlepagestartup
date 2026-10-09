@@ -11,9 +11,9 @@ import {
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
 import { ThreadAgentSelect } from "../../../profile/singlepage/ai-chat-agent/index";
 export interface IThreadCreateProps {
-  onCancel: () => void;
+  cancelHref: string;
 }
-export function Component({ onCancel }: IThreadCreateProps) {
+export function Component({ cancelHref }: IThreadCreateProps) {
   const [title, setTitle] = useState("");
   const [hasAgent, setHasAgent] = useState(false);
   const [previewed, setPreviewed] = useState(false);
@@ -52,9 +52,12 @@ export function Component({ onCancel }: IThreadCreateProps) {
           <Icon name="chat-circle" />
           Create thread
         </Button>
-        <Button type="button" variant="secondary" onClick={onCancel}>
+        <a
+          href={cancelHref}
+          className={`inline-flex min-h-11 items-center rounded-xl border border-sps-line px-5 text-sm font-semibold ${kit.focus}`}
+        >
           Cancel
-        </Button>
+        </a>
       </div>
       {previewed && <Feedback>Preview only. No thread was created.</Feedback>}
     </form>

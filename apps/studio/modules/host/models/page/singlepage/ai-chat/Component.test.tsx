@@ -3,13 +3,13 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Component as Page } from "./index";
-import { isAIChatRoute } from "./utils";
+import { AIChatPreview } from "../../../../../../workspace/products/singlepage/ai-chat/website/Preview";
+import { isAIChatRoute } from "../../../../../../workspace/utils/products/ai-chat-routes";
 import { documentAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
 import { ProjectAgentPicker } from "../../../../../social/models/profile/singlepage/ai-chat-agent/index";
 import { FilesProvider } from "../../../../../file-storage/models/file/singlepage/ai-chat-attachments/Files";
-import { SourceProvider } from "../../../../../knowledge/models/source/singlepage/ai-chat-editor/Source";
-import { ThreadProvider } from "../../../../../social/models/thread/singlepage/ai-chat-workspace/Thread";
+import { SourceProvider } from "../../../../../knowledge/models/source/singlepage/ai-chat-document/Source";
+import { ThreadProvider } from "../../../../../social/models/thread/singlepage/ai-chat-products/Thread";
 import { Component as ProjectConversation } from "../../../../../social/models/thread/singlepage/ai-chat-conversation/index";
 
 const root = path.resolve(import.meta.dir, "../../../../../../../..");
@@ -26,6 +26,8 @@ describe("Local AI Chat components", () => {
       "/ai-chat/help",
       "/ai-chat/projects/new#materials",
       "/ai-chat/projects/pottery",
+      "/ai-chat/projects/pottery/settings",
+      "/ai-chat/projects/pottery/threads/new",
     ])
       expect(isAIChatRoute(url)).toBe(true);
     for (const url of [
@@ -34,6 +36,8 @@ describe("Local AI Chat components", () => {
       "/projects/pottery",
       "/ai-chat/unknown",
       "/ai-chat/projects/pottery/unknown",
+      "/ai-chat/projects/new/settings",
+      "/ai-chat/projects/%bad/settings",
     ])
       expect(isAIChatRoute(url)).toBe(false);
   });
@@ -67,7 +71,19 @@ describe("Local AI Chat components", () => {
         if (resolved) visit(resolved);
       }
     }
-    visit(path.join(import.meta.dir, "Component.tsx"));
+    for (const variant of [
+      "ai-chat",
+      "ai-chat-register",
+      "ai-chat-login",
+      "ai-chat-settings",
+      "ai-chat-help",
+      "ai-chat-tokens",
+      "ai-chat-projects-new",
+      "ai-chat-projects-project-id",
+      "ai-chat-projects-project-id-settings",
+      "ai-chat-projects-project-id-threads-new",
+    ])
+      visit(path.join(import.meta.dir, "..", variant, "Component.tsx"));
     expect(visited.size).toBeGreaterThan(20);
   });
 
@@ -82,10 +98,9 @@ describe("Local AI Chat components", () => {
       "/ai-chat/projects/new",
     ]) {
       const html = renderToStaticMarkup(
-        <Page
-          url={url}
+        <AIChatPreview
+          initialHref={url}
           account={{ balance: { free: 250, purchased: 1000 } }}
-          onNavigate={() => {}}
         />,
       );
       for (const [, href] of html.matchAll(/<a[^>]*href="(\/[^\"]*)"/g))
@@ -104,6 +119,47 @@ describe("Local AI Chat components", () => {
         ).toBe(true);
       expect(html).not.toContain("/sps/");
     }
+  });
+
+  test("concrete Pages own one screen and import domain components, without a Page router", () => {
+    const variants = [
+      "ai-chat",
+      "ai-chat-register",
+      "ai-chat-login",
+      "ai-chat-settings",
+      "ai-chat-help",
+      "ai-chat-tokens",
+      "ai-chat-projects-new",
+      "ai-chat-projects-project-id",
+      "ai-chat-projects-project-id-settings",
+      "ai-chat-projects-project-id-threads-new",
+    ];
+    for (const variant of variants) {
+      const file = path.join(import.meta.dir, "..", variant, "Component.tsx");
+      const text = readFileSync(file, "utf8");
+      const imports = ts.preProcessFile(text, true, true).importedFiles;
+      expect(
+        imports.some(({ fileName }) => fileName.startsWith("../ai-chat")),
+      ).toBe(false);
+      expect(text).not.toMatch(
+        /currentUrl|popstate|location\.pathname|navigationHref|workspaceOpened/,
+      );
+      expect(text.split("\n").length).toBeLessThan(100);
+    }
+    const settings = renderToStaticMarkup(
+      <AIChatPreview initialHref="/ai-chat/projects/pottery/settings" />,
+    );
+    expect(settings).toContain(
+      'data-ds-block="social.profile.ai-chat-settings"',
+    );
+    expect(settings).not.toContain('data-model="thread"');
+    const create = renderToStaticMarkup(
+      <AIChatPreview initialHref="/ai-chat/projects/pottery/threads/new" />,
+    );
+    expect(create).toContain('data-ds-block="social.thread.ai-chat-create"');
+    expect(create).toContain("Thread name");
+    expect(create).toContain("Thread agent");
+    expect(create).not.toContain('data-model="thread"');
   });
 
   test("no-agent selection omits preset-specific actions", () => {
@@ -144,7 +200,7 @@ describe("Local AI Chat components", () => {
                 id: "history:products",
                 slug: "history:products",
                 title: "Products.md",
-                variant: "ai-chat-workspace",
+                variant: "ai-chat-products",
               }}
               initialMessages={messages}
             >
