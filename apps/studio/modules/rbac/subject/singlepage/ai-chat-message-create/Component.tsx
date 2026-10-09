@@ -8,11 +8,12 @@ import {
 import { readProjectFiles } from "../../../../../workspace/utils/products/ai-chat-files";
 import { Component as FileStorageModuleFile } from "../../../../file-storage/file/index";
 
-import { useThread } from "../ai-chat-products/Thread";
+import { useThread } from "../../../../social/thread/singlepage/ai-chat-overview/Thread";
 import { useSource } from "../../../../knowledge/source/singlepage/ai-chat-document/Source";
 import { useFiles } from "../../../../file-storage/file/singlepage/ai-chat-attachments/Files";
 export function Component() {
   const {
+    thread,
     draft: value,
     setDraft: onChange,
     send: onSend,
@@ -25,8 +26,8 @@ export function Component() {
   const { source } = useSource();
   const { files: records, register } = useFiles();
   const files = records.filter((file) => fileIds.includes(file.id));
-  const label = "Message the product assistant";
-  const placeholder = "Discuss products or request a change.";
+  const label = "Message the assistant";
+  const placeholder = "Discuss this knowledge or request a change.";
   const id = useId();
   const picker = useRef<HTMLInputElement>(null);
   const mounted = useRef(true);
@@ -68,6 +69,10 @@ export function Component() {
   }
   return (
     <form
+      data-ds-block="rbac.subject.ai-chat-message-create"
+      data-module="rbac"
+      data-model="subject"
+      data-variant="ai-chat-message-create"
       onSubmit={submit}
       className={`flex min-h-0 shrink-0 flex-col border-t border-sps-line bg-sps-white p-4 max-h-[min(24rem,60%)]`}
     >
@@ -100,7 +105,7 @@ export function Component() {
                   className="z-50 max-h-80 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg border border-sps-line bg-sps-white p-1 font-sps text-sps-graphite shadow-md"
                 >
                   <DropdownMenu.Label className="px-3 py-2 text-xs font-semibold text-sps-muted">
-                    Products.md · working context
+                    {thread.title} · working context
                   </DropdownMenu.Label>
                   <DropdownMenu.RadioGroup
                     value={workingOn}

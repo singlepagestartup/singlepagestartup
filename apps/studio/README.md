@@ -253,10 +253,16 @@ that dropdown after sign-in. The compact footer contains no admin link.
 Profile `ai-chat-project-overview` owns one sidebar and a responsive project
 frame. Tailwind container queries control the frame's columns, navigation
 controls and sidebar position; local state controls opening and dismissal.
-Chat `ai-chat-products` composes the prepared Thread directly.
+Chat `ai-chat-overview` composes Thread `ai-chat-overview`. Products is the
+Knowledge Source example's title. Thread derives its
+identity and title from the supplied Source. The Thread provider retains local
+state across project page navigation and reuses an existing scope.
 Thread's local provider owns messages, draft, pending File IDs, Working On, pane
-selection and proposals. Conversation maps those messages to Message views.
-Composer reads the Thread state. Working On selects Whole document or Products.
+selection and proposals. Thread `ai-chat-conversation` maps records to Social
+Message `ai-chat-message` views. RBAC Subject `ai-chat-message-create` owns the
+sending form and reads that Thread state. Host Page supplies it through the
+Chat/Thread `messageCreate` slot, keeping Social independent of RBAC. Working On
+selects Whole document or the supplied Source's title.
 Sending snapshots the supplied Source and files; later edits preserve history.
 
 SourceProvider owns one Source and an array of displayed File IDs. Source

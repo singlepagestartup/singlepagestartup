@@ -9,13 +9,21 @@ import {
 import { useSource } from "../../../../knowledge/source/singlepage/ai-chat-document/Source";
 
 import { Component as Conversation } from "../ai-chat-conversation/index";
-import { Component as Composer } from "../ai-chat-composer/index";
 import { PanelHeader } from "../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
-import { useThread } from "./Thread";
-export interface IProductsThreadProps {
+import { ThreadProvider, useThread } from "./Thread";
+export interface IThreadOverviewProps {
   navigation?: ReactNode;
+  messageCreate?: ReactNode;
 }
-export function Component({ navigation }: IProductsThreadProps) {
+export function Component(props: IThreadOverviewProps) {
+  return (
+    <ThreadProvider>
+      <ThreadOverview {...props} />
+    </ThreadProvider>
+  );
+}
+
+function ThreadOverview({ navigation, messageCreate }: IThreadOverviewProps) {
   const {
     thread,
     pane,
@@ -35,12 +43,12 @@ export function Component({ navigation }: IProductsThreadProps) {
   }, [pane, proposal]);
   return (
     <div
-      data-ds-block="social.thread.ai-chat-products"
+      data-ds-block="social.thread.ai-chat-overview"
       data-module="social"
       data-model="thread"
       data-id={thread.id}
       data-thread-id={thread.id}
-      data-variant="ai-chat-products"
+      data-variant="ai-chat-overview"
       data-knowledge-source-ids={source.id}
       className="flex min-h-0 min-w-0 flex-1 flex-col"
       aria-label={thread.title}
@@ -99,7 +107,7 @@ export function Component({ navigation }: IProductsThreadProps) {
               </div>
             )}
           </div>
-          <Composer />
+          {messageCreate}
         </div>
         <div
           className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-sps-line @[900px]/chat:block @[900px]/chat:border-l`}

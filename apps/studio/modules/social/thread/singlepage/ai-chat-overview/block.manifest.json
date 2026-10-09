@@ -1,9 +1,9 @@
 {
-  "id": "social.thread.ai-chat-products",
-  "title": "ai-chat-products",
+  "id": "social.thread.ai-chat-overview",
+  "title": "ai-chat-overview",
   "layer": "singlepage",
   "state": "draft",
-  "description": "Local Thread workspace composing its messages, knowledge editor and composer.",
+  "description": "Thread overview displaying Message records and its Knowledge Source, with a messageCreate slot.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
@@ -11,7 +11,7 @@
   "figma": {
     "componentName": "social.thread",
     "pageName": "social",
-    "variantName": "ai-chat-products",
+    "variantName": "ai-chat-overview",
     "nodeId": null,
     "variantNodeId": null,
     "syncStatus": "not-created",
@@ -21,7 +21,7 @@
     "module": "social",
     "entityType": "model",
     "entity": "thread",
-    "variant": "ai-chat-products"
+    "variant": "ai-chat-overview"
   },
   "contentSlots": []
 }

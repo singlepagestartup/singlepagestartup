@@ -3,7 +3,7 @@ import { Component as SocialModuleThread } from "../../index";
 import type { Meta, StoryObj } from "@storybook/react";
 import { FilesProvider } from "../../../../file-storage/file/singlepage/ai-chat-attachments/Files";
 import { SourceProvider } from "../../../../knowledge/source/singlepage/ai-chat-document/Source";
-import { ThreadProvider } from "../ai-chat-products/Thread";
+import { ThreadProvider } from "../ai-chat-overview/Thread";
 function Example() {
   return (
     <FilesProvider>
@@ -13,7 +13,7 @@ function Example() {
             id: "pottery:thread:document:products",
             slug: "pottery:document:products",
             title: "Products.md",
-            variant: "ai-chat-products",
+            variant: "ai-chat-overview",
           }}
         >
           <SocialModuleThread variant="ai-chat-conversation" />

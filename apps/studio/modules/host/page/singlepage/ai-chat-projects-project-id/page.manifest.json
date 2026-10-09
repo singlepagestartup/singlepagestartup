@@ -35,8 +35,8 @@
       "path": "../../../../social/profile/singlepage/ai-chat-sidebar"
     },
     {
-      "id": "social.chat.ai-chat-products",
-      "path": "../../../../social/chat/singlepage/ai-chat-products"
+      "id": "social.chat.ai-chat-overview",
+      "path": "../../../../social/chat/singlepage/ai-chat-overview"
     },
     {
       "id": "rbac.subject.account",
@@ -45,6 +45,22 @@
     {
       "id": "social.profile.ai-chat-project-select",
       "path": "../../../../social/profile/singlepage/ai-chat-project-select"
+    },
+    {
+      "id": "social.thread.ai-chat-overview",
+      "path": "../../../../social/thread/singlepage/ai-chat-overview"
+    },
+    {
+      "id": "social.thread.ai-chat-conversation",
+      "path": "../../../../social/thread/singlepage/ai-chat-conversation"
+    },
+    {
+      "id": "social.message.ai-chat-message",
+      "path": "../../../../social/message/singlepage/ai-chat-message"
+    },
+    {
+      "id": "rbac.subject.ai-chat-message-create",
+      "path": "../../../../rbac/subject/singlepage/ai-chat-message-create"
     }
   ]
 }

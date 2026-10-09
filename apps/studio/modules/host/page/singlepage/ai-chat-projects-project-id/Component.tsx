@@ -35,9 +35,12 @@ export function Component({ profileId }: IProjectPageProps) {
       >
         {(navigation) => (
           <SocialModuleChat
-            variant="ai-chat-products"
-            profileId={profileId}
+            variant="ai-chat-overview"
+            chatId={`${profileId}:project-chat`}
             navigation={navigation}
+            messageCreate={
+              <RbacModuleSubject variant="ai-chat-message-create" />
+            }
           />
         )}
       </SocialModuleProfile>

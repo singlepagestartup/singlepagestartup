@@ -3,7 +3,7 @@ import { Component as SocialModuleProfile } from "../../../profile/index";
 import { Component as SocialModuleMessage } from "../../../message/index";
 import { useCallback, useRef, useEffect, useState } from "react";
 import { type IProjectAgent } from "../../../../../workspace/utils/products/ai-chat-agent-resolver";
-import { useThread } from "../ai-chat-products/Thread";
+import { useThread } from "../ai-chat-overview/Thread";
 
 export interface IConversationProps {
   className?: string;

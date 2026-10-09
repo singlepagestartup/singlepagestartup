@@ -2,7 +2,7 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { FilesProvider } from "../../../../file-storage/file/singlepage/ai-chat-attachments/Files";
 import { SourceProvider } from "../../../../knowledge/source/singlepage/ai-chat-document/Source";
-import { ProductsThreadProvider } from "../../../thread/singlepage/ai-chat-products/Thread";
+import { ThreadProvider } from "../../../thread/singlepage/ai-chat-overview/Thread";
 interface IProjectProviderProps {
   profileId: string;
   children: ReactNode;
@@ -19,9 +19,7 @@ export function ProjectProvider({
     <ProjectContext.Provider value={profileId}>
       <FilesProvider key={profileId}>
         <SourceProvider profileId={profileId}>
-          <ProductsThreadProvider profileId={profileId}>
-            {children}
-          </ProductsThreadProvider>
+          <ThreadProvider>{children}</ThreadProvider>
         </SourceProvider>
       </FilesProvider>
     </ProjectContext.Provider>

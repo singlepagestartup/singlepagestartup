@@ -1,9 +1,9 @@
 {
-  "id": "social.chat.ai-chat-products",
-  "title": "ai-chat-products",
+  "id": "social.chat.ai-chat-overview",
+  "title": "ai-chat-overview",
   "layer": "singlepage",
   "state": "draft",
-  "description": "Local Chat workspace resolving Threads through chats-to-threads.",
+  "description": "Chat overview displaying its Thread and the caller-supplied message creation view.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
@@ -11,7 +11,7 @@
   "figma": {
     "componentName": "social.chat",
     "pageName": "social",
-    "variantName": "ai-chat-products",
+    "variantName": "ai-chat-overview",
     "nodeId": null,
     "variantNodeId": null,
     "syncStatus": "not-created",
@@ -21,7 +21,7 @@
     "module": "social",
     "entityType": "model",
     "entity": "chat",
-    "variant": "ai-chat-products"
+    "variant": "ai-chat-overview"
   },
   "contentSlots": []
 }

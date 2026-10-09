@@ -12,13 +12,13 @@ export function Component({ label = ".md" }: ISourceDownloadProps) {
   const { source } = useSource();
   function download() {
     const url = URL.createObjectURL(
-      new Blob([`# Products\n\n## ${source.title}\n\n${source.content}\n`], {
+      new Blob([`# ${source.title}\n\n${source.content}\n`], {
         type: "text/markdown;charset=utf-8",
       }),
     );
     const link = document.createElement("a");
     link.href = url;
-    link.download = "Products.md";
+    link.download = `${source.title}.md`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
@@ -26,7 +26,7 @@ export function Component({ label = ".md" }: ISourceDownloadProps) {
     <Button
       data-ds-block="knowledge.source.ai-chat-download"
       variant="secondary"
-      aria-label="Download Products.md"
+      aria-label={`Download ${source.title}.md`}
       onClick={download}
     >
       <Icon name="arrow-down" />

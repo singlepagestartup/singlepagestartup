@@ -33,18 +33,32 @@ interface IThreadContext {
   error: string;
 }
 interface IThreadProviderProps {
-  data: IAIChatThread;
+  data?: IAIChatThread;
   children: ReactNode;
   initialMessages?: IProjectMessage[];
 }
 const ThreadContext = createContext<IThreadContext | null>(null);
-export function ThreadProvider({
-  data,
+export function ThreadProvider(props: IThreadProviderProps) {
+  const existing = useContext(ThreadContext);
+  if (existing && (!props.data || existing.thread.id === props.data.id)) {
+    return props.children;
+  }
+  return <ThreadStateProvider {...props} />;
+}
+
+function ThreadStateProvider({
+  data: suppliedThread,
   children,
   initialMessages,
 }: IThreadProviderProps) {
   const { source, fileIds: sourceFileIds, edit } = useSource();
   const { files } = useFiles();
+  const data: IAIChatThread = suppliedThread ?? {
+    id: `${source.id}:thread`,
+    slug: `${source.slug}:thread`,
+    title: `${source.title}.md`,
+    variant: "ai-chat-overview",
+  };
   const [messages, setMessages] = useState<IProjectMessage[]>(
     () =>
       initialMessages ?? [
@@ -52,7 +66,7 @@ export function ThreadProvider({
           id: `${data.id}:intro`,
           role: "assistant",
           agent: productsAgent,
-          text: "Products.md is ready to work on. Describe your product, its customers, value and current availability.",
+          text: `${data.title} is ready to work on. ${source.description ?? "Discuss this knowledge or request a change."}`,
         },
       ],
   );
@@ -87,6 +101,7 @@ export function ThreadProvider({
       appendThreadExchange(current, {
         ids,
         text,
+        documentName: data.title,
         source,
         files: pending,
         sourceFiles,
@@ -146,28 +161,4 @@ export function useThread() {
   const context = useContext(ThreadContext);
   if (!context) throw new Error("AI Chat Thread requires ThreadProvider.");
   return context;
-}
-
-export function ProductsThreadProvider({
-  profileId,
-  children,
-}: {
-  profileId: string;
-  children: ReactNode;
-}) {
-  const existing = useContext(ThreadContext);
-  if (existing?.thread.id === `${profileId}:thread:document:products`)
-    return children;
-  return (
-    <ThreadProvider
-      data={{
-        id: `${profileId}:thread:document:products`,
-        slug: `${encodeURIComponent(profileId)}:document:products`,
-        title: "Products.md",
-        variant: "ai-chat-products",
-      }}
-    >
-      {children}
-    </ThreadProvider>
-  );
 }

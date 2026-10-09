@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.ai-chat-message-create",
+  "title": "ai-chat-message-create",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Current Subject creates a message with knowledge context and attachments.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "ai-chat-message-create",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "ai-chat-message-create"
+  },
+  "contentSlots": []
+}

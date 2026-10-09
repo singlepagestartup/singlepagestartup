@@ -9,7 +9,7 @@ import { documentAgent } from "../../../../../workspace/utils/products/ai-chat-a
 import { ProjectAgentPicker } from "../../../../social/profile/singlepage/ai-chat-agent/index";
 import { FilesProvider } from "../../../../file-storage/file/singlepage/ai-chat-attachments/Files";
 import { SourceProvider } from "../../../../knowledge/source/singlepage/ai-chat-document/Source";
-import { ThreadProvider } from "../../../../social/thread/singlepage/ai-chat-products/Thread";
+import { ThreadProvider } from "../../../../social/thread/singlepage/ai-chat-overview/Thread";
 import { Component as ProjectConversation } from "../../../../social/thread/singlepage/ai-chat-conversation/index";
 
 const root = path.resolve(import.meta.dir, "../../../../../../..");
@@ -225,7 +225,7 @@ describe("Local AI Chat components", () => {
                 id: "history:products",
                 slug: "history:products",
                 title: "Products.md",
-                variant: "ai-chat-products",
+                variant: "ai-chat-overview",
               }}
               initialMessages={messages}
             >

@@ -1,33 +1,25 @@
-import { Component as SocialModuleThread } from "../../index";
-
+import { Component as RbacModuleSubject } from "../../index";
 import type { Meta, StoryObj } from "@storybook/react";
-import { AccountProvider } from "../../../../rbac/subject/singlepage/account/Account";
+import { AccountProvider } from "../account/Account";
 import { aiChatAccount } from "../../../../../workspace/utils/products/ai-chat-account-fixture";
 import { FilesProvider } from "../../../../file-storage/file/singlepage/ai-chat-attachments/Files";
 import { SourceProvider } from "../../../../knowledge/source/singlepage/ai-chat-document/Source";
-import { ThreadProvider } from "../ai-chat-products/Thread";
+import { ThreadProvider } from "../../../../social/thread/singlepage/ai-chat-overview/Thread";
+
 function Example() {
   return (
     <FilesProvider>
       <SourceProvider profileId="pottery">
-        <ThreadProvider
-          data={{
-            id: "pottery:thread:document:products",
-            slug: "pottery:document:products",
-            title: "Products.md",
-            variant: "ai-chat-products",
-          }}
-        >
-          <SocialModuleThread variant="ai-chat-composer" />
+        <ThreadProvider>
+          <RbacModuleSubject variant="ai-chat-message-create" />
         </ThreadProvider>
       </SourceProvider>
     </FilesProvider>
   );
 }
-
 const meta = {
-  id: "modules-social-models-thread-singlepage-ai-chat-composer",
-  title: "Modules/Social/Models/Thread/Singlepage/ai-chat-composer",
+  id: "modules-rbac-models-subject-singlepage-ai-chat-message-create",
+  title: "Modules/RBAC/Models/Subject/Singlepage/ai-chat-message-create",
   component: Example,
   parameters: { layout: "fullscreen" },
   decorators: [

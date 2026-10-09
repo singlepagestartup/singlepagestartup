@@ -187,13 +187,12 @@ describe("AI Chat project ownership", () => {
         ),
       ).toBe(true);
     for (const [entity, variants] of [
-      ["chat", ["ai-chat-products"]],
+      ["chat", ["ai-chat-overview"]],
       [
         "thread",
         [
-          "ai-chat-products",
+          "ai-chat-overview",
           "ai-chat-conversation",
-          "ai-chat-composer",
           "ai-chat-create",
           "ai-chat-settings",
         ],
@@ -213,6 +212,19 @@ describe("AI Chat project ownership", () => {
     expect(
       social.entities.every((entity) => entity.entityType === "model"),
     ).toBe(true);
+    const subject = actual.modules
+      .find((record) => record.name === "rbac")!
+      .entities.find((entity) => entity.entity === "subject")!;
+    expect(
+      subject.storyFiles?.some((file) =>
+        file.includes("/ai-chat-message-create/"),
+      ),
+    ).toBe(true);
+    expect(
+      social.entities.some((entity) =>
+        entity.storyFiles?.some((file) => file.includes("/ai-chat-composer/")),
+      ),
+    ).toBe(false);
     const message = social.entities.find(
       (item) => item.entityType === "model" && item.entity === "message",
     )!;
