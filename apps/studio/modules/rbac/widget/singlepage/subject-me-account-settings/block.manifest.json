@@ -17,28 +17,18 @@
   },
   "contentSlots": [
     {
-      "name": "subject",
+      "name": "showTokens",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "initialSection",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "copy",
       "type": "object",
-      "required": false
-    },
-    {
-      "name": "user",
-      "type": "object",
-      "required": false
-    },
-    {
-      "name": "identities",
-      "type": "list",
-      "required": false
-    },
-    {
-      "name": "identityRelations",
-      "type": "list",
-      "required": false
-    },
-    {
-      "name": "profiles",
-      "type": "list",
       "required": false
     }
   ],

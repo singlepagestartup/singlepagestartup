@@ -1,6 +1,6 @@
 "use client";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 import {
   Icon,
   kit,
@@ -18,7 +18,6 @@ export interface IAccountMenuProps {
   settingsTarget?: "_top";
   onNavigate?: () => void;
   onSignOut?: () => void;
-  onAvatarChange?: (avatar: string) => void;
 }
 const menuItemClassName =
   "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-sps-grey data-highlighted:text-sps-graphite";
@@ -32,43 +31,12 @@ export function Component({
   settingsTarget,
   onNavigate,
   onSignOut,
-  onAvatarChange,
 }: IAccountMenuProps = {}) {
-  const upload = useRef<HTMLInputElement>(null);
   const [avatarFailed, setAvatarFailed] = useState(false);
-  const [avatarError, setAvatarError] = useState("");
   useEffect(() => setAvatarFailed(false), [data.avatar]);
   const balanceLabel = balance
     ? `${(balance.free + balance.purchased).toLocaleString("en-US")} tokens`
     : "Balance unavailable";
-  function changeAvatar(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    if (
-      !["image/png", "image/jpeg", "image/webp", "image/gif"].includes(
-        file.type,
-      ) ||
-      file.size > 2 * 1024 * 1024
-    ) {
-      setAvatarError("Choose a PNG, JPEG, WebP or GIF up to 2 MB.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        if (typeof reader.result !== "string")
-          throw new Error("Unreadable image");
-        onAvatarChange?.(reader.result);
-        setAvatarError("");
-      } catch {
-        setAvatarError("Could not save this image. Try a smaller file.");
-      }
-    };
-    reader.onerror = () =>
-      setAvatarError("Could not read this image. Try another file.");
-    reader.readAsDataURL(file);
-  }
   return (
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger asChild>
@@ -112,14 +80,6 @@ export function Component({
           />
         </button>
       </DropdownMenu.Trigger>
-      <input
-        ref={upload}
-        type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif"
-        aria-label="Upload avatar"
-        className="hidden"
-        onChange={changeAvatar}
-      />
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           align="end"
@@ -142,11 +102,6 @@ export function Component({
               </span>
             )}
           </DropdownMenu.Label>
-          {avatarError && (
-            <p role="alert" className="px-3 py-2 text-xs text-sps-danger">
-              {avatarError}
-            </p>
-          )}
           <DropdownMenu.Separator className="my-1 h-px bg-sps-line" />
           {showTokens && (
             <DropdownMenu.Item asChild>
@@ -171,18 +126,6 @@ export function Component({
               Settings
             </a>
           </DropdownMenu.Item>
-          {onAvatarChange && (
-            <DropdownMenu.Item
-              className={menuItemClassName}
-              onSelect={(event) => {
-                event.preventDefault();
-                upload.current?.click();
-              }}
-            >
-              <Icon name="image" />
-              Change avatar
-            </DropdownMenu.Item>
-          )}
           <DropdownMenu.Item asChild>
             <a
               href="/?path=/story/modules-host-models-page-singlepage-admin-settings--default"

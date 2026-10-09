@@ -1,18 +1,9 @@
-import { useState } from "react";
 import { Component as SocialModuleProfile } from "../../index";
 import { aiChatAccount } from "../../../../../workspace/utils/products/ai-chat-account-fixture";
 import type { IAccountMenuProps } from "./Component";
 import type { Meta, StoryObj } from "@storybook/react";
 function Example(props: IAccountMenuProps) {
-  const [avatar, setAvatar] = useState<string>();
-  return (
-    <SocialModuleProfile
-      {...props}
-      variant="account-menu"
-      data={avatar && props.data ? { ...props.data, avatar } : props.data}
-      onAvatarChange={setAvatar}
-    />
-  );
+  return <SocialModuleProfile {...props} variant="account-menu" />;
 }
 const meta = {
   id: "modules-social-models-profile-singlepage-account-menu",

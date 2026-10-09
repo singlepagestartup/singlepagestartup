@@ -1,13 +1,13 @@
+"use client";
+import { memo, useRef, useState, type ReactNode } from "react";
 import { Button } from "../../../../../workspace/design/singlepage/interface-kit/primitives";
 import { ConfirmationDialog } from "../../../../../workspace/design/singlepage/interface-kit/Confirmation";
-import { memo, useState } from "react";
 import {
   Check,
   ChevronDown,
-  type ModuleIcon,
 } from "../../../../../workspace/utils/components/ModuleIcons";
-
 import {
+  defaultSettingsIdentities,
   formatRbacDateTime,
   getIdentityActions,
   getIdentityPrimaryLogin,
@@ -16,171 +16,155 @@ import {
   type RbacIdentity,
 } from "../../../shared";
 
+export interface IIdentityFlowProps {
+  identity: RbacIdentity;
+  action: "change-email" | "change-password" | "reconnect";
+  onClose: () => void;
+  onUpdate: (identity: RbacIdentity) => void;
+}
 export interface IdentityCardDefaultProps {
+  renderFlow?: (props: IIdentityFlowProps) => ReactNode;
   identity: RbacIdentity;
   lastOperationLabel?: string;
   onAction?: (identity: RbacIdentity, action: IdentityAction) => void;
+  onUpdate?: (identity: RbacIdentity) => void;
   embedded?: boolean;
 }
-
 export const defaultIdentityCardDefaultProps: IdentityCardDefaultProps = {
-  identity: {
-    id: "f3b3934d-3199-4f04-9e8e-99c4ab0a47a1",
-    provider: "email_and_password",
-    email: "rogwild@sps.dev",
-    account: "",
-    variant: "default",
-    createdAt: "2025-03-09T13:17:10.100Z",
-    updatedAt: "2026-02-12T10:41:33.004Z",
-  },
+  identity: defaultSettingsIdentities[0],
 };
-
-function ProviderIcon({ icon: Icon }: { icon: ModuleIcon }) {
-  return (
-    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)]">
-      <Icon className="h-6 w-6" />
-    </span>
-  );
-}
-
-interface IIdentityDetailProps {
-  label: string;
-  value: string | number | undefined;
-}
-
-function IdentityDetail({ label, value }: IIdentityDetailProps) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-xs font-medium text-[var(--workspace-brand-muted)]">
-        {label}
-      </dt>
-      <dd className="mt-1 break-all text-sm leading-6 text-[var(--workspace-brand-foreground)]">
-        {value === undefined || value === "" ? "—" : value}
-      </dd>
-    </div>
-  );
-}
-
 export const IdentityCardDefault = memo(function IdentityCardDefault(
   props: Partial<IdentityCardDefaultProps>,
 ) {
   const {
-    identity,
+    identity: initialIdentity,
     lastOperationLabel,
     onAction,
-    embedded = false,
-  } = {
-    ...defaultIdentityCardDefaultProps,
-    ...props,
-  };
-  const providerMeta = getIdentityProviderMeta(identity.provider);
-  const actions = getIdentityActions(identity);
-  const [pendingAction, setPendingAction] = useState<{
-    identity: RbacIdentity;
-    action: IdentityAction;
-  } | null>(null);
-  const [localResult, setLocalResult] = useState<string>();
+    onUpdate,
+    renderFlow,
+  } = { ...defaultIdentityCardDefaultProps, ...props };
+  const [localIdentity, setLocalIdentity] = useState<RbacIdentity>();
+  const identity =
+    localIdentity?.id === initialIdentity.id ? localIdentity : initialIdentity;
+  const meta = getIdentityProviderMeta(identity.provider);
+  const ProviderIcon = meta.icon;
+  const [flow, setFlow] = useState<
+    "change-email" | "change-password" | "reconnect" | null
+  >(null);
+  const [pendingAction, setPendingAction] = useState<IdentityAction | null>(
+    null,
+  );
+  const [localResult, setLocalResult] = useState("");
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
     null,
   );
-  const operationLabel = lastOperationLabel ?? localResult;
-
+  const buttons = useRef<Record<string, HTMLButtonElement | null>>({});
+  function closeFlow() {
+    const key = flow;
+    setFlow(null);
+    if (key) buttons.current[key]?.focus();
+  }
+  function update(next: RbacIdentity) {
+    if (onUpdate) onUpdate(next);
+    else setLocalIdentity(next);
+  }
   return (
     <article
       ref={setPortalContainer}
-      className={
-        embedded
-          ? "min-w-0 py-6 first:pt-0 last:pb-0"
-          : "min-w-0 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-6"
-      }
+      className="min-w-0 rounded-xl border border-sps-line bg-sps-white p-4 sm:p-5"
       data-ds-block="rbac.identity.card-default"
       data-ds-layer="singlepage"
     >
-      <div className="flex flex-wrap items-start justify-between gap-5">
-        <div className="flex min-w-0 flex-[1_1_18rem] items-start gap-3">
-          <ProviderIcon icon={providerMeta.icon} />
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-lg font-semibold text-[var(--workspace-brand-foreground)]">
-                {providerMeta.title}
-              </h3>
-              <span className="rounded-full border border-[var(--workspace-brand-line)] px-2.5 py-1 text-xs text-[var(--workspace-brand-muted)]">
-                {providerMeta.kindLabel}
-              </span>
-            </div>
-            <p className="mt-1 break-all text-base leading-6 text-[var(--workspace-brand-muted)]">
-              {getIdentityPrimaryLogin(identity)}
-            </p>
-          </div>
+      <div className="flex min-w-0 items-start gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sps-grey">
+          <ProviderIcon className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-base font-semibold">{meta.title}</h3>
+          <p className="mt-1 break-all text-sm text-sps-muted">
+            {getIdentityPrimaryLogin(identity)}
+          </p>
         </div>
-        <div className="flex max-w-full flex-wrap gap-2 lg:max-w-lg lg:justify-end">
-          {actions.map((action) => (
-            <Button
-              variant={action.tone === "danger" ? "danger" : "secondary"}
-              key={action.key}
-              onClick={() => {
-                if (action.tone === "danger") {
-                  setPendingAction({ identity, action });
-                  return;
-                }
-                onAction?.(identity, action);
-              }}
-              type="button"
-            >
-              {action.label}
-            </Button>
-          ))}
-        </div>
+        <span className="hidden shrink-0 items-center gap-1 text-xs text-sps-muted sm:inline-flex">
+          <Check className="size-3" />
+          Connected
+        </span>
       </div>
-      {operationLabel ? (
-        <p
-          role="status"
-          className="mt-4 flex items-center gap-2 text-sm text-[var(--workspace-brand-foreground)]"
-        >
-          <Check className="h-5 w-5 shrink-0 text-[var(--workspace-brand-foreground)]" />
-          {operationLabel}
+      <p className="mt-3 text-sm leading-6 text-sps-muted">
+        {meta.description}
+      </p>
+      <div className="mt-4 flex max-w-full flex-wrap gap-2">
+        {getIdentityActions(identity).map((action) => (
+          <Button
+            ref={(node) => {
+              buttons.current[action.key] = node;
+            }}
+            variant={action.tone === "danger" ? "plain" : "secondary"}
+            key={action.key}
+            onClick={() => {
+              setLocalResult("");
+              if (action.key === "delete") {
+                setPendingAction(action);
+                return;
+              }
+              if (
+                action.key === "change-email" ||
+                action.key === "change-password" ||
+                action.key === "reconnect"
+              ) {
+                if (renderFlow) setFlow(action.key);
+                else onAction?.(identity, action);
+              }
+            }}
+            type="button"
+            aria-expanded={
+              action.key === "delete" ? undefined : flow === action.key
+            }
+          >
+            {action.label}
+          </Button>
+        ))}
+      </div>
+      {flow &&
+        renderFlow?.({
+          identity,
+          action: flow,
+          onClose: closeFlow,
+          onUpdate: update,
+        })}
+      {(lastOperationLabel || localResult) && (
+        <p role="status" className="mt-4 text-sm">
+          {lastOperationLabel ?? localResult}
         </p>
-      ) : null}
-      <details className="group mt-4 rounded-2xl p-1 open:bg-[var(--workspace-brand-background)]">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 text-sm font-medium text-[var(--workspace-brand-muted)] transition hover:bg-[var(--workspace-brand-background)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-focus)] [&::-webkit-details-marker]:hidden">
-          <span>Account details</span>
-          <ChevronDown className="h-5 w-5 shrink-0 transition group-open:rotate-180 motion-reduce:transition-none" />
+      )}
+      <details className="group mt-4 border-t border-sps-line pt-2">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg text-xs font-medium text-sps-muted focus-visible:outline-2 [&::-webkit-details-marker]:hidden">
+          <span>Connection details</span>
+          <ChevronDown className="size-4 shrink-0 transition group-open:rotate-180" />
         </summary>
-        <div className="mx-3 mt-2 border-t border-[var(--workspace-brand-line)] pb-3 pt-4">
-          <dl className="grid min-w-0 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-            <IdentityDetail label="Identity ID" value={identity.id} />
-            <IdentityDetail label="Provider key" value={identity.provider} />
-            <IdentityDetail label="Email" value={identity.email} />
-            <IdentityDetail label="Account" value={identity.account} />
-            <IdentityDetail label="Variant" value={identity.variant} />
-            <IdentityDetail
-              label="Created"
-              value={formatRbacDateTime(identity.createdAt)}
-            />
-            <IdentityDetail
-              label="Updated"
-              value={formatRbacDateTime(identity.updatedAt)}
-            />
-          </dl>
-        </div>
+        <dl className="grid min-w-0 gap-3 text-xs sm:grid-cols-2">
+          <div>
+            <dt className="text-sps-muted">Connected</dt>
+            <dd className="mt-1">{formatRbacDateTime(identity.createdAt)}</dd>
+          </div>
+          <div>
+            <dt className="text-sps-muted">Last updated</dt>
+            <dd className="mt-1">{formatRbacDateTime(identity.updatedAt)}</dd>
+          </div>
+        </dl>
       </details>
       <ConfirmationDialog
         open={pendingAction !== null}
         onOpenChange={(open) => {
           if (!open) setPendingAction(null);
         }}
-        title="Remove identity?"
-        description={
-          pendingAction
-            ? `Remove ${getIdentityProviderMeta(pendingAction.identity.provider).title} — ${getIdentityPrimaryLogin(pendingAction.identity)} from this account? Confirmation records a local removal request in this preview; no server data is deleted.`
-            : "Confirm removal of this sign-in method."
-        }
-        confirmLabel={pendingAction?.action.label ?? "Remove identity"}
+        title={`Remove ${meta.title}?`}
+        description={`Remove ${getIdentityPrimaryLogin(identity)} from the sign-in methods in this preview? No external account is deleted.`}
+        confirmLabel="Remove identity"
         onConfirm={() => {
           if (!pendingAction) return;
-          onAction?.(pendingAction.identity, pendingAction.action);
-          if (!onAction)
-            setLocalResult("Identity removal requested in this preview.");
+          if (onAction) onAction(identity, pendingAction);
+          else setLocalResult("Identity removal requested in this preview.");
           setPendingAction(null);
         }}
         portalContainer={portalContainer}

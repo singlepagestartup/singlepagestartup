@@ -1,3 +1,5 @@
+import { useStudioAccount } from "../account/Account";
+import { aiChatAccount } from "../../../../../workspace/utils/products/ai-chat-account-fixture";
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "../../../../../workspace/design/singlepage/interface-kit/primitives";
 import {
@@ -41,10 +43,20 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export function SubjectMeProfileInformation(
   props?: Partial<SubjectMeProfileInformationProps>,
 ) {
-  const { profile, profiles, title, description, saveLabel } = {
+  const session = useStudioAccount();
+  const currentProfile: RbacAccountProfile = {
+    id: session.account.profile?.id ?? aiChatAccount.profile.id,
+    title: session.account.profile?.title ?? aiChatAccount.profile.title,
+    subtitle: session.user?.role ?? "",
+    description: session.user?.description ?? "",
+    slug: session.user?.slug ?? "alex",
+    avatar: session.account.profile?.avatar ?? aiChatAccount.profile.avatar,
+  };
+  const { profiles, title, description, saveLabel } = {
     ...defaultSubjectMeProfileInformationProps,
     ...props,
   };
+  const profile = props?.profile ?? currentProfile;
   const [draft, setDraft] = useState({
     title: profile.title,
     subtitle: profile.subtitle,
@@ -59,18 +71,13 @@ export function SubjectMeProfileInformation(
     available: boolean;
   } | null>(null);
   const [avatar, setAvatar] = useState(profile.avatar ?? "");
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const reader = useRef<FileReader | null>(null);
   const [viewOpen, setViewOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const slugInput = useRef<HTMLInputElement>(null);
   const viewButton = useRef<HTMLButtonElement>(null);
   const id = useId();
-  useEffect(() => {
-    if (!avatarFile) return;
-    const url = URL.createObjectURL(avatarFile);
-    setAvatar(url);
-    return () => URL.revokeObjectURL(url);
-  }, [avatarFile]);
+  useEffect(() => () => reader.current?.abort(), []);
 
   function updateDraft(field: keyof typeof draft, value: string) {
     setDraft((previous) => ({ ...previous, [field]: value }));
@@ -138,6 +145,20 @@ export function SubjectMeProfileInformation(
             slugInput.current?.focus();
             return;
           }
+          try {
+            if (!props?.profile)
+              session.updateProfile({
+                name: draft.title.trim(),
+                role: draft.subtitle,
+                description: draft.description,
+                slug: draft.slug,
+                avatar,
+              });
+          } catch {
+            setInvalid(true);
+            setMessage("Could not save this profile. Try a smaller image.");
+            return;
+          }
           setSavedProfile(draft);
           setInvalid(false);
           setMessage(
@@ -174,7 +195,7 @@ export function SubjectMeProfileInformation(
                   type="button"
                   disabled={!avatar}
                   onClick={() => {
-                    setAvatarFile(null);
+                    reader.current?.abort();
                     setAvatar("");
                     if (fileInput.current) fileInput.current.value = "";
                     setMessage("Avatar removed in this preview.");
@@ -184,27 +205,47 @@ export function SubjectMeProfileInformation(
                 </Button>
               </div>
               <p className="mt-2 text-xs leading-5 text-[var(--workspace-brand-muted)]">
-                Image changes stay in this preview.
+                PNG, JPEG, WebP or GIF, up to 2 MB. Save to apply changes.
               </p>
             </div>
             <input
               ref={fileInput}
               type="file"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp,image/gif"
               className="sr-only"
               aria-label="Choose avatar image"
               tabIndex={-1}
               onChange={(event) => {
                 const file = event.target.files?.[0];
                 if (!file) return;
-                if (!file.type.startsWith("image/")) {
+                event.target.value = "";
+                reader.current?.abort();
+                if (
+                  ![
+                    "image/png",
+                    "image/jpeg",
+                    "image/webp",
+                    "image/gif",
+                  ].includes(file.type) ||
+                  file.size > 2 * 1024 * 1024
+                ) {
                   setInvalid(true);
-                  setMessage("Choose an image file.");
+                  setMessage("Choose a PNG, JPEG, WebP or GIF up to 2 MB.");
                   return;
                 }
-                setAvatarFile(file);
-                setInvalid(false);
-                setMessage("Avatar image selected in this preview.");
+                const upload = new FileReader();
+                reader.current = upload;
+                upload.onload = () => {
+                  if (typeof upload.result !== "string") return;
+                  setAvatar(upload.result);
+                  setInvalid(false);
+                  setMessage("Image selected. Save your profile to apply it.");
+                };
+                upload.onerror = () => {
+                  setInvalid(true);
+                  setMessage("Could not read this image. Try another file.");
+                };
+                upload.readAsDataURL(file);
               }}
             />
           </div>

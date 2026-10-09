@@ -27,6 +27,7 @@ test("the same account shows its name/avatar with optional AI Chat tokens", () =
     expect(html).toContain('data-ds-block="social.profile.account-menu"');
     expect(html).toContain('data-profile-id="current-user"');
     expect(html).toContain("Alex");
+    expect(html).not.toContain("Upload avatar");
     expect(html).toContain("singlepagestartup-account-mascot-square.png");
   }
   expect(render(true)).toContain("1,250 tokens");

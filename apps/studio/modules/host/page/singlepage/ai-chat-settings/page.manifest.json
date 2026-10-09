@@ -23,8 +23,8 @@
       "path": "../../../layout/singlepage/ai-chat-header"
     },
     {
-      "id": "rbac.subject.ai-chat-settings",
-      "path": "../../../../rbac/subject/singlepage/ai-chat-settings"
+      "id": "rbac.widget.subject-me-account-settings",
+      "path": "../../../../rbac/widget/singlepage/subject-me-account-settings"
     },
     {
       "id": "rbac.subject.account",

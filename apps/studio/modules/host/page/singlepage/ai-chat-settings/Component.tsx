@@ -1,6 +1,8 @@
 import { Component as HostModuleLayout } from "../../../layout/index";
 import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 
+import { Component as RbacModuleWidget } from "../../../../rbac/widget";
+
 export function Component() {
   return (
     <HostModuleLayout
@@ -15,7 +17,7 @@ export function Component() {
         />
       )}
     >
-      <RbacModuleSubject variant="ai-chat-settings" />
+      <RbacModuleWidget variant="subject-me-account-settings" showTokens />
     </HostModuleLayout>
   );
 }

@@ -83,7 +83,7 @@ publish(
 const copies = {
   register: "rbac/identity/ai-chat-register",
   login: "rbac/identity/ai-chat-login",
-  settings: "rbac/subject/ai-chat-settings",
+  settings: "rbac/subject/account-data",
   help: "website-builder/widget/ai-chat-help",
   tokens: "ecommerce/order/ai-chat-tokens",
 };

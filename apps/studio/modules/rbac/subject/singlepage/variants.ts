@@ -2,7 +2,7 @@ import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Settings } from "./admin-v2-settings/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as Account } from "./account/index";
-import { Component as AiChatSettings } from "./ai-chat-settings/index";
+import { Component as AccountData } from "./account-data/index";
 import { Component as List } from "./list/index";
 import { Component as MeCrmFormDeafult } from "./me-crm-form-deafult/index";
 import { Component as MeDelete } from "./me-delete/index";
@@ -16,7 +16,7 @@ export const variants = {
   "admin-v2-settings": AdminV2Settings,
   "admin-v2-table": AdminV2Table,
   account: Account,
-  "ai-chat-settings": AiChatSettings,
+  "account-data": AccountData,
   list: List,
   "me-crm-form-deafult": MeCrmFormDeafult,
   "me-delete": MeDelete,

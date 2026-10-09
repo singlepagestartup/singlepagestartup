@@ -1,9 +1,9 @@
 {
-  "id": "rbac.subject.ai-chat-settings",
-  "title": "ai-chat-settings",
+  "id": "rbac.subject.account-data",
+  "title": "account-data",
   "layer": "singlepage",
   "state": "draft",
-  "description": "AI Chat subject view.",
+  "description": "Shared account purchases, material processing and deletion controls.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
@@ -11,7 +11,7 @@
   "figma": {
     "componentName": "rbac.subject",
     "pageName": "rbac",
-    "variantName": "ai-chat-settings",
+    "variantName": "account-data",
     "nodeId": null,
     "variantNodeId": null,
     "syncStatus": "not-created",
@@ -21,7 +21,7 @@
     "module": "rbac",
     "entityType": "model",
     "entity": "subject",
-    "variant": "ai-chat-settings"
+    "variant": "account-data"
   },
   "contentSlots": []
 }

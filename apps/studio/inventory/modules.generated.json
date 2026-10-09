@@ -4119,6 +4119,7 @@
             }
           ],
           "storyFiles": [
+            "apps/studio/modules/rbac/identity/singlepage/account-change/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/admin-v2-table/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/ai-chat-login/Component.stories.tsx",
@@ -4128,6 +4129,7 @@
             "apps/studio/modules/rbac/identity/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/login-default/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/password-reset-default/Component.stories.tsx",
+            "apps/studio/modules/rbac/identity/singlepage/provider-connect/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/register-default/Component.stories.tsx",
             "apps/studio/modules/rbac/identity/singlepage/reset-password-default/Component.stories.tsx"
           ]
@@ -4491,11 +4493,11 @@
             }
           ],
           "storyFiles": [
+            "apps/studio/modules/rbac/subject/singlepage/account-data/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/account/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/admin-v2-settings/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/admin-v2-table/Component.stories.tsx",
-            "apps/studio/modules/rbac/subject/singlepage/ai-chat-settings/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-crm-form-deafult/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me-delete/Component.stories.tsx",

@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.identity",
+  "pageName": "rbac",
+  "variantName": "provider-connect",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.identity.provider-connect",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/identity/singlepage/provider-connect",
+    "sps.figma.component": "rbac.identity",
+    "sps.figma.variant": "provider-connect",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "identity",
+    "sps.source.variant": "provider-connect",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/identity/singlepage/provider-connect/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/identity/singlepage/provider-connect/Component.stories.tsx"
+  }
+}

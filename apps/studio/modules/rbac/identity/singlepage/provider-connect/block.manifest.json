@@ -1,0 +1,27 @@
+{
+  "id": "rbac.identity.provider-connect",
+  "title": "provider-connect",
+  "description": "Local account settings interaction.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "identity",
+    "variant": "provider-connect"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.identity",
+    "pageName": "rbac",
+    "variantName": "provider-connect",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

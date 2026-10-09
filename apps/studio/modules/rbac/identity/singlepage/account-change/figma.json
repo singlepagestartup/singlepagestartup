@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.identity",
+  "pageName": "rbac",
+  "variantName": "account-change",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.identity.account-change",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/identity/singlepage/account-change",
+    "sps.figma.component": "rbac.identity",
+    "sps.figma.variant": "account-change",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "identity",
+    "sps.source.variant": "account-change",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/identity/singlepage/account-change/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/identity/singlepage/account-change/Component.stories.tsx"
+  }
+}

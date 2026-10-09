@@ -27,7 +27,6 @@ export function Component({
 }: ISubjectAccountProps = {}) {
   const session = useStudioAccount();
   const [signedOut, setSignedOut] = useState(false);
-  const [avatar, setAvatar] = useState<{ email: string; url: string }>();
   useEffect(() => setSignedOut(false), [signedIn, user?.email]);
   useEffect(() => {
     if (session.signedIn) setSignedOut(false);
@@ -67,11 +66,7 @@ export function Component({
     <div data-ds-block="rbac.subject.account">
       <SocialModuleProfile
         variant="account-menu"
-        data={
-          user && avatar?.email === user.email
-            ? { ...data, avatar: avatar.url }
-            : data
-        }
+        data={data}
         email={user?.email ?? session.account.email ?? aiChatAccount.email}
         balance={balance === undefined ? session.account.balance : balance}
         showTokens={showTokens}
@@ -79,10 +74,6 @@ export function Component({
         settingsTarget={showTokens ? undefined : "_top"}
         page={page}
         onNavigate={onNavigate}
-        onAvatarChange={(next) => {
-          session.updateAvatar(next, user);
-          if (user) setAvatar({ email: user.email, url: next });
-        }}
         onSignOut={() => {
           session.signOut();
           setSignedOut(true);

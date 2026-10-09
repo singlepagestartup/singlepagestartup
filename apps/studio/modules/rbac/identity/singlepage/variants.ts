@@ -1,3 +1,5 @@
+import { Component as AccountChange } from "./account-change";
+import { Component as ProviderConnect } from "./provider-connect";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as AiChatLogin } from "./ai-chat-login/index";
@@ -11,6 +13,8 @@ import { Component as RegisterDefault } from "./register-default/index";
 import { Component as ResetPasswordDefault } from "./reset-password-default/index";
 
 export const variants = {
+  "account-change": AccountChange,
+  "provider-connect": ProviderConnect,
   "admin-v2-card": AdminV2Card,
   "admin-v2-table": AdminV2Table,
   "ai-chat-login": AiChatLogin,

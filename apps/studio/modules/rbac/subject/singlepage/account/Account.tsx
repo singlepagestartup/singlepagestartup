@@ -1,6 +1,8 @@
 "use client";
+import { aiChatAccount } from "../../../../../workspace/utils/products/ai-chat-account-fixture";
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -12,7 +14,7 @@ import {
   readRbacStudioAuthUser,
   writeRbacStudioAuthUser,
   RBAC_STUDIO_AUTH_CHANGE_EVENT,
-  type RbacAccountUser,
+  type RbacStudioAuthUser,
 } from "../../../shared";
 
 export interface IAIChatAccount {
@@ -79,28 +81,54 @@ export function useStudioAccount() {
         : context.account.profile
       : undefined,
   };
-  function signIn(email: string) {
+  const signIn = useCallback((email: string) => {
     const user = writeRbacStudioAuthUser(email);
     setStored(user);
     setSessionSignedIn(true);
-  }
-  function signOut() {
+  }, []);
+  const signOut = useCallback(() => {
     clearRbacStudioAuthUser();
     setStored(null);
     setSessionSignedIn(false);
-  }
-  function updateAvatar(avatar: string, previewUser?: RbacAccountUser) {
-    const user = writeRbacStudioAuthUser(
-      previewUser?.email ?? account.email ?? "alex@example.com",
-      {
-        name: previewUser?.name ?? account.profile?.title ?? "Alex",
-        avatar,
-      },
-    );
-    setStored(user);
-    setSessionSignedIn(true);
-  }
-  return { account, signedIn, signIn, signOut, updateAvatar };
+  }, []);
+  const updateProfile = useCallback(
+    (updates: Partial<Omit<RbacStudioAuthUser, "email">>) => {
+      const user = writeRbacStudioAuthUser(
+        account.email ?? "alex@example.com",
+        {
+          name: account.profile?.title ?? "Alex",
+          avatar: account.profile?.avatar ?? aiChatAccount.profile.avatar!,
+          ...updates,
+        },
+      );
+      setStored(user);
+      setSessionSignedIn(true);
+    },
+    [account.email, account.profile?.title, account.profile?.avatar],
+  );
+  const updateEmail = useCallback(
+    (email: string) => {
+      const user = writeRbacStudioAuthUser(email, {
+        role: stored?.role ?? "",
+        slug: stored?.slug ?? "alex",
+        description: stored?.description,
+        name: account.profile?.title ?? "Alex",
+        avatar: account.profile?.avatar ?? aiChatAccount.profile.avatar!,
+      });
+      setStored(user);
+      setSessionSignedIn(true);
+    },
+    [stored, account.profile?.title, account.profile?.avatar],
+  );
+  return {
+    account,
+    user: stored,
+    signedIn,
+    signIn,
+    signOut,
+    updateProfile,
+    updateEmail,
+  };
 }
 export const useAIChatAccount = () => useStudioAccount().account;
 export const useAIChatProjectHref = () => useContext(ProjectHrefContext);

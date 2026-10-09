@@ -1,3 +1,4 @@
+import { Component as RbacModuleWidget } from "../../../../../modules/rbac/widget";
 import { Component as RbacModuleSubject } from "../../../../../modules/rbac/subject/index";
 import { Component as HostModuleLayout } from "../../../../../modules/host/layout/index";
 
@@ -21,8 +22,9 @@ export default function Settings({ text }: { text?: string } = {}) {
           />
         )}
       >
-        <RbacModuleSubject
-          variant="ai-chat-settings"
+        <RbacModuleWidget
+          variant="subject-me-account-settings"
+          showTokens
           copy={parseAIChatServicePage(text ?? sourceText)}
         />
       </HostModuleLayout>
