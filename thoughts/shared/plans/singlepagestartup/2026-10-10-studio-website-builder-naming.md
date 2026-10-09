@@ -1,6 +1,6 @@
 # Studio Website Builder names
 
-Status: verified; publication pending
+Status: complete
 
 Website Builder content variants use `content-ai-chat-<block>`; navigation uses
 `navbar-ai-chat` with an optional purpose suffix. Footer remains `footer-ai-chat`.
@@ -31,6 +31,13 @@ The HTML header landmark and caller-supplied Subject/Profile slots are preserved
 - [x] Studio TypeScript, metadata/inventory, content freshness and code placement.
 - [x] Storybook production build at `/private/tmp/studio-website-naming-storybook`.
 - [x] Browser: landing navbar/content markers, Try anchor, service navbar, Project Select and Help navigation. Storybook shows content/ai-chat and navbar/ai-chat groups. Fresh browser error logs are empty; temporary tabs are closed.
-- [ ] Scoped commit and PR #371 publication.
+- [x] Scoped implementation commit and PR #371 publication; GitHub head and description verified.
 
 Browser evidence: `/private/tmp/studio-website-builder-naming.png`. Automated check logs use `/private/tmp/studio-website-naming-*.log`.
+
+## Publication
+
+- Local implementation: `cbafb552e5b35ea362d7600a28b24b611874dc3b`.
+- Published implementation: `1e083c3521925380036ce339141f77c0967a9e61` on `codex/ai-chat-ui-review`.
+- PR: https://github.com/singlepagestartup/singlepagestartup/pull/371.
+- All 109 changed paths/deletions match the checked local implementation. The publication checkout is clean and excludes unrelated production commit `94f63c6a75`.
