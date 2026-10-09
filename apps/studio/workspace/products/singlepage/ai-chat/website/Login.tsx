@@ -1,3 +1,4 @@
+import { Component as Layout } from "../../../../../modules/host/models/layout/singlepage/ai-chat-header/index";
 import { Component } from "../../../../../modules/rbac/models/identity/singlepage/ai-chat-login/index";
 import sourceText from "./login.md?raw";
 import { parseAIChatServicePage } from "./content";
@@ -7,7 +8,9 @@ import { aiChatAccount } from "../../../../utils/products/ai-chat-account-fixtur
 export default function Login({ text }: { text?: string } = {}) {
   return (
     <AccountProvider account={aiChatAccount}>
-      <Component copy={parseAIChatServicePage(text ?? sourceText)} />
+      <Layout page="login">
+        <Component copy={parseAIChatServicePage(text ?? sourceText)} />
+      </Layout>
     </AccountProvider>
   );
 }

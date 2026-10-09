@@ -31,7 +31,7 @@ export function Component({ copy = defaultCopy }: ITokensProps = {}) {
   const number = (value: number) =>
     value.toLocaleString("en-US", { maximumFractionDigits: 2 });
   return (
-    <ServicePage copy={copy} page="tokens">
+    <ServicePage copy={copy}>
       <div className="grid min-w-0 items-start gap-6 @[900px]:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-6">
           <section className="rounded-2xl bg-sps-graphite p-6 text-white">

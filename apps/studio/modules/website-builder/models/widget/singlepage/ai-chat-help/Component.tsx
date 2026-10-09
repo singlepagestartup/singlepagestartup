@@ -51,7 +51,7 @@ export function Component({ copy = defaultCopy }: IHelpProps = {}) {
   }
 
   return (
-    <ServicePage copy={copy} page="help">
+    <ServicePage copy={copy}>
       <div className="grid min-w-0 items-start gap-6 @3xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <PageSection section={sections.request} icon="chat-circle">
           {submitted ? (

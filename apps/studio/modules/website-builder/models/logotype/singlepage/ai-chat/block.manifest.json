@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.logotype.ai-chat",
+  "title": "logotype / ai-chat",
+  "description": "AI Chat home link and SPS logotype.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "logotype",
+    "variant": "ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.logotype",
+    "pageName": "website-builder",
+    "variantName": "ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

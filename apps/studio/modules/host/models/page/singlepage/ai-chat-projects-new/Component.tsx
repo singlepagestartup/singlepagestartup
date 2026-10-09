@@ -1,22 +1,24 @@
 "use client";
-import { Component as Layout } from "../../../layout/singlepage/ai-chat/index";
+import { Component as Layout } from "../../../layout/singlepage/ai-chat-header/index";
 import { useNavigate } from "../../../layout/singlepage/ai-chat/Navigation";
-import { Component as Header } from "../../../../../website-builder/models/widget/singlepage/ai-chat-header/index";
 import { Component as ProjectSelect } from "../../../../../social/models/profile/singlepage/ai-chat-project-select/index";
 import {
   Component as ProfileCreate,
   ProjectProcessingDisclosure,
 } from "../../../../../social/models/profile/singlepage/ai-chat-create/index";
 import { useProfiles } from "../../../../../social/models/profile/singlepage/ai-chat-project/Profiles";
+import { Component as SubjectAccount } from "../../../../../rbac/models/subject/singlepage/ai-chat-account/index";
 export function Component() {
   const navigate = useNavigate();
   const { create, projects } = useProfiles();
   return (
-    <Layout>
-      <Header
-        page="chat"
-        projectNavigation={(props) => <ProjectSelect {...props} />}
-      />
+    <Layout
+      page="chat"
+      profileSelect={(props) => <ProjectSelect {...props} />}
+      subjectAccount={({ onNavigate }) => (
+        <SubjectAccount page="chat" onNavigate={onNavigate} />
+      )}
+    >
       <ProfileCreate
         onCreate={(name) => {
           const id = create(name);

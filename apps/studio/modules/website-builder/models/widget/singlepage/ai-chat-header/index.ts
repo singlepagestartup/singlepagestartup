@@ -1,5 +1,5 @@
 export {
   Component,
   type IHeaderNavigationProps,
-  type IAccountHeaderProps,
+  type IAIChatHeaderProps,
 } from "./Component";

@@ -3,7 +3,7 @@
   "title": "ai-chat-header",
   "layer": "singlepage",
   "state": "draft",
-  "description": "SPS AI Chat header with project selection and account navigation.",
+  "description": "Header resolves Logotype and Buttons Array through Website Builder relations. Page supplies Profile Select and Subject Account render props through Host Layout.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"

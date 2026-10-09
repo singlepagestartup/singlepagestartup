@@ -19,6 +19,10 @@
   },
   "blocks": [
     {
+      "id": "host.layout.ai-chat-header",
+      "path": "../../../../../host/models/layout/singlepage/ai-chat-header"
+    },
+    {
       "id": "rbac.identity.ai-chat-register",
       "path": "../../../../../rbac/models/identity/singlepage/ai-chat-register"
     }

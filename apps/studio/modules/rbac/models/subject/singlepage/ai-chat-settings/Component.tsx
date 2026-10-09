@@ -54,7 +54,7 @@ export function Component({ copy = defaultCopy }: ISettingsProps = {}) {
   }
 
   return (
-    <ServicePage copy={copy} page="settings">
+    <ServicePage copy={copy}>
       <div className="grid min-w-0 gap-5">
         <PageSection section={sections.account} icon="lock-key">
           <form className="mt-6 grid max-w-xl gap-5" onSubmit={saveAccount}>

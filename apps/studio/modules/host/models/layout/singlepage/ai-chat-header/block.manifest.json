@@ -1,0 +1,27 @@
+{
+  "id": "host.layout.ai-chat-header",
+  "title": "layout / ai-chat-header",
+  "description": "AI Chat page frame with Website Builder header and Profile Select / Subject Account slots supplied by Page.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "layout",
+    "variant": "ai-chat-header"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.layout",
+    "pageName": "host",
+    "variantName": "ai-chat-header",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

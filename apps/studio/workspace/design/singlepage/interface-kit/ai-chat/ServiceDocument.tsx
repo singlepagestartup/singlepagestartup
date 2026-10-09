@@ -15,7 +15,6 @@ import type {
 
 interface IServicePageProps {
   copy: IAIChatServicePageContent;
-  page: "register" | "login" | "settings" | "help" | "tokens";
   children: ReactNode;
   showIntro?: boolean;
 }
@@ -52,12 +51,8 @@ interface IFeedbackProps {
   kind?: "success" | "error" | "info";
 }
 
-export { Component as AccountHeader } from "../../../../../modules/website-builder/models/widget/singlepage/ai-chat-header/index";
-import { Component as AccountHeader } from "../../../../../modules/website-builder/models/widget/singlepage/ai-chat-header/index";
-
 export function ServicePage({
   copy,
-  page,
   children,
   showIntro = true,
 }: IServicePageProps) {
@@ -65,9 +60,8 @@ export function ServicePage({
   return (
     <div
       data-sps-theme="singlepage"
-      className="@container min-h-screen bg-sps-grey text-sps-graphite font-sps"
+      className="@container min-w-0 bg-sps-grey text-sps-graphite font-sps"
     >
-      <AccountHeader page={page} />
       <main className="mx-auto max-w-6xl px-5 py-7 @[640px]:px-8 @[640px]:py-10">
         <a
           href={copy.labels["back-href"].replace(
@@ -103,7 +97,7 @@ function PageIntro({ section }: { section: IWebsiteSection }) {
 export function AccountPage({ copy, page, children }: IAccountPageProps) {
   const secondaryPhoto = copy.labels["secondary-photo-src"];
   return (
-    <ServicePage copy={copy} page={page} showIntro={false}>
+    <ServicePage copy={copy} showIntro={false}>
       <div
         className={`grid min-w-0 items-stretch gap-8 @[1000px]:gap-12 ${secondaryPhoto ? "@[760px]:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]" : "@[760px]:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]"}`}
       >

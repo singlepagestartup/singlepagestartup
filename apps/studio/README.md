@@ -161,27 +161,31 @@ public types or helpers. Fixture data and interactive examples live in
 `Component.stories.tsx`. Product website previews compose these components and
 editable Markdown content.
 
-| Owner                   | Component responsibility                                           |
-| ----------------------- | ------------------------------------------------------------------ |
-| Host Page               | One concrete screen composed from domain components                |
-| Host Layout             | Page frame, responsive columns and mobile sidebar drawer           |
-| RBAC Identity / Subject | Registration, login, account settings and account provider         |
-| Social Profile          | User menu, project identities, sidebar, selector, forms and agents |
-| Social Chat             | Resolve the selected Thread through Chat-to-Thread links           |
-| Social Thread           | Conversation, Working On, composer, creation and settings          |
-| Social Skill            | One product-planning instruction                                   |
-| Social Message          | One message, role attribution, context and attachments             |
-| RBAC / Social relations | Subject profiles, profile chats, Sources, Threads and Messages     |
-| Knowledge Source        | Document bundle navigation and editable sections                   |
-| Knowledge relation      | Ordered Source-to-File links filtered by Source ID                 |
-| File Storage File       | File lists, upload, open and detach                                |
-| Ecommerce Order         | Token purchase preview                                             |
-| Website Builder Widget  | Navigation, help and landing page                                  |
+| Owner                                  | Component responsibility                                           |
+| -------------------------------------- | ------------------------------------------------------------------ |
+| Host Page                              | One concrete screen composed from domain components                |
+| Host Layout                            | Page frame, responsive columns and mobile sidebar drawer           |
+| RBAC Identity / Subject                | Registration, login, account settings and account provider         |
+| Social Profile                         | User menu, project identities, sidebar, selector, forms and agents |
+| Social Chat                            | Resolve the selected Thread through Chat-to-Thread links           |
+| Social Thread                          | Conversation, Working On, composer, creation and settings          |
+| Social Skill                           | One product-planning instruction                                   |
+| Social Message                         | One message, role attribution, context and attachments             |
+| RBAC / Social relations                | Subject profiles, profile chats, Sources, Threads and Messages     |
+| Knowledge Source                       | Document bundle navigation and editable sections                   |
+| Knowledge relation                     | Ordered Source-to-File links filtered by Source ID                 |
+| File Storage File                      | File lists, upload, open and detach                                |
+| Ecommerce Order                        | Token purchase preview                                             |
+| Website Builder Widget                 | Header slots, mobile navigation, help and landing page             |
+| Website Builder Logotype               | Logo artwork and home link                                         |
+| Website Builder Buttons Array / Button | Header links through ordered relations                             |
 
 The current subject resolves its `ai-chat-user` Social Profile through
 `subjects-to-social-module-profiles`. RBAC Subject `ai-chat-account` renders that
 profile's `ai-chat-user-menu`, including token balance and account links. The
-header owns layout and mobile disclosure.
+Website Builder header owns its mobile disclosure and receives the rendered
+Profile Select and Subject Account through props supplied by Host Page. It has
+no imports from Social, RBAC or Host, including transitive dependencies.
 
 The user's Profile reaches project chats through `profiles-to-chats`. Only chats
 with `ai-chat-project` and linked Profiles with `ai-chat-project` enter the
@@ -204,7 +208,17 @@ Project Pages are `ai-chat-projects-new`, `ai-chat-projects-project-id`,
 to separate Page components and Storybook stories. Pages receive a `profileId`
 where needed; they do not accept a URL or select another screen internally.
 
-Host Layout `ai-chat` supplies the page frame. Layout `ai-chat-project` owns the
+Host Layout `ai-chat` supplies the page frame. Layout `ai-chat-header` adds the
+Website Builder header. All nine Pages with that header use this Layout. Pages
+compose `profileSelect` and `subjectAccount` render props; Layout passes them to
+the widget. The header resolves Logotype through `widgets-to-logotypes`, Buttons
+Array through `widgets-to-buttons-arrays`, and Button through
+`buttons-arrays-to-buttons`, using local `variant="find"` relation components.
+Help is a Button record; the logo artwork belongs to Logotype. Header and its
+model variants have isolated stories; the Layout story composes the real Social
+and RBAC slots at Host level. `ServicePage` renders content only.
+
+Layout `ai-chat-project` owns the
 responsive columns, collapse control and mobile drawer; its sidebar and body are
 slots. Each project Page imports Profile `ai-chat-sidebar` directly and composes
 its own Chat, Profile settings or Thread creation content. Shared `PanelHeader`

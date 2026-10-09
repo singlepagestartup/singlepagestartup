@@ -74,3 +74,14 @@ Studio содержит собственные React views, интерфейсы
 - [x] Проверить импортные границы, типы, существующие сценарии, отдельные страницы в браузере и мобильный drawer. Обновить handoff и PR.
 
 Результат: десять конкретных Host Page, два Host Layout, Social Profile sidebar/create/settings/select. Каждый Page Component содержит 9–51 строку. Router находится в website/Preview.tsx; модельные providers сохраняют состояние при смене страниц. Проверки: 260 тестов, TypeScript, studio:validate, metadata/content checks и изолированная сборка Storybook. Browser подтверждает переходы, сохранение данных, форму без новой записи и мобильную иерархию navbar/sidebar.
+
+## Header и граница Website Builder
+
+- [x] Website Builder Header разрешает Logotype и Buttons Array через существующие типы отношений; Buttons Array разрешает Button. Help принадлежит Button, SVG — Logotype.
+- [x] Profile Select и Subject Account передаются страницами через slots/props. Header не импортирует Social, RBAC или Host, включая зависимости через shared helpers.
+- [x] Отдельный Host Layout `ai-chat-header` содержит Header. Все Pages с этим header используют этот Layout; общий ServicePage отображает только содержимое.
+- [x] Обновить локальные stories, website adapters, manifests, inventory и карту компонентов.
+- [x] Проверить направления импортов и отсутствие циклов, композицию, типы, существующие сценарии, изолированную сборку и браузер на desktop/mobile.
+- [x] Зафиксировать результат и обновить PR #371. Production остаётся отдельной реализацией.
+
+Результат Header: семь новых вариантов и девять Pages с общим Layout. 264 теста в 32 файлах, TypeScript и изолированная сборка Storybook проходят. Browser проверяет desktop/mobile меню, account navigation и границу sidebar/navbar. SHA и опубликованный PR head доступны в Git и PR #371.

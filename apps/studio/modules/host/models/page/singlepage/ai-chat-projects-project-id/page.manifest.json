@@ -19,6 +19,10 @@
   },
   "blocks": [
     {
+      "id": "host.layout.ai-chat-header",
+      "path": "../../../../../host/models/layout/singlepage/ai-chat-header"
+    },
+    {
       "id": "host.layout.ai-chat-project",
       "path": "../../../../../host/models/layout/singlepage/ai-chat-project"
     },
@@ -33,6 +37,14 @@
     {
       "id": "social.chat.ai-chat-products",
       "path": "../../../../../social/models/chat/singlepage/ai-chat-products"
+    },
+    {
+      "id": "rbac.subject.ai-chat-account",
+      "path": "../../../../../rbac/models/subject/singlepage/ai-chat-account"
+    },
+    {
+      "id": "social.profile.ai-chat-project-select",
+      "path": "../../../../../social/models/profile/singlepage/ai-chat-project-select"
     }
   ]
 }

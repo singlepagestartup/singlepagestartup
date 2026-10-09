@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.buttons-arrays-to-buttons.ai-chat-find",
+  "title": "buttons-arrays-to-buttons / ai-chat-find",
+  "description": "Ordered Buttons Array-to-Button links filtered by Buttons Array ID.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "relation",
+    "entity": "buttons-arrays-to-buttons",
+    "variant": "ai-chat-find"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.buttons-arrays-to-buttons",
+    "pageName": "website-builder",
+    "variantName": "ai-chat-find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.buttons-array.ai-chat-header",
+  "title": "buttons-array / ai-chat-header",
+  "description": "Ordered header buttons resolved through Buttons Array-to-Button links.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "buttons-array",
+    "variant": "ai-chat-header"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.buttons-array",
+    "pageName": "website-builder",
+    "variantName": "ai-chat-header",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}
