@@ -18,17 +18,15 @@ import {
 import {
   createProjectTopic,
   attachProjectAsset,
-  isDocumentReviewed,
   prepareProjectDocuments,
-  reviewProjectDocument,
+  projectDocumentText,
+  detachProjectFile,
   sendProjectMessage,
-  topicDocumentContext,
   topicAgentContext,
   documentWorkingOn,
   type IProjectProfile,
   type IProjectDocument,
   type IProjectMessage,
-  type IProjectAsset,
   type IProjectFile,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import {
@@ -37,8 +35,10 @@ import {
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
 import { ProjectSetup, ProjectSteps } from "../ai-chat-workspace/ProjectSetup";
 import { Component as ChatWorkspace } from "../../../chat/singlepage/ai-chat-workspace/index";
-import { Component as ThreadWorkspace } from "../../../thread/singlepage/ai-chat-workspace/index";
-import { ThreadHeader } from "../../../thread/singlepage/ai-chat-workspace/index";
+import {
+  Component as ThreadWorkspace,
+  ThreadHeader,
+} from "../../../thread/singlepage/ai-chat-workspace/index";
 import { Component as ThreadSettings } from "../../../thread/singlepage/ai-chat-settings/index";
 import { projectThreadGraph } from "../../../../../../workspace/utils/products/ai-chat-threads";
 import { Component as ProfileSources } from "../../../../relations/profiles-to-knowledge-module-sources/singlepage/ai-chat-find/index";
@@ -129,7 +129,6 @@ export function Component({
       selection.localId ===
         (view === "document" ? selectedDocument : selectedTopic),
   )?.threadId;
-  const savedCount = project.documents.filter((item) => item.saved).length;
   const working = project.stage === "documents" || project.stage === "topics";
   const anchor = (name: string) => (active ? name : `${id}-${name}`);
   useLayoutEffect(() => {
@@ -180,8 +179,7 @@ export function Component({
       setProject((current) => ({
         ...current,
         stage: "topics",
-        setupComplete:
-          current.setupComplete || current.documents.every(isDocumentReviewed),
+        setupComplete: true,
       }));
     },
     [setProject],
@@ -232,16 +230,16 @@ export function Component({
     setWorkingSections((current) => ({ ...current, [document.id]: titles }));
   }
   const attachFile = useCallback(
-    (file: IProjectFile, title: string, kind: IProjectAsset["kind"]) => {
+    (file: IProjectFile, title: string) => {
       const assetId = `${id}-asset-${++sequence.current}`;
       updateDocument((current) =>
-        attachProjectAsset(current, file, title, kind, assetId),
+        attachProjectAsset(current, file, title, assetId),
       );
     },
     [id, updateDocument],
   );
   const uploadFiles = useCallback(
-    (files: IProjectFile[], title: string, kind: IProjectAsset["kind"]) => {
+    (files: IProjectFile[], title: string) => {
       const assetIds = files.map(() => `${id}-asset-${++sequence.current}`);
       setProject((current) => ({
         ...current,
@@ -250,13 +248,7 @@ export function Component({
           item.id === selectedDocument
             ? files.reduce(
                 (document, file, index) =>
-                  attachProjectAsset(
-                    document,
-                    file,
-                    title,
-                    kind,
-                    assetIds[index],
-                  ),
+                  attachProjectAsset(document, file, title, assetIds[index]),
                 item,
               )
             : item,
@@ -265,22 +257,9 @@ export function Component({
     },
     [id, setProject, selectedDocument],
   );
-  const changeDocumentAsset = useCallback(
-    (assetId: string, update: Partial<IProjectAsset>) =>
-      updateDocument((current) => ({
-        ...current,
-        assets: (current.assets ?? []).map((asset) =>
-          asset.id === assetId ? { ...asset, ...update } : asset,
-        ),
-      })),
-    [updateDocument],
-  );
   const detachDocumentAsset = useCallback(
-    (assetId: string) =>
-      updateDocument((current) => ({
-        ...current,
-        assets: (current.assets ?? []).filter((asset) => asset.id !== assetId),
-      })),
+    (fileId: string, section: string) =>
+      updateDocument((current) => detachProjectFile(current, fileId, section)),
     [updateDocument],
   );
   function sendDocumentMessage() {
@@ -297,7 +276,7 @@ export function Component({
         reply: text
           ? section
             ? `I've prepared an update for “${section}” from your message. Check it below, then apply it to the draft or keep discussing it.`
-            : `I'll use ${document.title}.md to discuss ${selectedSections.length ? selectedSections.join(" and ") : "the whole document"}. Review changes in Document before saving the next version.`
+            : `I'll use ${document.title}.md to discuss ${selectedSections.length ? selectedSections.join(" and ") : "the whole document"}. You can edit the current knowledge in Document.`
           : `Your files are attached to this conversation. What should we check or change in ${section || `${document.title}.md`}?`,
       }),
     );
@@ -312,7 +291,7 @@ export function Component({
     );
     const reply = message(
       "assistant",
-      `The draft's “${proposal.section}” section is updated. ${next?.prompt ?? "Open the document to check the wording and save the reviewed version."}`,
+      `The draft's “${proposal.section}” section is updated. ${next?.prompt ?? "Open the document to check the wording."}`,
     );
     updateDocument((current) => ({
       ...current,
@@ -323,40 +302,27 @@ export function Component({
     if (next) changeSections([next.title]);
     setPane("document");
   }
-  function reviewDocument() {
-    const reply = message(
-      "assistant",
-      "This version is saved for project threads. You can return here to revise it or continue with another document.",
-    );
-    updateDocument((current) => ({
-      ...reviewProjectDocument(current),
-      messages: [...current.messages, reply],
-    }));
-    setPane("chat");
-  }
   function newTopic() {
     setMobileSidebarOpen(false);
     setView("new-topic");
     setDocumentListOpen(false);
     setProject((current) => ({
-      ...current,
+      ...(current.documents.length
+        ? current
+        : prepareProjectDocuments(current, projectDefinitions)),
       stage: "topics",
-      setupComplete:
-        current.setupComplete || current.documents.every(isDocumentReviewed),
+      setupComplete: true,
     }));
   }
   function createTopic(title: string) {
-    const reviewedIds = project.documents
-      .filter((item) => item.saved)
-      .map((item) => item.id);
-    if (!title.trim() || !reviewedIds.length) return;
+    if (!title.trim()) return;
     const topicId = `${id}-topic-${++sequence.current}`;
     setProject((current) =>
       createProjectTopic(
         current,
         topicId,
         title,
-        reviewedIds,
+        current.documents.map((document) => document.id),
         documentAgent("thread"),
       ),
     );
@@ -377,7 +343,7 @@ export function Component({
         text,
         reply: text
           ? `${context.length ? `I'll work from ${context.map((item) => item.name).join(", ")}. ` : ""}Which part of “${topic.title}” should we develop first? You can add a goal or ask for a revision.`
-          : `Your files are attached alongside the reviewed documents. What would you like to work on in “${topic.title}”?`,
+          : `Your files are attached alongside the profile knowledge. What would you like to work on in “${topic.title}”?`,
       }),
     );
     setInputs((current) => ({ ...current, [topic.id]: "" }));
@@ -469,10 +435,7 @@ export function Component({
   function exportDocuments() {
     const text =
       `# ${project.name}\n\n` +
-      project.documents
-        .filter((item) => item.saved)
-        .map((item) => item.saved)
-        .join("\n\n");
+      project.documents.map(projectDocumentText).join("\n\n");
     const url = URL.createObjectURL(
       new Blob([text], { type: "text/markdown;charset=utf-8" }),
     );
@@ -512,7 +475,7 @@ export function Component({
         aria-label="Thread context documents"
         className="flex max-h-20 min-w-0 flex-wrap justify-end gap-2 overflow-y-auto"
       >
-        {topicDocumentContext(project, topic.documentIds).map((item) => (
+        {topicAgentContext(project, topic).map((item) => (
           <span
             key={item.name}
             title={item.name}
@@ -571,7 +534,6 @@ export function Component({
       selectedDocument={view === "document" ? selectedDocument : undefined}
       selectedTopic={view === "topic" ? selectedTopic : undefined}
       settingsSelected={view === "settings"}
-      canCreateThread={Boolean(savedCount)}
       onSettings={() => {
         setView("settings");
         setMobileSidebarOpen(false);
@@ -606,6 +568,7 @@ export function Component({
         {!working ? (
           <ProjectSetup
             project={project}
+            onStartThread={newTopic}
             analysisStep={analysisStep}
             disclosureId={anchor("how-your-materials-are-processed-and-stored")}
             onNotes={(notes) =>
@@ -631,7 +594,6 @@ export function Component({
                               draft,
                               file,
                               target,
-                              "reference",
                               `${document.id}-${file.id}`,
                             ),
                           document,
@@ -650,7 +612,7 @@ export function Component({
                     .filter((asset) => asset.file.id !== sourceId)
                     .map((asset) =>
                       asset.delivery?.id === sourceId
-                        ? { ...asset, delivery: undefined, status: "proposed" }
+                        ? { ...asset, delivery: undefined }
                         : asset,
                     ),
                 })),
@@ -859,10 +821,8 @@ export function Component({
                                         knowledge.attachmentViews,
                                       sources: project.sources,
                                       onEdit: editDocumentSection,
-                                      onReview: reviewDocument,
                                       onAttach: attachFile,
                                       onUpload: uploadFiles,
-                                      onAssetChange: changeDocumentAsset,
                                       onAssetRemove: detachDocumentAsset,
                                     }}
                                   >
@@ -891,23 +851,11 @@ export function Component({
                                         </Button>
                                       </form>
                                     )}
-                                    {document.saved && (
-                                      <div className="p-4 pt-0">
-                                        <Button
-                                          variant="secondary"
-                                          onClick={newTopic}
-                                        >
-                                          <Icon name="chat-circle" />
-                                          Start a thread with saved documents
-                                        </Button>
-                                      </div>
-                                    )}
                                   </ThreadWorkspace>
                                 )}
                                 {view === "new-topic" && (
                                   <ThreadCreate
                                     key={`${project.id}:new-thread`}
-                                    canCreate={Boolean(savedCount)}
                                     onCreate={createTopic}
                                   />
                                 )}
@@ -989,11 +937,11 @@ export function Component({
                                     <div className="border-t border-sps-line pt-5">
                                       <Button
                                         variant="secondary"
-                                        disabled={!savedCount}
+                                        disabled={!project.documents.length}
                                         onClick={exportDocuments}
                                       >
                                         <Icon name="arrow-down" />
-                                        Export reviewed documents
+                                        Export documents
                                       </Button>
                                     </div>
                                   </section>

@@ -1,13 +1,9 @@
 "use client";
-import * as Tooltip from "@radix-ui/react-tooltip";
 import {
   Icon,
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
-import {
-  isDocumentReviewed,
-  type IProjectDocument,
-} from "../../../../../../workspace/utils/products/ai-chat-workspace";
+import { type IProjectDocument } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import type { IProjectKnowledge } from "../../../../../../workspace/utils/products/ai-chat-models";
 import type { IProjectThreadGraph } from "../../../../../../workspace/utils/products/ai-chat-threads";
 import { Component as ProfileSources } from "../../../../relations/profiles-to-knowledge-module-sources/singlepage/ai-chat-find/index";
@@ -27,7 +23,6 @@ export interface IProfileNavigationProps {
   selectedDocument?: string;
   selectedTopic?: string;
   settingsSelected: boolean;
-  canCreateThread: boolean;
   onSettings: () => void;
   onToggleDocuments: () => void;
   onDocument: (id: string) => void;
@@ -46,7 +41,6 @@ export function Component({
   selectedDocument,
   selectedTopic,
   settingsSelected,
-  canCreateThread,
   onSettings,
   onToggleDocuments,
   onDocument,
@@ -129,7 +123,6 @@ export function Component({
                         id: item.id,
                         title: item.title,
                         sources,
-                        reviewed: isDocumentReviewed(item),
                       }}
                       selected={selectedDocument === item.id}
                       onSelect={onDocument}
@@ -143,41 +136,14 @@ export function Component({
       </nav>
       <div className="mt-5 border-t border-white/15 pt-4">
         <p className="mb-3 text-xs font-semibold text-white/60">Threads</p>
-        <Tooltip.Provider delayDuration={150}>
-          <Tooltip.Root>
-            <Tooltip.Trigger asChild>
-              <button
-                type="button"
-                aria-disabled={!canCreateThread}
-                onClick={(event) => {
-                  if (!canCreateThread) {
-                    event.preventDefault();
-                    return;
-                  }
-                  onCreateThread();
-                }}
-                className={`flex min-h-11 w-full items-center gap-2 rounded-xl border border-white/20 px-3 text-sm aria-disabled:cursor-not-allowed aria-disabled:opacity-40 ${kit.focus}`}
-              >
-                <Icon name="plus" className="size-4" />
-                New thread
-              </button>
-            </Tooltip.Trigger>
-            {!canCreateThread && (
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  side="right"
-                  sideOffset={8}
-                  collisionPadding={12}
-                  className="z-50 max-w-72 rounded-xl border border-sps-line bg-sps-graphite p-3 font-sps text-xs leading-5 text-sps-white shadow-lg"
-                >
-                  Fill in at least one document and save it as reviewed to
-                  create a thread.
-                  <Tooltip.Arrow className="fill-sps-graphite" />
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            )}
-          </Tooltip.Root>
-        </Tooltip.Provider>
+        <button
+          type="button"
+          onClick={onCreateThread}
+          className={`flex min-h-11 w-full items-center gap-2 rounded-xl border border-white/20 px-3 text-sm ${kit.focus}`}
+        >
+          <Icon name="plus" className="size-4" />
+          New thread
+        </button>
         <div className="mt-2 grid gap-1">
           <ChatThreads
             variant="find"

@@ -4,7 +4,7 @@ import { aiChatSourceFixture } from "../../../../../../workspace/utils/products/
 import { projectKnowledge } from "../../../../../../workspace/utils/products/ai-chat-models";
 import {
   attachProjectAsset,
-  reviewProjectDocument,
+  detachProjectFile,
   type IProjectDocument,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import type { Meta, StoryObj } from "@storybook/react";
@@ -66,19 +66,12 @@ function Example() {
           values: { ...current.values, [key]: value },
         }))
       }
-      onReview={() => updateDocument(reviewProjectDocument)}
-      onAttach={(file, section, kind) =>
+      onAttach={(file, section) =>
         updateDocument((current) =>
-          attachProjectAsset(
-            current,
-            file,
-            section,
-            kind,
-            `${file.id}:${section}`,
-          ),
+          attachProjectAsset(current, file, section, `${file.id}:${section}`),
         )
       }
-      onUpload={(files, section, kind) =>
+      onUpload={(files, section) =>
         setProject((current) => ({
           ...current,
           sources: [...current.sources, ...files],
@@ -90,7 +83,6 @@ function Example() {
                       document,
                       file,
                       section,
-                      kind,
                       `${file.id}:${section}`,
                     ),
                   document,
@@ -99,19 +91,10 @@ function Example() {
           ),
         }))
       }
-      onAssetChange={(id, update) =>
-        updateDocument((current) => ({
-          ...current,
-          assets: current.assets?.map((asset) =>
-            asset.id === id ? { ...asset, ...update } : asset,
-          ),
-        }))
-      }
-      onAssetRemove={(id) =>
-        updateDocument((current) => ({
-          ...current,
-          assets: current.assets?.filter((asset) => asset.id !== id),
-        }))
+      onAssetRemove={(fileId, section) =>
+        updateDocument((document) =>
+          detachProjectFile(document, fileId, section),
+        )
       }
     />
   );

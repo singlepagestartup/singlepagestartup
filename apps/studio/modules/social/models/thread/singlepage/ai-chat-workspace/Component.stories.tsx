@@ -4,10 +4,7 @@ import { aiChatProjectFixture } from "../../../../../../workspace/utils/products
 import { projectKnowledge } from "../../../../../../workspace/utils/products/ai-chat-models";
 import { projectThreadGraph } from "../../../../../../workspace/utils/products/ai-chat-threads";
 import { documentAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
-import {
-  sendProjectMessage,
-  reviewProjectDocument,
-} from "../../../../../../workspace/utils/products/ai-chat-workspace";
+import { sendProjectMessage } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import type { Meta, StoryObj } from "@storybook/react";
 
 function Example() {
@@ -76,8 +73,7 @@ function Example() {
                   sections: knowledge.sources
                     .filter((source) => selected.includes(source.id))
                     .map((source) => source.title),
-                  reply:
-                    "Review the proposed update before saving the document.",
+                  reply: "Check the proposed update before applying it.",
                 }),
               );
               setValue("");
@@ -103,16 +99,8 @@ function Example() {
                     : item,
                 ),
               })),
-            onReview: () =>
-              setProject((current) => ({
-                ...current,
-                documents: current.documents.map((item) =>
-                  item.id === document.id ? reviewProjectDocument(item) : item,
-                ),
-              })),
             onAttach: () => {},
             onUpload: () => {},
-            onAssetChange: () => {},
             onAssetRemove: () => {},
           }}
         />

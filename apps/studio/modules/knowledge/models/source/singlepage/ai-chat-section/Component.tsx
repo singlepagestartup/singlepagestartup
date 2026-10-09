@@ -20,10 +20,7 @@ import type {
   ISourceFileRelation,
   ISourceAttachmentView,
 } from "../../../../../../workspace/utils/products/ai-chat-models";
-import type {
-  IProjectFile,
-  IProjectAsset,
-} from "../../../../../../workspace/utils/products/ai-chat-workspace";
+import type { IProjectFile } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 
 export interface ISourceSectionProps {
   data: IAIChatSource;
@@ -35,18 +32,9 @@ export interface ISourceSectionProps {
   availableFiles: IProjectFile[];
   onEdit: (sourceId: string, content: string) => void;
   onDiscuss: (sourceId: string) => void;
-  onAttach: (
-    file: IProjectFile,
-    sourceId: string,
-    kind: IProjectAsset["kind"],
-  ) => void;
-  onUpload: (
-    files: IProjectFile[],
-    sourceId: string,
-    kind: IProjectAsset["kind"],
-  ) => void;
-  onAssetChange: (id: string, update: Partial<IProjectAsset>) => void;
-  onAssetRemove: (id: string) => void;
+  onAttach: (file: IProjectFile, sourceId: string) => void;
+  onUpload: (files: IProjectFile[], sourceId: string) => void;
+  onAssetRemove: (fileId: string, sourceId: string) => void;
   helpLabel?: string;
   onHelp?: (button: HTMLButtonElement, title: string) => void;
 }
@@ -63,7 +51,6 @@ export const Component = memo(function Component({
   onDiscuss,
   onAttach,
   onUpload,
-  onAssetChange,
   onAssetRemove,
   helpLabel,
   onHelp,
@@ -75,13 +62,11 @@ export const Component = memo(function Component({
     [data.id, data.content, onEdit],
   );
   const attach = useCallback(
-    (file: IProjectFile, _: string, kind: IProjectAsset["kind"]) =>
-      onAttach(file, data.id, kind),
+    (file: IProjectFile, _: string) => onAttach(file, data.id),
     [data.id, onAttach],
   );
   const upload = useCallback(
-    (files: IProjectFile[], _: string, kind: IProjectAsset["kind"]) =>
-      onUpload(files, data.id, kind),
+    (files: IProjectFile[], _: string) => onUpload(files, data.id),
     [data.id, onUpload],
   );
   const materials = sourceMaterials(data.content);
@@ -150,8 +135,7 @@ export const Component = memo(function Component({
             sources={availableFiles}
             onAttach={attach}
             onUpload={upload}
-            onChange={onAssetChange}
-            onRemove={onAssetRemove}
+            onRemove={(fileId) => onAssetRemove(fileId, data.id)}
           />
         )}
       </SourceFiles>

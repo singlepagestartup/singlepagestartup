@@ -171,9 +171,9 @@ editable Markdown content.
 | Social Thread           | Conversation, Working On, composer, creation and settings         |
 | Social Message          | One message, role attribution, context and attachments            |
 | RBAC / Social relations | Subject profiles, profile chats, Sources, Threads and Messages    |
-| Knowledge Source        | Document bundle navigation, editable sections and review controls |
+| Knowledge Source        | Document bundle navigation and editable sections                  |
 | Knowledge relation      | Ordered Source-to-File links filtered by Source ID                |
-| File Storage File       | References and generated attachment views                         |
+| File Storage File       | File lists, upload, open and detach                               |
 | Ecommerce Order         | Token purchase preview                                            |
 | Website Builder Widget  | Navigation, help and landing page                                 |
 
@@ -200,7 +200,11 @@ plus the Source editor for document discussions. Its conversation resolves order
 Messages through `threads-to-messages/ai-chat-find` and renders one
 `message/ai-chat-message` per record. Thread creation and settings have separate
 variants. A work Thread uses Profile knowledge without Working On or a document
-selection form.
+selection form. Threads can start before materials or documents are filled in.
+The initial setup provides Start a thread and scaffolds the document sections
+without requiring material analysis. Responses and Markdown exports use current
+knowledge. Message history retains the context captured when each message was
+sent; there is no reviewed-version snapshot or review gate.
 
 Knowledge navigation uses `profiles-to-knowledge-module-sources` and Source
 components. Each document block renders `knowledge.source/ai-chat-section` with
@@ -215,8 +219,8 @@ Each Source finds its Files through Knowledge
 Links carry sourceId, fileStorageModuleFileId and orderIndex; the Source/File
 pair is unique. File views resolve independent File records. Detaching preserves
 the File pool and other Source links. Delivery Files also have explicit links.
-Reference/generated categories and asset review are local presentation
-parameters, not extra Source or relation schema fields.
+Every linked File appears in one Files list with upload and detach actions.
+Existing original and delivery Files remain independent links in that list.
 
 The section editor changes the user-context block in Source.content and keeps
 file-derived descriptions visible and unchanged. Plain text Sources remain

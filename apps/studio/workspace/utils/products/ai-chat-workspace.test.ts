@@ -18,14 +18,13 @@ import {
   createProjectProfile,
   attachProjectAsset,
   createProjectTopic,
+  detachProjectFile,
   topicAgentContext,
   documentAgentContext,
   documentWorkingOn,
   hasProjectMaterials,
-  isDocumentReviewed,
   prepareProjectDocuments,
   projectDocumentText,
-  reviewProjectDocument,
   sendProjectMessage,
   topicDocumentContext,
 } from "./ai-chat-workspace";
@@ -64,7 +63,7 @@ function projectWithDrafts() {
 }
 
 describe("AI Chat project workflow", () => {
-  test("preserves Markdown and significant whitespace through review, export and agent context", () => {
+  test("preserves Markdown and significant whitespace through export and current agent context", () => {
     const project = projectWithDrafts();
     const markdown =
       "    code with indentation\n\n### Offer\n\n**Cup workshop**\n\n- [ ] Confirm dates\n\n| Offer | Price |\n| --- | --- |\n| Cup | Unknown |\n\nHard break  \nNext line\n";
@@ -73,26 +72,28 @@ describe("AI Chat project workflow", () => {
       values: { "Project and products": markdown },
     };
     const expected = `## Project and products\n\n${markdown}`;
-    const reviewed = reviewProjectDocument(document);
     expect(projectDocumentText(document)).toContain(expected);
-    expect(reviewed.saved).toContain(expected);
-    expect(isDocumentReviewed(reviewed)).toBe(true);
     expect(documentAgentContext(project, document)[0].text).toBe(expected);
     expect(
-      topicDocumentContext({ ...project, documents: [reviewed] }, [
-        reviewed.id,
+      topicDocumentContext({ ...project, documents: [document] }, [
+        document.id,
       ])[0].text,
     ).toContain(expected);
   });
-  test("requires a name before upload and materials before analysis", () => {
+  test("requires a project name and scaffolds documents without materials", () => {
     expect(() => createProjectProfile("project", "  ")).toThrow();
     const project = createProjectProfile("project", "  Pottery  ");
     expect(project.name).toBe("Pottery");
     expect(project.stage).toBe("upload");
     expect(hasProjectMaterials(project)).toBe(false);
-    expect(() =>
-      prepareProjectDocuments(project, projectDefinitions),
-    ).toThrow();
+    const scaffold = prepareProjectDocuments(project, projectDefinitions);
+    expect(scaffold.documents).toHaveLength(5);
+    expect(scaffold.documents[0].values).toEqual({
+      "Project and products": "Pottery",
+    });
+    expect(
+      scaffold.documents.every((document) => !document.assets?.length),
+    ).toBe(true);
   });
   test("keeps supplied text attributed and leaves unsupported decisions open", () => {
     const project = projectWithDrafts();
@@ -110,7 +111,6 @@ describe("AI Chat project workflow", () => {
       "Studio.jpg: attached material; interpretation needs review.",
     );
     expect(project.documents[1].values).toEqual({});
-    expect(project.documents.every((item) => !item.saved)).toBe(true);
     expect(definitions.product.sections.map((item) => item.title)).toEqual([
       "Product identity",
       "Customer Segments",
@@ -129,50 +129,83 @@ describe("AI Chat project workflow", () => {
       "Analytics & Research",
     ]);
   });
-  test("draft edits preserve the reviewed snapshot until the user reviews again", () => {
-    const project = projectWithDrafts();
-    const saved = reviewProjectDocument(project.documents[0]);
-    const edited = {
-      ...saved,
-      values: {
-        ...saved.values,
-        "Current state": "A studio is available.",
-      },
-    };
-    expect(isDocumentReviewed(saved)).toBe(true);
-    expect(isDocumentReviewed(edited)).toBe(false);
-    expect(edited.saved).toBe(saved.saved);
-    expect(reviewProjectDocument(edited).saved).toContain(
-      "A studio is available.",
+
+  test("threads start without materials and use current profile knowledge on every response", () => {
+    let project = createProjectTopic(
+      createProjectProfile("empty", "Empty"),
+      "topic",
+      "Start",
+      [],
     );
+    expect(project.topics).toHaveLength(1);
+    expect(topicAgentContext(project, project.topics[0])).toEqual([]);
+    project = { ...project, documents: projectWithDrafts().documents };
+    const first = sendProjectMessage(project, "topic", {
+      userId: "u1",
+      assistantId: "a1",
+      text: "First",
+      reply: "Answer",
+    });
+    const oldText = first.topics[0].messages.at(-1)!.context![0].text;
+    const updated = {
+      ...first,
+      documents: first.documents.map((document, index) =>
+        index === 0
+          ? {
+              ...document,
+              values: {
+                ...document.values,
+                "Current state": "New current knowledge",
+              },
+            }
+          : document,
+      ),
+    };
+    const second = sendProjectMessage(updated, "topic", {
+      userId: "u2",
+      assistantId: "a2",
+      text: "Next",
+      reply: "Answer",
+    });
+    expect(second.topics[0].messages.at(-1)?.context).toHaveLength(
+      updated.documents.length,
+    );
+    expect(second.topics[0].messages.at(-1)?.context?.[0].text).toContain(
+      "New current knowledge",
+    );
+    expect(second.topics[0].messages.at(-3)?.context?.[0].text).toBe(oldText);
+    expect(oldText).not.toContain("New current knowledge");
   });
-  test("threads attach selected reviewed documents and use their saved versions", () => {
+  test("detach removes only the selected Source/File link and keeps shared stored files", () => {
     const project = projectWithDrafts();
-    project.documents[0] = reviewProjectDocument(project.documents[0]);
-    expect(() =>
-      createProjectTopic(project, "topic", "Offer", ["strategy"]),
-    ).toThrow();
-    const threaded = createProjectTopic(project, "topic", "Offer", [
-      "brief",
-      "brief",
-      "strategy",
-      "unknown",
-    ]);
-    expect(threaded.topics[0].documentIds).toEqual(["brief"]);
-    const initial = threaded.topics[0].messages[0].context;
-    threaded.documents[0] = {
-      ...threaded.documents[0],
-      values: {
-        ...threaded.documents[0].values,
-        "Project and products": "Changed draft",
-      },
-    };
-    expect(topicDocumentContext(threaded, ["brief"])).toEqual(initial!);
-    threaded.documents[0] = reviewProjectDocument(threaded.documents[0]);
-    expect(topicDocumentContext(threaded, ["brief"])[0].text).toContain(
-      "Changed draft",
+    const document = project.documents[0];
+    const file = project.sources[1];
+    const linked = attachProjectAsset(
+      attachProjectAsset(document, file, document.sections[0].title, "first"),
+      file,
+      document.sections[1].title,
+      "second",
     );
-    expect(initial![0].text).not.toContain("Changed draft");
+    const detached = detachProjectFile(
+      linked,
+      file.id,
+      document.sections[0].title,
+    );
+    expect(
+      detached.assets?.some(
+        (asset) =>
+          asset.file.id === file.id &&
+          asset.section === document.sections[0].title,
+      ),
+    ).toBe(false);
+    expect(
+      detached.assets?.some(
+        (asset) =>
+          asset.file.id === file.id &&
+          asset.section === document.sections[1].title,
+      ),
+    ).toBe(true);
+    expect(project.sources).toContain(file);
   });
   test("another project starts without the first project's materials or threads", () => {
     const first = projectWithDrafts();
@@ -193,7 +226,7 @@ describe("AI Chat project workflow", () => {
       fileUrl: "blob:chat-image",
     };
     project.documents[0] = {
-      ...reviewProjectDocument(project.documents[0]),
+      ...project.documents[0],
       draftFiles: [file],
       proposal: { section: "Current state", text: "An earlier proposal." },
     };
@@ -207,7 +240,6 @@ describe("AI Chat project workflow", () => {
     });
     const after = sent.documents[0];
     expect(after.values).toEqual(before.values);
-    expect(after.saved).toBe(before.saved!);
     expect(after.proposal).toEqual(before.proposal!);
     expect(after.draftFiles).toEqual([]);
     expect(after.messages.at(-2)?.files?.[0]).toEqual(file);
@@ -215,7 +247,6 @@ describe("AI Chat project workflow", () => {
     expect(sent.sources.at(-1)).toEqual(file);
     file.name = "Changed filename";
     expect(after.messages.at(-2)?.files?.[0].name).toBe("Reference.jpg");
-    expect(isDocumentReviewed(after)).toBe(true);
   });
   test("conversation files stay isolated and follow-up messages use only that conversation's files", () => {
     const project = projectWithDrafts();
@@ -271,9 +302,8 @@ describe("AI Chat project workflow", () => {
       }),
     ).toBe(continued);
   });
-  test("thread attachments supplement the reviewed document context without approving draft files", () => {
+  test("thread attachments supplement the current knowledge context", () => {
     const project = projectWithDrafts();
-    project.documents[0] = reviewProjectDocument(project.documents[0]);
     const threaded = createProjectTopic(project, "offer", "Offer", ["brief"]);
     const file = {
       id: "offer-file",
@@ -290,7 +320,9 @@ describe("AI Chat project workflow", () => {
       reply: "What should we work on?",
     });
     const reply = sent.topics[0].messages.at(-1)!;
-    expect(reply.context?.[0].text).toBe(project.documents[0].saved!);
+    expect(reply.context?.[0].text).toBe(
+      projectDocumentText(project.documents[0]),
+    );
     expect(reply.filesUsed).toEqual([file]);
     expect(sent.topics[0].draftFiles).toEqual([]);
     expect(sent.documents).toEqual(project.documents);
@@ -313,62 +345,8 @@ describe("AI Chat project workflow", () => {
     expect(request.assets?.[0].section).toBe("Visual reference intake");
     expect(design.assets?.[0].section).toBe("Outputs and provenance");
     expect(design.assets?.[0].file.fileUrl).toBe("blob:studio");
-    expect(design.assets?.[0].status).toBe("proposed");
-    expect(design.assets?.[0].purpose).toBe("");
     expect(design.values).toEqual({});
     expect(project.documents[1].assets).toEqual([]);
-  });
-  test("file metadata and attachment edits require a new document review", () => {
-    const project = projectWithDrafts();
-    const original = project.sources[1];
-    const generated = attachProjectAsset(
-      project.documents[3],
-      original,
-      "Photography",
-      "generated",
-      "generated-1",
-    );
-    generated.assets![1] = {
-      ...generated.assets![1],
-      purpose: "Website hero",
-      prompt: "A person working in a pottery studio.",
-      tool: "Image generator",
-      delivery: {
-        ...original,
-        id: "square",
-        name: "Studio-square.jpg",
-        fileUrl: "blob:square",
-      },
-    };
-    project.documents[3] = reviewProjectDocument(generated);
-    const context = topicDocumentContext(project, ["design"])[0];
-    expect(context.assets).toHaveLength(2);
-    expect(context.text).toContain(
-      "Prompt: A person working in a pottery studio.",
-    );
-    expect(context.text).toContain("Studio-square.jpg");
-    project.documents[3] = { ...project.documents[3], assets: [] };
-    expect(isDocumentReviewed(project.documents[3])).toBe(false);
-    expect(
-      topicDocumentContext(project, ["design"])[0].assets?.[1].delivery
-        ?.fileUrl,
-    ).toBe("blob:square");
-    expect(context.assets?.[1].status).toBe("proposed");
-    project.documents[3] = reviewProjectDocument({
-      ...project.documents[3],
-      values: { "Visual system": "Cool white surfaces." },
-    });
-    expect(topicDocumentContext(project, ["design"])[0].assets).toEqual([]);
-    expect(context.assets).toHaveLength(2);
-    expect(() =>
-      attachProjectAsset(
-        generated,
-        original,
-        "Missing section",
-        "reference",
-        "bad",
-      ),
-    ).toThrow();
   });
 });
 
@@ -469,16 +447,14 @@ describe("AI Chat agent profiles", () => {
     const project = {
       ...base,
       documents: base.documents.map((document) =>
-        document.id === "brief"
-          ? reviewProjectDocument(document)
-          : document.id === "strategy"
-            ? reviewProjectDocument({
-                ...document,
-                values: {
-                  [document.sections[0].title]: "Adults trying pottery.",
-                },
-              })
-            : document,
+        document.id === "strategy"
+          ? {
+              ...document,
+              values: {
+                [document.sections[0].title]: "Adults trying pottery.",
+              },
+            }
+          : document,
       ),
     };
     const created = createProjectTopic(
@@ -505,8 +481,13 @@ describe("AI Chat agent profiles", () => {
     expect(answer.context?.map((item) => item.name)).toEqual([
       "Brief.md",
       "Strategy.md",
+      "Brand.md",
+      "Design.md",
+      "Products.md",
     ]);
-    expect(answer.context?.[0].text).toBe(project.documents[0].saved!);
+    expect(answer.context?.[0].text).toBe(
+      projectDocumentText(project.documents[0]),
+    );
     expect(answer.filesUsed?.[0].text).toBe("New evidence");
     expect(sent.topics[0].agent).toBeNull();
     expect(sent.topics[0].messages[1].text).toBe(
@@ -517,12 +498,7 @@ describe("AI Chat agent profiles", () => {
   });
   test("retains historical attribution when switching between a role and no agent", () => {
     const base = projectWithDrafts();
-    const project = {
-      ...base,
-      documents: base.documents.map((document) =>
-        document.id === "brief" ? reviewProjectDocument(document) : document,
-      ),
-    };
+    const project = base;
     const created = createProjectTopic(project, "switch", "Discussion", [
       "brief",
     ]);
@@ -645,10 +621,10 @@ describe("AI Chat agent profiles", () => {
     expect(documentAgent("strategy").role).toContain("in Products");
     expect(documentAgent("design").name).toBe("Brand Designer");
     expect(documentAgent("design").role).toContain(
-      "Design.md → Outputs and provenance → References",
+      "Design.md → Outputs and provenance → Files",
     );
     expect(documentAgent("design").role).toContain(
-      "Generated files holds outputs",
+      "inputs and outputs to the owning section as Files",
     );
     expect(documentAgent("products").role).toContain("Products.md inventory");
     expect(documentAgent("products").role).toContain("Revenue Streams");
@@ -656,14 +632,9 @@ describe("AI Chat agent profiles", () => {
       /frontmatter|segments: \[\]|v2 segment workspace/,
     );
   });
-  test("uses only attached project documents and retains earlier role snapshots", () => {
+  test("uses all current profile knowledge and retains earlier role snapshots", () => {
     const base = projectWithDrafts();
-    const project = {
-      ...base,
-      documents: base.documents.map((document) =>
-        document.id === "brief" ? reviewProjectDocument(document) : document,
-      ),
-    };
+    const project = base;
     const agent = {
       ...snapshotAgent(documentAgent("thread")),
       id: "custom-coach",
@@ -686,6 +657,10 @@ describe("AI Chat agent profiles", () => {
     expect(original.messages[0].agent?.role).toBe(originalRole);
     expect(topicAgentContext(next, original).map((item) => item.name)).toEqual([
       "Brief.md",
+      "Strategy.md",
+      "Brand.md",
+      "Design.md",
+      "Products.md",
     ]);
     next = {
       ...next,
@@ -706,7 +681,13 @@ describe("AI Chat agent profiles", () => {
     );
     expect(
       next.topics[0].messages.at(-1)?.context?.map((item) => item.name),
-    ).toEqual(["Brief.md"]);
+    ).toEqual([
+      "Brief.md",
+      "Strategy.md",
+      "Brand.md",
+      "Design.md",
+      "Products.md",
+    ]);
     expect(
       createProjectProfile("another", "Another project").agents,
     ).toBeUndefined();
@@ -724,7 +705,7 @@ describe("AI Chat agent profiles", () => {
     });
     expect(
       emptyContext.some(
-        (item) => item.name === "Project notes" && item.status === "source",
+        (item) => item.name === "Brief.md" && item.text.includes(project.notes),
       ),
     ).toBe(true);
     const partial = {
@@ -789,7 +770,7 @@ describe("AI Chat agent profiles", () => {
       ]).sections,
     ).toEqual(["Project and products"]);
   });
-  test("uses the reviewed Brief without repeating initial notes or other chat attachments", () => {
+  test("uses current knowledge without repeating intake or other chat attachments", () => {
     const project = projectWithDrafts();
     project.documents[2].draftFiles = [
       {
@@ -811,10 +792,15 @@ describe("AI Chat agent profiles", () => {
         (item) => item.name === "Brand-private.md",
       ),
     ).toBe(false);
-    sent.documents[0] = reviewProjectDocument(sent.documents[0]);
     expect(
       documentAgentContext(sent, strategy).map((item) => item.name),
-    ).toEqual(["Strategy.md", "Brief.md"]);
+    ).toEqual([
+      "Strategy.md",
+      "Brief.md",
+      "Brand.md",
+      "Design.md",
+      "Products.md",
+    ]);
     sent = sendProjectMessage(sent, "strategy", {
       userId: "strategy-user",
       assistantId: "strategy-answer",
@@ -827,6 +813,12 @@ describe("AI Chat agent profiles", () => {
     );
     expect(
       sent.documents[1].messages.at(-1)?.context?.map((item) => item.name),
-    ).toEqual(["Strategy.md", "Brief.md"]);
+    ).toEqual([
+      "Strategy.md",
+      "Brief.md",
+      "Brand.md",
+      "Design.md",
+      "Products.md",
+    ]);
   });
 });

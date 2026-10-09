@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { Component } from "./index";
 import { projectKnowledge } from "../../../../../../workspace/utils/products/ai-chat-models";
 import { aiChatSourceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
-import { attachProjectAsset } from "../../../../../../workspace/utils/products/ai-chat-workspace";
+import {
+  attachProjectAsset,
+  detachProjectFile,
+} from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import type { Meta, StoryObj } from "@storybook/react";
 
 function Example() {
@@ -55,7 +58,7 @@ function Example() {
           }))
         }
         onDiscuss={() => setDiscussing(true)}
-        onAttach={(file, _, kind) =>
+        onAttach={(file, _) =>
           setProject((current) => ({
             ...current,
             documents: current.documents.map((document, index) =>
@@ -64,14 +67,13 @@ function Example() {
                     document,
                     file,
                     source.title,
-                    kind,
                     `${file.id}:attachment`,
                   )
                 : document,
             ),
           }))
         }
-        onUpload={(files, _, kind) =>
+        onUpload={(files, _) =>
           setProject((current) => ({
             ...current,
             sources: [...current.sources, ...files],
@@ -83,7 +85,6 @@ function Example() {
                         document,
                         file,
                         source.title,
-                        kind,
                         `${file.id}:attachment`,
                       ),
                     document,
@@ -92,24 +93,14 @@ function Example() {
             ),
           }))
         }
-        onAssetChange={(id, update) =>
+        onAssetRemove={(fileId) =>
           setProject((current) => ({
             ...current,
-            documents: current.documents.map((document) => ({
-              ...document,
-              assets: document.assets?.map((asset) =>
-                asset.id === id ? { ...asset, ...update } : asset,
-              ),
-            })),
-          }))
-        }
-        onAssetRemove={(id) =>
-          setProject((current) => ({
-            ...current,
-            documents: current.documents.map((document) => ({
-              ...document,
-              assets: document.assets?.filter((asset) => asset.id !== id),
-            })),
+            documents: current.documents.map((document, index) =>
+              index === 0
+                ? detachProjectFile(document, fileId, source.title)
+                : document,
+            ),
           }))
         }
       />

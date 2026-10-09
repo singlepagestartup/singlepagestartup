@@ -10,7 +10,6 @@ export interface ISourceDocumentNavigationProps {
     id: string;
     title: string;
     sources: IAIChatSource[];
-    reviewed: boolean;
   };
   selected: boolean;
   onSelect: (id: string) => void;
@@ -31,14 +30,6 @@ export const Component = memo(function Component({
     >
       <Icon name="file-text" className="size-4 shrink-0 text-white/50" />
       <span className="min-w-0 flex-1 break-words">{data.title}.md</span>
-      {data.reviewed && (
-        <>
-          <span className="inline-flex size-3.5 shrink-0 items-center justify-center rounded-full bg-sps-green text-sps-graphite">
-            <Icon name="check" className="size-[8.4px]" />
-          </span>
-          <span className="sr-only">Reviewed</span>
-        </>
-      )}
     </button>
   );
 });

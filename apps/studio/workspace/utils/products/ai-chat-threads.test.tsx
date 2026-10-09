@@ -160,10 +160,8 @@ test("Thread renders linked Messages and the Brief Sources; work Threads have no
     attachmentViews: knowledge.attachmentViews,
     sources: project.sources,
     onEdit: () => {},
-    onReview: () => {},
     onAttach: () => {},
     onUpload: () => {},
-    onAssetChange: () => {},
     onAssetRemove: () => {},
   };
   const content = renderToStaticMarkup(

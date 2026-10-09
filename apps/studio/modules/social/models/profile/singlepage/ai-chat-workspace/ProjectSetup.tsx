@@ -31,6 +31,7 @@ interface IProjectSetupProps {
   onNotes: (notes: string) => void;
   onFiles: (sources: IProjectFile[]) => void;
   onRemove: (id: string) => void;
+  onStartThread: () => void;
   onAnalyze: () => void;
   onOpenDocuments: () => void;
   onBack: () => void;
@@ -92,12 +93,12 @@ export function ProjectSteps({ step }: IProjectStepsProps) {
             {
               label: "Documents",
               description:
-                "Review each document with the AI agent. Correct mistakes, add missing details and improve the text, then save a reviewed version. These documents will be the knowledge base for your project threads.",
+                "Work on documents with the AI agent or edit them directly. Threads use the current knowledge of your profile.",
             },
             {
               label: "Work",
               description:
-                "Create a conversation about a task and attach the reviewed documents it needs. The AI agent uses those documents and the files you share in that thread as context.",
+                "Create a thread about any task. The AI agent uses the current knowledge of your profile and the files you share in the thread as context.",
             },
           ].map(({ label, description }, index) => (
             <li
@@ -238,6 +239,7 @@ export function ProjectSetup({
   onNotes,
   onFiles,
   onRemove,
+  onStartThread,
   onAnalyze,
   onOpenDocuments,
   onBack,
@@ -266,6 +268,12 @@ export function ProjectSetup({
   return (
     <>
       <ProjectSteps step={analyzing ? 2 : 1} />
+      <div className="mx-auto mb-4 flex max-w-3xl justify-end">
+        <Button variant="secondary" onClick={onStartThread}>
+          <Icon name="plus" />
+          Start a thread
+        </Button>
+      </div>
       {analyzing ? (
         <section
           id="analysis"

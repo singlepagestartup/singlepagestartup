@@ -34,9 +34,6 @@ export function sourceAttachmentAssets(
 ): IProjectAsset[] {
   const records = new Map(files.map((file) => [file.id, file]));
   const views = new Map(presentation.map((view) => [view.relationId, view]));
-  const related = new Set(
-    relations.map((relation) => relation.fileStorageModuleFileId),
-  );
   const viewFile = (file: IAIChatFile): IProjectFile => ({
     id: file.id,
     name: file.alt || file.adminTitle || file.file.split("/").pop() || "File",
@@ -51,32 +48,11 @@ export function sourceAttachmentAssets(
       const file = records.get(relation.fileStorageModuleFileId);
       if (!file) return [];
       const view = views.get(relation.id);
-      // Delivery records are linked Files but render with their original.
-      if (
-        !view &&
-        presentation.some(
-          (item) =>
-            item.deliveryFileId === file.id &&
-            relations.some((link) => link.id === item.relationId),
-        )
-      )
-        return [];
-      const delivery =
-        view?.deliveryFileId && related.has(view.deliveryFileId)
-          ? records.get(view.deliveryFileId)
-          : undefined;
       return [
         {
           id: view?.id ?? relation.id,
           section: title,
           file: viewFile(file),
-          kind: view?.kind ?? "reference",
-          category: view?.category ?? "Unclassified",
-          purpose: view?.purpose ?? "",
-          prompt: view?.prompt ?? "",
-          tool: view?.tool ?? "",
-          status: view?.status ?? "proposed",
-          delivery: delivery ? viewFile(delivery) : undefined,
         },
       ];
     });

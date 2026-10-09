@@ -136,9 +136,7 @@ function ConversationContext({ documents, label }: IConversationContextProps) {
               <span className="ml-2">
                 {document.status === "draft"
                   ? "Current draft"
-                  : document.status === "reviewed"
-                    ? "Reviewed version"
-                    : "Source material"}
+                  : "Source material"}
               </span>
             </summary>
             <div className="mt-3 max-h-48 overflow-y-auto whitespace-pre-wrap break-words leading-5">

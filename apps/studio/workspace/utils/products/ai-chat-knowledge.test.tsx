@@ -38,21 +38,18 @@ function attachedProject() {
     project.documents[0],
     files[0],
     first,
-    "reference",
     "asset-a",
   );
   project.documents[0] = attachProjectAsset(
     project.documents[0],
     files[1],
     first,
-    "reference",
     "asset-b",
   );
   project.documents[0] = attachProjectAsset(
     project.documents[0],
     files[0],
     second,
-    "reference",
     "asset-shared",
   );
   return project;
@@ -76,13 +73,7 @@ test("each section owns ordered unique Source/File links; a File can be shared",
   expect(source).not.toHaveProperty("documentId");
   const document = project.documents[0];
   expect(
-    attachProjectAsset(
-      document,
-      files[0],
-      source.title,
-      "generated",
-      "duplicate",
-    ),
+    attachProjectAsset(document, files[0], source.title, "duplicate"),
   ).toBe(document);
   const after = projectKnowledge({
     ...project,
@@ -135,8 +126,8 @@ test("attachment resolution uses scoped links and preserves original and deliver
     graph.files,
     graph.attachmentViews,
   );
-  expect(assets.map((asset) => asset.file.id)).toEqual(["a", "b"]);
-  expect(assets[0].delivery?.fileUrl).toBe("/delivery.png");
+  expect(assets.map((asset) => asset.file.id)).toEqual(["a", "square", "b"]);
+  expect(assets[1].file.fileUrl).toBe("/delivery.png");
   expect(
     sourceAttachmentAssets("Missing", [], graph.files, graph.attachmentViews),
   ).toEqual([]);
@@ -229,15 +220,18 @@ test("Source variant renders multiple scoped Files and excludes another section'
       onDiscuss={() => {}}
       onAttach={() => {}}
       onUpload={() => {}}
-      onAssetChange={() => {}}
       onAssetRemove={() => {}}
     />,
   );
   expect(html).toContain('data-id="pottery:brief:Project and products"');
   expect(html).toContain("Workshop notes.txt");
   expect(html).toContain("Audience.txt");
-  expect(html).toContain("References · 2");
+  expect(html).toContain("Files · 2");
   expect(html).toContain("Analyzed materials");
   expect(html).toContain("Read-only description");
   expect(html).not.toContain("Foreign material.txt");
+  expect(html).not.toContain("Generated files");
+  expect(html).not.toContain("References ·");
+  expect(html).not.toContain("Approve file");
+  expect(html).toContain("Upload files");
 });

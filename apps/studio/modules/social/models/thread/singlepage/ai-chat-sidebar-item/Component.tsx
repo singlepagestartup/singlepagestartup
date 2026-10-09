@@ -12,7 +12,6 @@ export interface IThreadButtonProps {
   name: string;
   topic?: boolean;
   selected: boolean;
-  reviewed?: boolean;
   onSelect: (id: string) => void;
 }
 
@@ -22,7 +21,6 @@ export const Component = memo(function Component({
   name,
   topic,
   selected,
-  reviewed,
   onSelect,
 }: IThreadButtonProps) {
   return (
@@ -42,14 +40,6 @@ export const Component = memo(function Component({
         className="size-4 shrink-0 text-white/50"
       />
       <span className="min-w-0 flex-1 break-words">{name}</span>
-      {reviewed && !topic && (
-        <>
-          <span className="inline-flex size-3.5 shrink-0 items-center justify-center rounded-full bg-sps-green text-sps-graphite">
-            <Icon name="check" className="size-[8.4px]" />
-          </span>
-          <span className="sr-only">Reviewed</span>
-        </>
-      )}
     </button>
   );
 });

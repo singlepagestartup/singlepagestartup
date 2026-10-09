@@ -1,5 +1,5 @@
 "use client";
-import { memo, useId, useState } from "react";
+import { memo, useId, useRef, useState } from "react";
 import {
   Button,
   Icon,
@@ -25,18 +25,9 @@ export interface ISectionAssetsProps {
   section: string;
   assets: IProjectAsset[];
   sources: IProjectFile[];
-  onAttach: (
-    file: IProjectFile,
-    section: string,
-    kind: IProjectAsset["kind"],
-  ) => void;
-  onUpload: (
-    files: IProjectFile[],
-    section: string,
-    kind: IProjectAsset["kind"],
-  ) => void;
-  onChange: (id: string, update: Partial<IProjectAsset>) => void;
-  onRemove: (id: string) => void;
+  onAttach: (file: IProjectFile, section: string) => void;
+  onUpload: (files: IProjectFile[], section: string) => void;
+  onRemove: (fileId: string) => void;
 }
 
 export const ProjectPendingFile = memo(function ProjectPendingFile({
@@ -134,22 +125,8 @@ export function ProjectFilePreview({ file, compact }: IFilePreviewProps) {
 export function ProjectAssetPreview({ asset }: { asset: IProjectAsset }) {
   return (
     <div className="space-y-2">
-      <ProjectFilePreview file={asset.delivery ?? asset.file} />
-      <p className={`text-xs leading-5 ${kit.muted}`}>
-        {asset.kind === "reference" ? "Uploaded reference" : "Generated file"} ·{" "}
-        {asset.status === "approved" ? "Approved" : "Needs review"}
-        {asset.category !== "Unclassified" ? ` · ${asset.category}` : ""}
-      </p>
-      {asset.purpose && <p className="text-xs leading-5">{asset.purpose}</p>}
-      {asset.delivery && asset.file.fileUrl && (
-        <a
-          className={`${kit.plain} px-0 text-xs`}
-          href={asset.file.fileUrl}
-          download={asset.file.name}
-        >
-          Download original
-        </a>
-      )}
+      <ProjectFilePreview file={asset.file} />
+      {asset.delivery && <ProjectFilePreview file={asset.delivery} />}
     </div>
   );
 }
@@ -160,28 +137,22 @@ export function Component({
   sources,
   onAttach,
   onUpload,
-  onChange,
   onRemove,
 }: ISectionAssetsProps) {
   const id = useId();
-  const [kind, setKind] = useState<IProjectAsset["kind"]>("reference");
+  const input = useRef<HTMLInputElement>(null);
   const [selected, setSelected] = useState("");
   const [reading, setReading] = useState(false);
   const [error, setError] = useState("");
-  const visible = assets.filter((asset) => asset.kind === kind);
   const available = sources.filter(
-    (source) =>
-      !assets.some(
-        (asset) =>
-          asset.file.id === source.id || asset.delivery?.id === source.id,
-      ),
+    (source) => !assets.some((asset) => asset.file.id === source.id),
   );
   async function upload(files: FileList | null) {
     if (!files?.length) return;
     setReading(true);
     setError("");
     try {
-      onUpload(await readProjectFiles(files, id), section, kind);
+      onUpload(await readProjectFiles(files, id), section);
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "Could not add these files.",
@@ -191,218 +162,87 @@ export function Component({
     }
   }
   return (
-    <div className="mt-3 space-y-3 border-t border-sps-line pt-3">
-      <div
-        role="group"
-        aria-label={`${section} file types`}
-        className="flex gap-1 rounded-lg bg-sps-grey p-1"
-      >
-        {(["reference", "generated"] as const).map((type) => (
-          <button
-            type="button"
-            key={type}
-            aria-pressed={kind === type}
-            onClick={() => {
-              setKind(type);
-              setSelected("");
-            }}
-            className={`min-h-9 min-w-0 flex-1 rounded-md px-2 text-xs ${kit.focus} ${kind === type ? "bg-sps-white font-semibold" : kit.muted}`}
-          >
-            {type === "reference" ? "References" : "Generated files"} ·{" "}
-            {assets.filter((asset) => asset.kind === type).length}
-          </button>
-        ))}
-      </div>
-      {visible.map((asset) => (
+    <section
+      aria-label={`${section} files`}
+      className="mt-3 space-y-3 border-t border-sps-line pt-3"
+    >
+      <p className={`text-xs ${kit.muted}`}>Files · {assets.length}</p>
+      {assets.map((asset) => (
         <article
-          key={asset.id}
+          key={asset.file.id}
           className="space-y-2"
           aria-label={`${asset.file.name} attachment`}
         >
-          <ProjectAssetPreview asset={asset} />
-          <details className={`text-xs ${kit.muted}`}>
-            <summary className={`min-h-9 cursor-pointer ${kit.focus}`}>
-              File details
-            </summary>
-            <div className="grid gap-3 pb-3">
-              <label className="grid gap-1">
-                Visual category
-                <Select
-                  value={asset.category}
-                  onValueChange={(category) =>
-                    onChange(asset.id, { category, status: "proposed" })
-                  }
-                  aria-label={`Category for ${asset.file.name}`}
-                  options={[
-                    "Unclassified",
-                    "Identity",
-                    "Interface and website",
-                    "Typography",
-                    "Photography",
-                    "Illustration",
-                    "Marketing creative",
-                  ].map((value) => ({ value, label: value }))}
-                  className="min-h-9 text-xs"
-                />
-              </label>
-              <label className="grid gap-1">
-                Use in this section
-                <textarea
-                  className={`${kit.field} text-xs`}
-                  rows={2}
-                  value={asset.purpose}
-                  onChange={(event) =>
-                    onChange(asset.id, {
-                      purpose: event.target.value,
-                      status: "proposed",
-                    })
-                  }
-                />
-              </label>
-              {asset.kind === "generated" && (
-                <>
-                  <label className="grid gap-1">
-                    Generation prompt
-                    <textarea
-                      className={`${kit.field} text-xs`}
-                      rows={3}
-                      value={asset.prompt}
-                      onChange={(event) =>
-                        onChange(asset.id, {
-                          prompt: event.target.value,
-                          status: "proposed",
-                        })
-                      }
-                    />
-                  </label>
-                  <label className="grid gap-1">
-                    Generation tool
-                    <input
-                      className={`${kit.field} min-h-9 text-xs`}
-                      value={asset.tool}
-                      onChange={(event) =>
-                        onChange(asset.id, {
-                          tool: event.target.value,
-                          status: "proposed",
-                        })
-                      }
-                    />
-                  </label>
-                  <p>
-                    Keep the original. Attach a prepared square version
-                    separately.
-                  </p>
-                  <label className="grid gap-1">
-                    Delivery file
-                    <Select
-                      aria-label={`Delivery file for ${asset.file.name}`}
-                      value={asset.delivery?.id ?? "none"}
-                      onValueChange={(fileId) =>
-                        onChange(asset.id, {
-                          delivery: sources.find(
-                            (source) => source.id === fileId,
-                          ),
-                          status: "proposed",
-                        })
-                      }
-                      options={[
-                        { value: "none", label: "Original only" },
-                        ...sources
-                          .filter(
-                            (source) =>
-                              source.id !== asset.file.id &&
-                              source.mimeType?.startsWith("image/"),
-                          )
-                          .map((source) => ({
-                            value: source.id,
-                            label: source.name,
-                          })),
-                      ]}
-                      className="min-h-9 text-xs"
-                    />
-                  </label>
-                </>
-              )}
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="secondary"
-                  disabled={asset.status === "approved"}
-                  className="min-h-9 px-3 text-xs"
-                  onClick={() => onChange(asset.id, { status: "approved" })}
-                >
-                  <Icon name="check" className="size-4" />
-                  Approve file
-                </Button>
-                <Button
-                  variant="plain"
-                  className="min-h-9 px-2 text-xs"
-                  onClick={() => onRemove(asset.id)}
-                  aria-label={`Detach ${asset.file.name}`}
-                >
-                  Detach
-                </Button>
-              </div>
-            </div>
-          </details>
+          <ProjectFilePreview file={asset.file} />
+          <Button
+            variant="plain"
+            className="min-h-9 px-2 text-xs"
+            onClick={() => onRemove(asset.file.id)}
+            aria-label={`Detach ${asset.file.name}`}
+          >
+            Detach
+          </Button>
         </article>
       ))}
-      <details className="text-xs">
-        <summary
-          className={`inline-flex min-h-9 cursor-pointer items-center gap-2 ${kit.focus}`}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="plain"
+          className="min-h-9 px-0 text-xs"
+          disabled={reading}
+          onClick={() => input.current?.click()}
         >
-          <Icon name="paperclip" className="size-4" />
-          {kind === "reference" ? "Add a reference" : "Add a generated file"}
-        </summary>
-        <div className="mt-2 grid gap-2">
-          {available.length > 0 && (
-            <>
+          <Icon name="upload-simple" className="size-4" />
+          {reading ? "Adding files…" : "Upload files"}
+        </Button>
+        <input
+          ref={input}
+          aria-label={`Upload files for ${section}`}
+          className="sr-only"
+          type="file"
+          multiple
+          disabled={reading}
+          onChange={(event) => {
+            void upload(event.target.files);
+            event.target.value = "";
+          }}
+        />
+        {available.length > 0 && (
+          <details className="text-xs">
+            <summary
+              className={`inline-flex min-h-9 cursor-pointer items-center gap-2 ${kit.focus}`}
+            >
+              <Icon name="paperclip" className="size-4" />
+              Add a file
+            </summary>
+            <div className="mt-2 grid gap-2">
               <Select
                 aria-label={`Project file for ${section}`}
                 value={selected}
                 onValueChange={setSelected}
                 placeholder="Choose a project file"
-                options={available.map((source) => ({
-                  value: source.id,
-                  label: source.name,
+                options={available.map((file) => ({
+                  value: file.id,
+                  label: file.name,
                 }))}
                 className="min-h-9 text-xs"
               />
               <Button
                 variant="secondary"
                 className="min-h-9 text-xs"
-                disabled={!available.some((source) => source.id === selected)}
+                disabled={!available.some((file) => file.id === selected)}
                 onClick={() => {
-                  const file = available.find(
-                    (source) => source.id === selected,
-                  );
-                  if (file) onAttach(file, section, kind);
+                  const file = available.find((file) => file.id === selected);
+                  if (file) onAttach(file, section);
                   setSelected("");
                 }}
               >
                 Attach to section
               </Button>
-            </>
-          )}
-          <label
-            className={`${kit.plain} min-h-9 cursor-pointer justify-start px-0 text-xs focus-within:ring-2 focus-within:ring-sps-graphite`}
-          >
-            <Icon name="upload-simple" className="size-4" />
-            {reading ? "Adding files…" : "Upload files"}
-            <input
-              aria-label={`Upload ${kind === "reference" ? "references" : "generated files"} for ${section}`}
-              className="sr-only"
-              type="file"
-              multiple
-              disabled={reading}
-              onChange={(event) => {
-                void upload(event.target.files);
-                event.target.value = "";
-              }}
-            />
-          </label>
-        </div>
-      </details>
+            </div>
+          </details>
+        )}
+      </div>
       {error && <Feedback kind="error">{error}</Feedback>}
-    </div>
+    </section>
   );
 }

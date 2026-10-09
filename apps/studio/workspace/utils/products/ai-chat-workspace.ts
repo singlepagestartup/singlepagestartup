@@ -17,12 +17,12 @@ export interface IProjectAsset {
   id: string;
   file: IProjectFile;
   section: string;
-  kind: "reference" | "generated";
-  category: string;
-  purpose: string;
-  prompt: string;
-  tool: string;
-  status: "proposed" | "approved";
+  kind?: "reference" | "generated";
+  category?: string;
+  purpose?: string;
+  prompt?: string;
+  tool?: string;
+  status?: "proposed" | "approved";
   delivery?: IProjectFile;
 }
 
@@ -30,7 +30,7 @@ export interface IProjectDocumentContext {
   name: string;
   text: string;
   assets?: IProjectAsset[];
-  status?: "source" | "draft" | "reviewed";
+  status?: "source" | "draft";
 }
 
 export interface IProjectDocumentDefinition {
@@ -66,16 +66,10 @@ interface IProjectMessageExchange {
 
 export interface IProjectDocument extends IProjectDocumentDefinition {
   values: Record<string, string>;
-  saved?: string;
   assets?: IProjectAsset[];
-  savedAssets?: IProjectAsset[];
   messages: IProjectMessage[];
   draftFiles?: IProjectFile[];
   proposal?: { section: string; text: string };
-}
-
-export interface IReviewedProjectDocument extends IProjectDocument {
-  saved: string;
 }
 
 export interface IProjectTopic {
@@ -229,8 +223,6 @@ export function prepareProjectDocuments(
   project: IProjectProfile,
   definitions: IProjectDocumentDefinition[],
 ): IProjectProfile {
-  if (!hasProjectMaterials(project))
-    throw new Error("Add materials before analysis.");
   const sourceText = [
     ...(project.notes.trim()
       ? [`Project notes:\n${project.notes.trim()}`]
@@ -245,8 +237,9 @@ export function prepareProjectDocuments(
     const values: Record<string, string> = {};
     if (definition.id === "brief") {
       values["Project and products"] = project.name;
-      values["Current state"] =
-        `Supplied intake (needs review):\n\n${sourceText}`;
+      if (sourceText)
+        values["Current state"] =
+          `Supplied intake (needs review):\n\n${sourceText}`;
     }
     const next = definition.sections.find((section) => !values[section.title]);
     return {
@@ -263,12 +256,6 @@ export function prepareProjectDocuments(
                   definition.id === "brief"
                     ? "Visual reference intake"
                     : "Outputs and provenance",
-                kind: "reference",
-                category: "Unclassified",
-                purpose: "",
-                prompt: "",
-                tool: "",
-                status: "proposed",
               }))
           : [],
       messages: [
@@ -295,10 +282,7 @@ export function projectDocumentText(document: IProjectDocument): string {
             .filter((asset) => asset.section === section.title)
             .map(
               (asset) =>
-                `\n\n### ${asset.file.name}\n\nAsset ID: ${asset.id}\nKind: ${asset.kind}\nCategory: ${asset.category}\nStatus: ${asset.status}\nUse: ${asset.purpose.trim() || "Unknown — needs information."}\nOriginal: [${asset.file.name}](./${encodeURIComponent(asset.file.name)})` +
-                (asset.kind === "generated"
-                  ? `\nPrompt: ${asset.prompt.trim() || "Unknown — needs information."}\nTool: ${asset.tool.trim() || "Unknown — needs information."}`
-                  : "") +
+                `\n\n### ${asset.file.name}\n\nFile: [${asset.file.name}](./${encodeURIComponent(asset.file.name)})` +
                 (asset.delivery
                   ? `\nDelivery: [${asset.delivery.name}](./${encodeURIComponent(asset.delivery.name)})`
                   : ""),
@@ -309,34 +293,10 @@ export function projectDocumentText(document: IProjectDocument): string {
   );
 }
 
-export function isDocumentReviewed(document: IProjectDocument): boolean {
-  return document.saved === projectDocumentText(document);
-}
-
-export function reviewProjectDocument(
-  document: IProjectDocument,
-): IReviewedProjectDocument {
-  if (
-    !Object.values(document.values).some((text) => text.trim()) &&
-    !document.assets?.length
-  )
-    throw new Error("Add some document content before reviewing it.");
-  return {
-    ...document,
-    saved: projectDocumentText(document),
-    savedAssets: (document.assets ?? []).map((asset) => ({
-      ...asset,
-      file: { ...asset.file },
-      delivery: asset.delivery ? { ...asset.delivery } : undefined,
-    })),
-  };
-}
-
 export function attachProjectAsset(
   document: IProjectDocument,
   file: IProjectFile,
   section: string,
-  kind: IProjectAsset["kind"],
   id: string,
 ): IProjectDocument {
   if (!document.sections.some((field) => field.title === section))
@@ -358,14 +318,28 @@ export function attachProjectAsset(
         id,
         file,
         section,
-        kind,
-        category: "Unclassified",
-        purpose: "",
-        prompt: "",
-        tool: "",
-        status: "proposed",
       },
     ],
+  };
+}
+
+export function detachProjectFile(
+  document: IProjectDocument,
+  fileId: string,
+  section: string,
+): IProjectDocument {
+  return {
+    ...document,
+    assets: (document.assets ?? []).flatMap((asset) => {
+      if (asset.section !== section) return [asset];
+      if (asset.file.id === fileId)
+        return asset.delivery
+          ? [{ ...asset, file: asset.delivery, delivery: undefined }]
+          : [];
+      if (asset.delivery?.id === fileId)
+        return [{ ...asset, delivery: undefined }];
+      return [asset];
+    }),
   };
 }
 
@@ -375,13 +349,17 @@ export function topicDocumentContext(
 ): IProjectDocumentContext[] {
   return [...new Set(documentIds)].flatMap((id) => {
     const document = project.documents.find((item) => item.id === id);
-    return document?.saved
+    return document
       ? [
           {
             name: `${document.title}.md`,
-            status: "reviewed",
-            text: document.saved,
-            assets: document.savedAssets ?? [],
+            status: "draft" as const,
+            text: projectDocumentText(document),
+            assets: (document.assets ?? []).map((asset) => ({
+              ...asset,
+              file: { ...asset.file },
+              delivery: asset.delivery ? { ...asset.delivery } : undefined,
+            })),
           },
         ]
       : [];
@@ -392,14 +370,13 @@ export function createProjectTopic(
   project: IProjectProfile,
   id: string,
   title: string,
-  documentIds: string[],
+  documentIds: string[] = project.documents.map((document) => document.id),
   agent: IProjectAgent | null = documentAgent("thread"),
 ): IProjectProfile {
   if (!title.trim()) throw new Error("A topic needs a name.");
   const ids = [...new Set(documentIds)].filter((documentId) =>
-    project.documents.some((item) => item.id === documentId && item.saved),
+    project.documents.some((item) => item.id === documentId),
   );
-  if (!ids.length) throw new Error("Attach at least one reviewed document.");
   return {
     ...project,
     stage: "topics",
@@ -415,7 +392,7 @@ export function createProjectTopic(
             id: `${id}-intro`,
             role: "assistant",
             agent: agent ? snapshotAgent(agent) : null,
-            text: "The reviewed documents are attached. What would you like to work on?",
+            text: "What would you like to work on?",
             context: topicAgentContext(project, { documentIds: ids }),
           },
         ],
@@ -426,9 +403,12 @@ export function createProjectTopic(
 
 export function topicAgentContext(
   project: IProjectProfile,
-  topic: Pick<IProjectTopic, "documentIds">,
+  _topic: Pick<IProjectTopic, "documentIds">,
 ): IProjectDocumentContext[] {
-  return topicDocumentContext(project, topic.documentIds);
+  return topicDocumentContext(
+    project,
+    project.documents.map((document) => document.id),
+  );
 }
 
 export function documentAgentContext(
@@ -436,13 +416,15 @@ export function documentAgentContext(
   currentDocument: IProjectDocument,
 ): IProjectDocumentContext[] {
   const context: IProjectDocumentContext[] = [];
-  const reviewedBrief = project.documents.some(
-    (document) => document.id === "brief" && document.saved,
+  const intakeInBrief = project.documents.some(
+    (document) =>
+      document.id === "brief" &&
+      document.values["Current state"]?.includes("Supplied intake"),
   );
   const notesInDocument = Object.values(currentDocument.values).some(
     (text) => project.notes.trim() && text.includes(project.notes.trim()),
   );
-  if (!reviewedBrief && !notesInDocument && project.notes.trim())
+  if (!intakeInBrief && !notesInDocument && project.notes.trim())
     context.push({
       name: "Project notes",
       text: project.notes.trim(),
@@ -455,7 +437,7 @@ export function documentAgentContext(
       ),
     ),
   );
-  if (!reviewedBrief)
+  if (!intakeInBrief)
     for (const file of project.sources)
       if (!conversationFileIds.has(file.id))
         context.push({ name: file.name, text: file.text, status: "source" });
@@ -464,7 +446,7 @@ export function documentAgentContext(
   );
   context.unshift({
     name: `${currentDocument.title}.md`,
-    status: isDocumentReviewed(currentDocument) ? "reviewed" : "draft",
+    status: "draft",
     text: supplied
       .map(
         (section) =>

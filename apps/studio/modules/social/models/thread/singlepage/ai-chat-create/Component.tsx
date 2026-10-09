@@ -7,17 +7,16 @@ import {
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import { TextField } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
 export interface IThreadCreateProps {
-  canCreate: boolean;
   onCreate: (title: string) => void;
 }
-export function Component({ canCreate, onCreate }: IThreadCreateProps) {
+export function Component({ onCreate }: IThreadCreateProps) {
   const [title, setTitle] = useState("");
   return (
     <form
       data-ds-block="social.thread.ai-chat-create"
       onSubmit={(event) => {
         event.preventDefault();
-        if (canCreate && title.trim()) onCreate(title.trim());
+        if (title.trim()) onCreate(title.trim());
       }}
       className="mx-auto grid w-full max-w-xl gap-5 overflow-y-auto p-5 @[640px]:p-8"
     >
@@ -33,7 +32,7 @@ export function Component({ canCreate, onCreate }: IThreadCreateProps) {
         maxLength={100}
         placeholder="What do you want to work on?"
       />
-      <Button type="submit" disabled={!canCreate || !title.trim()}>
+      <Button type="submit" disabled={!title.trim()}>
         <Icon name="chat-circle" />
         Create thread
       </Button>

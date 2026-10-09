@@ -22,7 +22,6 @@ export interface IThreadRowProps {
   value?: string;
   selected: boolean;
   disabled?: boolean;
-  reviewed?: boolean;
   status?: string;
   topic?: boolean;
   onSelect: (name: string) => void;
@@ -56,7 +55,6 @@ const ThreadRow = memo(function ThreadRow({
   value,
   selected,
   disabled,
-  reviewed,
   status,
   topic,
   onSelect,
@@ -70,8 +68,8 @@ const ThreadRow = memo(function ThreadRow({
       className={`flex min-h-12 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm disabled:opacity-50 ${selected ? "bg-white/10" : "hover:bg-white/5"} ${focus}`}
     >
       <Icon
-        name={topic ? "chat-circle" : reviewed ? "check-circle" : "file-text"}
-        className={`size-4 shrink-0 ${reviewed ? "text-sps-green" : "text-white/60"}`}
+        name={topic ? "chat-circle" : "file-text"}
+        className={`size-4 shrink-0 text-white/60`}
       />
       <span className="min-w-0 flex-1 break-words">
         <span className="block font-semibold">{name}</span>
@@ -99,8 +97,6 @@ export function Component({ content }: IChatPreviewProps) {
       content.demoDocuments.items.map(({ title, text }) => [title, text]),
     ),
   );
-  // Last reviewed versions remain available while a new draft is being edited.
-  const [saved, setSaved] = useState<Record<string, string>>({});
   const [threads, setThreads] = useState<Record<string, IThreadMessage[]>>(() =>
     Object.fromEntries(
       content.demoThreadPrompts.items.map(({ title, text }) => [
@@ -119,15 +115,8 @@ export function Component({ content }: IChatPreviewProps) {
   const [topicInputs, setTopicInputs] = useState<Record<string, string>>({});
   const [topicTitle, setTopicTitle] = useState(label["demo-topic-title"]);
   const [attachments, setAttachments] = useState<string[]>([]);
-  const reviewed = content.demoDocuments.items.filter(
-    ({ title }) =>
-      saved[title] !== undefined && saved[title] === drafts[title]?.trim(),
-  ).length;
   const activeTopic = topics.find((topic) => topic.id === selectedTopic);
   const needsAnswer = selected === "Products" && !submittedAnswer;
-  const currentReviewed =
-    saved[selected] !== undefined &&
-    saved[selected] === drafts[selected]?.trim();
   const messages =
     view === "topic"
       ? (activeTopic?.messages ?? [])
@@ -175,7 +164,6 @@ export function Component({ content }: IChatPreviewProps) {
         content.demoDocuments.items.map(({ title, text }) => [title, text]),
       ),
     );
-    setSaved({});
     setThreads(
       Object.fromEntries(
         content.demoThreadPrompts.items.map(({ title, text }) => [
@@ -229,16 +217,6 @@ export function Component({ content }: IChatPreviewProps) {
     setDrafts((current) => ({ ...current, [selected]: value }));
     setStage(2);
   }
-  function saveDocument() {
-    const text = drafts[selected]?.trim();
-    if (!text || needsAnswer || currentReviewed) return;
-    setSaved((current) => ({ ...current, [selected]: text }));
-    const response = message("assistant", label["demo-saved-section"]);
-    setThreads((current) => ({
-      ...current,
-      [selected]: [...(current[selected] ?? []), response],
-    }));
-  }
   function sendDocumentMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = threadInputs[selected]?.trim();
@@ -263,7 +241,9 @@ export function Component({ content }: IChatPreviewProps) {
     editor.current?.focus();
   }
   function openWorkspace() {
-    setAttachments(Object.keys(saved));
+    setAttachments(
+      content.demoDocuments.items.map((document) => document.title),
+    );
     setTopicTitle(label["demo-topic-title"]);
     setView("workspace");
     setStage(3);
@@ -273,14 +253,14 @@ export function Component({ content }: IChatPreviewProps) {
       "assistant",
       label["demo-topic-reply"],
       names
-        .map((name) => ({ name, text: saved[name] }))
+        .map((name) => ({ name, text: drafts[name] }))
         .filter((document) => document.text),
     );
   }
   function createTopic(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const title = topicTitle.trim();
-    if (!title || !attachments.length) return;
+    if (!title) return;
     const topicId = `topic-${sequence.current++}`;
     const topic: ITopic = {
       id: topicId,
@@ -384,23 +364,6 @@ export function Component({ content }: IChatPreviewProps) {
             </span>
             <p className="text-sm font-semibold">{content.demoDraft.title}</p>
           </div>
-          <div className="mt-6">
-            <div className="flex items-center justify-between gap-3 text-xs">
-              <span>{label["demo-progress"]}</span>
-              <span aria-live="polite">
-                {reviewed}/{content.demoDocuments.items.length}
-              </span>
-            </div>
-            <progress
-              aria-label={label["demo-progress"]}
-              value={reviewed}
-              max={content.demoDocuments.items.length || 1}
-              className="mt-3 block h-1.5 w-full overflow-hidden rounded-full [&::-webkit-progress-bar]:bg-white/15 [&::-webkit-progress-value]:bg-sps-green [&::-moz-progress-bar]:bg-sps-green"
-            />
-            <p className="mt-3 text-xs leading-5 text-white/60">
-              {label["demo-progress-note"]}
-            </p>
-          </div>
           <p className="mb-2 mt-6 text-xs font-semibold text-white/60">
             {label["demo-document-threads"]}
           </p>
@@ -411,18 +374,6 @@ export function Component({ content }: IChatPreviewProps) {
                 name={document.title}
                 selected={view === "document" && selected === document.title}
                 disabled={stage === 0}
-                reviewed={
-                  saved[document.title] !== undefined &&
-                  saved[document.title] === drafts[document.title]?.trim()
-                }
-                status={
-                  saved[document.title] !== undefined &&
-                  saved[document.title] === drafts[document.title]?.trim()
-                    ? label["demo-accepted"]
-                    : document.title === "Products" && !submittedAnswer
-                      ? label["demo-needs-input"]
-                      : label["demo-review"]
-                }
                 onSelect={selectDocument}
               />
             ))}
@@ -445,7 +396,6 @@ export function Component({ content }: IChatPreviewProps) {
             </p>
             <button
               type="button"
-              disabled={!Object.keys(saved).length}
               onClick={openWorkspace}
               aria-pressed={view === "workspace"}
               className={`mb-2 inline-flex min-h-11 w-full items-center gap-2 rounded-lg border border-white/20 px-3 text-left text-sm disabled:opacity-50 ${focus}`}
@@ -635,13 +585,6 @@ export function Component({ content }: IChatPreviewProps) {
                           <Icon name="file-text" className="size-4" />
                           {selected}.md
                         </label>
-                        <span
-                          className={`text-xs ${currentReviewed ? "font-semibold" : muted}`}
-                        >
-                          {currentReviewed
-                            ? label["demo-accepted"]
-                            : label["demo-review"]}
-                        </span>
                       </div>
                       <div className="p-4">
                         <textarea
@@ -653,17 +596,6 @@ export function Component({ content }: IChatPreviewProps) {
                           onChange={(event) => editDocument(event.target.value)}
                           className={`${field} resize-y`}
                         />
-                        <button
-                          type="button"
-                          onClick={saveDocument}
-                          disabled={
-                            !drafts[selected]?.trim() || currentReviewed
-                          }
-                          className={`${kit.button} mt-3 disabled:opacity-50`}
-                        >
-                          <Icon name="check" className="size-4" />
-                          {label["demo-save-section"]}
-                        </button>
                       </div>
                     </div>
                     <form onSubmit={sendDocumentMessage} className="grid gap-3">
@@ -697,16 +629,14 @@ export function Component({ content }: IChatPreviewProps) {
                         {label["demo-send"]}
                       </button>
                     </form>
-                    {saved[selected] ? (
-                      <button
-                        type="button"
-                        onClick={openWorkspace}
-                        className={`${kit.button} border border-sps-line !bg-white`}
-                      >
-                        <Icon name="plus" className="size-4" />
-                        {label["demo-open-workspace"]}
-                      </button>
-                    ) : null}
+                    <button
+                      type="button"
+                      onClick={openWorkspace}
+                      className={`${kit.button} border border-sps-line !bg-white`}
+                    >
+                      <Icon name="plus" className="size-4" />
+                      {label["demo-open-workspace"]}
+                    </button>
                   </>
                 )}
               </>
@@ -714,7 +644,7 @@ export function Component({ content }: IChatPreviewProps) {
             {view === "workspace" ? (
               <form onSubmit={createTopic} className="grid gap-5">
                 <p className={`text-sm leading-6 ${muted}`}>
-                  {label["demo-workspace-intro"]}
+                  The thread uses the current knowledge of this profile.
                 </p>
                 <div className="grid gap-2">
                   <label
@@ -730,44 +660,10 @@ export function Component({ content }: IChatPreviewProps) {
                     className={field}
                   />
                 </div>
-                <fieldset className="grid gap-2">
-                  <legend className="mb-3 text-sm font-semibold">
-                    {label["demo-topic-documents"]}
-                  </legend>
-                  {content.demoDocuments.items.map((document) => (
-                    <label
-                      key={document.title}
-                      className={`flex min-h-11 items-center gap-3 rounded-xl border border-sps-line px-3 text-sm ${saved[document.title] ? "" : "opacity-50"}`}
-                    >
-                      <input
-                        type="checkbox"
-                        disabled={!saved[document.title]}
-                        checked={attachments.includes(document.title)}
-                        onChange={(event) => {
-                          const checked = event.target.checked;
-                          setAttachments((current) =>
-                            checked
-                              ? [...current, document.title]
-                              : current.filter(
-                                  (name) => name !== document.title,
-                                ),
-                          );
-                        }}
-                        className="size-4 accent-sps-graphite"
-                      />
-                      <Icon name="file-text" className="size-4" />
-                      <span className="flex-1">{document.title}.md</span>
-                      <span className={`text-xs ${muted}`}>
-                        {saved[document.title]
-                          ? label["demo-saved-version"]
-                          : label["demo-review"]}
-                      </span>
-                    </label>
-                  ))}
-                </fieldset>
+
                 <button
                   type="submit"
-                  disabled={!topicTitle.trim() || !attachments.length}
+                  disabled={!topicTitle.trim()}
                   className={`${kit.button} justify-self-start disabled:opacity-50`}
                 >
                   <Icon name="plus" className="size-4" />

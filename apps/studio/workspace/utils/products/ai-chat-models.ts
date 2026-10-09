@@ -56,14 +56,13 @@ export interface ISourceFileRelation {
   fileStorageModuleFileId: string;
   orderIndex: number;
 }
-// Bundle membership and asset review are Studio view parameters, not schema fields.
+// Bundle membership is a Studio view parameter, not a Source schema field.
 export interface ISourceBundle {
   id: string;
   sourceIds: string[];
   sourceSlugs: string[];
 }
-export interface ISourceAttachmentView
-  extends Omit<IProjectAsset, "file" | "section" | "delivery"> {
+export interface ISourceAttachmentView extends Pick<IProjectAsset, "id"> {
   relationId: string;
   deliveryFileId?: string;
 }
@@ -211,9 +210,9 @@ export function projectKnowledge(project: IProjectProfile): IProjectKnowledge {
           fileStorageModuleFileId: asset.file.id,
           orderIndex: orderIndex++,
         });
-        const { file, section: _, delivery, ...presentation } = asset;
+        const { delivery } = asset;
         attachmentViews.push({
-          ...presentation,
+          id: asset.id,
           relationId,
           deliveryFileId: delivery?.id,
         });

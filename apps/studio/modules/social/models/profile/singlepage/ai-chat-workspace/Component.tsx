@@ -76,9 +76,8 @@ export function Component({
         ...project.documents.flatMap((document) => document.draftFiles ?? []),
         ...project.topics.flatMap((topic) => topic.draftFiles ?? []),
         ...project.documents.flatMap((document) =>
-          [...(document.assets ?? []), ...(document.savedAssets ?? [])].flatMap(
-            (asset) =>
-              asset.delivery ? [asset.file, asset.delivery] : [asset.file],
+          (document.assets ?? []).flatMap((asset) =>
+            asset.delivery ? [asset.file, asset.delivery] : [asset.file],
           ),
         ),
       ];

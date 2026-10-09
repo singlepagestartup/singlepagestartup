@@ -21,7 +21,6 @@ function Example() {
         documentListOpen={open}
         selectedDocument={selected}
         settingsSelected={false}
-        canCreateThread={false}
         onSettings={() => {}}
         onToggleDocuments={() => setOpen(!open)}
         onDocument={setSelected}

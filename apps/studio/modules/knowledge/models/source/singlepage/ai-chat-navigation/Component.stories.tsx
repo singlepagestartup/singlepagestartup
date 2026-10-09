@@ -8,7 +8,6 @@ function Example() {
         data={{
           id: "brief",
           title: "Brief",
-          reviewed: false,
           sources: [
             {
               id: "pottery:brief:customers",

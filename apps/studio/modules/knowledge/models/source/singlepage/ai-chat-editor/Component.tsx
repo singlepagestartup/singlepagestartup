@@ -6,10 +6,8 @@ import {
   kit,
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import {
-  isDocumentReviewed,
   projectDocumentText,
   type IProjectDocument,
-  type IProjectAsset,
   type IProjectFile,
 } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 import {
@@ -34,20 +32,10 @@ export interface IDocumentEditorProps {
   sections: string[];
   onSection: (section: string) => void;
   onEdit: (section: string, text: string) => void;
-  onReview: () => void;
   sources: IProjectFile[];
-  onAttach: (
-    file: IProjectFile,
-    section: string,
-    kind: IProjectAsset["kind"],
-  ) => void;
-  onUpload: (
-    files: IProjectFile[],
-    section: string,
-    kind: IProjectAsset["kind"],
-  ) => void;
-  onAssetChange: (id: string, update: Partial<IProjectAsset>) => void;
-  onAssetRemove: (id: string) => void;
+  onAttach: (file: IProjectFile, section: string) => void;
+  onUpload: (files: IProjectFile[], section: string) => void;
+  onAssetRemove: (fileId: string, section: string) => void;
 }
 
 export function Component({
@@ -59,14 +47,11 @@ export function Component({
   sections,
   onSection,
   onEdit,
-  onReview,
   sources,
   onAttach,
   onUpload,
-  onAssetChange,
   onAssetRemove,
 }: IDocumentEditorProps) {
-  const reviewed = isDocumentReviewed(document);
   const guide = projectDocumentGuide(AI_CHAT_DOCUMENT_GUIDES, document.id);
   const [openedGuide, setOpenedGuide] =
     useState<IDocumentGuideProps["guide"]>(null);
@@ -103,16 +88,16 @@ export function Component({
     [sourceTitle, onSection],
   );
   const attachSourceFile = useCallback(
-    (file: IProjectFile, sourceId: string, kind: IProjectAsset["kind"]) => {
+    (file: IProjectFile, sourceId: string) => {
       const title = sourceTitle(sourceId);
-      if (title) onAttach(file, title, kind);
+      if (title) onAttach(file, title);
     },
     [sourceTitle, onAttach],
   );
   const uploadSourceFiles = useCallback(
-    (files: IProjectFile[], sourceId: string, kind: IProjectAsset["kind"]) => {
+    (files: IProjectFile[], sourceId: string) => {
       const title = sourceTitle(sourceId);
-      if (title) onUpload(files, title, kind);
+      if (title) onUpload(files, title);
     },
     [sourceTitle, onUpload],
   );
@@ -152,13 +137,6 @@ export function Component({
           )}
         </div>
         <div className="flex items-center gap-3">
-          <span className={`text-xs ${kit.muted}`}>
-            {reviewed
-              ? "Reviewed"
-              : document.saved
-                ? "Changes to review"
-                : "Draft"}
-          </span>
           <Button
             variant="secondary"
             aria-label={`Download ${document.title}.md`}
@@ -184,25 +162,15 @@ export function Component({
             onDiscuss={discussSource}
             onAttach={attachSourceFile}
             onUpload={uploadSourceFiles}
-            onAssetChange={onAssetChange}
-            onAssetRemove={onAssetRemove}
+            onAssetRemove={(fileId, sourceId) => {
+              const title = sourceTitle(sourceId);
+              if (title) onAssetRemove(fileId, title);
+            }}
             helpLabel={`About ${document.title}.md: ${source.title}`}
             onHelp={guide?.sections[source.title] ? openGuide : undefined}
           />
         ))}
       </div>
-      <Button
-        className="mt-4 w-full"
-        disabled={
-          reviewed ||
-          (!Object.values(document.values).some((text) => text.trim()) &&
-            !document.assets?.length)
-        }
-        onClick={onReview}
-      >
-        <Icon name="check" />
-        {reviewed ? "Version reviewed" : "Save reviewed version"}
-      </Button>
       <DocumentGuide
         guide={openedGuide}
         onClose={() => setOpenedGuide(null)}

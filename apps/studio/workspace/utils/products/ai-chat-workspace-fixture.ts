@@ -57,13 +57,7 @@ export function aiChatSourceFixture(): IProjectProfile {
   const section = document.sections[0].title;
   project.documents[0] = files.reduce(
     (document, file) =>
-      attachProjectAsset(
-        document,
-        file,
-        section,
-        "reference",
-        `${file.id}:asset`,
-      ),
+      attachProjectAsset(document, file, section, `${file.id}:asset`),
     document,
   );
   project.documents[0].values[section] =
