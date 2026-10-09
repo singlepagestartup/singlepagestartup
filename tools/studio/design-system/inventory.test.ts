@@ -179,7 +179,7 @@ describe("AI Chat project ownership", () => {
       "ai-chat-create",
       "ai-chat-settings",
       "ai-chat-project",
-      "ai-chat-user-menu",
+      "account-menu",
     ])
       expect(
         profile.storyFiles?.some((file) =>

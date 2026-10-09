@@ -19,7 +19,7 @@ test("landing Page places native widgets inside one Layout and injects Subject a
     "website-builder.logotype.ai-chat",
     "website-builder.buttons-array.ai-chat-header",
     "website-builder.button.ai-chat-header",
-    "rbac.subject.ai-chat-sign-in",
+    "rbac.subject.account",
   ])
     expect(header).toContain(`data-ds-block="${block}"`);
   expect(header).toContain('href="#workflow"');
@@ -60,7 +60,7 @@ test("website Layout receives account/cart slots and keeps them out of main", ()
   expect(html).toContain(
     'data-ds-block="website-builder.widget.footer-compact"',
   );
-  expect(html).not.toContain('data-ds-block="rbac.subject.navbar-account"');
+  expect(html).not.toContain('data-ds-block="rbac.subject.account"');
   expect(html).not.toContain('data-ds-block="ecommerce.cart.drawer-default"');
 });
 
@@ -68,7 +68,7 @@ test("website Layout delegates sign in to Subject and cart to Ecommerce", () => 
   const html = renderToStaticMarkup(
     <HostModuleLayout variant="website" signedIn={false} />,
   );
-  expect(html).toContain('data-ds-block="rbac.subject.navbar-account"');
+  expect(html).toContain('data-ds-block="rbac.subject.account"');
   expect(html).toContain('data-ds-block="ecommerce.cart.button-default"');
   expect(html).toContain("Sign in");
   expect(html).not.toContain("Admin Panel");

@@ -9,7 +9,8 @@ export function Component() {
       page="tokens"
       subjectAccount={({ onNavigate }) => (
         <RbacModuleSubject
-          variant="ai-chat-account"
+          variant="account"
+          showTokens
           page="tokens"
           onNavigate={onNavigate}
         />

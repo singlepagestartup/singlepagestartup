@@ -1,7 +1,7 @@
 import { Component as EcommerceModuleOrder } from "../../index";
 
 import type { Meta, StoryObj } from "@storybook/react";
-import { AccountProvider } from "../../../../rbac/subject/singlepage/ai-chat-account/Account";
+import { AccountProvider } from "../../../../rbac/subject/singlepage/account/Account";
 import { aiChatAccount } from "../../../../../workspace/utils/products/ai-chat-account-fixture";
 
 function Example() {

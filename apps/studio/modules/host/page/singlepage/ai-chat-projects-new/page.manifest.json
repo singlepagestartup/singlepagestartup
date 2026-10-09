@@ -31,8 +31,8 @@
       "path": "../../../../social/profile/singlepage/ai-chat-create"
     },
     {
-      "id": "rbac.subject.ai-chat-account",
-      "path": "../../../../rbac/subject/singlepage/ai-chat-account"
+      "id": "rbac.subject.account",
+      "path": "../../../../rbac/subject/singlepage/account"
     },
     {
       "id": "social.profile.ai-chat-project-select",

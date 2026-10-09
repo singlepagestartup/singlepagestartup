@@ -3,7 +3,7 @@ import { Component as HostModuleLayout } from "../../../../../modules/host/layou
 
 import sourceText from "./settings.md?raw";
 import { parseAIChatServicePage } from "./content";
-import { AccountProvider } from "../../../../../modules/rbac/subject/singlepage/ai-chat-account/Account";
+import { AccountProvider } from "../../../../../modules/rbac/subject/singlepage/account/Account";
 import { aiChatAccount } from "../../../../utils/products/ai-chat-account-fixture";
 
 export default function Settings({ text }: { text?: string } = {}) {
@@ -14,7 +14,8 @@ export default function Settings({ text }: { text?: string } = {}) {
         page="settings"
         subjectAccount={({ onNavigate }) => (
           <RbacModuleSubject
-            variant="ai-chat-account"
+            variant="account"
+            showTokens
             page="settings"
             onNavigate={onNavigate}
           />

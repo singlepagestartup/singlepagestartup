@@ -11,7 +11,7 @@ import { Component as AiChatProjectOverview } from "./ai-chat-project-overview/i
 import { Component as AiChatProjectSelect } from "./ai-chat-project-select/index";
 import { Component as AiChatSettings } from "./ai-chat-settings/index";
 import { Component as AiChatSidebar } from "./ai-chat-sidebar/index";
-import { Component as AiChatUserMenu } from "./ai-chat-user-menu/index";
+import { Component as AiChatUserMenu } from "./account-menu/index";
 import { Component as ArticleFindByIdCommentFormDefault } from "./article-find-by-id-comment-form-default/index";
 import { Component as Author } from "./author/index";
 import { Component as AuthorFindByIdOverviewDefault } from "./author-find-by-id-overview-default/index";
@@ -35,7 +35,7 @@ export const variants = {
   "ai-chat-project-select": AiChatProjectSelect,
   "ai-chat-settings": AiChatSettings,
   "ai-chat-sidebar": AiChatSidebar,
-  "ai-chat-user-menu": AiChatUserMenu,
+  "account-menu": AiChatUserMenu,
   "article-find-by-id-comment-form-default": ArticleFindByIdCommentFormDefault,
   author: Author,
   "author-find-by-id-overview-default": AuthorFindByIdOverviewDefault,

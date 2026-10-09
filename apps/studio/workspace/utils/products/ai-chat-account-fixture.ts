@@ -3,9 +3,11 @@ export const aiChatAccount = {
   subject: { id: "current-subject" },
   profile: {
     id: "current-user",
-    title: "Profile",
+    title: "Alex",
+    avatar:
+      "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-account-mascot-square.png",
     variant: "ai-chat-user" as const,
   },
-  email: "you@example.com",
+  email: "alex@example.com",
   balance: { free: 250, purchased: 1000 },
 };

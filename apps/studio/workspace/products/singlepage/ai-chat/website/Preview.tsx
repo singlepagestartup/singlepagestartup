@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import {
   AccountProvider,
   type IAIChatAccount,
-} from "../../../../../modules/rbac/subject/singlepage/ai-chat-account/Account";
+} from "../../../../../modules/rbac/subject/singlepage/account/Account";
 import {
   ProfilesProvider,
   useProfiles,
@@ -19,7 +19,9 @@ import {
   resolveAIChatRoute,
   type IAIChatRoute,
 } from "../../../../utils/products/ai-chat-routes";
+import type { IAIChatServicePageContent } from "../../../../utils/products/ai-chat-content";
 export interface IAIChatPreviewProps {
+  loginCopy?: IAIChatServicePageContent;
   initialHref?: string;
   account?: IAIChatAccount;
   profiles?: Omit<IProfilesProviderProps, "children">;
@@ -38,7 +40,13 @@ const projectPages = {
   "project-settings": "ai-chat-projects-project-id-settings",
   "thread-create": "ai-chat-projects-project-id-threads-new",
 } as const;
-function Pages({ route }: { route: IAIChatRoute | undefined }) {
+function Pages({
+  route,
+  loginCopy,
+}: {
+  route: IAIChatRoute | undefined;
+  loginCopy?: IAIChatServicePageContent;
+}) {
   const { projects } = useProfiles();
   if (!route) return <main role="status">Page unavailable.</main>;
   const serviceVariant = servicePages[route.page as keyof typeof servicePages];
@@ -46,7 +54,11 @@ function Pages({ route }: { route: IAIChatRoute | undefined }) {
   const available = projects.some((profile) => profile.id === route.profileId);
   return (
     <>
-      {serviceVariant && <HostModulePage variant={serviceVariant} />}
+      {serviceVariant === "ai-chat-login" ? (
+        <HostModulePage variant="ai-chat-login" copy={loginCopy} />
+      ) : (
+        serviceVariant && <HostModulePage variant={serviceVariant} />
+      )}
       {projectVariant && !available && (
         <HostModulePage variant={projectVariant} profileId={route.profileId!} />
       )}
@@ -61,6 +73,7 @@ function Pages({ route }: { route: IAIChatRoute | undefined }) {
   );
 }
 export function AIChatPreview({
+  loginCopy,
   initialHref = "/ai-chat/",
   account = aiChatAccount,
   profiles = aiChatWorkspaceFixture(),
@@ -70,7 +83,9 @@ export function AIChatPreview({
     const id = resolveAIChatRoute(initialHref)?.profileId;
     return id
       ? `/ai-chat/projects/${encodeURIComponent(id)}`
-      : "/ai-chat/projects/new";
+      : profiles.initialProjects?.[0]
+        ? `/ai-chat/projects/${encodeURIComponent(profiles.initialProjects?.[0].id)}`
+        : "/ai-chat/projects/new";
   });
   const navigate = useCallback((next: string) => {
     if (!resolveAIChatRoute(next)) return;
@@ -101,11 +116,19 @@ export function AIChatPreview({
     navigate(target);
   }
   return (
-    <AccountProvider account={account} projectHref={projectHref}>
+    <AccountProvider
+      account={account}
+      projectHref={projectHref}
+      signedIn={
+        !["landing", "login", "register"].includes(
+          resolveAIChatRoute(initialHref)?.page ?? "",
+        )
+      }
+    >
       <ProfilesProvider {...profiles}>
         <NavigationProvider navigate={navigate}>
           <div onClick={followLink} data-preview-href={href}>
-            <Pages route={resolveAIChatRoute(href)} />
+            <Pages route={resolveAIChatRoute(href)} loginCopy={loginCopy} />
           </div>
         </NavigationProvider>
       </ProfilesProvider>

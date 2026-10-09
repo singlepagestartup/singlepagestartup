@@ -7,6 +7,7 @@ export interface IAIChatChat {
 export interface IAIChatUserProfile {
   id: string;
   title: string;
+  avatar?: string;
   variant: "ai-chat-user";
 }
 export interface IAIChatSource {

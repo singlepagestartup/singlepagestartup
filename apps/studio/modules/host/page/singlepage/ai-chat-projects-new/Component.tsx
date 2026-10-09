@@ -19,7 +19,8 @@ export function Component() {
       )}
       subjectAccount={({ onNavigate }) => (
         <RbacModuleSubject
-          variant="ai-chat-account"
+          variant="account"
+          showTokens
           page="chat"
           onNavigate={onNavigate}
         />

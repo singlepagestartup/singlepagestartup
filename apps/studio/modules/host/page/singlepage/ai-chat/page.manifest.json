@@ -39,8 +39,8 @@
       "path": "../../../../social/chat/singlepage/ai-chat-preview"
     },
     {
-      "id": "rbac.subject.ai-chat-sign-in",
-      "path": "../../../../rbac/subject/singlepage/ai-chat-sign-in"
+      "id": "rbac.subject.account",
+      "path": "../../../../rbac/subject/singlepage/account"
     }
   ]
 }

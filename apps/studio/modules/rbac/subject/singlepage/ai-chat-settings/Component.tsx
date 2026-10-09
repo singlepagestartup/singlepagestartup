@@ -7,10 +7,7 @@ import {
   kit,
 } from "../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import defaultCopy from "./content.json";
-import {
-  useAIChatAccount,
-  useAIChatProjectHref,
-} from "../ai-chat-account/Account";
+import { useAIChatAccount, useAIChatProjectHref } from "../account/Account";
 import type { IAIChatServicePageContent } from "../../../../../workspace/utils/products/ai-chat-content";
 import {
   Feedback,

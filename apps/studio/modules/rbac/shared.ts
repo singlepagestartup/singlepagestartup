@@ -157,8 +157,16 @@ export function readRbacStudioAuthUser(): RbacStudioAuthUser | null {
   }
 }
 
-export function writeRbacStudioAuthUser(email: string): RbacStudioAuthUser {
-  const user = resolveRbacStudioAuthUser(email);
+export function writeRbacStudioAuthUser(
+  email: string,
+  updates: Partial<Pick<RbacStudioAuthUser, "name" | "avatar">> = {},
+): RbacStudioAuthUser {
+  const stored = readRbacStudioAuthUser();
+  const user = {
+    ...resolveRbacStudioAuthUser(email),
+    ...(stored?.email === email.trim().toLowerCase() ? stored : {}),
+    ...updates,
+  };
 
   if (typeof window !== "undefined") {
     window.localStorage.setItem(

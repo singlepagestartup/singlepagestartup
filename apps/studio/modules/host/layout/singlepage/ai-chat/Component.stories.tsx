@@ -6,7 +6,7 @@ function Example() {
   return (
     <HostModuleLayout
       variant="ai-chat"
-      subjectAccount={<RbacModuleSubject variant="ai-chat-sign-in" />}
+      subjectAccount={<RbacModuleSubject variant="account" showTokens />}
     >
       <main className="p-5">AI Chat page content slot</main>
     </HostModuleLayout>

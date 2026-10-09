@@ -12,7 +12,7 @@ export function Component({ content }: IAIChatPageProps = {}) {
   return (
     <HostModuleLayout
       variant="ai-chat"
-      subjectAccount={<RbacModuleSubject variant="ai-chat-sign-in" />}
+      subjectAccount={<RbacModuleSubject variant="account" showTokens />}
       footerContent={content?.footer}
     >
       <main

@@ -227,7 +227,8 @@ describe("Website Builder header composition", () => {
       );
       if (!["register", "login"].includes(route)) {
         expect(source).toContain("subjectAccount=");
-        expect(source).toContain('variant="ai-chat-account"');
+        expect(source).toContain('variant="account"');
+        expect(source).toContain("showTokens");
         expect(source).toContain("rbac/subject/index");
       }
       if (route.startsWith("projects")) {

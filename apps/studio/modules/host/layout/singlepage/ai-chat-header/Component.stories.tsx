@@ -4,7 +4,7 @@ import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 
 import { ProfilesProvider } from "../../../../social/profile/singlepage/ai-chat-project/Profiles";
 
-import { AccountProvider } from "../../../../rbac/subject/singlepage/ai-chat-account/Account";
+import { AccountProvider } from "../../../../rbac/subject/singlepage/account/Account";
 import { aiChatAccount } from "../../../../../workspace/utils/products/ai-chat-account-fixture";
 import { aiChatWorkspaceFixture } from "../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 import type { Meta, StoryObj } from "@storybook/react";
@@ -22,7 +22,8 @@ function Example() {
       )}
       subjectAccount={({ onNavigate }) => (
         <RbacModuleSubject
-          variant="ai-chat-account"
+          variant="account"
+          showTokens
           page="chat"
           onNavigate={onNavigate}
         />

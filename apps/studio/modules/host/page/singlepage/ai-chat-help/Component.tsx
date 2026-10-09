@@ -2,7 +2,7 @@ import { Component as HostModuleLayout } from "../../../layout/index";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
 import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 
-import { useAIChatProjectHref } from "../../../../rbac/subject/singlepage/ai-chat-account/Account";
+import { useAIChatProjectHref } from "../../../../rbac/subject/singlepage/account/Account";
 
 export function Component() {
   const projectHref = useAIChatProjectHref();
@@ -12,7 +12,8 @@ export function Component() {
       page="help"
       subjectAccount={({ onNavigate }) => (
         <RbacModuleSubject
-          variant="ai-chat-account"
+          variant="account"
+          showTokens
           page="help"
           onNavigate={onNavigate}
         />

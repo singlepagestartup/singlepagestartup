@@ -17,6 +17,7 @@ import {
 
 export interface ILoginProps {
   copy?: IAIChatServicePageContent;
+  onSuccess?: (email: string) => void;
 }
 
 export interface ILoginErrors {
@@ -24,7 +25,7 @@ export interface ILoginErrors {
   password?: string;
 }
 
-export function Component({ copy = defaultCopy }: ILoginProps = {}) {
+export function Component({ copy = defaultCopy, onSuccess }: ILoginProps = {}) {
   const label = copy.labels;
   const id = useId();
   const [email, setEmail] = useState("");
@@ -49,7 +50,9 @@ export function Component({ copy = defaultCopy }: ILoginProps = {}) {
       const field = event.currentTarget.elements.namedItem(firstError);
       if (field instanceof HTMLElement) field.focus();
     }
-    setSubmitted(Object.keys(nextErrors).length === 0);
+    const valid = Object.keys(nextErrors).length === 0;
+    setSubmitted(valid);
+    if (valid) onSuccess?.(email.trim());
   }
 
   return (

@@ -197,7 +197,7 @@ of its variants. Singlepage and startup maps assemble those variants locally.
 ```tsx
 import { Component as SocialModuleProfile } from ".../social/profile";
 
-<SocialModuleProfile variant="ai-chat-user-menu" data={profile} balance={balance} page="chat" />;
+<SocialModuleProfile variant="account-menu" data={profile} balance={balance} page="chat" />;
 ```
 
 | Model                                                      | Studio responsibility                                |
@@ -213,7 +213,7 @@ import { Component as SocialModuleProfile } from ".../social/profile";
 | Website Builder Widget / Logotype / Buttons Array / Button | Header, logo, navigation and Help                    |
 
 AccountProvider supplies one user profile and its balance directly to Subject
-`ai-chat-account`. ProfilesProvider supplies local project identities; the project
+`account`. ProfilesProvider supplies local project identities; the project
 selector and sidebar display those examples. A route ID selects the supplied
 profile. Missing examples show an unavailable state. Project creation only adds
 an identity to the local preview.
@@ -244,7 +244,7 @@ Website Builder imports no Social, RBAC or Host components.
 
 Public Home, Blog, Services, account, checkout and legal Pages use Layout
 `website`. It composes Website Builder `navbar-default` and a full or compact
-footer, and supplies Subject `navbar-account` and Cart views. A Page with its
+footer, and supplies Subject `account` and Cart views. A Page with its
 own cart state can supply `cartButton` and `cartDrawer`; `subjectAccount` can
 also be supplied. Navbar uses Logotype and Buttons Array → Button for navigation.
 Account state and its dropdown belong to Subject. Admin Panel is visible in
@@ -415,3 +415,9 @@ source and passed as `{ content }` to its React entry point. Shared components
 provide layout/export; they do not extract Strategy or other document copy.
 Document dependencies are semantic review relationships: `stale` requests an
 impact review without automatically replacing any dependent text.
+
+User menus use Subject `account` and Social Profile `account-menu` on every header.
+`showTokens` adds the AI Chat balance and Buy tokens action. Name, avatar, email,
+Settings, Change avatar, Admin Panel and Sign out share one dropdown. The account
+stories expose signed-in and token controls. Studio stores the preview session
+and uploaded avatar locally; AI Chat login opens the active project immediately.

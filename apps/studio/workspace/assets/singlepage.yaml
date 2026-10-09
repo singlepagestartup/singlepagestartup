@@ -5648,3 +5648,41 @@ assets:
       findings: Full original scene remains recognizable with proportional resampling. Added wall and window above, desk and foreground below. Face, hands, laptop and original project materials remain visible; no obvious seam, stretch or crop.
       scope: Source and delivery comparison; responsive display is checked in the registration page. Agent QA only, lifecycle remains proposed.
     alt: "A man reviewing a project sketch beside his laptop."
+
+  - id: singlepage-generated-account-mascot
+    path: apps/studio/workspace/assets/singlepage/generated/living-focus/singlepagestartup-account-mascot.png
+    source_type: generated
+    evidence: false
+    rights_status: AI-generated illustrative draft for Studio preview.
+    purpose: Original user-avatar mascot master.
+    related_artifacts: [singlepage.design]
+    allowed_use: [Studio profile menu preview]
+    prohibited_use: [Product evidence or approved brand identity claims]
+    prompt: >-
+      Use case: stylized-concept. Create an original small friendly mascot portrait
+      for a user avatar in SinglePageStartup AI Chat. A compact rounded geometric
+      character made from matte ceramic: soft graphite blue-gray body #18262D,
+      warm off-white face, two simple dark eyes, one small lime green #BFEF61
+      accent on the upper left edge of its head. Calm slight smile, thoughtful
+      adult-friendly design, subtle soft studio lighting, no shiny plastic, no
+      antenna, no letters, no logo, no text, no watermark. Head and shoulders
+      front-facing, generous empty margins so it reads as a circular UI avatar
+      at 32 pixels. Transparent background. Create the illustrative master with
+      natural unconstrained aspect ratio; do not crop any part of the character.
+      This is a portrait asset, not an interface screenshot.
+    source_or_tool: Built-in image_gen, text generation.
+
+  - id: singlepage-generated-account-mascot-square
+    path: apps/studio/workspace/assets/singlepage/generated/living-focus/singlepagestartup-account-mascot-square.png
+    source_type: generated
+    evidence: false
+    rights_status: AI-generated illustrative draft for Studio preview.
+    purpose: Square delivery avatar from the preserved mascot master.
+    related_artifacts: [singlepage-generated-account-mascot]
+    allowed_use: [Studio profile menu preview]
+    prohibited_use: [Product evidence or approved brand identity claims]
+    prompt: >-
+      Prepare a square avatar by expanding the transparent canvas to 1:1.
+      Preserve the whole mascot without cropping or redesign; center it with
+      transparent breathing room for a circular UI avatar.
+    source_or_tool: Built-in image_gen, referenced-image edit.

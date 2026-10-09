@@ -27,8 +27,8 @@
       "path": "../../../../rbac/subject/singlepage/ai-chat-settings"
     },
     {
-      "id": "rbac.subject.ai-chat-account",
-      "path": "../../../../rbac/subject/singlepage/ai-chat-account"
+      "id": "rbac.subject.account",
+      "path": "../../../../rbac/subject/singlepage/account"
     }
   ]
 }

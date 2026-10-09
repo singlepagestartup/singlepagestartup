@@ -1,6 +1,6 @@
 import { Component as SocialModuleProfile } from "../../index";
 import type { Meta, StoryObj } from "@storybook/react";
-import { AccountProvider } from "../../../../rbac/subject/singlepage/ai-chat-account/Account";
+import { AccountProvider } from "../../../../rbac/subject/singlepage/account/Account";
 import { ProfilesProvider } from "../ai-chat-project/Profiles";
 import { aiChatAccount } from "../../../../../workspace/utils/products/ai-chat-account-fixture";
 import { aiChatWorkspaceFixture } from "../../../../../workspace/utils/products/ai-chat-workspace-fixture";

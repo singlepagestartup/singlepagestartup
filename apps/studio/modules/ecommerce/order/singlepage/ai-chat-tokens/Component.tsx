@@ -3,7 +3,7 @@ import { useId, useState } from "react";
 import {
   useAIChatAccount,
   useAIChatProjectHref,
-} from "../../../../rbac/subject/singlepage/ai-chat-account/Account";
+} from "../../../../rbac/subject/singlepage/account/Account";
 import {
   Button,
   Icon,

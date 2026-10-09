@@ -1,7 +1,7 @@
 import { Component as RbacModuleSubject } from "../../index";
 
 import type { Meta, StoryObj } from "@storybook/react";
-import { AccountProvider } from "../ai-chat-account/Account";
+import { AccountProvider } from "../account/Account";
 import { aiChatAccount } from "../../../../../workspace/utils/products/ai-chat-account-fixture";
 
 function Example() {
