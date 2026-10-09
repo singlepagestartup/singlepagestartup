@@ -1,6 +1,6 @@
 # Studio responsive layout
 
-Status: verified locally; publication pending
+Status: complete
 
 ## Scope
 
@@ -18,7 +18,7 @@ height. Production modules remain outside this change.
 - [x] Align registration fields at the start of the form with a consistent gap.
 - [x] Verify project navigation, resizing and registration at narrow,
       intermediate and wide widths. Run Studio tests, type checking and a build.
-- [ ] Publish the scoped changes to PR #371 and record the verified commit.
+- [x] Publish the scoped changes to PR #371 and record the verified commit.
 
 ## Audit boundary
 
@@ -47,3 +47,13 @@ navigation work. No horizontal overflow or browser errors occurred.
 Registration has 20px between field groups at widths 320, 767, 1000 and 1192 px.
 Empty-submit validation reports each missing value and focuses Email. Screenshot:
 `/private/tmp/studio-registration-responsive.png`.
+
+## Published result
+
+Implementation commit in the local branch:
+`94fb6c6a40eecfa02859d287acfb01fe5712aa91`.
+Published implementation in PR #371:
+`3dcd4f2569e967be6b479d797b0776062572741e`.
+PR head and description are verified. All six owned files match between the
+local checkout and the publication checkout. The unrelated production commit
+`94f63c6a75` is excluded. Existing dirty files remain outside the commit.

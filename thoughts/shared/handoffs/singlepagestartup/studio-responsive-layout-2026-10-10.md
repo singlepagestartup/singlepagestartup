@@ -1,6 +1,6 @@
 # Studio responsive layout continuation
 
-Status: verified locally; publication pending
+Status: complete
 
 ## Current work
 
@@ -34,3 +34,13 @@ Publish explicit scoped commits through an isolated worktree at the verified PR
 head. Do not push the local branch: it includes unrelated production history.
 Preserve all existing dirty files outside this task. The previous account
 settings plan and handoff contain that completed task's verification.
+
+## Published result
+
+Implementation commit in the local branch:
+`94fb6c6a40eecfa02859d287acfb01fe5712aa91`.
+Published implementation in PR #371:
+`3dcd4f2569e967be6b479d797b0776062572741e`.
+PR head and description are verified. All six owned files match between the
+local checkout and the publication checkout. The unrelated production commit
+`94f63c6a75` is excluded. Existing dirty files remain outside the commit.
