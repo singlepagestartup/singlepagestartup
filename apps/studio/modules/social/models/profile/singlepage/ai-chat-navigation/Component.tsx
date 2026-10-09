@@ -64,6 +64,20 @@ export function Component({
           </div>
         </div>
       </nav>
+      <section
+        aria-label="Project threads"
+        className="mt-5 border-t border-white/10 pt-4"
+      >
+        <h2 className="mb-3 text-xs font-semibold text-white/60">Threads</h2>
+        <button
+          type="button"
+          aria-disabled="true"
+          className={`flex min-h-11 w-full items-center gap-2 rounded-xl border border-white/15 px-3 py-2 text-left text-sm text-white/80 ${kit.focus}`}
+        >
+          <Icon name="plus" className="size-4" />
+          New thread
+        </button>
+      </section>
     </>
   );
 }

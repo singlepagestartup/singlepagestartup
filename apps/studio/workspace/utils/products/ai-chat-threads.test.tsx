@@ -154,7 +154,6 @@ test("new profile identity is sufficient to prepare Products; profile IDs isolat
   expect(first).not.toContain("second:products");
   expect(second).toContain('data-id="second:thread:document:products:intro"');
   expect(second).not.toContain("first:products");
-  expect(first).not.toContain("New thread");
   expect(first).not.toContain("Analyze materials");
 });
 
