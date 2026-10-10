@@ -1,6 +1,6 @@
 # Studio Profile variant names
 
-Status: in progress
+Status: complete
 
 Profile is the current model. Functions precede the AI Chat project presentation;
 `project` is the final folder and key segment. Ordinary public profile overview
@@ -33,6 +33,13 @@ scope and processing folders.
 - [x] 292 tests across 41 files; TypeScript, metadata/inventory, copy freshness, code placement and diff checks.
 - [x] Storybook production build at `/private/tmp/studio-profile-naming-storybook`.
 - [x] Browser: ordinary overview Controls change the name; create/overview branches end in ai-chat/project; Host Profile Select Item keeps its scope, New thread/Cancel and Settings navigation work; New project opens the Profile creation form. Error logs are empty. Controls are reset and temporary tabs are closed.
-- [ ] Scoped implementation and PR #371 publication.
+- [x] Scoped implementation and PR #371 publication; GitHub head and description verified.
 
 Browser evidence: `/private/tmp/studio-profile-naming.png`. Check logs use `/private/tmp/studio-profile-naming-*.log`.
+
+## Publication
+
+- Local implementation: `4dabeb3434d766dd7c926d794e4cb643f93e0b1f`.
+- Published implementation: `0c99107d16f900c975b72eaff5ba772a60df1480` on `codex/ai-chat-ui-review`.
+- PR: https://github.com/singlepagestartup/singlepagestartup/pull/371.
+- All 122 changed paths/deletions match the checked implementation. The clean publication checkout excludes unrelated production commit `94f63c6a75`.
