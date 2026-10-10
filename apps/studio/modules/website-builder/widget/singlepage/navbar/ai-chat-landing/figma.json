@@ -7,7 +7,7 @@
   "metadata": {
     "singlepagestartup.studio.blockId": "website-builder.widget.navbar-ai-chat-landing",
     "singlepagestartup.studio.layer": "singlepage",
-    "singlepagestartup.studio.syncKey": "website-builder/widget/singlepage/navbar/ai-chat/landing",
+    "singlepagestartup.studio.syncKey": "website-builder/widget/singlepage/navbar/ai-chat-landing",
     "sps.figma.component": "website-builder.widget",
     "sps.figma.variant": "navbar-ai-chat-landing",
     "sps.source.module": "website-builder",
@@ -15,7 +15,7 @@
     "sps.source.entity": "widget",
     "sps.source.variant": "navbar-ai-chat-landing",
     "sps.contractVersion": "0.1.0",
-    "sps.code.component": "apps/studio/modules/website-builder/widget/singlepage/navbar/ai-chat/landing/Component.tsx",
-    "sps.code.story": "apps/studio/modules/website-builder/widget/singlepage/navbar/ai-chat/landing/Component.stories.tsx"
+    "sps.code.component": "apps/studio/modules/website-builder/widget/singlepage/navbar/ai-chat-landing/Component.tsx",
+    "sps.code.story": "apps/studio/modules/website-builder/widget/singlepage/navbar/ai-chat-landing/Component.stories.tsx"
   }
 }

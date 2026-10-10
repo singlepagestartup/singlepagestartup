@@ -7,7 +7,7 @@ import { Component as FooterAiChat } from "./footer/ai-chat/index";
 import { Component as NavbarAiChat } from "./navbar/ai-chat/index";
 import { Component as ContentAiChatHelp } from "./content/ai-chat/help/index";
 import { Component as ContentAiChatHero } from "./content/ai-chat/hero/index";
-import { Component as NavbarAiChatLanding } from "./navbar/ai-chat/landing/index";
+import { Component as NavbarAiChatLanding } from "./navbar/ai-chat-landing/index";
 import { Component as ContentAiChatTry } from "./content/ai-chat/try/index";
 import { Component as ContentButtonsArrayFindDefault } from "./content-buttons-array-find-default/index";
 import { Component as ContentCta } from "./content-cta/index";

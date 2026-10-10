@@ -6450,8 +6450,8 @@
             "apps/studio/modules/website-builder/widget/singlepage/footer/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/navbar-default/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/navbar/ai-chat-landing/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/navbar/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/navbar/ai-chat/landing/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/startup/content-default/Component.stories.tsx"
           ]
         }

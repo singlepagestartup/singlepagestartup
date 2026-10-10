@@ -260,6 +260,8 @@ use `content-ai-chat-hero`, `content-ai-chat-try`, `content-ai-chat-continue` an
 `navbar-ai-chat-landing`; the footer uses `footer-ai-chat`. Button and Buttons
 Array use `navbar-ai-chat` for the navbar's links. Nested folders mirror those
 keys, for example `singlepage/content/ai-chat/hero`.
+Navbar samples are siblings: `singlepage/navbar/ai-chat` and
+`singlepage/navbar/ai-chat-landing`.
 
 Other Studio models name their variants by purpose, with presentation last: `overview-ai-chat`
 displays one model, `list-ai-chat` displays records, and
