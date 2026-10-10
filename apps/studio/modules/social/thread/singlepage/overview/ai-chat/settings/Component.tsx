@@ -4,9 +4,9 @@ import { useState } from "react";
 import {
   Button,
   Icon,
-} from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
-import { TextField } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
-import { type IProjectTopic } from "../../../../../../workspace/utils/products/ai-chat-workspace";
+} from "../../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
+import { TextField } from "../../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
+import { type IProjectTopic } from "../../../../../../../workspace/utils/products/ai-chat-workspace";
 export interface IThreadSettingsProps {
   topic: IProjectTopic;
   onSave: (title: string) => void;
@@ -39,7 +39,14 @@ export function Component({ topic, onSave, onDelete }: IThreadSettingsProps) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-sps-graphite/40" />
-        <Dialog.Content className="fixed inset-y-4 right-4 z-50 flex w-[calc(100%-32px)] max-w-xl flex-col overflow-hidden rounded-2xl border border-sps-line bg-sps-white font-sps text-sps-graphite shadow-xl focus:outline-none">
+        <Dialog.Content
+          data-ds-block="social.thread.overview-ai-chat-settings"
+          data-module="social"
+          data-model="thread"
+          data-id={topic.id}
+          data-variant="overview-ai-chat-settings"
+          className="fixed inset-y-4 right-4 z-50 flex w-[calc(100%-32px)] max-w-xl flex-col overflow-hidden rounded-2xl border border-sps-line bg-sps-white font-sps text-sps-graphite shadow-xl focus:outline-none"
+        >
           <div className="flex items-start justify-between gap-3 border-b border-sps-line p-5">
             <div>
               <Dialog.Title className="text-lg font-semibold">

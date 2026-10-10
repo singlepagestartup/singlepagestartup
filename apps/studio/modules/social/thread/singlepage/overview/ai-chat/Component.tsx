@@ -8,7 +8,7 @@ import {
 } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/primitives";
 import { useSource } from "../../../../../knowledge/source/singlepage/overview/document/ai-chat/Source";
 
-import { Component as SocialModuleMessage } from "../../../../message/index";
+import { Component as ThreadMessageList } from "../../message/list/ai-chat/index";
 import { PanelHeader } from "../../../../../../workspace/design/singlepage/interface-kit/ai-chat/ServiceDocument";
 import { ThreadProvider, useThread } from "./Thread";
 export interface IThreadOverviewProps {
@@ -78,10 +78,7 @@ function ThreadOverview({ navigation, messageCreate }: IThreadOverviewProps) {
           className={`${pane === "chat" ? "flex" : "hidden"} min-h-0 min-w-0 flex-col overflow-y-auto @[900px]/chat:flex`}
         >
           <div className="min-h-0 flex-1 overflow-y-auto">
-            <SocialModuleMessage
-              variant="list-ai-chat"
-              className="min-h-[50dvh] @[760px]/workspace:min-h-0"
-            />
+            <ThreadMessageList className="min-h-[50dvh] @[760px]/workspace:min-h-0" />
             {proposal && (
               <div
                 ref={proposalView}

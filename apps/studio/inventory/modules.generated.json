@@ -5477,8 +5477,9 @@
             "apps/studio/modules/social/thread/singlepage/list-default/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/list/item/sidebar/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/message/list/ai-chat/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/overview/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/social/thread/singlepage/settings/ai-chat/Component.stories.tsx"
+            "apps/studio/modules/social/thread/singlepage/overview/ai-chat/settings/Component.stories.tsx"
           ]
         },
         {

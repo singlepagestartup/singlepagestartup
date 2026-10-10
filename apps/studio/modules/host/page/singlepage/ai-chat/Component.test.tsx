@@ -10,7 +10,8 @@ import { ProjectAgentPicker } from "../../../../social/profile/singlepage/agent/
 import { FilesProvider } from "../../../../file-storage/file/singlepage/list/attachments/ai-chat/Files";
 import { SourceProvider } from "../../../../knowledge/source/singlepage/overview/document/ai-chat/Source";
 import { ThreadProvider } from "../../../../social/thread/singlepage/overview/ai-chat/Thread";
-import { Component as MessageList } from "../../../../social/message/singlepage/list/ai-chat/index";
+import { Component as SocialModuleThread } from "../../../../social/thread/index";
+import { Component as SocialModuleMessage } from "../../../../social/message/index";
 
 const root = path.resolve(import.meta.dir, "../../../../../../..");
 const studio = path.join(root, "apps/studio");
@@ -229,7 +230,7 @@ describe("Local AI Chat components", () => {
               }}
               initialMessages={messages}
             >
-              <MessageList />
+              <SocialModuleThread variant="message-list-ai-chat" />
             </ThreadProvider>
           </SourceProvider>
         </FilesProvider>,
@@ -237,6 +238,26 @@ describe("Local AI Chat components", () => {
       expect(html).toContain("AI assistant");
       expect(html).toContain("About Account Manager");
       expect(html).not.toContain("About Strategist");
+      expect(html).toContain(
+        'data-ds-block="social.thread.message-list-ai-chat"',
+      );
+      expect(html).toContain('data-thread-id="history:products"');
     }
+  });
+
+  test("a Message list displays supplied records without a Thread provider", () => {
+    const html = renderToStaticMarkup(
+      <SocialModuleMessage
+        variant="list-ai-chat"
+        threadId="standalone-thread"
+        messages={[
+          { id: "standalone-message", role: "user", text: "Supplied message" },
+        ]}
+      />,
+    );
+    expect(html).toContain('data-thread-id="standalone-thread"');
+    expect(html).toContain('data-id="standalone-message"');
+    expect(html).toContain("Supplied message");
+    expect(html).not.toContain("Products.md is ready");
   });
 });

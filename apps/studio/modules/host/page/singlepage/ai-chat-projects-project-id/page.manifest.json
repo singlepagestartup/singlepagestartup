@@ -51,6 +51,10 @@
       "path": "../../../../social/thread/singlepage/overview/ai-chat"
     },
     {
+      "id": "social.thread.message-list-ai-chat",
+      "path": "../../../../social/thread/singlepage/message/list/ai-chat"
+    },
+    {
       "id": "social.message.list-ai-chat",
       "path": "../../../../social/message/singlepage/list/ai-chat"
     },

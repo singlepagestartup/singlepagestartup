@@ -264,6 +264,16 @@ purpose as in `singlepage/project/select/item/ai-chat`. Host Page variants and
 story IDs follow their route names. Project scope is a local state wrapper;
 project overview displays the selected profile.
 
+Names describe the model path relative to the current entry, then the function
+and appearance. A Thread uses `overview-ai-chat`, `create-ai-chat` and
+`overview-ai-chat-settings` for its own views. Its child Message list uses
+`message-list-ai-chat`; Message itself uses `list-ai-chat`, because the model
+name is already given by the entry. Thread owns the context lookup and passes
+records directly to Message. Each additional model step appears in order:
+Subject `overview-profile-overview-chat-overview-thread-list-default` would
+describe `/subjects/:subjectId/profiles/:profileId/chats/:chatId/threads`.
+This is a naming example; Host Page names continue to follow their actual routes.
+
 Profile `project-overview-ai-chat` owns one sidebar and a responsive project
 frame. Tailwind container queries control the frame's columns, navigation
 controls and sidebar position; local state controls opening and dismissal.

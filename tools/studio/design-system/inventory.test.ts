@@ -190,7 +190,15 @@ describe("AI Chat project ownership", () => {
       ).toBe(true);
     for (const [entity, folders] of [
       ["chat", ["overview/ai-chat"]],
-      ["thread", ["overview/ai-chat", "create/ai-chat", "settings/ai-chat"]],
+      [
+        "thread",
+        [
+          "overview/ai-chat",
+          "create/ai-chat",
+          "overview/ai-chat/settings",
+          "message/list/ai-chat",
+        ],
+      ],
       ["message", ["overview/ai-chat", "list/ai-chat"]],
     ] as const) {
       const record = social.entities.find(
@@ -221,7 +229,9 @@ describe("AI Chat project ownership", () => {
     ).toBe(false);
     const thread = social.entities.find((item) => item.entity === "thread")!;
     expect(
-      thread.storyFiles?.some((file) => file.includes("/list/ai-chat/")),
+      thread.storyFiles?.some((file) =>
+        file.includes("/thread/singlepage/list/ai-chat/"),
+      ),
     ).toBe(false);
   });
 });

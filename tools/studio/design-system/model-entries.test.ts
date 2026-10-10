@@ -264,7 +264,7 @@ test("AI Chat model variants classify their purpose and mirror nested folders", 
         /^(content-ai-chat-.+|navbar-ai-chat(?:-.+)?|footer-ai-chat|brand-ai-chat)$/,
       );
     } else {
-      expect(variant.endsWith("-ai-chat")).toBe(true);
+      expect(variant).toMatch(/-ai-chat(?:-settings)?$/);
     }
     const variantPath = path.relative(
       path.join(modules, module, entity, "singlepage"),
@@ -273,5 +273,5 @@ test("AI Chat model variants classify their purpose and mirror nested folders", 
     expect(variantPath.split(path.sep).join("-")).toBe(variant);
     checked++;
   }
-  expect(checked).toBe(45);
+  expect(checked).toBe(46);
 });

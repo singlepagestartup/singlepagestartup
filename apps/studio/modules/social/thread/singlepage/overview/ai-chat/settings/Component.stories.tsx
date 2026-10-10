@@ -1,7 +1,7 @@
-import { Component as SocialModuleThread } from "../../../index";
+import { Component as SocialModuleThread } from "../../../../index";
 
 import { useState } from "react";
-import type { IProjectTopic } from "../../../../../../workspace/utils/products/ai-chat-workspace";
+import type { IProjectTopic } from "../../../../../../../workspace/utils/products/ai-chat-workspace";
 import type { Meta, StoryObj } from "@storybook/react";
 
 function Example() {
@@ -13,7 +13,7 @@ function Example() {
   });
   return (
     <SocialModuleThread
-      variant="settings-ai-chat"
+      variant="overview-ai-chat-settings"
       topic={topic}
       onSave={(title) => setTopic({ ...topic, title })}
       onDelete={() => {}}
@@ -22,8 +22,8 @@ function Example() {
 }
 
 const meta = {
-  id: "modules-social-models-thread-singlepage-settings-ai-chat",
-  title: "Modules/Social/Models/Thread/Singlepage/settings/ai-chat",
+  id: "modules-social-models-thread-singlepage-overview-ai-chat-settings",
+  title: "Modules/Social/Models/Thread/Singlepage/overview/ai-chat/settings",
   component: Example,
   parameters: { layout: "fullscreen" },
 } satisfies Meta<typeof Example>;

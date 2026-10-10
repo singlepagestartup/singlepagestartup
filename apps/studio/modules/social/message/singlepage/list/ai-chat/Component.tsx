@@ -3,13 +3,18 @@ import { Component as SocialModuleProfile } from "../../../../profile/index";
 import { Component as MessageOverview } from "../../overview/ai-chat/index";
 import { useCallback, useRef, useEffect, useState } from "react";
 import { type IProjectAgent } from "../../../../../../workspace/utils/products/ai-chat-agent-resolver";
-import { useThread } from "../../../../thread/singlepage/overview/ai-chat/Thread";
+import type { IProjectMessage } from "../../../../../../workspace/utils/products/ai-chat-workspace";
 
 export interface IMessageListProps {
+  threadId: string;
+  messages: IProjectMessage[];
   className?: string;
 }
-export function Component({ className = "" }: IMessageListProps) {
-  const { thread, messages } = useThread();
+export function Component({
+  threadId,
+  messages,
+  className = "",
+}: IMessageListProps) {
   const [profile, setProfile] = useState<IProjectAgent | null>(null);
   const selectProfile = useCallback(
     (selected: IProjectAgent) => setProfile(selected),
@@ -28,7 +33,7 @@ export function Component({ className = "" }: IMessageListProps) {
         data-ds-block="social.message.list-ai-chat"
         data-module="social"
         data-model="message"
-        data-thread-id={thread.id}
+        data-thread-id={threadId}
         data-variant="list-ai-chat"
         role="log"
         aria-label="Messages"
