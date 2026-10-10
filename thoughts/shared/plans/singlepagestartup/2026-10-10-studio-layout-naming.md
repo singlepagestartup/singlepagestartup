@@ -1,6 +1,6 @@
 # Studio AI Chat Layout names
 
-Status: in progress
+Status: complete
 
 AI Chat Layout samples put their presentation first and use flat folders.
 Landing and Dashboard describe visual samples of Layout records; their intended
@@ -25,6 +25,13 @@ Website Builder content/navbar names and Social model names retain their contrac
 - [x] 292 tests across 41 files; TypeScript, metadata/inventory, copy freshness, code placement and diff checks.
 - [x] Storybook production build at `/private/tmp/studio-layout-naming-storybook`.
 - [x] Browser: flat Layout stories; one navbar/footer in each shell; landing Try anchor, login and registration navigation; project/New project/existing thread navigation. Error logs are empty and temporary tabs are closed.
-- [ ] Scoped implementation and PR #371 publication.
+- [x] Scoped implementation and PR #371 publication; GitHub head and description verified.
 
 Browser evidence: `/private/tmp/studio-layout-naming.png`. Check logs use `/private/tmp/studio-layout-naming-*.log`.
+
+## Publication
+
+- Local implementation: `0333a56e852c4b83614e170c3edbaeba9c2f274e`.
+- Published implementation: `0471c73671f2752648503b943fc256045762e753` on `codex/ai-chat-ui-review`.
+- PR: https://github.com/singlepagestartup/singlepagestartup/pull/371.
+- All 56 changed paths/deletions match the checked implementation. The clean publication checkout excludes unrelated production commit `94f63c6a75`.
