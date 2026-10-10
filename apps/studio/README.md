@@ -244,6 +244,10 @@ documents pass their content override through Host Page.
 Layout `ai-chat-dashboard` owns its themed container, Website Builder navbar and footer.
 Pages supply `profileSelect` and `subjectAccount` slots. The navbar directly
 composes Logotype, Buttons Array and Button models; Help is a Button example.
+Host Layout selects the Buttons Array record, active href, navigation label,
+inline/collapsible presentation and supplied slots from the page. Navbar renders
+that data and both supplied slots in either presentation; it owns menu interaction
+and focus handling.
 Website Builder imports no Social, RBAC or Host components.
 
 Public Home, Blog, Services, account, checkout and legal Pages use Layout

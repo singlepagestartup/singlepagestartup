@@ -3,7 +3,7 @@
   "title": "navbar-ai-chat",
   "layer": "singlepage",
   "state": "draft",
-  "description": "Navbar composes Website Builder Logotype and Buttons Array. Host Page supplies Profile Select and Subject Account through its Layout slots.",
+  "description": "Navbar renders supplied navigation data and model slots. Host chooses page-specific Buttons Array records, labels, presentation and slot content.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
@@ -23,5 +23,16 @@
     "entity": "widget",
     "variant": "navbar-ai-chat"
   },
-  "contentSlots": []
+  "contentSlots": [
+    {
+      "name": "profileSelect",
+      "type": "component",
+      "description": "Profile Select view supplied by Host with menu navigation/focus callbacks."
+    },
+    {
+      "name": "subjectAccount",
+      "type": "component",
+      "description": "Subject Account view supplied by Host with menu navigation/focus callbacks."
+    }
+  ]
 }

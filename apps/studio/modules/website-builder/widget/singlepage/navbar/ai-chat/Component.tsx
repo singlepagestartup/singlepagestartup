@@ -12,12 +12,18 @@ export interface INavbarNavigationProps {
   onCloseAutoFocus: (event: Event) => void;
 }
 export interface INavbarAiChatProps {
-  page: "register" | "login" | "settings" | "help" | "tokens" | "chat";
+  buttonsArrayId: string;
+  activeHref?: string;
+  navigationLayout?: "inline" | "collapsible";
+  navigationLabel?: string;
   profileSelect?: (props: INavbarNavigationProps) => ReactNode;
   subjectAccount?: (props: INavbarNavigationProps) => ReactNode;
 }
 export function Component({
-  page,
+  buttonsArrayId,
+  activeHref,
+  navigationLayout = "collapsible",
+  navigationLabel = "Navigation",
   profileSelect,
   subjectAccount,
 }: INavbarAiChatProps) {
@@ -35,13 +41,7 @@ export function Component({
     },
     [navigationOpen],
   );
-  const auth = page === "register" || page === "login";
-  const buttonsArrayId =
-    page === "register"
-      ? "ai-chat-login"
-      : page === "login"
-        ? "ai-chat-register"
-        : "ai-chat-help";
+  const collapsible = navigationLayout === "collapsible";
   const navigationProps = {
     onNavigate: closeNavigation,
     onCloseAutoFocus: closeAutoFocus,
@@ -53,14 +53,14 @@ export function Component({
       data-model="widget"
       data-id={widgetId}
       data-variant="navbar-ai-chat"
-      className={`sticky top-0 z-40 border-b border-sps-line bg-sps-white px-4 py-3 @[800px]:px-8 @[800px]:py-5 ${auth ? "" : "h-18 @[800px]:h-24"}`}
+      className={`sticky top-0 z-40 border-b border-sps-line bg-sps-white px-4 py-3 @[800px]:px-8 @[800px]:py-5 ${collapsible ? "h-18 @[800px]:h-24" : ""}`}
     >
       <div
-        className={`mx-auto flex max-w-6xl items-center justify-between gap-2 @[800px]:gap-5 ${auth ? "flex-wrap" : "h-full"}`}
+        className={`mx-auto flex max-w-6xl items-center justify-between gap-2 @[800px]:gap-5 ${collapsible ? "h-full" : "flex-wrap"}`}
       >
         <WebsiteBuilderModuleLogotype variant="brand-ai-chat" />
         <nav
-          aria-label={auth ? "Account access" : "Account navigation"}
+          aria-label={navigationLabel}
           className="flex shrink-0 items-center justify-end gap-1"
           onKeyDown={(event) => {
             if (event.key === "Escape" && navigationOpen) {
@@ -72,21 +72,21 @@ export function Component({
           <div
             id={navigationId}
             className={
-              auth
-                ? "flex items-center gap-1"
-                : `${navigationOpen ? "flex" : "hidden"} absolute inset-x-0 top-full flex-col items-start gap-1 border-b border-sps-line bg-sps-white px-4 py-3 shadow-lg @[800px]:static @[800px]:flex @[800px]:flex-row @[800px]:items-center @[800px]:border-0 @[800px]:p-0 @[800px]:shadow-none`
+              collapsible
+                ? `${navigationOpen ? "flex" : "hidden"} absolute inset-x-0 top-full flex-col items-start gap-1 border-b border-sps-line bg-sps-white px-4 py-3 shadow-lg @[800px]:static @[800px]:flex @[800px]:flex-row @[800px]:items-center @[800px]:border-0 @[800px]:p-0 @[800px]:shadow-none`
+                : "flex items-center gap-1"
             }
           >
             <WebsiteBuilderModuleButtonsArray
               variant="navbar-ai-chat"
               id={buttonsArrayId}
-              activeHref={`/ai-chat/${page}`}
+              activeHref={activeHref}
               onNavigate={closeNavigation}
             />
-            {!auth && profileSelect?.(navigationProps)}
+            {profileSelect?.(navigationProps)}
           </div>
-          {!auth && subjectAccount?.(navigationProps)}
-          {!auth && (
+          {subjectAccount?.(navigationProps)}
+          {collapsible && (
             <button
               type="button"
               ref={navigationTrigger}

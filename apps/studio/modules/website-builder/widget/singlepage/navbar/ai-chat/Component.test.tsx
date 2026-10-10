@@ -128,7 +128,7 @@ describe("Website Builder navbar composition", () => {
   test("Navbar resolves native logo and button models without account/profile providers", () => {
     const html = renderToStaticMarkup(
       <Navbar
-        page="chat"
+        buttonsArrayId="ai-chat-help"
         profileSelect={() => <button>Selected project slot</button>}
         subjectAccount={() => <button>Current subject slot</button>}
       />,
@@ -145,8 +145,30 @@ describe("Website Builder navbar composition", () => {
     expect(html.indexOf("Current subject slot")).toBeLessThan(
       html.indexOf('aria-label="Open navigation menu"'),
     );
-    const help = renderToStaticMarkup(<Navbar page="help" />);
+    const help = renderToStaticMarkup(
+      <Navbar buttonsArrayId="ai-chat-help" activeHref="/ai-chat/help" />,
+    );
     expect(help).toContain('aria-current="page"');
+  });
+
+  test("Navbar renders supplied slots in either navigation layout", () => {
+    for (const navigationLayout of ["inline", "collapsible"] as const) {
+      const html = renderToStaticMarkup(
+        <Navbar
+          buttonsArrayId="ai-chat-register"
+          activeHref="/ai-chat/register"
+          navigationLayout={navigationLayout}
+          navigationLabel="Preview navigation"
+          profileSelect={() => <button>Selected project slot</button>}
+          subjectAccount={() => <button>Current subject slot</button>}
+        />,
+      );
+      expect(html).toContain('href="/ai-chat/register"');
+      expect(html).toContain('aria-current="page"');
+      expect(html).toContain('aria-label="Preview navigation"');
+      expect(html).toContain("Selected project slot");
+      expect(html).toContain("Current subject slot");
+    }
   });
 
   test("landing and contact widgets receive higher models as slots", () => {
@@ -176,15 +198,30 @@ describe("Website Builder navbar composition", () => {
     expect(html).not.toContain('href="/ai-chat/projects/example"');
   });
 
-  test("auth headers use Button records for opposite account action", () => {
-    const register = renderToStaticMarkup(<Navbar page="register" />);
-    expect(register).toContain('data-id="ai-chat-login"');
-    expect(register).toContain('href="/ai-chat/login"');
-    const login = renderToStaticMarkup(<Navbar page="login" />);
-    expect(login).toContain('data-id="ai-chat-register"');
-    expect(login).toContain('href="/ai-chat/register"');
-    for (const html of [register, login])
-      expect(html).not.toContain('aria-label="Open navigation menu"');
+  test("Host selects account-access navigation and omits project/account slots", () => {
+    const hiddenSlot = () => {
+      throw new Error("Host must omit this slot on an account-access page");
+    };
+    for (const [page, action] of [
+      ["register", "login"],
+      ["login", "register"],
+    ] as const) {
+      const html = renderToStaticMarkup(
+        <HostModuleLayout
+          variant="ai-chat-dashboard"
+          page={page}
+          profileSelect={hiddenSlot}
+          subjectAccount={hiddenSlot}
+        >
+          <main>Account access page</main>
+        </HostModuleLayout>,
+      );
+      const header = html.match(/<header\b[\s\S]*?<\/header>/)?.[0] ?? "";
+      expect(header).toContain(`data-id="ai-chat-${action}"`);
+      expect(header).toContain(`href="/ai-chat/${action}"`);
+      expect(header).toContain('aria-label="Account access"');
+      expect(header).not.toContain('aria-label="Open navigation menu"');
+    }
   });
 
   test("every header Page owns its model slots through one header Layout", () => {
