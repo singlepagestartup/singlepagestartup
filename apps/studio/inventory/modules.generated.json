@@ -2944,10 +2944,10 @@
             "apps/studio/modules/host/layout/singlepage/admin-v2-list/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/admin-v2-select-input/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/ai-chat-dashboard/Component.stories.tsx",
+            "apps/studio/modules/host/layout/singlepage/ai-chat-landing/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/default/Component.stories.tsx",
-            "apps/studio/modules/host/layout/singlepage/landing/ai-chat/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/host/layout/singlepage/service/ai-chat/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/website/Component.stories.tsx"
           ]
         },

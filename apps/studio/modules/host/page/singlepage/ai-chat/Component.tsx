@@ -11,7 +11,7 @@ export interface IAIChatPageProps {
 export function Component({ content }: IAIChatPageProps = {}) {
   return (
     <HostModuleLayout
-      variant="landing-ai-chat"
+      variant="ai-chat-landing"
       subjectAccount={<RbacModuleSubject variant="account" showTokens />}
       footerContent={content?.footer}
     >

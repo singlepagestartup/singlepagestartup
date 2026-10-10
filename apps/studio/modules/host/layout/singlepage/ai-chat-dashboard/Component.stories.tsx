@@ -1,17 +1,17 @@
-import { Component as HostModuleLayout } from "../../../index";
-import { Component as SocialModuleProfile } from "../../../../../social/profile/index";
-import { Component as RbacModuleSubject } from "../../../../../rbac/subject/index";
+import { Component as HostModuleLayout } from "../../index";
+import { Component as SocialModuleProfile } from "../../../../social/profile/index";
+import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 
-import { ProfilesProvider } from "../../../../../social/profile/singlepage/scope/ai-chat/project/Profiles";
+import { ProfilesProvider } from "../../../../social/profile/singlepage/scope/ai-chat/project/Profiles";
 
-import { AccountProvider } from "../../../../../rbac/subject/singlepage/account/Account";
-import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
-import { aiChatWorkspaceFixture } from "../../../../../../workspace/utils/products/ai-chat-workspace-fixture";
+import { AccountProvider } from "../../../../rbac/subject/singlepage/account/Account";
+import { aiChatAccount } from "../../../../../workspace/utils/products/ai-chat-account-fixture";
+import { aiChatWorkspaceFixture } from "../../../../../workspace/utils/products/ai-chat-workspace-fixture";
 import type { Meta, StoryObj } from "@storybook/react";
 function Example() {
   return (
     <HostModuleLayout
-      variant="service-ai-chat"
+      variant="ai-chat-dashboard"
       page="chat"
       profileSelect={(props) => (
         <SocialModuleProfile
@@ -34,8 +34,8 @@ function Example() {
   );
 }
 const meta = {
-  id: "modules-host-models-layout-singlepage-service-ai-chat",
-  title: "Modules/Host/Models/Layout/Singlepage/service/ai-chat",
+  id: "modules-host-models-layout-singlepage-ai-chat-dashboard",
+  title: "Modules/Host/Models/Layout/Singlepage/ai-chat-dashboard",
   component: Example,
   parameters: { layout: "fullscreen" },
   decorators: [

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { Component as WebsiteBuilderModuleWidget } from "../../../../../website-builder/widget";
-import type { IWebsiteSection } from "../../../../../../workspace/utils/products/ai-chat-content";
-export interface IAIChatLayoutProps {
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+import type { IWebsiteSection } from "../../../../../workspace/utils/products/ai-chat-content";
+export interface IAIChatLandingLayoutProps {
   children?: ReactNode;
   subjectAccount?: ReactNode;
   footerContent?: IWebsiteSection;
@@ -10,11 +10,11 @@ export function Component({
   children,
   subjectAccount,
   footerContent,
-}: IAIChatLayoutProps = {}) {
+}: IAIChatLandingLayoutProps = {}) {
   return (
     <div
       data-sps-theme="singlepage"
-      data-ds-block="host.layout.landing-ai-chat"
+      data-ds-block="host.layout.ai-chat-landing"
       className="@container min-h-screen min-w-0 flex flex-col bg-sps-grey font-sps text-sps-graphite"
     >
       <a

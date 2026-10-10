@@ -1,0 +1,21 @@
+{
+  "componentName": "host.layout",
+  "pageName": "host",
+  "variantName": "ai-chat-dashboard",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.layout.ai-chat-dashboard",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/layout/singlepage/ai-chat-dashboard",
+    "sps.figma.component": "host.layout",
+    "sps.figma.variant": "ai-chat-dashboard",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "layout",
+    "sps.source.variant": "ai-chat-dashboard",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/layout/singlepage/ai-chat-dashboard/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/layout/singlepage/ai-chat-dashboard/Component.stories.tsx"
+  }
+}

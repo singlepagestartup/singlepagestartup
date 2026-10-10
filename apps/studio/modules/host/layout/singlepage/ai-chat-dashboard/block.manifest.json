@@ -1,14 +1,14 @@
 {
-  "id": "host.layout.landing-ai-chat",
-  "title": "landing-ai-chat",
-  "description": "AI Chat landing layout with Website Builder header/footer and a supplied Subject account slot.",
+  "id": "host.layout.ai-chat-dashboard",
+  "title": "ai-chat-dashboard",
+  "description": "AI Chat service layout with Website Builder header/footer and Profile Select / Subject Account slots supplied by Page.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
     "module": "host",
     "entityType": "model",
     "entity": "layout",
-    "variant": "landing-ai-chat"
+    "variant": "ai-chat-dashboard"
   },
   "files": {
     "component": "Component.tsx",
@@ -18,7 +18,7 @@
   "figma": {
     "componentName": "host.layout",
     "pageName": "host",
-    "variantName": "landing-ai-chat",
+    "variantName": "ai-chat-dashboard",
     "nodeId": null,
     "variantNodeId": null,
     "syncStatus": "not-created",

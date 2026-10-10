@@ -12,7 +12,7 @@ export interface IProjectPageProps {
 export function Component({ profileId }: IProjectPageProps) {
   return (
     <HostModuleLayout
-      variant="service-ai-chat"
+      variant="ai-chat-dashboard"
       page="chat"
       profileSelect={(props) => (
         <SocialModuleProfile

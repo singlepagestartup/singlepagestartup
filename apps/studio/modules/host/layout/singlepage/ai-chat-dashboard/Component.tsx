@@ -1,15 +1,18 @@
-import { Component as WebsiteBuilderModuleWidget } from "../../../../../website-builder/widget/index";
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
 import type { ReactNode } from "react";
-import { type INavbarAiChatProps } from "../../../../../website-builder/widget";
+import { type INavbarAiChatProps } from "../../../../website-builder/widget";
 
-export interface IServiceAiChatLayoutProps extends INavbarAiChatProps {
+export interface IAIChatDashboardLayoutProps extends INavbarAiChatProps {
   children: ReactNode;
 }
-export function Component({ children, ...navbar }: IServiceAiChatLayoutProps) {
+export function Component({
+  children,
+  ...navbar
+}: IAIChatDashboardLayoutProps) {
   return (
     <div
       data-sps-theme="singlepage"
-      data-ds-block="host.layout.service-ai-chat"
+      data-ds-block="host.layout.ai-chat-dashboard"
       className="@container min-h-screen min-w-0 flex flex-col bg-sps-grey font-sps text-sps-graphite"
     >
       <WebsiteBuilderModuleWidget {...navbar} variant="navbar-ai-chat" />

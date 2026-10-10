@@ -19,8 +19,8 @@
   },
   "blocks": [
     {
-      "id": "host.layout.landing-ai-chat",
-      "path": "../../../layout/singlepage/landing/ai-chat"
+      "id": "host.layout.ai-chat-landing",
+      "path": "../../../layout/singlepage/ai-chat-landing"
     },
     {
       "id": "website-builder.widget.content-ai-chat-hero",

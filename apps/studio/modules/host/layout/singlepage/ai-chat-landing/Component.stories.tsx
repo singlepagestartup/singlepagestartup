@@ -1,11 +1,11 @@
-import { Component as HostModuleLayout } from "../../../index";
-import { Component as RbacModuleSubject } from "../../../../../rbac/subject";
+import { Component as HostModuleLayout } from "../../index";
+import { Component as RbacModuleSubject } from "../../../../rbac/subject";
 
 import type { Meta, StoryObj } from "@storybook/react";
 function Example() {
   return (
     <HostModuleLayout
-      variant="landing-ai-chat"
+      variant="ai-chat-landing"
       subjectAccount={<RbacModuleSubject variant="account" showTokens />}
     >
       <main className="p-5">AI Chat page content slot</main>
@@ -13,8 +13,8 @@ function Example() {
   );
 }
 const meta = {
-  id: "modules-host-models-layout-singlepage-landing-ai-chat",
-  title: "Modules/Host/Models/Layout/Singlepage/landing/ai-chat",
+  id: "modules-host-models-layout-singlepage-ai-chat-landing",
+  title: "Modules/Host/Models/Layout/Singlepage/ai-chat-landing",
   component: Example,
   parameters: { layout: "fullscreen" },
 } satisfies Meta<typeof Example>;

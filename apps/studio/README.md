@@ -228,7 +228,11 @@ tokens, project creation, project content, project settings and thread creation.
 Pages use the public model entries. The website Preview adapter handles local
 navigation between those pages.
 
-Layout `landing-ai-chat` composes Website Builder `navbar-ai-chat-landing` and
+AI Chat Layout examples use flat `singlepage/ai-chat-landing` and
+`singlepage/ai-chat-dashboard` folders. Their names distinguish visual samples;
+the production mapping uses Layout records with shared rendering.
+
+Layout `ai-chat-landing` composes Website Builder `navbar-ai-chat-landing` and
 `footer-ai-chat`. Its Subject slot is supplied by Page. The landing navbar uses
 the same `brand-ai-chat` Logotype as the service screens. Try the chat is a Button
 record displayed through Buttons Array. Page places `content-ai-chat-hero`, `content-ai-chat-try`
@@ -237,7 +241,7 @@ of `content-ai-chat-try`. Each Widget has its own generated content fixture. The
 preview reads `utils/products/ai-chat-website.generated.json`; editable website
 documents pass their content override through Host Page.
 
-Layout `service-ai-chat` owns its themed container, Website Builder navbar and footer.
+Layout `ai-chat-dashboard` owns its themed container, Website Builder navbar and footer.
 Pages supply `profileSelect` and `subjectAccount` slots. The navbar directly
 composes Logotype, Buttons Array and Button models; Help is a Button example.
 Website Builder imports no Social, RBAC or Host components.

@@ -19,8 +19,8 @@
   },
   "blocks": [
     {
-      "id": "host.layout.service-ai-chat",
-      "path": "../../../layout/singlepage/service/ai-chat"
+      "id": "host.layout.ai-chat-dashboard",
+      "path": "../../../layout/singlepage/ai-chat-dashboard"
     },
     {
       "id": "rbac.identity.authentication-login-ai-chat",

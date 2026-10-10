@@ -6,7 +6,7 @@ import { Component as RbacModuleWidget } from "../../../../rbac/widget";
 export function Component() {
   return (
     <HostModuleLayout
-      variant="service-ai-chat"
+      variant="ai-chat-dashboard"
       page="settings"
       subjectAccount={({ onNavigate }) => (
         <RbacModuleSubject

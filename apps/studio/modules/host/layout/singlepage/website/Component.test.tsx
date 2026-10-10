@@ -11,7 +11,7 @@ const studio = path.resolve(import.meta.dir, "../../../../..");
 test("landing Page places native widgets inside one Layout and injects Subject and Social Chat", () => {
   const html = renderToStaticMarkup(<HostModulePage variant="ai-chat" />);
   expect(html.match(/data-ds-block="host\.layout\.[^"]+"/g)).toEqual([
-    'data-ds-block="host.layout.landing-ai-chat"',
+    'data-ds-block="host.layout.ai-chat-landing"',
   ]);
   const header = html.match(/<header\b[\s\S]*?<\/header>/)?.[0] ?? "";
   for (const block of [

@@ -3,7 +3,7 @@ import { Component as HostModuleLayout } from "../../../layout/index";
 import { Component as SocialModuleProfile } from "../../../../social/profile/index";
 import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 
-import { useNavigate } from "../../../layout/singlepage/landing/ai-chat/Navigation";
+import { useNavigate } from "../../../layout/singlepage/ai-chat-landing/Navigation";
 
 import { useProfiles } from "../../../../social/profile/singlepage/scope/ai-chat/project/Profiles";
 
@@ -12,7 +12,7 @@ export function Component() {
   const { create, projects } = useProfiles();
   return (
     <HostModuleLayout
-      variant="service-ai-chat"
+      variant="ai-chat-dashboard"
       page="chat"
       profileSelect={(props) => (
         <SocialModuleProfile {...props} variant="select-ai-chat-project" />

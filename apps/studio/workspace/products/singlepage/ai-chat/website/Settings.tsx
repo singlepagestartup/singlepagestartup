@@ -11,7 +11,7 @@ export default function Settings({ text }: { text?: string } = {}) {
   return (
     <AccountProvider account={aiChatAccount}>
       <HostModuleLayout
-        variant="service-ai-chat"
+        variant="ai-chat-dashboard"
         page="settings"
         subjectAccount={({ onNavigate }) => (
           <RbacModuleSubject

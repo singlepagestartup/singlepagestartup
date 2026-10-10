@@ -11,7 +11,7 @@ export default function Tokens({ text }: { text?: string } = {}) {
   return (
     <AccountProvider account={aiChatAccount}>
       <HostModuleLayout
-        variant="service-ai-chat"
+        variant="ai-chat-dashboard"
         page="tokens"
         subjectAccount={({ onNavigate }) => (
           <RbacModuleSubject

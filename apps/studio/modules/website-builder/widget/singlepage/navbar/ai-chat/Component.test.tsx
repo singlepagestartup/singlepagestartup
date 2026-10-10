@@ -16,22 +16,22 @@ const pages = path.join(studio, "modules/host/page/singlepage");
 describe("Website Builder navbar composition", () => {
   test("header Layout owns its frame without composing the adjacent Layout", () => {
     const html = renderToStaticMarkup(
-      <HostModuleLayout variant="service-ai-chat" page="help">
+      <HostModuleLayout variant="ai-chat-dashboard" page="help">
         <main>Page content</main>
       </HostModuleLayout>,
     );
-    expect(html).toContain('data-ds-block="host.layout.service-ai-chat"');
-    expect(html).not.toContain('data-ds-block="host.layout.landing-ai-chat"');
+    expect(html).toContain('data-ds-block="host.layout.ai-chat-dashboard"');
+    expect(html).not.toContain('data-ds-block="host.layout.ai-chat-landing"');
     expect(html).toContain("@container min-h-screen min-w-0");
     expect(html).toContain("Page content");
     const source = readFileSync(
       path.join(
         studio,
-        "modules/host/layout/singlepage/service/ai-chat/Component.tsx",
+        "modules/host/layout/singlepage/ai-chat-dashboard/Component.tsx",
       ),
       "utf8",
     );
-    expect(source).not.toContain('variant="landing-ai-chat"');
+    expect(source).not.toContain('variant="ai-chat-landing"');
   });
 
   test("the Profile model dispatches its project item with record identity and selection", () => {
@@ -221,7 +221,7 @@ describe("Website Builder navbar composition", () => {
         "utf8",
       );
       expect(source).toContain("layout/index");
-      expect(source).toContain('variant="service-ai-chat"');
+      expect(source).toContain('variant="ai-chat-dashboard"');
       expect(source).not.toContain(
         "website-builder/widget/singlepage/navbar/ai-chat",
       );

@@ -171,7 +171,7 @@ describe("Local AI Chat components", () => {
     ]) {
       const html = renderToStaticMarkup(<AIChatPreview initialHref={url} />);
       expect(html.match(/data-ds-block="host\.layout\.[^"]+"/g)).toEqual([
-        'data-ds-block="host.layout.service-ai-chat"',
+        'data-ds-block="host.layout.ai-chat-dashboard"',
       ]);
       expect(html).toContain(
         'data-ds-block="social.profile.overview-ai-chat-project"',

@@ -12,7 +12,7 @@ import {
   type IProfilesProviderProps,
 } from "../../../../../modules/social/profile/singlepage/scope/ai-chat/project/Profiles";
 import { ProjectProvider } from "../../../../../modules/social/profile/singlepage/scope/ai-chat/project/Profile";
-import { NavigationProvider } from "../../../../../modules/host/layout/singlepage/landing/ai-chat/Navigation";
+import { NavigationProvider } from "../../../../../modules/host/layout/singlepage/ai-chat-landing/Navigation";
 import { aiChatAccount } from "../../../../utils/products/ai-chat-account-fixture";
 import { aiChatWorkspaceFixture } from "../../../../utils/products/ai-chat-workspace-fixture";
 import {

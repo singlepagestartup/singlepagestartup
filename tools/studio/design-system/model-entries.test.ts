@@ -258,12 +258,14 @@ test("AI Chat model variants classify their purpose and mirror nested folders", 
       !variant.includes("ai-chat")
     )
       continue;
-    expect(variant.startsWith("ai-chat")).toBe(false);
-    if (module === "website-builder") {
+    if (module === "host" && entity === "layout") {
+      expect(variant).toMatch(/^ai-chat-(landing|dashboard)$/);
+    } else if (module === "website-builder") {
       expect(variant).toMatch(
         /^(content-ai-chat-.+|navbar-ai-chat(?:-.+)?|footer-ai-chat|brand-ai-chat)$/,
       );
     } else {
+      expect(variant.startsWith("ai-chat")).toBe(false);
       expect(variant).toMatch(/-ai-chat(?:-settings|-project)?$/);
     }
     const variantPath = path.relative(
