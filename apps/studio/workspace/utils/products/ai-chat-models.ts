@@ -1,7 +1,7 @@
 export interface IAIChatChat {
   id: string;
   title: string;
-  variant: "project-scope-ai-chat" | "work-ai-chat";
+  variant: "scope-ai-chat-project" | "work-ai-chat";
 }
 // Local records and identifiers used by Studio examples.
 export interface IAIChatUserProfile {

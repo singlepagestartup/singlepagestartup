@@ -4,7 +4,7 @@ import {
   prepareProjectDocuments,
   type IProjectProfile,
 } from "./ai-chat-workspace";
-import definitions from "../../../modules/social/profile/singlepage/project/scope/ai-chat/definitions.json";
+import definitions from "../../../modules/social/profile/singlepage/scope/ai-chat/project/definitions.json";
 export function aiChatProjectFixture(): IProjectProfile {
   const project = createProjectProfile("pottery", "Pottery workshops");
   project.notes =
@@ -22,7 +22,7 @@ export function aiChatWorkspaceFixture() {
   const project = {
     id: "pottery",
     name: "Pottery workshops",
-    variant: "project-scope-ai-chat" as const,
+    variant: "scope-ai-chat-project" as const,
   };
   return {
     initialProjects: [project],

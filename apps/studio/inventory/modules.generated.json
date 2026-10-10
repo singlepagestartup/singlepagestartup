@@ -5243,7 +5243,8 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": [
-                "social.profile.author-find-by-id-overview-default"
+                "social.profile.author-find-by-id-overview-default",
+                "social.profile.overview-default"
               ]
             }
           ],
@@ -5260,16 +5261,17 @@
             "apps/studio/modules/social/profile/singlepage/byline/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/card/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/compact/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/create/ai-chat/project/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/find-row/Component.stories.tsx",
             "apps/studio/modules/social/profile/singlepage/list/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/project/create/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/project/overview/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/project/processing/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/project/scope/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/project/select/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/project/select/item/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/project/settings/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/social/profile/singlepage/project/sidebar/ai-chat/Component.stories.tsx"
+            "apps/studio/modules/social/profile/singlepage/overview/ai-chat/project/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/overview/default/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/processing/ai-chat/project/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/scope/ai-chat/project/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/select/ai-chat/project/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/select/item/ai-chat/project/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/settings/ai-chat/project/Component.stories.tsx",
+            "apps/studio/modules/social/profile/singlepage/sidebar/ai-chat/project/Component.stories.tsx"
           ]
         },
         {

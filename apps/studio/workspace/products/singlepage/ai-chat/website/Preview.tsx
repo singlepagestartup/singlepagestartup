@@ -10,8 +10,8 @@ import {
   ProfilesProvider,
   useProfiles,
   type IProfilesProviderProps,
-} from "../../../../../modules/social/profile/singlepage/project/scope/ai-chat/Profiles";
-import { ProjectProvider } from "../../../../../modules/social/profile/singlepage/project/scope/ai-chat/Profile";
+} from "../../../../../modules/social/profile/singlepage/scope/ai-chat/project/Profiles";
+import { ProjectProvider } from "../../../../../modules/social/profile/singlepage/scope/ai-chat/project/Profile";
 import { NavigationProvider } from "../../../../../modules/host/layout/singlepage/landing/ai-chat/Navigation";
 import { aiChatAccount } from "../../../../utils/products/ai-chat-account-fixture";
 import { aiChatWorkspaceFixture } from "../../../../utils/products/ai-chat-workspace-fixture";

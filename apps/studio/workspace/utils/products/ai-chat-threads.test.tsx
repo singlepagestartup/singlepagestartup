@@ -121,7 +121,7 @@ test("new profile identity is sufficient to prepare Products; profile IDs isolat
         initialHref={`/ai-chat/projects/${id}`}
         profiles={{
           initialProjects: [
-            { id, name: "Empty project", variant: "project-scope-ai-chat" },
+            { id, name: "Empty project", variant: "scope-ai-chat-project" },
           ],
         }}
       />,

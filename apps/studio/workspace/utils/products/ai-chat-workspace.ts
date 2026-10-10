@@ -82,7 +82,7 @@ export interface IProjectTopic {
 }
 
 export interface IProjectProfile {
-  variant: "project-scope-ai-chat";
+  variant: "scope-ai-chat-project";
   agents?: IProjectAgent[];
   setupComplete?: boolean;
   id: string;
@@ -100,7 +100,7 @@ export function createProjectProfile(
 ): IProjectProfile {
   if (!name.trim()) throw new Error("A project needs a name.");
   return {
-    variant: "project-scope-ai-chat",
+    variant: "scope-ai-chat-project",
     id,
     name: name.trim(),
     stage: "upload",

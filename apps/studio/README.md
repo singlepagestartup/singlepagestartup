@@ -259,10 +259,14 @@ keys, for example `singlepage/content/ai-chat/hero`.
 
 Other Studio models name their variants by purpose, with presentation last: `overview-ai-chat`
 displays one model, `list-ai-chat` displays records, and
-`project-select-item-ai-chat` identifies a Project Select item. Folders group
-purpose as in `singlepage/project/select/item/ai-chat`. Host Page variants and
+`select-item-ai-chat-project` identifies a Profile Select item in the project presentation.
+Folders mirror the key, as in `singlepage/select/item/ai-chat/project`. Host Page variants and
 story IDs follow their route names. Project scope is a local state wrapper;
-project overview displays the selected profile.
+`overview-ai-chat-project` displays the selected profile.
+Profile functions live under `create`, `overview`, `select`, `settings`,
+`sidebar`, `scope` and `processing`; `ai-chat/project` specifies their appearance.
+The ordinary Profile uses `overview-default` in `overview/default`, with a
+Component/index entry, local defaults and its own Storybook Controls.
 
 Names describe the model path relative to the current entry, then the function
 and appearance. A Thread uses `overview-ai-chat`, `create-ai-chat` and
@@ -274,7 +278,7 @@ Subject `overview-profile-overview-chat-overview-thread-list-default` would
 describe `/subjects/:subjectId/profiles/:profileId/chats/:chatId/threads`.
 This is a naming example; Host Page names continue to follow their actual routes.
 
-Profile `project-overview-ai-chat` owns one sidebar and a responsive project
+Profile `overview-ai-chat-project` owns one sidebar and a responsive project
 frame. Tailwind container queries control the frame's columns, navigation
 controls and sidebar position; local state controls opening and dismissal.
 Chat `overview-ai-chat` composes Thread `overview-ai-chat`. Products is the

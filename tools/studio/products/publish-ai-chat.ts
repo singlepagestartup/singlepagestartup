@@ -168,12 +168,12 @@ publish(
   JSON.stringify(guidePublication, null, 2) + "\n",
 );
 publish(
-  "apps/studio/modules/social/profile/singlepage/project/scope/ai-chat/definitions.json",
+  "apps/studio/modules/social/profile/singlepage/scope/ai-chat/project/definitions.json",
   JSON.stringify(definitions, null, 2) + "\n",
 );
 const materials = readFileSync(path.join(source, "new-project.md"), "utf8");
 publish(
-  "apps/studio/modules/social/profile/singlepage/project/processing/ai-chat/disclosure.json",
+  "apps/studio/modules/social/profile/singlepage/processing/ai-chat/project/disclosure.json",
   JSON.stringify(
     materials.slice(
       materials.indexOf("## How your materials are processed and stored"),

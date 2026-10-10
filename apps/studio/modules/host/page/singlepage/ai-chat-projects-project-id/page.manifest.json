@@ -23,16 +23,16 @@
       "path": "../../../layout/singlepage/service/ai-chat"
     },
     {
-      "id": "social.profile.project-overview-ai-chat",
-      "path": "../../../../social/profile/singlepage/project/overview/ai-chat"
+      "id": "social.profile.overview-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/overview/ai-chat/project"
     },
     {
-      "id": "social.profile.project-scope-ai-chat",
-      "path": "../../../../social/profile/singlepage/project/scope/ai-chat"
+      "id": "social.profile.scope-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/scope/ai-chat/project"
     },
     {
-      "id": "social.profile.project-sidebar-ai-chat",
-      "path": "../../../../social/profile/singlepage/project/sidebar/ai-chat"
+      "id": "social.profile.sidebar-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/sidebar/ai-chat/project"
     },
     {
       "id": "social.chat.overview-ai-chat",
@@ -43,8 +43,8 @@
       "path": "../../../../rbac/subject/singlepage/account"
     },
     {
-      "id": "social.profile.project-select-ai-chat",
-      "path": "../../../../social/profile/singlepage/project/select/ai-chat"
+      "id": "social.profile.select-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/select/ai-chat/project"
     },
     {
       "id": "social.thread.overview-ai-chat",

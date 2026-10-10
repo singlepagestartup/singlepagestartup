@@ -1,0 +1,53 @@
+{
+  "id": "social.profile.overview-default",
+  "title": "Social Profile / Overview Default",
+  "description": "Public profile overview with avatar, name, role, location and social links.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "overview-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "avatar",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "location",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "website",
+      "type": "link",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "overview-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

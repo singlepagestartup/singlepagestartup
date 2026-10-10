@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.processing-ai-chat-project",
+  "title": "processing-ai-chat-project",
+  "description": "Explain how project Profile materials are processed.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "processing-ai-chat-project"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "processing-ai-chat-project",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

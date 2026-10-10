@@ -23,20 +23,20 @@
       "path": "../../../layout/singlepage/service/ai-chat"
     },
     {
-      "id": "social.profile.project-select-ai-chat",
-      "path": "../../../../social/profile/singlepage/project/select/ai-chat"
+      "id": "social.profile.select-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/select/ai-chat/project"
     },
     {
-      "id": "social.profile.project-create-ai-chat",
-      "path": "../../../../social/profile/singlepage/project/create/ai-chat"
+      "id": "social.profile.create-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/create/ai-chat/project"
     },
     {
       "id": "rbac.subject.account",
       "path": "../../../../rbac/subject/singlepage/account"
     },
     {
-      "id": "social.profile.project-select-ai-chat",
-      "path": "../../../../social/profile/singlepage/project/select/ai-chat"
+      "id": "social.profile.select-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/select/ai-chat/project"
     }
   ]
 }

@@ -81,7 +81,7 @@ test("public Studio model entries have no runtime import cycles", () => {
     visited.has(
       path.join(
         modules,
-        "social/profile/singlepage/project/select/item/ai-chat/Component.tsx",
+        "social/profile/singlepage/select/item/ai-chat/project/Component.tsx",
       ),
     ),
   ).toBe(true);
@@ -264,7 +264,7 @@ test("AI Chat model variants classify their purpose and mirror nested folders", 
         /^(content-ai-chat-.+|navbar-ai-chat(?:-.+)?|footer-ai-chat|brand-ai-chat)$/,
       );
     } else {
-      expect(variant).toMatch(/-ai-chat(?:-settings)?$/);
+      expect(variant).toMatch(/-ai-chat(?:-settings|-project)?$/);
     }
     const variantPath = path.relative(
       path.join(modules, module, entity, "singlepage"),

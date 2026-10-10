@@ -40,20 +40,20 @@ describe("Website Builder navbar composition", () => {
         <DropdownMenu.Trigger>Projects</DropdownMenu.Trigger>
         <DropdownMenu.Content forceMount>
           <SocialModuleProfile
-            variant="project-select-item-ai-chat"
+            variant="select-item-ai-chat-project"
             data={{
               id: "pottery / one",
               name: "Pottery workshops",
-              variant: "project-scope-ai-chat",
+              variant: "scope-ai-chat-project",
             }}
             selected
           />
           <SocialModuleProfile
-            variant="project-select-item-ai-chat"
+            variant="select-item-ai-chat-project"
             data={{
               id: "second",
               name: "Second project",
-              variant: "project-scope-ai-chat",
+              variant: "scope-ai-chat-project",
             }}
             selected={false}
           />
@@ -61,7 +61,7 @@ describe("Website Builder navbar composition", () => {
       </DropdownMenu.Root>,
     );
     expect(html).toContain(
-      'data-ds-block="social.profile.project-select-item-ai-chat"',
+      'data-ds-block="social.profile.select-item-ai-chat-project"',
     );
     expect(html).toContain('href="/ai-chat/projects/pottery%20%2F%20one"');
     expect(html).toContain('data-id="pottery / one"');
@@ -233,7 +233,7 @@ describe("Website Builder navbar composition", () => {
       }
       if (route.startsWith("projects")) {
         expect(source).toContain("profileSelect=");
-        expect(source).toContain('variant="project-select-ai-chat"');
+        expect(source).toContain('variant="select-ai-chat-project"');
         expect(source).toContain("social/profile/index");
       }
     }

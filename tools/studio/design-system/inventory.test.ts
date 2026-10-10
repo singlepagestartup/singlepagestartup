@@ -174,13 +174,15 @@ describe("AI Chat project ownership", () => {
       (entity) => entity.entityType === "model" && entity.entity === "profile",
     )!;
     for (const folder of [
-      "project/select/ai-chat",
-      "project/select/item/ai-chat",
-      "project/sidebar/ai-chat",
-      "project/create/ai-chat",
-      "project/settings/ai-chat",
-      "project/scope/ai-chat",
-      "project/overview/ai-chat",
+      "select/ai-chat/project",
+      "select/item/ai-chat/project",
+      "sidebar/ai-chat/project",
+      "create/ai-chat/project",
+      "settings/ai-chat/project",
+      "scope/ai-chat/project",
+      "overview/ai-chat/project",
+      "overview/default",
+      "processing/ai-chat/project",
       "account-menu",
     ])
       expect(

@@ -2,7 +2,7 @@ import { Component as HostModuleLayout } from "../../../index";
 import { Component as SocialModuleProfile } from "../../../../../social/profile/index";
 import { Component as RbacModuleSubject } from "../../../../../rbac/subject/index";
 
-import { ProfilesProvider } from "../../../../../social/profile/singlepage/project/scope/ai-chat/Profiles";
+import { ProfilesProvider } from "../../../../../social/profile/singlepage/scope/ai-chat/project/Profiles";
 
 import { AccountProvider } from "../../../../../rbac/subject/singlepage/account/Account";
 import { aiChatAccount } from "../../../../../../workspace/utils/products/ai-chat-account-fixture";
@@ -17,7 +17,7 @@ function Example() {
         <SocialModuleProfile
           profileId="pottery"
           {...props}
-          variant="project-select-ai-chat"
+          variant="select-ai-chat-project"
         />
       )}
       subjectAccount={({ onNavigate }) => (

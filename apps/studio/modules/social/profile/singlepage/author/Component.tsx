@@ -1,10 +1,10 @@
 import { ChevronRight } from "../../../../../workspace/utils/components/ModuleIcons";
 
 import {
-  ProfileOverview,
-  type ProfileOverviewProps,
+  Component as ProfileOverview,
+  type IProfileOverviewProps as ProfileOverviewProps,
   defaultProfileOverviewProps,
-} from "../overview/ProfileOverview";
+} from "../overview/default/index";
 
 export const defaultProfileAuthorProps = {
   slug: "sarah-kim",
