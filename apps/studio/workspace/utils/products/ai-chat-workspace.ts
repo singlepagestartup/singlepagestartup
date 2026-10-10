@@ -1,0 +1,467 @@
+import {
+  documentAgent,
+  resolveThreadAgent,
+  snapshotAgent,
+  type IProjectAgent,
+} from "./ai-chat-agent-resolver";
+export interface IProjectFile {
+  id: string;
+  name: string;
+  text: string;
+  size: number;
+  mimeType?: string;
+  fileUrl?: string;
+}
+
+export interface IProjectAsset {
+  id: string;
+  file: IProjectFile;
+  section: string;
+  kind?: "reference" | "generated";
+  category?: string;
+  purpose?: string;
+  prompt?: string;
+  tool?: string;
+  status?: "proposed" | "approved";
+  delivery?: IProjectFile;
+}
+
+export interface IProjectDocumentContext {
+  name: string;
+  text: string;
+  assets?: IProjectAsset[];
+  status?: "source" | "draft";
+}
+
+export interface IProjectDocumentDefinition {
+  id: string;
+  title: string;
+  sections: { title: string; prompt: string }[];
+}
+
+export interface IProjectMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  agent?: IProjectAgent | null;
+  context?: IProjectDocumentContext[];
+  files?: IProjectFile[];
+  filesUsed?: IProjectFile[];
+  workingOn?: IProjectWorkingOn;
+}
+
+export interface IProjectWorkingOn {
+  documentName: string;
+  sections: string[];
+}
+
+interface IProjectMessageExchange {
+  userId: string;
+  assistantId: string;
+  text: string;
+  reply: string;
+  section?: string;
+  sections?: string[];
+}
+
+export interface IProjectDocument extends IProjectDocumentDefinition {
+  values: Record<string, string>;
+  assets?: IProjectAsset[];
+  messages: IProjectMessage[];
+  draftFiles?: IProjectFile[];
+  proposal?: { section: string; text: string };
+}
+
+export interface IProjectTopic {
+  agent?: IProjectAgent | null;
+  id: string;
+  title: string;
+  documentIds: string[];
+  messages: IProjectMessage[];
+  draftFiles?: IProjectFile[];
+}
+
+export interface IProjectProfile {
+  variant: "scope-ai-chat-project";
+  agents?: IProjectAgent[];
+  setupComplete?: boolean;
+  id: string;
+  name: string;
+  stage: "upload" | "analysis" | "documents" | "topics";
+  notes: string;
+  sources: IProjectFile[];
+  documents: IProjectDocument[];
+  topics: IProjectTopic[];
+}
+
+export function createProjectProfile(
+  id: string,
+  name: string,
+): IProjectProfile {
+  if (!name.trim()) throw new Error("A project needs a name.");
+  return {
+    variant: "scope-ai-chat-project",
+    id,
+    name: name.trim(),
+    stage: "upload",
+    notes: "",
+    sources: [],
+    documents: [],
+    topics: [],
+  };
+}
+
+export function hasProjectMaterials(project: IProjectProfile): boolean {
+  return Boolean(project.notes.trim() || project.sources.length);
+}
+
+export function sendProjectMessage(
+  project: IProjectProfile,
+  conversationId: string,
+  exchange: IProjectMessageExchange,
+): IProjectProfile {
+  const document = project.documents.find((item) => item.id === conversationId);
+  const topic = project.topics.find((item) => item.id === conversationId);
+  const conversation = document ?? topic;
+  if (!conversation)
+    throw new Error("Choose a document chat or project thread.");
+  const agent = document
+    ? documentAgent(document.id)
+    : resolveThreadAgent(topic?.agent);
+  const text = exchange.text.trim();
+  const files = (conversation.draftFiles ?? []).map((file) => ({ ...file }));
+  if (!text && !files.length) return project;
+  const filesUsed = Array.from(
+    new Map(
+      [
+        ...conversation.messages.flatMap((item) => item.files ?? []),
+        ...files,
+      ].map((file) => [file.id, { ...file }]),
+    ).values(),
+  );
+  const workingOn = document
+    ? documentWorkingOn(
+        document,
+        exchange.sections ?? (exchange.section ? [exchange.section] : []),
+      )
+    : undefined;
+  const context = (
+    document
+      ? documentAgentContext(project, document)
+      : topicAgentContext(project, topic!)
+  ).map((item) => ({
+    ...item,
+    assets: item.assets?.map((asset) => ({
+      ...asset,
+      file: { ...asset.file },
+      delivery: asset.delivery ? { ...asset.delivery } : undefined,
+    })),
+  }));
+  const messages: IProjectMessage[] = [
+    ...conversation.messages,
+    {
+      id: exchange.userId,
+      role: "user",
+      text,
+      files,
+      workingOn: workingOn
+        ? { ...workingOn, sections: [...workingOn.sections] }
+        : undefined,
+    },
+    {
+      id: exchange.assistantId,
+      role: "assistant",
+      text: exchange.reply,
+      agent: agent ? snapshotAgent(agent) : null,
+      filesUsed,
+      context,
+      workingOn,
+    },
+  ];
+  return {
+    ...project,
+    sources: Array.from(
+      new Map(
+        [...project.sources, ...files].map((file) => [file.id, file]),
+      ).values(),
+    ),
+    documents: project.documents.map((item) =>
+      item.id === document?.id
+        ? {
+            ...item,
+            messages,
+            draftFiles: [],
+            proposal: text
+              ? workingOn?.sections.length === 1
+                ? { section: workingOn.sections[0], text }
+                : undefined
+              : item.proposal,
+          }
+        : item,
+    ),
+    topics: project.topics.map((item) =>
+      item.id === topic?.id ? { ...item, messages, draftFiles: [] } : item,
+    ),
+  };
+}
+
+export function documentWorkingOn(
+  document: IProjectDocument,
+  sections: string[] = [],
+): IProjectWorkingOn {
+  return {
+    documentName: `${document.title}.md`,
+    sections: document.sections
+      .filter((section) => sections.includes(section.title))
+      .map((section) => section.title),
+  };
+}
+
+// Studio's deterministic draft scaffolding. Supplied text stays attributed;
+// this does not extract facts from binary files or call an AI provider.
+export function prepareProjectDocuments(
+  project: IProjectProfile,
+  definitions: IProjectDocumentDefinition[],
+): IProjectProfile {
+  const sourceText = [
+    ...(project.notes.trim()
+      ? [`Project notes:\n${project.notes.trim()}`]
+      : []),
+    ...project.sources.map((source) =>
+      source.text
+        ? `${source.name}:\n${source.text}`
+        : `${source.name}: attached material; interpretation needs review.`,
+    ),
+  ].join("\n\n");
+  const documents = definitions.map((definition): IProjectDocument => {
+    const values: Record<string, string> = {};
+    if (definition.id === "brief") {
+      values["Project and products"] = project.name;
+      if (sourceText)
+        values["Current state"] =
+          `Supplied intake (needs review):\n\n${sourceText}`;
+    }
+    const next = definition.sections.find((section) => !values[section.title]);
+    return {
+      ...definition,
+      values,
+      assets:
+        definition.id === "brief" || definition.id === "design"
+          ? project.sources
+              .filter((file) => file.mimeType?.startsWith("image/"))
+              .map((file) => ({
+                id: `${definition.id}-${file.id}`,
+                file,
+                section:
+                  definition.id === "brief"
+                    ? "Visual reference intake"
+                    : "Outputs and provenance",
+              }))
+          : [],
+      messages: [
+        {
+          id: `${definition.id}-intro`,
+          role: "assistant",
+          agent: snapshotAgent(documentAgent(definition.id)),
+          text: `${definition.title}.md is ready to work on. ${next?.prompt ?? "Check the draft and correct any inaccurate statements."}`,
+        },
+      ],
+    };
+  });
+  return { ...project, documents };
+}
+
+export function projectDocumentText(document: IProjectDocument): string {
+  return (
+    `# ${document.title}\n\n` +
+    document.sections
+      .map(
+        (section) =>
+          `## ${section.title}\n\n${document.values[section.title]?.trim() ? document.values[section.title] : "Unknown — needs information."}` +
+          (document.assets ?? [])
+            .filter((asset) => asset.section === section.title)
+            .map(
+              (asset) =>
+                `\n\n### ${asset.file.name}\n\nFile: [${asset.file.name}](./${encodeURIComponent(asset.file.name)})` +
+                (asset.delivery
+                  ? `\nDelivery: [${asset.delivery.name}](./${encodeURIComponent(asset.delivery.name)})`
+                  : ""),
+            )
+            .join(""),
+      )
+      .join("\n\n")
+  );
+}
+
+export function attachProjectAsset(
+  document: IProjectDocument,
+  file: IProjectFile,
+  section: string,
+  id: string,
+): IProjectDocument {
+  if (!document.sections.some((field) => field.title === section))
+    throw new Error("Choose a document section for this file.");
+  // The production Source/File pair is unique, irrespective of display category.
+  if (
+    document.assets?.some(
+      (asset) =>
+        asset.section === section &&
+        (asset.file.id === file.id || asset.delivery?.id === file.id),
+    )
+  )
+    return document;
+  return {
+    ...document,
+    assets: [
+      ...(document.assets ?? []),
+      {
+        id,
+        file,
+        section,
+      },
+    ],
+  };
+}
+
+export function detachProjectFile(
+  document: IProjectDocument,
+  fileId: string,
+  section: string,
+): IProjectDocument {
+  return {
+    ...document,
+    assets: (document.assets ?? []).flatMap((asset) => {
+      if (asset.section !== section) return [asset];
+      if (asset.file.id === fileId)
+        return asset.delivery
+          ? [{ ...asset, file: asset.delivery, delivery: undefined }]
+          : [];
+      if (asset.delivery?.id === fileId)
+        return [{ ...asset, delivery: undefined }];
+      return [asset];
+    }),
+  };
+}
+
+export function topicDocumentContext(
+  project: IProjectProfile,
+  documentIds: string[],
+): IProjectDocumentContext[] {
+  return [...new Set(documentIds)].flatMap((id) => {
+    const document = project.documents.find((item) => item.id === id);
+    return document
+      ? [
+          {
+            name: `${document.title}.md`,
+            status: "draft" as const,
+            text: projectDocumentText(document),
+            assets: (document.assets ?? []).map((asset) => ({
+              ...asset,
+              file: { ...asset.file },
+              delivery: asset.delivery ? { ...asset.delivery } : undefined,
+            })),
+          },
+        ]
+      : [];
+  });
+}
+
+export function createProjectTopic(
+  project: IProjectProfile,
+  id: string,
+  title: string,
+  documentIds: string[] = project.documents.map((document) => document.id),
+  agent: IProjectAgent | null = documentAgent("thread"),
+): IProjectProfile {
+  if (!title.trim()) throw new Error("A topic needs a name.");
+  const ids = [...new Set(documentIds)].filter((documentId) =>
+    project.documents.some((item) => item.id === documentId),
+  );
+  return {
+    ...project,
+    stage: "topics",
+    topics: [
+      ...project.topics,
+      {
+        id,
+        title: title.trim(),
+        agent: agent ? snapshotAgent(agent) : null,
+        documentIds: ids,
+        messages: [
+          {
+            id: `${id}-intro`,
+            role: "assistant",
+            agent: agent ? snapshotAgent(agent) : null,
+            text: "What would you like to work on?",
+            context: topicAgentContext(project, { documentIds: ids }),
+          },
+        ],
+      },
+    ],
+  };
+}
+
+export function topicAgentContext(
+  project: IProjectProfile,
+  _topic: Pick<IProjectTopic, "documentIds">,
+): IProjectDocumentContext[] {
+  return topicDocumentContext(
+    project,
+    project.documents.map((document) => document.id),
+  );
+}
+
+export function documentAgentContext(
+  project: IProjectProfile,
+  currentDocument: IProjectDocument,
+): IProjectDocumentContext[] {
+  const context: IProjectDocumentContext[] = [];
+  const intakeInBrief = project.documents.some(
+    (document) =>
+      document.id === "brief" &&
+      document.values["Current state"]?.includes("Supplied intake"),
+  );
+  const notesInDocument = Object.values(currentDocument.values).some(
+    (text) => project.notes.trim() && text.includes(project.notes.trim()),
+  );
+  if (!intakeInBrief && !notesInDocument && project.notes.trim())
+    context.push({
+      name: "Project notes",
+      text: project.notes.trim(),
+      status: "source",
+    });
+  const conversationFileIds = new Set(
+    [...project.documents, ...project.topics].flatMap((conversation) =>
+      conversation.messages.flatMap((message) =>
+        (message.files ?? []).map((file) => file.id),
+      ),
+    ),
+  );
+  if (!intakeInBrief)
+    for (const file of project.sources)
+      if (!conversationFileIds.has(file.id))
+        context.push({ name: file.name, text: file.text, status: "source" });
+  const supplied = currentDocument.sections.filter((section) =>
+    currentDocument.values[section.title]?.trim(),
+  );
+  context.unshift({
+    name: `${currentDocument.title}.md`,
+    status: "draft",
+    text: supplied
+      .map(
+        (section) =>
+          `## ${section.title}\n\n${currentDocument.values[section.title]}`,
+      )
+      .join("\n\n"),
+    assets: currentDocument.assets,
+  });
+  context.push(
+    ...topicDocumentContext(
+      project,
+      project.documents
+        .filter((document) => document.id !== currentDocument.id)
+        .map((document) => document.id),
+    ),
+  );
+  return context;
+}

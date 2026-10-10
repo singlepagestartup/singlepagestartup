@@ -1,0 +1,21 @@
+{
+  "componentName": "website-builder.button",
+  "pageName": "website-builder",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "website-builder.button.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "website-builder/button/singlepage/list",
+    "sps.figma.component": "website-builder.button",
+    "sps.figma.variant": "list",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "button",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/website-builder/button/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/website-builder/button/singlepage/list/Component.stories.tsx"
+  }
+}

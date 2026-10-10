@@ -1,0 +1,46 @@
+{
+  "id": "ai-chat",
+  "title": "ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat landing composed through Host Layout and Website Builder sections with Social Chat children.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.ai-chat-landing",
+      "path": "../../../layout/singlepage/ai-chat-landing"
+    },
+    {
+      "id": "website-builder.widget.content-ai-chat-hero",
+      "path": "../../../../website-builder/widget/singlepage/content/ai-chat/hero"
+    },
+    {
+      "id": "website-builder.widget.content-ai-chat-try",
+      "path": "../../../../website-builder/widget/singlepage/content/ai-chat/try"
+    },
+    {
+      "id": "website-builder.widget.content-ai-chat-continue",
+      "path": "../../../../website-builder/widget/singlepage/content/ai-chat/continue"
+    },
+    {
+      "id": "social.chat.overview-preview-ai-chat",
+      "path": "../../../../social/chat/singlepage/overview/preview/ai-chat"
+    },
+    {
+      "id": "rbac.subject.account",
+      "path": "../../../../rbac/subject/singlepage/account"
+    }
+  ]
+}

@@ -58,7 +58,7 @@ const fileModules = import.meta.glob(
   "../../products/{singlepage,startup}/**/*",
   { query: "?url", import: "default" },
 );
-const sourceKey = (key: string) => key.slice("../../products/".length);
+const sourceKey = (key: string) => key.slice("../../products".length);
 const pageSources = {
   components: Object.fromEntries(
     Object.entries(componentModules).map(([key, value]) => [

@@ -14,7 +14,10 @@ import { ProductPages } from "../components/ProductPages";
 import { WorkspacePage } from "../components/WorkspacePage";
 import { productReviewPages } from "../../../../../tools/studio/workspace/review";
 import { parseCodeFrameworkWebsite } from "../../products/singlepage/singlepagestartup/website/content";
-import { parseAIChatWebsite } from "../../products/singlepage/ai-chat/website/content";
+import {
+  parseAIChatServicePage,
+  parseAIChatWebsite,
+} from "../../products/singlepage/ai-chat/website/content";
 import { ProductCatalog } from "../components/ProductCatalog";
 import type { IProductCatalogView } from "./source";
 import { extensionProduct } from "../../../../../tools/studio/products/fixtures/catalog";
@@ -59,6 +62,50 @@ function sources(layer: "startup" | "singlepage"): IProductPageSources {
 }
 
 describe("product pages", () => {
+  test("passes the internal destination to chat layouts", () => {
+    const html = renderToStaticMarkup(
+      <WorkspacePage
+        navigationHref="/projects/example#materials"
+        page={{
+          id: "chat",
+          title: "Chat",
+          kind: "react",
+          layer: "singlepage",
+          children: [],
+          Component: ({ navigationHref }) => (
+            <div data-destination={navigationHref}>Chat</div>
+          ),
+        }}
+      />,
+    );
+    expect(html).toContain('data-destination="/projects/example#materials"');
+  });
+
+  test("keeps account page copy and form labels in the review source", () => {
+    for (const page of ["register", "login", "settings", "help", "tokens"]) {
+      const markdown = readFileSync(
+        new URL(
+          `../../products/singlepage/ai-chat/website/${page}.md`,
+          import.meta.url,
+        ),
+        "utf8",
+      );
+      const original = parseAIChatServicePage(markdown);
+      const revised = markdown
+        .replace(
+          `## ${original.sections.hero.title}`,
+          "## Revised account page.",
+        )
+        .replace(original.labels["back-label"], "Return to my work");
+      const copy = parseAIChatServicePage(revised);
+      expect(copy.sections.hero.title).toBe("Revised account page.");
+      expect(copy.labels["back-label"]).toBe("Return to my work");
+      expect(copy.sections.hero.paragraphs.join(" ")).not.toContain(
+        "confirmation:",
+      );
+    }
+  });
+
   /** BDD Scenario: AI Chat website wording has one canonical source
    * Given the AI Chat landing page supplies both review text and its React layout
    * When its project promise and workspace steps are revised in Markdown
@@ -72,24 +119,34 @@ describe("product pages", () => {
       ),
       "utf8",
     );
+    const original = parseAIChatWebsite(markdown);
     const revised = markdown
       .replace(
-        "Turn your notes and drafts into a business model and prepare your first landing page.",
-        "Turn project files into a working business model.",
+        `# ${original.hero.title}`,
+        "# Describe your project from existing notes.",
       )
-      .replace("Upload the material", "Bring existing material")
       .replace(
-        "Preview the landing page, then publish it on your server.",
-        "Inspect one landing-page sandbox.",
+        `| ${original.workflow.items[0].title}`,
+        "| Bring existing material",
+      )
+      .replace(
+        `## ${original.publish.title}`,
+        "## Review the written descriptions.",
       );
     const content = parseAIChatWebsite(revised);
 
     expect(content.hero.title).toBe(
-      "Turn project files into a working business model.",
+      "Describe your project from existing notes.",
     );
     expect(content.workflow.items[0].title).toBe("Bring existing material");
-    expect(content.publish.title).toBe("Inspect one landing-page sandbox.");
-    expect(content.foundation.items).toHaveLength(4);
+    expect(content.publish.title).toBe("Review the written descriptions.");
+    expect(content.foundation.items.map(({ title }) => title)).toEqual([
+      "Brief",
+      "Strategy",
+      "Brand",
+      "Design",
+      "Products",
+    ]);
     expect(content.labels["navigation-foundation"]).toBeTruthy();
   });
 
@@ -241,7 +298,7 @@ describe("product pages", () => {
     expect(html).toContain("Lesson introduction");
     expect(html).toMatch(/disabled=""[^>]*>Layout</);
     const root = new URL(
-      "../../../../../tools/studio/products/fixtures/startup/",
+      "../../../../../tools/studio/products/fixtures/startup",
       import.meta.url,
     ).pathname;
     await validateProductSectionFiles(
@@ -491,7 +548,7 @@ describe("product pages", () => {
    */
   test("validates nested files from the selected catalog directory", async () => {
     const root = new URL(
-      "../../../../../tools/studio/products/fixtures/startup/",
+      "../../../../../tools/studio/products/fixtures/startup",
       import.meta.url,
     ).pathname;
     await validateProductSectionFiles(catalog("startup"), root);

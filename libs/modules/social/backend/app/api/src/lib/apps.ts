@@ -1,8 +1,10 @@
+import { app as skillsToKnowledgeModuleSources } from "@sps/social/relations/skills-to-knowledge-module-sources/backend/app/api";
+import { app as messagesToKnowledgeModuleSources } from "@sps/social/relations/messages-to-knowledge-module-sources/backend/app/api";
 import { app as profilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/backend/app/api";
 import { app as profilesToSkills } from "@sps/social/relations/profiles-to-skills/backend/app/api";
 import { app as skill } from "@sps/social/models/skill/backend/app/api";
 import { app as profilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/backend/app/api";
-import { app as profilesToKnowledgeModuleDocuments } from "@sps/social/relations/profiles-to-knowledge-module-documents/backend/app/api";
+import { app as profilesToKnowledgeModuleSources } from "@sps/social/relations/profiles-to-knowledge-module-sources/backend/app/api";
 import { app as profilesToWebsiteBuilderModuleWidgets } from "@sps/social/relations/profiles-to-website-builder-module-widgets/backend/app/api";
 import { app as profile } from "@sps/social/models/profile/backend/app/api";
 import { app as action } from "@sps/social/models/action/backend/app/api";
@@ -38,6 +40,16 @@ export class Apps {
   bindApps() {
     this.apps.push({
       type: "relation",
+      route: "/skills-to-knowledge-module-sources",
+      app: skillsToKnowledgeModuleSources,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/messages-to-knowledge-module-sources",
+      app: messagesToKnowledgeModuleSources,
+    });
+    this.apps.push({
+      type: "relation",
       route: "/profiles-to-blog-module-articles",
       app: profilesToBlogModuleArticles,
     });
@@ -58,8 +70,8 @@ export class Apps {
     });
     this.apps.push({
       type: "relation",
-      route: "/profiles-to-knowledge-module-documents",
-      app: profilesToKnowledgeModuleDocuments,
+      route: "/profiles-to-knowledge-module-sources",
+      app: profilesToKnowledgeModuleSources,
     });
     this.apps.push({
       type: "relation",

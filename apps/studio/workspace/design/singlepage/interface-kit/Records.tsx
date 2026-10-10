@@ -27,6 +27,7 @@ export interface IRecordField<T> {
   label: string;
   value: (record: T) => string;
   displayValue?: (record: T) => string;
+  renderValue?: (record: T) => ReactNode;
 }
 export interface IRecordAction<T> {
   label: string;
@@ -69,7 +70,8 @@ function RecordRowComponent<T extends { id: string }>({
             <dd
               className={`mt-1 [overflow-wrap:anywhere] text-sm ${field.key === "adminTitle" || field.key === "title" ? "font-semibold" : ""}`}
             >
-              {(field.displayValue?.(record) ?? field.value(record)) || "—"}
+              {field.renderValue?.(record) ??
+                ((field.displayValue?.(record) ?? field.value(record)) || "—")}
             </dd>
           </div>
         ))}

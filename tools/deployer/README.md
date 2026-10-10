@@ -64,6 +64,42 @@ services, run `./server.sh up` instead.
 Password authentication remains available for other providers by leaving both
 private-key variables empty and setting `ANSIBLE_PASSWORD`.
 
+## MCP client configuration
+
+When the MCP deployment succeeds, `mcp.sh up` generates project configuration
+for OpenCode, Claude Code, Codex, Cursor, and VS Code/Copilot with the deployed
+HTTPS endpoint. The connector name is `<repo-name>-production`, or
+`<repo-name>-<environment>` for an explicit environment such as `preview`.
+`mcp.sh down`, a skipped MCP image, and a failed deployment do not generate
+these files.
+
+Before changing DNS, pulling an image, or running the MCP playbooks, the deployer
+validates client configuration with `--check-clients`. Invalid existing config
+stops the MCP deployment before those operations. The files are written only
+after the MCP deployment and GitHub metadata update succeed.
+
+`./create_env.sh` at the repository root also generates the configs when
+`tools/deployer/.env` contains `MCP_SERVICE_NAME` and `DOMAIN`, or an explicit
+`MCP_SERVICE_PUBLIC_URL`. Client generation runs on Bun 1.3.6; it
+does not install dependencies or perform OAuth login.
+
+Use `MCP_CLIENT_OPENCODE_VERSION=auto` to preserve the project's existing
+OpenCode format. A new configuration uses the installed client's version, or
+V2 when detection is unavailable. `1` and `2` select a new file's format
+explicitly. Regenerate without provisioning a server:
+
+```bash
+# From the repository root:
+npm run mcp:clients:generate
+```
+
+GitHub Actions saves an `mcp-client-configs` artifact with public connector
+entries after successful MCP deployment. The export excludes existing client
+settings and credentials. Local deployment merges into checkout files; CI
+exports to `MCP_CLIENT_CONFIG_OUTPUT_DIR` without committing generated files.
+Each client still needs the user's OAuth login. See the
+[client formats and authentication commands](../../apps/mcp/README.md#generated-project-client-configs).
+
 ## Infrastructure security and operations
 
 The default production deployment keeps infrastructure services behind the

@@ -1,0 +1,70 @@
+{
+  "id": "ai-chat-projects-project-id",
+  "title": "ai-chat-projects-project-id",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Concrete AI Chat Page: ai-chat-projects-project-id.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ai-chat-projects-project-id",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.ai-chat-dashboard",
+      "path": "../../../layout/singlepage/ai-chat-dashboard"
+    },
+    {
+      "id": "social.profile.overview-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/overview/ai-chat/project"
+    },
+    {
+      "id": "social.profile.scope-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/scope/ai-chat/project"
+    },
+    {
+      "id": "social.profile.sidebar-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/sidebar/ai-chat/project"
+    },
+    {
+      "id": "social.chat.overview-ai-chat",
+      "path": "../../../../social/chat/singlepage/overview/ai-chat"
+    },
+    {
+      "id": "rbac.subject.account",
+      "path": "../../../../rbac/subject/singlepage/account"
+    },
+    {
+      "id": "social.profile.select-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/select/ai-chat/project"
+    },
+    {
+      "id": "social.thread.overview-ai-chat",
+      "path": "../../../../social/thread/singlepage/overview/ai-chat"
+    },
+    {
+      "id": "social.thread.message-list-ai-chat",
+      "path": "../../../../social/thread/singlepage/message/list/ai-chat"
+    },
+    {
+      "id": "social.message.list-ai-chat",
+      "path": "../../../../social/message/singlepage/list/ai-chat"
+    },
+    {
+      "id": "social.message.overview-ai-chat",
+      "path": "../../../../social/message/singlepage/overview/ai-chat"
+    },
+    {
+      "id": "rbac.subject.message-create-ai-chat",
+      "path": "../../../../rbac/subject/singlepage/message/create/ai-chat"
+    }
+  ]
+}

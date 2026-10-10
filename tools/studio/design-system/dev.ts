@@ -4,7 +4,7 @@ import * as path from "node:path";
 
 const ROOT = process.cwd();
 const DESIGN_SYSTEM_ROOT = path.join(ROOT, "apps", "studio");
-const DEFAULT_REF = "modules/host/models/page/singlepage/landing-page-basic";
+const DEFAULT_REF = "modules/host/page/singlepage/landing-page-basic";
 const MIME_TYPES: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
   ".gif": "image/gif",
@@ -36,8 +36,8 @@ Usage: bun tools/studio/design-system/dev.ts [blocks-or-pages-ref] [options]
 
 Examples:
   bun tools/studio/design-system/dev.ts
-  bun tools/studio/design-system/dev.ts modules/host/models/page/singlepage/landing-page-basic
-  bun tools/studio/design-system/dev.ts modules/website-builder/models/widget/singlepage/hero-default
+  bun tools/studio/design-system/dev.ts modules/host/page/singlepage/landing-page-basic
+  bun tools/studio/design-system/dev.ts modules/website-builder/widget/singlepage/hero-default
 
 Options:
   --host <hostname>  Hostname, default 127.0.0.1

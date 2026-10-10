@@ -20,5 +20,5 @@
     "configDir": ".storybook"
   },
   "modulesRoot": "modules",
-  "pagesRoot": "modules/host/models/page"
+  "pagesRoot": "modules/host/page"
 }

@@ -1,0 +1,27 @@
+{
+  "id": "social.chat.overview-ai-chat",
+  "title": "overview-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Chat overview displaying its Thread and the caller-supplied message creation view.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.chat",
+    "pageName": "social",
+    "variantName": "overview-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "chat",
+    "variant": "overview-ai-chat"
+  },
+  "contentSlots": []
+}

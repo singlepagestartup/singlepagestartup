@@ -1,0 +1,129 @@
+{
+  "schema": {
+    "module": "crm",
+    "entity": "step",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "subtitle",
+        "label": "Subtitle",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "2a282881-e215-4f63-a083-c07390dd36b3",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "adminTitle": "step example 1",
+      "slug": "step-example-1",
+      "title": {
+        "en": "step example 1"
+      },
+      "subtitle": {
+        "en": "step example 1"
+      },
+      "description": {
+        "en": "step example 1"
+      }
+    },
+    {
+      "id": "b48a0ef3-43aa-48b0-abe6-344ae12b8026",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "adminTitle": "step example 2",
+      "slug": "step-example-2",
+      "title": {
+        "en": "step example 2"
+      },
+      "subtitle": {
+        "en": "step example 2"
+      },
+      "description": {
+        "en": "step example 2"
+      }
+    },
+    {
+      "id": "534a1029-35a0-4e37-a04f-d53768b7cc04",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "adminTitle": "step example 3",
+      "slug": "step-example-3",
+      "title": {
+        "en": "step example 3"
+      },
+      "subtitle": {
+        "en": "step example 3"
+      },
+      "description": {
+        "en": "step example 3"
+      }
+    }
+  ]
+}

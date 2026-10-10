@@ -1,0 +1,135 @@
+import {
+  Component as EcommerceModuleProduct,
+  type ProductTierProps,
+} from "../../../product";
+
+export type ProductTierItem = ProductTierProps;
+
+export const defaultProductFindTiersProps = {
+  eyebrow: "Pricing",
+  title: "Simple, transparent plans",
+  description: "Start free, scale when you're ready. No hidden fees.",
+  products: [
+    {
+      name: "Free",
+      price: "$0",
+      period: "/month",
+      description: "For personal projects and experimentation.",
+      features: [
+        "1 project",
+        "3 modules",
+        "Community support",
+        "1 GB storage",
+        "Basic analytics",
+      ],
+      cta: "Get started",
+      appearance: "default",
+    },
+    {
+      name: "Startup",
+      price: "$49",
+      period: "/month",
+      description: "Everything a growing startup needs.",
+      features: [
+        "5 projects",
+        "All 15 modules",
+        "Priority support",
+        "50 GB storage",
+        "Advanced analytics",
+        "Custom domain",
+        "API access",
+      ],
+      cta: "Start free trial",
+      appearance: "featured",
+      badge: "Most popular",
+    },
+    {
+      name: "Enterprise",
+      price: "$199",
+      period: "/month",
+      description: "For large teams and complex deployments.",
+      features: [
+        "Unlimited projects",
+        "All 15 modules",
+        "24/7 dedicated support",
+        "500 GB storage",
+        "Full analytics suite",
+        "SSO & RBAC",
+        "Custom integrations",
+        "SLA guarantee",
+      ],
+      cta: "Contact sales",
+      appearance: "default",
+    },
+  ] as ProductTierItem[],
+};
+
+export type ProductFindTiersProps = typeof defaultProductFindTiersProps;
+
+function SectionHeader({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="mb-8 max-w-2xl">
+      <p className="mb-2 text-xs text-[var(--workspace-brand-muted)]">
+        {eyebrow}
+      </p>
+      <h2 className="text-3xl font-semibold leading-tight sm:text-4xl text-[var(--workspace-brand-foreground)]">
+        {title}
+      </h2>
+      {description ? (
+        <p className="mt-3 text-base leading-6 text-[var(--workspace-brand-muted)]">
+          {description}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export function ProductFindTiers(props?: Partial<ProductFindTiersProps>) {
+  const { eyebrow, title, description, products } = {
+    ...defaultProductFindTiersProps,
+    ...props,
+  };
+
+  return (
+    <div
+      id="pricing"
+      className="w-full py-12 sm:py-16"
+      data-ds-block="ecommerce.widget.product-find-tiers"
+      data-ds-imports="ecommerce.product.tier"
+      data-ds-layer="singlepage"
+    >
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHeader
+          eyebrow={eyebrow}
+          title={title}
+          description={description}
+        />
+        <div className="grid items-stretch gap-6 lg:grid-cols-3">
+          {products.map((product) => (
+            <EcommerceModuleProduct
+              variant="tier"
+              key={product.name}
+              name={product.name}
+              price={product.price}
+              period={product.period}
+              description={product.description}
+              features={product.features}
+              cta={product.cta}
+              appearance={product.appearance}
+              badge={product.badge}
+              featured={product.featured}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,27 @@
+{
+  "id": "file-storage.file.list-item-asset-ai-chat",
+  "title": "list-item-asset-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "File and delivery preview.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "file-storage.file",
+    "pageName": "file-storage",
+    "variantName": "list-item-asset-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "file-storage",
+    "entityType": "model",
+    "entity": "file",
+    "variant": "list-item-asset-ai-chat"
+  },
+  "contentSlots": []
+}

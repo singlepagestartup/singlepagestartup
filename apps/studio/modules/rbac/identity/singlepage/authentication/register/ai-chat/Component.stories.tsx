@@ -1,0 +1,26 @@
+import { Component as RbacModuleIdentity } from "../../../../index";
+
+import type { Meta, StoryObj } from "@storybook/react";
+import { AccountProvider } from "../../../../../subject/singlepage/account/Account";
+import { aiChatAccount } from "../../../../../../../workspace/utils/products/ai-chat-account-fixture";
+
+function Example() {
+  return <RbacModuleIdentity variant="authentication-register-ai-chat" />;
+}
+
+const meta = {
+  id: "modules-rbac-models-identity-singlepage-authentication-register-ai-chat",
+  title:
+    "Modules/Rbac/Models/Identity/Singlepage/authentication/register/ai-chat",
+  component: Example,
+  parameters: { layout: "fullscreen" },
+  decorators: [
+    (Story) => (
+      <AccountProvider account={aiChatAccount}>
+        <Story />
+      </AccountProvider>
+    ),
+  ],
+} satisfies Meta<typeof Example>;
+export default meta;
+export const Default: StoryObj<typeof meta> = {};

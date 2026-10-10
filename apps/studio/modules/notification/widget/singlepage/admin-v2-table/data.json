@@ -1,0 +1,120 @@
+{
+  "schema": {
+    "module": "notification",
+    "entity": "widget",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "subtitle",
+        "label": "Subtitle",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "d211994f-5238-4a4b-abd8-02ffff136edf",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": {
+        "en": "widget example 1"
+      },
+      "subtitle": {
+        "en": "widget example 1"
+      },
+      "description": {
+        "en": "widget example 1"
+      },
+      "adminTitle": "widget example 1",
+      "slug": "widget-example-1"
+    },
+    {
+      "id": "5a99d3ce-0cbe-4d0d-a509-30d9ab5d8c74",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": {
+        "en": "widget example 2"
+      },
+      "subtitle": {
+        "en": "widget example 2"
+      },
+      "description": {
+        "en": "widget example 2"
+      },
+      "adminTitle": "widget example 2",
+      "slug": "widget-example-2"
+    },
+    {
+      "id": "9fd7a5d5-f2ae-4304-a16a-03d2e4f9e364",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": {
+        "en": "widget example 3"
+      },
+      "subtitle": {
+        "en": "widget example 3"
+      },
+      "description": {
+        "en": "widget example 3"
+      },
+      "adminTitle": "widget example 3",
+      "slug": "widget-example-3"
+    }
+  ]
+}

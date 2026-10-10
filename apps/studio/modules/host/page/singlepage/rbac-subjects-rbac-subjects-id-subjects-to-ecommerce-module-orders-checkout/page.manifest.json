@@ -1,0 +1,38 @@
+{
+  "id": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout",
+  "title": "Ecommerce Order Checkout Details Default",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the RBAC-scoped ecommerce checkout details step.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
+    },
+    {
+      "id": "ecommerce.order.checkout-stepper-default",
+      "path": "../../../../ecommerce/order/singlepage/checkout-stepper-default"
+    },
+    {
+      "id": "ecommerce.order.checkout-details-default",
+      "path": "../../../../ecommerce/order/singlepage/checkout-details-default"
+    },
+    {
+      "id": "ecommerce.order.summary-default",
+      "path": "../../../../ecommerce/order/singlepage/summary-default"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1819",
+    "syncStatus": "needs-update",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "schema": {
+    "module": "ecommerce",
+    "entity": "product",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "type",
+        "label": "Type",
+        "kind": "text",
+        "nullable": false,
+        "default": "one_off"
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "shortDescription",
+        "label": "Short Description",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "fb74f941-d8a8-4f0a-a20d-4b53ad0537ec",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "type": "one_off",
+      "slug": "product-example-1",
+      "title": {
+        "en": "product example 1"
+      },
+      "shortDescription": {
+        "en": "product example 1"
+      },
+      "description": {
+        "en": "product example 1"
+      },
+      "adminTitle": "product example 1"
+    },
+    {
+      "id": "783bbfd8-4d2c-4f44-a022-6759d33cfd1c",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "type": "one_off",
+      "slug": "product-example-2",
+      "title": {
+        "en": "product example 2"
+      },
+      "shortDescription": {
+        "en": "product example 2"
+      },
+      "description": {
+        "en": "product example 2"
+      },
+      "adminTitle": "product example 2"
+    },
+    {
+      "id": "235e7f65-d427-4740-a4db-4453dffbeeed",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "type": "one_off",
+      "slug": "product-example-3",
+      "title": {
+        "en": "product example 3"
+      },
+      "shortDescription": {
+        "en": "product example 3"
+      },
+      "description": {
+        "en": "product example 3"
+      },
+      "adminTitle": "product example 3"
+    }
+  ]
+}

@@ -93,23 +93,20 @@ describe("product catalog", () => {
       "/",
       "/register",
       "/login",
-      "/projects/new",
       "/projects/[project-id]",
-      "/projects/[project-id]/landing-page",
-      "/projects/[project-id]/landing-page/publish",
       "/tokens",
       "/settings",
       "/help",
     ]);
     expect(
-      pages?.children.find(({ id }) => id === "new-project")?.uses,
-    ).toEqual(["product.ai-chat.page.content.one-hour-setup"]);
+      pages?.children.find(({ id }) => id === "project-workspace")?.title,
+    ).toBe("Project chat");
     expect(
       pages?.children.find(({ id }) => id === "project-workspace")?.uses,
-    ).toEqual(["product.ai-chat.page.content.project-model"]);
-    expect(
-      pages?.children.find(({ id }) => id === "landing-page-workspace")?.uses,
-    ).toEqual(["product.ai-chat.page.content.project-model"]);
+    ).toEqual([
+      "product.ai-chat.page.content.one-hour-setup",
+      "product.ai-chat.page.content.project-model",
+    ]);
     expect(
       pages?.children.every(
         ({ representations }) =>

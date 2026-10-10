@@ -1,0 +1,153 @@
+{
+  "schema": {
+    "module": "file-storage",
+    "entity": "file",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "file",
+        "label": "File",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "containerClassName",
+        "label": "Container Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "width",
+        "label": "Width",
+        "kind": "integer",
+        "nullable": true
+      },
+      {
+        "key": "height",
+        "label": "Height",
+        "kind": "integer",
+        "nullable": true
+      },
+      {
+        "key": "alt",
+        "label": "Alt",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "size",
+        "label": "Size",
+        "kind": "integer",
+        "nullable": true
+      },
+      {
+        "key": "extension",
+        "label": "Extension",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "mimeType",
+        "label": "Mime Type",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "419f5780-8433-43c1-afb9-a32c6be1a79d",
+      "file": "File example 1",
+      "containerClassName": null,
+      "className": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "adminTitle": "file example 1",
+      "width": null,
+      "height": null,
+      "alt": null,
+      "size": null,
+      "extension": null,
+      "mimeType": null,
+      "slug": "file-example-1"
+    },
+    {
+      "id": "8a5fb3ae-dad4-45ae-a3be-ff10d1a2281d",
+      "file": "File example 2",
+      "containerClassName": null,
+      "className": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "adminTitle": "file example 2",
+      "width": null,
+      "height": null,
+      "alt": null,
+      "size": null,
+      "extension": null,
+      "mimeType": null,
+      "slug": "file-example-2"
+    },
+    {
+      "id": "2239cc1b-ea20-4313-a367-ee1c3ab48be1",
+      "file": "File example 3",
+      "containerClassName": null,
+      "className": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "adminTitle": "file example 3",
+      "width": null,
+      "height": null,
+      "alt": null,
+      "size": null,
+      "extension": null,
+      "mimeType": null,
+      "slug": "file-example-3"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "knowledge.source.list-item-document-ai-chat",
+  "title": "list-item-document-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Local source model navigation.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "knowledge.source",
+    "pageName": "knowledge",
+    "variantName": "list-item-document-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "knowledge",
+    "entityType": "model",
+    "entity": "source",
+    "variant": "list-item-document-ai-chat"
+  },
+  "contentSlots": []
+}

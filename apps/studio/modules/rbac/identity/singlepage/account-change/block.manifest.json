@@ -1,0 +1,27 @@
+{
+  "id": "rbac.identity.account-change",
+  "title": "account-change",
+  "description": "Local account settings interaction.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "identity",
+    "variant": "account-change"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.identity",
+    "pageName": "rbac",
+    "variantName": "account-change",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

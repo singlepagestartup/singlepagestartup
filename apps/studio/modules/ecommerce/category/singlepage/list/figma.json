@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.category",
+  "pageName": "ecommerce",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.category.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/category/singlepage/list",
+    "sps.figma.component": "ecommerce.category",
+    "sps.figma.variant": "list",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "category",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/category/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/category/singlepage/list/Component.stories.tsx"
+  }
+}

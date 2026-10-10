@@ -1,0 +1,21 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "variantName": "content-ai-chat-help",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "website-builder.widget.content-ai-chat-help",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "website-builder/widget/singlepage/content/ai-chat/help",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "content-ai-chat-help",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "content-ai-chat-help",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/help/Component.tsx",
+    "sps.code.story": "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/help/Component.stories.tsx"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "workflow": {
+    "title": "Try the chat.",
+    "paragraphs": [
+      "Check the workshop files and send an answer. Review Products.md, work on another file, then open a topic with the documents you saved."
+    ],
+    "items": [
+      {
+        "title": "Add materials",
+        "text": "Bring notes, photos, plans or describe the idea in chat."
+      },
+      {
+        "title": "Review",
+        "text": "AI checks the material and asks about what is missing."
+      },
+      {
+        "title": "Edit together",
+        "text": "Discuss and edit each document in its own thread. Review it when ready."
+      },
+      {
+        "title": "Keep working",
+        "text": "Open a topic and attach the saved documents you want to use."
+      }
+    ],
+    "links": []
+  },
+  "uploadNote": "Interactive walkthrough; changes stay in this page."
+}

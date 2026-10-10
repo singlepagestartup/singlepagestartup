@@ -9,6 +9,7 @@
     "storybook:build": "npm --prefix ../.. run studio:storybook:build",
     "presentation:export": "npm --prefix ../.. run studio:presentation:export",
     "inventory": "npm --prefix ../.. run studio:inventory",
+    "catalog": "npm --prefix ../.. run studio:catalog",
     "validate": "npm --prefix ../.. run studio:validate"
   }
 }

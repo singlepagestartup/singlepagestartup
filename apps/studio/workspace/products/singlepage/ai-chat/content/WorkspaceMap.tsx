@@ -7,9 +7,9 @@ import {
 
 const sections = [
   {
-    id: "request",
+    id: "brief",
     number: "00",
-    title: "Request",
+    title: "Brief",
     summary: "Current situation, intended result and boundaries",
     details: [
       [
@@ -22,7 +22,7 @@ const sections = [
       ],
       [
         "Known boundary",
-        "AI Chat guides repository and server publication; Code Framework supplies the deployable foundation and runtime.",
+        "AI Chat's first release creates written project and product descriptions. Landing-page generation and paid deployment belong to later development.",
       ],
     ],
   },
@@ -38,7 +38,7 @@ const sections = [
       ],
       [
         "Customer path",
-        "Supply material → review the model → use chat → prepare a page sandbox → connect GitHub and a server when ready to publish.",
+        "Add material → discuss and edit each file in its own thread → review the texts → attach saved documents to a project topic.",
       ],
       [
         "Success",
@@ -54,7 +54,7 @@ const sections = [
     details: [
       [
         "Meaning",
-        "Begin with one clear page and add depth when the project needs it.",
+        "Describe the project from existing notes, files and decisions, correct identified shortcomings and use the texts as a first step toward customers.",
       ],
       [
         "Voice",
@@ -74,7 +74,7 @@ const sections = [
     details: [
       [
         "Interface",
-        "A document workspace with one decision in focus and the project page visible beside it.",
+        "A written description of the intended appearance and constraints, reviewed beside the other project texts.",
       ],
       [
         "Identity",
@@ -90,19 +90,23 @@ const sections = [
     id: "products",
     number: "40",
     title: "Products",
-    summary: "Customer, value, access, money, delivery and learning",
+    summary: "Separate product texts, each with its own sections",
     details: [
       [
         "Customer and value",
-        "Early-stage project owners receive one maintained project model and relevant chat.",
+        "Early-stage project owners receive short project and product descriptions, correction, review, export and continued chat.",
       ],
       [
         "Access and relationship",
-        "Upload material, review decisions, work in chat, create a page and return to the saved project.",
+        "Add material, work with the agent in each document thread and review the text. Export saved documents or attach them to a separate project topic.",
       ],
       [
         "Money and delivery",
-        "Hosted AI work uses token purchases; the owner provides the service and initial support.",
+        "AI Chat owns its token revenue and service costs. Development and support time is split equally with Code Framework; other owner work is allocated 80% to AI Chat and 20% to Code Framework. One token costs 0.13 roubles; top-ups are 100, 300, 500, 1,000 or 3,000 roubles without a package discount. Purchased tokens do not expire; cash refunds for purchases are decided case by case. Failed or cancelled AI requests restore all token deductions and have a net charge of zero; the service bears any provider expense.",
+      ],
+      [
+        "Promotion",
+        "Written descriptions of how each product will be presented publicly, with Website, Creative and Presentation texts where relevant. This section does not build a website or produce media.",
       ],
       [
         "Sales and learning",
@@ -116,161 +120,187 @@ const hypothesisFlow = [
   {
     number: "01",
     title: "Brief",
-    pages: "Idea + goal + known facts",
-    result: "The starting point for the first model",
+    pages: "Idea + goal + supplied facts",
+    result: "Describe the project or supply the material already available",
   },
   {
     number: "02",
-    title: "Draft Product",
-    pages: "Customer + value + offer",
-    result: "A product definition ready to inspect",
+    title: "Draft project and product texts",
+    pages: "Five short stages + separate Products",
+    result: "Read the AI agent's proposed descriptions",
   },
   {
     number: "03",
-    title: "Draft Operations & Economics",
-    pages: "Delivery + revenue + costs",
-    result: "The operating model behind the offer",
+    title: "Each Product: operations and economics",
+    pages: "Delivery + revenue + resources + costs",
+    result: "Review that Product's decisions and allocated resource shares",
   },
   {
     number: "04",
-    title: "Draft Sales",
-    pages: "Segments + customer paths",
-    result: "The complete intended sales process",
+    title: "Each Product: Sales",
+    pages: "Customer process + support + continued use",
+    result: "Review the short customer-process description for that Product",
   },
   {
     number: "05",
-    title: "Critical assumptions",
-    pages: "Questions that can change a decision",
-    result: "A focused agenda for validation",
+    title: "AI-identified shortcomings",
+    pages: "Inaccuracies + contradictions + critical assumptions",
+    result: "See which descriptions need correction or an answer",
   },
   {
     number: "06",
-    title: "Research & experiments",
-    pages: "Evidence + limitations",
-    result: "Data for keeping or changing the model",
+    title: "Analytics and research where needed",
+    pages: "Observations + evidence + unanswered questions",
+    result:
+      "Keep sources and limitations visible; missing evidence stays missing",
+  },
+  {
+    number: "07",
+    title: "Correct and review the owning text",
+    pages: "Edit + answer + review",
+    result: "Correct identified shortcomings or leave an unanswered fact open",
+  },
+  {
+    number: "08",
+    title: "Review, export and open a topic",
+    pages: "Selected saved documents + separate topic",
+    result:
+      "Attach selected reviewed documents to a new project topic or freely export them",
   },
 ];
 
-export default function WorkspaceMap() {
+export default function WorkspaceMap({
+  embedded = false,
+}: { embedded?: boolean } = {}) {
   const [active, setActive] = useState(4);
   const section = sections[active];
 
   return (
     <div
       data-workspace-projection="singlepage"
-      className="min-h-[820px] bg-[var(--workspace-brand-background)] p-3 text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)] sm:p-6"
+      className={`bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)] ${embedded ? "" : "min-h-[820px] p-3 sm:p-6"}`}
     >
       <div className="mx-auto max-w-[1440px] overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)]">
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--workspace-brand-line)] bg-white px-5 py-4 sm:px-7">
-          <div className="flex items-center gap-3">
-            <div className="grid size-10 place-items-center rounded-xl bg-[var(--workspace-brand-foreground)] text-[var(--workspace-brand-accent)]">
-              <img
-                src="/workspace-assets/singlepage/intake/operator-logo-square-white.svg"
-                data-asset-id="singlepage-operator-logo-square-white"
-                alt=""
-                width={24}
-                height={24}
-                className="size-6"
-              />
+        {!embedded && (
+          <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--workspace-brand-line)] bg-white px-5 py-4 sm:px-7">
+            <div className="flex items-center gap-3">
+              <div className="grid size-10 place-items-center rounded-xl bg-[var(--workspace-brand-foreground)] text-[var(--workspace-brand-accent)]">
+                <img
+                  src="/workspace-assets/singlepage/intake/operator-logo-square-white.svg"
+                  data-asset-id="singlepage-operator-logo-square-white"
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="size-6"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Sample project</p>
+                <p className="text-sm text-[var(--workspace-brand-muted)]">
+                  Project model · Saved now
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold">Sample project</p>
-              <p className="text-sm text-[var(--workspace-brand-muted)]">
-                Project model · Saved now
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="rounded-full border border-[var(--workspace-brand-line)] px-3 py-2 text-sm font-semibold">
-              2 unknowns
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-medium">
-              <span className="grid size-5 place-items-center rounded-full bg-[var(--workspace-brand-accent)]">
-                <Icon name="check" className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-2">
+              <span className="rounded-full border border-[var(--workspace-brand-line)] px-3 py-2 text-sm font-semibold">
+                Request terms defined
               </span>
-              Ready for chat
-            </span>
-          </div>
-        </header>
-
-        <section
-          aria-labelledby="product-cycle-title"
-          className="border-b border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-5 py-6 sm:px-7"
-        >
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-                How the business work moves
-              </p>
-              <h2
-                className="mt-1 text-2xl font-semibold [font-family:var(--workspace-brand-font-display)]"
-                id="product-cycle-title"
-              >
-                Draft, test and decide
-              </h2>
+              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-medium">
+                <span className="grid size-5 place-items-center rounded-full bg-[var(--workspace-brand-accent)]">
+                  <Icon name="check" className="h-3.5 w-3.5" />
+                </span>
+                Ready for chat
+              </span>
             </div>
-            <p className="max-w-xl text-base leading-7 text-[var(--workspace-brand-muted)]">
-              Draft the complete model first. Test the assumptions that can
-              change it before committing to materials and implementation.
-            </p>
-          </div>
+          </header>
+        )}
 
-          <div
-            aria-label="Product development loop"
-            className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
-            role="list"
+        {!embedded && (
+          <section
+            aria-labelledby="product-cycle-title"
+            className="border-b border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-5 py-6 sm:px-7"
           >
-            {hypothesisFlow.map((step, index) => (
-              <div className="flex min-w-0" key={step.number} role="listitem">
-                <article
-                  className={`min-h-48 flex-1 rounded-2xl border p-5 ${index === 0 ? "border-[var(--workspace-brand-foreground)] bg-[var(--workspace-brand-foreground)] text-white" : index === hypothesisFlow.length - 1 ? "border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]" : "border-[var(--workspace-brand-line)] bg-white"}`}
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
+                  How you review the project texts
+                </p>
+                <h2
+                  className="mt-1 text-2xl font-semibold [font-family:var(--workspace-brand-font-display)]"
+                  id="product-cycle-title"
                 >
-                  <p
-                    className={`text-sm font-semibold ${index === 0 ? "text-[var(--workspace-brand-accent)]" : "text-[var(--workspace-brand-muted)]"}`}
-                  >
-                    {step.number}
-                  </p>
-                  <h3 className="mt-2 text-base font-semibold leading-5">
-                    {step.title}
-                  </h3>
-                  <p
-                    className={`mt-2 text-sm font-semibold ${index === 0 ? "text-[var(--workspace-brand-muted-on-primary)]" : "text-[var(--workspace-brand-muted)]"}`}
-                  >
-                    {step.pages}
-                  </p>
-                  <p
-                    className={`mt-3 text-base leading-7 ${index === 0 ? "text-[var(--workspace-brand-background)]" : "text-[var(--workspace-brand-foreground)]"}`}
-                  >
-                    {step.result}
-                  </p>
-                </article>
+                  Draft, correct and review
+                </h2>
               </div>
-            ))}
-          </div>
+              <p className="max-w-xl text-base leading-7 text-[var(--workspace-brand-muted)]">
+                Discuss and edit each file in its own thread. Review the texts,
+                then attach selected saved documents to a new project topic or
+                freely export them.
+              </p>
+            </div>
 
-          <div className="mt-6 rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-6">
-            <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-              What did the evidence show?
-            </p>
-            <div className="mt-3 grid gap-3 lg:grid-cols-2">
-              <div className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
-                <p className="text-sm font-semibold">Supports the decisions</p>
-                <p className="mt-2 text-base leading-7">
-                  Refine and confirm the decisions, then develop Product
-                  Content, Website, Marketing Creative, Presentation and the
-                  product itself.
-                </p>
-              </div>
-              <div className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
-                <p className="text-sm font-semibold">Disproves an assumption</p>
-                <p className="mt-2 text-base leading-7">
-                  Change Product, Operations &amp; Economics or Sales, identify
-                  the next critical assumption and test again.
-                </p>
+            <div
+              aria-label="Project text review loop"
+              className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+              role="list"
+            >
+              {hypothesisFlow.map((step, index) => (
+                <div className="flex min-w-0" key={step.number} role="listitem">
+                  <article
+                    className={`min-h-48 flex-1 rounded-2xl border p-5 ${index === 0 ? "border-[var(--workspace-brand-foreground)] bg-[var(--workspace-brand-foreground)] text-white" : index === hypothesisFlow.length - 1 ? "border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]" : "border-[var(--workspace-brand-line)] bg-white"}`}
+                  >
+                    <p
+                      className={`text-sm font-semibold ${index === 0 ? "text-[var(--workspace-brand-accent)]" : "text-[var(--workspace-brand-muted)]"}`}
+                    >
+                      {step.number}
+                    </p>
+                    <h3 className="mt-2 text-base font-semibold leading-5">
+                      {step.title}
+                    </h3>
+                    <p
+                      className={`mt-2 text-sm font-semibold ${index === 0 ? "text-[var(--workspace-brand-muted-on-primary)]" : "text-[var(--workspace-brand-muted)]"}`}
+                    >
+                      {step.pages}
+                    </p>
+                    <p
+                      className={`mt-3 text-base leading-7 ${index === 0 ? "text-[var(--workspace-brand-background)]" : "text-[var(--workspace-brand-foreground)]"}`}
+                    >
+                      {step.result}
+                    </p>
+                  </article>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-6">
+              <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
+                What happens after review?
+              </p>
+              <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                <div className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
+                  <p className="text-sm font-semibold">Reviewed description</p>
+                  <p className="mt-2 text-base leading-7">
+                    Save the text you reviewed, export it or attach it to a
+                    project topic. The saved version stays available while you
+                    revise a new draft. Review records the wording, not market
+                    demand.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
+                  <p className="text-sm font-semibold">
+                    Unanswered fact or assumption
+                  </p>
+                  <p className="mt-2 text-base leading-7">
+                    Keep missing facts open. A reviewed assumption remains an
+                    assumption. Attribute evidence to its source and revise the
+                    owning text when an answer or new evidence becomes
+                    available.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <div className="grid lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)_320px]">
           <aside className="border-b border-[var(--workspace-brand-line)] bg-white p-4 lg:border-r lg:border-b-0">
@@ -372,9 +402,32 @@ export default function WorkspaceMap() {
                         a stated share of shared resources.
                       </p>
                     </div>
-                    <button className={kit.secondary} type="button">
-                      Open Product
-                    </button>
+                    <p className="mt-3 text-sm leading-6 text-[var(--workspace-brand-muted)]">
+                      AI Chat and Code Framework each have their own Product,
+                      Operations & Economics, Sales, Promotion, and Analytics &
+                      Research texts.
+                    </p>
+                  </div>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {["AI Chat", "Code Framework"].map((product) => (
+                      <article
+                        key={product}
+                        className="rounded-xl border border-[var(--workspace-brand-line)] bg-white p-4"
+                      >
+                        <h3 className="text-base font-semibold">{product}</h3>
+                        <ul className="mt-3 space-y-2 text-sm text-[var(--workspace-brand-muted)]">
+                          {[
+                            "Product: customer and offer",
+                            "Operations & Economics",
+                            "Sales",
+                            "Promotion: written public presentation",
+                            "Analytics & Research where needed",
+                          ].map((text) => (
+                            <li key={text}>{text}</li>
+                          ))}
+                        </ul>
+                      </article>
+                    ))}
                   </div>
                 </section>
               ) : null}
@@ -383,20 +436,21 @@ export default function WorkspaceMap() {
 
           <aside className="border-t border-[var(--workspace-brand-line)] bg-white p-5 xl:border-t-0 xl:border-l">
             <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-              Work with this project
+              Project topics
             </p>
             <div className="mt-4 rounded-3xl bg-[var(--workspace-brand-foreground)] p-6 text-white">
               <p className="text-base font-semibold [font-family:var(--workspace-brand-font-display)]">
                 Ask in ordinary language
               </p>
               <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
-                AI Chat adds the relevant accepted decisions to each request.
+                Choose saved documents for each topic. AI Chat uses those
+                attachments as context for its answers.
               </p>
               <label className="mt-4 block" htmlFor="project-question">
                 <span className="sr-only">Ask about this project</span>
                 <textarea
                   className={`${kit.field} min-h-32 resize-y focus-visible:ring-[var(--workspace-brand-accent)]`}
-                  defaultValue="Improve the offer on my landing page"
+                  defaultValue="Evaluate my idea against the customer and offer I described"
                   id="project-question"
                 />
               </label>
@@ -413,8 +467,8 @@ export default function WorkspaceMap() {
               <div className="mt-3 space-y-2">
                 {[
                   "Improve an uploaded document",
-                  "Create the first landing page",
-                  "Show decisions that still matter",
+                  "Correct the shortcomings identified by the AI agent",
+                  "Export the reviewed documents",
                   "Add another product",
                 ].map((action) => (
                   <button
@@ -430,10 +484,14 @@ export default function WorkspaceMap() {
             </div>
 
             <div className="mt-5 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4">
-              <p className="text-sm font-semibold">Two unknowns remain</p>
+              <p className="text-sm font-semibold">
+                Failed or cancelled requests
+              </p>
               <p className="mt-1 text-sm leading-5 text-[var(--workspace-brand-muted)]">
-                Token package price and the initial acquisition budget are not
-                supplied. They affect only related decisions.
+                All deductions are restored, including the initial token and any
+                settlement charge. The net charge is zero; the service pays any
+                provider cost. Cash refunds for top-up purchases remain
+                case-by-case decisions.
               </p>
             </div>
           </aside>

@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import { Button, Icon, Specimen, kit, type IconName } from "./primitives";
 import { StarFilled } from "../../../utils/components/ModuleIcons";
+import { InterfaceRules } from "../../../utils/components/InterfaceGuidance";
 
 const icons: { name: IconName; label: string }[] = [
   { name: "arrow-right", label: "Forward" },
@@ -34,6 +35,7 @@ export default function Foundations() {
 
   return (
     <div className="grid gap-4">
+      <InterfaceRules />
       <Specimen
         id="icons"
         title="Icons"

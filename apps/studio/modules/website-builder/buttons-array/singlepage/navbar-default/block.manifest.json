@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.buttons-array.navbar-default",
+  "title": "navbar-default",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Website navigation composed from Button views.",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "buttons-array",
+    "variant": "navbar-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.buttons-array",
+    "pageName": "website-builder",
+    "variantName": "navbar-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

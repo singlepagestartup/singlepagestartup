@@ -1,0 +1,34 @@
+{
+  "id": "ai-chat-tokens",
+  "title": "ai-chat-tokens",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat page recipe for /ai-chat/tokens.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ai-chat-tokens",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.ai-chat-dashboard",
+      "path": "../../../layout/singlepage/ai-chat-dashboard"
+    },
+    {
+      "id": "ecommerce.order.checkout-tokens-ai-chat",
+      "path": "../../../../ecommerce/order/singlepage/checkout/tokens/ai-chat"
+    },
+    {
+      "id": "rbac.subject.account",
+      "path": "../../../../rbac/subject/singlepage/account"
+    }
+  ]
+}

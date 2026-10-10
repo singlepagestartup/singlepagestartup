@@ -81,6 +81,38 @@ export class Service {
     this.apiKey = OPEN_ROUTER_API_KEY;
   }
 
+  async transcribeAudio(props: {
+    data: Buffer;
+    format: string;
+    model: string;
+  }) {
+    const response = await fetch(`${this.baseURL}/audio/transcriptions`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${this.apiKey}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: props.model,
+        input_audio: {
+          data: props.data.toString("base64"),
+          format: props.format,
+        },
+        response_format: "verbose_json",
+        timestamp_granularities: ["segment"],
+      }),
+    });
+    if (!response.ok)
+      throw new Error(`OpenRouter transcription failed: ${response.status}`);
+    const result = (await response.json()) as {
+      text?: string;
+      segments?: { start: number; end: number; text: string }[];
+    };
+    if (typeof result.text !== "string")
+      throw new Error("OpenRouter returned no transcription text.");
+    return result;
+  }
+
   private stringifyError(error: unknown) {
     if (error instanceof Error) {
       return error.message;
@@ -652,6 +684,7 @@ export class Service {
 
     return {
       ...parsedMessage,
+      finishReason: props.data?.choices?.[0]?.finish_reason,
       billing,
     };
   }

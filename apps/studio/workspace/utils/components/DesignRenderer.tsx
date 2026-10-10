@@ -16,6 +16,7 @@ import ProjectDesign, { ProjectDesignSection } from "./ProjectDesign";
 import { DocumentDownloads } from "./DocumentDownloads";
 import { DocumentHeader, documentPurpose } from "./DocumentStatus";
 import { WorkspacePage } from "./WorkspacePage";
+import type { WorkspacePageLayer } from "../pages";
 
 interface IDesignSectionContentProps {
   section: IDesignSectionView;
@@ -262,8 +263,12 @@ function DesignSectionGroup({
 /** Presentation structure belongs to the selected layout; document data resolves separately. */
 export function DesignRenderer({
   layout,
+  projection = "default",
   ...props
-}: IDesignTemplateProps & { layout: IDesignLayoutView }) {
+}: IDesignTemplateProps & {
+  layout: IDesignLayoutView;
+  projection?: WorkspacePageLayer | "default";
+}) {
   const exportRef = useRef<HTMLDivElement>(null);
   // Downloads receive an expanded copy; changing categories never unmounts a
   // specimen or changes the reviewer's selection to prepare the catalogue.
@@ -299,6 +304,7 @@ export function DesignRenderer({
   return (
     <div
       ref={exportRef}
+      data-workspace-projection={projection}
       className="min-h-screen font-[family-name:var(--workspace-brand-font-body)] bg-[var(--workspace-brand-background)] p-5 text-[var(--workspace-brand-foreground)] md:p-10"
     >
       <DocumentHeader

@@ -53,6 +53,7 @@ function ProjectDesignStory({ projection }: { projection: DesignProjection }) {
   return (
     <DesignRenderer
       layout={layout}
+      projection={projection}
       data={data}
       document={
         workspace.artifacts.find(({ kind }) => kind === "design")?.content

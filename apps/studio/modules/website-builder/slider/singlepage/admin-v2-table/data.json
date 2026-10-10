@@ -1,0 +1,129 @@
+{
+  "schema": {
+    "module": "website-builder",
+    "entity": "slider",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "subtitle",
+        "label": "Subtitle",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "379b2963-3455-4c9c-a3f2-0300e61f1920",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "className": null,
+      "adminTitle": "slider example 1",
+      "slug": "slider-example-1",
+      "title": {
+        "en": "slider example 1"
+      },
+      "subtitle": {
+        "en": "slider example 1"
+      },
+      "description": {
+        "en": "slider example 1"
+      }
+    },
+    {
+      "id": "1917f8c3-1929-47a1-a324-18c51fb906a7",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "className": null,
+      "adminTitle": "slider example 2",
+      "slug": "slider-example-2",
+      "title": {
+        "en": "slider example 2"
+      },
+      "subtitle": {
+        "en": "slider example 2"
+      },
+      "description": {
+        "en": "slider example 2"
+      }
+    },
+    {
+      "id": "870445a7-e737-4131-a151-ea8fba8b8e20",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "className": null,
+      "adminTitle": "slider example 3",
+      "slug": "slider-example-3",
+      "title": {
+        "en": "slider example 3"
+      },
+      "subtitle": {
+        "en": "slider example 3"
+      },
+      "description": {
+        "en": "slider example 3"
+      }
+    }
+  ]
+}

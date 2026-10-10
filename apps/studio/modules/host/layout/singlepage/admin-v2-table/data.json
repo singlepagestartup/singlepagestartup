@@ -1,0 +1,90 @@
+{
+  "schema": {
+    "module": "host",
+    "entity": "layout",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "ced98667-9d01-444f-a9b5-94d575d9203e",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "layout example 1",
+      "className": null,
+      "adminTitle": "layout example 1",
+      "slug": "layout-example-1"
+    },
+    {
+      "id": "31e26cd9-5ea6-4245-a171-1379eeb49e91",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "layout example 2",
+      "className": null,
+      "adminTitle": "layout example 2",
+      "slug": "layout-example-2"
+    },
+    {
+      "id": "7bb850d2-2eda-45df-a4f5-43413fdd2376",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "layout example 3",
+      "className": null,
+      "adminTitle": "layout example 3",
+      "slug": "layout-example-3"
+    }
+  ]
+}

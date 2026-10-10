@@ -1,3 +1,4 @@
+import { SurfacePatternGuidance } from "../../../utils/components/InterfaceGuidance";
 import { useState } from "react";
 import {
   Button,
@@ -29,6 +30,7 @@ export default function Editorial() {
         <p className="mt-2 text-xs text-[var(--workspace-brand-muted)]">
           Composed from: surfaces · actions · icons
         </p>
+        <SurfacePatternGuidance title="Editorial entry" />
         <p className="mt-2 max-w-3xl text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
           A candid photograph and a graphite statement share the composition.
           Large proportional type carries the message; one lime action follows

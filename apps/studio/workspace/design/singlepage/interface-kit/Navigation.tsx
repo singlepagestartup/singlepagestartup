@@ -1,3 +1,4 @@
+import { SurfacePatternGuidance } from "../../../utils/components/InterfaceGuidance";
 import { Fragment, useId, useRef, useState } from "react";
 import {
   SectionTabsRoot,
@@ -206,6 +207,7 @@ export function NavigationSpecimens() {
       <Specimen
         id="navigation"
         title="Navigation"
+        guidance={<SurfacePatternGuidance title="Work screen frame" />}
         description="Public links identify destinations; workspace navigation keeps the current section visible. The compact menu opens below the header on small screens."
         states={[
           "default",

@@ -1,0 +1,40 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "website-builder.widget.navbar-default",
+  "title": "Website Builder Widget / Navbar / Default",
+  "description": "Website navigation composed from Logotype and Buttons Array, with supplied Cart and Subject views.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "navbar-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "cartButton",
+      "type": "component",
+      "description": "Cart view supplied by Host Layout."
+    },
+    {
+      "name": "subjectAccount",
+      "type": "component",
+      "description": "Subject account view supplied by Host Layout."
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "navbar-default",
+    "nodeId": "700:24",
+    "variantNodeId": "715:2",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["home", "landing", "website-builder", "widget", "navbar-default"]
+}

@@ -58,7 +58,6 @@ const config: StorybookConfig = {
     ],
     resolve: {
       ...config.resolve,
-      tsconfigPaths: true,
     },
     css: {
       ...config.css,

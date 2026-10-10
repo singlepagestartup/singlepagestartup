@@ -1,0 +1,1 @@
+ALTER TABLE "sps_ke_ss_to_cs_rae" ADD CONSTRAINT "sps_ke_chunk_owner_unique" UNIQUE("ck_id");

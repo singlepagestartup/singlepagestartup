@@ -15,7 +15,7 @@ import { createRoot, Root } from "react-dom/client";
 import { Component } from "./Component";
 
 jest.mock(
-  "@sps/knowledge/models/document/frontend/component/src/lib/singlepage/chat-sidebar-item",
+  "@sps/knowledge/models/source/frontend/component/src/lib/singlepage/chat-sidebar-item",
   () => ({
     Component: () => <div data-testid="knowledge-sidebar-item" />,
   }),
@@ -225,8 +225,8 @@ describe("GIVEN: social profile chat sidebar actions", () => {
               adminTitle: "Chat GPT 1",
             } as any
           }
-          knowledgeDocuments={[]}
-          hasKnowledgeDocumentsError
+          knowledgeSources={[]}
+          hasKnowledgeSourcesError
         />,
       );
     });
@@ -234,6 +234,6 @@ describe("GIVEN: social profile chat sidebar actions", () => {
     expect(container.textContent).toContain(
       "Knowledge could not be loaded. Check access permissions and try again.",
     );
-    expect(container.textContent).not.toContain("No knowledge documents.");
+    expect(container.textContent).not.toContain("No knowledge sources.");
   });
 });

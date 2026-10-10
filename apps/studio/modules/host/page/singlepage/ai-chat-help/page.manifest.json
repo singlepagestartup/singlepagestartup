@@ -1,0 +1,34 @@
+{
+  "id": "ai-chat-help",
+  "title": "ai-chat-help",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat page recipe for /ai-chat/help.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ai-chat-help",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.ai-chat-dashboard",
+      "path": "../../../layout/singlepage/ai-chat-dashboard"
+    },
+    {
+      "id": "website-builder.widget.content-ai-chat-help",
+      "path": "../../../../website-builder/widget/singlepage/content/ai-chat/help"
+    },
+    {
+      "id": "rbac.subject.account",
+      "path": "../../../../rbac/subject/singlepage/account"
+    }
+  ]
+}

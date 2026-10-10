@@ -3,6 +3,7 @@ import type { IDocumentConfirmation } from "../../../../tools/studio/workspace/d
 export type WorkspacePageLayer = "singlepage" | "startup";
 export interface IWorkspacePageProps {
   text?: string;
+  navigationHref?: string;
 }
 
 export interface IWorkspacePageView {

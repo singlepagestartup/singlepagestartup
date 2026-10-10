@@ -1,0 +1,118 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "attribute",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "number",
+        "label": "Number",
+        "kind": "numeric",
+        "nullable": true
+      },
+      {
+        "key": "boolean",
+        "label": "Boolean",
+        "kind": "boolean",
+        "nullable": true
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "kind": "timestamp",
+        "nullable": true
+      },
+      {
+        "key": "datetime",
+        "label": "Datetime",
+        "kind": "timestamp",
+        "nullable": true
+      },
+      {
+        "key": "string",
+        "label": "String",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "73d9aa9d-a224-4c8e-a781-c90ffa9847b1",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "number": null,
+      "boolean": null,
+      "date": null,
+      "datetime": null,
+      "string": {},
+      "adminTitle": "attribute example 1",
+      "slug": "attribute-example-1"
+    },
+    {
+      "id": "9847a702-5e31-493c-a7c1-3aab99cccedf",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "number": null,
+      "boolean": null,
+      "date": null,
+      "datetime": null,
+      "string": {},
+      "adminTitle": "attribute example 2",
+      "slug": "attribute-example-2"
+    },
+    {
+      "id": "104fc3f9-8ff9-42f0-a321-cb108591bc89",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "number": null,
+      "boolean": null,
+      "date": null,
+      "datetime": null,
+      "string": {},
+      "adminTitle": "attribute example 3",
+      "slug": "attribute-example-3"
+    }
+  ]
+}

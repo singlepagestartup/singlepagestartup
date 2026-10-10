@@ -1,0 +1,34 @@
+{
+  "id": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation",
+  "title": "Ecommerce Order Checkout Confirmation Default",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the ecommerce checkout confirmation step.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
+    },
+    {
+      "id": "ecommerce.order.checkout-stepper-default",
+      "path": "../../../../ecommerce/order/singlepage/checkout-stepper-default"
+    },
+    {
+      "id": "ecommerce.order.checkout-confirmation-default",
+      "path": "../../../../ecommerce/order/singlepage/checkout-confirmation-default"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1807",
+    "syncStatus": "needs-update",
+    "metadataFile": "figma.json"
+  }
+}

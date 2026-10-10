@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.agent-select-ai-chat",
+  "title": "agent-select-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Select an agent Profile for a new Thread.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "agent-select-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "agent-select-ai-chat"
+  },
+  "contentSlots": []
+}

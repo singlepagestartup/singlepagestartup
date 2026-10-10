@@ -2,7 +2,7 @@ FROM node:24
 
 RUN apt-get update && \
     apt-get -qy full-upgrade && \
-    apt-get install -qy curl ffmpeg python3 python3-venv && \
+    apt-get install -qy curl ffmpeg poppler-utils python3 python3-venv && \
     curl -fsSL https://bun.sh/install | bash && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 

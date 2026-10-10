@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.account-data",
+  "title": "account-data",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Shared account purchases, material processing and deletion controls.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "account-data",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "account-data"
+  },
+  "contentSlots": []
+}

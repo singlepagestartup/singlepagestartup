@@ -1,0 +1,27 @@
+{
+  "id": "file-storage.file.overview-ai-chat",
+  "title": "overview-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "File preview with open and download actions.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "file-storage.file",
+    "pageName": "file-storage",
+    "variantName": "overview-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "file-storage",
+    "entityType": "model",
+    "entity": "file",
+    "variant": "overview-ai-chat"
+  },
+  "contentSlots": []
+}

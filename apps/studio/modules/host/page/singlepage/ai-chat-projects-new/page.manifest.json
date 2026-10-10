@@ -1,0 +1,42 @@
+{
+  "id": "ai-chat-projects-new",
+  "title": "ai-chat-projects-new",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Concrete AI Chat Page: ai-chat-projects-new.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ai-chat-projects-new",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.ai-chat-dashboard",
+      "path": "../../../layout/singlepage/ai-chat-dashboard"
+    },
+    {
+      "id": "social.profile.select-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/select/ai-chat/project"
+    },
+    {
+      "id": "social.profile.create-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/create/ai-chat/project"
+    },
+    {
+      "id": "rbac.subject.account",
+      "path": "../../../../rbac/subject/singlepage/account"
+    },
+    {
+      "id": "social.profile.select-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/select/ai-chat/project"
+    }
+  ]
+}

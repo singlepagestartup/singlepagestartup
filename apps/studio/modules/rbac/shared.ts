@@ -1,10 +1,12 @@
+import { aiChatAccount } from "../../workspace/utils/products/ai-chat-account-fixture";
 import {
-  Github,
   KeyRound,
   Mail,
   MessageSquare,
   Send,
   Shield,
+  Wallet,
+  Globe,
   User,
   type ModuleIcon,
 } from "../../workspace/utils/components/ModuleIcons";
@@ -27,28 +29,13 @@ export interface RbacIdentity {
   updatedAt: string;
 }
 
-export interface RbacSubjectToIdentity {
-  id: string;
-  subjectId: string;
-  identityId: string;
-  orderIndex: number;
-  variant: string;
-}
-
 export interface RbacAccountProfile {
   id: string;
   title: string;
   subtitle: string;
   description?: string;
   slug: string;
-  relationId: string;
   avatar?: string;
-  avatarRelation?: {
-    id: string;
-    profileId: string;
-    fileStorageModuleFileId: string;
-    orderIndex: number;
-  };
 }
 
 export interface RbacAccountUser {
@@ -60,6 +47,7 @@ export interface RbacAccountUser {
 
 export interface RbacStudioAuthUser extends RbacAccountUser {
   slug: string;
+  description?: string;
 }
 
 export type IdentityActionTone = "neutral" | "danger";
@@ -99,8 +87,7 @@ export const defaultRbacUser: RbacAccountUser = {
   name: "Sarah Kim",
   email: "sarah@sps.dev",
   role: "Head of Product",
-  avatar:
-    "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=160",
+  avatar: aiChatAccount.profile.avatar!,
 };
 
 export const RBAC_STUDIO_AUTH_STORAGE_KEY =
@@ -110,6 +97,13 @@ export const RBAC_STUDIO_AUTH_CHANGE_EVENT =
 
 export const defaultRbacStudioAuthUsers: RbacStudioAuthUser[] = [
   {
+    name: "Alex",
+    email: aiChatAccount.email,
+    role: "",
+    slug: "alex",
+    avatar: aiChatAccount.profile.avatar!,
+  },
+  {
     ...defaultRbacUser,
     slug: "sarah-kim",
   },
@@ -118,16 +112,14 @@ export const defaultRbacStudioAuthUsers: RbacStudioAuthUser[] = [
     email: "james@sps.dev",
     role: "CTO",
     slug: "james-carter",
-    avatar:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=160",
+    avatar: aiChatAccount.profile.avatar!,
   },
   {
     name: "Marcus Webb",
     email: "marcus@sps.dev",
     role: "Lead Engineer",
     slug: "marcus-webb",
-    avatar:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=160",
+    avatar: aiChatAccount.profile.avatar!,
   },
 ];
 
@@ -143,7 +135,7 @@ export function resolveRbacStudioAuthUser(email: string): RbacStudioAuthUser {
         user.slug === emailPrefix ||
         normalizedName === emailPrefix
       );
-    }) ?? defaultRbacStudioAuthUsers[0];
+    }) ?? defaultRbacStudioAuthUsers[1];
 
   return {
     ...matchedUser,
@@ -166,14 +158,25 @@ export function readRbacStudioAuthUser(): RbacStudioAuthUser | null {
     return {
       ...resolveRbacStudioAuthUser(parsedUser.email),
       ...parsedUser,
+      avatar: parsedUser.avatar?.includes("images.unsplash.com")
+        ? aiChatAccount.profile.avatar!
+        : (parsedUser.avatar ?? aiChatAccount.profile.avatar!),
     };
   } catch {
     return null;
   }
 }
 
-export function writeRbacStudioAuthUser(email: string): RbacStudioAuthUser {
-  const user = resolveRbacStudioAuthUser(email);
+export function writeRbacStudioAuthUser(
+  email: string,
+  updates: Partial<Omit<RbacStudioAuthUser, "email">> = {},
+): RbacStudioAuthUser {
+  const stored = readRbacStudioAuthUser();
+  const user = {
+    ...resolveRbacStudioAuthUser(email),
+    ...(stored?.email === email.trim().toLowerCase() ? stored : {}),
+    ...updates,
+  };
 
   if (typeof window !== "undefined") {
     window.localStorage.setItem(
@@ -225,30 +228,6 @@ export const defaultRbacIdentities: RbacIdentity[] = [
   },
 ];
 
-export const defaultRbacSubjectToIdentities: RbacSubjectToIdentity[] = [
-  {
-    id: "b887f4ef-fca1-46cc-9f39-c988f9b0b3d5",
-    subjectId: defaultRbacSubject.id,
-    identityId: defaultRbacIdentities[0]?.id ?? "",
-    orderIndex: 0,
-    variant: "default",
-  },
-  {
-    id: "f8082360-6ccf-44e8-a1b1-c6fc7e2f7d57",
-    subjectId: defaultRbacSubject.id,
-    identityId: defaultRbacIdentities[1]?.id ?? "",
-    orderIndex: 1,
-    variant: "default",
-  },
-  {
-    id: "baad8824-6f51-49da-a0a7-ff8f5f5d6285",
-    subjectId: defaultRbacSubject.id,
-    identityId: defaultRbacIdentities[2]?.id ?? "",
-    orderIndex: 2,
-    variant: "default",
-  },
-];
-
 export const defaultRbacProfiles: RbacAccountProfile[] = [
   {
     id: "2f6f62e1-5c1a-4fa3-983e-08469b11fa89",
@@ -258,7 +237,6 @@ export const defaultRbacProfiles: RbacAccountProfile[] = [
       "Sarah leads product strategy for SPS, turning reusable modules into fast startup prototypes.",
     slug: "sarah-kim",
     avatar: defaultRbacUser.avatar,
-    relationId: "9f1c43fd-cbd8-4f59-b55f-3637804f5f32",
   },
 ];
 
@@ -320,70 +298,56 @@ export function formatRbacDateTime(value: string | undefined | null): string {
   });
 }
 
+export const identityProviders: IdentityProviderMeta[] = [
+  {
+    key: "email_and_password",
+    title: "Email & password",
+    kind: "credentials",
+    kindLabel: "Password",
+    description: "Sign in with your email and password.",
+    icon: Mail,
+  },
+  {
+    key: "oauth_google",
+    title: "Google",
+    kind: "oauth",
+    kindLabel: "Connected",
+    description: "Use your Google account to sign in.",
+    icon: Globe,
+  },
+  {
+    key: "telegram",
+    title: "Telegram",
+    kind: "oauth",
+    kindLabel: "Connected",
+    description: "Use your Telegram account to sign in.",
+    icon: Send,
+  },
+  {
+    key: "ethereum_virtual_machine",
+    title: "Crypto wallet",
+    kind: "external",
+    kindLabel: "Wallet",
+    description: "Connect a wallet and verify ownership with a signature.",
+    icon: Wallet,
+  },
+];
+
 export function getIdentityProviderMeta(
   provider: string,
 ): IdentityProviderMeta {
   const normalized = String(provider || "unknown").toLowerCase();
-
-  if (normalized === "email_and_password" || normalized === "email") {
-    return {
-      key: normalized,
-      title: "Email & Password",
-      kind: "credentials",
-      kindLabel: "Credentials",
-      description:
-        "Classic credential identity. Supports email updates and password rotation.",
-      icon: Mail,
-    };
-  }
-
-  if (normalized === "telegram" || normalized.includes("telegram")) {
-    return {
-      key: normalized,
-      title: "Telegram",
-      kind: "oauth",
-      kindLabel: "External",
-      description:
-        "External provider identity resolved via Telegram account and bot auth flow.",
-      icon: Send,
-    };
-  }
-
-  if (
-    normalized.includes("oauth") ||
-    normalized.includes("google") ||
-    normalized.includes("github")
-  ) {
-    const label = normalized
-      .replace(/_/g, "-")
-      .split("-")
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
-
-    return {
-      key: normalized,
-      title: label,
-      kind: "oauth",
-      kindLabel: "External",
-      description:
-        "OAuth identity. Password management is handled by the upstream provider.",
-      icon: Github,
-    };
-  }
-
-  return {
-    key: normalized,
-    title: normalized
-      .replace(/_/g, "-")
-      .split("-")
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" "),
-    kind: "external",
-    kindLabel: "External",
-    description:
-      "External identity provider. Available actions depend on provider capabilities.",
-    icon: KeyRound,
-  };
+  const key = normalized === "email" ? "email_and_password" : normalized;
+  return (
+    identityProviders.find((item) => item.key === key) ?? {
+      key,
+      title: key.replace(/_/g, " "),
+      kind: "external",
+      kindLabel: "Connected",
+      description: "Manage this connected sign-in method.",
+      icon: KeyRound,
+    }
+  );
 }
 
 export function getIdentityActions(identity: RbacIdentity): IdentityAction[] {

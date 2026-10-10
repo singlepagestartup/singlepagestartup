@@ -1,0 +1,27 @@
+{
+  "id": "host.widget.admin-v2-form",
+  "title": "Host widget / admin-v2-form",
+  "description": "Local Studio projection of Host widget using the existing SDK fields and links.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "admin-v2-form"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.widget",
+    "pageName": "host",
+    "variantName": "admin-v2-form",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

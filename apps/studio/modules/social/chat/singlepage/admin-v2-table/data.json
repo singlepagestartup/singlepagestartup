@@ -1,0 +1,108 @@
+{
+  "schema": {
+    "module": "social",
+    "entity": "chat",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "className",
+        "label": "Class Name",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "sourceSystemId",
+        "label": "Source System Id",
+        "kind": "text",
+        "nullable": true
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "60eef9fe-d550-4e6c-a676-7a8e2f75fbfa",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "chat example 1",
+      "description": null,
+      "adminTitle": "chat example 1",
+      "slug": "chat-example-1",
+      "sourceSystemId": null
+    },
+    {
+      "id": "21bc24f5-c10a-4b2c-a81e-a81139784a92",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "chat example 2",
+      "description": null,
+      "adminTitle": "chat example 2",
+      "slug": "chat-example-2",
+      "sourceSystemId": null
+    },
+    {
+      "id": "f01939e3-f3a8-49d0-a556-9a9d346d1e96",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "className": null,
+      "variant": "default",
+      "title": "chat example 3",
+      "description": null,
+      "adminTitle": "chat example 3",
+      "slug": "chat-example-3",
+      "sourceSystemId": null
+    }
+  ]
+}

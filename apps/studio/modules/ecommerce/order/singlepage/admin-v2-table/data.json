@@ -1,0 +1,93 @@
+{
+  "schema": {
+    "module": "ecommerce",
+    "entity": "order",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "status",
+        "label": "Status",
+        "kind": "text",
+        "nullable": false,
+        "default": "new"
+      },
+      {
+        "key": "type",
+        "label": "Type",
+        "kind": "text",
+        "nullable": false,
+        "default": "cart"
+      },
+      {
+        "key": "receipt",
+        "label": "Receipt",
+        "kind": "text",
+        "nullable": false,
+        "default": ""
+      },
+      {
+        "key": "comment",
+        "label": "Comment",
+        "kind": "text",
+        "nullable": true
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "f5aff0ee-06d8-45e7-a123-0236e4ac3bba",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "status": "new",
+      "type": "cart",
+      "receipt": "",
+      "comment": null
+    },
+    {
+      "id": "89214e48-c443-45ed-aa81-6789e1c7fd62",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "status": "new",
+      "type": "cart",
+      "receipt": "",
+      "comment": null
+    },
+    {
+      "id": "c994228f-441e-48d4-a884-671cbdaf392b",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "status": "new",
+      "type": "cart",
+      "receipt": "",
+      "comment": null
+    }
+  ]
+}

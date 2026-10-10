@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.widget.content-ai-chat-try",
+  "title": "content-ai-chat-try",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat trial section with children supplied by Host Page.",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-ai-chat-try"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "content-ai-chat-try",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

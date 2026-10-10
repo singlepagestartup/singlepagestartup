@@ -1,0 +1,30 @@
+{
+  "id": "rbac-subject-authentication-reset-password",
+  "title": "RBAC Identity Reset Password Default",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the RBAC identity reset password completion screen.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
+    },
+    {
+      "id": "rbac.identity.reset-password-default",
+      "path": "../../../../rbac/identity/singlepage/reset-password-default"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "rbac-subject-authentication-reset-password",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1789",
+    "syncStatus": "needs-update",
+    "metadataFile": "figma.json"
+  }
+}

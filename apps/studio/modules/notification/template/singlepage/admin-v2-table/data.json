@@ -1,0 +1,81 @@
+{
+  "schema": {
+    "module": "notification",
+    "entity": "template",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "77cb6a6a-c0c0-4ca5-a290-2f9f4f65ec3d",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "template example 1",
+      "adminTitle": "template example 1",
+      "slug": "template-example-1"
+    },
+    {
+      "id": "2572ac76-c1d9-40b1-aef3-1beeaab36fc9",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "template example 2",
+      "adminTitle": "template example 2",
+      "slug": "template-example-2"
+    },
+    {
+      "id": "7c69f82d-2619-406f-aed7-2cfa2e4752af",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "template example 3",
+      "adminTitle": "template example 3",
+      "slug": "template-example-3"
+    }
+  ]
+}

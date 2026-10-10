@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.overview-ai-chat-project",
+  "title": "overview-ai-chat-project",
+  "description": "Project Profile overview with Knowledge navigation, settings and current Chat content.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "overview-ai-chat-project"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "overview-ai-chat-project",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -18,7 +18,7 @@ assets:
     source_or_tool: "Existing repository file inspected on 2026-08-09; original source and creation tool unknown."
 
   - id: singlepage-legacy-pixel-wordmark
-    path: apps/studio/modules/website-builder/models/widget/singlepage/footer-default/assets/singlepagestartup-logo.svg
+    path: apps/studio/modules/website-builder/widget/singlepage/footer-default/assets/singlepagestartup-logo.svg
     source_type: client
     evidence: false
     rights_status: "Unknown authorship, font/path license, and trademark clearance; unapproved legacy reference."
@@ -1472,6 +1472,115 @@ assets:
       master are preserved exactly. This reuse does not establish a new asset approval.
     production_stage: original-master
     display_derivative_asset_id: singlepage-generated-living-focus-illustration-coordinated-agents-cool-square
+
+  - id: singlepage-generated-living-focus-photography-solo-founder-v1
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-solo-founder-v1.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated original editorial photograph. The person, studio and business are fictional; no actual customer or founder is depicted.
+    purpose: Preserved production master for the AI Chat landing page. A solo founder pauses over her notes at the beginning of a venture.
+    related_artifacts:
+      - singlepage.products
+      - product.ai-chat.website
+    allowed_use:
+      - Retain unchanged as the production source for the separately registered square delivery.
+      - Inspect the original composition and photographic treatment during product review.
+    prohibited_use:
+      - Do not present this scene as an actual customer, founder, team, workplace, portfolio project or business result.
+      - Use the registered square delivery for product display; do not replace it with a crop of the original.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-photography-reference-motion-portrait
+    reference_use: The three files were inspected for photographic treatment only; the new generation used the written style master and scene brief, without image inputs.
+    dimensions:
+      width: 1536
+      height: 1024
+    content_sha256: d77006c9dc817000b70eacf7655bf7a0253d39a32baf74ef81a9801044c5009c
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    prompt: |-
+      Use case: photorealistic-natural.
+
+      Asset type: original editorial photograph for the SinglePageStartup AI Chat landing page, in the existing Living Focus photography family.
+
+      Style master: Candid editorial photography of people at work, with cool blue or teal daylight balanced by warm natural skin tones. Use close human framing, a present gesture and a clear point of attention. Keep the image photographic and contemporary, with soft foreground or background depth; allow natural motion blur when the action calls for it.
+
+      Scene brief: A young adult starting a small business alone, at a modest table beside a large window in a small personal studio. The person wears a simple dark blue casual shirt and leans toward their handwritten notes with an engaged, slightly hopeful expression. They hold a pencil above an open notebook, having just connected an idea, with their face and the natural working gesture clearly visible. A few loose notes and photographs of ordinary product ideas give believable signs of an early project. The setting feels personal and attainable, with cool blue-grey surroundings, daylight, tactile fabric, a softly blurred foreground edge and warm natural skin. Show their own decision-making and agency, an ordinary human moment at the beginning of a venture. A single person is present. No coworker, client, meeting partner or corporate team.
+
+      Composition: one full-bleed photographic scene with close human framing and enough of the tabletop to understand planning. Let the scene determine the original aspect ratio; do not force a square. No surrounding border or interface. Preserve a readable face and gesture at small landing-page sizes.
+
+      Treatment references inspected: the existing Living Focus moment-of-focus and business-conversation photographs, and the supplied motion-portrait-neutral reference, inform only cool daylight, natural texture, warm skin, optical depth and human presence. Create a different original person and scene. Do not copy likeness, clothes, setting or exact composition.
+
+      Constraints: No text, logos, watermarks, UI, diagrams or graphic overlays. Notes may have indistinct natural handwriting, with no readable claims or slogans. This is conceptual generated brand imagery, not a photograph of an actual customer, team, founder or documented business result.
+    source_or_tool: Built-in imagegen, 2026-10-06. The original output was copied unchanged from /Users/rogwild/.codex/generated_images/01a10e55-6464-7321-aa90-c163b4d0cd39/exec-3e1ec2e0-30e2-4e75-97f3-0aa200d9ef6e.png. Model and seed unavailable.
+    production_stage: original-master
+    display_derivative_asset_id: singlepage-generated-living-focus-photography-solo-founder-v1-square
+    visual_review:
+      status: visually-verified
+      source: Production-agent native-image inspection, 2026-10-06.
+      findings: One individual, attentive hopeful expression, pencil and notebook, natural hands and face, cool window daylight, blue-grey surroundings and warm skin. No corporate meeting, readable claims, graphic overlays or obvious anatomical defects.
+      scope: Generated editorial scene inspected at native resolution; conceptual imagery only. Agent QA does not establish operator approval or product evidence.
+
+  - id: singlepage-generated-living-focus-photography-solo-founder-v1-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-solo-founder-v1-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated square editorial derivative of a fictional solo-founder scene; not an actual customer or founder photograph.
+    purpose: AI Chat landing-page hero for a person describing their own early project.
+    related_artifacts:
+      - singlepage.products
+      - product.ai-chat.website
+    allowed_use:
+      - Use as conceptual editorial imagery in the AI Chat landing-page review.
+      - Keep explanatory text and interface controls outside the photograph.
+    prohibited_use:
+      - Do not present this scene as an actual customer, founder, team, workplace, portfolio project or business result.
+      - Do not stretch the square or crop away its reviewed composition.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-solo-founder-v1
+    source_master_asset_id: singlepage-generated-living-focus-photography-solo-founder-v1
+    source_master_sha256: d77006c9dc817000b70eacf7655bf7a0253d39a32baf74ef81a9801044c5009c
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 72ad766c33eb851072d5b0506ab67dcd2a8745d2c65d297d20109baaf257e6ad
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    prompt: |-
+      Use case: precise-object-edit.
+
+      Asset type: square delivery derivative of the supplied Living Focus solo-founder editorial photograph.
+
+      Primary request: Expand this original 1536 by 1024 landscape photograph into a square 1536 by 1536 image by outpainting the shorter vertical canvas. Preserve the complete original composition and its proportions. Add natural surroundings above and below the original frame; do not crop, stretch, reposition, zoom, reframe or repaint the existing photograph. Keep every original person, gesture, object and visible detail intact.
+
+      Preserve the woman's exact face, hair, dark blue casual shirt, pencil, arms, open notebook, loose notes and photographs, plants, window and shelves. Continue only the studio wall and window above and the tabletop and soft foreground below. Match the existing cool window daylight, warm natural skin, blue-grey setting, optical depth, texture and perspective at the junctions. Add no people, text, logos, UI or graphic overlays. Keep the picture photographic and plausible. Full opaque square PNG. This is a generated illustrative scene, not actual customer evidence.
+    adaptation:
+      operation: canvas-outpainting
+      tool: Built-in imagegen
+      postprocessing: none
+      instruction: |-
+        Use case: precise-object-edit.
+
+        Asset type: square delivery derivative of the supplied Living Focus solo-founder editorial photograph.
+
+        Primary request: Expand this original 1536 by 1024 landscape photograph into a square 1536 by 1536 image by outpainting the shorter vertical canvas. Preserve the complete original composition and its proportions. Add natural surroundings above and below the original frame; do not crop, stretch, reposition, zoom, reframe or repaint the existing photograph. Keep every original person, gesture, object and visible detail intact.
+
+        Preserve the woman's exact face, hair, dark blue casual shirt, pencil, arms, open notebook, loose notes and photographs, plants, window and shelves. Continue only the studio wall and window above and the tabletop and soft foreground below. Match the existing cool window daylight, warm natural skin, blue-grey setting, optical depth, texture and perspective at the junctions. Add no people, text, logos, UI or graphic overlays. Keep the picture photographic and plausible. Full opaque square PNG. This is a generated illustrative scene, not actual customer evidence.
+      original_generated_output: /Users/rogwild/.codex/generated_images/01a10e55-6464-7321-aa90-c163b4d0cd39/exec-acf42b31-e19f-4334-b98b-92f5a9782534.png
+    visual_review:
+      status: visually-verified
+      source: Production-agent native comparison with preserved original, 2026-10-06.
+      findings: Square delivery is 1254 by 1254. The complete original scene remains visible with proportional resampling; window and wall continue above and desk foreground below. Face, gesture, notebook, reference photographs and original props remain recognizable. No obvious seam, extra person, stretch or crop is visible.
+      scope: Source and square compared at native resolution. Product layout and responsive display review remains with the Website owner. Agent QA only; lifecycle remains proposed.
+    source_or_tool: Built-in imagegen edit with the preserved original as its sole image input, 2026-10-06. Requested vertical canvas expansion to a square; tool returned a native 1254 by 1254 square PNG, copied unchanged. The 1536 by 1024 original remains unchanged. Model and seed unavailable.
+    alt: A solo founder pauses over notes for her new business.
 
   - id: singlepage-generated-living-focus-photography-business-conversation
     design_role: null
@@ -5373,3 +5482,207 @@ assets:
       @phosphor-icons/core 2.1.1, immutable revision 2b75f3ad12b420c9504ef05df8d2564a28f8500e,
       downloaded unchanged 2026-10-04. Native geometry is retained; the consuming control supplies its
       accessible label.
+
+  - id: singlepage-generated-living-focus-photography-project-start-v1
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1.png
+    design_role: null
+    design_key: null
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated editorial photograph of a fictional individual; no actual customer or business result is depicted.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+      - product.ai-chat.website
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    purpose: Preserved original master for the upper photograph on the AI Chat registration page.
+    production_stage: original-master
+    display_derivative_asset_id: singlepage-generated-living-focus-photography-project-start-v1-square
+    allowed_use:
+      - Retain unchanged as the source of the registered square delivery.
+      - Inspect the composition and photographic treatment during product review.
+    prohibited_use:
+      - Do not present the fictional person or setting as a real customer, founder, workplace or testimonial.
+      - Use the registered square delivery for product display; do not substitute a crop of this original.
+    reference_asset_ids: []
+    reference_use: Existing Living Focus photographs informed the written style master only; generation had no image inputs or external references.
+    dimensions:
+      width: 1536
+      height: 1024
+    content_sha256: 06066f8af76532b5ecec055fabb127be135330b2640909d2b09503e9a8a7be27
+    prompt: |-
+      Candid editorial photography of people at work, with cool blue or teal daylight balanced by warm natural skin tones. Use close human framing, a present gesture and a clear point of attention. Keep the image photographic and contemporary, with soft foreground or background depth; allow natural motion blur when the action calls for it.
+      Photorealistic-natural photograph for SinglePageStartup AI Chat account registration, Living Focus visual direction. One independent founder, a woman in her early thirties with a short auburn bob, wearing a charcoal knit top, working alone at a modest home desk beside a tall window. Three-quarter view, she looks at her laptop and has a small relaxed smile of understanding, her hand rests on a notebook with handwritten project notes. Cool pale grey room, a simple blue chair, a few pinned reference photographs in soft focus, natural imperfect work materials, understated everyday life. She is making progress on her own project with an AI assistant. Frame her face and shoulders in the upper half, retain her hands and laptop in the lower half. No other people, no posing at camera, no advertising grin, no logos, no readable screen text, no artificial AI motifs. Let the scene determine the natural aspect ratio; preserve a complete photographic composition rather than forcing a square. Produce a single original photograph, no collage, no interface or captions.
+    source_or_tool: "Built-in imagegen, 2026-10-06. Original output copied unchanged from /Users/rogwild/.codex/generated_images/01a10349-97f3-7f92-9a08-dd2a647e8f7a/exec-80d376e7-3987-4cff-8840-96b4ea34d68b.png. Model and seed unavailable."
+    visual_review:
+      status: visually-verified
+      source: Production-agent image inspection, 2026-10-06.
+      findings: One person working independently at a laptop, readable face and hand gesture, cool daylight and warm skin. No visible graphic overlays or anatomical defects.
+      scope: Conceptual brand imagery; agent inspection does not establish operator approval or customer evidence.
+
+  - id: singlepage-generated-living-focus-photography-project-start-v1-square
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1-square.png
+    design_role: photography
+    design_key: project-start
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated editorial photograph of a fictional individual; no actual customer or business result is depicted.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+      - product.ai-chat.website
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    purpose: Upper registration photograph introducing independent project work.
+    allowed_use:
+      - Reuse as conceptual Living Focus imagery on account, onboarding and project pages, and in related marketing materials.
+      - Keep interface content outside the photograph.
+    prohibited_use:
+      - Do not present the fictional person or setting as a real customer, founder, workplace or testimonial.
+      - Do not stretch the square or crop away its reviewed composition.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-project-start-v1
+    source_master_asset_id: singlepage-generated-living-focus-photography-project-start-v1
+    source_master_sha256: 06066f8af76532b5ecec055fabb127be135330b2640909d2b09503e9a8a7be27
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 9d52f9a484543f7d5b3a5ec01ee6cfd96b5ad90c5c6a01bf61533446dfbee22b
+    prompt: |-
+      Use case: precise-object-edit. Expand the supplied original 1536 by 1024 landscape photograph into a square canvas by outpainting above and below the original. Preserve the entire original frame, composition and proportions; do not crop, stretch, zoom, reframe, reposition or repaint the existing scene. Preserve the woman's exact face, auburn bob, charcoal top, hands, pen, handwritten notebook, blue chair, laptop, plants, window and pinned reference photographs. Add plausible continuation of the wall and window above and the desk and soft foreground below. Match cool daylight, natural warm skin, blue-grey surroundings, optical depth, perspective and texture at all edges. Keep the existing face in the upper half of the finished square; extend mostly below when needed, retaining some headroom. Add no person, text, logo, interface or graphic overlay. Produce an opaque square PNG. This is conceptual brand photography of a fictional individual.
+    adaptation:
+      operation: canvas-outpainting
+      tool: Built-in imagegen
+      postprocessing: none
+      original_generated_output: "/Users/rogwild/.codex/generated_images/01a10349-97f3-7f92-9a08-dd2a647e8f7a/exec-c6f5a08f-3437-4710-8cad-9c3cb1b2f0dc.png"
+    source_or_tool: "Built-in imagegen edit, 2026-10-06, using the preserved original as the sole image input. The tool returned a 1254 by 1254 square PNG, copied unchanged. Model and seed unavailable."
+    visual_review:
+      status: visually-verified
+      source: Production-agent comparison of original and square delivery, 2026-10-06.
+      findings: Full original scene remains recognizable with proportional resampling. Added wall and window above, desk and foreground below. Face, hands, laptop and original project materials remain visible; no obvious seam, stretch or crop.
+      scope: Source and delivery comparison; responsive display is checked in the registration page. Agent QA only, lifecycle remains proposed.
+    alt: "A woman working on her project with a laptop and notebook."
+
+  - id: singlepage-generated-living-focus-photography-project-progress-v1
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-project-progress-v1.png
+    design_role: null
+    design_key: null
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated editorial photograph of a fictional individual; no actual customer or business result is depicted.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+      - product.ai-chat.website
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    purpose: Preserved original master for the lower photograph on the AI Chat registration page.
+    production_stage: original-master
+    display_derivative_asset_id: singlepage-generated-living-focus-photography-project-progress-v1-square
+    allowed_use:
+      - Retain unchanged as the source of the registered square delivery.
+      - Inspect the composition and photographic treatment during product review.
+    prohibited_use:
+      - Do not present the fictional person or setting as a real customer, founder, workplace or testimonial.
+      - Use the registered square delivery for product display; do not substitute a crop of this original.
+    reference_asset_ids: []
+    reference_use: Existing Living Focus photographs informed the written style master only; generation had no image inputs or external references.
+    dimensions:
+      width: 1536
+      height: 1024
+    content_sha256: e02a0fc9805ad8c515f9dde5cac93a07b921c6b4b1e8047e55c5aa16b4013999
+    prompt: |-
+      Candid editorial photography of people at work, with cool blue or teal daylight balanced by warm natural skin tones. Use close human framing, a present gesture and a clear point of attention. Keep the image photographic and contemporary, with soft foreground or background depth; allow natural motion blur when the action calls for it.
+      Photorealistic-natural photograph for SinglePageStartup AI Chat account registration, Living Focus visual direction. A different solo entrepreneur, a man in his late thirties with short curly dark hair, wearing a muted denim shirt, at his own bright small workshop desk. A candid closer photograph from a slightly elevated side angle: he smiles quietly while reviewing his project on a laptop and holding one paper sketch beside it. His expression feels relieved and engaged, working independently rather than with a team. Cool slate and blue-grey daylight, warm natural skin, a simple shelf and personal work materials blurred in the background, authentic lived-in details. Frame his face in the upper third, keep the hands and project materials visible, and leave unobtrusive desk area along the bottom for an eventual separate UI card overlay. No other people, no posed camera eye contact, no logos or readable screen text, no robot or glowing AI imagery. Let the scene determine the natural aspect ratio; preserve a complete photographic composition rather than forcing a square. Produce one original photograph, no collage, no interface or captions.
+    source_or_tool: "Built-in imagegen, 2026-10-06. Original output copied unchanged from /Users/rogwild/.codex/generated_images/01a10349-97f3-7f92-9a08-dd2a647e8f7a/exec-def253af-18b4-4e82-9cda-835477d50a68.png. Model and seed unavailable."
+    visual_review:
+      status: visually-verified
+      source: Production-agent image inspection, 2026-10-06.
+      findings: One person working independently at a laptop, readable face and hand gesture, cool daylight and warm skin. No visible graphic overlays or anatomical defects.
+      scope: Conceptual brand imagery; agent inspection does not establish operator approval or customer evidence.
+
+  - id: singlepage-generated-living-focus-photography-project-progress-v1-square
+    path: assets/singlepage/generated/living-focus/singlepagestartup-photography-project-progress-v1-square.png
+    design_role: photography
+    design_key: project-progress
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated editorial photograph of a fictional individual; no actual customer or business result is depicted.
+    related_artifacts:
+      - singlepage.design
+      - singlepage.products
+      - product.ai-chat.website
+    style_master_sha256: 9425ac405b2e6979438a4f25a5c23823c9b2e768f0f3bfe594905aa28db64dae
+    purpose: Lower registration photograph beneath the materials-information card.
+    allowed_use:
+      - Reuse as conceptual Living Focus imagery on account, onboarding and project pages, and in related marketing materials.
+      - Overlay the materials-information card on the lower desk area while keeping the face and working gesture visible.
+    prohibited_use:
+      - Do not present the fictional person or setting as a real customer, founder, workplace or testimonial.
+      - Do not stretch the square or crop away its reviewed composition.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-project-progress-v1
+    source_master_asset_id: singlepage-generated-living-focus-photography-project-progress-v1
+    source_master_sha256: e02a0fc9805ad8c515f9dde5cac93a07b921c6b4b1e8047e55c5aa16b4013999
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 07582dedb4b552abf1d37d75c2f5801175736a467989a6a23e9a1df13ac2d2a2
+    prompt: |-
+      Use case: precise-object-edit. Expand the supplied original 1536 by 1024 landscape photograph into a square canvas by outpainting above and below the original. Preserve the entire original frame, composition and proportions; do not crop, stretch, zoom, reframe, reposition or repaint the existing scene. Preserve the man's exact face, curly hair, denim shirt, hands, paper sketch, laptop, cup, desk materials, shelves and window. Add plausible continuation of the wall and window above and the desk and soft foreground below. Match cool daylight, natural warm skin, blue-grey surroundings, optical depth, perspective and texture at all edges. Keep the existing face in the upper half of the finished square; extend mostly below when needed, retaining some headroom. Add no person, text, logo, interface or graphic overlay. Produce an opaque square PNG. This is conceptual brand photography of a fictional individual.
+    adaptation:
+      operation: canvas-outpainting
+      tool: Built-in imagegen
+      postprocessing: none
+      original_generated_output: "/Users/rogwild/.codex/generated_images/01a10349-97f3-7f92-9a08-dd2a647e8f7a/exec-b25d5934-78c8-4f3d-a824-648b81c25a90.png"
+    source_or_tool: "Built-in imagegen edit, 2026-10-06, using the preserved original as the sole image input. The tool returned a 1254 by 1254 square PNG, copied unchanged. Model and seed unavailable."
+    visual_review:
+      status: visually-verified
+      source: Production-agent comparison of original and square delivery, 2026-10-06.
+      findings: Full original scene remains recognizable with proportional resampling. Added wall and window above, desk and foreground below. Face, hands, laptop and original project materials remain visible; no obvious seam, stretch or crop.
+      scope: Source and delivery comparison; responsive display is checked in the registration page. Agent QA only, lifecycle remains proposed.
+    alt: "A man reviewing a project sketch beside his laptop."
+
+  - id: singlepage-generated-account-mascot
+    path: apps/studio/workspace/assets/singlepage/generated/living-focus/singlepagestartup-account-mascot.png
+    source_type: generated
+    evidence: false
+    rights_status: AI-generated illustrative draft for Studio preview.
+    purpose: Original user-avatar mascot master.
+    related_artifacts: [singlepage.design]
+    allowed_use: [Studio profile menu preview]
+    prohibited_use: [Product evidence or approved brand identity claims]
+    prompt: >-
+      Use case: stylized-concept. Create an original small friendly mascot portrait
+      for a user avatar in SinglePageStartup AI Chat. A compact rounded geometric
+      character made from matte ceramic: soft graphite blue-gray body #18262D,
+      warm off-white face, two simple dark eyes, one small lime green #BFEF61
+      accent on the upper left edge of its head. Calm slight smile, thoughtful
+      adult-friendly design, subtle soft studio lighting, no shiny plastic, no
+      antenna, no letters, no logo, no text, no watermark. Head and shoulders
+      front-facing, generous empty margins so it reads as a circular UI avatar
+      at 32 pixels. Transparent background. Create the illustrative master with
+      natural unconstrained aspect ratio; do not crop any part of the character.
+      This is a portrait asset, not an interface screenshot.
+    source_or_tool: Built-in image_gen, text generation.
+
+  - id: singlepage-generated-account-mascot-square
+    path: apps/studio/workspace/assets/singlepage/generated/living-focus/singlepagestartup-account-mascot-square.png
+    source_type: generated
+    evidence: false
+    rights_status: AI-generated illustrative draft for Studio preview.
+    purpose: Square delivery avatar from the preserved mascot master.
+    related_artifacts: [singlepage-generated-account-mascot]
+    allowed_use: [Studio profile menu preview]
+    prohibited_use: [Product evidence or approved brand identity claims]
+    prompt: >-
+      Prepare a square avatar by expanding the transparent canvas to 1:1.
+      Preserve the whole mascot without cropping or redesign; center it with
+      transparent breathing room for a circular UI avatar.
+    source_or_tool: Built-in image_gen, referenced-image edit.

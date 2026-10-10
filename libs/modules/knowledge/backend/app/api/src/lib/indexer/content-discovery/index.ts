@@ -44,25 +44,14 @@ export function parseKnowledgeSourceFile(props: {
   const filename = path.basename(props.filePath);
   const directoryName = path.basename(path.dirname(props.filePath));
   const title = extractTitle(props.content) || humanize(directoryName);
-  const type = inferSourceType(relativePath, filename);
   const timestamps = extractTimestamps(props.content);
   const normalizedContent = props.content.trim();
 
   return {
     title,
-    type,
     content: normalizedContent,
     description: filename.includes("description") ? normalizedContent : null,
-    originalPath: relativePath,
-    contentHash: hashContent(normalizedContent),
-    metadata: {
-      filename,
-      directoryName,
-      relativePath,
-      absolutePath: props.filePath,
-      hasTimestamps: timestamps.length > 0,
-      timestamps: timestamps.slice(0, 50),
-    },
+    slug: "file-" + hashContent(relativePath),
   };
 }
 

@@ -1,0 +1,21 @@
+{
+  "componentName": "host.metadata",
+  "pageName": "host",
+  "variantName": "admin-v2-form",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.metadata.admin-v2-form",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/metadata/singlepage/admin-v2-form",
+    "sps.figma.component": "host.metadata",
+    "sps.figma.variant": "admin-v2-form",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "metadata",
+    "sps.source.variant": "admin-v2-form",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/host/metadata/singlepage/admin-v2-form/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/metadata/singlepage/admin-v2-form/Component.stories.tsx"
+  }
+}

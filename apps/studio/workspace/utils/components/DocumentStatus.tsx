@@ -45,6 +45,7 @@ export interface IDocumentHeaderProps {
   actions?: ReactNode;
   confirmation?: IDocumentConfirmation;
   title: string;
+  titleId?: string;
   purpose: string;
 }
 
@@ -52,10 +53,11 @@ export function DocumentHeader({
   actions,
   confirmation,
   title,
+  titleId,
   purpose,
 }: IDocumentHeaderProps) {
   return (
-    <header className="mb-8 w-full rounded-3xl bg-[var(--workspace-brand-primary)] p-7 text-white  md:p-10">
+    <header className="mb-8 w-full rounded-3xl bg-[var(--workspace-brand-primary)] p-7 text-[var(--workspace-brand-on-primary)] md:p-10">
       <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:flex-wrap">
         <div className="min-w-0 w-full flex-1 sm:w-auto">
           {confirmation ? (
@@ -63,7 +65,10 @@ export function DocumentHeader({
               <ConfirmationBadge confirmation={confirmation} />
             </div>
           ) : null}
-          <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
+          <h1
+            id={titleId}
+            className="text-3xl font-semibold tracking-tight md:text-5xl"
+          >
             {title}
           </h1>
           {purpose ? (

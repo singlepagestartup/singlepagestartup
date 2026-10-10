@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "variantName": "account-data",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.subject.account-data",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/subject/singlepage/account-data",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "account-data",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "account-data",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/subject/singlepage/account-data/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/subject/singlepage/account-data/Component.stories.tsx"
+  }
+}

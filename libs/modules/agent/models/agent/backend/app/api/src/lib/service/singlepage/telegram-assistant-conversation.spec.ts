@@ -15,15 +15,15 @@ const mockRbacApi = {
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillUpdate: jest.fn(),
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillLink: jest.fn(),
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillUnlink: jest.fn(),
-  socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind:
+  socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind:
     jest.fn(),
-  socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentCreate:
+  socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceCreate:
     jest.fn(),
-  socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdUpdate:
+  socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdUpdate:
     jest.fn(),
-  socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdReindex:
+  socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdReindex:
     jest.fn(),
-  socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdDelete:
+  socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdDelete:
     jest.fn(),
 };
 
@@ -119,7 +119,7 @@ describe("TelegramAssistantConversation", () => {
     mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillAvailable.mockResolvedValue(
       [],
     );
-    mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind.mockResolvedValue(
+    mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind.mockResolvedValue(
       [],
     );
   });
@@ -765,7 +765,7 @@ describe("TelegramAssistantConversation", () => {
       title: "Facts",
       description: "Content",
     };
-    mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind.mockResolvedValue(
+    mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind.mockResolvedValue(
       [document],
     );
     await harness.conversation.enter(context, harness.transport);
@@ -785,7 +785,7 @@ describe("TelegramAssistantConversation", () => {
       harness.transport,
     );
     expect(
-      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdDelete,
+      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdDelete,
     ).not.toHaveBeenCalled();
 
     const confirmData = callback(harness.transport, "Да, удалить");
@@ -801,7 +801,7 @@ describe("TelegramAssistantConversation", () => {
     );
 
     expect(
-      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdDelete,
+      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdDelete,
     ).toHaveBeenCalledTimes(1);
   });
 
@@ -816,9 +816,9 @@ describe("TelegramAssistantConversation", () => {
     const document = {
       id: "document-long",
       title: 'Release / notes: "Summer"',
-      description: "Полное содержимое\n" + "x".repeat(6_000),
+      content: "Полное содержимое\n" + "x".repeat(6_000),
     };
-    mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind.mockResolvedValue(
+    mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind.mockResolvedValue(
       [document],
     );
 
@@ -844,11 +844,11 @@ describe("TelegramAssistantConversation", () => {
     expect(file?.name).toBe("Release - notes- -Summer-.txt");
     expect(file?.type).toBe("text/plain");
     await expect(file?.text()).resolves.toBe(
-      `${document.title}\n\n${document.description}`,
+      `${document.title}\n\n${document.content}`,
     );
     expect(lastData(harness.transport).description.length).toBeLessThan(4_096);
     expect(lastData(harness.transport).description).not.toContain(
-      document.description,
+      document.content,
     );
     expect(lastData(harness.transport).description).toContain(
       "Содержимое отправлено отдельным TXT-файлом.",
@@ -866,9 +866,10 @@ describe("TelegramAssistantConversation", () => {
     const document = {
       id: "33333333-3333-4333-8333-333333333333",
       title: "Facts",
-      description: "Old content",
+      content:
+        "## Контекст пользователя\n<!-- knowledge:user -->\nOld content\n<!-- /knowledge:user -->\n\n## Сведения из материалов\nОписание PDF",
     };
-    mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind.mockResolvedValue(
+    mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind.mockResolvedValue(
       [document],
     );
     await harness.conversation.enter(context, harness.transport);
@@ -890,10 +891,10 @@ describe("TelegramAssistantConversation", () => {
       );
     }
     expect(
-      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentCreate,
+      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceCreate,
     ).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { title: "New facts", description: "New content" },
+        data: { title: "New facts", content: "New content" },
       }),
     );
 
@@ -915,11 +916,14 @@ describe("TelegramAssistantConversation", () => {
       );
     }
     expect(
-      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdUpdate,
+      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdUpdate,
     ).toHaveBeenCalledWith(
       expect.objectContaining({
-        knowledgeModuleDocumentId: document.id,
-        data: { title: "Updated facts", description: "Updated content" },
+        knowledgeModuleSourceId: document.id,
+        data: {
+          title: "Updated facts",
+          content: document.content.replace("Old content", "Updated content"),
+        },
       }),
     );
 
@@ -934,10 +938,10 @@ describe("TelegramAssistantConversation", () => {
       harness.transport,
     );
     expect(
-      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdReindex,
+      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdReindex,
     ).toHaveBeenCalledWith(
       expect.objectContaining({
-        knowledgeModuleDocumentId: document.id,
+        knowledgeModuleSourceId: document.id,
       }),
     );
   });
@@ -979,10 +983,10 @@ describe("TelegramAssistantConversation", () => {
 
     expect(content.length).toBeGreaterThan(4_000);
     expect(
-      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentCreate,
+      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceCreate,
     ).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { title: "Келлеры в ЖК", description: content.trim() },
+        data: { title: "Келлеры в ЖК", content: content.trim() },
       }),
     );
     expect((await harness.runtime.get(context.key))?.editor).toBeUndefined();

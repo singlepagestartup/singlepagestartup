@@ -15,6 +15,37 @@ import type { ITopicRule } from "./index";
  */
 export const topicRules: ITopicRule[] = [
   {
+    routeTemplate: "/api/knowledge/sources-to-file-storage-module-files",
+    topics: [
+      "knowledge.sources-to-file-storage-module-files",
+      "knowledge.sources",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+    ],
+    stop: true,
+  },
+  {
+    routeTemplate: "/api/knowledge/sources",
+    topics: [
+      "knowledge.sources",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+    ],
+    stop: true,
+  },
+  {
+    routeTemplate: "/api/file-storage/files",
+    topics: [
+      "file-storage.files",
+      "knowledge.sources-to-file-storage-module-files",
+      "knowledge.sources",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+    ],
+    stop: true,
+  },
+
+  {
     // Thread-scoped message mutations (the chat send path). Without this rule
     // the generic fallback broadcasts broad topics (social.chats.[id],
     // social.profiles.[id]) that invalidate the chat findById query and
@@ -51,32 +82,32 @@ export const topicRules: ITopicRule[] = [
       "social.chats.[social.chats.id].messages",
       "social.actions",
       "social.chats.[social.chats.id].actions",
-      "social.profiles-to-knowledge-module-documents",
-      "knowledge.documents",
+      "social.profiles-to-knowledge-module-sources",
+      "knowledge.sources",
       "rbac.subjects-to-billing-module-currencies",
     ],
     stop: true,
   },
   {
     // Profile Knowledge is a composite RBAC read over both the Social-owned
-    // profile-document relation and Knowledge documents. Canonical derivation
-    // sees only the trailing `documents` segment and therefore cannot identify
+    // profile-Source relation and Knowledge Sources. Canonical derivation
+    // sees only the trailing `sources` segment and therefore cannot identify
     // either collection that actually changes.
     routeTemplate:
-      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/[social.target-profiles.id]/knowledge/documents",
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/[social.target-profiles.id]/knowledge/sources",
     topics: [
-      "social.profiles-to-knowledge-module-documents",
-      "knowledge.documents",
+      "social.profiles-to-knowledge-module-sources",
+      "knowledge.sources",
     ],
     stop: true,
   },
   {
-    // Profile-scoped variant of the same composite Knowledge document read.
+    // Profile-scoped variant of the same composite Knowledge Source read.
     routeTemplate:
-      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/knowledge/documents",
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/knowledge/sources",
     topics: [
-      "social.profiles-to-knowledge-module-documents",
-      "knowledge.documents",
+      "social.profiles-to-knowledge-module-sources",
+      "knowledge.sources",
     ],
     stop: true,
   },

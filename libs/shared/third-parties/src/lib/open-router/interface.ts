@@ -91,6 +91,7 @@ export type IOpenRouterToolChoice =
     };
 
 export interface IOpenRouterGenerationSuccess {
+  finishReason?: string;
   text: string;
   images?: IOpenRouterGeneratedImage[];
   toolCalls?: IOpenRouterToolCall[];

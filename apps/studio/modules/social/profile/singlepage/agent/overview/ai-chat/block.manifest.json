@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.agent-overview-ai-chat",
+  "title": "agent-overview-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Agent Profile overview with its description and Skill.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "agent-overview-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "agent-overview-ai-chat"
+  },
+  "contentSlots": []
+}

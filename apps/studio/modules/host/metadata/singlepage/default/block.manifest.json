@@ -1,0 +1,27 @@
+{
+  "id": "host.metadata.default",
+  "title": "Host metadata / default",
+  "description": "Local Studio projection of Host metadata using the existing SDK fields and links.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "host",
+    "entityType": "model",
+    "entity": "metadata",
+    "variant": "default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "host.metadata",
+    "pageName": "host",
+    "variantName": "default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

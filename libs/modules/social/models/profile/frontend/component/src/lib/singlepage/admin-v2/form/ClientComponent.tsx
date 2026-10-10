@@ -71,9 +71,9 @@ export function Component(props: IComponentPropsExtended) {
         render: props.profilesToBlogModuleArticles,
       },
       {
-        id: "profiles-to-knowledge-module-documents",
-        title: "Knowledge Documents",
-        render: props.profilesToKnowledgeModuleDocuments,
+        id: "profiles-to-knowledge-module-sources",
+        title: "Knowledge Sources",
+        render: props.profilesToKnowledgeModuleSources,
       },
       {
         id: "profiles-to-skills",
@@ -126,7 +126,7 @@ export function Component(props: IComponentPropsExtended) {
     );
   }, [
     props.profilesToBlogModuleArticles,
-    props.profilesToKnowledgeModuleDocuments,
+    props.profilesToKnowledgeModuleSources,
     props.profilesToSkills,
     props.profilesToWebsiteBuilderModuleWidgets,
     props.profilesToFileStorageModuleFiles,

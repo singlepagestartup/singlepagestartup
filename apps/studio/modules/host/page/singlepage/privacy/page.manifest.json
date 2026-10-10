@@ -1,0 +1,26 @@
+{
+  "id": "privacy",
+  "title": "Privacy",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the privacy policy route.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "privacy",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1783",
+    "syncStatus": "needs-update",
+    "metadataFile": "figma.json"
+  }
+}

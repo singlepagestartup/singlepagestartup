@@ -123,6 +123,7 @@ export interface ISelectProps extends SelectPrimitive.SelectProps {
   placeholder?: string;
   "aria-label"?: string;
   "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
   options: ISelectOption[];
 }
 
@@ -130,6 +131,7 @@ export interface ISpecimenProps {
   id: string;
   title: string;
   description: string;
+  guidance?: ReactNode;
   states: string[];
   usage: string;
   recipe: string;
@@ -431,20 +433,48 @@ export const Select = forwardRef<HTMLButtonElement, ISelectProps>(
       options,
       "aria-label": ariaLabel,
       "aria-invalid": ariaInvalid,
+      "aria-describedby": ariaDescribedBy,
       ...props
     },
     ref,
   ) {
-    const [portal, setPortal] = useState<HTMLDivElement | null>(null);
+    const [projection, setProjection] = useState("singlepage");
+    const [editorDepth, setEditorDepth] = useState(0);
 
     return (
-      <div ref={setPortal} className="min-w-0">
-        <SelectPrimitive.Root {...props}>
+      <div
+        ref={(node) => {
+          if (node) {
+            setProjection(
+              node
+                .closest("[data-workspace-projection]")
+                ?.getAttribute("data-workspace-projection") ?? "singlepage",
+            );
+            setEditorDepth(
+              Number(
+                node
+                  .closest("[data-ds-panel-depth]")
+                  ?.getAttribute("data-ds-panel-depth") ?? 0,
+              ),
+            );
+          }
+        }}
+        className="min-w-0"
+      >
+        <SelectPrimitive.Root
+          {...props}
+          onValueChange={(value) => {
+            // Radix's hidden form select can emit an empty value while newly
+            // created options register. Empty values are placeholders, not options.
+            if (value) props.onValueChange?.(value);
+          }}
+        >
           <SelectPrimitive.Trigger
             ref={ref}
             id={id}
             aria-label={ariaLabel}
             aria-invalid={ariaInvalid}
+            aria-describedby={ariaDescribedBy}
             className={twMerge(picker.trigger, className)}
           >
             <SelectPrimitive.Value placeholder={placeholder} />
@@ -452,13 +482,20 @@ export const Select = forwardRef<HTMLButtonElement, ISelectProps>(
               <Icon name="caret-down" className={picker.icon} />
             </SelectPrimitive.Icon>
           </SelectPrimitive.Trigger>
-          <SelectPrimitive.Portal container={portal}>
+          {/* Keep fixed positioning outside CSS containers while retaining the project theme. */}
+          <SelectPrimitive.Portal>
             <SelectPrimitive.Content
+              data-workspace-projection={projection}
               position="popper"
               align="start"
               sideOffset={6}
               collisionPadding={12}
-              className={picker.content}
+              className={twMerge(
+                picker.content,
+                ["z-60", "z-80", "z-[100]", "z-[120]"][
+                  Math.min(editorDepth, 3)
+                ],
+              )}
             >
               <SelectPrimitive.ScrollUpButton className="flex h-7 items-center justify-center">
                 <Icon name="caret-down" className="rotate-180" />
@@ -497,6 +534,7 @@ export function Specimen({
   id,
   title,
   description,
+  guidance,
   states,
   usage,
   recipe,
@@ -511,6 +549,7 @@ export function Specimen({
       <p className={`mt-2 max-w-3xl text-sm leading-[22px] ${kit.muted}`}>
         {description}
       </p>
+      {guidance}
       <div className="mt-6 min-w-0">{children}</div>
       <details className="mt-6 border-t border-[var(--workspace-brand-line)] pt-4 text-xs leading-5">
         <summary

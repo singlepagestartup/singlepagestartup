@@ -1,3 +1,4 @@
+import { SurfacePatternGuidance } from "../../../utils/components/InterfaceGuidance";
 import { ConfirmationDialog } from "../interface-kit/Confirmation";
 import { StatusBadge } from "../interface-kit/DataDisplay";
 import { useState } from "react";
@@ -37,6 +38,7 @@ export default function Conversion() {
         <p className="mt-2 text-xs text-[var(--workspace-brand-muted)]">
           Composed from: surfaces · actions
         </p>
+        <SurfacePatternGuidance title="Offer comparison" />
         <p className="mt-2 max-w-3xl text-sm leading-[22px] text-[var(--workspace-brand-muted)]">
           Two products use equal columns and a consistent hierarchy. A graphite
           panel can focus one route without inventing a price or a paid tier.
@@ -138,6 +140,7 @@ export default function Conversion() {
         <p className="mt-2 text-xs text-[var(--workspace-brand-muted)]">
           Composed from: surfaces · actions · icons · status · fields
         </p>
+        <SurfacePatternGuidance title="Contextual sheet" />
         <p className="mt-2 text-sm leading-6 text-[var(--workspace-brand-muted)]">
           A compact surface groups a record, its state and relevant actions. Use
           the Sheet component when this composition opens as an overlay.

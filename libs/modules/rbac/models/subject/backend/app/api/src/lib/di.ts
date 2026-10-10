@@ -4,6 +4,7 @@ export interface IReadService {
 }
 
 export interface ICreateService extends IReadService {
+  findOrCreate(props: any): Promise<any>;
   create: (props: { data: any }) => Promise<any>;
 }
 
@@ -49,7 +50,9 @@ export interface ISocialModule {
   attributeKey: IReadService;
   profilesToChats: IReadService;
   profilesToSkills: ICreateDeleteService;
-  profilesToKnowledgeModuleDocuments: ICreateService;
+  profilesToKnowledgeModuleSources: ICreateService;
+  messagesToKnowledgeModuleSources: ICreateService;
+  skillsToKnowledgeModuleSources: ICreateService;
   profilesToMessages: IReadService;
   profilesToActions: IReadService;
   profilesToAttributes: IReadService;

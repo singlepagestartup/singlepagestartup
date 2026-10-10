@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.order",
+  "pageName": "ecommerce",
+  "variantName": "checkout-tokens-ai-chat",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.order.checkout-tokens-ai-chat",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/order/singlepage/checkout/tokens/ai-chat",
+    "sps.figma.component": "ecommerce.order",
+    "sps.figma.variant": "checkout-tokens-ai-chat",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "order",
+    "sps.source.variant": "checkout-tokens-ai-chat",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/order/singlepage/checkout/tokens/ai-chat/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/order/singlepage/checkout/tokens/ai-chat/Component.stories.tsx"
+  }
+}

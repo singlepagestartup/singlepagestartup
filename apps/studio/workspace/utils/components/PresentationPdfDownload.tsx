@@ -5,7 +5,7 @@ import { ArrowDown as Download } from "./ModuleIcons";
 import {
   useElementPdfDownload,
   type ICreatePdfFromElementsOptions,
-} from "@sps/shared-frontend-client-pdf";
+} from "../media/pdf/index";
 
 interface IPresentationPdfDownloadProps {
   children: ReactNode;

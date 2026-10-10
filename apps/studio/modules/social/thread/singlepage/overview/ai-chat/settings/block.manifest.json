@@ -1,0 +1,27 @@
+{
+  "id": "social.thread.overview-ai-chat-settings",
+  "title": "overview-ai-chat-settings",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Settings for one local work Thread.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.thread",
+    "pageName": "social",
+    "variantName": "overview-ai-chat-settings",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "thread",
+    "variant": "overview-ai-chat-settings"
+  },
+  "contentSlots": []
+}

@@ -39,6 +39,7 @@ export function ProductPages({
   const all = flatten(pages);
   const first = all.find((page) => page.kind !== "group");
   const [selected, setSelected] = useState(overview ? "overview" : first?.id);
+  const [navigationHref, setNavigationHref] = useState<string>();
   const [representation, setRepresentation] = useState<Representation>("text");
   const [expanded, setExpanded] = useState<Set<string>>(
     () =>
@@ -56,9 +57,9 @@ export function ProductPages({
     pendingAnchor.current = null;
     const anchor = [
       ...(contentRef.current?.querySelectorAll<HTMLElement>("[id]") ?? []),
-    ].find((node) => node.id === target);
+    ].find((node) => node.id === target && !node.closest("[hidden]"));
     (anchor ?? contentRef.current)?.scrollIntoView({ block: "start" });
-  }, [selected]);
+  }, [selected, navigationHref, representation]);
   if (!pages.length) return <>{children}</>;
   const page =
     selected === "overview" && overview
@@ -209,7 +210,7 @@ export function ProductPages({
   );
   return (
     <div
-      className="grid min-w-0 md:grid-cols-[220px_minmax(0,1fr)]"
+      className="grid min-w-0 grid-cols-1 md:grid-cols-[220px_minmax(0,1fr)]"
       onClickCapture={(event) => {
         if (
           event.button !== 0 ||
@@ -225,28 +226,37 @@ export function ProductPages({
         if (!link || link.hasAttribute("download")) return;
         const target = new URL(link.href, window.location.href);
         if (target.origin !== window.location.origin) return;
-        const linked = all.find((entry) => {
-          const url = entry.representations?.text.url ?? entry.url;
-          return (
-            url &&
-            new URL(url, window.location.href).pathname === target.pathname
-          );
-        });
+        const linked =
+          all.find((entry) => entry.route === target.pathname) ??
+          all.find((entry) => {
+            const url = entry.representations?.text.url ?? entry.url;
+            const routeParts = entry.route?.split("/");
+            const targetParts = target.pathname.split("/");
+            const routeMatches =
+              routeParts?.length === targetParts.length &&
+              routeParts.every((part, index) =>
+                /^\[[^\]]+\]$/.test(part)
+                  ? Boolean(targetParts[index])
+                  : part === targetParts[index],
+              );
+            return (
+              routeMatches ||
+              (url &&
+                new URL(url, window.location.href).pathname === target.pathname)
+            );
+          });
         if (!linked) return;
         event.preventDefault();
+        setNavigationHref(target.pathname + target.hash);
         const anchorId = decodeURIComponent(target.hash.slice(1));
-        if (linked.id === selected) {
-          const anchor = [
-            ...(contentRef.current?.querySelectorAll<HTMLElement>("[id]") ??
-              []),
-          ].find((node) => node.id === anchorId);
-          (anchor ?? contentRef.current)?.scrollIntoView({ block: "start" });
-          return;
-        }
         pendingAnchor.current = anchorId;
         setSelected(linked.id);
         setFocused(linked.id);
-        setRepresentation("text");
+        setRepresentation((current) =>
+          current === "preview" && linked.representations?.preview
+            ? "preview"
+            : "text",
+        );
         setExpanded(
           new Set(
             all
@@ -335,6 +345,7 @@ export function ProductPages({
               </h2>
               <WorkspacePage
                 page={displayed}
+                navigationHref={navigationHref}
                 resolveLink={resolveLink}
                 hideConfirmation
                 hideTitle={displayed.kind === "markdown"}

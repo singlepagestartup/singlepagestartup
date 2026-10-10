@@ -3,7 +3,7 @@ import { productStoryId } from "../products/catalog";
 
 import type { IProductCatalogView, IProductView } from "../products/source";
 import { MarkdownDocument } from "./ArtifactBrowser";
-import { DocumentReviewToolbar } from "./DocumentStatus";
+import { DocumentHeader, DocumentReviewToolbar } from "./DocumentStatus";
 import { PresentationWorkspace } from "./PresentationWorkspace";
 import { ProductPages } from "./ProductPages";
 import { DocumentDownloads } from "./DocumentDownloads";
@@ -300,19 +300,15 @@ export function ProductCatalog({
       data-workspace-projection="default"
       className="min-h-screen font-[family-name:var(--workspace-brand-font-body)] bg-[var(--workspace-brand-background)] p-5 text-[var(--workspace-brand-foreground)] md:p-10"
     >
-      <header className="mb-8 w-full rounded-3xl bg-[var(--workspace-brand-primary)] p-7 text-white  md:p-10">
-        <h1
-          id="product-title"
-          className="text-3xl font-semibold tracking-tight md:text-5xl"
-        >
-          {productId ? product.name : "Products"}
-        </h1>
-        <p className="mt-4 max-w-3xl text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)] md:text-base">
-          {productId
+      <DocumentHeader
+        titleId="product-title"
+        title={productId ? product.name : "Products"}
+        purpose={
+          productId
             ? product.summary
-            : "Connects each product's offer, operating model, customer process, promotion, observed results, and research in one reviewable workspace."}
-        </p>
-      </header>
+            : "Connects each product's offer, operating model, customer process, promotion, observed results, and research in one reviewable workspace."
+        }
+      />
 
       <div className="w-full min-w-0">
         {!productId && (

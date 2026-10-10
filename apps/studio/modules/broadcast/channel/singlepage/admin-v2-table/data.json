@@ -1,0 +1,81 @@
+{
+  "schema": {
+    "module": "broadcast",
+    "entity": "channel",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "adminTitle",
+        "label": "Admin Title",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "slug",
+        "label": "Slug",
+        "kind": "text",
+        "nullable": false
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "e2b7c152-8e1f-4db4-a250-03c214010776",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "channel example 1",
+      "adminTitle": "channel example 1",
+      "slug": "channel-example-1"
+    },
+    {
+      "id": "804063a0-d29f-49c8-a719-b1ce59958cd8",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "channel example 2",
+      "adminTitle": "channel example 2",
+      "slug": "channel-example-2"
+    },
+    {
+      "id": "1d09a8be-b512-4301-a5a0-f1648c95b5be",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "title": "channel example 3",
+      "adminTitle": "channel example 3",
+      "slug": "channel-example-3"
+    }
+  ]
+}

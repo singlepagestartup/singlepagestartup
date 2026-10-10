@@ -6,7 +6,7 @@
  * Then: the expected route paths and response shapes are preserved.
  */
 
-import { generate, index, models, reindexDocument, search } from ".";
+import { generate, index, models, reindexSource, search } from ".";
 
 describe("knowledge client SDK actions", () => {
   beforeEach(() => {
@@ -97,18 +97,18 @@ describe("knowledge client SDK actions", () => {
   /**
    * BDD Scenario: document reindex route.
    *
-   * Given: a knowledge document id.
+   * Given: a knowledge source id.
    * When: the client SDK action executes.
-   * Then: it posts to `/api/knowledge/documents/:id/reindex`.
+   * Then: it posts to `/api/knowledge/sources/:id/reindex`.
    */
   it("builds the document reindex route", async () => {
-    await reindexDocument.action({
+    await reindexSource.action({
       host: "http://api.test",
       id: "document-1",
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
-      "http://api.test/api/knowledge/documents/document-1/reindex",
+      "http://api.test/api/knowledge/sources/document-1/reindex",
       expect.objectContaining({
         method: "POST",
       }),

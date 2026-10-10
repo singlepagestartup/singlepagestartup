@@ -1,0 +1,42 @@
+{
+  "id": "blog",
+  "title": "Blog Find Article Card",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for a blog find page with article cards.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.website",
+      "path": "../../../layout/singlepage/website"
+    },
+    {
+      "id": "website-builder.widget.content-page-header",
+      "path": "../../../../website-builder/widget/singlepage/content-page-header"
+    },
+    {
+      "id": "blog.widget.article-find-featured",
+      "path": "../../../../blog/widget/singlepage/article-find-featured"
+    },
+    {
+      "id": "blog.widget.article-find-card-default",
+      "path": "../../../../blog/widget/singlepage/article-find-card-default"
+    },
+    {
+      "id": "blog.widget.tag-find-button",
+      "path": "../../../../blog/widget/singlepage/tag-find-button"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "blog",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1765",
+    "syncStatus": "needs-update",
+    "metadataFile": "figma.json"
+  }
+}

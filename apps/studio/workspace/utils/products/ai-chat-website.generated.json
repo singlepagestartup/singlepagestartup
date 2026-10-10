@@ -1,0 +1,387 @@
+{
+  "hero": {
+    "title": "Your notes, photos and plans. One project chat.",
+    "paragraphs": [
+      "AI Chat for your business idea.",
+      "Upload what you have. AI checks for gaps and helps you edit each document in its own thread. Attach saved documents to new conversations about your project.",
+      "Your documents stay editable. Export them and use them freely outside AI Chat."
+    ],
+    "items": [],
+    "links": [
+      {
+        "text": "Start with my files",
+        "href": "/ai-chat/register"
+      },
+      {
+        "text": "Sign in",
+        "href": "/ai-chat/login"
+      }
+    ]
+  },
+  "foundation": {
+    "title": "Your project, ready to work on.",
+    "paragraphs": [
+      "Your files become working documents you can open, edit and use in chat."
+    ],
+    "items": [
+      {
+        "title": "Brief",
+        "text": "What you want to make and the material you have."
+      },
+      {
+        "title": "Strategy",
+        "text": "Who you want to reach and what you will offer them."
+      },
+      {
+        "title": "Brand",
+        "text": "How you describe the project and speak to customers."
+      },
+      {
+        "title": "Design",
+        "text": "The intended appearance and the images you can use."
+      },
+      {
+        "title": "Products",
+        "text": "Each product's customer, offer and working sections."
+      }
+    ],
+    "links": []
+  },
+  "workflow": {
+    "title": "Try the chat.",
+    "paragraphs": [
+      "Check the workshop files and send an answer. Review Products.md, work on another file, then open a topic with the documents you saved."
+    ],
+    "items": [
+      {
+        "title": "Add materials",
+        "text": "Bring notes, photos, plans or describe the idea in chat."
+      },
+      {
+        "title": "Review",
+        "text": "AI checks the material and asks about what is missing."
+      },
+      {
+        "title": "Edit together",
+        "text": "Discuss and edit each document in its own thread. Review it when ready."
+      },
+      {
+        "title": "Keep working",
+        "text": "Open a topic and attach the saved documents you want to use."
+      }
+    ],
+    "links": []
+  },
+  "publish": {
+    "title": "Edit the document.",
+    "paragraphs": [
+      "Read the draft, change the wording and save the section when it is ready."
+    ],
+    "items": [],
+    "links": []
+  },
+  "continue": {
+    "title": "Keep working in chat.",
+    "paragraphs": [
+      "Open a topic for your next task. Choose which saved documents to attach, then discuss the project with AI Chat."
+    ],
+    "items": [],
+    "links": []
+  },
+  "footer": {
+    "title": "SinglePageStartup",
+    "paragraphs": [],
+    "items": [],
+    "links": [
+      {
+        "text": "Start with my files",
+        "href": "/ai-chat/register"
+      },
+      {
+        "text": "Sign in",
+        "href": "/ai-chat/login"
+      },
+      {
+        "text": "Code Framework",
+        "href": "https://github.com/singlepagestartup/singlepagestartup"
+      }
+    ]
+  },
+  "terms": {
+    "title": "Access, tokens and your materials",
+    "paragraphs": [
+      "Registration shows the current free token allowance. Paid AI work uses the token balance."
+    ],
+    "items": [
+      {
+        "title": "Token cost",
+        "text": "0.13 roubles per internal token. One token is charged when input is sent; a successful request settles at actual provider cost, rounded up to a whole internal token, with a minimum of one token."
+      },
+      {
+        "title": "Top-ups",
+        "text": "100, 300, 500, 1,000 or 3,000 roubles, at the same rate without package discounts. Tokens do not expire. Cash refunds for purchases are decided case by case."
+      },
+      {
+        "title": "Balance limit",
+        "text": "The balance can go below zero. At −2,000 internal tokens or lower, new paid AI requests are restricted. Top up above the threshold to return to your saved task."
+      },
+      {
+        "title": "Failed or cancelled AI requests",
+        "text": "All token deductions are restored, including the initial token and any settlement. The net charge is zero; the service pays the provider expense."
+      },
+      {
+        "title": "Support",
+        "text": "Initial support requests are processed within 24 hours, without continuous live coverage or a promised resolution time."
+      },
+      {
+        "title": "Materials",
+        "text": "Review how your materials are processed and stored before uploading. Account deletion removes active data; infrastructure backups may retain copies for up to six months."
+      }
+    ],
+    "links": [
+      {
+        "text": "Buy tokens",
+        "href": "/ai-chat/tokens"
+      },
+      {
+        "text": "How your materials are processed and stored",
+        "href": "/ai-chat/projects/new#how-your-materials-are-processed-and-stored"
+      },
+      {
+        "text": "Get help",
+        "href": "/ai-chat/help"
+      }
+    ]
+  },
+  "demoFiles": {
+    "title": "Your files",
+    "paragraphs": [],
+    "items": [
+      {
+        "title": "Notes.md",
+        "text": "I want to run weekend pottery workshops."
+      },
+      {
+        "title": "Plan.md",
+        "text": "Make a cup by hand in a small group."
+      },
+      {
+        "title": "References.jpg",
+        "text": "Photos of the studio, clay and handmade cups."
+      }
+    ],
+    "links": []
+  },
+  "demoDraft": {
+    "title": "Pottery workshops",
+    "paragraphs": [
+      "Weekend pottery workshops where people make a cup by hand in a small group. Who the workshop is for is still open.",
+      "Weekend pottery workshops for {audience} Make a cup by hand in a small group."
+    ],
+    "items": [
+      {
+        "title": "Customer",
+        "text": "Who the workshop is for is still open."
+      },
+      {
+        "title": "Offer",
+        "text": "Make a cup by hand in a small group."
+      },
+      {
+        "title": "Missing",
+        "text": "Who is this workshop for?"
+      }
+    ],
+    "links": []
+  },
+  "demoDocuments": {
+    "title": "Project documents",
+    "paragraphs": [],
+    "items": [
+      {
+        "title": "Brief",
+        "text": "Run weekend pottery workshops in a local studio. Start with a small group making cups by hand."
+      },
+      {
+        "title": "Strategy",
+        "text": "Reach people looking for a hands-on weekend activity. The intended audience still needs to be specified."
+      },
+      {
+        "title": "Brand",
+        "text": "Use warm, direct language. Show the clay, tools and process without promising results."
+      },
+      {
+        "title": "Design",
+        "text": "Use photographs of the studio and materials. Keep workshop information clear and readable."
+      },
+      {
+        "title": "Products",
+        "text": "Weekend pottery workshops where people make a cup by hand in a small group. Who the workshop is for is still open."
+      }
+    ],
+    "links": []
+  },
+  "demoConversation": {
+    "title": "Project chat",
+    "paragraphs": [],
+    "items": [
+      {
+        "title": "Add materials",
+        "text": "I can work with these three files. Check them to start."
+      },
+      {
+        "title": "Review",
+        "text": "The workshop plan is clear. Who is it for: adults trying pottery, people with experience, or someone else?"
+      },
+      {
+        "title": "Edit together",
+        "text": "I added the audience, offer and format to Products.md. Review the draft and change anything that does not fit."
+      },
+      {
+        "title": "Keep working",
+        "text": "Open a topic in the project workspace and choose the saved documents for that conversation."
+      }
+    ],
+    "links": []
+  },
+  "demoReadyDocument": {
+    "title": "Products.md",
+    "paragraphs": [],
+    "items": [
+      {
+        "title": "Customer",
+        "text": "{audience}"
+      },
+      {
+        "title": "Offer",
+        "text": "Make a cup by hand."
+      },
+      {
+        "title": "Format",
+        "text": "A small group in a local studio."
+      }
+    ],
+    "links": []
+  },
+  "demoThreadPrompts": {
+    "title": "Document threads",
+    "paragraphs": [],
+    "items": [
+      {
+        "title": "Brief",
+        "text": "We have a studio workshop idea and three source files. What should the first session focus on?"
+      },
+      {
+        "title": "Strategy",
+        "text": "Who should this workshop reach first?"
+      },
+      {
+        "title": "Brand",
+        "text": "How should you invite people to the workshop?"
+      },
+      {
+        "title": "Design",
+        "text": "Which studio image should lead the page?"
+      },
+      {
+        "title": "Products",
+        "text": "The workshop plan is clear. Who is it for: adults trying pottery, people with experience, or someone else?"
+      }
+    ],
+    "links": []
+  },
+  "demoThreadInputs": {
+    "title": "Your next message",
+    "paragraphs": [],
+    "items": [
+      {
+        "title": "Brief",
+        "text": "Keep the first session focused on making a cup."
+      },
+      {
+        "title": "Strategy",
+        "text": "Focus on adults trying pottery for the first time."
+      },
+      {
+        "title": "Brand",
+        "text": "Use “Make your first cup” as the invitation."
+      },
+      {
+        "title": "Design",
+        "text": "Lead with a close-up of hands working with clay."
+      },
+      {
+        "title": "Products",
+        "text": "Make the small group format clear."
+      }
+    ],
+    "links": []
+  },
+  "labels": {
+    "navigation-foundation": "Try the chat",
+    "navigation-workflow": "How it works",
+    "navigation-start": "Start with my files",
+    "skip-link": "Skip to page content",
+    "hero-photo-alt": "A solo founder pauses over notes for her new business.",
+    "final-title": "Bring your own project into the chat.",
+    "demo-project": "Pottery workshops",
+    "demo-chat": "Project chat",
+    "demo-files": "Your files",
+    "demo-sections": "Project documents",
+    "demo-progress": "Sections reviewed",
+    "demo-progress-note": "Unanswered questions stay visible. Review each section when it is ready.",
+    "demo-check": "Check materials",
+    "demo-answer": "Send answer",
+    "demo-answer-label": "Who is the workshop for?",
+    "demo-answer-placeholder": "Adults trying pottery for the first time.",
+    "demo-save": "Save Product description",
+    "demo-edit-label": "Product description",
+    "demo-continue": "Continue in chat",
+    "demo-message-label": "Message",
+    "demo-message-placeholder": "Ask about the project...",
+    "demo-send": "Send message",
+    "demo-reset": "Restart walkthrough",
+    "demo-ready": "Ready to review",
+    "demo-needs-input": "Needs an answer",
+    "demo-review": "Review draft",
+    "demo-accepted": "Reviewed",
+    "demo-add": "Add files",
+    "demo-upload-note": "Interactive walkthrough; changes stay in this page.",
+    "demo-you": "You",
+    "demo-agent": "AI Chat",
+    "demo-chat-saved": "Your saved documents are ready for the next conversation.",
+    "demo-followup": "How should I explain the workshop to a new customer?",
+    "demo-followup-reply": "Start with the offer in your saved Product description: {draft}",
+    "demo-editor": "Edit document",
+    "demo-save-section": "Save and review section",
+    "demo-saved-section": "Section saved and reviewed.",
+    "demo-attach": "Attach files",
+    "demo-files-added": "Files added to the chat.",
+    "demo-review-materials": "Check materials",
+    "demo-show-document": "Open document",
+    "demo-count-unit": "sections reviewed",
+    "demo-refine": "Refine this section",
+    "demo-answer-value": "Adults trying pottery for the first time.",
+    "demo-materials-thread": "Materials review",
+    "demo-document-threads": "Document threads",
+    "demo-document-thread": "Document thread",
+    "demo-workspace": "Project workspace",
+    "demo-new-topic": "New topic",
+    "demo-topic-hint": "Review a document, then attach its saved version to a new topic.",
+    "demo-thread-intro": "Discuss this file with AI Chat and edit its draft here.",
+    "demo-thread-message": "Message in this thread",
+    "demo-thread-reply": "I added your note to {document}. Review the updated draft below.",
+    "demo-working-note": "Working note",
+    "demo-open-workspace": "Open project workspace",
+    "demo-back-to-work": "Back to work",
+    "demo-workspace-intro": "Create a topic and choose the saved documents for this conversation.",
+    "demo-topic-title-label": "Topic name",
+    "demo-topic-title": "How should I explain the workshop to a new customer?",
+    "demo-topic-documents": "Attach saved documents",
+    "demo-saved-version": "Saved version",
+    "demo-create-topic": "Create topic",
+    "demo-topic-reply": "Here are the saved documents attached to this topic:",
+    "demo-topic-message": "What should I keep clear in this invitation?",
+    "demo-topic-message-label": "Message in this topic"
+  }
+}

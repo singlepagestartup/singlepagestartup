@@ -1,5 +1,7 @@
 #!/bin/bash
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 write_runtime_env() {
   local target_path="$1"
 
@@ -53,3 +55,7 @@ cd ../host && ./create_env.sh
 cd ../api && ./create_env.sh
 cd ../telegram && ./create_env.sh
 cd ../mcp && ./create_env.sh
+
+# Client configs belong to the developer checkout, never to runtime containers.
+cd "$REPO_ROOT" || exit 1
+tools/mcp/setup-project-mcp.sh --write-clients --if-configured

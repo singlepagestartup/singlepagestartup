@@ -1,0 +1,121 @@
+{
+  "schema": {
+    "module": "notification",
+    "entity": "notification",
+    "entityType": "model",
+    "fields": [
+      {
+        "key": "id",
+        "label": "Id",
+        "kind": "uuid",
+        "nullable": false
+      },
+      {
+        "key": "createdAt",
+        "label": "Created At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "updatedAt",
+        "label": "Updated At",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "variant",
+        "label": "Variant",
+        "kind": "text",
+        "nullable": false,
+        "default": "default"
+      },
+      {
+        "key": "status",
+        "label": "Status",
+        "kind": "text",
+        "nullable": false,
+        "default": "new"
+      },
+      {
+        "key": "title",
+        "label": "Title",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "data",
+        "label": "Data",
+        "kind": "jsonb",
+        "nullable": true,
+        "default": {}
+      },
+      {
+        "key": "reciever",
+        "label": "Reciever",
+        "kind": "text",
+        "nullable": false
+      },
+      {
+        "key": "attachments",
+        "label": "Attachments",
+        "kind": "jsonb",
+        "nullable": true,
+        "jsonShape": "array",
+        "default": []
+      },
+      {
+        "key": "sendAfter",
+        "label": "Send After",
+        "kind": "timestamp",
+        "nullable": false
+      },
+      {
+        "key": "sourceSystemId",
+        "label": "Source System Id",
+        "kind": "text",
+        "nullable": true
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "20df49d6-31f4-4eca-aa39-4225896f0a69",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "status": "new",
+      "title": "notification example 1",
+      "data": {},
+      "reciever": "Reciever example 1",
+      "attachments": [],
+      "sendAfter": "2026-01-01T00:00:00.000Z",
+      "sourceSystemId": null
+    },
+    {
+      "id": "72e69a99-72c2-43ae-af1c-eff54a191639",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "status": "new",
+      "title": "notification example 2",
+      "data": {},
+      "reciever": "Reciever example 2",
+      "attachments": [],
+      "sendAfter": "2026-01-01T00:00:00.000Z",
+      "sourceSystemId": null
+    },
+    {
+      "id": "75f3e362-05a9-450a-ac38-b52d29e33a97",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "variant": "default",
+      "status": "new",
+      "title": "notification example 3",
+      "data": {},
+      "reciever": "Reciever example 3",
+      "attachments": [],
+      "sendAfter": "2026-01-01T00:00:00.000Z",
+      "sourceSystemId": null
+    }
+  ]
+}

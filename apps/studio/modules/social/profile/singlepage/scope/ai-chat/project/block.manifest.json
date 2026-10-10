@@ -1,0 +1,27 @@
+{
+  "id": "social.profile.scope-ai-chat-project",
+  "title": "scope-ai-chat-project",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Local state scope for the selected project Profile.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "variantName": "scope-ai-chat-project",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "scope-ai-chat-project"
+  },
+  "contentSlots": []
+}

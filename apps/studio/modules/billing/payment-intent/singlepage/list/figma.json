@@ -1,0 +1,21 @@
+{
+  "componentName": "billing.payment-intent",
+  "pageName": "billing",
+  "variantName": "list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "billing.payment-intent.list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "billing/payment-intent/singlepage/list",
+    "sps.figma.component": "billing.payment-intent",
+    "sps.figma.variant": "list",
+    "sps.source.module": "billing",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "payment-intent",
+    "sps.source.variant": "list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/billing/payment-intent/singlepage/list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/billing/payment-intent/singlepage/list/Component.stories.tsx"
+  }
+}

@@ -8,11 +8,11 @@ export const mockOpenRouterModelFavoriteUpdateMutate = jest.fn();
 export const mockThreadUpdateMutate = jest.fn();
 export const mockProfileSkillFind = jest.fn();
 export const mockProfileUpdateMutate = jest.fn();
-export const mockKnowledgeDocumentUpdateMutate = jest.fn();
-export const mockKnowledgeDocumentCreateMutate = jest.fn();
+export const mockKnowledgeSourceUpdateMutate = jest.fn();
+export const mockKnowledgeSourceCreateMutate = jest.fn();
 export const mockKnowledgeReindexDocumentMutateAsync = jest.fn();
-export const mockKnowledgeDocumentDeleteMutateAsync = jest.fn();
-export const mockKnowledgeDocumentFindRefetch = jest.fn();
+export const mockKnowledgeSourceDeleteMutateAsync = jest.fn();
+export const mockKnowledgeSourceFindRefetch = jest.fn();
 export const mockSocialSkillCreateMutateAsync = jest.fn();
 export const mockSocialSkillUpdateMutateAsync = jest.fn();
 export const mockProfilesToSkillsCreateMutateAsync = jest.fn();
@@ -20,7 +20,7 @@ export const mockToastError = jest.fn();
 export const mockToastSuccess = jest.fn();
 
 export const mockChatComponentState = {
-  knowledgeDocuments: [] as any[],
+  knowledgeSources: [] as any[],
   profileMessageRelations: [] as any[],
   profiles: [] as any[],
   profileSkillRelations: [] as any[],
@@ -139,23 +139,23 @@ jest.mock("@sps/social/models/profile/frontend/component", () => {
             </section>
             <section>
               <h3>Knowledge</h3>
-              {props.onKnowledgeDocumentCreate ? (
+              {props.onKnowledgeSourceCreate ? (
                 <button
                   type="button"
                   onClick={() => {
-                    props.onKnowledgeDocumentCreate?.(props.data);
+                    props.onKnowledgeSourceCreate?.(props.data);
                   }}
                 >
                   New knowledge for {props.data.slug}
                 </button>
               ) : null}
-              {props.knowledgeDocuments?.map((document: any) => {
+              {props.knowledgeSources?.map((document: any) => {
                 return (
                   <button
                     key={document.id}
                     type="button"
                     onClick={() => {
-                      props.onKnowledgeDocumentSelect?.(document);
+                      props.onKnowledgeSourceSelect?.(document);
                     }}
                   >
                     {document.title}
@@ -175,7 +175,7 @@ jest.mock("@sps/social/models/profile/frontend/component", () => {
 });
 
 jest.mock(
-  "@sps/knowledge/models/document/frontend/component/src/lib/singlepage/chat-sidebar-detail",
+  "@sps/knowledge/models/source/frontend/component/src/lib/singlepage/chat-sidebar-detail",
   () => {
     return {
       Component: (props: any) => {
@@ -193,11 +193,11 @@ jest.mock(
             />
             <textarea
               aria-label="Knowledge content"
-              value={props.draft?.description || ""}
+              value={props.draft?.content || ""}
               onChange={(event) => {
                 props.onDraftChange?.({
                   ...props.draft,
-                  description: event.target.value,
+                  content: event.target.value,
                 });
               }}
             />
@@ -490,79 +490,73 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
             isPending: false,
           };
         }),
-      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind:
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind:
         jest.fn(() => {
           return {
-            data: mockChatComponentState.knowledgeDocuments,
+            data: mockChatComponentState.knowledgeSources,
             isLoading: false,
-            refetch: mockKnowledgeDocumentFindRefetch,
+            refetch: mockKnowledgeSourceFindRefetch,
           };
         }),
-      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentCreate:
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceCreate:
         jest.fn(() => {
           return {
-            mutate: mockKnowledgeDocumentCreateMutate,
+            mutate: mockKnowledgeSourceCreateMutate,
             isPending: false,
           };
         }),
-      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdUpdate:
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdUpdate:
         jest.fn(() => {
           return {
-            mutate: mockKnowledgeDocumentUpdateMutate,
+            mutate: mockKnowledgeSourceUpdateMutate,
             isPending: false,
           };
         }),
-      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdReindex:
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdReindex:
         jest.fn(() => {
           return {
             mutateAsync: mockKnowledgeReindexDocumentMutateAsync,
             isPending: false,
           };
         }),
-      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdDelete:
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdDelete:
         jest.fn(() => {
           return {
-            mutateAsync: mockKnowledgeDocumentDeleteMutateAsync,
+            mutateAsync: mockKnowledgeSourceDeleteMutateAsync,
             isPending: false,
           };
         }),
-      socialModuleProfileFindByIdKnowledgeDocumentFind: jest.fn(() => {
+      socialModuleProfileFindByIdKnowledgeSourceFind: jest.fn(() => {
         return {
-          data: mockChatComponentState.knowledgeDocuments,
+          data: mockChatComponentState.knowledgeSources,
           isLoading: false,
-          refetch: mockKnowledgeDocumentFindRefetch,
+          refetch: mockKnowledgeSourceFindRefetch,
         };
       }),
-      socialModuleProfileFindByIdKnowledgeDocumentCreate: jest.fn(() => {
+      socialModuleProfileFindByIdKnowledgeSourceCreate: jest.fn(() => {
         return {
-          mutate: mockKnowledgeDocumentCreateMutate,
+          mutate: mockKnowledgeSourceCreateMutate,
           isPending: false,
         };
       }),
-      socialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate: jest.fn(
-        () => {
-          return {
-            mutate: mockKnowledgeDocumentUpdateMutate,
-            isPending: false,
-          };
-        },
-      ),
-      socialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex: jest.fn(
-        () => {
-          return {
-            mutateAsync: mockKnowledgeReindexDocumentMutateAsync,
-            isPending: false,
-          };
-        },
-      ),
-      socialModuleProfileFindByIdKnowledgeDocumentFindByIdDelete: jest.fn(
-        () => {
-          return {
-            mutateAsync: mockKnowledgeDocumentDeleteMutateAsync,
-            isPending: false,
-          };
-        },
-      ),
+      socialModuleProfileFindByIdKnowledgeSourceFindByIdUpdate: jest.fn(() => {
+        return {
+          mutate: mockKnowledgeSourceUpdateMutate,
+          isPending: false,
+        };
+      }),
+      socialModuleProfileFindByIdKnowledgeSourceFindByIdReindex: jest.fn(() => {
+        return {
+          mutateAsync: mockKnowledgeReindexDocumentMutateAsync,
+          isPending: false,
+        };
+      }),
+      socialModuleProfileFindByIdKnowledgeSourceFindByIdDelete: jest.fn(() => {
+        return {
+          mutateAsync: mockKnowledgeSourceDeleteMutateAsync,
+          isPending: false,
+        };
+      }),
     },
     queryClient: {
       invalidateQueries: jest.fn(),
@@ -692,17 +686,17 @@ export function resetChatComponentMocks() {
   mockThreadUpdateMutate.mockReset();
   mockProfileSkillFind.mockReset();
   mockProfileUpdateMutate.mockReset();
-  mockKnowledgeDocumentUpdateMutate.mockReset();
-  mockKnowledgeDocumentCreateMutate.mockReset();
+  mockKnowledgeSourceUpdateMutate.mockReset();
+  mockKnowledgeSourceCreateMutate.mockReset();
   mockKnowledgeReindexDocumentMutateAsync.mockReset();
-  mockKnowledgeDocumentDeleteMutateAsync.mockReset();
-  mockKnowledgeDocumentFindRefetch.mockReset();
+  mockKnowledgeSourceDeleteMutateAsync.mockReset();
+  mockKnowledgeSourceFindRefetch.mockReset();
   mockSocialSkillCreateMutateAsync.mockReset();
   mockSocialSkillUpdateMutateAsync.mockReset();
   mockProfilesToSkillsCreateMutateAsync.mockReset();
   mockToastError.mockReset();
   mockToastSuccess.mockReset();
-  mockChatComponentState.knowledgeDocuments = [];
+  mockChatComponentState.knowledgeSources = [];
   mockChatComponentState.profileMessageRelations = [];
   mockChatComponentState.profiles = [];
   mockChatComponentState.profileSkillRelations = [];
@@ -717,7 +711,7 @@ export function resetChatComponentMocks() {
       sources: [],
     },
   });
-  mockKnowledgeDocumentDeleteMutateAsync.mockResolvedValue({
+  mockKnowledgeSourceDeleteMutateAsync.mockResolvedValue({
     id: "document-1",
   });
   mockProfileUpdateMutate.mockImplementation((payload, options) => {
@@ -731,7 +725,7 @@ export function resetChatComponentMocks() {
       description: payload.data.description || {},
     });
   });
-  mockKnowledgeDocumentCreateMutate.mockImplementation((payload, options) => {
+  mockKnowledgeSourceCreateMutate.mockImplementation((payload, options) => {
     options?.onSuccess?.({
       id: "document-created-1",
       title: payload.data.title,
@@ -774,3 +768,7 @@ export function resetChatComponentMocks() {
     disconnect = jest.fn();
   };
 }
+
+jest.mock("./components/KnowledgeSourceFiles", () => ({
+  KnowledgeSourceFiles: () => null,
+}));

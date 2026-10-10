@@ -263,7 +263,7 @@ interface IOpenRouterKnowledgeControlsHandler {
       title: string;
       description: string;
     }>;
-    knowledgeDocumentIds: string[];
+    knowledgeSourceIds: string[];
   }): Array<{
     source: "skill" | "knowledge" | "mcp";
     definition: {
@@ -364,7 +364,7 @@ interface IOpenRouterKnowledgeControlsHandler {
     }[];
   }): Promise<{
     useKnowledgeSearch: boolean;
-    searchDocumentIds: string[];
+    searchSourceIds: string[];
     candidateSources: unknown[];
     sources: unknown[];
     retrieval: Record<string, unknown>;
@@ -414,8 +414,6 @@ function createKnowledgeSearchResult(
     chunkIndex: 0,
     sourceId: "source-1",
     sourceTitle: "Policy",
-    sourceOriginalPath: "policy.md",
-    sourceType: "text",
     distance: 0.1,
     similarity: 0.9,
     retrievalRole: "seed",
@@ -1442,7 +1440,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
             },
           ]),
         },
-        profilesToKnowledgeModuleDocuments: {
+        profilesToKnowledgeModuleSources: {
           find: jest.fn(async () => []),
         },
         skill: {
@@ -1662,7 +1660,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
 
   /**
    * BDD Scenario
-   * Given: a replying profile has scoped Knowledge documents.
+   * Given: a replying profile has scoped Knowledge Sources.
    * When: OpenRouter resolves an ordinary task and an explicit @knowledge task.
    * Then: only the explicit task retrieves profile-scoped Knowledge.
    */
@@ -1687,10 +1685,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         profilesToSkills: {
           find: jest.fn(async () => []),
         },
-        profilesToKnowledgeModuleDocuments: {
+        profilesToKnowledgeModuleSources: {
           find: jest.fn(async () => [
             {
-              knowledgeModuleDocumentId: "document-1",
+              knowledgeModuleSourceId: "document-1",
             },
           ]),
         },
@@ -1723,7 +1721,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       }),
     ).resolves.toMatchObject({
       useKnowledgeSearch: false,
-      searchDocumentIds: [],
+      searchSourceIds: [],
       candidateSources: [],
       sources: [],
       systemMessages: [],
@@ -1764,7 +1762,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       query: "Question",
       topK: 30,
       neighborWindow: 1,
-      documentIds: ["document-1"],
+      sourceIds: ["document-1"],
     });
     expect(openRouter.generate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -1777,7 +1775,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     );
     expect(context).toMatchObject({
       useKnowledgeSearch: true,
-      searchDocumentIds: ["document-1"],
+      searchSourceIds: ["document-1"],
       candidateSources: [
         {
           text: "Policy fragment",
@@ -1827,10 +1825,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         profilesToSkills: {
           find: jest.fn(async () => []),
         },
-        profilesToKnowledgeModuleDocuments: {
+        profilesToKnowledgeModuleSources: {
           find: jest.fn(async () => [
             {
-              knowledgeModuleDocumentId: "document-1",
+              knowledgeModuleSourceId: "document-1",
             },
           ]),
         },
@@ -1874,7 +1872,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
 
   /**
    * BDD Scenario
-   * Given: an social.profile has one linked skill and one linked Knowledge document.
+   * Given: an social.profile has one linked skill and one linked Knowledge Source.
    * When: its local capability catalog is built and invoked by the model.
    * Then: only the linked skill slug and server-bound document ids can be used.
    */
@@ -1900,7 +1898,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
           description: "Write a concise brief.",
         },
       ],
-      knowledgeDocumentIds: ["document-1"],
+      knowledgeSourceIds: ["document-1"],
     });
     const skillTool = tools.find(
       (tool) => tool.definition.function.name === "profile_skill_activate",
@@ -1926,10 +1924,164 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     ]);
     expect(search).toHaveBeenCalledWith({
       query: "policy",
-      documentIds: ["document-1"],
+      sourceIds: ["document-1"],
       topK: 12,
       neighborWindow: 1,
     });
+  });
+
+  it("pages large Sources and keeps edits bounded and scoped", async () => {
+    const generated = "Данные файла ".repeat(10000);
+    const content =
+      "## Контекст пользователя\n<!-- knowledge:user -->\nМоя заметка\n<!-- /knowledge:user -->\n" +
+      generated;
+    const source = {
+      id: "source-1",
+      title: "Lesson",
+      content,
+      contentHash: "hash-1",
+    };
+    const updateSource = jest.fn(async () => ({
+      source: { ...source, contentHash: "hash-2" },
+    }));
+    const handler = new Handler({} as any) as any;
+    handler.knowledgeService = {
+      listSources: jest.fn(async () => [source]),
+      updateSource,
+    };
+    const tools = handler.buildProfileCapabilityTools({
+      availableSkills: [],
+      knowledgeSourceIds: [source.id],
+    });
+    const read = tools.find(
+      (tool: any) => tool.definition.function.name === "profile_knowledge_read",
+    );
+    const edit = tools.find(
+      (tool: any) => tool.definition.function.name === "profile_knowledge_edit",
+    );
+    const first = await read.execute({ sourceId: source.id });
+    expect(first.content).toHaveLength(12000);
+    expect(first.nextOffset).toBe(12000);
+    expect(first.userContext).toBe("Моя заметка");
+    const next = await read.execute({
+      sourceId: source.id,
+      offset: first.nextOffset,
+      limit: 1000,
+    });
+    expect(next.content).toBe(content.slice(12000, 13000));
+    await expect(read.execute({ sourceId: "outside-scope" })).rejects.toThrow(
+      "not available",
+    );
+    await expect(
+      edit.execute({ sourceId: "outside-scope", userContext: "Change" }),
+    ).rejects.toThrow("not available");
+    const result = await edit.execute({
+      sourceId: source.id,
+      userContext: "Моя заметка и дополнение",
+      expectedContentHash: "hash-1",
+    });
+    expect(updateSource).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceId: source.id,
+        expectedContentHash: "hash-1",
+        content: expect.stringContaining(generated),
+      }),
+    );
+    expect(result).toMatchObject({
+      sourceId: source.id,
+      contentHash: "hash-2",
+    });
+    expect(JSON.stringify(result).length).toBeLessThan(1000);
+  });
+
+  it("reads Russian text and long user notes in complete byte-bounded pages", async () => {
+    const notes = 'Пояснение 😀\n"цитата"\\\t'.repeat(1000);
+    const content = `## Контекст пользователя\n<!-- knowledge:user -->\n${notes}\n<!-- /knowledge:user -->\n${"Данные файла 🧾\n".repeat(3000)}`;
+    const source = {
+      id: "source-1",
+      title: "Урок",
+      content,
+      contentHash: "hash-1",
+    };
+    const handler = new Handler({} as any) as any;
+    handler.knowledgeService = { listSources: jest.fn(async () => [source]) };
+    const read = handler
+      .buildProfileCapabilityTools({
+        availableSkills: [],
+        knowledgeSourceIds: [source.id],
+      })
+      .find(
+        (tool: any) =>
+          tool.definition.function.name === "profile_knowledge_read",
+      );
+
+    for (const [section, expected] of [
+      ["content", content],
+      ["userContext", notes],
+    ]) {
+      let offset = 0;
+      let reconstructed = "";
+      do {
+        const page = await read.execute({
+          sourceId: source.id,
+          section,
+          offset,
+        });
+        expect(
+          Buffer.byteLength(JSON.stringify(page), "utf8"),
+        ).toBeLessThanOrEqual(24 * 1024);
+        expect(page.userContextTruncated).toBe(true);
+        expect(page.content.length).toBeGreaterThan(0);
+        expect(expected.slice(offset).startsWith(page.content)).toBe(true);
+        expect(page.content).toBe(
+          Array.from(expected.slice(offset))
+            .slice(0, Array.from(page.content).length)
+            .join(""),
+        );
+        reconstructed += page.content;
+        if (page.nextOffset === null) break;
+        expect(page.nextOffset).toBeGreaterThan(offset);
+        offset = page.nextOffset;
+      } while (offset < expected.length);
+      expect(reconstructed).toBe(expected);
+    }
+  });
+
+  it("bounds all search excerpts and identifies where full Source reading is needed", async () => {
+    const search = jest.fn(async () =>
+      Array.from({ length: 12 }, (_, index) =>
+        createKnowledgeSearchResult({
+          id: `chunk-${index}`,
+          sourceId: "source-1",
+          sourceTitle: "Урок 😀".repeat(2000),
+          text: 'Большой фрагмент 😀\n"числа"\\'.repeat(2000),
+        }),
+      ),
+    );
+    const handler = new Handler({} as any) as any;
+    handler.knowledgeService = { search };
+    const tool = handler
+      .buildProfileCapabilityTools({
+        availableSkills: [],
+        knowledgeSourceIds: ["source-1"],
+      })
+      .find(
+        (tool: any) =>
+          tool.definition.function.name === "profile_knowledge_search",
+      );
+    const results = await tool.execute({ query: "Большой фрагмент" });
+    expect(results).toHaveLength(12);
+    expect(
+      Buffer.byteLength(JSON.stringify(results), "utf8"),
+    ).toBeLessThanOrEqual(24 * 1024);
+    expect(
+      results.every(
+        (result: any) =>
+          result.textTruncated &&
+          result.text.length > 0 &&
+          result.sourceId === "source-1",
+      ),
+    ).toBe(true);
   });
 
   /**
@@ -2064,10 +2216,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         profilesToSkills: {
           find: jest.fn(async () => []),
         },
-        profilesToKnowledgeModuleDocuments: {
+        profilesToKnowledgeModuleSources: {
           find: jest.fn(async () => [
             {
-              knowledgeModuleDocumentId: "document-1",
+              knowledgeModuleSourceId: "document-1",
             },
           ]),
         },

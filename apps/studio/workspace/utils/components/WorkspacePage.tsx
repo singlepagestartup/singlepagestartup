@@ -9,17 +9,19 @@ export function WorkspacePage({
   hideTitle = false,
   hideConfirmation = false,
   resolveLink,
+  navigationHref,
 }: {
   page: IWorkspacePageView;
   hideTitle?: boolean;
   hideConfirmation?: boolean;
+  navigationHref?: string;
   resolveLink?: (url: string) => string | { href: string; target: "_top" };
 }) {
   const Component = page.Component;
   if (Component) {
     const content = (
       <div className="overflow-x-auto">
-        <Component text={page.text} />
+        <Component text={page.text} navigationHref={navigationHref} />
       </div>
     );
     return page.export === "pdf" ? (

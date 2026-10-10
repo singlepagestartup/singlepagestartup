@@ -133,7 +133,7 @@ Telegram bootstrap maintains two different RBAC subjects for one user:
 The agent subject owns exactly one
 `social.profile.variant="artificial-intelligence"` with the same deterministic
 slug. The initial profile has empty title-independent instructions and no
-Knowledge document relations; it allows the `singlepagestartup` MCP server and
+Knowledge Source relations; it allows the `singlepagestartup` MCP server and
 can be enriched later through the normal profile Knowledge and Skill APIs.
 
 Telegram messages do not select a reply profile. Agent dispatches every
@@ -149,7 +149,7 @@ The same idempotent bootstrap ensures a profile-specific Knowledge owner role
 for the authenticated owner subject. The role uses only existing RBAC models
 and relations (`role`, `permission`, `roles-to-permissions`, and
 `subjects-to-roles`). Permission paths contain the exact target AI profile UUID;
-only explicitly bracketed requester profile, chat, and Knowledge document ids
+only explicitly bracketed requester profile, chat, and Knowledge Source ids
 are dynamic masks.
 
 ### Subject-scoped assistant management API
@@ -163,7 +163,7 @@ Telegram bootstrap idempotently provisions exact target-profile permission
 paths for every connected AI profile, so multiple-profile selection does not
 depend on a global admin wildcard.
 
-Linked Skills and Knowledge documents accept bounded `limit` and `offset`
+Linked Skills and Knowledge Sources accept bounded `limit` and `offset`
 queries while keeping the existing plain-array response. Available Skills are
 ordered, searchable, paginated, and exclude skills already linked to the target
 profile. Linking is idempotent. Unlinking deletes only the profile-to-skill

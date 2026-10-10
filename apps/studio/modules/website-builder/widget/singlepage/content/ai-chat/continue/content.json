@@ -1,0 +1,60 @@
+{
+  "continue": {
+    "title": "Keep working in chat.",
+    "paragraphs": [
+      "Open a topic for your next task. Choose which saved documents to attach, then discuss the project with AI Chat."
+    ],
+    "items": [],
+    "links": []
+  },
+  "terms": {
+    "title": "Access, tokens and your materials",
+    "paragraphs": [
+      "Registration shows the current free token allowance. Paid AI work uses the token balance."
+    ],
+    "items": [
+      {
+        "title": "Token cost",
+        "text": "0.13 roubles per internal token. One token is charged when input is sent; a successful request settles at actual provider cost, rounded up to a whole internal token, with a minimum of one token."
+      },
+      {
+        "title": "Top-ups",
+        "text": "100, 300, 500, 1,000 or 3,000 roubles, at the same rate without package discounts. Tokens do not expire. Cash refunds for purchases are decided case by case."
+      },
+      {
+        "title": "Balance limit",
+        "text": "The balance can go below zero. At −2,000 internal tokens or lower, new paid AI requests are restricted. Top up above the threshold to return to your saved task."
+      },
+      {
+        "title": "Failed or cancelled AI requests",
+        "text": "All token deductions are restored, including the initial token and any settlement. The net charge is zero; the service pays the provider expense."
+      },
+      {
+        "title": "Support",
+        "text": "Initial support requests are processed within 24 hours, without continuous live coverage or a promised resolution time."
+      },
+      {
+        "title": "Materials",
+        "text": "Review how your materials are processed and stored before uploading. Account deletion removes active data; infrastructure backups may retain copies for up to six months."
+      }
+    ],
+    "links": [
+      {
+        "text": "Buy tokens",
+        "href": "/ai-chat/tokens"
+      },
+      {
+        "text": "How your materials are processed and stored",
+        "href": "/ai-chat/projects/new#how-your-materials-are-processed-and-stored"
+      },
+      {
+        "text": "Get help",
+        "href": "/ai-chat/help"
+      }
+    ]
+  },
+  "startLink": {
+    "text": "Start with my files",
+    "href": "/ai-chat/register"
+  }
+}

@@ -216,8 +216,8 @@ describe("Given: a profile-specific Knowledge owner grant", () => {
     ).toBe(true);
     expect(
       descriptors
-        .filter(({ path }) => path.includes("/knowledge/documents/"))
-        .every(({ path }) => path.includes("[knowledge.documents.id]")),
+        .filter(({ path }) => path.includes("/knowledge/sources/"))
+        .every(({ path }) => path.includes("[knowledge.sources.id]")),
     ).toBe(true);
     expect(
       descriptors.some(({ path }) =>

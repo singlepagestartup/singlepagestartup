@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import "../../../../styles/singlepage.css";
 import {
   Icon,
@@ -7,17 +7,17 @@ import {
 
 const stages = [
   {
-    id: "request",
-    label: "Request",
+    id: "brief",
+    label: "Brief",
     time: "10 min",
     question:
       "What are you working on, and what should be true when this project is useful?",
     answer:
-      "A hosted workspace that turns a founder's existing material into a usable business model and keeps it available to the chat.",
+      "A hosted workspace that drafts short project and product documents from existing material. Each file has its own working thread; saved texts can be attached to project topics.",
     found: [
       "The first product is a hosted AI chat.",
       "Existing notes, files and screenshots should be accepted.",
-      "The person wants a useful result in one focused session.",
+      "The first result is written descriptions the user can edit, review and export.",
     ],
     result: "Scope, desired result, products and constraints",
   },
@@ -28,12 +28,12 @@ const stages = [
     question:
       "What should the complete project look like when it is working as intended?",
     answer:
-      "A person moves from mixed material to an accepted project model, uses it in ordinary chat, prepares a landing-page sandbox and can publish it through a user-owned repository and server.",
+      "A person adds material, discusses each file in its own thread and reviews the text. Selected saved documents become context for new project topics. The owner evaluates this flow before adding landing-page creation and paid deployment.",
     found: [
       "The chat is the main hosted product.",
-      "The landing page remains private until the user starts publication.",
-      "GitHub repository creation and server connection lead to a public site.",
-      "Code Framework supplies the deployable foundation.",
+      "The first release creates written project and product documents.",
+      "Landing-page generation and paid deployment are future capabilities.",
+      "Each product has its own sections, including economics, Sales, Promotion and Analytics.",
     ],
     result: "Final picture, audiences, product roles and customer path",
   },
@@ -44,9 +44,9 @@ const stages = [
     question:
       "What should people understand and remember after using the product?",
     answer:
-      "Start with one clear page, then add depth only when the next decision or material needs it.",
+      "Describe the project from the notes, files and decisions already available. Correct the shortcomings the AI agent identifies and use the reviewed texts as a first step toward customers.",
     found: [
-      "Single Page means a compact starting point.",
+      "Existing material is the starting point for written project descriptions.",
       "The product should feel practical and direct.",
       "Claims need support from the person's actual material.",
     ],
@@ -58,10 +58,10 @@ const stages = [
     time: "7 min",
     question: "How should this meaning become visible and easy to use?",
     answer:
-      "A calm document workspace with strong typography, visible progress and one decision in focus at a time.",
+      "A written Design description: Onest text, cool neutral surfaces, graphite, lime actions and one description in focus at a time.",
     found: [
       "Graphite, cool gray, white and lime form the current palette.",
-      "The interface combines editorial pages with practical controls.",
+      "The first-release Design result is text describing intended appearance.",
       "Uploaded images remain source material, not automatic design decisions.",
     ],
     result: "Visual direction, interface principles and available assets",
@@ -73,24 +73,52 @@ const stages = [
     question:
       "Who receives what value, and how is the offer delivered and sustained?",
     answer:
-      "Early-stage project owners receive a maintained project model and relevant chat. Token purchases fund hosted work; shared operations support the chat and later products.",
+      "Early-stage project owners receive written descriptions and continued chat. Every product has its own Product, Operations & Economics, Sales, Promotion, and Analytics & Research sections. AI Chat owns its token revenue and service costs.",
     found: [
       "The user, buyer and decision-maker may initially be one person.",
       "AI Chat and Code Framework are separate related products.",
-      "Prices, package sizes and customer demand are still unknown.",
+      "One internal token costs 0.13 roubles. Top-ups are 100, 300, 500, 1,000 or 3,000 roubles, with no package discount.",
+      "Purchased tokens do not expire; cash refunds for top-ups are decided case by case. Failed or cancelled AI requests restore all token deductions and have a net charge of zero; the service bears any provider expense. Customer demand remains unverified.",
     ],
-    result: "Customer, value, access, money, delivery, sales and learning",
+    result:
+      "Separate product texts: Product, Operations & Economics, Sales, Promotion, Analytics & Research",
   },
 ];
 
-export default function GuidedCards() {
-  const [active, setActive] = useState(1);
-  const [accepted, setAccepted] = useState(() => new Set([0]));
+interface IGuidedCardsProps {
+  embedded?: boolean;
+  empty?: boolean;
+  onAddMaterials?: () => void;
+  onDocumentsChange?: (
+    documents: Record<string, string>,
+    reviewed: string[],
+  ) => void;
+}
+
+export default function GuidedCards({
+  embedded = false,
+  empty = false,
+  onAddMaterials,
+  onDocumentsChange,
+}: IGuidedCardsProps = {}) {
+  const id = useId();
+  const [active, setActive] = useState(empty ? 0 : 1);
+  const [accepted, setAccepted] = useState(
+    () => new Set<number>(empty ? [] : [0]),
+  );
   const [unknown, setUnknown] = useState(() => new Set<number>());
   const [answers, setAnswers] = useState(() =>
-    Object.fromEntries(stages.map((stage) => [stage.id, stage.answer])),
+    Object.fromEntries(
+      stages.map((stage) => [stage.id, empty ? "" : stage.answer]),
+    ),
   );
   const stage = stages[active];
+  useEffect(() => {
+    onDocumentsChange?.(
+      answers,
+      [...accepted].map((index) => stages[index].id),
+    );
+  }, [answers, accepted, onDocumentsChange]);
 
   const advance = (state: "accepted" | "unknown") => {
     if (state === "accepted") {
@@ -114,45 +142,47 @@ export default function GuidedCards() {
   return (
     <div
       data-workspace-projection="singlepage"
-      className="min-h-[820px] bg-[var(--workspace-brand-background)] p-3 text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)] sm:p-6"
+      className={`@container bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] [font-family:var(--workspace-brand-font-body)] ${embedded ? "" : "min-h-[820px] p-3 sm:p-6"}`}
     >
       <div className="mx-auto max-w-[1440px] overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)]">
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--workspace-brand-line)] bg-white px-5 py-4 sm:px-7">
-          <div className="flex items-center gap-3">
-            <div className="grid size-10 place-items-center rounded-xl bg-[var(--workspace-brand-foreground)] text-[var(--workspace-brand-accent)]">
-              <img
-                src="/workspace-assets/singlepage/intake/operator-logo-square-white.svg"
-                data-asset-id="singlepage-operator-logo-square-white"
-                alt=""
-                width={24}
-                height={24}
-                className="size-6"
-              />
+        {!embedded && (
+          <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--workspace-brand-line)] bg-white px-5 py-4 sm:px-7">
+            <div className="flex items-center gap-3">
+              <div className="grid size-10 place-items-center rounded-xl bg-[var(--workspace-brand-foreground)] text-[var(--workspace-brand-accent)]">
+                <img
+                  src="/workspace-assets/singlepage/intake/operator-logo-square-white.svg"
+                  data-asset-id="singlepage-operator-logo-square-white"
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="size-6"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">SinglePageStartup</p>
+                <p className="text-sm text-[var(--workspace-brand-muted)]">
+                  New project setup
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold">SinglePageStartup</p>
-              <p className="text-sm text-[var(--workspace-brand-muted)]">
-                New project setup
-              </p>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-3 py-2 text-sm font-semibold">
+                {accepted.size} of 5 reviewed
+              </span>
+              <span className="rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-medium">
+                About one hour
+              </span>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="rounded-full border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-3 py-2 text-sm font-semibold">
-              {accepted.size} of 5 reviewed
-            </span>
-            <span className="rounded-full border border-[var(--workspace-brand-line)] bg-white px-3 py-2 text-sm font-medium">
-              About one hour
-            </span>
-          </div>
-        </header>
+          </header>
+        )}
 
-        <div className="grid lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)_320px]">
+        <div className="grid @[700px]:grid-cols-[180px_minmax(0,1fr)] @[1200px]:grid-cols-[200px_minmax(0,1fr)_280px]">
           <aside className="border-b border-[var(--workspace-brand-line)] bg-white p-4 lg:border-r lg:border-b-0">
             <p className="px-2 text-sm font-semibold text-[var(--workspace-brand-muted)]">
-              Five stages
+              Document threads
             </p>
             <nav
-              className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1"
+              className="mt-3 grid gap-2 @[500px]:grid-cols-2 @[700px]:grid-cols-1"
               aria-label="Setup stages"
             >
               {stages.map((item, index) => {
@@ -209,12 +239,13 @@ export default function GuidedCards() {
               <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
                 Material bundle
               </p>
-              <p className="mt-2 text-sm font-semibold">7 files processed</p>
+              <p className="mt-2 text-sm font-semibold">Project materials</p>
               <p className="mt-1 text-base leading-7 text-[var(--workspace-brand-muted)]">
-                Notes, pitch deck, price table, screenshots
+                Notes, files and images added in the project chat
               </p>
               <button
                 className={`${kit.plain} mt-3 px-0 underline underline-offset-4`}
+                onClick={onAddMaterials}
                 type="button"
               >
                 Add more
@@ -251,7 +282,7 @@ export default function GuidedCards() {
                   </button>
                 </div>
                 <ul className="mt-4 space-y-3">
-                  {stage.found.map((item, index) => (
+                  {(empty ? [] : stage.found).map((item, index) => (
                     <li className="flex gap-3 text-base leading-7" key={item}>
                       <span
                         className={`mt-1 grid size-6 shrink-0 place-items-center rounded-full text-sm font-bold ${
@@ -278,21 +309,29 @@ export default function GuidedCards() {
               </section>
 
               <section className="mt-6 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 sm:p-8">
-                <p className="text-sm font-semibold">Current question</p>
+                <p className="text-sm font-semibold">AI Chat</p>
                 <h2 className="mt-3 text-2xl font-semibold leading-tight [font-family:var(--workspace-brand-font-display)] sm:text-3xl">
                   {stage.question}
                 </h2>
-                <label className="mt-5 block" htmlFor={`answer-${stage.id}`}>
+                <label
+                  className="mt-5 block"
+                  htmlFor={`${id}-answer-${stage.id}`}
+                >
                   <span className="sr-only">Your answer</span>
                   <textarea
                     className={`${kit.field} min-h-40 resize-y`}
-                    id={`answer-${stage.id}`}
-                    onChange={(event) =>
+                    id={`${id}-answer-${stage.id}`}
+                    onChange={(event) => {
+                      setAccepted((previous) => {
+                        const next = new Set(previous);
+                        next.delete(active);
+                        return next;
+                      });
                       setAnswers((previous) => ({
                         ...previous,
                         [stage.id]: event.target.value,
-                      }))
-                    }
+                      }));
+                    }}
                     value={answers[stage.id]}
                   />
                 </label>
@@ -306,6 +345,7 @@ export default function GuidedCards() {
                   </button>
                   <button
                     className={kit.button}
+                    disabled={!answers[stage.id].trim()}
                     onClick={() => advance("accepted")}
                     type="button"
                   >
@@ -329,13 +369,59 @@ export default function GuidedCards() {
                   prepared.
                 </p>
               </details>
+              {stage.id === "products" && !empty ? (
+                <section
+                  className="mt-6 space-y-4"
+                  aria-label="Separate product documents"
+                >
+                  {["AI Chat", "Code Framework"].map((product) => (
+                    <article
+                      key={product}
+                      className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5"
+                    >
+                      <h2 className="text-lg font-semibold">{product}</h2>
+                      <dl className="mt-3 divide-y divide-[var(--workspace-brand-line)]">
+                        {[
+                          [
+                            "Product",
+                            "This product's customer, problem, offer and conditions.",
+                          ],
+                          [
+                            "Operations & Economics",
+                            "This product's delivery, revenue, resources, allocated shares and costs.",
+                          ],
+                          [
+                            "Sales",
+                            "This product's customer process, including support and continued use.",
+                          ],
+                          [
+                            "Promotion",
+                            "Written public presentation of this product, with Website, Creative and Presentation texts where relevant.",
+                          ],
+                          [
+                            "Analytics & Research",
+                            "This product's measures, observations and evidence questions where needed.",
+                          ],
+                        ].map(([title, text]) => (
+                          <div key={title} className="py-3">
+                            <dt className="text-sm font-semibold">{title}</dt>
+                            <dd className="mt-1 text-sm leading-6 text-[var(--workspace-brand-muted)]">
+                              {text}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </article>
+                  ))}
+                </section>
+              ) : null}
             </div>
           </main>
 
           <aside className="border-t border-[var(--workspace-brand-line)] bg-white p-5 xl:border-t-0 xl:border-l">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-[var(--workspace-brand-muted)]">
-                Live project page
+                Project texts
               </p>
               <span
                 className="size-2 rounded-full bg-[var(--workspace-brand-accent)]"
@@ -388,8 +474,9 @@ export default function GuidedCards() {
                 Useful context, then depth
               </p>
               <p className="mt-2 text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
-                Finish the five-stage review to use this model in chat. Detailed
-                Studio documents can be added later without repeating intake.
+                Work on each document in its own thread. Review the text, then
+                freely export it or attach its saved version to a new project
+                topic. Other files can keep their open questions.
               </p>
             </div>
           </aside>
