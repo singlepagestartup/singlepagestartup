@@ -1,3 +1,4 @@
+import { withConsistencySnapshot } from "@sps/shared-backend-api";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -23,16 +24,18 @@ export class Handler {
         throw new Error("Validation error. Invalid id. Got: " + id);
       }
 
-      let entity = await this.service.findById({ id });
+      return await withConsistencySnapshot(async () => {
+        let entity = await this.service.findById({ id });
 
-      if (!entity) {
-        throw new Error("Not Found error. Order not found");
-      }
+        if (!entity) {
+          throw new Error("Not Found error. Order not found");
+        }
 
-      const quantity = await this.service.findByIdQuantity({ id });
+        const quantity = await this.service.findByIdQuantity({ id });
 
-      return c.json({
-        data: quantity,
+        return c.json({
+          data: quantity,
+        });
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

@@ -17,6 +17,52 @@
           }
         ]
       }
+    },
+    "repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": ".",
+        "commands": [
+          "bun node_modules/drizzle-kit/bin.cjs generate --config=libs/providers/db/src/lib/drizzle/config.ts",
+          "bun tools/plugins/sps-generator-plugin/src/utils/consistency-migrations/generate.ts"
+        ]
+      }
+    },
+    "repository-migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": ".",
+        "command": "bun --env-file=apps/api/.env libs/providers/db/src/lib/drizzle/migrate-consistency.ts"
+      }
+    },
+    "consistency-check": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "cwd": ".",
+        "parallel": false,
+        "commands": [
+          "bun tools/plugins/sps-generator-plugin/src/utils/consistency-migrations/generate.ts --check",
+          "bun --env-file=apps/api/.env tools/plugins/sps-generator-plugin/src/utils/consistency-migrations/check.ts"
+        ]
+      }
+    },
+    "consistency-status": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "cwd": ".",
+        "command": "bun --env-file=apps/api/.env libs/providers/db/src/lib/drizzle/consistency-maintenance.ts"
+      }
+    },
+    "consistency-reset": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "cwd": ".",
+        "command": "bun --env-file=apps/api/.env libs/providers/db/src/lib/drizzle/consistency-maintenance.ts --reset"
+      }
     }
   }
 }

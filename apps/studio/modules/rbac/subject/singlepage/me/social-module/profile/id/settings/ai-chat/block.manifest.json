@@ -1,0 +1,40 @@
+{
+  "$schema": "../../../../../../../block.schema.json",
+  "id": "rbac.subject.me-social-module-profile-id-settings-ai-chat",
+  "title": "me-social-module-profile-id-settings-ai-chat",
+  "description": "Current-subject editable profile information draft card.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-social-module-profile-id-settings-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "user",
+      "type": "object",
+      "required": false
+    },
+    {
+      "name": "bio",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-social-module-profile-id-settings-ai-chat",
+    "nodeId": "859:27",
+    "variantNodeId": "981:123",
+    "syncStatus": "needs-update",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "subject", "me-social-module-profile-id-settings-ai-chat"]
+}

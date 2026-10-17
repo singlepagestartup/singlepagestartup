@@ -1,7 +1,7 @@
 import type { ComponentProps, ComponentType } from "react";
-import { Component as Variant0 } from "./singlepage/default/index";
-import { Component as Variant1 } from "./singlepage/navbar/ai-chat/index";
-const variants = { default: Variant0, "navbar-ai-chat": Variant1 };
+import { Component as Default } from "./singlepage/default/index";
+import { Component as NavbarAiChat } from "./singlepage/navbar/ai-chat/index";
+const variants = { default: Default, "navbar-ai-chat": NavbarAiChat };
 type Props = {
   [V in keyof typeof variants]: { variant: V } & ComponentProps<
     (typeof variants)[V]

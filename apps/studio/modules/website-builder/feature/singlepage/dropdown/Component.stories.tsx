@@ -1,15 +1,19 @@
+import { Component as Feature } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { FeatureDropdown, defaultFeatureDropdownProps } from "./Component";
+import { defaultFeatureDropdownProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Feature/Singlepage/dropdown",
-  component: FeatureDropdown,
+  id: "modules-website-builder-models-feature-singlepage-dropdown",
+  title: "Modules/Website-Builder/Feature/Singlepage/dropdown",
+  component: Feature,
   parameters: {
     layout: "padded",
   },
-  args: defaultFeatureDropdownProps,
-} satisfies Meta<typeof FeatureDropdown>;
+  args: { ...defaultFeatureDropdownProps, variant: "dropdown" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Feature>, { variant: "dropdown" }>
+>;
 
 export default meta;
 

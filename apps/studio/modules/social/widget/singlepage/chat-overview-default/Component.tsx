@@ -1,4 +1,11 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  SocialWidgetChatOverviewDefaultProps,
+} from "./interface";
+export type { SocialWidgetChatOverviewDefaultProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import {
   forwardRef,
   type SVGProps,
@@ -8,13 +15,13 @@ import {
   useState,
 } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import {
-  Component as SocialModuleMessage,
+  Component as Message,
   type SocialMessageBubbleDefaultProps,
 } from "../../../message/index";
 import {
-  Component as SocialModuleThread,
+  Component as Thread,
   defaultSocialThreadListDefaultProps,
   defaultSocialProfiles,
   type SocialThreadListDefaultProps,
@@ -56,21 +63,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface SocialWidgetChatOverviewDefaultProps {
-  variant?: string;
-  chat?: SocialWidgetChatListDefaultProps["chats"][number];
-  chatImage?: SocialPreviewAttachment;
-  onChatImageChange?: (file: File | null) => void;
-  onChatChange?: (
-    chat: SocialWidgetChatListDefaultProps["chats"][number],
-  ) => void;
-}
-export function SocialWidgetChatOverviewDefault(
-  props: SocialWidgetChatOverviewDefaultProps = {},
-) {
+export function SocialWidgetChatOverviewDefault(props: IComponentProps = {}) {
   const [localChat, setLocalChat] = useState<
     SocialWidgetChatListDefaultProps["chats"][number]
   >({
@@ -201,7 +197,7 @@ export function SocialWidgetChatOverviewDefault(
     : [];
   return (
     <section
-      className="w-full bg-[var(--color-sps-grey)] p-4 sm:p-6"
+      className="w-full bg-muted p-4 sm:p-6"
       data-ds-block="social.widget.chat-overview-default"
       data-ds-imports="social.thread.list-default social.message.bubble-default"
       data-ds-layer="singlepage"
@@ -209,8 +205,8 @@ export function SocialWidgetChatOverviewDefault(
       data-model="widget"
       data-variant={props.variant ?? "chat-overview-default"}
     >
-      <div className="grid w-full overflow-hidden rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] md:h-[calc(100vh-10rem)] md:min-h-[760px] md:grid-cols-[300px_minmax(0,1fr)]">
-        <SocialModuleThread
+      <div className="grid w-full overflow-hidden rounded-3xl border border-border bg-card md:h-[calc(100vh-10rem)] md:min-h-[760px] md:grid-cols-[300px_minmax(0,1fr)]">
+        <Thread
           variant="list-default"
           chatImage={chatImage}
           title={chat.name}
@@ -221,12 +217,12 @@ export function SocialWidgetChatOverviewDefault(
           onOpenSettings={() => openSettings({ tab: "general" })}
         />
         <div className="flex min-h-0 min-w-0 flex-col">
-          <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[var(--color-sps-line)] px-5 py-3">
+          <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
             <div>
-              <h2 className="text-lg font-semibold text-[var(--color-sps-graphite)]">
+              <h2 className="text-lg font-semibold text-foreground">
                 {thread?.title ?? "Choose a thread"}
               </h2>
-              <p className="mt-0.5 text-xs text-[var(--color-sps-muted)]">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 {thread
                   ? thread.description || "Messages in this thread"
                   : "Create a thread in Chat settings to start a conversation."}
@@ -239,7 +235,7 @@ export function SocialWidgetChatOverviewDefault(
                 { Icon: Settings, label: "Thread settings" },
               ].map(({ Icon, label }) => (
                 <button
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--color-sps-line)] text-[var(--color-sps-muted)] transition hover:bg-[var(--color-sps-grey)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)] min-h-11"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-border text-muted-foreground transition hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground min-h-11"
                   key={label}
                   onClick={() =>
                     label === "Search messages"
@@ -265,7 +261,7 @@ export function SocialWidgetChatOverviewDefault(
             </div>
           </header>
           {searchOpen && (
-            <label className="grid gap-2 border-b border-[var(--color-sps-line)] p-4">
+            <label className="grid gap-2 border-b border-border p-4">
               <span className={kit.label}>Search messages</span>
               <input
                 className={kit.field}
@@ -275,9 +271,9 @@ export function SocialWidgetChatOverviewDefault(
               />
             </label>
           )}
-          <div className="max-h-[640px] min-h-0 flex-1 space-y-6 overflow-y-auto bg-[var(--color-sps-white)] px-4 py-6 sm:px-7 md:max-h-none">
+          <div className="max-h-[640px] min-h-0 flex-1 space-y-6 overflow-y-auto bg-card px-4 py-6 sm:px-7 md:max-h-none">
             {visibleInitial.map((message, index) => (
-              <SocialModuleMessage
+              <Message
                 key={`initial-${index}`}
                 {...message}
                 variant="bubble-default"
@@ -293,7 +289,7 @@ export function SocialWidgetChatOverviewDefault(
               </p>
             )}
             {visibleSent.map((message) => (
-              <SocialModuleMessage
+              <Message
                 variant="bubble-default"
                 key={message.id}
                 author="You"
@@ -307,7 +303,7 @@ export function SocialWidgetChatOverviewDefault(
               />
             ))}
           </div>
-          <footer className="border-t border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-5 py-4">
+          <footer className="border-t border-border bg-card px-5 py-4">
             <input
               ref={fileInput}
               type="file"
@@ -323,7 +319,7 @@ export function SocialWidgetChatOverviewDefault(
                 event.target.value = "";
               }}
             />
-            <div className="rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] p-3">
+            <div className="rounded-2xl border border-border bg-muted p-3">
               {attachments.length > 0 ? (
                 <ul className="mb-3 grid gap-2">
                   {attachments.map((file) => (
@@ -364,19 +360,19 @@ export function SocialWidgetChatOverviewDefault(
                     sendMessage();
                   }
                 }}
-                className="min-h-24 w-full resize-y rounded-xl bg-[var(--color-sps-white)] p-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)]"
+                className="min-h-24 w-full resize-y rounded-xl bg-card p-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-foreground"
               />
               <div className="mt-2 flex items-center justify-between gap-3">
                 <button
                   aria-label="Attach files"
-                  className="grid h-11 w-11 place-items-center rounded-xl text-[var(--color-sps-muted)] hover:bg-[var(--color-sps-white)] focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="grid h-11 w-11 place-items-center rounded-xl text-muted-foreground hover:bg-card focus-visible:outline-2 focus-visible:outline-offset-2"
                   onClick={() => fileInput.current?.click()}
                   type="button"
                 >
                   <Paperclip className="h-5 w-5" />
                 </button>
                 <button
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[var(--color-sps-green)] px-4 text-sm font-semibold text-[var(--color-sps-graphite)] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 text-sm font-semibold disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2"
                   onClick={sendMessage}
                   disabled={
                     !thread || (!draft.trim() && attachments.length === 0)
@@ -388,14 +384,14 @@ export function SocialWidgetChatOverviewDefault(
                 </button>
               </div>
             </div>
-            <p className="mt-2 text-xs text-[var(--color-sps-muted)]">
+            <p className="mt-2 text-xs text-muted-foreground">
               Local preview. Chats, messages and selected files clear on reload.
             </p>
           </footer>
         </div>
       </div>
       {settings && (
-        <SocialModuleThread
+        <Thread
           variant="chat-settings"
           profiles={defaultSocialProfiles}
           open
@@ -438,7 +434,7 @@ export function SocialWidgetChatOverviewDefault(
                 event.preventDefault();
                 previewTrigger.current?.focus();
               }}
-              className="fixed left-1/2 top-1/2 z-[60] max-h-[90vh] w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl bg-[var(--color-sps-white)] p-5 text-[var(--color-sps-graphite)] shadow-xl"
+              className="fixed left-1/2 top-1/2 z-[60] max-h-[90vh] w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl bg-card p-5 text-foreground shadow-xl"
             >
               <div className="flex items-center justify-between gap-3">
                 <Dialog.Title className="min-w-0 break-all text-lg font-semibold">
@@ -484,16 +480,16 @@ const Send = createIcon("paper-plane-tilt");
 const Search = createIcon("magnifying-glass");
 const Paperclip = createIcon("paperclip");
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  secondary: `${buttonBase} border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)] enabled:hover:bg-[var(--color-sps-grey)] ${focus}`,
-  plain: `${buttonBase} text-[var(--color-sps-muted)] enabled:hover:text-[var(--color-sps-graphite)] ${focus}`,
+  secondary: `${buttonBase} border border-border bg-card text-foreground enabled:hover:bg-muted ${focus}`,
+  plain: `${buttonBase} text-muted-foreground enabled:hover:text-foreground ${focus}`,
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 py-2 text-base text-[var(--color-sps-graphite)] outline-none transition motion-reduce:transition-none placeholder:text-[var(--color-sps-muted)] focus-visible:border-[var(--color-sps-graphite)] focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-sps-white)] disabled:cursor-not-allowed disabled:bg-[var(--color-sps-grey)] disabled:text-[var(--color-sps-muted)] disabled:opacity-60 [&[readonly]]:bg-[var(--color-sps-grey)] aria-invalid:border-[var(--color-sps-danger)] aria-invalid:focus-visible:ring-[var(--color-sps-danger)]",
-  muted: "text-[var(--color-sps-muted)]",
-  label: "text-sm font-semibold text-[var(--color-sps-graphite)]",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
+  muted: "text-muted-foreground",
+  label: "text-sm font-semibold text-foreground",
 };
 const initialMessages: SocialMessageBubbleDefaultProps[] = [
   {

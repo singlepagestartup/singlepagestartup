@@ -93,6 +93,37 @@ Callers import the public model entry and select its display with `variant`.
 Cross-model views always use this entry. Private sibling imports remain inside
 one model; providers and helpers keep their state-specific entry points.
 
+Each variant owns an `interface.ts` exporting its literal `variant`, public
+`IComponentProps`, payload types and `IComponentPropsExtended`. The view imports
+that contract; shared local input fields, when needed, use `IProps`. A view
+imports only the types it uses. Its `index.ts` exports the component and types.
+Model and layer interfaces derive the public union from their effective registries, so a startup
+override replaces both the renderer and the matching props contract. Optional
+arguments on a private view do not make `variant` optional at the public model
+entry. `studio:catalog` preserves authored contracts and requires an owning
+interface before assembling custom variants. Its generated table, card and list
+views use the same structure.
+
+The current tree has 63 model entries and 430 presentation variants, plus the
+shared Icon and Toast entries. Every model exports a provider-free `Skeleton` and
+`ISkeletonProps` from its public index, with a `Loading` story. The skeleton uses
+the selected variant to distinguish list/table, form and image layouts. Source
+editors, Profile project frames and Chat/Thread conversations have their own
+loading compositions and stories; the RBAC chat workspace retains its dedicated
+frame. Loading previews need no model data
+or API. When transferring a view to production, pass a rendered node through the
+existing template parameter: `Skeleton={<Skeleton ... />}`. Both server Suspense
+and client pending reads use that node.
+
+Static glyphs live in `modules/shared/icon`, independently of Website Builder
+Feature records. Use its public entry with `variant="phosphor"` and one of the
+90 registered names, or `variant="custom" name="star-fill"`. Each collection
+owns its interface and assets; `startup/variants.ts` can replace a collection or
+add another. The selected collection determines the valid `name` values. SVG
+props and refs pass through `svgProps`; icons inherit text color. Keep Workspace's
+own icons within Workspace. Production uses the existing static Icon in
+`libs/shared/ui/adapter`, without database Feature records.
+
 ```tsx
 import { Component as BlogModuleArticle } from "../../../article";
 
@@ -109,7 +140,35 @@ The catalog provides `admin-v2-table`, `admin-v2-card` and `list`. Tables expose
 `empty`; lists expose `empty` and `count` through Storybook Controls. List stories
 include Default, Empty and Many (20 cards). Repeated cards use one local example.
 Custom model variants retain their own props and interactive states. Studio
-composes models directly and requires neither production libraries nor an API.
+composes its own models and fixtures without production SDKs, providers or an API.
+
+Studio shares three exact UI-only public entries with production:
+`@sps/shared-frontend-client-utils/chat-scroll`,
+`@sps/shared-utils/chat-scroll`, and `@sps/ui-adapter/toast`.
+The chat viewport controller owns follow-latest and history anchoring. Toast owns
+notification presentation and its Phosphor status icons. Studio maps these
+subpaths rather than their package barrels. Isolation gates walk their full
+import graphs, allowing only the named UI files and React, Sonner and
+Tailwind Merge. SDKs, app imports and broad shared barrels fail the gate.
+Workspace and Modules remain independent through these entries too.
+
+`Modules/Shared/Toast/Singlepage/Default` renders Default, Success, Error,
+Warning, Info, Loading, Action, LongText, AllStates, Stacked and AutoDismiss.
+Controls edit the text, state, action label, duration and position. Persistent
+keeps examples visible; the Loading example has a local Complete operation
+button. AllStates lays out the actual renderer in a flowing gallery, while
+individual examples use its normal floating placement.
+`Modules/Shared/Toast/Singlepage/Icons` shows all seven notification glyphs,
+including the animated loader and close icon. The full Phosphor collection is
+under `Modules/Shared/Icon/Singlepage/Phosphor/Collection`.
+
+Host and Studio use the same UI-only Toaster exported by
+`libs/shared/ui/adapter/src/lib/toast`. Change its card layout in `Component.tsx`
+and its status glyphs in `icons.tsx`; callers supply message content and behavior.
+The module decorator mounts one Toaster except when the Toast catalog owns it.
+The account Profile settings Saved story keeps its success notification visible;
+request and validation errors stay beside that form. Workspace retains its own
+presentation and notification ownership.
 
 `studio:presentation:export` builds the resolved semantic React/HTML presentation,
 resolves `singlepage` or `startup` from repository identity, and writes a
@@ -184,18 +243,30 @@ apps/studio/modules/<module>/<model>/<layer>/<variant>/
   figma.json
 ```
 
+Storybook groups these stories as `Modules/<Module>/<Model>/<Layer>/<Variant>`,
+for example `Modules/Host/Layout/Singlepage/default`. Module stories keep explicit
+`modules-...` IDs so changes to grouping preserve their URLs. Workspace stories
+remain under `Workspace`.
+
 Host pages remain under
-`apps/studio/modules/host/page/<layer>/<page-variant>/`. Host Page variants and Storybook IDs follow their routes. Domain variant IDs follow their component names.
+`apps/studio/modules/host/page/<layer>/<page-variant>/`. The folder, variant key,
+Storybook title and ID share the same model chain. Each module is named with
+`-module-`, each model uses its singular name, and `me` identifies the acting
+Subject. Actions and child models follow in order; appearance comes last, as in
+`rbac-module-subject-me-ecommerce-module-order-checkout` or
+`rbac-module-subject-me-social-module-profile-id-chat-id-thread-create-ai-chat`.
+URL routes keep their own plural segments and parameters.
 
 ## Local AI Chat components
 
-AI Chat Host Page folders remain flat. Their variant keys and Storybook route
-names identify the models in the address:
+AI Chat Host Page folders remain flat and use the model chain above. The route
+adapter selects the corresponding Page variant for each address:
 
 | Page             | Route                                                                                  |
 | ---------------- | -------------------------------------------------------------------------------------- |
-| Landing          | `/ai-chat/`                                                                            |
+| Landing          | `/`                                                                                    |
 | Help             | `/ai-chat/help`                                                                        |
+| My projects      | `/ai-chat/projects`                                                                    |
 | Create Profile   | `/ai-chat/social/profiles/create`                                                      |
 | Profile overview | `/ai-chat/social/profiles/[social.profiles.id]`                                        |
 | Profile settings | `/ai-chat/social/profiles/[social.profiles.id]/settings`                               |
@@ -205,18 +276,41 @@ names identify the models in the address:
 | Account settings | `/ai-chat/rbac/subjects/settings`                                                      |
 | Tokens           | `/ai-chat/rbac/subjects/tokens`                                                        |
 
-The local preview router decodes Profile and Chat IDs separately and passes them
-to the concrete Page. Profile providers remain mounted across transitions, so
-drafts, knowledge, files and history retain their scope. New thread displays its
-parent Chat ID and a name/agent form with preview-only submit. Sidebar, account
-menu, forms, copy and catalog links use these addresses. Display variants such as
-`overview-ai-chat-project` and Button record IDs remain independent of Page routes.
+Module page stories select a concrete screen from their supplied address and
+fixtures. `signedIn` controls the header appearance; it does not authorize the
+screen. Account data comes from the current example's props. Studio reads no
+browser authentication storage, persists no session, and never redirects a story
+to sign in. Actions emit supplied callbacks. Page navigation needs an explicit
+`onNavigate` callback; the selected story stays on its screen by default.
+Local UI interactions such as opening menus, editing drafts and reordering
+attachments remain available within the example.
 
-AI Chat prototypes live entirely in Studio. `Component.tsx` contains each variant's
-implementation, props and callbacks. `index.ts` exports the component and its
-public types or helpers. Fixture data and interactive examples live in
-`Component.stories.tsx`. Module website previews compose these components and frozen local copy. Workspace
-website previews use their own editable component snapshot and Markdown content.
+The project chooser is
+`Modules/Host/Page/Singlepage/rbac-module-subject-me-social-module-profile-list-ai-chat`.
+It lists the supplied projects and has a Create project button. Default, Empty,
+Loading, Error, Guest and Creating show its states. Creation and cancellation
+change only the example's UI; choosing a project emits `onNavigate`. The sign-in
+example emits `/ai-chat/projects` after a successful form interaction.
+
+Private project Pages expose `workspaceState`: `ready`, `checking-session`,
+`loading-projects`, `loading-chat`, `sign-in-required`, `access-denied` and `error`.
+Checking session and loading projects show a workspace skeleton without project
+content. Loading chat keeps the supplied project navigation and shows skeletons
+in the content area. Access and error states contain navigation or retry controls.
+Guest examples for document chats, thread creation and project settings select
+`sign-in-required`, with no project selector, files, threads or private forms.
+These stories contain no session checks or redirects.
+
+AI Chat prototypes live entirely in Studio. Each variant declares its public
+props, callback types and literal variant in `interface.ts`; `Component.tsx`
+contains its presentation. The public model interface selects the effective
+variant contract, including startup overrides. `index.ts` exposes the component
+and its public interface. Fixture data and interactive examples live in
+`Component.stories.tsx`. Some existing variants still declare props inline and
+require migration to this contract. Module website previews compose their owned
+components and local copy. Workspace website previews use their own editable
+component snapshot and Markdown content, independently of Modules, including
+stories, tests and fixtures.
 
 Studio callers import each model from `<module>/<model>/index.ts` and choose the
 view with `variant`. Each entry's discriminated props retain the required inputs
@@ -228,18 +322,18 @@ import { Component as SocialModuleProfile } from ".../social/profile";
 <SocialModuleProfile variant="account-menu" data={profile} balance={balance} page="chat" />;
 ```
 
-| Model                                                      | Studio responsibility                                   |
-| ---------------------------------------------------------- | ------------------------------------------------------- |
-| Host Page / Layout                                         | Separate pages and the frame with header slots          |
-| RBAC Subject                                               | Authentication, registration, account forms and session |
-| RBAC Identity                                              | Connected identity display                              |
-| Social Profile                                             | Project selector, overview, sidebar, forms and agent    |
-| Social Chat / Thread                                       | Chat and Thread overviews                               |
-| Social Message / Skill                                     | Message overview/list and knowledge-editing instruction |
-| Knowledge Source                                           | Products content, editor and document navigation        |
-| File Storage File                                          | Upload, attachment list, preview and detach             |
-| Ecommerce Order                                            | Token purchase preview                                  |
-| Website Builder Widget / Logotype / Buttons Array / Button | Header, logo, navigation and Help                       |
+| Model                                                      | Studio responsibility                                                 |
+| ---------------------------------------------------------- | --------------------------------------------------------------------- |
+| Host Page / Layout                                         | Separate pages and the frame with header slots                        |
+| RBAC Subject                                               | Authentication, registration and account form presentation            |
+| RBAC Identity                                              | Connected identity display                                            |
+| Social Profile                                             | Selector, ID view, document lists, settings and agent                 |
+| Social Chat / Thread                                       | Identified Chat and Thread views                                      |
+| Social Message / Skill                                     | Identified Message and Message list and knowledge-editing instruction |
+| Knowledge Source                                           | One knowledge editor and its attachments                              |
+| File Storage File                                          | Upload, attachment list, preview and detach                           |
+| Ecommerce Order                                            | Token purchase preview                                                |
+| Website Builder Widget / Logotype / Buttons Array / Button | Header, logo, navigation and Help                                     |
 
 Authentication and registration belong to Subject. Variant folders follow the
 method and form, with appearance last:
@@ -260,8 +354,7 @@ rbac/subject/singlepage/authentication/
 
 The public Subject key mirrors the path, for example
 `authentication-email-and-password-registration-form-ai-chat`. Host Pages call this entry. Subject owns local validation, copy,
-stories, connected-method actions and preview sign-in; Host owns navigation after
-success. The AI Chat login Page calls the email/password form directly. The ordinary
+stories and callbacks for connected-method actions and form submission. The AI Chat login Page calls the email/password form directly. The ordinary
 Select Method places Email/password, EVM and OAuth tabs inside the centered card
 and preserves each method’s state while switching tabs.
 EVM and OAuth expose idle, approval, completion and error states through Controls.
@@ -271,9 +364,9 @@ requires no existing Identity.
 
 AI Chat authentication Pages compose Layout `ai-chat-dashboard`, Website Builder
 Widget `content-ai-chat-authentication` and the Subject form in the Widget’s
-`children` slot. The Widget owns the introduction, photography, back link and
+`children` slot. The Widget owns the introduction, photography and
 information card. Host chooses its content, media presentation and card icon.
-Subject forms own their fields, validation, local session and result feedback;
+Subject forms own their fields, validation and result feedback;
 they render independently in Storybook. The content publisher writes separate
 Widget and form fixtures. Login overrides use `{ content, form }` so each owner
 receives only its own data.
@@ -285,14 +378,15 @@ profile. Missing examples show an unavailable state. Project creation only adds
 an identity to the local preview.
 
 The project prototype has one Products.md document, one prepared Thread, one
-Knowledge Source and one knowledge assistant using Skill `overview-ai-chat`.
-The New thread page shows a name, agent selection and Cancel. Submit displays
+Knowledge Source and one knowledge assistant using Skill `id-ai-chat`.
+The New thread page shows a name and Cancel. Submit displays
 preview feedback and creates no Thread records.
 
 Each Host Page owns one screen: landing, register, login, account settings, help,
 tokens, project creation, project content, project settings and thread creation.
-Pages use the public model entries. The website Preview adapter handles local
-navigation between those pages.
+Pages use the public model entries. Module stories emit navigation callbacks
+without replacing their selected page. The separate Workspace website prototype
+owns navigation between its screens.
 
 AI Chat Layout examples use flat `singlepage/ai-chat-landing` and
 `singlepage/ai-chat-dashboard` folders. Their names distinguish visual samples;
@@ -333,52 +427,56 @@ keys, for example `singlepage/content/ai-chat/hero`.
 Navbar samples are siblings: `singlepage/navbar/ai-chat` and
 `singlepage/navbar/ai-chat-landing`.
 
-Other Studio models name their variants by purpose, with presentation last: `overview-ai-chat`
+Other Studio models name their variants by purpose, with presentation last: `id-ai-chat`
 displays one model, `list-ai-chat` displays records, and
 `select-item-ai-chat-project` identifies a Profile Select item in the project presentation.
-Folders mirror the key, as in `singlepage/select/item/ai-chat/project`. Host Page variants and
-story IDs follow their route names. Project scope is a local state wrapper;
-`overview-ai-chat-project` displays the selected profile.
-Profile functions live under `create`, `overview`, `select`, `settings`,
+Folders mirror the key, as in `singlepage/select/item/ai-chat/project`. Host Page
+folders and story IDs use the module/model chain. Project scope is a local state wrapper;
+`id-ai-chat-project` displays the selected profile.
+Profile functions live under `create`, `id`, `select`, `settings`,
 `sidebar`, `scope` and `processing`; `ai-chat/project` specifies their appearance.
 The ordinary Profile uses `overview-default` in `overview/default`, with a
 Component/index entry, local defaults and its own Storybook Controls.
 
 Names describe the model path relative to the current entry, then the function
-and appearance. A Thread uses `overview-ai-chat`, `create-ai-chat` and
-`overview-ai-chat-settings` for its own views. Its child Message list uses
+and appearance. A Thread uses `id-ai-chat`, `create-ai-chat` and
+`id-ai-chat-settings` for its own views. Its child Message list uses
 `message-list-ai-chat`; Message itself uses `list-ai-chat`, because the model
 name is already given by the entry. Thread owns the context lookup and passes
 records directly to Message. Each additional model step appears in order:
-Subject `overview-profile-overview-chat-overview-thread-list-default` would
+Subject `id-social-module-profile-id-chat-id-thread-list-default` would
 describe `/subjects/:subjectId/profiles/:profileId/chats/:chatId/threads`.
-This is a naming example; Host Page names continue to follow their actual routes.
+Host prefixes that chain with `rbac-module-subject`.
 
-Profile `overview-ai-chat-project` owns one sidebar and a responsive project
+Profile `id-ai-chat-project` owns one sidebar and a responsive project
 frame. Tailwind container queries control the frame's columns, navigation
 controls and sidebar position; local state controls opening and dismissal.
-Chat `overview-ai-chat` composes Thread `overview-ai-chat`. Products is the
+Chat `id-ai-chat` composes Thread `id-ai-chat`. Products is the
 Knowledge Source example's title. Thread derives its
 identity and title from the supplied Source. The Thread provider retains local
 state across project page navigation and reuses an existing scope.
 Thread's local provider owns messages, draft, pending File IDs, Working On, pane
 selection and proposals. Message `list-ai-chat` maps records to Social
-Message `overview-ai-chat` views. RBAC Subject `message-create-ai-chat` owns the
+Message `id-ai-chat` views. RBAC Subject `message-create-ai-chat` owns the
 sending form and reads that Thread state. Host Page supplies it through the
 Chat/Thread `messageCreate` slot, keeping Social independent of RBAC. Working On
 selects Whole document or the supplied Source's title.
 Sending snapshots the supplied Source and files; later edits preserve history.
 
 SourceProvider owns one Source and an array of displayed File IDs. Source
-`overview-ai-chat` edits user context while preserving analyzed material text. It
+`id-ai-chat` edits user context while preserving analyzed material text. It
 passes File IDs to File `list-attachments-ai-chat` directly. The Source story exposes
 `empty` and `withFiles` controls. Upload and detach affect only preview state;
 the File pool remains available for reattachment and message attachments.
 
 Fixtures and helpers live beside the models that own them. Component variants
-contain their own rendering; Website Builder Button and Feature provide button
-and icon views through public model entries. Modules use `runtime/sps.css` and
-assets under `runtime/assets`, exposed as `/module-assets`. The website keeps
+contain their own rendering. Website Builder Feature supplies icons through its
+public model entry; Subject form actions use local native buttons. Website Builder
+Button supplies content and navigation links. Modules use `runtime/theme.css` and
+assets under `runtime/assets`, exposed as `/module-assets`. Color utilities use
+semantic roles such as `primary`, `default`, `card`, `muted`, `foreground`, and
+`border`; color variables contain HSL channels. `font-default` and `font-sans` use
+the same default font role, and `font-primary` is available for display text. The website keeps
 model providers mounted across local navigation. Studio stores no relation records,
 query filters or SDK adapters. Production storage, retrieval and tools belong to
 `libs/modules` and are connected separately after visual design.
@@ -396,7 +494,7 @@ assets; changes to Module variants do not replace this snapshot.
 
 ## Host model previews
 
-`Modules/Host/Models/Page/Singlepage/composition` displays local Page, Layout,
+`Modules/Host/Page/Singlepage/composition` displays local Page, Layout,
 Widget and Metadata examples. Each model also has list, form and select stories.
 `HostStudioProvider` accepts controlled `state`/`onStateChange` or `initialState`.
 Edits affect in-memory examples and reset on reload.
@@ -411,7 +509,7 @@ checks require all four Host models and their management views.
 
 The Startup module has a Widget scaffold at
 `apps/studio/modules/startup/widget/singlepage/default/`, visible in
-Storybook as `Modules/Startup/Models/Widget/Singlepage/default`. A downstream
+Storybook as `Modules/Startup/Widget/Singlepage/default`. A downstream
 project adds its own variants under
 `apps/studio/modules/startup/widget/startup/<variant>/`, with a component,
 story, block manifest, and Figma metadata as shown above. The first `startup` in
@@ -537,8 +635,58 @@ provide layout/export; they do not extract Strategy or other document copy.
 Document dependencies are semantic review relationships: `stale` requests an
 impact review without automatically replacing any dependent text.
 
-User menus use Subject `account` and Social Profile `account-menu` on every header.
-`showTokens` adds the AI Chat balance and Buy tokens action. Name, avatar, email,
-Settings, Admin Panel and Sign out share one dropdown. Avatar changes belong in settings. The account
-stories expose signed-in and token controls. Studio stores the preview session
-and uploaded avatar locally; AI Chat login opens the active project immediately.
+User menus use Subject `me-account` and Social Profile `account-menu` on every
+header. `showTokens` adds the AI Chat balance and Buy tokens action. Name, avatar,
+email, Settings, Admin Panel and Sign out share one dropdown. Avatar changes
+belong in settings. Studio stores the preview session and uploaded avatar locally.
+AI Chat login opens the active project immediately.
+
+Host Page stories are component groups with a Default story. AI Chat Controls
+accept `signedIn`, `account` and `profiles`; story IDs match the Page variant keys.
+Authentication uses Subject `me-authentication-*`. Profile settings use
+`me-social-module-profile-id-settings-ai-chat` with an explicit `profileId`. Identity actions use
+`me-identity-change-email`, `me-identity-change-password`, `me-identity-delete`
+and a `me-identity-create-*` variant for each provider.
+
+AI Chat Help composes a Website Builder content slot with Subject
+`me-crm-module-form-support-ai-chat`. Subject owns field values, validation and
+local submission; CRM Form `support-ai-chat` renders one CRM Step and three CRM
+Inputs. Subject form actions use local native buttons.
+
+Account settings use separate Subject variants
+`me-ecommerce-module-order-list-ai-chat` and `me-delete-ai-chat`. The purchase list
+shows paid local examples and preview receipts; deletion contains its confirmation
+and recovery guidance. Subject `me-ecommerce-module-order-checkout-tokens-ai-chat`
+opens the token checkout. Authentication Pages supply Subject `me-account` to the
+navbar, so guests see Sign in and authenticated visitors see their profile menu.
+
+AI Chat uses `id` for an identified model view. Host Page folders, variant keys
+and Storybook names use singular model names in the same chain.
+Cross-module model variant paths include `-module-` after the module name.
+Website Builder Widget `content-ai-chat-profile-create` owns the static project
+introduction and image; Subject `me-social-module-profile-create-ai-chat` owns its
+form. Widget `content-ai-chat-materials-processing` renders the static materials
+disclosure.
+
+RBAC Widget variants compose the settings, Thread creation and document workspaces:
+`subject-me-profile-settings`,
+`subject-me-social-module-profile-id-settings-ai-chat`,
+`subject-me-social-module-profile-id-chat-id-thread-create-ai-chat` and
+`subject-me-social-module-profile-id-chat-id-thread-id-ai-chat`.
+Host Pages select these compositions from route parameters. Subject variants own
+profile edits, project name changes, Thread creation and message submission;
+Social Profile and Thread views accept action and content slots.
+
+The document workspace resolves the current Subject, Profile, Chat and Thread
+before supplying the Knowledge panel. Subject
+`me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat`
+imports the Profile Source card list; the corresponding `source-update-ai-chat`
+action applies a proposed change. Profile
+`knowledge-module-source-list-sidebar-ai-chat` owns document navigation, and
+`knowledge-module-source-list-document-ai-chat` displays Source cards. Knowledge
+Source `id-ai-chat` renders one editor card. Thread `id-ai-chat` owns the document
+header, and Thread `download-ai-chat` exports its supplied Knowledge Sources.
+
+Thread render variants `id/ai-chat` and `id/ai-chat-settings` occupy sibling
+folders. Message render variants `list` and `list-ai-chat` also occupy sibling
+folders; a render variant does not contain another render variant.

@@ -209,3 +209,31 @@ describe("knowledge embedding client", () => {
     ).toThrow("OPEN_ROUTER_API_KEY");
   });
 });
+
+it("keeps concurrent embedding sessions scoped to each request", async () => {
+  const fetcher = jest.fn(
+    async () =>
+      new Response(JSON.stringify({ data: [{ embedding: [1, 0, 0] }] }), {
+        status: 200,
+      }),
+  );
+  const client = new OpenRouterEmbeddingClient({
+    baseUrl: "https://openrouter.test/api/v1",
+    model: "test",
+    dimensions: 3,
+    apiKey: "test",
+    fetcher,
+  });
+  await Promise.all([
+    client.embed("first", { sessionId: "thread-A" }),
+    client.embed("second", { sessionId: "thread-B" }),
+  ]);
+  expect(
+    fetcher.mock.calls.map((call: any) => call[1].headers["x-session-id"]),
+  ).toEqual(["thread-A", "thread-B"]);
+  expect(
+    fetcher.mock.calls.every(
+      (call: any) => JSON.parse(call[1].body).session_id === undefined,
+    ),
+  ).toBe(true);
+});

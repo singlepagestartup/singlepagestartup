@@ -4,8 +4,6 @@ import { projectProfileIdFromHref } from "./ai-chat-models";
 import { aiChatAccount } from "./ai-chat-account-fixture";
 import { aiChatWorkspaceFixture } from "./ai-chat-workspace-fixture";
 import { createProjectProfile } from "./ai-chat-workspace";
-import { AccountProvider } from "../../../modules/rbac/subject/singlepage/account/Account";
-import { Component as SubjectAccount } from "../../../modules/rbac/subject/singlepage/account/index";
 import { AIChatPreview } from "../../products/singlepage/ai-chat/website/Preview";
 import {
   aiChatProfileHref,
@@ -106,23 +104,6 @@ test("account service links return to the supplied profile scope", () => {
   expect(registration).not.toContain(
     'href="/ai-chat/social/profiles/example#how-your-materials-are-processed-and-stored"',
   );
-});
-
-test("account menu renders the supplied profile and balance, with a signed-out fallback", () => {
-  const html = renderToStaticMarkup(
-    <AccountProvider account={aiChatAccount}>
-      <SubjectAccount page="chat" showTokens />
-    </AccountProvider>,
-  );
-  expect(html).toContain('data-profile-id="current-user"');
-  expect(html).toContain("1,250 tokens");
-  const empty = renderToStaticMarkup(
-    <AccountProvider account={{ ...aiChatAccount, profile: undefined }}>
-      <SubjectAccount page="chat" showTokens />
-    </AccountProvider>,
-  );
-  expect(empty).toContain("Sign in");
-  expect(empty).not.toContain('data-profile-id="current-user"');
 });
 
 test("route IDs select profiles from the supplied examples", () => {

@@ -1,16 +1,16 @@
 import { forwardRef } from "react";
 import type { ComponentProps, ComponentType, RefAttributes } from "react";
-import { Component as Variant0 } from "./singlepage/control/index";
-import { Component as Variant1 } from "./singlepage/link/index";
-import { Component as Variant2 } from "./singlepage/secondary/index";
-import { Component as Variant3 } from "./singlepage/primary/index";
-import { Component as Variant4 } from "./singlepage/navbar/ai-chat/index";
+import { Component as Control } from "./singlepage/control/index";
+import { Component as Link } from "./singlepage/link/index";
+import { Component as Secondary } from "./singlepage/secondary/index";
+import { Component as Primary } from "./singlepage/primary/index";
+import { Component as NavbarAiChat } from "./singlepage/navbar/ai-chat/index";
 const variants = {
-  control: Variant0,
-  link: Variant1,
-  secondary: Variant2,
-  primary: Variant3,
-  "navbar-ai-chat": Variant4,
+  control: Control,
+  link: Link,
+  secondary: Secondary,
+  primary: Primary,
+  "navbar-ai-chat": NavbarAiChat,
 };
 type Props = {
   [V in keyof typeof variants]: { variant: V } & ComponentProps<

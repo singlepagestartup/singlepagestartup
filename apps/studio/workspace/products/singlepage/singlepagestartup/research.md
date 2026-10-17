@@ -22,8 +22,8 @@ sources:
     limitation: Read-only source and platform inspection; no new installation, compatibility, novice completion or savings test.
 review:
   dependencies:
-    brief: c58b70512b9bc7ea71c0051f5ffecf1c0b733d413e96023e491b2ec08a39cb5e
-    product.singlepagestartup.analytics: ce1e12bfa58ab6764f42861a779e9a4d3d6b836f6bfb7b8b9d997c887bbc2015
+    brief: 1fcbfd98ca6f0c346a752a38256f36a69d324fcef58b6355c9a15a3eda8c624d
+    product.singlepagestartup.analytics: be0f193e75ae44c3c92ff3ceabe02814f23c1958b57ef812bfcb3440a005cd20
     product.singlepagestartup.page.research.competitors: 6efcf5101e989dfc5ad439d9fa04fcc41792696fdc97e520c795b03128673a6a
     product.singlepagestartup.page.research.developer-agents: d0ac4e91c7d319e4e796c69be6b76a77b2a8aa8dee7f14fbe27fbb10910899a5
     product.singlepagestartup.page.research.makers: 13ddcd6b09cb312bd06cc7ec810b7cd7d2d0d25be3ca5ecbca35e714344f7f19

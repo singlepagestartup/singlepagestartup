@@ -1,3 +1,31 @@
+import type { IComponentProps as IMeSocialModuleProfileIdSidebarAiChat } from "./me-social-module-profile-id-sidebar-ai-chat/interface";
+import type { IComponentProps as IResetPasswordFormAiChat } from "./authentication/email-and-password/reset-password-form-ai-chat/interface";
+import type { IComponentProps as IForgotPasswordFormAiChat } from "./authentication/email-and-password/forgot-password-form-ai-chat/interface";
+import type { IComponentProps as IRegistrationFormAiChat } from "./authentication/email-and-password/registration-form-ai-chat/interface";
+import type { IComponentProps as IAuthenticationFormAiChat } from "./authentication/email-and-password/authentication-form-ai-chat/interface";
+import type { IComponentProps as IMeSocialProfileSelectAiChat } from "./me-social-module-profile-select-ai-chat/interface";
+import type { IComponentProps as IMeIdentityListSettingsAiChat } from "./me-identity-list-settings-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileListSettingsAiChat } from "./me-social-module-profile-list-settings-ai-chat/interface";
+import type { IComponentProps as IMeIdentityIdSettingsAiChat } from "./me-identity-id-settings-ai-chat/interface";
+import type { IComponentProps as IMeIdentityChangePassword } from "./me-identity-change-password/interface";
+import type { IComponentProps as IMeIdentityChangeEmail } from "./me-identity-change-email/interface";
+import type { IComponentProps as IMeSocialModuleProfileIdAvatarUpdateAiChat } from "./me-social-module-profile-id-avatar-update-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileIdUpdateAiChat } from "./me-social-module-profile-id-update-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileIdNavigationAiChat } from "./me-social-module-profile-id-navigation-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdDownloadAiChat } from "./me-social-module-profile-id-chat-id-thread-id-download-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceListDocumentAiChat } from "./me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceIdUpdateAiChat } from "./me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-id-update-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdMessageCreateAiChat } from "./me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdMessageListAiChat } from "./me-social-module-profile-id-chat-id-thread-id-message-list-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileListAiChat } from "./me-social-module-profile-list-ai-chat/interface";
+import type { IComponentProps as IMeCrmModuleFormSupportAiChat } from "./me-crm-module-form-support-ai-chat/interface";
+import type { IComponentProps as IMeEcommerceModuleOrderListAiChat } from "./me-ecommerce-module-order-list-ai-chat/interface";
+import type { IComponentProps as IMeAccountAiChat } from "./me-account-ai-chat/interface";
+import type { IComponentProps as IMeProfileSettingsAiChat } from "./me-profile-settings-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadCreateAiChat } from "./me-social-module-profile-id-chat-id-thread-create-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileIdSettingsAiChat } from "./me-social-module-profile-id-settings-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdAiChat } from "./me-social-module-profile-id-chat-id-thread-id-ai-chat/interface";
+import type { IComponentProps as IMeSocialModuleProfileCreateAiChat } from "./me-social-module-profile-create-ai-chat/interface";
 import { IComponentProps as IEcommerceModuleOrderCheckoutDefaultComponentProps } from "./ecommerce-module/order/checkout-default/interface";
 import { IComponentProps as IEcommerceModuleOrderListCheckoutDefaultComponentProps } from "./ecommerce-module/order/list/checkout-default/interface";
 import { IComponentProps as IEcommerceModuleOrderUpdateDefaultComponentProps } from "./ecommerce-module/order/update-default/interface";
@@ -42,6 +70,35 @@ import { IComponentProps as ISocialModuleProfileChatListDefaultComponentProps } 
 import { IComponentProps as ISocialModuleProfileChatOverviewDefaultComponentProps } from "./social-module/profile/chat/overview/default/interface";
 
 export type IComponentProps =
+  | IAuthenticationEmailAndPasswordFormAiChat
+  | IMeSocialModuleProfileIdSidebarAiChat
+  | IResetPasswordFormAiChat
+  | IForgotPasswordFormAiChat
+  | IRegistrationFormAiChat
+  | IAuthenticationFormAiChat
+  | IMeSocialProfileSelectAiChat
+  | IMeIdentityListSettingsAiChat
+  | IMeSocialModuleProfileListSettingsAiChat
+  | IMeIdentityIdSettingsAiChat
+  | IMeIdentityChangePassword
+  | IMeIdentityChangeEmail
+  | IMeSocialModuleProfileIdAvatarUpdateAiChat
+  | IMeSocialModuleProfileIdUpdateAiChat
+  | IMeSocialModuleProfileIdNavigationAiChat
+  | IMeSocialModuleProfileIdChatIdThreadIdDownloadAiChat
+  | IMeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceListDocumentAiChat
+  | IMeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceIdUpdateAiChat
+  | IMeSocialModuleProfileIdChatIdThreadIdMessageCreateAiChat
+  | IMeSocialModuleProfileIdChatIdThreadIdMessageListAiChat
+  | IMeSocialModuleProfileListAiChat
+  | IMeCrmModuleFormSupportAiChat
+  | IMeEcommerceModuleOrderListAiChat
+  | IMeAccountAiChat
+  | IMeProfileSettingsAiChat
+  | IMeSocialModuleProfileIdChatIdThreadCreateAiChat
+  | IMeSocialModuleProfileIdSettingsAiChat
+  | IMeSocialModuleProfileIdChatIdThreadIdAiChat
+  | IMeSocialModuleProfileCreateAiChat
   | IEcommerceModuleOrderCheckoutDefaultComponentProps
   | IEcommerceModuleOrderListCheckoutDefaultComponentProps
   | IEcommerceModuleOrderUpdateDefaultComponentProps
@@ -84,3 +141,4 @@ export type IComponentProps =
   | ISocialModuleProfileChatListDefaultComponentProps
   | ISocialModuleProfileChatOverviewDefaultComponentProps
   | never;
+import type { IComponentProps as IAuthenticationEmailAndPasswordFormAiChat } from "./authentication/email-and-password/form-ai-chat/interface";

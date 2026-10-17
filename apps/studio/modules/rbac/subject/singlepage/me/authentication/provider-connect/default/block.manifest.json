@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-authentication-provider-connect-default",
+  "title": "me-authentication-provider-connect-default",
+  "description": "Local account settings interaction.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-authentication-provider-connect-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-authentication-provider-connect-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

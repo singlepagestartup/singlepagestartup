@@ -16,6 +16,7 @@ const mockSubjectNotify = jest.fn();
 const mockLoggerError = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "test-rbac-secret",
 }));
 
@@ -52,8 +53,9 @@ jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
 
 jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
   api: {
-    ecommerceModuleProductCheckout: (...args: unknown[]) =>
-      mockSubjectProductCheckout(...args),
+    ecommerceModuleProductCheckout: () => {
+      throw new Error("Unexpected Subject loopback HTTP");
+    },
     notify: (...args: unknown[]) => mockSubjectNotify(...args),
   },
 }));
@@ -63,6 +65,63 @@ import {
   ECOMMERCE_ORDER_PROCEED_STATUSES,
   Service,
 } from "./proceed";
+
+it("renews an expired zero-price daily subscription without requiring a Telegram chat", async () => {
+  jest.clearAllMocks();
+  const { service } = createService();
+  (
+    service.subjectsToBillingModuleCurrencies.find as jest.Mock
+  ).mockResolvedValue([
+    { id: "token-balance", variant: "default", amount: "11" },
+  ]);
+  await service.delivered({
+    order: { id: "free-order", status: "delivered" } as any,
+    extendedOrder: {
+      id: "free-order",
+      checkoutAttributesByCurrency: {
+        amount: 0,
+        type: "subscription",
+        interval: "day",
+      },
+      ordersToProducts: [
+        { productId: "free-product", product: { slug: "free-subscription" } },
+      ],
+      ordersToBillingModulePaymentIntents: [
+        {
+          billingModulePaymentIntent: {
+            type: "one_off",
+            paymentIntentsToCurrencies: [{ currency: { id: "currency" } }],
+            paymentIntentsToInvoices: [
+              { invoice: { provider: "dummy", amount: 0 } },
+            ],
+          },
+        },
+      ],
+    } as any,
+    subjectToEcommerceModuleOrder: {
+      subjectId: "user",
+      ecommerceModuleOrderId: "free-order",
+    },
+    existingRolesIds: [],
+    productsRolesIds: [],
+    subjectsToRoles: [],
+  });
+  expect(mockSubjectProductCheckout).toHaveBeenCalledWith({
+    id: "user",
+    productId: "free-product",
+    data: {
+      provider: "dummy",
+      billingModule: { currency: { id: "currency" } },
+    },
+  });
+  expect(mockSubjectsToBillingModuleCurrenciesUpdate).toHaveBeenCalledTimes(1);
+  expect(mockSubjectsToBillingModuleCurrenciesUpdate).toHaveBeenCalledWith(
+    expect.objectContaining({
+      id: "token-balance",
+      data: expect.objectContaining({ amount: "0" }),
+    }),
+  );
+});
 
 function createService(props?: {
   candidateOrders?: any[];
@@ -115,6 +174,7 @@ function createService(props?: {
     { find: subjectsToSocialModuleProfilesFind } as any,
     { find: jest.fn().mockResolvedValue([]) } as any,
     { find: jest.fn().mockResolvedValue([]) } as any,
+    mockSubjectProductCheckout,
   );
 
   return {

@@ -50,6 +50,8 @@ export function getSocialProfileKnowledgePermissionDescriptors(
     { method: "PATCH", path: knowledgeSourcePath },
     { method: "POST", path: `${knowledgeSourcePath}/reindex` },
     { method: "DELETE", path: knowledgeSourcePath },
+    { method: "GET", path: `${knowledgeSourcePath}/files` },
+    { method: "POST", path: `${knowledgeSourcePath}/files` },
   ];
 }
 

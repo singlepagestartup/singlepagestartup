@@ -1,0 +1,323 @@
+{
+  "connector": "local stdio MCP -> localhost:4000",
+  "subjectId": "2a7ce1bf-98d7-4190-a04c-b6111002b51c",
+  "profileId": "df5c6bb6-0ea7-43ed-9373-d5ca51e6184f",
+  "personalProfileCount": 1,
+  "assistantProfileCount": 0,
+  "permissionScope": "concrete Subject GET/POST collection; private role assigned only to that Subject; owner middleware retained",
+  "evidence": [
+    {
+      "selector": {
+        "module": "social",
+        "model": "profile"
+      },
+      "id": "df5c6bb6-0ea7-43ed-9373-d5ca51e6184f",
+      "data": {
+        "slug": "subject-2a7ce1bf-98d7-4190-a04c-b6111002b51c",
+        "variant": "default",
+        "title": {
+          "en": "yucky-blush-lamprey-4950"
+        }
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "relation": "subjects-to-social-module-profiles"
+      },
+      "id": "a75a6529-44ae-4a9e-bdce-acf5fd7f1323",
+      "data": {
+        "subjectId": "2a7ce1bf-98d7-4190-a04c-b6111002b51c",
+        "socialModuleProfileId": "df5c6bb6-0ea7-43ed-9373-d5ca51e6184f",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "model": "role"
+      },
+      "id": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+      "data": {
+        "slug": "subject-2a7ce1bf-98d7-4190-a04c-b6111002b51c-profiles-owner",
+        "title": "Own social profiles for Subject 2a7ce1bf-98d7-4190-a04c-b6111002b51c",
+        "variant": "default",
+        "availableOnRegistration": false
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "model": "permission"
+      },
+      "id": "2afee292-3d1f-4b78-a135-ec4ce0849c5e",
+      "data": {
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/social-module/profiles",
+        "method": "GET",
+        "type": "HTTP",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "relation": "roles-to-permissions"
+      },
+      "id": "cfe2114a-e4a5-4f7d-9c14-a107665a6814",
+      "data": {
+        "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+        "permissionId": "2afee292-3d1f-4b78-a135-ec4ce0849c5e",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "model": "permission"
+      },
+      "id": "fd81e4c8-9133-4001-9e64-a13a8e0df52b",
+      "data": {
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/social-module/profiles",
+        "method": "POST",
+        "type": "HTTP",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "relation": "roles-to-permissions"
+      },
+      "id": "19bace88-c413-44bc-b3a5-20e91f48e82b",
+      "data": {
+        "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+        "permissionId": "fd81e4c8-9133-4001-9e64-a13a8e0df52b",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "relation": "subjects-to-roles"
+      },
+      "id": "2208a888-bbd2-4683-8bf4-022f864a5f26",
+      "data": {
+        "subjectId": "2a7ce1bf-98d7-4190-a04c-b6111002b51c",
+        "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "model": "permission"
+      },
+      "id": "ee9aa0db-c6f9-4e6c-b386-4a2b3ffc8754",
+      "data": {
+        "method": "GET",
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/identities",
+        "type": "HTTP",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "relation": "roles-to-permissions"
+      },
+      "id": "3cf80f60-323b-41e7-90b5-b4ad6000a41b",
+      "data": {
+        "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+        "permissionId": "ee9aa0db-c6f9-4e6c-b386-4a2b3ffc8754",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "model": "permission"
+      },
+      "id": "39cab845-eef0-4506-899e-da51e9bc5f47",
+      "data": {
+        "method": "PATCH",
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/identities/6c7beea5-0e56-4263-a121-07009b3eefe3",
+        "type": "HTTP",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "relation": "roles-to-permissions"
+      },
+      "id": "040c79e0-f677-4623-9010-bcdccde21374",
+      "data": {
+        "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+        "permissionId": "39cab845-eef0-4506-899e-da51e9bc5f47",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "model": "permission"
+      },
+      "id": "8e25f977-d699-4420-a5cd-464d5f06392b",
+      "data": {
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/social-module/profiles/df5c6bb6-0ea7-43ed-9373-d5ca51e6184f",
+        "method": "PATCH",
+        "type": "HTTP",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "relation": "roles-to-permissions"
+      },
+      "id": "b3cbeb45-e669-4590-827b-ef0a8decbe0d",
+      "data": {
+        "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+        "permissionId": "8e25f977-d699-4420-a5cd-464d5f06392b",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "model": "permission"
+      },
+      "id": "2ce67a74-3cf3-4fc1-b3eb-e4ec37213fe7",
+      "data": {
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/social-module/profiles/df5c6bb6-0ea7-43ed-9373-d5ca51e6184f/avatar",
+        "method": "POST",
+        "type": "HTTP",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "relation": "roles-to-permissions"
+      },
+      "id": "c98be648-b3da-40dd-9bdf-a9565d394a0e",
+      "data": {
+        "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+        "permissionId": "2ce67a74-3cf3-4fc1-b3eb-e4ec37213fe7",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "model": "permission"
+      },
+      "id": "b04748c6-0cab-4104-ba24-12a343b9ac35",
+      "data": {
+        "method": "GET",
+        "type": "HTTP",
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/social-module/profiles/df5c6bb6-0ea7-43ed-9373-d5ca51e6184f/avatar",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "relation": "roles-to-permissions"
+      },
+      "id": "7d7d4f3c-e86c-4ab9-8420-df909d67c587",
+      "data": {
+        "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+        "permissionId": "b04748c6-0cab-4104-ba24-12a343b9ac35",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "model": "permission"
+      },
+      "id": "86038193-4b68-4d15-9178-3700e2f5dcc4",
+      "data": {
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c",
+        "method": "GET",
+        "type": "HTTP",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "selector": {
+        "module": "rbac",
+        "relation": "roles-to-permissions"
+      },
+      "id": "3556931c-2ce4-43f3-bd4f-92cfd3f8db20",
+      "data": {
+        "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+        "permissionId": "86038193-4b68-4d15-9178-3700e2f5dcc4",
+        "variant": "default"
+      },
+      "status": "VERIFIED"
+    }
+  ],
+  "status": "VERIFIED",
+  "signInMethods": {
+    "descriptors": [
+      {
+        "method": "GET",
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/identities"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/identities/6c7beea5-0e56-4263-a121-07009b3eefe3"
+      }
+    ],
+    "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+    "roleOwners": 1,
+    "status": "VERIFIED"
+  },
+  "personalProfileWrites": {
+    "descriptors": [
+      {
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/social-module/profiles/df5c6bb6-0ea7-43ed-9373-d5ca51e6184f",
+        "method": "PATCH"
+      },
+      {
+        "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/social-module/profiles/df5c6bb6-0ea7-43ed-9373-d5ca51e6184f/avatar",
+        "method": "POST"
+      }
+    ],
+    "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+    "roleOwners": 1,
+    "confirmation": "Да, дать владельцу эти два права",
+    "status": "VERIFIED"
+  },
+  "ownAvatarRead": {
+    "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c/social-module/profiles/df5c6bb6-0ea7-43ed-9373-d5ca51e6184f/avatar",
+    "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+    "status": "VERIFIED"
+  },
+  "ownSubjectRead": {
+    "path": "/api/rbac/subjects/2a7ce1bf-98d7-4190-a04c-b6111002b51c",
+    "roleId": "bfde6774-6f00-42bb-8e3d-a02a882a5c1d",
+    "status": "VERIFIED"
+  }
+}

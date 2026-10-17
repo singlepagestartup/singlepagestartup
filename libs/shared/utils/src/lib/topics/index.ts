@@ -299,3 +299,15 @@ export { singlepageTopicRules, startupTopicRules };
  */
 export const defaultCompiledTopicRules: ICompiledTopicRule[] =
   compileTopicRules([...startupTopicRules, ...singlepageTopicRules]);
+
+/** Temporary bridge for old bundles whose aggregate SDK only knows topics. */
+export function expandLegacyTopics(topics: string[]): string[] {
+  const changed = new Set(topics);
+  const result = new Set(topics);
+  for (const rule of [...startupTopicRules, ...singlepageTopicRules]) {
+    const staticTopics = rule.topics.filter((topic) => !topic.includes("["));
+    if (staticTopics.some((topic) => changed.has(topic)))
+      staticTopics.forEach((topic) => result.add(topic));
+  }
+  return [...result];
+}

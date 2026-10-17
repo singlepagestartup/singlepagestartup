@@ -1,3 +1,6 @@
+import { Component as SubjectMeSocialModuleProfileIdSettingsAiChat } from "./subject-me-social-module-profile-id-settings-ai-chat";
+import { Component as SubjectMeSocialModuleProfileIdChatIdThreadCreateAiChat } from "./subject-me-social-module-profile-id-chat-id-thread-create-ai-chat";
+import { Component as SubjectMeSocialModuleProfileIdChatIdThreadIdAiChat } from "./subject-me-social-module-profile-id-chat-id-thread-id-ai-chat";
 import { Component as SubjectEcommerceOrderComponentProps } from "./subject/ecommerce/order/orders";
 import { Component as SubjectEcommerceProductListDefaultComponentProps } from "./subject/ecommerce/product/list/default";
 import { Component as SubjectIdentitySettingsDefaultComponentProps } from "./subject/identity/settings-default";
@@ -7,6 +10,12 @@ import { Component as SubjectOverviewEcommerceModuleProductListDefaultComponentP
 import { Component as SubjectOverviewSocialModuleProfileOverviewDefaultComponentProps } from "./subject/overview/social-module/profile/overview-default";
 
 export const variants = {
+  "subject-me-social-module-profile-id-settings-ai-chat":
+    SubjectMeSocialModuleProfileIdSettingsAiChat,
+  "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat":
+    SubjectMeSocialModuleProfileIdChatIdThreadCreateAiChat,
+  "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat":
+    SubjectMeSocialModuleProfileIdChatIdThreadIdAiChat,
   "subject-ecommerce-order": SubjectEcommerceOrderComponentProps,
   "subject-ecommerce-product-list-default":
     SubjectEcommerceProductListDefaultComponentProps,

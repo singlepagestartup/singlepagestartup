@@ -3,7 +3,7 @@
  *
  * Given: a Telegram owner rbac.subject and its personal AI social.profile.
  * When: assistant management access is ensured.
- * Then: one profile-specific owner role, fourteen permissions, and existing RBAC relations are created idempotently.
+ * Then: one profile-specific owner role, sixteen permissions, and existing RBAC relations are created idempotently.
  */
 
 import {
@@ -134,8 +134,8 @@ describe("Given: a profile-specific Knowledge owner grant", () => {
 
     expect(second.role.id).toBe(first.role.id);
     expect(role.rows).toHaveLength(1);
-    expect(permission.rows).toHaveLength(14);
-    expect(rolesToPermissions.rows).toHaveLength(14);
+    expect(permission.rows).toHaveLength(16);
+    expect(rolesToPermissions.rows).toHaveLength(16);
     expect(subjectsToRoles.rows).toEqual([
       expect.objectContaining({
         subjectId: "owner-subject-id",
@@ -178,8 +178,8 @@ describe("Given: a profile-specific Knowledge owner grant", () => {
     });
 
     expect(role.rows).toHaveLength(1);
-    expect(permission.rows).toHaveLength(28);
-    expect(rolesToPermissions.rows).toHaveLength(28);
+    expect(permission.rows).toHaveLength(32);
+    expect(rolesToPermissions.rows).toHaveLength(32);
     expect(subjectsToRoles.rows).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ subjectId: "telegram-owner-subject-id" }),
@@ -201,7 +201,23 @@ describe("Given: a profile-specific Knowledge owner grant", () => {
       socialModuleProfileId: profileId,
     });
 
-    expect(descriptors).toHaveLength(14);
+    expect(descriptors).toHaveLength(16);
+    expect(descriptors).toEqual(
+      expect.arrayContaining([
+        {
+          method: "GET",
+          path: expect.stringMatching(
+            /\/knowledge\/sources\/\[knowledge.sources.id\]\/files$/,
+          ),
+        },
+        {
+          method: "POST",
+          path: expect.stringMatching(
+            /\/knowledge\/sources\/\[knowledge.sources.id\]\/files$/,
+          ),
+        },
+      ]),
+    );
     expect(
       descriptors
         .filter(({ path }) => !path.endsWith("/profiles"))

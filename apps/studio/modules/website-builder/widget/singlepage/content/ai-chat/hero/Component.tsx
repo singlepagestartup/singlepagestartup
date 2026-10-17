@@ -1,15 +1,13 @@
-import { Component as WebsiteBuilderModuleButtonsArray } from "../../../../../buttons-array/index";
+import type { IComponentProps, IAIChatHeroProps } from "./interface";
+export type { IAIChatHeroProps } from "./interface";
+import { Component as ButtonsArray } from "../../../../../buttons-array/index";
 import type { IWebsiteSection } from "../content";
 import defaultContent from "./content.json";
 
-export interface IAIChatHeroProps {
-  variant?: string;
-  content?: { hero: IWebsiteSection; labels: Record<string, string> };
-}
 export function Component({
   variant = "content-ai-chat-hero",
   content = defaultContent,
-}: IAIChatHeroProps = {}) {
+}: IComponentProps = {}) {
   return (
     <section
       data-ds-block="website-builder.widget.content-ai-chat-hero"
@@ -18,20 +16,20 @@ export function Component({
       data-model="widget"
       data-variant={variant}
     >
-      <div className="grid overflow-hidden rounded-2xl bg-sps-graphite text-white @3xl:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid overflow-hidden rounded-2xl bg-default text-default-foreground @3xl:grid-cols-[1.1fr_0.9fr]">
         <div className="flex flex-col justify-center p-6 @3xl:p-8">
-          <p className="text-sm leading-6 text-sps-muted-inverse">
-            <span className="mb-4 block h-1 w-10 bg-sps-green" />
+          <p className="text-sm leading-6 text-default-muted-foreground">
+            <span className="mb-4 block h-1 w-10 bg-primary text-primary-foreground" />
             {content.hero.paragraphs[0]}
           </p>
-          <h1 className="mt-5 max-w-md font-sps text-4xl font-semibold leading-tight tracking-normal">
+          <h1 className="mt-5 max-w-md font-default text-4xl font-semibold leading-tight tracking-normal">
             {content.hero.title}
           </h1>
-          <p className="mt-5 max-w-md text-base leading-7 text-sps-muted-inverse">
+          <p className="mt-5 max-w-md text-base leading-7 text-default-muted-foreground">
             {content.hero.paragraphs[1]}
           </p>
           <div className="mt-6">
-            <WebsiteBuilderModuleButtonsArray
+            <ButtonsArray
               variant="default"
               buttons={[
                 {
@@ -49,7 +47,7 @@ export function Component({
               ]}
             />
           </div>
-          <p className="mt-4 max-w-md text-xs leading-5 text-sps-muted-inverse">
+          <p className="mt-4 max-w-md text-xs leading-5 text-default-muted-foreground">
             {content.hero.paragraphs[2]}
           </p>
         </div>

@@ -36,16 +36,11 @@ export class Handler {
         throw new Error("Validation error. No subject provided in the token");
       }
 
-      // const entity = await this.service.findById({
-      //   id: decoded.subject?.["id"],
-      // });
-
-      if (!decoded.subject) {
-        throw new Error("Validation error. No subject provided in the token");
-      }
-
       return c.json({
-        data: decoded.subject,
+        data:
+          (await this.service.authenticationMe({
+            subjectId: decoded.subject["id"] as string,
+          })) ?? null,
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

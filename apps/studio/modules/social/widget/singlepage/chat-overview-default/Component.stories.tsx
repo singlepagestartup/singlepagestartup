@@ -1,15 +1,20 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { SocialWidgetChatOverviewDefault } from "./Component";
 
 const meta = {
   id: "modules-social-models-widget-singlepage-chat-overview-default",
-  title: "Modules/Social/Models/Widget/Singlepage/chat-overview-default",
-  component: SocialWidgetChatOverviewDefault,
+  title: "Modules/Social/Widget/Singlepage/chat-overview-default",
+  component: Widget,
   parameters: {
     layout: "fullscreen",
   },
-} satisfies Meta<typeof SocialWidgetChatOverviewDefault>;
+  args: { variant: "chat-overview-default" },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Widget>,
+    { variant: "chat-overview-default" }
+  >
+>;
 
 export default meta;
 

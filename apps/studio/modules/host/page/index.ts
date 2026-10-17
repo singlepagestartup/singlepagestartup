@@ -1,2 +1,6 @@
-export { Component, type IComponentProps } from "./Component";
-export type { ILoginPageProps } from "./singlepage/ai-chat-rbac-subjects-authentication-select-method/Component";
+export { Component } from "./Component";
+export type { IComponentProps } from "./interface";
+export type { ILoginPageProps } from "./interface";
+
+export { Skeleton } from "./Skeleton";
+export type { ISkeletonProps } from "./interface";

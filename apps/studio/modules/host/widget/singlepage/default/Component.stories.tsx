@@ -1,11 +1,15 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import { HostWidgetDefault } from "./Component";
 
 const meta = {
-  title: "Modules/Host/Models/Widget/Singlepage/default",
-  component: HostWidgetDefault,
+  id: "modules-host-models-widget-singlepage-default",
+  title: "Modules/Host/Widget/Singlepage/default",
+  component: Widget,
   parameters: { layout: "fullscreen" },
-} satisfies Meta<typeof HostWidgetDefault>;
+  args: { variant: "default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Widget>, { variant: "default" }>
+>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

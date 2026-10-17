@@ -1,0 +1,11 @@
+{
+  "id": "2db3dbbc-6d4b-4a78-9b11-d74ceb4588d6",
+  "createdAt": "2026-10-12T20:30:37.761Z",
+  "updatedAt": "2026-10-12T20:30:37.761Z",
+  "variant": "default",
+  "orderIndex": 0,
+  "className": null,
+  "roleId": "d0e41c11-98d4-4342-8542-a0797aee81aa",
+  "permissionId": "8af91c84-a02a-4175-a5d3-d03dea13b869",
+  "condition": null
+}

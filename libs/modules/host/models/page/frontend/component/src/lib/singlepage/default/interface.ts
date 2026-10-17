@@ -19,3 +19,9 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface ILayoutWidgetsProps
+  extends Pick<IComponentPropsExtended, "isServer" | "language" | "url"> {
+  layoutId: string;
+  slot: "default" | "additional";
+}

@@ -1,13 +1,12 @@
+import type { IComponentProps, IComponentVariantProps } from "./interface";
+export type { IComponentVariantProps } from "./interface";
 import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
-interface IComponentVariantProps {
-  variant?: string;
-}
 export function AdminSettings({
   variant = "admin-settings",
-}: IComponentVariantProps = {}) {
+}: IComponentProps = {}) {
   return (
     <div
       data-ds-page="host.page.admin-settings"

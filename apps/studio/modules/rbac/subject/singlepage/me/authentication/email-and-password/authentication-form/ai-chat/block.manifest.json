@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-authentication-email-and-password-authentication-form-ai-chat",
+  "title": "me-authentication-email-and-password-authentication-form-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "AI Chat Subject authentication form.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-authentication-email-and-password-authentication-form-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-authentication-email-and-password-authentication-form-ai-chat"
+  },
+  "contentSlots": []
+}

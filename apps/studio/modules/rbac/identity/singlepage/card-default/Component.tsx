@@ -1,12 +1,18 @@
 "use client";
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  IIdentityFlowProps,
+  IdentityCardDefaultProps,
+} from "./interface";
+export type { IIdentityFlowProps, IdentityCardDefaultProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
 
 import {
   useState as useStatePresentation,
   useRef as useRefPresentation,
   forwardRef,
   type SVGProps,
-  forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
   memo,
   useRef,
@@ -15,8 +21,7 @@ import {
 } from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { twMerge as twMerge } from "tailwind-merge";
-import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import {
   defaultSettingsIdentities,
   formatRbacDateTime,
@@ -74,7 +79,7 @@ function ConfirmationDialog({
         <AlertDialog.Portal container={portalContainer ?? portal}>
           <AlertDialog.Overlay className="fixed inset-0 z-[200] bg-black/40" />
           <AlertDialog.Content
-            className="fixed left-1/2 top-1/2 z-[210] max-h-[85dvh] w-[calc(100%_-_2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-6 font-[family-name:var(--font-sps)] text-[var(--color-sps-graphite)] shadow-xl"
+            className="fixed left-1/2 top-1/2 z-[210] max-h-[85dvh] w-[calc(100%_-_2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-border bg-card p-6 font-default text-foreground shadow-xl"
             onOpenAutoFocus={(event) => {
               event.preventDefault();
               returnFocus.current = document.activeElement as HTMLElement;
@@ -118,53 +123,47 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface IIdentityFlowProps {
-  identity: RbacIdentity;
-  action: "change-email" | "change-password" | "reconnect";
-  onClose: () => void;
-  onUpdate: (identity: RbacIdentity) => void;
-}
-export interface IdentityCardDefaultProps {
-  variant?: string;
-  renderFlow?: (props: IIdentityFlowProps) => ReactNode;
-  identity: RbacIdentity;
-  lastOperationLabel?: string;
-  onAction?: (identity: RbacIdentity, action: IdentityAction) => void;
-  onUpdate?: (identity: RbacIdentity) => void;
-  embedded?: boolean;
-}
 const ChevronDown = createIcon("caret-down");
 const Check = createIcon("check");
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  muted: "text-[var(--color-sps-muted)]",
+  muted: "text-muted-foreground",
 };
-const Button = forwardRefControl<
-  HTMLButtonElement,
-  ButtonControlProps<HTMLButtonElement> & {
-    variant?: "primary" | "secondary" | "plain" | "danger";
-  }
->(function Button({ variant = "primary", ...props }, ref) {
+function Button({
+  variant = "primary",
+  type = "button",
+  className,
+  ...props
+}: ButtonControlProps<HTMLButtonElement> & {
+  variant?: "primary" | "secondary" | "plain" | "danger";
+  ref?: React.Ref<HTMLButtonElement>;
+}) {
+  const appearances = {
+    primary: "bg-primary text-primary-foreground",
+    secondary: "border border-border bg-card",
+    plain: "text-muted-foreground",
+    danger:
+      "border border-destructive-border bg-destructive-surface text-destructive",
+  };
   return (
-    <WebsiteBuilderModuleButton
+    <button
       {...props}
-      variant="control"
-      appearance={variant}
-      ref={ref}
+      type={type}
+      className={twMerge(buttonBase, focus, appearances[variant], className)}
     />
   );
-});
+}
 export const defaultIdentityCardDefaultProps: IdentityCardDefaultProps = {
   identity: defaultSettingsIdentities[0],
 };
 export const IdentityCardDefault = memo(function IdentityCardDefault(
-  props: Partial<IdentityCardDefaultProps>,
+  props: IComponentProps,
 ) {
   const {
     identity: initialIdentity,
@@ -172,6 +171,7 @@ export const IdentityCardDefault = memo(function IdentityCardDefault(
     onAction,
     onUpdate,
     renderFlow,
+    actions,
   } = { ...defaultIdentityCardDefaultProps, ...props };
   const [localIdentity, setLocalIdentity] = useState<RbacIdentity>();
   const identity =
@@ -201,7 +201,7 @@ export const IdentityCardDefault = memo(function IdentityCardDefault(
   return (
     <article
       ref={setPortalContainer}
-      className="min-w-0 rounded-xl border border-sps-line bg-sps-white p-4 sm:p-5"
+      className="min-w-0 rounded-xl border border-border bg-card p-4 sm:p-5"
       data-ds-block="rbac.identity.card-default"
       data-ds-layer="singlepage"
       data-module="rbac"
@@ -209,99 +209,105 @@ export const IdentityCardDefault = memo(function IdentityCardDefault(
       data-variant={props.variant ?? "card-default"}
     >
       <div className="flex min-w-0 items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sps-grey">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted">
           <ProviderIcon className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold">{meta.title}</h3>
-          <p className="mt-1 break-all text-sm text-sps-muted">
+          <p className="mt-1 break-all text-sm text-muted-foreground">
             {getIdentityPrimaryLogin(identity)}
           </p>
         </div>
-        <span className="hidden shrink-0 items-center gap-1 text-xs text-sps-muted sm:inline-flex">
+        <span className="hidden shrink-0 items-center gap-1 text-xs text-muted-foreground sm:inline-flex">
           <Check className="size-3" />
           Connected
         </span>
       </div>
-      <p className="mt-3 text-sm leading-6 text-sps-muted">
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
         {meta.description}
       </p>
-      <div className="mt-4 flex max-w-full flex-wrap gap-2">
-        {getIdentityActions(identity).map((action) => (
-          <Button
-            ref={(node) => {
-              buttons.current[action.key] = node;
-            }}
-            variant={action.tone === "danger" ? "plain" : "secondary"}
-            key={action.key}
-            onClick={() => {
-              setLocalResult("");
-              if (action.key === "delete") {
-                setPendingAction(action);
-                return;
-              }
-              if (
-                action.key === "change-email" ||
-                action.key === "change-password" ||
-                action.key === "reconnect"
-              ) {
-                if (renderFlow) setFlow(action.key);
-                else onAction?.(identity, action);
-              }
-            }}
-            type="button"
-            aria-expanded={
-              action.key === "delete" ? undefined : flow === action.key
-            }
-          >
-            {action.label}
-          </Button>
-        ))}
-      </div>
-      {flow &&
-        renderFlow?.({
-          identity,
-          action: flow,
-          onClose: closeFlow,
-          onUpdate: update,
-        })}
+      {actions ?? (
+        <>
+          <div className="mt-4 flex max-w-full flex-wrap gap-2">
+            {getIdentityActions(identity).map((action) => (
+              <Button
+                ref={(node) => {
+                  buttons.current[action.key] = node;
+                }}
+                variant={action.tone === "danger" ? "plain" : "secondary"}
+                key={action.key}
+                onClick={() => {
+                  setLocalResult("");
+                  if (action.key === "delete") {
+                    setPendingAction(action);
+                    return;
+                  }
+                  if (
+                    action.key === "change-email" ||
+                    action.key === "change-password" ||
+                    action.key === "reconnect"
+                  ) {
+                    if (renderFlow) setFlow(action.key);
+                    else onAction?.(identity, action);
+                  }
+                }}
+                type="button"
+                aria-expanded={
+                  action.key === "delete" ? undefined : flow === action.key
+                }
+              >
+                {action.label}
+              </Button>
+            ))}
+          </div>
+          {flow &&
+            renderFlow?.({
+              identity,
+              action: flow,
+              onClose: closeFlow,
+              onUpdate: update,
+            })}
+        </>
+      )}
       {(lastOperationLabel || localResult) && (
         <p role="status" className="mt-4 text-sm">
           {lastOperationLabel ?? localResult}
         </p>
       )}
-      <details className="group mt-4 border-t border-sps-line pt-2">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg text-xs font-medium text-sps-muted focus-visible:outline-2 [&::-webkit-details-marker]:hidden">
+      <details className="group mt-4 border-t border-border pt-2">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg text-xs font-medium text-muted-foreground focus-visible:outline-2 [&::-webkit-details-marker]:hidden">
           <span>Connection details</span>
           <ChevronDown className="size-4 shrink-0 transition group-open:rotate-180" />
         </summary>
         <dl className="grid min-w-0 gap-3 text-xs sm:grid-cols-2">
           <div>
-            <dt className="text-sps-muted">Connected</dt>
+            <dt className="text-muted-foreground">Connected</dt>
             <dd className="mt-1">{formatRbacDateTime(identity.createdAt)}</dd>
           </div>
           <div>
-            <dt className="text-sps-muted">Last updated</dt>
+            <dt className="text-muted-foreground">Last updated</dt>
             <dd className="mt-1">{formatRbacDateTime(identity.updatedAt)}</dd>
           </div>
         </dl>
       </details>
-      <ConfirmationDialog
-        open={pendingAction !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingAction(null);
-        }}
-        title={`Remove ${meta.title}?`}
-        description={`Remove ${getIdentityPrimaryLogin(identity)} from the sign-in methods in this preview? No external account is deleted.`}
-        confirmLabel="Remove identity"
-        onConfirm={() => {
-          if (!pendingAction) return;
-          if (onAction) onAction(identity, pendingAction);
-          else setLocalResult("Identity removal requested in this preview.");
-          setPendingAction(null);
-        }}
-        portalContainer={portalContainer}
-      />
+      {actions === undefined && (
+        <ConfirmationDialog
+          open={pendingAction !== null}
+          onOpenChange={(open) => {
+            if (!open) setPendingAction(null);
+          }}
+          title={`Remove ${meta.title}?`}
+          description={`Remove ${getIdentityPrimaryLogin(identity)} from the sign-in methods in this preview? No external account is deleted.`}
+          confirmLabel="Remove identity"
+          onConfirm={() => {
+            if (!pendingAction) return;
+            if (onAction) onAction(identity, pendingAction);
+            else setLocalResult("Identity removal requested in this preview.");
+            setPendingAction(null);
+          }}
+          portalContainer={portalContainer}
+        />
+      )}
     </article>
   );
 });

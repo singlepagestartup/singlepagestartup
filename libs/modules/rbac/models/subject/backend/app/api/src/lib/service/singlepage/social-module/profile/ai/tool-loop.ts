@@ -22,16 +22,23 @@ export const SOCIAL_PROFILE_AI_TOOL_LOOP_DEFAULTS: ISocialProfileAiToolLoopLimit
     maxRepeatedCalls: 2,
   };
 
-export type TSocialProfileAiToolSource = "skill" | "knowledge" | "mcp";
+export type TSocialProfileAiToolSource =
+  | "skill"
+  | "knowledge"
+  | "mcp"
+  | "context";
 
 export interface ISocialProfileAiTool {
+  completeAfterSuccess?: boolean;
   definition: IOpenRouterTool;
   source: TSocialProfileAiToolSource;
+  timeoutMs?: number;
   display?: {
     label: string;
     serverId?: string;
   };
   execute: (args: Record<string, unknown>) => Promise<unknown>;
+  additionalContext?: (result: unknown) => IOpenRouterRequestMessage[];
   validateArguments?: (args: Record<string, unknown>) => void;
   audit?: (args: Record<string, unknown>) => Record<string, unknown>;
 }
@@ -102,6 +109,7 @@ export interface ISocialProfileAiToolLoopProps {
   language?: string;
   modelCandidateIds: string[];
   tools: ISocialProfileAiTool[];
+  requiredCompletionToolName?: string;
   generate: (props: {
     model: string;
     context: IOpenRouterRequestMessage[];
@@ -146,6 +154,13 @@ export class SocialProfileAiToolLoop {
 
       toolsByName.set(name, tool);
     }
+    if (
+      props.requiredCompletionToolName &&
+      !toolsByName.get(props.requiredCompletionToolName)?.completeAfterSuccess
+    )
+      throw new Error(
+        "Configuration error. Required completion tool is unavailable",
+      );
 
     const modelCandidateIds = Array.from(
       new Set(
@@ -162,6 +177,7 @@ export class SocialProfileAiToolLoop {
     let selectedModelId: string | null = null;
     let previousCallSignature: string | null = null;
     let repeatedCallCount = 0;
+    let missingCompletionToolRetries = 0;
 
     try {
       for (
@@ -191,6 +207,8 @@ export class SocialProfileAiToolLoop {
             tool_calls: generation.result.toolCalls,
           });
 
+          const additionalContext: IOpenRouterRequestMessage[] = [];
+          let completed = false;
           for (const toolCall of generation.result.toolCalls) {
             this.assertWithinTotalTimeout({
               startedAt,
@@ -217,17 +235,17 @@ export class SocialProfileAiToolLoop {
               1,
               limits.totalTimeoutMs - (now() - startedAt),
             );
+            const toolTimeoutMs =
+              toolsByName.get(toolCall.function.name)?.timeoutMs ??
+              limits.toolTimeoutMs;
             const isBoundedByTotalTimeout =
-              remainingTotalTimeoutMs <= limits.toolTimeoutMs;
+              remainingTotalTimeoutMs <= toolTimeoutMs;
             const toolResult = await this.executeToolCall({
               call: toolCall,
               maxResultBytes: limits.maxResultBytes,
               onEvent: props.onEvent,
               selectedModelId,
-              timeoutMs: Math.min(
-                limits.toolTimeoutMs,
-                remainingTotalTimeoutMs,
-              ),
+              timeoutMs: Math.min(toolTimeoutMs, remainingTotalTimeoutMs),
               timeoutReason: isBoundedByTotalTimeout
                 ? "total_timeout"
                 : "tool_timeout",
@@ -240,6 +258,34 @@ export class SocialProfileAiToolLoop {
               tool_call_id: toolCall.id,
               content: toolResult.serialized,
             });
+            additionalContext.push(...toolResult.additionalContext);
+            completed ||= Boolean(
+              toolsByName.get(toolCall.function.name)?.completeAfterSuccess,
+            );
+          }
+          context.push(...additionalContext);
+          if (completed) {
+            const result = this.toResult({
+              context,
+              durationMs: now() - startedAt,
+              exposedToolNames: Array.from(toolsByName.keys()),
+              finalText:
+                generation.result.text.trim() ||
+                (props.language?.startsWith("ru")
+                  ? "Предложение готово к проверке."
+                  : "The proposal is ready for review."),
+              selectedModelId,
+              stepCount: iteration,
+              stopReason: "final_text",
+              traceCalls,
+            });
+            await this.emitEvent(props.onEvent, {
+              type: "run_completed",
+              selectedModelId,
+              stopReason: result.trace.stopReason,
+              durationMs: result.trace.durationMs,
+            });
+            return result;
           }
 
           continue;
@@ -252,6 +298,21 @@ export class SocialProfileAiToolLoop {
             "model_error",
             "The model returned neither text nor a tool call.",
           );
+        }
+        if (props.requiredCompletionToolName) {
+          if (missingCompletionToolRetries++ >= 1)
+            throw new ToolLoopStopError(
+              "model_error",
+              "The model did not stage the requested document proposal.",
+            );
+          context.push(
+            { role: "assistant", content: finalText },
+            {
+              role: "system",
+              content: `The document draft must be staged with ${props.requiredCompletionToolName} before replying. Call that tool with the complete revised human notes; do not claim the proposal exists until the tool succeeds.`,
+            },
+          );
+          continue;
         }
 
         const result = this.toResult({
@@ -444,7 +505,11 @@ export class SocialProfileAiToolLoop {
         resultBytes,
       });
 
-      return { serialized, trace };
+      return {
+        serialized,
+        trace,
+        additionalContext: tool.additionalContext?.(result) || [],
+      };
     } catch (error) {
       const normalized = this.toStopError(error);
 
@@ -555,8 +620,8 @@ export class SocialProfileAiToolLoop {
         ru: "Задача выполнялась слишком долго и была остановлена. Попробуйте повторить запрос.",
       },
       tool_timeout: {
-        en: "The tool did not finish in time. Please try again.",
-        ru: "Инструмент не успел завершить работу. Попробуйте повторить запрос.",
+        en: "The tool did not finish in time. The operation may still complete; check its result before retrying.",
+        ru: "Инструмент не успел завершить работу. Операция может ещё завершиться; проверьте результат перед повторным запросом.",
       },
       tool_error: {
         en: "The task could not be completed because a tool failed. Please try again.",

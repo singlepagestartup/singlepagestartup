@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-authentication-oauth-authorization-default",
+  "title": "me-authentication-oauth-authorization-default",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Subject OAuth authorization preview.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-authentication-oauth-authorization-default"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-authentication-oauth-authorization-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

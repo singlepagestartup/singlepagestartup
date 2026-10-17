@@ -1,0 +1,23 @@
+{
+  "connector": "local stdio MCP -> localhost:4000",
+  "records": [
+    {
+      "id": "591c454b-2e20-4e4a-b532-0f6326f44cec",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/api/social/chats",
+      "variant": "default",
+      "status": "VERIFIED",
+      "roleGrants": 0
+    },
+    {
+      "id": "3bddac13-bd7e-44a7-a4b4-3f83308979e8",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/api/social/chats/1ac957b9-78e0-49c7-9e26-69d9c5c08aee",
+      "variant": "default",
+      "status": "VERIFIED",
+      "roleGrants": 0
+    }
+  ]
+}

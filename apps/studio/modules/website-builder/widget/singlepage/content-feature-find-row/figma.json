@@ -9,7 +9,7 @@
     "singlepagestartup.studio.layer": "singlepage",
     "singlepagestartup.studio.group": "content",
     "singlepagestartup.studio.groupVariant": "feature-find-row",
-    "singlepagestartup.studio.imports": "rbac.subject.me-crm-form-deafult",
+    "singlepagestartup.studio.imports": "rbac.subject.me-crm-module-form-default",
     "singlepagestartup.studio.syncKey": "website-builder/widget/singlepage/content-feature-find-row",
     "sps.figma.component": "website-builder.widget",
     "sps.figma.variant": "content-feature-find-row",

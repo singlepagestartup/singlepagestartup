@@ -127,7 +127,7 @@ function OverviewAiChatProject({
             closeDrawer();
           }
         }}
-        className="group/project relative grid min-w-0 grid-cols-1 overflow-hidden rounded-2xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] @[760px]/workspace:h-160 @[760px]/workspace:data-[sidebar-open=true]:grid-cols-[210px_minmax(0,1fr)]"
+        className="group/project relative grid min-w-0 grid-cols-1 overflow-hidden rounded-2xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] h-[calc(100dvh-9rem)] min-h-[560px] @[760px]/workspace:data-[sidebar-open=true]:grid-cols-[210px_minmax(0,1fr)]"
       >
         <button
           type="button"

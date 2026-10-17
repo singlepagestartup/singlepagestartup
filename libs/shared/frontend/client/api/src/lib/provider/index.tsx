@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { queryConsistency } from "../consistency";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -11,6 +12,8 @@ export const queryClient = new QueryClient({
     },
   },
 });
+// Register before query effects can complete their first request.
+queryConsistency(queryClient);
 
 export function Provider({
   children,

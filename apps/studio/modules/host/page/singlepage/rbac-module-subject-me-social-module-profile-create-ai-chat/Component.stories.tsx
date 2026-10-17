@@ -1,0 +1,41 @@
+import { AIChatPreview, type IAIChatPreviewProps } from "../ai-chat/Preview";
+import { aiChatAccount } from "../../../../rbac/subject/singlepage/me/account/fixture";
+import { aiChatWorkspaceFixture } from "../../../../social/profile/singlepage/scope/ai-chat/project/fixtures";
+import type { Meta, StoryObj } from "@storybook/react";
+type IPageStoryProps = Pick<
+  IAIChatPreviewProps,
+  "signedIn" | "account" | "profiles"
+>;
+function Component(props: IPageStoryProps) {
+  return (
+    <AIChatPreview {...props} initialHref="/ai-chat/social/profiles/create" />
+  );
+}
+const meta = {
+  id: "modules-host-models-page-singlepage-rbac-module-subject-me-social-module-profile-create-ai-chat",
+  title:
+    "Modules/Host/Page/Singlepage/rbac-module-subject-me-social-module-profile-create-ai-chat",
+  component: Component,
+  parameters: { layout: "fullscreen" },
+  args: {
+    signedIn: true,
+    account: aiChatAccount,
+    profiles: aiChatWorkspaceFixture(),
+  },
+  argTypes: {
+    signedIn: { control: "boolean" },
+    account: { control: "object" },
+    profiles: { control: "object" },
+  },
+} satisfies Meta<typeof Component>;
+export default meta;
+export const Default: StoryObj<typeof meta> = {};
+export const Loading: StoryObj<typeof meta> = {
+  args: { profiles: { initialProjects: [], loading: true } },
+};
+export const Empty: StoryObj<typeof meta> = {
+  args: { profiles: { initialProjects: [], loading: false } },
+};
+export const Error: StoryObj<typeof meta> = {
+  args: { profiles: { initialProjects: [], error: true } },
+};

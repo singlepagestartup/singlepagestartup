@@ -3,8 +3,8 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    product.singlepagestartup.product: 1bd3022ba57bd99882728e561cec47013e32d16dc2a138e8598efd17184e70e6
-    product.singlepagestartup.sales: 5f4d91f14898077c62d3576a0dd298c4393d3aa788e05df4d42bf6d85b0cbf13
+    product.singlepagestartup.product: f3730e0bc1b4a613fcd4b2d66156eeecdcd3f171030b00d691b28cdf81ee0f2b
+    product.singlepagestartup.sales: b291b673e781bdb8836db7bf5c10d7b7099beeb3bcfa98038f935f26d66f2d1a
 ---
 
 # Code Framework analytics

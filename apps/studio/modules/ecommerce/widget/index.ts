@@ -1,3 +1,7 @@
-export { Component, type IComponentProps } from "./Component";
+export { Component } from "./Component";
+export type { IComponentProps } from "./interface";
 
-export type { ProductOverviewDefaultProps } from "./singlepage/product-overview-default/Component";
+export type { ProductOverviewDefaultProps } from "./interface";
+
+export { Skeleton } from "./Skeleton";
+export type { ISkeletonProps } from "./interface";

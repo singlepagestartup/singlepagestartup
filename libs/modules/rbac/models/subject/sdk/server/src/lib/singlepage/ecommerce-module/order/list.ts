@@ -5,7 +5,10 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
-import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
+import {
+  IModel as IEcommerceModuleOrder,
+  type IPurchaseDetails,
+} from "@sps/ecommerce/models/order/sdk/model";
 
 export interface IProps {
   id: string;
@@ -13,12 +16,15 @@ export interface IProps {
   tag?: string;
   revalidate?: number;
   params?: {
+    includePurchaseDetails?: boolean;
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
 }
 
-export type IResult = IEcommerceModuleOrder[];
+export type IResult = (IEcommerceModuleOrder & {
+  purchaseDetails?: IPurchaseDetails;
+})[];
 
 export async function action(props: IProps): Promise<IResult> {
   const { id, params, options, host = serverHost } = props;

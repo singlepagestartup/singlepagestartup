@@ -1,3 +1,11 @@
+import {
+  effectivePropsContract,
+  modelComponent,
+  modelSkeleton,
+  projectionInterface,
+  skeletonPropsContract,
+  skeletonStory,
+} from "./contracts";
 import { projectionComponent } from "./projection";
 import { createHash } from "node:crypto";
 import {
@@ -288,10 +296,17 @@ export function assembleEntity(directory: string) {
     const imports: string[] = [];
     const entries: string[] = [];
     const aliases = variantAliases(path.join(layerDirectory, "variants.ts"));
-    for (const variant of readdirSync(layerDirectory, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name)
-      .sort()) {
+    const collectVariants = (parent: string, prefix = ""): string[] =>
+      readdirSync(parent, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .flatMap((entry) => {
+          const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
+          const folder = path.join(parent, entry.name);
+          return existsSync(path.join(folder, "Component.tsx"))
+            ? [relative]
+            : collectVariants(folder, relative);
+        });
+    for (const variant of collectVariants(layerDirectory).sort()) {
       const component = path.join(layerDirectory, variant, "Component.tsx");
       if (!existsSync(component)) continue;
       const name = exportedComponent(component);
@@ -310,14 +325,20 @@ export function assembleEntity(directory: string) {
           readFileSync(index, "utf8") +
             `\nexport { ${name} as Component } from "./Component";\n`,
         );
-      const alias = pascal(variant).replace(/[^a-zA-Z0-9_$]/g, "");
+      if (!existsSync(path.join(path.dirname(component), "interface.ts"))) {
+        throw new Error(
+          `Studio variant needs its owning interface.ts before assembly: ${component}`,
+        );
+      }
+      const variantKey = variant.replaceAll("/", "-");
+      const alias = pascal(variantKey).replace(/[^a-zA-Z0-9_$]/g, "");
       imports.push(
         `import { Component as ${alias} } from "./${variant}/index";`,
       );
       const keys = [...aliases]
         .filter(([, folder]) => folder === variant)
         .map(([key]) => key);
-      for (const key of keys.length ? keys : [variant])
+      for (const key of keys.length ? keys : [variantKey])
         entries.push(`  ${JSON.stringify(key)}: ${alias},`);
     }
     write(
@@ -329,15 +350,45 @@ export function assembleEntity(directory: string) {
     path.join(directory, "variants.ts"),
     'import { variants as singlepageVariants } from "./singlepage/variants";\nimport { variants as startupVariants } from "./startup/variants";\n\nexport const variants = {\n  ...singlepageVariants,\n  ...startupVariants,\n};',
   );
+  for (const layer of ["singlepage", "startup", ""]) {
+    const owner = layer ? path.join(directory, layer) : directory;
+    const contract = path.join(owner, "interface.ts");
+    const current = existsSync(contract) ? readFileSync(contract, "utf8") : "";
+    if (!current.includes("export type IComponentProps ="))
+      write(contract, current + "\n" + effectivePropsContract);
+  }
+  write(path.join(directory, "Component.tsx"), modelComponent);
+  const module = path.basename(path.dirname(directory));
+  const model = path.basename(directory);
+  const isStatic = module === "shared";
+  if (!isStatic) {
+    const contract = path.join(directory, "interface.ts");
+    const current = readFileSync(contract, "utf8");
+    if (!current.includes("export interface ISkeletonProps"))
+      write(contract, current + "\n" + skeletonPropsContract);
+    write(
+      path.join(directory, "Skeleton.tsx"),
+      modelSkeleton(module, model),
+      true,
+    );
+    write(
+      path.join(directory, "Skeleton.stories.tsx"),
+      skeletonStory(module, model),
+      true,
+    );
+  }
+  const entry = path.join(directory, "index.ts");
   write(
-    path.join(directory, "Component.tsx"),
-    'import type { ComponentProps, ComponentType } from "react";\nimport { variants } from "./variants";\n\nexport type IComponentProps = {\n  [Variant in keyof typeof variants]: { variant: Variant } & ComponentProps<(typeof variants)[Variant]>;\n}[keyof typeof variants];\n\nexport function Component(props: IComponentProps) {\n  const Comp = variants[props.variant] as ComponentType<IComponentProps>;\n  if (!Comp) return <></>;\n  return <Comp {...props} />;\n}',
-  );
-  write(
-    path.join(directory, "index.ts"),
-    'export { Component, type IComponentProps } from "./Component";',
+    entry,
+    'export { Component } from "./Component";\nexport type { IComponentProps } from "./interface";',
     true,
   );
+  if (!isStatic && !readFileSync(entry, "utf8").includes('from "./Skeleton"'))
+    write(
+      entry,
+      readFileSync(entry, "utf8") +
+        '\nexport { Skeleton } from "./Skeleton";\nexport type { ISkeletonProps } from "./interface";\n',
+    );
 }
 
 function variantAliases(file: string): Map<string, string> {
@@ -350,9 +401,10 @@ function variantAliases(file: string): Map<string, string> {
       !ts.isStringLiteral(node.moduleSpecifier)
     )
       continue;
-    const folder = node.moduleSpecifier.text.match(
-      /^\.\/([^/]+)(?:\/(?:index|Component)(?:\.tsx?)?)?$/,
-    )?.[1];
+    const specifier = node.moduleSpecifier.text;
+    const folder = specifier.startsWith("./")
+      ? specifier.slice(2).replace(/\/(?:index|Component)(?:\.tsx?)?$/, "")
+      : undefined;
     const bindings = node.importClause?.namedBindings;
     if (folder && bindings && ts.isNamedImports(bindings))
       for (const item of bindings.elements) imports.set(item.name.text, folder);
@@ -531,7 +583,7 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
   };
   write(
     path.join(table, "interface.ts"),
-    `export type JsonValue = null | string | number | boolean | JsonValue[] | { [key: string]: JsonValue };\n\nexport interface IRecord {\n${fields.map((field) => `  ${field.key}: ${fieldType(field)};`).join("\n")}\n}`,
+    `export type JsonValue = null | string | number | boolean | JsonValue[] | { [key: string]: JsonValue };\n\nexport interface IRecord {\n${fields.map((field) => `  ${field.key}: ${fieldType(field)};`).join("\n")}\n}\n${projectionInterface("admin-v2-table")}`,
     true,
   );
   write(
@@ -539,7 +591,7 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
     'export type { IRecord as IModel } from "./singlepage/admin-v2-table/interface";',
     true,
   );
-  const alias = `${pascal(entity.module)}Module${pascal(entity.entity)}`;
+  const alias = pascal(entity.entity);
   const existing = variantAliases(
     path.join(directory, "singlepage/variants.ts"),
   );
@@ -549,13 +601,19 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
     const folder = path.join(directory, "singlepage", variant);
     const dataImport = relative(folder, path.join(table, "data.json"));
     const interfaceImport = relative(folder, path.join(table, "interface"));
+    if (variant !== "admin-v2-table")
+      write(
+        path.join(folder, "interface.ts"),
+        projectionInterface(variant as "admin-v2-card" | "list"),
+        true,
+      );
     const code = projectionComponent(
       variant as "admin-v2-table" | "admin-v2-card" | "list",
     );
     write(path.join(folder, "Component.tsx"), code, true);
     write(
       path.join(folder, "index.ts"),
-      'export { Component } from "./Component";',
+      'export { Component } from "./Component";\nexport { variant } from "./interface";\nexport type { IComponentProps, IComponentPropsExtended } from "./interface";',
       true,
     );
     const title = (value: string) =>
@@ -569,7 +627,8 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
         : entity.module === "rbac"
           ? "RBAC"
           : title(entity.module);
-    const storyTitle = `Modules/${moduleTitle}/Models/${title(entity.entity)}/Singlepage/${variant}`;
+    const storyTitle = `Modules/${moduleTitle}/${title(entity.entity)}/Singlepage/${variant}`;
+    const storyId = `modules-${entity.module}-models-${entity.entity}-singlepage-${variant}`;
     const controls =
       variant === "list"
         ? '  argTypes: { count: { control: { type: "number", min: 0, max: 50 } }, empty: { control: "boolean" } },\n'
@@ -578,7 +637,7 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
           : '  argTypes: { id: { control: "text" } },\n';
     write(
       path.join(folder, "Component.stories.tsx"),
-      `import type { Meta, StoryObj } from "@storybook/react-vite";\nimport { Component as ${alias} } from "../../index";\n${variant === "admin-v2-card" ? `import fixture from "${dataImport}";\n` : ""}const meta = {\n  title: ${JSON.stringify(storyTitle)},\n  component: ${alias},\n  args: { variant: ${JSON.stringify(variant)}${variant === "admin-v2-card" ? ", id: fixture.records[0].id" : variant === "list" ? ", count: 3, empty: false" : ", empty: false"} },\n${controls}} satisfies Meta<typeof ${alias}>;\nexport default meta;\ntype Story = StoryObj<typeof meta>;\nexport const Default: Story = {};\n${variant !== "admin-v2-card" ? "export const Empty: Story = { args: { empty: true } };\n" : ""}${variant === "list" ? "export const Many: Story = { args: { count: 20 } };\n" : ""}`,
+      `import type { Meta, StoryObj } from "@storybook/react-vite";\nimport { Component as ${alias} } from "../../index";\n${variant === "admin-v2-card" ? `import fixture from "${dataImport}";\n` : ""}const meta = {\n  id: ${JSON.stringify(storyId)},\n  title: ${JSON.stringify(storyTitle)},\n  component: ${alias},\n  args: { variant: ${JSON.stringify(variant)}${variant === "admin-v2-card" ? ", id: fixture.records[0].id" : variant === "list" ? ", count: 3, empty: false" : ", empty: false"} },\n${controls}} satisfies Meta<Extract<React.ComponentProps<typeof ${alias}>, { variant: ${JSON.stringify(variant)} }>>;\nexport default meta;\ntype Story = StoryObj<typeof meta>;\nexport const Default: Story = {};\n${variant !== "admin-v2-card" ? "export const Empty: Story = { args: { empty: true } };\n" : ""}${variant === "list" ? "export const Many: Story = { args: { count: 20 } };\n" : ""}`,
       true,
     );
     metadata(root, folder, entity, variant);

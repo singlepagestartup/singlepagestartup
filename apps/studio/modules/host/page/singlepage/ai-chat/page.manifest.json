@@ -35,12 +35,12 @@
       "path": "../../../../website-builder/widget/singlepage/content/ai-chat/continue"
     },
     {
-      "id": "social.chat.overview-preview-ai-chat",
-      "path": "../../../../social/chat/singlepage/overview/preview/ai-chat"
+      "id": "social.chat.id-preview-ai-chat",
+      "path": "../../../../social/chat/singlepage/id/preview/ai-chat"
     },
     {
-      "id": "rbac.subject.account",
-      "path": "../../../../rbac/subject/singlepage/account"
+      "id": "rbac.subject.me-account",
+      "path": "../../../../rbac/subject/singlepage/me/account"
     }
   ]
 }

@@ -1,96 +1,21 @@
-# Shared Frontend Components
+# Shared frontend component readers
 
-A library of reusable components for the SinglePageStartup (SPS) project. Contains base components and abstractions used in the admin panel and other parts of the application.
+The default model and collection readers use their SDK and Provider unless the
+caller explicitly selects `dataSource="props"`.
 
-## Structure
+That mode renders the current `data` from an owning parent SDK reader. The parent
+keeps the React Query query, authorization scope, subscriptions, loading/error
+state and mutation/realtime reconciliation. It passes a loaded record to a
+model view, or loaded `data` to a collection view. Updating those props renders
+the new result without a second request, Provider or constant query function.
+SDK bindings and reader implementation props do not reach the record view.
 
-```
-src/
-└── lib/
-    └── singlepage/           # Core SPS components
-        ├── admin/            # Admin panel components
-        │   ├── form/         # Forms
-        │   ├── agregated-input/ # Aggregated input fields
-        │   ├── table/        # Tables
-        │   ├── table-row/    # Table rows
-        │   ├── select-input/ # Select fields
-        │   └── panel/        # Panels
-        ├── subject-default/  # Default components
-        ├── find/             # Search components
-        ├── default/          # Base components
-        ├── errors/           # Error components
-        └── skeletons/        # Skeleton components
-```
+Use this mode to compose a scoped parent query through another model's public
+variant. It does not grant access to the general model endpoint and is not a
+source of hardcoded production records. A snapshot without a live SDK owner
+cannot provide refresh or realtime behavior.
 
-## Purpose
-
-The library provides:
-
-1. **Admin Panel Abstractions**:
-
-   - Unified forms
-   - Standardized tables
-   - Common input components
-   - Control panels
-
-2. **Base Components**:
-   - Default components
-   - Search components
-   - Error handling
-   - Skeleton loading
-
-## Usage
-
-```typescript
-import {
-  AdminForm,
-  AdminTable,
-  AdminPanel
-} from "@sps/shared/frontend/components";
-
-// Form usage example
-<AdminForm
-  onSubmit={handleSubmit}
-  initialValues={initialData}
->
-  {/* Form fields */}
-</AdminForm>
-
-// Table usage example
-<AdminTable
-  columns={columns}
-  data={data}
-  onRowClick={handleRowClick}
-/>
-
-// Panel usage example
-<AdminPanel
-  title="Management"
-  actions={actions}
->
-  {/* Panel content */}
-</AdminPanel>
-```
-
-## Features
-
-1. **Implementation Abstraction**:
-
-   - Hidden internal logic
-   - Unified interface for different implementations
-   - Ease of use
-
-2. **Reusability**:
-
-   - Code duplication minimization
-   - Interface standardization
-   - UI consistency
-
-3. **Extensibility**:
-   - Ability to add new components
-   - Base functionality inheritance
-   - Existing components customization
-
-## License
-
-MIT
+`Skeleton={<Skeleton />}` supplies the same React node to the shared server
+Suspense boundary and the client reader's pending state. Specialized readers
+keep the appropriate local loading view for their additional SDK operation.
+Subject variants also pass that node as `skeleton` for JWT/session loading.

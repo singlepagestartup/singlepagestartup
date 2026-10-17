@@ -31,7 +31,7 @@ Own `Brief.md` as a compact, self-contained account of the client's current busi
 
 A brief is usable only with operator-confirmed decision scope: the primary subject, its boundaries and the current or intended products in scope. The current offer, intended buyer, commercial exchange, delivery boundary, primary goal, provisional model classification and highest-impact unknowns must be visible. Missing or unreviewed visual-reference categories do not block product models, Strategy or Brand; they block final Design proposals and generation until all five have reviewed files or an explicit out-of-scope decision. Escalate conflicting statements, unsupported proof, unconfirmed rights or undefined decision authority. If a request such as "make it premium" has no examples, ask for examples; if examples exist, identify their common qualities instead of asking the client for design vocabulary. Never turn aspirations into facts or promise a result the business cannot yet deliver.
 
-A reader should understand the current business without opening another document. Remove empty or formulaic sections instead of filling them with process language; keep the five Brief editor sections useful and specific.
+A reader should understand the current business without opening another document. Remove empty or formulaic sections instead of filling them with process language; keep the six Brief editor sections useful and specific.
 
 ## Handoff
 

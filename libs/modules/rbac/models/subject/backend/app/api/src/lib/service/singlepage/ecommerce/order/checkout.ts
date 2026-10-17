@@ -22,9 +22,10 @@ export const ACTIVE_SUBSCRIPTION_ORDER_STATUSES = [
 export type IExecuteProps =
   | {
       id: string;
-      email: string;
+      email?: string;
       provider: string;
-      comment: string;
+      account?: string | null;
+      comment?: string;
       billingModule?: {
         currency?: {
           id?: string;
@@ -38,9 +39,9 @@ export type IExecuteProps =
     }
   | {
       id: string;
-      account: string;
+      account?: string | null;
       provider: "telegram-star";
-      comment: string;
+      comment?: string;
       billingModule?: {
         currency?: {
           id?: string;
@@ -387,9 +388,9 @@ export class Service {
           };
         }),
       },
-      account: props["account"],
+      account: props.account || "",
       email: props["email"],
-      comment: props["comment"],
+      comment: props.comment || "",
     };
 
     const ordersToBillingModuleCurrencies =

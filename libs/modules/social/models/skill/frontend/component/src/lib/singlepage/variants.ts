@@ -1,3 +1,4 @@
+import { Component as IdAiChat } from "./id-ai-chat";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -15,6 +16,7 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Default } from "./default";
 import { Component as Find } from "./find";
 export const variants = {
+  "id-ai-chat": IdAiChat,
   "chat-create-dialog": ChatCreateDialog,
   "chat-mention-option": ChatMentionOption,
   "chat-sidebar-item": ChatSidebarItem,

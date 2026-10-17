@@ -1,25 +1,30 @@
-import { Component as BlogModuleWidget } from "../../../widget/index";
+import { Component as Article } from "../..";
+import { Component as Widget } from "../../../widget/index";
 import type { Meta, StoryObj } from "@storybook/react";
-import { ArticleDetail, defaultArticleDetailProps } from "./Component";
+import { defaultArticleDetailProps } from "./Component";
 
 const meta = {
-  title: "Modules/Blog/Models/Article/Singlepage/detail",
-  component: ArticleDetail,
+  id: "modules-blog-models-article-singlepage-detail",
+  title: "Modules/Blog/Article/Singlepage/detail",
+  component: Article,
   parameters: { layout: "fullscreen" },
-  args: defaultArticleDetailProps,
+  args: { ...defaultArticleDetailProps, variant: "detail" },
   argTypes: { tagsCard: { control: false } },
   render: (args) => (
-    <ArticleDetail
+    <Article
       {...args}
       tagsCard={
-        <BlogModuleWidget
+        <Widget
           variant="article-find-by-id-tag-find-default"
           tags={args?.tags}
         />
       }
+      variant="detail"
     />
   ),
-} satisfies Meta<typeof ArticleDetail>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Article>, { variant: "detail" }>
+>;
 
 export default meta;
 

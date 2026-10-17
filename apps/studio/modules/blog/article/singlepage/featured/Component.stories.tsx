@@ -1,15 +1,19 @@
+import { Component as Article } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ArticleFeatured, defaultArticleFeaturedProps } from "./Component";
+import { defaultArticleFeaturedProps } from "./Component";
 
 const meta = {
-  title: "Modules/Blog/Models/Article/Singlepage/featured",
-  component: ArticleFeatured,
+  id: "modules-blog-models-article-singlepage-featured",
+  title: "Modules/Blog/Article/Singlepage/featured",
+  component: Article,
   parameters: {
     layout: "padded",
   },
-  args: defaultArticleFeaturedProps,
-} satisfies Meta<typeof ArticleFeatured>;
+  args: { ...defaultArticleFeaturedProps, variant: "featured" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Article>, { variant: "featured" }>
+>;
 
 export default meta;
 

@@ -1,4 +1,8 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type { IComponentProps, IProductAdminListProps } from "./interface";
+export type { IProductAdminListProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import {
   type ReactNode,
   useId,
@@ -25,11 +29,11 @@ import { twMerge, twMerge as twMergePresentation } from "tailwind-merge";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import * as Dialog from "@radix-ui/react-dialog";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
 import { EcommerceProductAdminV2Form } from "../admin-v2-form/Component";
 import { studioProducts, type IStudioProduct } from "../../shared";
-import { Component as EcommerceModuleAttribute } from "../../../attribute/index";
+import { Component as Attribute } from "../../../attribute/index";
 interface IRecordEditorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -74,11 +78,11 @@ function RecordEditor({
                 returnFocus.current?.focus();
               })
             }
-            className={`fixed inset-y-0 right-0 flex h-dvh w-full min-w-0 flex-col border-l border-[var(--color-sps-line)] bg-[var(--color-sps-white)] font-[family-name:var(--font-sps)] text-[var(--color-sps-graphite)] shadow-xl ${width} ${["z-50", "z-70", "z-90", "z-[110]"][Math.min(depth, 3)]}`}
+            className={`fixed inset-y-0 right-0 flex h-dvh w-full min-w-0 flex-col border-l border-border bg-card font-default text-foreground shadow-xl ${width} ${["z-50", "z-70", "z-90", "z-[110]"][Math.min(depth, 3)]}`}
             data-ds-record-editor
             data-ds-panel-depth={depth}
           >
-            <header className="shrink-0 border-b border-[var(--color-sps-line)] p-5 sm:p-6">
+            <header className="shrink-0 border-b border-border p-5 sm:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   {depth > 0 && (
@@ -149,7 +153,7 @@ function ConfirmationDialog({
         <AlertDialog.Portal container={portalContainer ?? portal}>
           <AlertDialog.Overlay className="fixed inset-0 z-[200] bg-black/40" />
           <AlertDialog.Content
-            className="fixed left-1/2 top-1/2 z-[210] max-h-[85dvh] w-[calc(100%_-_2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-6 font-[family-name:var(--font-sps)] text-[var(--color-sps-graphite)] shadow-xl"
+            className="fixed left-1/2 top-1/2 z-[210] max-h-[85dvh] w-[calc(100%_-_2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-border bg-card p-6 font-default text-foreground shadow-xl"
             onOpenAutoFocus={(event) => {
               event.preventDefault();
               returnFocus.current = document.activeElement as HTMLElement;
@@ -422,7 +426,7 @@ export function Records<
       </header>
       <div
         className={twMerge(
-          "grid gap-4 border-y border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] p-5 sm:grid-cols-[minmax(0,1fr)_220px] sm:px-6",
+          "grid gap-4 border-y border-border bg-muted p-5 sm:grid-cols-[minmax(0,1fr)_220px] sm:px-6",
           embedded && "mx-5 mb-5 rounded-2xl border-0 p-4 sm:mx-6 sm:px-4",
         )}
       >
@@ -465,7 +469,7 @@ export function Records<
       </div>
       {children}
       {onRemove && visible.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-sps-line)] px-5 py-3 sm:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3 sm:px-6">
           <label className="flex items-center gap-3 text-sm">
             <Checkbox
               ref={(element) => {
@@ -505,7 +509,7 @@ export function Records<
           </Button>
         </div>
       )}
-      <div className="divide-y divide-[var(--color-sps-line)]">
+      <div className="divide-y divide-border">
         {visible.map((record) => (
           <RecordRow
             key={record.id}
@@ -539,7 +543,7 @@ export function Records<
           </div>
         ) : null}
       </div>
-      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--color-sps-line)] p-5 sm:p-6">
+      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-border p-5 sm:p-6">
         <div className="flex flex-wrap items-center gap-3">
           <label htmlFor={`${id}-limit`} className={`text-sm ${kit.muted}`}>
             Rows per page
@@ -609,17 +613,13 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface IProductAdminListProps {
-  variant?: string;
-  initialProduct?: IStudioProduct;
-}
 export function EcommerceProductAdminV2List({
   variant = "admin-v2-list",
   initialProduct,
-}: IProductAdminListProps = {}) {
+}: IComponentProps = {}) {
   const [products, setProducts] = useState(studioProducts);
   const [editing, setEditing] = useState<IStudioProduct | null>(
     initialProduct ?? null,
@@ -710,7 +710,7 @@ export function EcommerceProductAdminV2List({
             key={editing.id || "new"}
             product={editing}
             embedded
-            attributes={<EcommerceModuleAttribute variant="list" />}
+            attributes={<Attribute variant="list" />}
             onSave={(product) => {
               const saved = {
                 ...product,
@@ -746,15 +746,15 @@ const RecordRow = memo(RecordRowComponent) as typeof RecordRowComponent;
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const kit = {
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 py-2 text-base text-[var(--color-sps-graphite)] outline-none transition motion-reduce:transition-none placeholder:text-[var(--color-sps-muted)] focus-visible:border-[var(--color-sps-graphite)] focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-sps-white)] disabled:cursor-not-allowed disabled:bg-[var(--color-sps-grey)] disabled:text-[var(--color-sps-muted)] disabled:opacity-60 [&[readonly]]:bg-[var(--color-sps-grey)] aria-invalid:border-[var(--color-sps-danger)] aria-invalid:focus-visible:ring-[var(--color-sps-danger)]",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
   checkbox:
-    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)] checked:border-transparent checked:bg-[var(--color-sps-green)] indeterminate:border-transparent indeterminate:bg-[var(--color-sps-green)] disabled:cursor-not-allowed",
-  card: "min-w-0 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5",
-  muted: "text-[var(--color-sps-muted)]",
-  label: "text-sm font-semibold text-[var(--color-sps-graphite)]",
+    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-border bg-card text-foreground checked:border-transparent checked:bg-primary indeterminate:border-transparent indeterminate:bg-primary disabled:cursor-not-allowed",
+  card: "min-w-0 rounded-2xl border border-border bg-card p-5",
+  muted: "text-muted-foreground",
+  label: "text-sm font-semibold text-foreground",
   focus: focus,
 };
 const Checkbox = forwardRef<HTMLInputElement, ICheckboxProps>(function Checkbox(
@@ -771,21 +771,21 @@ const Checkbox = forwardRef<HTMLInputElement, ICheckboxProps>(function Checkbox(
       />
       <Icon
         name="check"
-        className="pointer-events-none absolute h-3.5 w-3.5 text-[var(--color-sps-graphite)] opacity-0 peer-checked:opacity-100 peer-indeterminate:hidden"
+        className="pointer-events-none absolute h-3.5 w-3.5 text-foreground opacity-0 peer-checked:opacity-100 peer-indeterminate:hidden"
       />
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute hidden h-0.5 w-2.5 rounded-full bg-[var(--color-sps-graphite)] peer-indeterminate:block"
+        className="pointer-events-none absolute hidden h-0.5 w-2.5 rounded-full bg-default peer-indeterminate:block"
       />
     </span>
   );
 });
 const picker = {
-  trigger: `${kit.field} flex h-12 items-center justify-between gap-3 rounded-lg text-left text-sm font-normal shadow-sm focus-visible:ring-[3px] focus-visible:ring-[var(--color-sps-graphite)]/20 focus-visible:ring-offset-0 [&>span]:truncate`,
-  icon: "pointer-events-none text-[var(--color-sps-muted)]",
+  trigger: `${kit.field} flex h-12 items-center justify-between gap-3 rounded-lg text-left text-sm font-normal shadow-sm focus-visible:ring-[3px] focus-visible:ring-foreground/20 focus-visible:ring-offset-0 [&>span]:truncate`,
+  icon: "pointer-events-none text-muted-foreground",
   content:
-    "z-[60] max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] font-[family-name:var(--font-sps)] text-[var(--color-sps-graphite)] shadow-md",
-  item: "relative flex min-h-9 w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-3 text-sm outline-none data-[highlighted]:bg-[var(--color-sps-grey)] data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+    "z-[60] max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-border bg-card font-default text-foreground shadow-md",
+  item: "relative flex min-h-9 w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-3 text-sm outline-none data-[highlighted]:bg-muted data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
 };
 // shadcn Select composition, themed with module tokens and Phosphor icons.
 // https://ui.shadcn.com/docs/components/radix/select

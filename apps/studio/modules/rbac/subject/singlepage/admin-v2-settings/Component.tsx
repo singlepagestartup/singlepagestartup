@@ -1,7 +1,11 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type { IComponentProps, IComponentVariantProps } from "./interface";
+export type { IComponentVariantProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -29,26 +33,23 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-interface IComponentVariantProps {
-  variant?: string;
-}
 export function RbacSubjectAdminV2Settings({
   variant = "admin-v2-settings",
-}: IComponentVariantProps = {}) {
+}: IComponentProps = {}) {
   return (
     <section
-      className="rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-6"
+      className="rounded-2xl border border-border bg-card p-6"
       data-ds-block="rbac.subject.admin-v2-settings"
       data-ds-layer="singlepage"
       data-module="rbac"
       data-model="subject"
       data-variant={variant}
     >
-      <p className="text-xs text-[var(--color-sps-muted)]">rbac.subject</p>
-      <h2 className="mt-1 text-xl font-semibold text-[var(--color-sps-graphite)]">
+      <p className="text-xs text-muted-foreground">rbac.subject</p>
+      <h2 className="mt-1 text-xl font-semibold text-foreground">
         Admin account settings
       </h2>
       <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -72,14 +73,14 @@ export function RbacSubjectAdminV2Settings({
           const Icon = item.icon;
           return (
             <article
-              className="rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] p-4"
+              className="rounded-xl border border-border bg-muted p-4"
               key={item.title}
             >
-              <Icon className="h-5 w-5 text-[var(--color-sps-graphite)]" />
-              <h3 className="mt-3 font-semibold text-[var(--color-sps-graphite)]">
+              <Icon className="h-5 w-5 text-foreground" />
+              <h3 className="mt-3 font-semibold text-foreground">
                 {item.title}
               </h3>
-              <p className="mt-2 text-sm leading-6 text-[var(--color-sps-muted)]">
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 {item.copy}
               </p>
             </article>

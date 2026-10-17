@@ -1,4 +1,8 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type { IComponentProps, IAttributeAdminFormProps } from "./interface";
+export type { IAttributeAdminFormProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import {
   forwardRef,
   type InputHTMLAttributes,
@@ -15,7 +19,7 @@ import {
 import { twMerge, twMerge as twMergePresentation } from "tailwind-merge";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import { studioAttributes, type IStudioAttribute } from "../../shared";
 interface IRecordFormProps {
   children: ReactNode;
@@ -54,7 +58,7 @@ export function RecordForm({
             {children}
           </div>
           {footer && (
-            <footer className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-6">
+            <footer className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-border bg-card p-5 sm:p-6">
               {footer}
             </footer>
           )}
@@ -85,21 +89,15 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface IAttributeAdminFormProps {
-  variant?: string;
-  attribute?: IStudioAttribute;
-  onSave?: (attribute: IStudioAttribute) => void;
-  embedded?: boolean;
-}
 export function EcommerceAttributeAdminV2Form({
   variant = "admin-v2-form",
   attribute = studioAttributes[0],
   onSave,
   embedded = false,
-}: IAttributeAdminFormProps = {}) {
+}: IComponentProps = {}) {
   const [draft, setDraft] = useState(attribute);
   const [language, setLanguage] = useState("en");
   const [status, setStatus] = useState("");
@@ -121,7 +119,7 @@ export function EcommerceAttributeAdminV2Form({
       data-variant={variant}
     >
       {!embedded && (
-        <header className="border-b border-[var(--color-sps-line)] p-5 sm:p-6">
+        <header className="border-b border-border p-5 sm:p-6">
           <p className={`text-xs ${kit.muted}`}>ecommerce / attribute</p>
           <h2 className="mt-1 text-2xl font-semibold">
             {attribute.id ? "Edit attribute" : "New attribute"}
@@ -177,7 +175,7 @@ export function EcommerceAttributeAdminV2Form({
               />
             </label>
           </div>
-          <fieldset className="grid min-w-0 gap-4 rounded-2xl border border-[var(--color-sps-line)] p-4 sm:p-5">
+          <fieldset className="grid min-w-0 gap-4 rounded-2xl border border-border p-4 sm:p-5">
             <legend className="px-1 text-sm font-semibold">String</legend>
             <label className="grid max-w-xs gap-2 text-sm">
               <span className={kit.label}>Language</span>
@@ -278,23 +276,23 @@ const RecordEditorPortal = createContext<HTMLElement | null>(null);
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const kit = {
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 py-2 text-base text-[var(--color-sps-graphite)] outline-none transition motion-reduce:transition-none placeholder:text-[var(--color-sps-muted)] focus-visible:border-[var(--color-sps-graphite)] focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-sps-white)] disabled:cursor-not-allowed disabled:bg-[var(--color-sps-grey)] disabled:text-[var(--color-sps-muted)] disabled:opacity-60 [&[readonly]]:bg-[var(--color-sps-grey)] aria-invalid:border-[var(--color-sps-danger)] aria-invalid:focus-visible:ring-[var(--color-sps-danger)]",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
   checkbox:
-    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)] checked:border-transparent checked:bg-[var(--color-sps-green)] indeterminate:border-transparent indeterminate:bg-[var(--color-sps-green)] disabled:cursor-not-allowed",
-  card: "min-w-0 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5",
-  muted: "text-[var(--color-sps-muted)]",
-  label: "text-sm font-semibold text-[var(--color-sps-graphite)]",
+    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-border bg-card text-foreground checked:border-transparent checked:bg-primary indeterminate:border-transparent indeterminate:bg-primary disabled:cursor-not-allowed",
+  card: "min-w-0 rounded-2xl border border-border bg-card p-5",
+  muted: "text-muted-foreground",
+  label: "text-sm font-semibold text-foreground",
   focus: focus,
 };
 const picker = {
-  trigger: `${kit.field} flex h-12 items-center justify-between gap-3 rounded-lg text-left text-sm font-normal shadow-sm focus-visible:ring-[3px] focus-visible:ring-[var(--color-sps-graphite)]/20 focus-visible:ring-offset-0 [&>span]:truncate`,
-  icon: "pointer-events-none text-[var(--color-sps-muted)]",
+  trigger: `${kit.field} flex h-12 items-center justify-between gap-3 rounded-lg text-left text-sm font-normal shadow-sm focus-visible:ring-[3px] focus-visible:ring-foreground/20 focus-visible:ring-offset-0 [&>span]:truncate`,
+  icon: "pointer-events-none text-muted-foreground",
   content:
-    "z-[60] max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] font-[family-name:var(--font-sps)] text-[var(--color-sps-graphite)] shadow-md",
-  item: "relative flex min-h-9 w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-3 text-sm outline-none data-[highlighted]:bg-[var(--color-sps-grey)] data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+    "z-[60] max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-border bg-card font-default text-foreground shadow-md",
+  item: "relative flex min-h-9 w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-3 text-sm outline-none data-[highlighted]:bg-muted data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
 };
 // shadcn Select composition, themed with module tokens and Phosphor icons.
 // https://ui.shadcn.com/docs/components/radix/select
@@ -416,11 +414,11 @@ const Checkbox = forwardRef<HTMLInputElement, ICheckboxProps>(function Checkbox(
       />
       <Icon
         name="check"
-        className="pointer-events-none absolute h-3.5 w-3.5 text-[var(--color-sps-graphite)] opacity-0 peer-checked:opacity-100 peer-indeterminate:hidden"
+        className="pointer-events-none absolute h-3.5 w-3.5 text-foreground opacity-0 peer-checked:opacity-100 peer-indeterminate:hidden"
       />
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute hidden h-0.5 w-2.5 rounded-full bg-[var(--color-sps-graphite)] peer-indeterminate:block"
+        className="pointer-events-none absolute hidden h-0.5 w-2.5 rounded-full bg-default peer-indeterminate:block"
       />
     </span>
   );

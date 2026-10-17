@@ -5,6 +5,12 @@ customer_segments:
 confirmation:
   confirmed: false
 sources:
+  owner_time_allocation:
+    classification: client-claim
+    resolution: operator-fact
+    source: Operator clarification in chat, 2026-10-06.
+    supports: Development and support time split equally between AI Chat and Code Framework; remaining owner activities allocated 80% to AI Chat and 20% to Code Framework.
+    limitation: No recurring hours or new cash-expense allocation is supplied.
   product_scope_and_testing:
     classification: client-claim
     source: apps/studio/workspace/brief/singlepage.md
@@ -21,9 +27,11 @@ sources:
     keys:
       - intake.audience_value_and_flow
       - sources.audience_value_and_flow
-    date: 2026-09-13
-    supports: Novice makers direct Claude Code or Codex Desktop and inspect the UI; publishing an AI Chat page creates the customer's own repository on this foundation, and a maker with another concrete software need reaches it through GitHub for adaptation and next-product reuse, in both cases without a token purchase.
-    limitation: Selected product journey; public chat readiness, automatic setup and measured conversion are not established.
+      - intake.product_direction
+      - sources.ai_chat_launch_stage
+    date: 2026-10-06
+    supports: Novice makers direct Claude Code or Codex Desktop and inspect the UI; a maker with a concrete software need reaches the existing foundation through GitHub for adaptation and next-product reuse without buying chat tokens. The intended future AI Chat publication route creates the customer's own repository on this foundation; AI Chat's current offer creates written project and product descriptions.
+    limitation: Selected product journey; public chat readiness, automatic setup and measured conversion are not established. Future AI Chat deployment commercial terms are undecided and the free code does not establish free deployment.
   approved_direction:
     classification: constraint
     sources:
@@ -99,8 +107,8 @@ sources:
     limitation: Earlier supplied 1836 frontend variants and 24 Studio examples are not used as current product counts; Research owns revalidation.
 review:
   dependencies:
-    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
-    product.singlepagestartup.research: 629f3131efae5b5778d2bf8cb4a6bf7b98b5d223f4174d6583c93ad3a1bcf01e
+    brief: 1fcbfd98ca6f0c346a752a38256f36a69d324fcef58b6355c9a15a3eda8c624d
+    product.singlepagestartup.research: 701750f671f10c53facf325cd0c445738db088b304dea025a7610a897f096d74
 ---
 
 # Product
@@ -146,7 +154,7 @@ The offer includes source code, documentation and agent instructions; account an
 
 The selected distribution model is free code under MIT through GitHub. [Revenue Streams](#revenue-streams) owns the money terms. Coding-agent subscriptions, infrastructure and hosted AI Chat usage are separate. Help and maintenance are provided as time permits; custom implementation and managed hosting are outside the offer.
 
-In the intended experience, a person discovers SPS through AI Chat, a demonstration, task guidance or a relevant community answer. Publishing a page from AI Chat creates the customer's repository on this foundation; a maker with another concrete software need instead follows **Run the project on your machine** to GitHub and asks a coding agent to deploy and adapt the project. Buying chat tokens is not required. The maker describes changes, reviews the interface and develops the product; the same foundation can support the next idea.
+In the intended experience, a person discovers SPS through AI Chat, a demonstration, task guidance or a relevant community answer. A maker with a concrete software need follows **Run the project on your machine** to GitHub and asks a coding agent to deploy and adapt the project, without buying chat tokens. The maker describes changes, reviews the interface and develops the product; the same foundation can support the next idea. AI Chat's intended future publication route creates a customer repository on this foundation; its current offer creates written project and product descriptions, and its future deployment commercial terms remain undecided.
 
 ## Revenue Streams
 
@@ -166,40 +174,39 @@ Develop and maintain the shared foundation, its modules and its documentation,
 and keep them usable by makers and their coding agents. Help makers adapt the
 code to their own businesses, as time permits.
 
-This product also carries the project's promotion: demonstrations and tutorials,
-short videos cut from them, searchable use-case pages and answers in relevant
-communities. Promotion belongs here because what it buys is exactly what this
-product is paid in, and because a maker who arrives through it can go on to AI
-Chat. The intended journey is in [Sales](sales.yaml); it is not repeated here.
+Promotion includes demonstrations and tutorials, short videos, searchable use-case
+pages and answers in relevant communities. Code Framework carries 20% of the owner's
+activities outside development and support, including promotion; AI Chat carries 80%.
+The intended framework journey is in [Sales](sales.yaml).
 
 ## Key Resources
 
-| Resource ID       | Scope and share                                                                                                                           | Availability                                                     |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `founder-time`    | Half of the owner's working time, split evenly with AI Chat because development and promotion serve both and cannot be traced separately. | Allocated as the project develops; no recurring hours committed. |
-| `repository`      | The shared code and documentation, developed by a team over several years. Counted here; AI Chat runs on the same base.                   | 16 modules, 65 models, 91 relations.                             |
-| `identity-assets` | The shared brand, fonts and visual materials.                                                                                             | Current approved identity and registered assets.                 |
+| Resource ID       | Scope and share                                                                                                         | Availability                                                     |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `founder-time`    | 50% of development and support time, plus 20% of remaining owner activities. AI Chat carries the complementary shares.  | Allocated as the project develops; no recurring hours committed. |
+| `repository`      | The shared code and documentation, developed by a team over several years. Counted here; AI Chat runs on the same base. | 16 modules, 65 models, 91 relations.                             |
+| `identity-assets` | The shared brand, fonts and visual materials.                                                                           | Current approved identity and registered assets.                 |
 
 ## Key Partnerships
 
-GitHub distributes the code and holds the repository that each published
-customer page is created in, which makes it a dependency of both this product
-and AI Chat's publication step. No agreement or dedicated supplier terms exist;
+GitHub distributes the code and is the intended repository and deployment
+dependency of AI Chat's future publication route. No agreement or dedicated supplier terms exist;
 the dependency rests on a public platform's ordinary service. Makers choose the
 coding agents and external services for their own projects, and those choices
 are outside this product.
 
 ## Cost Structure
 
-| Expense              | Basis                                                                                                                     |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Development and help | Half of the owner's time, per the `founder-time` split. Owner time, not cash.                                             |
-| Promotion            | All of it: demonstrations, short videos, searchable pages and community participation, in owner time and any money spent. |
-| Distribution         | None. GitHub carries the code at no charge to the project.                                                                |
+| Expense              | Basis                                                                                                                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Development and help | 50% of the owner's development and support time, per the `founder-time` split.                                                                                                                           |
+| Promotion            | 20% of owner time outside development and support, including demonstrations, short videos, searchable pages and community participation. Promotional cash remains allocated here; no amount is supplied. |
+| Distribution         | None. GitHub carries the code at no charge to the project.                                                                                                                                               |
 
-This product spends no cash of its own. Its whole cost is owner time, and the
-half it does not carry sits in AI Chat under the same resource ID, so the same
-hours are never counted twice.
+No cash spend is recorded. Owner time is allocated by activity under the same
+resource ID in both products: 50% of development and support and 20% of remaining
+activities here; the complementary shares sit in AI Chat. The same hours are
+counted once.
 
 ### Funding
 

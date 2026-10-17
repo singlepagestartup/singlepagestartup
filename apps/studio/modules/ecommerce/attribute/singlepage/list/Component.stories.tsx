@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as EcommerceModuleAttribute } from "../../index";
+import { Component as Attribute } from "../../index";
 const meta = {
-  title: "Modules/Ecommerce/Models/Attribute/Singlepage/list",
-  component: EcommerceModuleAttribute,
+  id: "modules-ecommerce-models-attribute-singlepage-list",
+  title: "Modules/Ecommerce/Attribute/Singlepage/list",
+  component: Attribute,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof EcommerceModuleAttribute>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Attribute>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

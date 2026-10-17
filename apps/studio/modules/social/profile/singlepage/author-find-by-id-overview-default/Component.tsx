@@ -1,7 +1,20 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  OtherAuthor,
+  CategoryBreakdown,
+  ProfileAuthorFindByIdOverviewDefaultProps,
+} from "./interface";
+export type {
+  OtherAuthor,
+  CategoryBreakdown,
+  ProfileAuthorFindByIdOverviewDefaultProps,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps, type ReactNode } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import {
   ProfileAuthor,
   type ProfileAuthorProps,
@@ -35,33 +48,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface OtherAuthor {
-  slug: string;
-  name: string;
-  role: string;
-  avatar: string;
-  articleCount: number;
-}
-export interface CategoryBreakdown {
-  category: string;
-  count: number;
-  widthClassName: string;
-}
-export type ProfileAuthorFindByIdOverviewDefaultProps = Omit<
-  typeof defaultProfileAuthorFindByIdOverviewDefaultProps,
-  "profile"
-> & {
-  profile: ProfileAuthorProps;
-  articles?: ReactNode;
-};
-export function ProfileAuthorFindByIdOverviewDefault(
-  props?: Partial<ProfileAuthorFindByIdOverviewDefaultProps> & {
-    variant?: string;
-  },
-) {
+export function ProfileAuthorFindByIdOverviewDefault(props?: IComponentProps) {
   const profile = {
     ...defaultProfileAuthorFindByIdOverviewDefaultProps.profile,
     ...props?.profile,
@@ -90,65 +80,57 @@ export function ProfileAuthorFindByIdOverviewDefault(
       data-model="profile"
       data-variant={props?.variant ?? "author-find-by-id-overview-default"}
     >
-      <ProfileAuthor {...profile} />
+      <ProfileAuthor {...profile} variant="author" />
 
-      <div className="w-full bg-[var(--color-sps-grey)]">
+      <div className="w-full bg-muted">
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
           <div className="grid gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_300px]">
             {/* Left column */}
             <div className="min-w-0 space-y-8">
               {/* Stats row */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <div className="flex items-center gap-3 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)]">
-                    <Newspaper className="h-5 w-5 text-[var(--color-sps-muted)]" />
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-muted">
+                    <Newspaper className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-2xl font-semibold text-[var(--color-sps-graphite)]">
+                    <p className="text-2xl font-semibold text-foreground">
                       {statArticles}
                     </p>
-                    <p className="text-xs text-[var(--color-sps-muted)]">
-                      Articles
-                    </p>
+                    <p className="text-xs text-muted-foreground">Articles</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)]">
-                    <MessageSquare className="h-5 w-5 text-[var(--color-sps-muted)]" />
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-muted">
+                    <MessageSquare className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-2xl font-semibold text-[var(--color-sps-graphite)]">
+                    <p className="text-2xl font-semibold text-foreground">
                       {statComments}
                     </p>
-                    <p className="text-xs text-[var(--color-sps-muted)]">
-                      Comments
-                    </p>
+                    <p className="text-xs text-muted-foreground">Comments</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)]">
-                    <ThumbsUp className="h-5 w-5 text-[var(--color-sps-muted)]" />
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-muted">
+                    <ThumbsUp className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-2xl font-semibold text-[var(--color-sps-graphite)]">
+                    <p className="text-2xl font-semibold text-foreground">
                       {statLikes}
                     </p>
-                    <p className="text-xs text-[var(--color-sps-muted)]">
-                      Likes
-                    </p>
+                    <p className="text-xs text-muted-foreground">Likes</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)]">
-                    <Clock className="h-5 w-5 text-[var(--color-sps-muted)]" />
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-muted">
+                    <Clock className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-2xl font-semibold text-[var(--color-sps-graphite)]">
+                    <p className="text-2xl font-semibold text-foreground">
                       {statReadTime}
                     </p>
-                    <p className="text-xs text-[var(--color-sps-muted)]">
-                      Read Time
-                    </p>
+                    <p className="text-xs text-muted-foreground">Read Time</p>
                   </div>
                 </div>
               </div>
@@ -156,10 +138,10 @@ export function ProfileAuthorFindByIdOverviewDefault(
               {/* Articles list */}
               <section>
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-[var(--color-sps-graphite)]">
+                  <h2 className="text-lg font-semibold text-foreground">
                     Articles by {profile.name}
                   </h2>
-                  <span className="rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] px-2 py-0.5 text-xs text-[var(--color-sps-muted)]">
+                  <span className="rounded-xl border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                     {statArticles} {statArticles === 1 ? "post" : "posts"}
                   </span>
                 </div>
@@ -170,26 +152,26 @@ export function ProfileAuthorFindByIdOverviewDefault(
             {/* Right sidebar */}
             <aside className="min-w-0 space-y-6">
               {/* Bio */}
-              <div className="rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-6">
+              <div className="rounded-2xl border border-border bg-card p-6">
                 <div className="mb-3 flex items-center gap-2">
-                  <User className="h-5 w-5 text-[var(--color-sps-muted)]" />
-                  <h3 className="text-lg font-semibold text-[var(--color-sps-graphite)]">
+                  <User className="h-5 w-5 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold text-foreground">
                     About
                   </h3>
                 </div>
-                <p className="text-sm text-[var(--color-sps-muted)]">{bio}</p>
+                <p className="text-sm text-muted-foreground">{bio}</p>
               </div>
 
               {/* Skills */}
-              <div className="rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-6">
-                <h3 className="mb-3 text-lg font-semibold text-[var(--color-sps-graphite)]">
+              <div className="rounded-2xl border border-border bg-card p-6">
+                <h3 className="mb-3 text-lg font-semibold text-foreground">
                   Skills & Expertise
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
                   {skills.map((skill) => (
                     <span
                       key={skill}
-                      className="rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] px-2.5 py-1 text-xs text-[var(--color-sps-muted)]"
+                      className="rounded-xl border border-border bg-muted px-2.5 py-1 text-xs text-muted-foreground"
                     >
                       {skill}
                     </span>
@@ -198,8 +180,8 @@ export function ProfileAuthorFindByIdOverviewDefault(
               </div>
 
               {/* Category breakdown */}
-              <div className="rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-6">
-                <h3 className="mb-3 text-lg font-semibold text-[var(--color-sps-graphite)]">
+              <div className="rounded-2xl border border-border bg-card p-6">
+                <h3 className="mb-3 text-lg font-semibold text-foreground">
                   Categories
                 </h3>
                 <div className="space-y-2">
@@ -209,16 +191,16 @@ export function ProfileAuthorFindByIdOverviewDefault(
                         key={category}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-xs capitalize text-[var(--color-sps-muted)]">
+                        <span className="text-xs capitalize text-muted-foreground">
                           {category}
                         </span>
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[var(--color-sps-grey)]">
+                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
                             <div
-                              className={`h-full rounded-full bg-[var(--color-sps-line)] ${widthClassName}`}
+                              className={`h-full rounded-full bg-border ${widthClassName}`}
                             />
                           </div>
-                          <span className="text-xs text-[var(--color-sps-muted)]">
+                          <span className="text-xs text-muted-foreground">
                             {count}
                           </span>
                         </div>
@@ -230,8 +212,8 @@ export function ProfileAuthorFindByIdOverviewDefault(
 
               {/* Other authors */}
               {otherAuthors.length > 0 && (
-                <div className="rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-6">
-                  <p className="mb-3 text-xs st text-[var(--color-sps-muted)]">
+                <div className="rounded-2xl border border-border bg-card p-6">
+                  <p className="mb-3 text-xs st text-muted-foreground">
                     Other Authors
                   </p>
                   <div className="space-y-2">
@@ -254,7 +236,7 @@ export function ProfileAuthorFindByIdOverviewDefault(
               <a
                 href={blogIndexStoryHref}
                 target="_top"
-                className="flex items-center gap-2 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 text-sm text-[var(--color-sps-muted)] transition hover:border-[var(--color-sps-line)] hover:bg-[var(--color-sps-grey)]"
+                className="flex items-center gap-2 rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground transition hover:border-border hover:bg-muted"
               >
                 <ArrowLeft className="h-5 w-5" />
                 Back to all articles
@@ -273,9 +255,9 @@ const MessageSquare = createIcon("chat");
 const Clock = createIcon("clock");
 const ArrowLeft = createIcon("arrow-left");
 const blogIndexStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-blog--default";
+  "/?path=/story/modules-host-models-page-singlepage-blog-module-article-find--default";
 const authorOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-blog-authors-social-profiles-slug--default";
+  "/?path=/story/modules-host-models-page-singlepage-social-module-profile-slug-author--default";
 const jamesAvatar =
   "https://images.unsplash.com/photo-1629507208649-70919ca33793?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMG1hbiUyMHBvcnRyYWl0JTIwcHJvZmVzc2lvbmFsfGVufDF8fHx8MTc3MTY2ODA0OXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 const marcusAvatar =

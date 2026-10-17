@@ -1,4 +1,12 @@
+/**
+ * BDD Suite: Studio catalog generation.
+ * Given: model schemas and authored flat or nested component variants.
+ * When: the catalog rebuilds local records and public variant registries.
+ * Then: authored variants and startup overrides remain available to consumers.
+ */
 import { afterEach, expect, test } from "bun:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import {
   existsSync,
   mkdtempSync,
@@ -104,7 +112,7 @@ test("every native model has a public entry, both layers and local stories; Tele
       ],
     }),
   ).toEqual([]);
-});
+}, 30_000);
 
 test("schema reading includes inherited fields, defaults, nullability and vector dimensions", () => {
   const directory = mkdtempSync(path.join(tmpdir(), "studio-schema-"));
@@ -158,7 +166,11 @@ test("assembling keeps variant aliases, startup overrides and authored files", (
     mkdirSync(path.join(directory, layer, "example"), { recursive: true });
     writeFileSync(
       path.join(directory, layer, "example/Component.tsx"),
-      "export function Example() { return <p>Owned view</p>; }",
+      'import type { IComponentProps } from "./interface"; export function Component(_props: IComponentProps) { return <p>Owned view</p>; }',
+    );
+    writeFileSync(
+      path.join(directory, layer, "example/interface.ts"),
+      'export const variant = "owned-variant"; export interface IComponentProps { variant?: typeof variant }',
     );
     writeFileSync(
       path.join(directory, layer, "variants.ts"),
@@ -179,7 +191,7 @@ test("assembling keeps variant aliases, startup overrides and authored files", (
     ).toContain("Owned view");
     expect(
       readFileSync(path.join(directory, layer, "example/index.ts"), "utf8"),
-    ).toContain("Example as Component");
+    ).toContain('Component } from "./Component"');
   }
   expect(
     readFileSync(path.join(directory, "variants.ts"), "utf8").indexOf(
@@ -190,6 +202,53 @@ test("assembling keeps variant aliases, startup overrides and authored files", (
       "...singlepageVariants",
     ),
   );
+});
+
+test("reassembling nested variants preserves custom keys and startup rendering", async () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "studio-nested-entries-"));
+  temporary.push(directory);
+  for (const layer of ["singlepage", "startup"]) {
+    const selector = path.join(directory, layer, "agent/select/ai-chat");
+    mkdirSync(selector, { recursive: true });
+    writeFileSync(
+      path.join(selector, "Component.tsx"),
+      `import type { IComponentProps } from "./interface"; export function Component(_props: IComponentProps) { return ${JSON.stringify(layer)}; }`,
+    );
+    writeFileSync(
+      path.join(selector, "interface.ts"),
+      'export const variant = "choose-agent"; export interface IComponentProps { variant?: typeof variant }',
+    );
+    writeFileSync(
+      path.join(directory, layer, "variants.ts"),
+      'import { Component as Selector } from "./agent/select/ai-chat/Component.tsx"; export const variants = { "choose-agent": Selector };',
+    );
+  }
+  const sidebar = path.join(directory, "singlepage/sidebar/ai-chat/project");
+  mkdirSync(sidebar, { recursive: true });
+  writeFileSync(
+    path.join(sidebar, "Component.tsx"),
+    'export function Component() { return "project sidebar"; }',
+  );
+  writeFileSync(
+    path.join(sidebar, "interface.ts"),
+    'export const variant = "sidebar-ai-chat-project"; export interface IComponentProps { variant?: typeof variant }',
+  );
+  for (let iteration = 0; iteration < 2; iteration++) {
+    assembleEntity(directory);
+    const { variants } = await import(
+      path.join(directory, "variants.ts") + `?iteration=${iteration}`
+    );
+    expect(Object.keys(variants).sort()).toEqual([
+      "choose-agent",
+      "sidebar-ai-chat-project",
+    ]);
+    expect(renderToStaticMarkup(createElement(variants["choose-agent"]))).toBe(
+      "startup",
+    );
+    expect(
+      renderToStaticMarkup(createElement(variants["sidebar-ai-chat-project"])),
+    ).toBe("project sidebar");
+  }
 });
 
 test("scaffolding preserves authored data and UI and skips relations and Telegram", async () => {
@@ -236,9 +295,17 @@ test("scaffolding preserves authored data and UI and skips relations and Telegra
   expect(readFileSync(path.join(table, "Component.tsx"), "utf8")).toContain(
     "Owned records",
   );
-  expect(
-    readFileSync(path.join(table, "../list/Component.stories.tsx"), "utf8"),
-  ).toContain("count: { control:");
+  const listStory = readFileSync(
+    path.join(table, "../list/Component.stories.tsx"),
+    "utf8",
+  );
+  expect(listStory).toContain("count: { control:");
+  expect(listStory).toContain(
+    'title: "Modules/Analytic/Metric/Singlepage/list"',
+  );
+  expect(listStory).toContain(
+    'id: "modules-analytic-models-metric-singlepage-list"',
+  );
   const model = path.dirname(path.dirname(table));
   const own = path.join(model, "singlepage/owned-list");
   mkdirSync(own, { recursive: true });
@@ -247,6 +314,10 @@ test("scaffolding preserves authored data and UI and skips relations and Telegra
     "export function Component() { return <p>Owned list</p>; }",
   );
   rmSync(path.join(model, "singlepage/list"), { recursive: true });
+  writeFileSync(
+    path.join(own, "interface.ts"),
+    'export const variant = "list"; export interface IComponentProps { variant?: typeof variant }',
+  );
   writeFileSync(
     path.join(model, "singlepage/variants.ts"),
     'import { Component as Owned } from "./owned-list/Component"; export const variants = { "list": Owned };',

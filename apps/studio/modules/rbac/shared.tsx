@@ -1,8 +1,9 @@
-import { Component as WebsiteBuilderModuleFeature } from "../website-builder/feature/index";
+import { Component as SharedIcon } from "../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../website-builder/feature/singlepage/icon/icons.json";
-import { aiChatAccount } from "./subject/singlepage/account/fixture";
+import type IconGlyphs from "../shared/icon/singlepage/phosphor/icons.json";
+import { aiChatAccount } from "./subject/singlepage/me/account/fixture";
 type ModuleIcon = ReturnType<typeof createIcon>;
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
@@ -31,7 +32,7 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
 export interface RbacSubject {
@@ -88,69 +89,6 @@ export interface AccountMenuAction {
   href: string;
   icon: ModuleIcon;
   tone?: "neutral" | "danger";
-}
-export function resolveRbacStudioAuthUser(email: string): RbacStudioAuthUser {
-  const normalizedEmail = email.trim().toLowerCase();
-  const emailPrefix = normalizedEmail.split("@")[0] ?? "";
-  const matchedUser =
-    defaultRbacStudioAuthUsers.find((user) => {
-      const normalizedName = user.name.toLowerCase().replace(/\s+/g, "-");
-      return (
-        user.email.toLowerCase() === normalizedEmail ||
-        user.slug === emailPrefix ||
-        normalizedName === emailPrefix
-      );
-    }) ?? defaultRbacStudioAuthUsers[1];
-  return {
-    ...matchedUser,
-    email: normalizedEmail || matchedUser.email,
-  };
-}
-export function readRbacStudioAuthUser(): RbacStudioAuthUser | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const storedUser = window.localStorage.getItem(
-      RBAC_STUDIO_AUTH_STORAGE_KEY,
-    );
-    if (!storedUser) return null;
-    const parsedUser = JSON.parse(storedUser) as Partial<RbacStudioAuthUser>;
-    if (!parsedUser || typeof parsedUser.email !== "string") return null;
-    return {
-      ...resolveRbacStudioAuthUser(parsedUser.email),
-      ...parsedUser,
-      avatar: parsedUser.avatar?.includes("images.unsplash.com")
-        ? aiChatAccount.profile.avatar!
-        : (parsedUser.avatar ?? aiChatAccount.profile.avatar!),
-    };
-  } catch {
-    return null;
-  }
-}
-export function writeRbacStudioAuthUser(
-  email: string,
-  updates: Partial<Omit<RbacStudioAuthUser, "email">> = {},
-): RbacStudioAuthUser {
-  const stored = readRbacStudioAuthUser();
-  const user = {
-    ...resolveRbacStudioAuthUser(email),
-    ...(stored?.email === email.trim().toLowerCase() ? stored : {}),
-    ...updates,
-  };
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(
-      RBAC_STUDIO_AUTH_STORAGE_KEY,
-      JSON.stringify(user),
-    );
-    window.dispatchEvent(
-      new CustomEvent(RBAC_STUDIO_AUTH_CHANGE_EVENT, { detail: user }),
-    );
-  }
-  return user;
-}
-export function clearRbacStudioAuthUser() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(RBAC_STUDIO_AUTH_STORAGE_KEY);
-  window.dispatchEvent(new CustomEvent(RBAC_STUDIO_AUTH_CHANGE_EVENT));
 }
 export function formatRbacDateTime(value: string | undefined | null): string {
   if (!value) return "-";
@@ -225,10 +163,6 @@ export const defaultRbacUser: RbacAccountUser = {
   role: "Head of Product",
   avatar: aiChatAccount.profile.avatar!,
 };
-export const RBAC_STUDIO_AUTH_STORAGE_KEY =
-  "singlepagestartup_studio_auth_user";
-export const RBAC_STUDIO_AUTH_CHANGE_EVENT =
-  "singlepagestartup-studio-auth-change";
 export const defaultRbacStudioAuthUsers: RbacStudioAuthUser[] = [
   {
     name: "Alex",

@@ -1,16 +1,20 @@
-import { SourceProvider } from "../../overview/document/ai-chat/Source";
+import { Component as Source } from "../../..";
+import { SourceProvider } from "../../id/ai-chat/Source";
 import type { Meta, StoryObj } from "@storybook/react";
-import { Component } from "./Component";
+
 const meta = {
-  title: "Modules/Knowledge/Models/Source/Singlepage/download/ai-chat",
-  component: Component,
-  args: { label: ".md" },
+  id: "modules-knowledge-models-source-singlepage-download-ai-chat",
+  title: "Modules/Knowledge/Source/Singlepage/download/ai-chat",
+  component: Source,
+  args: { label: ".md", variant: "download-ai-chat" },
   render: (args) => (
     <SourceProvider profileId="project-pottery">
-      <Component {...args} />
+      <Source {...args} variant="download-ai-chat" />
     </SourceProvider>
   ),
-} satisfies Meta<typeof Component>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Source>, { variant: "download-ai-chat" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = { name: "default" };

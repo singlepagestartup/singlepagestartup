@@ -12,6 +12,8 @@ import {
   type IResult as IParentResult,
 } from "@sps/ecommerce/models/order/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
+import { queryClient, subscription } from "@sps/shared-frontend-client-api";
+import { useEffect } from "react";
 
 export type IProps = IParentProps["ITotalProps"] & {
   reactQueryOptions?: Partial<UseQueryOptions<any>>;
@@ -20,8 +22,25 @@ export type IProps = IParentProps["ITotalProps"] & {
 export type IResult = IParentResult["ITotalResult"];
 
 export function action(props: IProps) {
+  const queryKey = `${route}/${props.id}/total`;
+  const { meta, ...reactQueryOptions } = props.reactQueryOptions ?? {};
+  useEffect(() => subscription(queryKey, queryClient), [queryKey]);
   return useQuery<IResult>({
-    queryKey: [`${route}/${props.id}/total`],
+    queryKey: [queryKey],
+    meta: {
+      topics: [
+        "ecommerce.orders",
+        "ecommerce.orders-to-products",
+        "ecommerce.products",
+        "ecommerce.products-to-attributes",
+        "ecommerce.attribute-keys",
+        "ecommerce.attribute-keys-to-attributes",
+        "ecommerce.attributes",
+        "ecommerce.attributes-to-billing-module-currencies",
+        "billing.currencies",
+      ],
+      ...meta,
+    },
     queryFn: async () => {
       try {
         const result = await api.total({
@@ -53,6 +72,6 @@ export function action(props: IProps) {
       return data;
     },
     staleTime: STALE_TIME,
-    ...(props ? props.reactQueryOptions : {}),
+    ...reactQueryOptions,
   });
 }

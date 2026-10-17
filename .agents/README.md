@@ -24,6 +24,8 @@ canonical file it adapts. Both run in the repository checks.
 
 - `workflows/engineering/` preserves the existing GitHub-Project-gated
   development process.
+- `workflows/engineering/review_pr.md` supplies code-review guidance for PRs and
+  local diffs, including module boundaries and API/cache consistency.
 - `workflows/pre-development.md` coordinates the local process before
   engineering: the preflight, the cursor, the pipeline check, decision-scoped
   loading, the stage sequence and the handoff.
@@ -47,6 +49,8 @@ canonical file it adapts. Both run in the repository checks.
   `github-reconciliation.md` for the commit preflight; `tool-use.md` for
   capabilities; and `editorial-pass.md`, the final pass for prose written for
   people, which every role and workflow invokes and provider adapters inherit.
+  `contracts/engineering/frontend-components.md` governs SPS frontend template
+  reuse, runtime props and JSX slots at client/server boundaries.
 - `migrations/` holds dated one-time procedures for legacy workspace shapes,
   loaded only when the pipeline check reports such a shape.
 - `tools/` defines provider-neutral capabilities, their allowed roles and

@@ -1,22 +1,21 @@
+import type {
+  IComponentProps,
+  IHostPageAdminV2SelectInputProps,
+} from "./interface";
+export type { IHostPageAdminV2SelectInputProps } from "./interface";
 import {
   HostModelSelect,
   HostStudioProvider,
   type IHostStudioProviderProps,
 } from "../composition/HostRecords/index";
-export interface IHostPageAdminV2SelectInputProps
-  extends Omit<IHostStudioProviderProps, "children"> {
-  variant?: string;
-  value?: string;
-  onValueChange?: (value: string) => void;
-  disabled?: boolean;
-}
+
 export function HostPageAdminV2SelectInput({
   variant = "admin-v2-select-input",
   value,
   onValueChange,
   disabled,
   ...provider
-}: IHostPageAdminV2SelectInputProps = {}) {
+}: IComponentProps = {}) {
   return (
     <HostStudioProvider {...provider}>
       <HostModelSelect

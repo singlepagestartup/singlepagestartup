@@ -25,7 +25,7 @@ function Empty({
 }) {
   return (
     <p
-      className={`rounded-xl border border-dashed border-[var(--color-sps-line)] p-5 text-sm ${kit.muted}`}
+      className={`rounded-xl border border-dashed border-border p-5 text-sm ${kit.muted}`}
       data-module="host"
       data-model={model}
       data-variant={variant}
@@ -199,12 +199,12 @@ export function HostRecordPreview({
   );
 }
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  card: "min-w-0 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5",
-  muted: "text-[var(--color-sps-muted)]",
+  card: "min-w-0 rounded-2xl border border-border bg-card p-5",
+  muted: "text-muted-foreground",
 };
 const Button = forwardRefControl<
   HTMLButtonElement,

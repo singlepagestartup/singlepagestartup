@@ -1,4 +1,7 @@
-import { getHttpErrorType } from "@sps/backend-utils";
+import {
+  getHttpErrorType,
+  getPrivateAIChatSkillProfileId,
+} from "@sps/backend-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../../service";
@@ -27,6 +30,13 @@ export class Handler {
       if (!currentSkill?.id) {
         throw new Error("Not found error. Requested skill not found");
       }
+      if (
+        getPrivateAIChatSkillProfileId(currentSkill.slug) &&
+        payload.slug !== currentSkill.slug
+      )
+        throw new Error(
+          "Validation error. A document profession's command cannot be renamed.",
+        );
 
       const updatedSkill = await this.service.socialModule.skill.update({
         id: socialModuleSkillId,

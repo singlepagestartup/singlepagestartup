@@ -1,11 +1,16 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../feature/index";
+import type {
+  IComponentProps,
+  ContentButtonsArrayFindDefaultProps,
+} from "./interface";
+export type { ContentButtonsArrayFindDefaultProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 type ModuleIcon = ReturnType<typeof createIcon>;
-interface IModuleIconProps extends SVGProps<SVGSVGElement> {
-  size?: number;
-}
+
 type IconName = keyof typeof IconGlyphs;
 function createIcon(name: IconName) {
   const Component = forwardRef<SVGSVGElement, IModuleIconProps>(
@@ -30,25 +35,22 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
 interface IntegrationItem {
   label: string;
   icon: ModuleIcon;
 }
-export type ContentButtonsArrayFindDefaultProps =
-  typeof defaultContentButtonsArrayFindDefaultProps;
-export function ContentButtonsArrayFindDefault(
-  props?: Partial<ContentButtonsArrayFindDefaultProps> & { variant?: string },
-) {
+
+export function ContentButtonsArrayFindDefault(props?: IComponentProps) {
   const { label, integrations } = {
     ...defaultContentButtonsArrayFindDefaultProps,
     ...props,
   };
   return (
     <div
-      className="w-full bg-[var(--color-sps-grey)] py-6 sm:py-8"
+      className="w-full bg-muted py-6 sm:py-8"
       data-ds-block="website-builder.widget.content-buttons-array-find-default"
       data-ds-layer="singlepage"
       data-module="website-builder"
@@ -56,14 +58,14 @@ export function ContentButtonsArrayFindDefault(
       data-variant={props?.variant ?? "content-buttons-array-find-default"}
     >
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex min-w-0 flex-col gap-6 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-6 lg:flex-row lg:items-center lg:justify-between">
-          <p className="text-base font-semibold leading-7 text-[var(--color-sps-graphite)]">
+        <div className="flex min-w-0 flex-col gap-6 rounded-2xl border border-border bg-card p-6 lg:flex-row lg:items-center lg:justify-between">
+          <p className="text-base font-semibold leading-7 text-foreground">
             {label}
           </p>
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">
             {integrations.map((integration) => (
               <span
-                className="inline-flex max-w-full items-center gap-2 rounded-xl bg-[var(--color-sps-grey)] px-3 py-3 text-sm text-[var(--color-sps-graphite)]"
+                className="inline-flex max-w-full items-center gap-2 rounded-xl bg-muted px-3 py-3 text-sm text-foreground"
                 key={integration.label}
               >
                 <integration.icon className="h-5 w-5 shrink-0" />
@@ -93,3 +95,5 @@ export const defaultContentButtonsArrayFindDefaultProps = {
     { icon: Mail, label: "SMTP" },
   ] satisfies IntegrationItem[],
 };
+
+import type { IModuleIconProps } from "./interface";

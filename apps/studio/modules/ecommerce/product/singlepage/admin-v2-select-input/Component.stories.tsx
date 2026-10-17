@@ -1,11 +1,18 @@
+import { Component as Product } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import { EcommerceProductAdminV2SelectInput } from "./Component";
+
 const meta = {
   id: "modules-ecommerce-models-product-singlepage-admin-v2-select-input",
-  title: "Modules/Ecommerce/Models/Product/Singlepage/admin-v2-select-input",
-  component: EcommerceProductAdminV2SelectInput,
+  title: "Modules/Ecommerce/Product/Singlepage/admin-v2-select-input",
+  component: Product,
   parameters: { layout: "centered" },
-} satisfies Meta<typeof EcommerceProductAdminV2SelectInput>;
+  args: { variant: "admin-v2-select-input" },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Product>,
+    { variant: "admin-v2-select-input" }
+  >
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

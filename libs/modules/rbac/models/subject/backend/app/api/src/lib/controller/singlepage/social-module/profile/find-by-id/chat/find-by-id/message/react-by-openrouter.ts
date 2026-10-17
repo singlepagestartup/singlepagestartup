@@ -1,12 +1,14 @@
 import {
+  OPEN_ROUTER_ASSISTANT_MODEL,
+  AI_CONTEXT_POLICY,
+  OPEN_ROUTER_MODEL_ROUTER_CONFIG as MODEL_ROUTER_CONFIG,
   replaceKnowledgeUserContext,
   readKnowledgeUserContext,
   sliceKnowledgeToolText,
   KNOWLEDGE_TOOL_RESULT_MAX_BYTES,
   KNOWLEDGE_TOOL_READ_MAX_CHARS,
   KNOWLEDGE_TOOL_USER_CONTEXT_MAX_BYTES,
-} from "@sps/shared-utils";
-import {
+  KNOWLEDGE_TOOL_WRITE_TIMEOUT_MS,
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
@@ -31,7 +33,13 @@ import {
   type TRbacAiReactionReasoning,
   parseRbacAiReactionRequestMetadata,
 } from "@sps/rbac/models/subject/sdk/model";
-import { blobifyFiles, getHttpErrorType } from "@sps/backend-utils";
+import {
+  blobifyFiles,
+  assertKnowledgeAttachmentBytes,
+  getHttpErrorType,
+  getAIChatDocumentForSkill,
+  estimateAiContextTokens,
+} from "@sps/backend-utils";
 import {
   OpenRouter,
   type IOpenRouterGenerateResult,
@@ -47,18 +55,29 @@ import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/
 import {
   IModel as ISocialModuleMessage,
   isSocialMessageExcludedFromOpenRouter,
+  withSocialMessageSystemMetadata,
 } from "@sps/social/models/message/sdk/model";
 import {
   getLocalizedProfilePlainText,
   IModel as ISocialModuleProfile,
 } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
+import {
+  SocialProfileJevService,
+  type TJevKnowledgeAction,
+} from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/jev";
 import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import {
+  Service as DocumentService,
+  type IAIChatDocumentContext,
+} from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/document";
+import { Service as ProfileSkills } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/skills";
 import { KnowledgeSearchResult } from "@sps/knowledge/backend/app/api/src/lib/types";
+import type { IAiContextHistoryMessage } from "@sps/rbac/models/subject/backend/app/api/src/lib/service";
+import { fingerprintAiContextMessage } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/context/utils";
 import * as jwt from "hono/jwt";
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import { basename, extname, join, normalize } from "node:path";
+import { basename, extname } from "node:path";
 
 type TRequestTask =
   | "qa"
@@ -79,7 +98,7 @@ type TOutputModality = "text" | "image" | "audio" | "file";
 type TComplexity = "low" | "medium" | "high";
 type TRiskLevel = "low" | "medium" | "high";
 type TModelClass = "CHAT" | "CODER" | "VISION" | "IMAGE";
-type TModelConfigClass = TModelClass | "CLASSIFIER";
+type TModelConfigClass = TModelClass;
 
 interface IRequestClassification {
   language: string;
@@ -105,7 +124,7 @@ interface IModelCandidate {
 interface IModelSelectionResult {
   orderedCandidateIds: string[];
   selectedModelId: string | null;
-  selectedBy: "llm" | "priority" | "manual";
+  selectedBy: "jev" | "priority" | "manual" | "single";
 }
 
 interface IFinalGenerationResult {
@@ -151,271 +170,6 @@ interface IOpenRouterKnowledgeRetrievalMetadata {
   rerankReason: string | null;
 }
 
-const MODEL_ROUTER_CONFIG = {
-  version: "2026-07-15",
-  classes: {
-    CLASSIFIER: [
-      {
-        id: "openai/gpt-5.6-luna",
-        enabled: true,
-        priority: 100,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["classification", "routing", "structured_outputs"],
-      },
-      {
-        id: "minimax/minimax-m3",
-        enabled: true,
-        priority: 90,
-        input_modalities: ["text", "image"],
-        output_modalities: ["text"],
-        strengths: ["classification", "routing", "cost_efficiency"],
-      },
-      {
-        id: "google/gemini-3.1-flash-lite",
-        enabled: true,
-        priority: 80,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: [
-          "classification",
-          "routing",
-          "multimodal",
-          "cost_efficiency",
-        ],
-      },
-    ],
-    CHAT: [
-      {
-        id: "openai/gpt-5.6-terra",
-        enabled: true,
-        priority: 100,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["general_chat", "reasoning", "professional_work"],
-      },
-      {
-        id: "minimax/minimax-m3",
-        enabled: true,
-        priority: 95,
-        input_modalities: ["text", "image"],
-        output_modalities: ["text"],
-        strengths: [
-          "general_chat",
-          "reasoning",
-          "agentic_workflows",
-          "cost_efficiency",
-        ],
-      },
-      {
-        id: "anthropic/claude-sonnet-5",
-        enabled: true,
-        priority: 90,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["deep_reasoning", "long_form", "professional_work"],
-      },
-      {
-        id: "google/gemini-3.5-flash",
-        enabled: true,
-        priority: 88,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: [
-          "general_chat",
-          "agentic_workflows",
-          "reasoning",
-          "multimodal",
-        ],
-      },
-      {
-        id: "google/gemini-3.1-flash-lite",
-        enabled: true,
-        priority: 85,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["speed", "general_chat", "multimodal", "cost_efficiency"],
-      },
-      {
-        id: "openai/gpt-5.6-luna",
-        enabled: true,
-        priority: 80,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["speed", "high_volume", "concise_answers"],
-      },
-      {
-        id: "minimax/minimax-m2.7",
-        enabled: true,
-        priority: 75,
-        input_modalities: ["text"],
-        output_modalities: ["text"],
-        strengths: [
-          "professional_work",
-          "office_tasks",
-          "coding",
-          "cost_efficiency",
-        ],
-      },
-    ],
-    CODER: [
-      {
-        id: "openai/gpt-5.6-sol",
-        enabled: true,
-        priority: 100,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["coding", "debugging", "architecture", "deep_reasoning"],
-        best_for: ["code_generation", "bug_fixing", "architecture_help"],
-      },
-      {
-        id: "minimax/minimax-m2.7",
-        enabled: true,
-        priority: 95,
-        input_modalities: ["text"],
-        output_modalities: ["text"],
-        strengths: ["coding", "debugging", "refactoring", "tooling"],
-        best_for: ["real_world_engineering", "code_generation", "code_review"],
-      },
-      {
-        id: "moonshotai/kimi-k2.7-code",
-        enabled: true,
-        priority: 90,
-        input_modalities: ["text", "image"],
-        output_modalities: ["text"],
-        strengths: ["coding", "agentic_workflows", "large_codebases"],
-        best_for: ["project_delivery", "code_generation", "debugging"],
-      },
-      {
-        id: "google/gemini-3.5-flash",
-        enabled: true,
-        priority: 88,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["coding", "agentic_workflows", "multimodal"],
-        best_for: ["code_generation", "debugging", "project_delivery"],
-      },
-      {
-        id: "anthropic/claude-sonnet-5",
-        enabled: true,
-        priority: 85,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["reasoning", "code_explanations", "architecture"],
-      },
-    ],
-    VISION: [
-      {
-        id: "openai/gpt-5.6-terra",
-        enabled: true,
-        priority: 100,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["image_understanding", "ocr", "analysis"],
-      },
-      {
-        id: "minimax/minimax-m3",
-        enabled: true,
-        priority: 95,
-        input_modalities: ["text", "image"],
-        output_modalities: ["text"],
-        strengths: ["image_understanding", "reasoning", "cost_efficiency"],
-      },
-      {
-        id: "google/gemini-3.5-flash",
-        enabled: true,
-        priority: 92,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["vision", "reasoning", "ocr", "multimodal"],
-      },
-      {
-        id: "google/gemini-3.1-flash-lite",
-        enabled: true,
-        priority: 90,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["vision", "speed", "ocr", "cost_efficiency"],
-      },
-      {
-        id: "anthropic/claude-sonnet-5",
-        enabled: true,
-        priority: 85,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["text"],
-        strengths: ["image_understanding", "deep_reasoning", "long_context"],
-      },
-    ],
-    IMAGE: [
-      {
-        id: "google/gemini-3.1-flash-image",
-        enabled: true,
-        priority: 100,
-        input_modalities: ["text", "image"],
-        output_modalities: ["image", "text"],
-        strengths: [
-          "quality_cost_balance",
-          "text_on_image",
-          "image_editing",
-          "low_latency",
-        ],
-        best_for: ["general_image_generation", "marketing_visuals", "editing"],
-      },
-      {
-        id: "google/gemini-3.1-flash-lite-image",
-        enabled: true,
-        priority: 95,
-        input_modalities: ["text", "image"],
-        output_modalities: ["image", "text"],
-        strengths: ["cost_efficiency", "ultra_low_latency", "image_editing"],
-        best_for: ["high_volume", "drafts", "rapid_iterations"],
-      },
-      {
-        id: "openai/gpt-5.4-image-2",
-        enabled: true,
-        priority: 90,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["image", "text"],
-        strengths: ["creative_generation", "art_direction", "image_editing"],
-        best_for: ["high_fidelity", "creative_concepts", "ad_creatives"],
-      },
-      {
-        id: "google/gemini-3-pro-image",
-        enabled: true,
-        priority: 80,
-        input_modalities: ["text", "image"],
-        output_modalities: ["image", "text"],
-        strengths: ["complex_composition", "reasoning", "text_on_image"],
-        best_for: ["complex_briefs", "professional_visuals"],
-      },
-      {
-        id: "openai/gpt-5-image-mini",
-        enabled: true,
-        priority: 70,
-        input_modalities: ["text", "image", "file"],
-        output_modalities: ["image", "text"],
-        strengths: ["creative_generation", "cost_efficiency"],
-      },
-    ],
-  },
-} as const;
-
-const ALLOWED_TASKS: TRequestTask[] = [
-  "qa",
-  "support",
-  "coding",
-  "research",
-  "translate",
-  "summarize",
-  "extract",
-  "image_gen",
-  "image_understanding",
-  "tts",
-  "asr",
-  "music_gen",
-  "file_gen",
-];
-
 const ALLOWED_OUTPUT_MODALITIES: TOutputModality[] = [
   "text",
   "image",
@@ -434,83 +188,6 @@ const KNOWLEDGE_RERANK_THREAD_CONTEXT_MESSAGES = 8;
 const KNOWLEDGE_RERANK_THREAD_CONTEXT_CHARS = 800;
 const OPEN_ROUTER_TERMINAL_MESSAGE_WRITTEN_MARKER =
   "open-router-terminal-message-written";
-
-const CLASSIFICATION_RESPONSE_FORMAT = {
-  type: "json_schema" as const,
-  json_schema: {
-    name: "request_classification",
-    strict: true,
-    schema: {
-      type: "object",
-      additionalProperties: false,
-      required: [
-        "language",
-        "task",
-        "input_modalities",
-        "output_modality",
-        "need_web",
-        "complexity",
-        "risk_level",
-      ],
-      properties: {
-        language: {
-          type: "string",
-        },
-        task: {
-          type: "string",
-          enum: [...ALLOWED_TASKS],
-        },
-        input_modalities: {
-          type: "array",
-          minItems: 1,
-          items: {
-            type: "string",
-            enum: [...ALLOWED_INPUT_MODALITIES],
-          },
-        },
-        output_modality: {
-          type: "string",
-          enum: [...ALLOWED_OUTPUT_MODALITIES],
-        },
-        need_web: {
-          type: "boolean",
-        },
-        complexity: {
-          type: "string",
-          enum: ["low", "medium", "high"],
-        },
-        risk_level: {
-          type: "string",
-          enum: ["low", "medium", "high"],
-        },
-      },
-    },
-  },
-};
-
-const KNOWLEDGE_RERANK_RESPONSE_FORMAT = {
-  type: "json_schema" as const,
-  json_schema: {
-    name: "knowledge_rerank",
-    strict: true,
-    schema: {
-      type: "object",
-      additionalProperties: false,
-      required: ["selected_chunk_ids", "reason"],
-      properties: {
-        selected_chunk_ids: {
-          type: "array",
-          items: {
-            type: "string",
-          },
-        },
-        reason: {
-          type: "string",
-        },
-      },
-    },
-  },
-};
 
 export class Handler {
   service: Service;
@@ -543,6 +220,7 @@ export class Handler {
     purpose: TOpenRouterBillingPurpose;
     openRouter: OpenRouter;
     model: string;
+    sessionId?: string;
     context: IOpenRouterRequestMessage[];
     max_tokens?: number;
     reasoning?: IOpenRouterReasoning;
@@ -566,6 +244,7 @@ export class Handler {
   }): Promise<IOpenRouterGenerateResult> {
     const result = await props.openRouter.generate({
       model: props.model,
+      sessionId: props.sessionId,
       context: props.context,
       max_tokens: props.max_tokens,
       reasoning: props.reasoning,
@@ -739,6 +418,7 @@ export class Handler {
     modelSelection: IModelSelectionResult;
     expectedOutputModality: TOutputModality;
     generationContext: IOpenRouterRequestMessage[];
+    sessionId?: string;
     reasoning?: IOpenRouterReasoning;
     onModelAttempt?: (modelId: string) => Promise<void>;
   }): Promise<IFinalGenerationResult> {
@@ -768,6 +448,7 @@ export class Handler {
       openRouter: props.openRouter,
       model: primaryModelId,
       context: props.generationContext,
+      sessionId: props.sessionId,
       max_tokens: maxTokens,
       reasoning: props.reasoning,
       stripNonTextOnRetry: false,
@@ -807,6 +488,7 @@ export class Handler {
       openRouter: props.openRouter,
       model: fallbackModelId,
       context: props.generationContext,
+      sessionId: props.sessionId,
       max_tokens: maxTokens,
       reasoning: props.reasoning,
       stripNonTextOnRetry: false,
@@ -929,6 +611,7 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
+    const startedAt = Date.now();
     const billingLedger: IOpenRouterBillingLedgerEntry[] = [];
     let socialProfileMcpCatalogSession: IProfileMcpCatalogSession | null = null;
     let unavailableMcpServerIds: string[] = [];
@@ -1066,10 +749,34 @@ export class Handler {
       });
 
       const context: IOpenRouterRequestMessage[] = [];
-      const requestedSkillIds = aiReactionRequest.skillIds;
-      const requestedKnowledgeSearch = this.hasKnowledgeControl(
-        socialModuleMessage.description,
+      const contextHistory: IAiContextHistoryMessage[] = [];
+      let contextResetMessageId: string | null = null;
+      let currentAttachmentTitles: string[] = [];
+      const isAIChat = socialModuleChat.variant === "ai-chat";
+      const documentService = new DocumentService(
+        this.service.socialModule,
+        this.knowledgeService,
       );
+      const documentContext = isAIChat
+        ? await documentService.load({
+            profileId: replyBySocialModuleProfile.id,
+            threadId: socialModuleThreadId,
+            message: socialModuleMessage,
+          })
+        : null;
+      const documentSkill = documentContext
+        ? await new ProfileSkills(this.service.socialModule).forDocument(
+            replyBySocialModuleProfile.id,
+            documentContext.document.key,
+          )
+        : undefined;
+      const requestedSkillIds = documentSkill
+        ? [documentSkill.id]
+        : aiReactionRequest.skillIds;
+      const requestedKnowledgeSearch =
+        isAIChat ||
+        aiReactionRequest.useKnowledgeSearch ||
+        this.hasKnowledgeControl(socialModuleMessage.description);
       const hasMentionedSkill = Boolean(
         this.getMentionedSkillSlugs(socialModuleMessage.description).length,
       );
@@ -1081,6 +788,7 @@ export class Handler {
       });
       let routingRequestText = sanitizedTriggerDescription;
 
+      const thisTriggerCreatedAt = socialModuleMessage.createdAt;
       const chatThreadMessageIds = await this.findThreadMessageIdsInChat({
         socialModuleChatId,
         socialModuleThreadId,
@@ -1138,7 +846,25 @@ export class Handler {
             });
 
           if (socialModuleProfilesToMessages?.length) {
+            socialModuleMessages.sort((a, b) =>
+              a.createdAt && b.createdAt
+                ? new Date(a.createdAt).getTime() -
+                    new Date(b.createdAt).getTime() || a.id.localeCompare(b.id)
+                : 0,
+            );
             for (const socialModuleMessage of socialModuleMessages) {
+              const triggerTime = new Date(
+                socialModuleMessage.createdAt || 0,
+              ).getTime();
+              const requestTime = new Date(thisTriggerCreatedAt || 0).getTime();
+              if (
+                thisTriggerCreatedAt &&
+                socialModuleMessage.createdAt &&
+                (triggerTime > requestTime ||
+                  (triggerTime === requestTime &&
+                    socialModuleMessage.id > socialModuleMessageId))
+              )
+                break;
               const messageDescription =
                 socialModuleMessage.id === socialModuleMessageId
                   ? sanitizedTriggerDescription
@@ -1147,6 +873,8 @@ export class Handler {
               // Soft context reset marker: keep messages only after the latest /new.
               if (messageDescription.startsWith("/new")) {
                 context.length = 0;
+                contextHistory.length = 0;
+                contextResetMessageId = socialModuleMessage.id;
                 continue;
               }
 
@@ -1169,7 +897,12 @@ export class Handler {
                 })
                 .filter(Boolean);
 
-              if (localizedServiceValues.includes(messageDescription)) {
+              // Older stored statuses may still have a decorative emoji prefix.
+              const serviceDescription = messageDescription.replace(
+                /^[\p{Extended_Pictographic}\p{Emoji_Modifier}\u200D\uFE0F\s]+/u,
+                "",
+              );
+              if (localizedServiceValues.includes(serviceDescription)) {
                 continue;
               }
 
@@ -1177,7 +910,10 @@ export class Handler {
                 continue;
               }
 
-              if (this.isOpenRouterLearnContextMessage(messageDescription)) {
+              if (
+                !documentContext &&
+                this.isOpenRouterLearnContextMessage(messageDescription)
+              ) {
                 continue;
               }
 
@@ -1250,6 +986,13 @@ export class Handler {
               }
               const resolvedMessageContext =
                 await this.resolveOpenRouterMessageContext({
+                  presentationOnlyFileIds: isAssistantMessage
+                    ? (
+                        socialModuleMessage.metadata?.["knowledge"] as
+                          | { documentProposalFileIds?: string[] }
+                          | undefined
+                      )?.documentProposalFileIds
+                    : undefined,
                   fileStorageFiles: fileStorageFiles || [],
                   messageDescription,
                 });
@@ -1262,10 +1005,42 @@ export class Handler {
                 role: isAssistantMessage ? "assistant" : "user",
                 content: resolvedMessageContext.content,
               });
+              const presentationIds = new Set(
+                isAssistantMessage
+                  ? (
+                      socialModuleMessage.metadata?.["knowledge"] as
+                        | { documentProposalFileIds?: string[] }
+                        | undefined
+                    )?.documentProposalFileIds || []
+                  : [],
+              );
+              const contextFiles = (fileStorageFiles || []).filter(
+                (file) =>
+                  !presentationIds.has(file.id) &&
+                  !this.isAudioFileStorageFile(file),
+              );
+              contextHistory.push({
+                id: socialModuleMessage.id,
+                role: isAssistantMessage ? "assistant" : "user",
+                content: resolvedMessageContext.content,
+                attachments: contextFiles,
+                fingerprint: fingerprintAiContextMessage(
+                  socialModuleMessage,
+                  contextFiles,
+                ),
+              });
 
               if (socialModuleMessage.id === socialModuleMessageId) {
                 routingRequestText = resolvedMessageContext.routingText;
+                currentAttachmentTitles = (fileStorageFiles || []).map(
+                  (file) =>
+                    this.toLearnText(file.adminTitle) ||
+                    this.toLearnText(file.alt) ||
+                    basename(this.toLearnText(file.file).split("?")[0]) ||
+                    "attachment",
+                );
               }
+              if (socialModuleMessage.id === socialModuleMessageId) break;
             }
           }
         }
@@ -1285,7 +1060,10 @@ export class Handler {
         RBAC_JWT_SECRET,
       );
 
-      if (this.hasLearnCommand(socialModuleMessage.description)) {
+      if (
+        !documentContext &&
+        this.hasLearnCommand(socialModuleMessage.description)
+      ) {
         const learnedMessage = await this.learnFromMessage({
           rbacSubjectAuthenticationJwt: replyByRbacSubjectAuthenticationJwt,
           replyByRbacSubjectId: replyByRbacSubject.id,
@@ -1305,7 +1083,31 @@ export class Handler {
         });
       }
 
-      const openRouter = new OpenRouter();
+      const aiContext = this.service.socialModuleProfileAiContextCreate({
+        chatId: socialModuleChatId,
+        threadId: socialModuleThreadId,
+        profileId: replyBySocialModuleProfile.id,
+        triggerMessageId: socialModuleMessage.id,
+        resetMessageId: contextResetMessageId,
+        history: contextHistory,
+        documentThread: Boolean(documentContext),
+      });
+      const openRouter = new OpenRouter({ sessionId: aiContext.sessionId });
+      const contextSourceIds = await this.findKnowledgeSourceIdsForProfile(
+        replyBySocialModuleProfile.id,
+      );
+      const contextSourceRefs = contextSourceIds.length
+        ? (
+            await this.knowledgeService.listSources({
+              sourceIds: contextSourceIds,
+            })
+          )
+            .map((source) => ({
+              id: source.id,
+              contentHash: source.contentHash,
+            }))
+            .sort((a, b) => a.id.localeCompare(b.id))
+        : [];
 
       const statusMessage =
         await api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
@@ -1325,6 +1127,13 @@ export class Handler {
           },
         );
 
+      const preparedContext = await aiContext.prepare({
+        openRouter,
+        billingLedger,
+        sourceRefs: contextSourceRefs,
+      });
+      context.splice(0, context.length, ...preparedContext.messages);
+
       await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
         id: replyByRbacSubject.id,
         socialModuleProfileId: replyBySocialModuleProfile.id,
@@ -1342,13 +1151,59 @@ export class Handler {
 
       const openRouterModels = await openRouter.getModels();
 
-      const requiredInputModalitiesList =
-        this.detectInputModalitiesFromContext(context);
       let requestClassification: IRequestClassification;
       let selectedModelClass: TModelClass = "CHAT";
       let expectedOutputModality: TOutputModality = "text";
       let modelCandidates: IModelCandidate[] = [];
       let modelSelection: IModelSelectionResult;
+      const jev = new SocialProfileJevService({ openRouter, billingLedger });
+      const jevRoute = await jev.route({
+        requestText: sanitizedTriggerDescription,
+        ...(documentContext
+          ? {
+              knowledgeScope: {
+                documentKey: documentContext.document.key,
+                sourceCount: documentContext.document.sourceIds.length,
+              },
+            }
+          : {}),
+        history: this.toKnowledgeRerankThreadContext(context),
+        ...(documentContext?.proposal
+          ? {
+              documentProposal: {
+                id: documentContext.proposal.id,
+                status: documentContext.proposal.status,
+                title: documentContext.proposal.title,
+                shown: Boolean(documentContext.proposal.shownInMessageId),
+              },
+            }
+          : {}),
+      });
+      const documentResolution = documentContext
+        ? await documentService.resolve(
+            documentContext,
+            jevRoute.documentProposalAction || "none",
+            socialModuleMessage.id,
+          )
+        : null;
+      const knowledgeImportContext =
+        !documentContext && jevRoute.knowledgeAction === "create"
+          ? context.map((message, index) =>
+              index === context.length - 1
+                ? {
+                    ...message,
+                    content: [
+                      sanitizedTriggerDescription,
+                      `Current message attachments: ${JSON.stringify(currentAttachmentTitles)}. These files will be analyzed and saved by profile_knowledge_create.`,
+                      "For this new material, use the current attachment names and current user explanations. Use earlier conversation facts only when the current request explicitly refers to them; do not copy a previous Source's title or notes into a new upload.",
+                    ].join("\n"),
+                  }
+                : message,
+            )
+          : context;
+      const requiredInputModalitiesList = this.detectInputModalitiesFromContext(
+        knowledgeImportContext,
+      );
 
       if (aiReactionRequest.modelId !== "auto") {
         const manualModel = this.resolveManualOpenRouterModel({
@@ -1385,12 +1240,15 @@ export class Handler {
           },
         });
 
-        const rawRequestClassification = await this.classifyRequest({
-          billingLedger,
-          openRouter,
-          requestText: routingRequestText,
-          requiredInputModalitiesList,
-        });
+        const rawRequestClassification: IRequestClassification = {
+          ...this.buildManualRequestClassification({
+            requestText: routingRequestText,
+            requiredInputModalitiesList,
+            expectedOutputModality:
+              jevRoute.task === "image_gen" ? "image" : "text",
+          }),
+          task: jevRoute.task,
+        };
 
         requestClassification = this.adaptClassificationForEndpoint({
           classification: rawRequestClassification,
@@ -1429,7 +1287,58 @@ export class Handler {
           modelClass: selectedModelClass,
           requiredInputModalitiesList,
           expectedOutputModality,
-        });
+        }).filter((candidate) =>
+          openRouterModels.some((model) => model.id === candidate.id),
+        );
+
+        if (!modelCandidates.length && selectedModelClass === "IMAGE") {
+          const billingSettlement = await this.settleOpenRouterBilling({
+            billingLedger,
+            selectedModelId: null,
+            route: requestRoute,
+            method: requestMethod,
+            authorization: requestAuthorization,
+          });
+          billingSettled = true;
+          const updatedMessage =
+            await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
+              id: replyByRbacSubject.id,
+              socialModuleProfileId: replyBySocialModuleProfile.id,
+              socialModuleChatId,
+              socialModuleMessageId: statusMessage.id,
+              data: {
+                description: requestClassification.language
+                  .toLowerCase()
+                  .startsWith("ru")
+                  ? "Создание изображений сейчас недоступно. Разрешённая GPT 6.1 Sol поддерживает анализ изображений и файлов, а результат возвращает текстом."
+                  : "Image generation is currently unavailable. The allowed GPT 6.1 Sol model can analyze images and files, and returns text.",
+                metadata: withSocialMessageSystemMetadata({
+                  source: "openrouter-unsupported-output",
+                  metadata: {
+                    openRouter: {
+                      blockedReason: "unsupported-output-modality",
+                      expectedOutputModality,
+                      reasoning: aiReactionRequest.reasoning,
+                      billing: {
+                        ...billingSettlement.summary,
+                        settlement:
+                          billingSettlement.settlement?.settlement || null,
+                      },
+                    },
+                  },
+                }),
+              },
+              options: {
+                headers: {
+                  Authorization:
+                    "Bearer " + replyByRbacSubjectAuthenticationJwt,
+                },
+              },
+            });
+          return c.json({
+            data: { socialModule: { message: updatedMessage } },
+          });
+        }
 
         if (!modelCandidates.length) {
           throw new Error(
@@ -1444,6 +1353,7 @@ export class Handler {
           requestClassification,
           selectedModelClass,
           modelCandidates,
+          models: openRouterModels,
         });
       }
 
@@ -1465,6 +1375,7 @@ export class Handler {
           socialModuleMessage,
           sanitizedQuery: routingRequestText,
           requestedKnowledgeSearch,
+          knowledgeAction: jevRoute.knowledgeAction,
           requestedSkillIds,
           reasoning: openRouterReasoning,
           selectedModelId:
@@ -1472,11 +1383,12 @@ export class Handler {
             modelSelection.orderedCandidateIds[0] ||
             null,
           threadContext: context,
+          isAIChat,
+          documentSkill,
+          contextMode: aiContext.mode,
+          sessionId: aiContext.sessionId,
         });
-      const openRouterContext = this.attachSkillMessagePrefixToContext({
-        context,
-        skillMessagePrefix: openRouterKnowledgeContext.skillMessagePrefix,
-      });
+      const openRouterContext = knowledgeImportContext;
       const generationContext = this.buildGenerationContext({
         context: openRouterContext,
         expectedOutputModality,
@@ -1485,11 +1397,41 @@ export class Handler {
           language: requestClassification.language,
           replyProfile: replyBySocialModuleProfile,
         }),
-        prependedSystemMessages: openRouterKnowledgeContext.systemMessages,
+        prependedSystemMessages: [
+          ...(openRouterKnowledgeContext.skillMessagePrefix
+            ? [
+                {
+                  role: "system" as const,
+                  content: openRouterKnowledgeContext.skillMessagePrefix,
+                },
+              ]
+            : []),
+          ...openRouterKnowledgeContext.systemMessages,
+          ...preparedContext.systemMessages,
+          ...aiContext.draftSystemMessage(),
+        ],
       });
       const profileCapabilityTools = this.buildProfileCapabilityTools({
+        sessionId: aiContext.sessionId,
+        knowledgeFileAction: jevRoute.knowledgeFileAction,
+        knowledgeFileScope: {
+          id,
+          socialModuleProfileId,
+          socialModuleChatId,
+          targetSocialModuleProfileId: replyBySocialModuleProfile.id,
+        },
         availableSkills: openRouterKnowledgeContext.availableSkills,
         knowledgeSourceIds: openRouterKnowledgeContext.knowledgeSourceIds,
+        knowledgeAction: jevRoute.knowledgeAction,
+        replyProfileId: replyBySocialModuleProfile.id,
+        socialModuleMessage,
+        ...(documentContext &&
+        (!jevRoute.documentProposalAction ||
+          jevRoute.documentProposalAction === "none" ||
+          jevRoute.documentProposalAction === "revise")
+          ? { documentContext }
+          : {}),
+        disableKnowledgeWrites: Boolean(documentContext),
       });
       const allowedMcpServerIds = Array.isArray(
         replyBySocialModuleProfile.allowedMcpServerIds,
@@ -1497,7 +1439,11 @@ export class Handler {
         ? replyBySocialModuleProfile.allowedMcpServerIds
         : [];
 
-      if (expectedOutputModality === "text" && allowedMcpServerIds.length) {
+      if (
+        expectedOutputModality === "text" &&
+        allowedMcpServerIds.length &&
+        !documentContext
+      ) {
         const mcpCatalogResult = await this.openProfileMcpCatalogBestEffort({
           configuredServerIds: allowedMcpServerIds,
           rbacSubjectAuthenticationJwt: replyByRbacSubjectAuthenticationJwt,
@@ -1507,10 +1453,78 @@ export class Handler {
         unavailableMcpServerIds = mcpCatalogResult.unavailableServerIds;
       }
 
-      const socialProfileTools = [
+      const availableTools = [
         ...profileCapabilityTools,
         ...this.buildMcpCapabilityTools(socialProfileMcpCatalogSession),
       ];
+      const capabilities = await jev.selectCapabilities({
+        requestText: sanitizedTriggerDescription,
+        history: this.toKnowledgeRerankThreadContext(context),
+        tools: availableTools,
+        skills: openRouterKnowledgeContext.availableSkills,
+        forceKnowledge:
+          requestedKnowledgeSearch || jevRoute.knowledgeAction !== "none",
+        explicitSkillIds: openRouterKnowledgeContext.requestedSkillIds,
+      });
+      const socialProfileTools = [...capabilities.tools, ...aiContext.tools()];
+      const requiredCompletionToolName =
+        documentContext &&
+        jevRoute.knowledgeFileAction !== "detach" &&
+        (!documentResolution ||
+          documentResolution.status === "needs_revision") &&
+        (documentResolution?.status === "needs_revision" ||
+          jevRoute.knowledgeAction === "create" ||
+          jevRoute.knowledgeAction === "update")
+          ? "profile_knowledge_propose"
+          : undefined;
+      if (capabilities.skills.length) {
+        generationContext.splice(2, 0, {
+          role: "system",
+          content: this.toSkillMessagePrefix(capabilities.skills),
+        });
+      }
+      if (documentContext) {
+        generationContext.splice(
+          generationContext.findIndex((message) => message.role !== "system"),
+          0,
+          {
+            role: "system",
+            content: [
+              `Current document: ${documentContext.thread.title}; Source ID: ${documentContext.targetSourceId ?? "not selected or not created"}.`,
+              "You may read all linked profile Knowledge. Changes to document TEXT require profile_knowledge_propose, which only records a proposal. The server shows its exact text after your answer. Briefly explain your reasoning; do not duplicate the full proposal or claim it was saved. Do not ask another tool to bypass this confirmation flow.",
+              "Use profile_knowledge_files to identify saved attachments and their current contentHash. When the user explicitly asks to remove an attachment, use profile_knowledge_file_detach if exposed. This unlinks only that file from the Source and rebuilds its materials/index; it preserves the original file and chat history. If the target is unclear, ask which file. Report the actual tool result and any processing/indexing failure.",
+              "Brainstorm and ask focused questions when the inputs are incomplete. When enough facts are available or the user requests a draft, propose the structured document. Never invent operator facts.",
+              documentResolution
+                ? `Result of the user's response to the saved proposal: ${JSON.stringify(documentResolution)}. Report this result honestly. An applied result means the exact stored text was saved; do not regenerate it. A conflict requires reading the changed Source and a new proposal.`
+                : "",
+              documentContext.proposal?.status === "pending" ||
+              documentContext.proposal?.status === "needs_revision" ||
+              jevRoute.documentProposalAction === "revise"
+                ? `Pending proposal (not saved Knowledge): ${JSON.stringify(documentContext.proposal)}`
+                : "",
+            ]
+              .filter(Boolean)
+              .join("\n"),
+          },
+        );
+      } else if (
+        jevRoute.knowledgeAction === "create" ||
+        jevRoute.knowledgeAction === "update" ||
+        jevRoute.knowledgeAction === "auto"
+      ) {
+        generationContext.splice(
+          generationContext.findIndex((message) => message.role !== "system"),
+          0,
+          {
+            role: "system",
+            content: [
+              "Use the profile Knowledge tools to carry out explicit current save/edit requests. The user's direct request already authorizes saving; do not ask for a second confirmation. Ask for clarification only if the material or target Source cannot be identified.",
+              "Read existing human notes before editing and preserve unrelated notes. For a new material use profile_knowledge_create. Attached files are analyzed by the Knowledge service.",
+              `Linked Source ids: ${JSON.stringify(openRouterKnowledgeContext.knowledgeSourceIds)}`,
+            ].join("\n"),
+          },
+        );
+      }
       const onModelAttempt = async (modelCandidateId: string) => {
         await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
           id: replyByRbacSubject.id,
@@ -1538,12 +1552,44 @@ export class Handler {
         | undefined;
       let socialProfileToolLoopResult: ISocialProfileAiToolLoopResult | null =
         null;
+      let contextWindowExceeded = false;
+      const contextWindowMessage = requestClassification.language.startsWith(
+        "ru",
+      )
+        ? "Точный документ и необходимые сообщения превышают окно модели. Выберите раздел документа для продолжения."
+        : "The exact document and required messages exceed the model context window. Select a document section to continue.";
       let finalGenerationResult: IFinalGenerationResult = {
         selectedModelId: null,
         fallbackReasons: [],
       };
 
-      if (expectedOutputModality === "text" && socialProfileTools.length) {
+      const contextMetrics = aiContext.measure(
+        generationContext,
+        socialProfileTools.map((tool) => tool.definition),
+        estimateAiContextTokens(
+          openRouterKnowledgeContext.systemMessages
+            .map((message) => this.getMessageTextContent(message))
+            .join("\n"),
+        ),
+      );
+      const modelWindow = openRouterModels.find(
+        (model) => model.id === modelSelection.selectedModelId,
+      )?.context_length;
+      if (
+        modelWindow &&
+        contextMetrics.inputEstimatedTokens +
+          OPEN_ROUTER_FINAL_TEXT_MAX_TOKENS >
+          modelWindow
+      ) {
+        selectModelForRequest = modelSelection.selectedModelId;
+        generationResult = {
+          text: contextWindowMessage,
+        };
+        contextMetrics.budgetExceededReason = "model_context_window_exceeded";
+      } else if (
+        expectedOutputModality === "text" &&
+        socialProfileTools.length
+      ) {
         let generationCallCount = 0;
         const socialModuleChat = await this.service.socialModule.chat.findById({
           id: socialModuleChatId,
@@ -1572,6 +1618,7 @@ export class Handler {
             language: requestClassification.language,
             modelCandidateIds: modelSelection.orderedCandidateIds,
             tools: socialProfileTools,
+            requiredCompletionToolName,
             onEvent: executionActionReporter
               ? (event) => executionActionReporter.handle(event)
               : undefined,
@@ -1579,20 +1626,51 @@ export class Handler {
               generationCallCount += 1;
               await onModelAttempt(toolGeneration.model);
 
-              return this.generateWithBillingLedger({
+              const iterationMetrics = aiContext.measure(
+                toolGeneration.context,
+                toolGeneration.tools,
+                contextMetrics.knowledgeEstimatedTokens,
+              );
+              if (
+                (openRouterModels.find(
+                  (model) => model.id === toolGeneration.model,
+                )?.context_length ||
+                  modelWindow) &&
+                iterationMetrics.inputEstimatedTokens +
+                  OPEN_ROUTER_FINAL_TEXT_MAX_TOKENS >
+                  (openRouterModels.find(
+                    (model) => model.id === toolGeneration.model,
+                  )?.context_length || modelWindow)!
+              ) {
+                contextWindowExceeded = true;
+                return {
+                  error: { message: "context_window_exceeded" },
+                  billing: null,
+                };
+              }
+              const result = await this.generateWithBillingLedger({
                 billingLedger,
                 purpose:
                   generationCallCount === 1 ? "generation" : "tool_iteration",
                 openRouter,
                 model: toolGeneration.model,
                 context: toolGeneration.context,
+                sessionId: aiContext.sessionId,
                 max_tokens: OPEN_ROUTER_FINAL_TEXT_MAX_TOKENS,
                 reasoning: openRouterReasoning,
                 stripNonTextOnRetry: false,
                 tools: toolGeneration.tools,
-                toolChoice: "auto",
+                toolChoice: requiredCompletionToolName ? "required" : "auto",
                 parallelToolCalls: false,
               });
+              if (
+                "error" in result &&
+                /context.{0,30}(length|window)|maximum.{0,30}tokens/i.test(
+                  this.stringifyError(result.error),
+                )
+              )
+                contextWindowExceeded = true;
+              return result;
             },
           });
         selectModelForRequest =
@@ -1602,8 +1680,12 @@ export class Handler {
           null;
         selectedModelIdForBilling = selectModelForRequest;
         generationResult = {
-          text: socialProfileToolLoopResult.finalText,
+          text: contextWindowExceeded
+            ? contextWindowMessage
+            : socialProfileToolLoopResult.finalText,
         };
+        if (contextWindowExceeded)
+          contextMetrics.budgetExceededReason = "model_context_window_exceeded";
       } else {
         finalGenerationResult = await this.generateFinalOpenRouterReply({
           billingLedger,
@@ -1611,6 +1693,7 @@ export class Handler {
           modelSelection,
           expectedOutputModality,
           generationContext,
+          sessionId: aiContext.sessionId,
           reasoning: openRouterReasoning,
           onModelAttempt,
         });
@@ -1618,6 +1701,19 @@ export class Handler {
         selectModelForRequest = finalGenerationResult.selectedModelId;
         selectedModelIdForBilling = finalGenerationResult.selectedModelId;
         generationResult = finalGenerationResult.generationResult;
+      }
+
+      const servedModelId = [...billingLedger]
+        .reverse()
+        .find(
+          (call) =>
+            (call.purpose === "generation" ||
+              call.purpose === "tool_iteration") &&
+            call.status === "success",
+        )?.billing?.responseModelId;
+      if (servedModelId) {
+        selectModelForRequest = servedModelId;
+        selectedModelIdForBilling = servedModelId;
       }
 
       if (!selectModelForRequest || !generationResult) {
@@ -1665,6 +1761,22 @@ export class Handler {
       });
       billingSettled = true;
 
+      const proposalPreview = documentContext
+        ? documentService.preview(
+            documentContext,
+            socialModuleMessage.id,
+            requestClassification.language,
+          )
+        : null;
+      if (proposalPreview)
+        generationResult.text = [generationResult.text, proposalPreview]
+          .filter(Boolean)
+          .join("\n\n");
+      const workingDraftPreview = aiContext.preview();
+      if (workingDraftPreview)
+        generationResult.text = [generationResult.text, workingDraftPreview]
+          .filter(Boolean)
+          .join("\n\n");
       const replyMessageData = await this.buildOpenRouterReplyMessageData({
         expectedOutputModality,
         generationResult,
@@ -1689,9 +1801,21 @@ export class Handler {
             unavailableServerIds: unavailableMcpServerIds,
           },
           knowledge: {
+            ...(documentContext
+              ? {
+                  documentProposalId: documentContext.proposal?.id,
+                  documentProposalFileIds: proposalPreview
+                    ? documentContext.proposal?.fileIds || []
+                    : [],
+                  documentResolution,
+                }
+              : {}),
             action: this.hasLearnCommand(socialModuleMessage.description)
               ? "learn"
-              : "generate",
+              : jevRoute.knowledgeAction === "create" ||
+                  jevRoute.knowledgeAction === "update"
+                ? jevRoute.knowledgeAction
+                : "generate",
             profileId: replyBySocialModuleProfile.id,
             triggerMessageId: socialModuleMessage.id,
             useKnowledgeSearch: openRouterKnowledgeContext.useKnowledgeSearch,
@@ -1707,6 +1831,7 @@ export class Handler {
             ),
             activatedSkillIds: Array.from(
               new Set([
+                ...capabilities.skills.map((skill) => skill.id),
                 ...openRouterKnowledgeContext.promptSkills.map(
                   (skill) => skill.id,
                 ),
@@ -1717,7 +1842,10 @@ export class Handler {
                   ),
               ]),
             ),
-            skills: openRouterKnowledgeContext.promptSkills.map((skill) => {
+            skills: [
+              ...openRouterKnowledgeContext.promptSkills,
+              ...capabilities.skills,
+            ].map((skill) => {
               return {
                 skillId: skill.id,
                 slug: skill.slug,
@@ -1733,6 +1861,9 @@ export class Handler {
             },
           },
           openRouter: {
+            context: contextMetrics,
+            sessionId: aiContext.sessionId,
+            durationMs: Date.now() - startedAt,
             toolLoop: socialProfileToolLoopResult?.trace || {
               enabled: false,
               stepCount: 1,
@@ -1771,6 +1902,12 @@ export class Handler {
               },
             },
           },
+        );
+      if (documentContext && proposalPreview)
+        await documentService.markShown(
+          documentContext,
+          socialModuleMessage.id,
+          repliedSocialModuleMessage.id,
         );
 
       for (const sourceId of new Set(
@@ -1839,13 +1976,16 @@ export class Handler {
     );
 
     if (persistedRequest) {
-      return persistedRequest;
+      return {
+        ...persistedRequest,
+        reasoning: OPEN_ROUTER_ASSISTANT_MODEL.reasoning.effort,
+      };
     }
 
     return {
       version: 1,
       modelId: "auto",
-      reasoning: "auto",
+      reasoning: OPEN_ROUTER_ASSISTANT_MODEL.reasoning.effort,
       skillIds: [],
       useKnowledgeSearch: false,
     };
@@ -2049,14 +2189,16 @@ export class Handler {
       },
     });
 
-    if (relations?.length !== 1 || !relations[0]?.subjectId) {
+    const replyRelations =
+      relations?.filter((relation) => relation.variant !== "assistant") || [];
+    if (replyRelations.length !== 1 || !replyRelations[0]?.subjectId) {
       throw new Error(
         "Validation error. Reply social.profile must have exactly one linked rbac.subject.",
       );
     }
 
     const rbacSubject = await this.service.findById({
-      id: relations[0].subjectId,
+      id: replyRelations[0].subjectId,
     });
 
     if (!rbacSubject) {
@@ -2121,23 +2263,45 @@ export class Handler {
     socialModuleMessage: ISocialModuleMessage;
     sanitizedQuery: string;
     requestedKnowledgeSearch: boolean;
+    knowledgeAction?: TJevKnowledgeAction;
     requestedSkillIds: string[];
     reasoning?: IOpenRouterReasoning;
     selectedModelId: string | null;
     threadContext: IOpenRouterRequestMessage[];
+    isAIChat?: boolean;
+    documentSkill?: ISocialModuleSkill;
+    contextMode?: "full" | "compact";
+    sessionId?: string;
   }): Promise<IResolvedOpenRouterKnowledgeContext> {
     const mentionedSkillSlugs = this.getMentionedSkillSlugs(
       props.socialModuleMessage.description || "",
     );
-    const availableSkills = await this.findSkillsForProfile({
+    const linkedSkills = await this.findSkillsForProfile({
       socialModuleProfileId: props.replyProfile.id,
       requireRequestedSkillsLinked: false,
     });
-    const promptSkills = await this.findPromptSkillsForProfile({
-      socialModuleProfileId: props.replyProfile.id,
-      skillIds: props.requestedSkillIds,
-      skillSlugs: mentionedSkillSlugs,
-    });
+    const availableSkills = props.isAIChat
+      ? linkedSkills.filter(
+          (skill) =>
+            !getAIChatDocumentForSkill(skill.slug, props.replyProfile.id) ||
+            (!props.documentSkill &&
+              (props.requestedSkillIds.includes(skill.id) ||
+                mentionedSkillSlugs.includes(skill.slug.toLowerCase()))),
+        )
+      : linkedSkills;
+    const promptSkills = props.documentSkill
+      ? [props.documentSkill]
+      : (
+          await this.findPromptSkillsForProfile({
+            socialModuleProfileId: props.replyProfile.id,
+            skillIds: props.requestedSkillIds,
+            skillSlugs: mentionedSkillSlugs,
+          })
+        ).filter(
+          (skill) =>
+            !props.isAIChat ||
+            availableSkills.some((available) => available.id === skill.id),
+        );
     const requestedSkillIds = Array.from(
       new Set([
         ...props.requestedSkillIds,
@@ -2155,15 +2319,20 @@ export class Handler {
       );
     }
 
-    const useKnowledgeSearch = props.requestedKnowledgeSearch;
-    const knowledgeSourceIds = useKnowledgeSearch
-      ? await this.findKnowledgeSourceIdsForProfile(props.replyProfile.id)
-      : [];
+    const useKnowledgeSearch =
+      props.requestedKnowledgeSearch ||
+      props.knowledgeAction === "read" ||
+      props.knowledgeAction === "update";
+    const knowledgeSourceIds =
+      useKnowledgeSearch || props.knowledgeAction === "auto"
+        ? await this.findKnowledgeSourceIdsForProfile(props.replyProfile.id)
+        : [];
     const searchSourceIds = useKnowledgeSearch ? knowledgeSourceIds : [];
     const candidateSources =
-      useKnowledgeSearch && query
+      useKnowledgeSearch && query && searchSourceIds.length > 0
         ? await this.knowledgeService.search({
             query,
+            ...(props.sessionId && { sessionId: props.sessionId }),
             topK: KNOWLEDGE_INITIAL_TOP_K,
             neighborWindow: KNOWLEDGE_NEIGHBOR_WINDOW,
             sourceIds: searchSourceIds,
@@ -2179,7 +2348,18 @@ export class Handler {
       selectedModelId: props.selectedModelId,
       threadContext: props.threadContext,
     });
-    const sources = knowledgeRerankResult.sources;
+    const sources: KnowledgeSearchResult[] = [];
+    let knowledgeTokens = 0;
+    for (const source of knowledgeRerankResult.sources) {
+      const size = estimateAiContextTokens(source.text);
+      if (
+        props.contextMode === "compact" &&
+        knowledgeTokens + size > AI_CONTEXT_POLICY.knowledgeTokens
+      )
+        continue;
+      sources.push(source);
+      knowledgeTokens += size;
+    }
     const systemMessages: IOpenRouterRequestMessage[] = [
       ...(useKnowledgeSearch
         ? [
@@ -2233,144 +2413,15 @@ export class Handler {
     reason: string | null;
     fallbackReason: string | null;
   }> {
-    const fallbackSources = props.candidateSources.slice(0, props.rerankTopK);
-
-    if (!props.candidateSources.length) {
-      return {
-        sources: [],
-        reason: null,
-        fallbackReason: null,
-      };
-    }
-
-    if (!props.selectedModelId) {
-      return {
-        sources: fallbackSources,
-        reason: null,
-        fallbackReason: "no selected model id for knowledge rerank",
-      };
-    }
-
-    const rerankResponse = await this.generateWithBillingLedger({
-      billingLedger: props.billingLedger,
-      purpose: "knowledge_rerank",
+    return new SocialProfileJevService({
       openRouter: props.openRouter,
-      model: props.selectedModelId,
-      max_tokens: 800,
-      reasoning: props.reasoning,
-      responseFormat: KNOWLEDGE_RERANK_RESPONSE_FORMAT,
-      temperature: 0,
-      context: this.buildKnowledgeRerankContext({
-        candidateSources: props.candidateSources,
-        query: props.query,
-        rerankTopK: props.rerankTopK,
-        threadContext: props.threadContext,
-      }),
+      billingLedger: props.billingLedger,
+    }).rerank({
+      query: props.query,
+      history: this.toKnowledgeRerankThreadContext(props.threadContext),
+      sources: props.candidateSources,
+      topK: props.rerankTopK,
     });
-
-    if ("error" in rerankResponse) {
-      return {
-        sources: fallbackSources,
-        reason: null,
-        fallbackReason: "knowledge rerank generation error",
-      };
-    }
-
-    const parsed = this.tryParseJsonObject(rerankResponse.text);
-    const rawSelectedChunkIds = parsed?.selected_chunk_ids;
-
-    if (!Array.isArray(rawSelectedChunkIds)) {
-      return {
-        sources: fallbackSources,
-        reason: null,
-        fallbackReason: "knowledge rerank returned invalid selected_chunk_ids",
-      };
-    }
-
-    const rerankReason =
-      typeof parsed?.reason === "string" ? parsed.reason : null;
-
-    if (!rawSelectedChunkIds.length) {
-      return {
-        sources: [],
-        reason: rerankReason,
-        fallbackReason: null,
-      };
-    }
-
-    const selectedChunkIds = rawSelectedChunkIds
-      .filter((value): value is string => typeof value === "string")
-      .map((value) => value.trim())
-      .filter(Boolean);
-    const sourcesById = new Map(
-      props.candidateSources.map((source) => [source.id, source]),
-    );
-    const selectedSources = Array.from(new Set(selectedChunkIds))
-      .map((chunkId) => sourcesById.get(chunkId))
-      .filter((source): source is KnowledgeSearchResult => Boolean(source))
-      .slice(0, props.rerankTopK);
-
-    if (!selectedSources.length) {
-      return {
-        sources: fallbackSources,
-        reason: null,
-        fallbackReason: "knowledge rerank returned no valid selected_chunk_ids",
-      };
-    }
-
-    return {
-      sources: selectedSources,
-      reason: rerankReason,
-      fallbackReason: null,
-    };
-  }
-
-  private buildKnowledgeRerankContext(props: {
-    candidateSources: KnowledgeSearchResult[];
-    query: string;
-    rerankTopK: number;
-    threadContext: IOpenRouterRequestMessage[];
-  }): IOpenRouterRequestMessage[] {
-    return [
-      {
-        role: "system",
-        content: [
-          "You are reranking profile-scoped RAG chunks before answer generation.",
-          "Select only chunks that directly help answer the user query.",
-          "Prefer chunks that preserve the source meaning and avoid misleading partial context.",
-          `Return at most ${props.rerankTopK} chunk ids.`,
-          "Return STRICT JSON only.",
-        ].join(" "),
-      },
-      {
-        role: "user",
-        content: `User query:\n${props.query}`,
-      },
-      {
-        role: "user",
-        content: [
-          "Recent thread context:",
-          this.toKnowledgeRerankThreadContext(props.threadContext),
-        ].join("\n"),
-      },
-      {
-        role: "user",
-        content: `Candidate chunks JSON:\n${JSON.stringify(
-          props.candidateSources.map((source, index) => {
-            return {
-              order: index + 1,
-              id: source.id,
-              retrievalRole: source.retrievalRole,
-              sourceId: source.sourceId,
-              sourceTitle: source.sourceTitle,
-              chunkIndex: source.chunkIndex,
-              similarity: source.similarity,
-              text: source.text,
-            };
-          }),
-        )}`,
-      },
-    ];
   }
 
   private toKnowledgeRerankThreadContext(context: IOpenRouterRequestMessage[]) {
@@ -2621,10 +2672,125 @@ export class Handler {
   }
 
   private buildProfileCapabilityTools(props: {
+    sessionId?: string;
     availableSkills: ISocialModuleSkill[];
     knowledgeSourceIds: string[];
+    knowledgeAction?: TJevKnowledgeAction;
+    replyProfileId?: string;
+    socialModuleMessage?: ISocialModuleMessage;
+    documentContext?: IAIChatDocumentContext;
+    disableKnowledgeWrites?: boolean;
+    knowledgeFileAction?: "detach";
+    knowledgeFileScope?: {
+      id: string;
+      socialModuleProfileId: string;
+      socialModuleChatId: string;
+      targetSocialModuleProfileId: string;
+    };
   }): ISocialProfileAiTool[] {
     const tools: ISocialProfileAiTool[] = [];
+    const canWrite =
+      !props.disableKnowledgeWrites &&
+      (props.knowledgeAction === "create" ||
+        props.knowledgeAction === "update" ||
+        props.knowledgeAction === "auto" ||
+        props.knowledgeAction === undefined);
+    if (
+      props.documentContext &&
+      props.socialModuleMessage &&
+      props.knowledgeFileAction !== "detach"
+    )
+      tools.push(
+        new DocumentService(
+          this.service.socialModule,
+          this.knowledgeService,
+        ).tool(props.documentContext, props.socialModuleMessage),
+      );
+    if (canWrite && props.replyProfileId && props.socialModuleMessage) {
+      const message = props.socialModuleMessage;
+      const profileId = props.replyProfileId;
+      tools.push({
+        source: "knowledge",
+        timeoutMs: KNOWLEDGE_TOOL_WRITE_TIMEOUT_MS,
+        display: { label: "Create profile Knowledge" },
+        definition: {
+          type: "function",
+          function: {
+            name: "profile_knowledge_create",
+            description:
+              "Save new knowledge in this replying profile when the user explicitly requests it. Include the complete user-provided facts and context. The current message's attachments are analyzed and attached automatically. Use edit for an existing Source instead. Return errors honestly; saved does not always mean indexed.",
+            parameters: {
+              type: "object",
+              properties: {
+                title: { type: "string", minLength: 1 },
+                userContext: { type: "string" },
+              },
+              required: ["title", "userContext"],
+              additionalProperties: false,
+            },
+          },
+        },
+        validateArguments: (args) => {
+          if (
+            typeof args["title"] !== "string" ||
+            !args["title"].trim() ||
+            typeof args["userContext"] !== "string"
+          )
+            throw new Error("Knowledge title and userContext are required.");
+        },
+        execute: async (args) => {
+          const relations =
+            await this.service.socialModule.messagesToFileStorageModuleFiles.find(
+              {
+                params: {
+                  filters: {
+                    and: [
+                      { column: "messageId", method: "eq", value: message.id },
+                    ],
+                  },
+                  orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
+                },
+              },
+            );
+          const saved = await this.knowledgeService.learnContent({
+            slug: this.toSlug(`knowledge-${profileId}-${message.id}`),
+            title: String(args["title"]).trim(),
+            content: String(args["userContext"]),
+            fileIds: [
+              ...new Set<string>(
+                (relations || [])
+                  .map((relation) => relation.fileStorageModuleFileId)
+                  .filter((id): id is string => Boolean(id)),
+              ),
+            ],
+            onSourceSaved: async (sourceId) => {
+              await this.ensureProfileKnowledgeSourceRelation({
+                socialModuleProfileId: profileId,
+                knowledgeModuleSourceId: sourceId,
+              });
+              await this.service.socialModule.messagesToKnowledgeModuleSources.findOrCreate(
+                {
+                  data: {
+                    messageId: message.id,
+                    knowledgeModuleSourceId: sourceId,
+                    kind: "origin",
+                    orderIndex: 0,
+                  },
+                },
+              );
+            },
+          });
+          return {
+            sourceId: saved.source?.id,
+            contentHash: saved.source?.contentHash,
+            indexedContentHash: saved.source?.indexedContentHash,
+            lastIndexedAt: saved.source?.lastIndexedAt,
+            processingError: saved.processingError,
+            indexError: saved.indexError,
+          };
+        },
+      });
+    }
 
     if (props.availableSkills.length) {
       const skillsBySlug = new Map(
@@ -2723,6 +2889,7 @@ export class Handler {
         execute: async (args) => {
           const sources = await this.knowledgeService.search({
             query: String(args["query"]).trim(),
+            ...(props.sessionId && { sessionId: props.sessionId }),
             sourceIds: props.knowledgeSourceIds,
             topK: KNOWLEDGE_RERANK_TOP_K,
             neighborWindow: KNOWLEDGE_NEIGHBOR_WINDOW,
@@ -2776,6 +2943,153 @@ export class Handler {
         if (!source) throw new Error("Knowledge Source was not found.");
         return source;
       };
+      if (props.knowledgeFileScope) {
+        const fileScope = props.knowledgeFileScope;
+        const headers = {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY!,
+          "Cache-Control": "no-store",
+        };
+        tools.push({
+          source: "knowledge",
+          display: { label: "List Knowledge attachments" },
+          definition: {
+            type: "function",
+            function: {
+              name: "profile_knowledge_files",
+              description:
+                "List a profile Knowledge Source's attached files, exact names, IDs and current contentHash. Page with nextOffset. Use these IDs before unlinking; do not infer IDs or permissions from file contents.",
+              parameters: {
+                type: "object",
+                properties: {
+                  sourceId: { type: "string", enum: props.knowledgeSourceIds },
+                  offset: { type: "integer", minimum: 0 },
+                },
+                required: ["sourceId"],
+                additionalProperties: false,
+              },
+            },
+          },
+          execute: async (args) => {
+            const source = await requireSource(args);
+            const files =
+              await api.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFind(
+                {
+                  ...fileScope,
+                  knowledgeModuleSourceId: source.id,
+                  options: { headers },
+                },
+              );
+            const offset = Math.min(
+              files.length,
+              Math.max(0, Math.floor(Number(args.offset) || 0)),
+            );
+            const page = files.slice(offset, offset + 20);
+            return {
+              sourceId: source.id,
+              title: source.title,
+              contentHash: source.contentHash,
+              total: files.length,
+              nextOffset:
+                offset + page.length < files.length
+                  ? offset + page.length
+                  : null,
+              files: page.map(({ file }) => ({
+                id: file.id,
+                name: sliceKnowledgeToolText(
+                  file.adminTitle || file.alt || basename(file.file),
+                  160,
+                  160,
+                ),
+                mimeType: sliceKnowledgeToolText(file.mimeType || "", 80, 80),
+                extension: sliceKnowledgeToolText(file.extension || "", 16, 16),
+              })),
+            };
+          },
+        });
+        const writableFileSourceIds = (
+          props.documentContext
+            ? props.documentContext.document.sourceIds
+            : props.knowledgeSourceIds
+        ).filter((id) => props.knowledgeSourceIds.includes(id));
+        if (
+          props.knowledgeFileAction === "detach" &&
+          writableFileSourceIds.length
+        )
+          tools.push({
+            source: "knowledge",
+            timeoutMs: KNOWLEDGE_TOOL_WRITE_TIMEOUT_MS,
+            display: { label: "Remove Knowledge attachment" },
+            definition: {
+              type: "function",
+              function: {
+                name: "profile_knowledge_file_detach",
+                description:
+                  "Unlink ONE file from its Knowledge Source only after the current user explicitly requests it. First list attachments and use the exact file ID and current contentHash. Ask which file if the target is unclear. The original File and chat attachments remain; Source materials and index are rebuilt. This does not edit human notes or approve a document proposal. Report processingError and indexing status honestly. If analysisPending is true, the file is already unlinked but rebuilding continues in the background; do not claim the index is ready.",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    sourceId: {
+                      type: "string",
+                      enum: writableFileSourceIds,
+                    },
+                    fileId: { type: "string" },
+                    expectedContentHash: { type: "string", minLength: 1 },
+                  },
+                  required: ["sourceId", "fileId", "expectedContentHash"],
+                  additionalProperties: false,
+                },
+              },
+            },
+            execute: async (args) => {
+              const source = await requireSource(args);
+              if (
+                props.documentContext &&
+                (!props.documentContext.document.sourceIds.includes(
+                  source.id,
+                ) ||
+                  (props.documentContext.targetSourceId !== undefined &&
+                    props.documentContext.targetSourceId !== source.id))
+              )
+                throw new Error(
+                  "Select the current document Source before removing an attachment.",
+                );
+              if (
+                typeof args.fileId !== "string" ||
+                !args.fileId ||
+                args.expectedContentHash !== source.contentHash
+              )
+                throw new Error(
+                  "Read the current Source attachments and contentHash before removing a file.",
+                );
+              const result =
+                await api.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate(
+                  {
+                    ...fileScope,
+                    knowledgeModuleSourceId: source.id,
+                    data: {
+                      removeFileId: args.fileId,
+                      expectedContentHash: source.contentHash,
+                    },
+                    options: { headers },
+                  },
+                );
+              return {
+                status: "detached",
+                sourceId: source.id,
+                removedFileId: args.fileId,
+                remainingFiles: result.files.length,
+                contentHash: result.source?.contentHash,
+                indexed: Boolean(
+                  result.source &&
+                    result.source.contentHash ===
+                      result.source.indexedContentHash,
+                ),
+                processingError: result.processingError,
+                analysisPending: result.analysisPending || false,
+              };
+            },
+          });
+      }
       tools.push({
         source: "knowledge",
         display: { label: "Read Knowledge source" },
@@ -2854,56 +3168,58 @@ export class Handler {
           };
         },
       });
-      tools.push({
-        source: "knowledge",
-        display: { label: "Edit Knowledge context" },
-        definition: {
-          type: "function",
-          function: {
-            name: "profile_knowledge_edit",
-            description:
-              "Directly save user context and optional title in a Source when the user explicitly requests or confirms this edit. Read the Source first, pass its contentHash as expectedContentHash, and preserve its other human notes. File-derived descriptions are rebuilt from files. Do not edit when the user is only discussing a possible change.",
-            parameters: {
-              type: "object",
-              properties: {
-                sourceId: { type: "string", enum: props.knowledgeSourceIds },
-                userContext: { type: "string" },
-                expectedContentHash: { type: "string" },
-                title: { type: "string" },
+      if (canWrite)
+        tools.push({
+          source: "knowledge",
+          timeoutMs: KNOWLEDGE_TOOL_WRITE_TIMEOUT_MS,
+          display: { label: "Edit Knowledge context" },
+          definition: {
+            type: "function",
+            function: {
+              name: "profile_knowledge_edit",
+              description:
+                "Directly save user context and optional title in a Source when the user explicitly requests or confirms this edit. Read the Source first, pass its contentHash as expectedContentHash, and preserve its other human notes. File-derived descriptions are rebuilt from files. Do not edit when the user is only discussing a possible change.",
+              parameters: {
+                type: "object",
+                properties: {
+                  sourceId: { type: "string", enum: props.knowledgeSourceIds },
+                  userContext: { type: "string" },
+                  expectedContentHash: { type: "string" },
+                  title: { type: "string" },
+                },
+                required: ["sourceId", "userContext", "expectedContentHash"],
+                additionalProperties: false,
               },
-              required: ["sourceId", "userContext", "expectedContentHash"],
-              additionalProperties: false,
             },
           },
-        },
-        execute: async (args) => {
-          const source = await requireSource(args);
-          if (typeof args["userContext"] !== "string")
-            throw new Error("User context is required.");
-          if (args["expectedContentHash"] !== source.contentHash)
-            throw new Error(
-              "Source changed after reading. Read it again before editing.",
-            );
-          const saved = await this.knowledgeService.updateSource({
-            sourceId: source.id,
-            content: replaceKnowledgeUserContext(
-              source.content,
-              args["userContext"],
-            ),
-            expectedContentHash: source.contentHash,
-            ...(typeof args["title"] === "string"
-              ? { title: args["title"] }
-              : {}),
-          });
-          return {
-            sourceId: saved.source?.id,
-            contentHash: saved.source?.contentHash,
-            indexedContentHash: saved.source?.indexedContentHash,
-            lastIndexedAt: saved.source?.lastIndexedAt,
-            indexError: saved.indexError,
-          };
-        },
-      });
+          execute: async (args) => {
+            const source = await requireSource(args);
+            if (typeof args["userContext"] !== "string")
+              throw new Error("User context is required.");
+            if (args["expectedContentHash"] !== source.contentHash)
+              throw new Error(
+                "Source changed after reading. Read it again before editing.",
+              );
+            const saved = await this.knowledgeService.updateSource({
+              sourceId: source.id,
+              content: replaceKnowledgeUserContext(
+                source.content,
+                args["userContext"],
+              ),
+              expectedContentHash: source.contentHash,
+              ...(typeof args["title"] === "string"
+                ? { title: args["title"] }
+                : {}),
+            });
+            return {
+              sourceId: saved.source?.id,
+              contentHash: saved.source?.contentHash,
+              indexedContentHash: saved.source?.indexedContentHash,
+              lastIndexedAt: saved.source?.lastIndexedAt,
+              indexError: saved.indexError,
+            };
+          },
+        });
     }
 
     return tools;
@@ -3072,11 +3388,14 @@ export class Handler {
             ].join("\n");
           })
           .join("\n\n---\n\n")
-      : "No indexed knowledge fragments matched the query.";
+      : "The initial search returned no matching knowledge fragments.";
 
     return [
       "Use the following profile-scoped knowledge fragments for factual grounding.",
-      "If the fragments do not support a claim, say that the indexed sources do not contain it.",
+      "Answer directly when these fragments contain enough evidence.",
+      "If needed facts are missing and profile_knowledge_search is available, call it once with a focused query before concluding that information is unavailable.",
+      "Use profile_knowledge_read for relevant pages if search excerpts are insufficient or exact saved wording is needed.",
+      "Describe missing information only after that search; distinguish a tool failure from information not found. Never invent facts.",
       "Use conversation history only to resolve follow-ups and source text for edits.",
       `Knowledge query: ${props.query}`,
       "",
@@ -3191,6 +3510,13 @@ export class Handler {
     requiredInputModalitiesList: TInputModality[];
     expectedOutputModality?: TOutputModality;
   }) {
+    const allowed = Object.values(MODEL_ROUTER_CONFIG.classes)
+      .flat()
+      .some((candidate) => candidate.enabled && candidate.id === props.modelId);
+    if (!allowed)
+      throw new Error(
+        `Validation error. OpenRouter model ${props.modelId} is not in the local allowed model catalogue.`,
+      );
     const model = props.models.find((item) => item.id === props.modelId);
 
     if (!model) {
@@ -3378,52 +3704,6 @@ export class Handler {
     );
   }
 
-  private async readFileStorageModuleFile(file: IFileStorageModuleFile) {
-    const source = this.toLearnText(file.file);
-
-    if (!source) {
-      throw new Error("Validation error. File-storage path is required");
-    }
-
-    if (/^https?:\/\//i.test(source)) {
-      const response = await fetch(source);
-
-      if (!response.ok) {
-        throw new Error(
-          `Knowledge attachment download failed with status ${response.status}`,
-        );
-      }
-
-      return response.text();
-    }
-
-    const relativePath = normalize(source.replace(/^\/+/, ""));
-
-    if (!relativePath || relativePath.startsWith("..")) {
-      throw new Error("Validation error. Invalid file-storage path");
-    }
-
-    const candidates = [
-      join(process.cwd(), "public", relativePath),
-      join(process.cwd(), "apps/api/public", relativePath),
-    ];
-    let lastError: unknown;
-
-    for (const candidate of candidates) {
-      try {
-        return await readFile(candidate, "utf8");
-      } catch (error) {
-        lastError = error;
-      }
-    }
-
-    throw new Error(
-      `Text attachment could not be read from file-storage: ${
-        lastError instanceof Error ? lastError.message : String(lastError)
-      }`,
-    );
-  }
-
   private toTitle(value: string) {
     return this.toLearnText(value).replace(/\s+/g, " ").trim().slice(0, 120);
   }
@@ -3566,27 +3846,56 @@ export class Handler {
   protected async resolveOpenRouterMessageContext(props: {
     fileStorageFiles: IFileStorageModuleFile[];
     messageDescription: string;
+    presentationOnlyFileIds?: string[];
   }): Promise<IResolvedOpenRouterMessageContext> {
     const messageText = props.messageDescription.trim();
     const contentTextParts = [messageText].filter(Boolean);
     const routingTextParts = [messageText].filter(Boolean);
     const mediaParts: IOpenRouterMessageContent[] = [];
+    const presentationOnlyIds = new Set(
+      Array.isArray(props.presentationOnlyFileIds)
+        ? props.presentationOnlyFileIds.filter((id) => typeof id === "string")
+        : [],
+    );
 
     for (const fileStorageFile of props.fileStorageFiles) {
-      if (this.isAudioFileStorageFile(fileStorageFile)) {
+      if (presentationOnlyIds.has(fileStorageFile.id)) continue;
+      if (this.isAudioFileStorageFile(fileStorageFile)) continue;
+      let attachmentBytes: Buffer;
+      try {
+        assertKnowledgeAttachmentBytes({
+          bytes: new Uint8Array(),
+          name: fileStorageFile.extension
+            ? "file." + fileStorageFile.extension
+            : fileStorageFile.file,
+          mimeType: fileStorageFile.mimeType || undefined,
+        });
+        attachmentBytes =
+          await this.service.fileStorageModule.file.readBytes(fileStorageFile);
+        assertKnowledgeAttachmentBytes({
+          bytes: attachmentBytes,
+          name: fileStorageFile.file,
+          mimeType: fileStorageFile.mimeType || undefined,
+        });
+      } catch (error) {
+        // Historical unsupported attachments remain stored, but never enter model input.
+        routingTextParts.push(
+          "Unsupported attachment excluded: " +
+            (fileStorageFile.adminTitle || "file"),
+        );
         continue;
       }
-
       const source = this.toLearnText(fileStorageFile.file);
-      const fileName = basename(source.split("?")[0]) || "attachment";
+      const fileName =
+        this.toLearnText(fileStorageFile.adminTitle) ||
+        basename(source.split("?")[0]) ||
+        "attachment";
       const fileUrl = /^https?:\/\//i.test(source)
         ? source
         : `${NEXT_PUBLIC_API_SERVICE_URL}/public${source}`;
 
       if (this.isTextFileStorageFile(fileStorageFile)) {
-        const attachmentText = (
-          await this.readFileStorageModuleFile(fileStorageFile)
-        ).trim();
+        const attachmentText = attachmentBytes.toString("utf8").trim();
 
         if (attachmentText) {
           routingTextParts.push(
@@ -3596,8 +3905,8 @@ export class Handler {
       }
 
       if (fileStorageFile.mimeType?.includes("image")) {
-        contentTextParts.push(`Attached image: ${fileName}`);
         routingTextParts.push(`Attached image: ${fileName}`);
+        mediaParts.push({ type: "text", text: `Attached image: ${fileName}` });
         mediaParts.push({
           type: "image_url",
           image_url: {
@@ -3607,10 +3916,10 @@ export class Handler {
         continue;
       }
 
-      contentTextParts.push(`Attached file: ${fileName}`);
       if (!this.isTextFileStorageFile(fileStorageFile)) {
         routingTextParts.push(`Attached file: ${fileName}`);
       }
+      mediaParts.push({ type: "text", text: `Attached file: ${fileName}` });
       mediaParts.push({
         type: "file_url",
         file_url: {
@@ -3653,20 +3962,21 @@ export class Handler {
 
     const modalities = new Set<TInputModality>();
 
-    if (typeof latestMessage.content === "string") {
-      modalities.add("text");
-    } else {
-      for (const part of latestMessage.content) {
-        if (part.type === "text") {
-          modalities.add("text");
-        } else if (part.type === "image_url") {
-          modalities.add("image");
-        } else if (part.type === "file" || part.type === "file_url") {
-          modalities.add("file");
+    for (const message of context) {
+      if (typeof message.content === "string") {
+        modalities.add("text");
+      } else {
+        for (const part of message.content) {
+          if (part.type === "text") {
+            modalities.add("text");
+          } else if (part.type === "image_url") {
+            modalities.add("image");
+          } else if (part.type === "file" || part.type === "file_url") {
+            modalities.add("file");
+          }
         }
       }
     }
-
     if (!modalities.size) {
       modalities.add("text");
     }
@@ -3706,6 +4016,7 @@ export class Handler {
             )
           : "",
         "Use the profile description as persona, expertise, and communication boundary.",
+        "Use the available read/search tools to obtain missing facts when the supplied context is insufficient. The supplied excerpts may cover only part of the information available to you.",
         "Linked social skills are available capabilities. Activate only skills relevant to the assigned task and follow their instructions precisely.",
       ]
         .filter(Boolean)
@@ -3758,8 +4069,9 @@ export class Handler {
       {
         role: "system",
         content: [
-          `Answer in ${props.language} language.`,
+          "Answer in the language requested by the current user; otherwise use the language of their latest message.",
           "Use portable Markdown only.",
+          "Do not add emoji or decorative pictograms to replies, headings, lists, or status text.",
           "Do not use LaTeX delimiters or commands.",
           "Write formulas with plain text and Unicode mathematical symbols so the same answer is readable in web chat and Telegram.",
         ].join(" "),
@@ -3887,7 +4199,14 @@ export class Handler {
         continue;
       }
 
-      if (messageDescription.startsWith(prefix)) {
+      if (
+        messageDescription
+          .replace(
+            /^[\p{Extended_Pictographic}\p{Emoji_Modifier}\u200D\uFE0F\s]+/u,
+            "",
+          )
+          .startsWith(prefix)
+      ) {
         if (!suffix || messageDescription.includes(suffix)) {
           return true;
         }
@@ -3924,483 +4243,47 @@ export class Handler {
       );
     });
 
-    if (filteredCandidates.length) {
-      return filteredCandidates;
-    }
-
-    return enabledCandidates;
-  }
-
-  protected buildModelSelectionResponseFormat(candidateIds: string[]) {
-    return {
-      type: "json_schema" as const,
-      json_schema: {
-        name: "model_selection",
-        strict: true,
-        schema: {
-          type: "object",
-          additionalProperties: false,
-          required: ["selected_model_id", "reason"],
-          properties: {
-            selected_model_id: {
-              type: "string",
-              enum: candidateIds,
-            },
-            reason: {
-              type: "string",
-            },
-          },
-        },
-      },
-    };
+    return filteredCandidates;
   }
 
   protected async selectModelCandidatesForRequest(props: {
-    billingLedger: IOpenRouterBillingLedgerEntry[];
-    openRouter: OpenRouter;
-    requestText: string;
-    requestClassification: IRequestClassification;
-    selectedModelClass: TModelClass;
     modelCandidates: IModelCandidate[];
+    selectedModelClass: TModelClass;
+    requestText: string;
+    openRouter: OpenRouter;
+    billingLedger: IOpenRouterBillingLedgerEntry[];
+    models?: IOpenRouterModel[];
+    [key: string]: unknown;
   }): Promise<IModelSelectionResult> {
-    const defaultOrderedCandidateIds = props.modelCandidates
+    const fallbackIds = props.modelCandidates
       .slice()
       .sort((a, b) => b.priority - a.priority)
       .map((candidate) => candidate.id);
-    const modelSelectionResponseFormat = this.buildModelSelectionResponseFormat(
-      defaultOrderedCandidateIds,
-    );
-    const classifierModelIds = this.getEnabledCandidatesByClass(
-      "CLASSIFIER",
-    ).map((candidate) => candidate.id);
-
-    for (const selectorModelId of classifierModelIds) {
-      const selectorResponse = await this.generateWithBillingLedger({
-        billingLedger: props.billingLedger,
-        purpose: "model_selection",
-        openRouter: props.openRouter,
-        model: selectorModelId,
-        max_tokens: 300,
-        responseFormat: modelSelectionResponseFormat,
-        temperature: 0,
-        context: [
-          {
-            role: "system",
-            content: `You are a model router. Return STRICT JSON only:
-{
-  "selected_model_id": "one-of-candidate-ids",
-  "reason": "short reason"
-}
-No markdown. No extra keys.`,
-          },
-          {
-            role: "user",
-            content: `User request: ${props.requestText}`,
-          },
-          {
-            role: "user",
-            content: `Classification: ${JSON.stringify(props.requestClassification)}`,
-          },
-          {
-            role: "user",
-            content: `Target class: ${props.selectedModelClass}`,
-          },
-          {
-            role: "user",
-            content: `Candidates: ${JSON.stringify(
-              props.modelCandidates.map((candidate) => ({
-                id: candidate.id,
-                priority: candidate.priority,
-                strengths: candidate.strengths,
-                best_for: candidate.best_for || [],
-                avoid_for: candidate.avoid_for || [],
-                input_modalities: candidate.input_modalities,
-                output_modalities: candidate.output_modalities,
-              })),
-            )}`,
-          },
-        ],
-      });
-
-      if ("error" in selectorResponse) {
-        console.log(
-          "react-by-openrouter/model-selector-fallback",
-          `model=${selectorModelId}: generation error`,
-        );
-        continue;
-      }
-
-      const selectedModelId = await this.parseAndNormalizeModelSelection({
-        billingLedger: props.billingLedger,
-        openRouter: props.openRouter,
-        selectorModelId,
-        requestText: props.requestText,
-        requestClassification: props.requestClassification,
-        selectedModelClass: props.selectedModelClass,
-        modelCandidates: props.modelCandidates,
-        rawSelectorOutput: selectorResponse.text,
-        modelSelectionResponseFormat,
-      });
-
-      if (!selectedModelId) {
-        console.log(
-          "react-by-openrouter/model-selector-retry",
-          `model=${selectorModelId}: invalid json or invalid selected_model_id`,
-        );
-        this.setLatestBillingLedgerFallbackReason({
-          billingLedger: props.billingLedger,
-          fallbackReason:
-            "invalid json or invalid selected_model_id; falling back to the next selector model",
-        });
-        continue;
-      }
-
-      return {
-        orderedCandidateIds: [
-          selectedModelId,
-          ...defaultOrderedCandidateIds.filter((id) => id !== selectedModelId),
-        ],
-        selectedModelId,
-        selectedBy: "llm",
-      };
-    }
-
-    return {
-      orderedCandidateIds: defaultOrderedCandidateIds,
-      selectedModelId: defaultOrderedCandidateIds[0] || null,
-      selectedBy: "priority",
-    };
-  }
-
-  protected async parseAndNormalizeModelSelection(props: {
-    billingLedger: IOpenRouterBillingLedgerEntry[];
-    openRouter: OpenRouter;
-    selectorModelId: string;
-    requestText: string;
-    requestClassification: IRequestClassification;
-    selectedModelClass: TModelClass;
-    modelCandidates: IModelCandidate[];
-    rawSelectorOutput: string;
-    modelSelectionResponseFormat: {
-      type: "json_schema";
-      json_schema: {
-        name: string;
-        strict: boolean;
-        schema: Record<string, unknown>;
-      };
-    };
-  }): Promise<string | null> {
-    const candidateIds = props.modelCandidates.map((candidate) => candidate.id);
-    const availableIds = new Set(candidateIds);
-
-    const parseSelectedModelId = (
-      parsed: Record<string, unknown> | null,
-    ): string | null => {
-      if (!parsed) {
-        return null;
-      }
-
-      const selectedModelId = parsed.selected_model_id;
-
-      if (typeof selectedModelId !== "string") {
-        return null;
-      }
-
-      if (!availableIds.has(selectedModelId)) {
-        return null;
-      }
-
-      return selectedModelId;
-    };
-
-    const directParsed = this.tryParseJsonObject(props.rawSelectorOutput);
-    const directSelectedModelId = parseSelectedModelId(directParsed);
-
-    if (directSelectedModelId) {
-      return directSelectedModelId;
-    }
-
-    const repairResponse = await this.generateWithBillingLedger({
-      billingLedger: props.billingLedger,
-      purpose: "model_selection_repair",
-      openRouter: props.openRouter,
-      model: props.selectorModelId,
-      max_tokens: 300,
-      responseFormat: props.modelSelectionResponseFormat,
-      temperature: 0,
-      context: [
-        {
-          role: "system",
-          content: `Convert assistant output to STRICT JSON:
-{
-  "selected_model_id": "one-of-candidate-ids",
-  "reason": "short reason"
-}
-No markdown. No extra keys.`,
-        },
-        {
-          role: "user",
-          content: `User request: ${props.requestText}`,
-        },
-        {
-          role: "user",
-          content: `Classification: ${JSON.stringify(props.requestClassification)}`,
-        },
-        {
-          role: "user",
-          content: `Target class: ${props.selectedModelClass}`,
-        },
-        {
-          role: "user",
-          content: `Candidate IDs: ${JSON.stringify(candidateIds)}`,
-        },
-        {
-          role: "user",
-          content: `Assistant output to normalize: ${props.rawSelectorOutput}`,
-        },
-      ],
-    });
-
-    if ("error" in repairResponse) {
-      return null;
-    }
-
-    const repairedParsed = this.tryParseJsonObject(repairResponse.text);
-    return parseSelectedModelId(repairedParsed);
-  }
-
-  protected async classifyRequest(props: {
-    billingLedger: IOpenRouterBillingLedgerEntry[];
-    openRouter: OpenRouter;
-    requestText: string;
-    requiredInputModalitiesList: TInputModality[];
-  }): Promise<IRequestClassification> {
-    const classifierModels = this.getEnabledCandidatesByClass("CLASSIFIER").map(
-      (candidate) => candidate.id,
-    );
-    const fallbackClassifierModels = this.getEnabledCandidatesByClass("CHAT")
-      .map((candidate) => candidate.id)
-      .filter((candidateId) => !classifierModels.includes(candidateId));
-    const allClassifierModels = [
-      ...classifierModels,
-      ...fallbackClassifierModels,
-    ];
-
-    for (const classifierModel of classifierModels) {
-      const classificationResponse = await this.generateWithBillingLedger({
-        billingLedger: props.billingLedger,
-        purpose: "classification",
-        openRouter: props.openRouter,
-        model: classifierModel,
-        max_tokens: 600,
-        responseFormat: CLASSIFICATION_RESPONSE_FORMAT,
-        temperature: 0,
-        context: [
-          {
-            role: "system",
-            content: `Return STRICT JSON only with keys:
-{
-  "language": "ru|en|other",
-  "task": "${ALLOWED_TASKS.join(" | ")}",
-  "input_modalities": ["text|image|file"],
-  "output_modality": "text|image|audio|file",
-  "need_web": false,
-  "complexity": "low|medium|high",
-  "risk_level": "low|medium|high"
-}
-No markdown. No explanation. No extra keys.`,
-          },
-          {
-            role: "user",
-            content: `Request text: ${props.requestText}`,
-          },
-          {
-            role: "user",
-            content: `Detected input modalities from message payload: ${JSON.stringify(props.requiredInputModalitiesList)}`,
-          },
-        ],
-      });
-
-      if ("error" in classificationResponse) {
-        console.log(
-          "react-by-openrouter/classifier-fallback",
-          `model=${classifierModel}: generation error`,
-        );
-        continue;
-      }
-
-      const normalizedClassification =
-        await this.parseAndNormalizeClassification({
-          billingLedger: props.billingLedger,
-          openRouter: props.openRouter,
-          classifierModel,
-          fallbackClassifierModels: classifierModels.filter(
-            (m) => m !== classifierModel,
-          ),
-          requestText: props.requestText,
-          requiredInputModalitiesList: props.requiredInputModalitiesList,
-          rawClassifierOutput: classificationResponse.text,
-        });
-
-      if (!normalizedClassification) {
-        console.log(
-          "react-by-openrouter/classifier-fallback",
-          `model=${classifierModel}: invalid json`,
-        );
-        this.setLatestBillingLedgerFallbackReason({
-          billingLedger: props.billingLedger,
-          fallbackReason:
-            "invalid classification json; falling back to the next classifier model",
-        });
-        continue;
-      }
-
-      return normalizedClassification;
-    }
-
-    for (const classifierModel of fallbackClassifierModels) {
-      const classificationResponse = await this.generateWithBillingLedger({
-        billingLedger: props.billingLedger,
-        purpose: "classification",
-        openRouter: props.openRouter,
-        model: classifierModel,
-        max_tokens: 600,
-        temperature: 0,
-        context: [
-          {
-            role: "system",
-            content: `Classify user request and return JSON object only:
-{
-  "language": "ru|en|other",
-  "task": "${ALLOWED_TASKS.join(" | ")}",
-  "input_modalities": ["text|image|file"],
-  "output_modality": "text|image|audio|file",
-  "need_web": false,
-  "complexity": "low|medium|high",
-  "risk_level": "low|medium|high"
-}
-No markdown. No explanation.`,
-          },
-          {
-            role: "user",
-            content: `Request text: ${props.requestText}`,
-          },
-          {
-            role: "user",
-            content: `Detected input modalities from message payload: ${JSON.stringify(props.requiredInputModalitiesList)}`,
-          },
-        ],
-      });
-
-      if ("error" in classificationResponse) {
-        console.log(
-          "react-by-openrouter/classifier-fallback",
-          `model=${classifierModel}: fallback generation error`,
-        );
-        continue;
-      }
-
-      const normalizedClassification =
-        await this.parseAndNormalizeClassification({
-          billingLedger: props.billingLedger,
-          openRouter: props.openRouter,
-          classifierModel,
-          fallbackClassifierModels: allClassifierModels.filter(
-            (modelId) => modelId !== classifierModel,
-          ),
-          requestText: props.requestText,
-          requiredInputModalitiesList: props.requiredInputModalitiesList,
-          rawClassifierOutput: classificationResponse.text,
-        });
-
-      if (!normalizedClassification) {
-        console.log(
-          "react-by-openrouter/classifier-fallback",
-          `model=${classifierModel}: fallback invalid json`,
-        );
-        this.setLatestBillingLedgerFallbackReason({
-          billingLedger: props.billingLedger,
-          fallbackReason:
-            "invalid fallback classification json; falling back to another classifier",
-        });
-        continue;
-      }
-
-      return normalizedClassification;
-    }
-
-    const heuristicClassification = this.getHeuristicClassification({
+    const chosen = await new SocialProfileJevService(props).selectModel({
       requestText: props.requestText,
-      requiredInputModalitiesList: props.requiredInputModalitiesList,
+      modelClass: props.selectedModelClass,
+      candidates: props.modelCandidates.map((candidate) => ({
+        id: candidate.id,
+        strengths: candidate.strengths,
+        pricing: props.models?.find((model) => model.id === candidate.id)
+          ?.pricing,
+      })),
     });
-
-    console.log("react-by-openrouter/classifier-fallback", {
-      reason: "all classifier models failed; using heuristic classification",
-      modelsTried: allClassifierModels,
-      heuristicClassification,
-    });
-
-    return heuristicClassification;
-  }
-
-  protected getHeuristicClassification(props: {
-    requestText: string;
-    requiredInputModalitiesList: TInputModality[];
-  }): IRequestClassification {
-    const normalizedRequestText = props.requestText.toLowerCase();
-    const hasImageInput = props.requiredInputModalitiesList.includes("image");
-    const hasFileInput = props.requiredInputModalitiesList.includes("file");
-
-    let task: TRequestTask = "qa";
-
-    if (
-      /(code|coding|debug|bug|refactor|typescript|javascript|python|код|программ)/i.test(
-        normalizedRequestText,
-      )
-    ) {
-      task = "coding";
-    } else if (
-      /(translate|translation|перевед|перевод|локализац)/i.test(
-        normalizedRequestText,
-      )
-    ) {
-      task = "translate";
-    } else if (
-      /(summarize|summary|кратк|резюм|подведи итог)/i.test(
-        normalizedRequestText,
-      )
-    ) {
-      task = "summarize";
-    } else if (
-      /(extract|извлеки|достань|вытащи|структурируй)/i.test(
-        normalizedRequestText,
-      )
-    ) {
-      task = "extract";
-    } else if (
-      /(image generation|generate image|draw|picture|poster|картин|изображен|нарисуй|сгенерируй)/i.test(
-        normalizedRequestText,
-      )
-    ) {
-      task = "image_gen";
-    } else if (hasImageInput || hasFileInput) {
-      task = "image_understanding";
-    }
-
-    const output_modality: TOutputModality =
-      task === "image_gen" ? "image" : "text";
-
+    const selectedModelId = chosen || fallbackIds[0] || null;
     return {
-      language: this.normalizeLanguage(props.requestText),
-      task,
-      input_modalities:
-        props.requiredInputModalitiesList.length > 0
-          ? props.requiredInputModalitiesList
-          : ["text"],
-      output_modality,
-      need_web: false,
-      complexity: "medium",
-      risk_level: "medium",
+      orderedCandidateIds: selectedModelId
+        ? [
+            selectedModelId,
+            ...fallbackIds.filter((id) => id !== selectedModelId),
+          ]
+        : [],
+      selectedModelId,
+      selectedBy:
+        props.modelCandidates.length === 1
+          ? "single"
+          : chosen
+            ? "jev"
+            : "priority",
     };
   }
 
@@ -4454,130 +4337,6 @@ No markdown. No explanation.`,
     }
 
     return `output modality is not supported by endpoint: ${props.expectedOutputModality}`;
-  }
-
-  protected async parseAndNormalizeClassification(props: {
-    billingLedger: IOpenRouterBillingLedgerEntry[];
-    openRouter: OpenRouter;
-    classifierModel: string;
-    fallbackClassifierModels?: string[];
-    requestText: string;
-    requiredInputModalitiesList: TInputModality[];
-    rawClassifierOutput: string;
-  }): Promise<IRequestClassification | null> {
-    const directParsed = this.tryParseJsonObject(props.rawClassifierOutput);
-
-    if (directParsed) {
-      return this.normalizeClassificationPayload({
-        parsedJson: directParsed,
-        requestText: props.requestText,
-        requiredInputModalitiesList: props.requiredInputModalitiesList,
-      });
-    }
-
-    const repairModelId =
-      props.fallbackClassifierModels?.[0] ?? props.classifierModel;
-
-    const repairResponse = await this.generateWithBillingLedger({
-      billingLedger: props.billingLedger,
-      purpose: "classification_repair",
-      openRouter: props.openRouter,
-      model: repairModelId,
-      max_tokens: 300,
-      responseFormat: CLASSIFICATION_RESPONSE_FORMAT,
-      temperature: 0,
-      context: [
-        {
-          role: "system",
-          content: `Convert the assistant output into STRICT JSON with keys:
-{
-  "language": "ru|en|other",
-  "task": "${ALLOWED_TASKS.join(" | ")}",
-  "input_modalities": ["text|image|file"],
-  "output_modality": "text|image|audio|file",
-  "need_web": false,
-  "complexity": "low|medium|high",
-  "risk_level": "low|medium|high"
-}
-No markdown. No explanation. No extra keys.`,
-        },
-        {
-          role: "user",
-          content: `Request text: ${props.requestText}`,
-        },
-        {
-          role: "user",
-          content: `Detected input modalities from message payload: ${JSON.stringify(props.requiredInputModalitiesList)}`,
-        },
-        {
-          role: "user",
-          content: `Assistant output to normalize: ${props.rawClassifierOutput}`,
-        },
-      ],
-    });
-
-    if ("error" in repairResponse) {
-      return null;
-    }
-
-    const repairedParsed = this.tryParseJsonObject(repairResponse.text);
-
-    if (!repairedParsed) {
-      return null;
-    }
-
-    return this.normalizeClassificationPayload({
-      parsedJson: repairedParsed,
-      requestText: props.requestText,
-      requiredInputModalitiesList: props.requiredInputModalitiesList,
-    });
-  }
-
-  protected normalizeClassificationPayload(props: {
-    parsedJson: Record<string, unknown>;
-    requestText: string;
-    requiredInputModalitiesList: TInputModality[];
-  }): IRequestClassification {
-    const task = ALLOWED_TASKS.includes(props.parsedJson.task as TRequestTask)
-      ? (props.parsedJson.task as TRequestTask)
-      : "qa";
-    const output_modality = ALLOWED_OUTPUT_MODALITIES.includes(
-      props.parsedJson.output_modality as TOutputModality,
-    )
-      ? (props.parsedJson.output_modality as TOutputModality)
-      : "text";
-    const input_modalities = (
-      Array.isArray(props.parsedJson.input_modalities)
-        ? props.parsedJson.input_modalities
-        : props.requiredInputModalitiesList
-    ).filter((modality) =>
-      ALLOWED_INPUT_MODALITIES.includes(modality as TInputModality),
-    ) as TInputModality[];
-
-    return {
-      language: this.normalizeLanguage(
-        props.parsedJson.language || props.requestText,
-      ),
-      task,
-      input_modalities:
-        input_modalities.length > 0
-          ? input_modalities
-          : props.requiredInputModalitiesList,
-      output_modality,
-      need_web: Boolean(props.parsedJson.need_web),
-      complexity:
-        props.parsedJson.complexity === "low" ||
-        props.parsedJson.complexity === "medium" ||
-        props.parsedJson.complexity === "high"
-          ? props.parsedJson.complexity
-          : "medium",
-      risk_level:
-        props.parsedJson.risk_level === "low" ||
-        props.parsedJson.risk_level === "medium" ||
-        props.parsedJson.risk_level === "high"
-          ? props.parsedJson.risk_level
-          : "medium",
-    };
   }
 
   protected adaptClassificationForEndpoint(props: {
@@ -4643,34 +4402,5 @@ No markdown. No explanation. No extra keys.`,
     }
 
     return "en";
-  }
-
-  protected tryParseJsonObject(value: string): Record<string, unknown> | null {
-    const trimmed = value.trim();
-    const candidateValues = [trimmed];
-
-    const fencedJsonMatch = trimmed.match(/```json\s*([\s\S]*?)```/i);
-    if (fencedJsonMatch?.[1]) {
-      candidateValues.push(fencedJsonMatch[1].trim());
-    }
-
-    const firstBrace = trimmed.indexOf("{");
-    const lastBrace = trimmed.lastIndexOf("}");
-    if (firstBrace >= 0 && lastBrace > firstBrace) {
-      candidateValues.push(trimmed.slice(firstBrace, lastBrace + 1));
-    }
-
-    for (const candidate of candidateValues) {
-      try {
-        const parsed = JSON.parse(candidate);
-        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-          return parsed as Record<string, unknown>;
-        }
-      } catch (error) {
-        continue;
-      }
-    }
-
-    return null;
   }
 }

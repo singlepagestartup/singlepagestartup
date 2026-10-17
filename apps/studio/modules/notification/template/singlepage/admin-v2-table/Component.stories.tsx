@@ -1,12 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as NotificationModuleTemplate } from "../../index";
+import { Component as Template } from "../../index";
 
 const meta = {
-  title: "Modules/Notification/Models/Template/Singlepage/admin-v2-table",
-  component: NotificationModuleTemplate,
+  id: "modules-notification-models-template-singlepage-admin-v2-table",
+  title: "Modules/Notification/Template/Singlepage/admin-v2-table",
+  component: Template,
   argTypes: { empty: { control: "boolean" } },
   args: { variant: "admin-v2-table", empty: false },
-} satisfies Meta<typeof NotificationModuleTemplate>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Template>, { variant: "admin-v2-table" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

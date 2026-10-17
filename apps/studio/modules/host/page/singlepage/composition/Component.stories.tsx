@@ -1,10 +1,15 @@
+import { Component as Page } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import { HostPageComposition } from "./Component";
+
 const meta = {
-  title: "Modules/Host/Models/Page/Singlepage/composition",
-  component: HostPageComposition,
+  id: "modules-host-models-page-singlepage-composition",
+  title: "Modules/Host/Page/Singlepage/composition",
+  component: Page,
   parameters: { layout: "padded" },
-} satisfies Meta<typeof HostPageComposition>;
+  args: { variant: "composition" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Page>, { variant: "composition" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

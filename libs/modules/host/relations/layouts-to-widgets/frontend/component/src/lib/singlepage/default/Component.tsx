@@ -15,37 +15,39 @@ export function Component(props: IComponentPropsExtended) {
         props.className,
       )}
     >
-      <Widget
-        isServer={props.isServer}
-        variant="find"
-        apiProps={{
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "eq",
-                  value: props.data.widgetId,
-                },
-              ],
+      {props.children ?? (
+        <Widget
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "eq",
+                    value: props.data.widgetId,
+                  },
+                ],
+              },
             },
-          },
-        }}
-      >
-        {({ data }) => {
-          return data?.map((entity, index) => {
-            return (
-              <Widget
-                key={index}
-                isServer={props.isServer}
-                variant={entity.variant as any}
-                data={entity}
-                language={props.language}
-              />
-            );
-          });
-        }}
-      </Widget>
+          }}
+        >
+          {({ data }) => {
+            return data?.map((entity) => {
+              return (
+                <Widget
+                  key={entity.id}
+                  isServer={props.isServer}
+                  variant={entity.variant as any}
+                  data={entity}
+                  language={props.language}
+                />
+              );
+            });
+          }}
+        </Widget>
+      )}
     </div>
   );
 }

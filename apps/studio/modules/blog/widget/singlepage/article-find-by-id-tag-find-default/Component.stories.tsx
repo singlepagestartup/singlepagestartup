@@ -1,17 +1,23 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  ArticleFindByIdTagFind,
-  defaultArticleFindByIdTagFindProps,
-} from "./Component";
+import { defaultArticleFindByIdTagFindProps } from "./Component";
 
 const meta = {
-  title:
-    "Modules/Blog/Models/Widget/Singlepage/article-find-by-id-tag-find-default",
-  component: ArticleFindByIdTagFind,
+  id: "modules-blog-models-widget-singlepage-article-find-by-id-tag-find-default",
+  title: "Modules/Blog/Widget/Singlepage/article-find-by-id-tag-find-default",
+  component: Widget,
   parameters: { layout: "padded" },
-  args: defaultArticleFindByIdTagFindProps,
-} satisfies Meta<typeof ArticleFindByIdTagFind>;
+  args: {
+    ...defaultArticleFindByIdTagFindProps,
+    variant: "article-find-by-id-tag-find-default",
+  },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Widget>,
+    { variant: "article-find-by-id-tag-find-default" }
+  >
+>;
 
 export default meta;
 

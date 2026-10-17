@@ -1,21 +1,8 @@
 "use client";
-import { aiChatAccount } from "./fixture";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+
+import { createContext, useContext, type ReactNode } from "react";
 import type { IAIChatUserProfile } from "../../../../social/profile/singlepage/scope/ai-chat/project/models";
-import {
-  clearRbacStudioAuthUser,
-  readRbacStudioAuthUser,
-  writeRbacStudioAuthUser,
-  RBAC_STUDIO_AUTH_CHANGE_EVENT,
-  type RbacStudioAuthUser,
-} from "../../../shared";
+import type { RbacStudioAuthUser } from "../../../shared";
 
 export interface IAIChatAccount {
   subject?: { id: string };
@@ -26,19 +13,42 @@ export interface IAIChatAccount {
 export interface IAccountContext {
   account: IAIChatAccount;
   signedIn?: boolean;
+  user?: RbacStudioAuthUser;
+  onSignIn?: (email: string) => void;
+  onSignOut?: () => void;
+  onProfileChange?: (
+    updates: Partial<Omit<RbacStudioAuthUser, "email">>,
+  ) => void;
+  onEmailChange?: (email: string) => void;
 }
 const AccountContext = createContext<IAccountContext>({
   account: { balance: null },
 });
 const ProjectHrefContext = createContext("/ai-chat/social/profiles/create");
+const ignoreAction = () => {};
 export function AccountProvider({
   account,
   signedIn,
+  user,
+  onSignIn,
+  onSignOut,
+  onProfileChange,
+  onEmailChange,
   projectHref = "/ai-chat/social/profiles/create",
   children,
 }: IAccountContext & { projectHref?: string; children: ReactNode }) {
   return (
-    <AccountContext.Provider value={{ account, signedIn }}>
+    <AccountContext.Provider
+      value={{
+        account,
+        signedIn,
+        user,
+        onSignIn,
+        onSignOut,
+        onProfileChange,
+        onEmailChange,
+      }}
+    >
       <ProjectHrefContext.Provider value={projectHref}>
         {children}
       </ProjectHrefContext.Provider>
@@ -46,88 +56,17 @@ export function AccountProvider({
   );
 }
 
-/** Local preview session shared by AI Chat and website account controls. */
+/** Presentation data and callbacks supplied by the current example. */
 export function useStudioAccount() {
   const context = useContext(AccountContext);
-  const [stored, setStored] = useState(() => readRbacStudioAuthUser());
-  const [sessionSignedIn, setSessionSignedIn] = useState<boolean>();
-  useEffect(() => {
-    function syncUser() {
-      const user = readRbacStudioAuthUser();
-      setStored(user);
-      setSessionSignedIn(Boolean(user));
-    }
-    window.addEventListener("storage", syncUser);
-    window.addEventListener(RBAC_STUDIO_AUTH_CHANGE_EVENT, syncUser);
-    return () => {
-      window.removeEventListener("storage", syncUser);
-      window.removeEventListener(RBAC_STUDIO_AUTH_CHANGE_EVENT, syncUser);
-    };
-  }, []);
-  const signedIn =
-    sessionSignedIn ??
-    (stored ? true : (context.signedIn ?? Boolean(context.account.profile)));
-  const account: IAIChatAccount = {
-    ...context.account,
-    email: stored?.email ?? context.account.email,
-    profile: signedIn
-      ? stored
-        ? {
-            id: context.account.profile?.id ?? stored.slug,
-            title: stored.name,
-            avatar: stored.avatar,
-            variant: "user-ai-chat",
-          }
-        : context.account.profile
-      : undefined,
-  };
-  const signIn = useCallback((email: string) => {
-    const user = writeRbacStudioAuthUser(email);
-    setStored(user);
-    setSessionSignedIn(true);
-  }, []);
-  const signOut = useCallback(() => {
-    clearRbacStudioAuthUser();
-    setStored(null);
-    setSessionSignedIn(false);
-  }, []);
-  const updateProfile = useCallback(
-    (updates: Partial<Omit<RbacStudioAuthUser, "email">>) => {
-      const user = writeRbacStudioAuthUser(
-        account.email ?? "alex@example.com",
-        {
-          name: account.profile?.title ?? "Alex",
-          avatar: account.profile?.avatar ?? aiChatAccount.profile.avatar!,
-          ...updates,
-        },
-      );
-      setStored(user);
-      setSessionSignedIn(true);
-    },
-    [account.email, account.profile?.title, account.profile?.avatar],
-  );
-  const updateEmail = useCallback(
-    (email: string) => {
-      const user = writeRbacStudioAuthUser(email, {
-        role: stored?.role ?? "",
-        slug: stored?.slug ?? "alex",
-        description: stored?.description,
-        name: account.profile?.title ?? "Alex",
-        avatar: account.profile?.avatar ?? aiChatAccount.profile.avatar!,
-      });
-      setStored(user);
-      setSessionSignedIn(true);
-    },
-    [stored, account.profile?.title, account.profile?.avatar],
-  );
   return {
-    account,
-    user: stored,
-    signedIn,
-    signIn,
-    signOut,
-    updateProfile,
-    updateEmail,
+    account: context.account,
+    user: context.user,
+    signedIn: context.signedIn ?? Boolean(context.account.profile),
+    signIn: context.onSignIn ?? ignoreAction,
+    signOut: context.onSignOut ?? ignoreAction,
+    updateProfile: context.onProfileChange ?? ignoreAction,
+    updateEmail: context.onEmailChange ?? ignoreAction,
   };
 }
 export const useAIChatAccount = () => useStudioAccount().account;

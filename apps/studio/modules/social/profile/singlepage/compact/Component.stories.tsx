@@ -1,15 +1,19 @@
+import { Component as Profile } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ProfileCompact, defaultProfileCompactProps } from "./Component";
+import { defaultProfileCompactProps } from "./Component";
 
 const meta = {
-  title: "Modules/Social/Models/Profile/Singlepage/compact",
-  component: ProfileCompact,
+  id: "modules-social-models-profile-singlepage-compact",
+  title: "Modules/Social/Profile/Singlepage/compact",
+  component: Profile,
   parameters: {
     layout: "centered",
   },
-  args: defaultProfileCompactProps,
-} satisfies Meta<typeof ProfileCompact>;
+  args: { ...defaultProfileCompactProps, variant: "compact" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Profile>, { variant: "compact" }>
+>;
 
 export default meta;
 

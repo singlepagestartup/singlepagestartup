@@ -49,16 +49,16 @@ export async function action(props: Params) {
     options,
   );
 
-  const json = await responsePipe<{ data: string }>({
+  const json = await responsePipe<{ data: string | null }>({
     res,
     catchErrors: props.catchErrors || productionBuild,
   });
 
   if (!json) {
-    return;
+    return null;
   }
 
-  const transformedData = transformResponseItem<string>(json);
+  const transformedData = transformResponseItem<string | null>(json);
 
-  return transformedData;
+  return transformedData ?? null;
 }

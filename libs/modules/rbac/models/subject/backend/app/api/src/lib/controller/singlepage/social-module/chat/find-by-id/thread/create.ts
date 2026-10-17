@@ -80,6 +80,14 @@ export class Handler {
         throw new Error("Validation error. Thread title is required");
       }
 
+      if (data.metadata?.aiChatDocument !== undefined) {
+        data.metadata.aiChatDocument =
+          await this.service.socialModuleChatLifecycleValidateDocument({
+            socialModuleChatId,
+            document: data.metadata.aiChatDocument,
+          });
+      }
+
       const telegramTopic = canMirrorTelegramTopic({ socialModuleChat })
         ? await createTelegramForumTopic({
             socialModuleChat,

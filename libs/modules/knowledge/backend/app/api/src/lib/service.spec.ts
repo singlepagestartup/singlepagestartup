@@ -34,7 +34,7 @@ describe("knowledge service", () => {
         sourceIds: ["source-1", "source-2"],
       });
       const service = new KnowledgeService({
-        repository: { mutateStoredFile } as any,
+        source: { mutateStoredFile } as any,
         embeddingClient: {} as any,
         generationClient: {} as any,
         modelClient: {} as any,
@@ -112,7 +112,7 @@ describe("knowledge service", () => {
    */
   it("requires a query for search", async () => {
     const service = new KnowledgeService({
-      repository: {} as any,
+      source: {} as any,
       embeddingClient: {} as any,
       generationClient: {} as any,
       modelClient: {} as any,
@@ -133,7 +133,7 @@ describe("knowledge service", () => {
   it("caps search result count", async () => {
     const searchChunks = jest.fn().mockResolvedValue([]);
     const service = new KnowledgeService({
-      repository: { searchChunks } as any,
+      source: { searchChunks } as any,
       embeddingClient: {
         embed: jest
           .fn()
@@ -180,7 +180,7 @@ describe("knowledge service", () => {
       .fn()
       .mockResolvedValue([duplicateSeedNeighbor, neighbor]);
     const service = new KnowledgeService({
-      repository: {
+      source: {
         searchChunks,
         findNeighborChunks,
       } as any,
@@ -226,7 +226,7 @@ describe("knowledge service", () => {
   it("restricts search to explicit document ids", async () => {
     const searchChunks = jest.fn().mockResolvedValue([]);
     const service = new KnowledgeService({
-      repository: {
+      source: {
         searchChunks,
       } as any,
       embeddingClient: {
@@ -261,7 +261,7 @@ describe("knowledge service", () => {
     const embed = jest.fn();
     const searchChunks = jest.fn();
     const service = new KnowledgeService({
-      repository: {
+      source: {
         searchChunks,
       } as any,
       embeddingClient: {
@@ -291,7 +291,7 @@ describe("knowledge service", () => {
       { id: "source-1", title: "First" },
     ]);
     const service = new KnowledgeService({
-      repository: {
+      source: {
         findSourcesByIds,
       } as any,
       embeddingClient: {} as any,
@@ -339,7 +339,7 @@ describe("knowledge service", () => {
       description: { tone: "concise" },
     };
     const service = new KnowledgeService({
-      repository: {
+      source: {
         searchChunks,
       } as any,
       embeddingClient: {
@@ -390,7 +390,7 @@ describe("knowledge service", () => {
     const searchChunks = jest.fn();
     const generate = jest.fn().mockResolvedValue({ answer: "answer" });
     const service = new KnowledgeService({
-      repository: {
+      source: {
         searchChunks,
       } as any,
       embeddingClient: {
@@ -446,7 +446,7 @@ describe("knowledge service", () => {
     const upsertSourceBySlug = jest.fn();
     const modelGet = jest.fn();
     const service = new KnowledgeService({
-      repository: {
+      source: {
         upsertSourceBySlug,
       } as any,
       embeddingClient: {} as any,
@@ -478,7 +478,7 @@ describe("knowledge service", () => {
     const source = { id: "source-1", content: "Learned context" };
     const upsertSourceBySlug = jest.fn().mockResolvedValue(source);
     const service = new KnowledgeService({
-      repository: {
+      source: {
         upsertSourceBySlug,
         findSourceById: jest.fn().mockResolvedValue(source),
       } as any,
@@ -519,7 +519,7 @@ describe("knowledge service", () => {
     const previousProvider = process.env.KNOWLEDGE_EMBEDDING_PROVIDER;
     const modelGet = jest.fn();
     const service = new KnowledgeService({
-      repository: {
+      source: {
         listSourcesForIndex: jest.fn().mockResolvedValue([]),
       } as any,
       embeddingClient: {} as any,
@@ -557,7 +557,7 @@ describe("knowledge service", () => {
   it("rejects deleting a missing document before cleanup", async () => {
     const deleteSourceWithDerivedData = jest.fn();
     const service = new KnowledgeService({
-      repository: {
+      source: {
         findSourceById: jest.fn().mockResolvedValue(undefined),
         deleteSourceWithDerivedData,
       } as any,
@@ -587,7 +587,7 @@ describe("knowledge service", () => {
       embedMany: jest.fn(),
     };
     const service = new KnowledgeService({
-      repository: {
+      source: {
         findSourceById: jest.fn().mockResolvedValue(document),
         deleteSourceWithDerivedData,
       } as any,

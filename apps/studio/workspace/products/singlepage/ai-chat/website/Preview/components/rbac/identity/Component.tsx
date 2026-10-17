@@ -1,6 +1,6 @@
 import type { ComponentProps, ComponentType } from "react";
-import { Component as Variant0 } from "./singlepage/card-default/index";
-const variants = { "card-default": Variant0 };
+import { Component as CardDefault } from "./singlepage/card-default/index";
+const variants = { "card-default": CardDefault };
 type Props = {
   [V in keyof typeof variants]: { variant: V } & ComponentProps<
     (typeof variants)[V]

@@ -1,0 +1,80 @@
+{
+  "newProject": {
+    "profileId": "11571df7-9729-4d77-b4dc-92bcecf353ad",
+    "chatId": "4d624a4c-c205-4203-80ef-ba8287584554",
+    "title": {
+      "en": "Five documents — verification"
+    },
+    "variant": "artificial-intelligence",
+    "generatedSlug": "underground-moccasin-mule-2276",
+    "generatedAdminTitle": "professional rose gamefowl",
+    "documents": [
+      {
+        "id": "664afc97-cd08-40f6-b2e1-3d2ceec11347",
+        "title": "Brief.md",
+        "document": {
+          "key": "brief",
+          "profileId": "11571df7-9729-4d77-b4dc-92bcecf353ad",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "eb242807-165a-42a7-8acb-2b544249354e",
+        "title": "Strategy.md",
+        "document": {
+          "key": "strategy",
+          "profileId": "11571df7-9729-4d77-b4dc-92bcecf353ad",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "461421af-2377-46f0-b59e-7e3b418e7555",
+        "title": "Brand.md",
+        "document": {
+          "key": "brand",
+          "profileId": "11571df7-9729-4d77-b4dc-92bcecf353ad",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "a5c78987-e860-405e-815b-cd9f9e30ed17",
+        "title": "Design.md",
+        "document": {
+          "key": "design",
+          "profileId": "11571df7-9729-4d77-b4dc-92bcecf353ad",
+          "sourceIds": []
+        }
+      },
+      {
+        "id": "a3f85246-302f-4ff5-8b87-37c714736391",
+        "title": "Products.md",
+        "document": {
+          "key": "products",
+          "profileId": "11571df7-9729-4d77-b4dc-92bcecf353ad",
+          "sourceIds": []
+        }
+      }
+    ],
+    "topics": [
+      {
+        "id": "0df80267-b0c1-422d-b896-502682dd0465",
+        "title": "Ordinary conversation — verification",
+        "metadata": {}
+      }
+    ],
+    "sourceCount": 0,
+    "primaryRelationCount": 1
+  },
+  "existingProducts": {
+    "id": "49d7a40e-685e-4469-9298-7c015c7d9631",
+    "document": {
+      "key": "products",
+      "profileId": "98f95262-957a-4388-b6d1-56f676bca793",
+      "sourceIds": [
+        "7e0546c8-b6b9-48b9-815c-5e7f31d6ebf9",
+        "77520cd1-2458-490d-9e0d-d1380af41961"
+      ]
+    },
+    "sourceIdsPreserved": true
+  }
+}

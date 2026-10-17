@@ -1,3 +1,5 @@
+import type { IComponentProps, ProfileCompactProps } from "./interface";
+export type { ProfileCompactProps } from "./interface";
 /**
  * social.profile.compact
  *
@@ -16,11 +18,7 @@ export const defaultProfileCompactProps = {
   target: undefined as "_blank" | "_parent" | "_self" | "_top" | undefined,
 };
 
-export type ProfileCompactProps = typeof defaultProfileCompactProps;
-
-export function ProfileCompact(
-  props?: Partial<ProfileCompactProps> & { variant?: string },
-) {
+export function ProfileCompact(props?: IComponentProps) {
   const { name, role, avatar, href, target, inverse } = {
     ...defaultProfileCompactProps,
     ...props,
@@ -31,16 +29,16 @@ export function ProfileCompact(
       <img
         src={avatar}
         alt={name}
-        className="h-10 w-10 rounded-full border border-[var(--color-sps-line)] object-cover transition group-hover:opacity-80"
+        className="h-10 w-10 rounded-full border border-border object-cover transition group-hover:opacity-80"
       />
       <div>
         <p
-          className={`text-sm font-semibold transition ${inverse ? "text-[var(--color-sps-white)]" : "text-[var(--color-sps-graphite)]"}`}
+          className={`text-sm font-semibold transition ${inverse ? "text-default-foreground" : "text-foreground"}`}
         >
           {name}
         </p>
         <p
-          className={`text-xs ${inverse ? "text-[var(--color-sps-muted-inverse)]" : "text-[var(--color-sps-muted)]"}`}
+          className={`text-xs ${inverse ? "text-default-muted-foreground" : "text-muted-foreground"}`}
         >
           {role}
         </p>
@@ -54,7 +52,7 @@ export function ProfileCompact(
         href={href}
         target={target}
         rel={target === "_blank" ? "noreferrer" : undefined}
-        className="group flex min-h-11 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+        className="group flex min-h-11 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
         data-ds-block="social.profile.compact"
         data-ds-layer="singlepage"
         data-module="social"
@@ -68,7 +66,7 @@ export function ProfileCompact(
 
   return (
     <div
-      className="group flex min-h-11 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+      className="group flex min-h-11 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       data-ds-block="social.profile.compact"
       data-ds-layer="singlepage"
       data-module="social"

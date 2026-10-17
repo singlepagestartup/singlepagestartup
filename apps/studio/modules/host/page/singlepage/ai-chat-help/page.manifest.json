@@ -27,8 +27,12 @@
       "path": "../../../../website-builder/widget/singlepage/content/ai-chat/help"
     },
     {
-      "id": "rbac.subject.account",
-      "path": "../../../../rbac/subject/singlepage/account"
+      "id": "rbac.subject.me-account",
+      "path": "../../../../rbac/subject/singlepage/me/account"
+    },
+    {
+      "id": "rbac.subject.me-crm-module-form-support-ai-chat",
+      "path": "../../../../rbac/subject/singlepage/me/crm-module/form/support/ai-chat"
     }
   ]
 }

@@ -1,12 +1,10 @@
-import { SubjectMeProfileInformation } from "../me-profile-information/Component";
+import type {
+  IComponentProps,
+  SubjectMeSocialModuleProfileFindInformationProps,
+} from "./interface";
+export type { SubjectMeSocialModuleProfileFindInformationProps } from "./interface";
+import { SubjectMeProfileInformation } from "../me/social-module/profile/id/settings/ai-chat/Component";
 import { defaultRbacProfiles, type RbacAccountProfile } from "../../../shared";
-
-export interface SubjectMeSocialModuleProfileFindInformationProps {
-  variant?: string;
-  title: string;
-  description: string;
-  profiles: RbacAccountProfile[];
-}
 
 export const defaultSubjectMeSocialModuleProfileFindInformationProps: SubjectMeSocialModuleProfileFindInformationProps =
   {
@@ -17,7 +15,7 @@ export const defaultSubjectMeSocialModuleProfileFindInformationProps: SubjectMeS
   };
 
 export function SubjectMeSocialModuleProfileFindInformation(
-  props?: Partial<SubjectMeSocialModuleProfileFindInformationProps>,
+  props?: IComponentProps,
 ) {
   const { title, description, profiles } = {
     ...defaultSubjectMeSocialModuleProfileFindInformationProps,
@@ -27,7 +25,7 @@ export function SubjectMeSocialModuleProfileFindInformation(
     <section
       className="min-w-0 space-y-6"
       data-ds-block="rbac.subject.me-social-module-profile-find-information"
-      data-ds-imports="rbac.subject.me-profile-information"
+      data-ds-imports="rbac.subject.me-social-module-profile-id-settings-ai-chat"
       data-ds-layer="singlepage"
       data-module="rbac"
       data-model="subject"
@@ -39,6 +37,7 @@ export function SubjectMeSocialModuleProfileFindInformation(
         profiles.map((profile) => (
           <SubjectMeProfileInformation
             key={profile.id}
+            profileId={profile.id}
             profile={profile}
             profiles={profiles}
             title={profiles.length > 1 ? profile.title : title}
@@ -46,9 +45,9 @@ export function SubjectMeSocialModuleProfileFindInformation(
           />
         ))
       ) : (
-        <div className="rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-6">
+        <div className="rounded-2xl border border-border bg-card p-6">
           <h2 className="text-xl font-semibold">{title}</h2>
-          <p className="mt-2 text-sm text-[var(--color-sps-muted)]">
+          <p className="mt-2 text-sm text-muted-foreground">
             No public profile is connected.
           </p>
         </div>

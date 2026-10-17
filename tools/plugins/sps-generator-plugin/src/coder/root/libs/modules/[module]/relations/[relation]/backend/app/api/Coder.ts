@@ -1,3 +1,4 @@
+import { util as getRelationModelNames } from "../../../../../../../../../utils/get-relation-model-names";
 import { ProjectConfiguration, Tree, getProjects, names } from "@nx/devkit";
 import pluralize from "pluralize";
 import {
@@ -81,7 +82,9 @@ export class Coder {
     const leftModelName =
       this.parent.parent.parent.parent.project.relation.models[0].name;
 
-    const leftModelNameStyles = getNameStyles({
+    const leftModelNameStyles = getRelationModelNames({
+      ownerModule: moduleName,
+      module: leftModelModuleName,
       name: leftModelName,
     });
 
@@ -91,7 +94,9 @@ export class Coder {
       this.parent.parent.parent.parent.project.relation.models[1].module;
     const rightModelName =
       this.parent.parent.parent.parent.project.relation.models[1].name;
-    const rightModelNameStyles = getNameStyles({
+    const rightModelNameStyles = getRelationModelNames({
+      ownerModule: moduleName,
+      module: rightModelModuleName,
       name: rightModelName,
     });
 
@@ -108,10 +113,10 @@ export class Coder {
       templateParams: {
         template: "",
         left_model_id_field_name: leftModelIdFieldName,
-        left_model_name_kebab_cased: leftModelNameStyles.kebabCased.base,
+        left_model_name_kebab_cased: leftModelName,
         left_model_module_name: leftModelModuleName,
         right_model_id_field_name: rightModelIdFieldName,
-        right_model_name_kebab_cased: rightModelNameStyles.kebabCased.base,
+        right_model_name_kebab_cased: rightModelName,
         right_model_module_name: rightModelModuleName,
         modelRepositoryDatabaseImportPath,
         module_name: moduleName,

@@ -1,0 +1,12 @@
+{
+  "id": "a9b2427c-ebd4-4072-b707-ac108bfebb48",
+  "title": "AI Chat — new-thread",
+  "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/create",
+  "description": "Description",
+  "createdAt": "2026-10-11T02:03:56.095Z",
+  "updatedAt": "2026-10-11T02:03:56.095Z",
+  "variant": "default",
+  "className": "",
+  "language": "en",
+  "adminTitle": "unsightly silver mink"
+}

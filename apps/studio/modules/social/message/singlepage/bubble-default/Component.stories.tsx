@@ -1,15 +1,17 @@
+import { Component as Message } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { SocialMessageBubbleDefault } from "./Component";
 
 const meta = {
   id: "modules-social-models-message-singlepage-bubble-default",
-  title: "Modules/Social/Models/Message/Singlepage/bubble-default",
-  component: SocialMessageBubbleDefault,
+  title: "Modules/Social/Message/Singlepage/bubble-default",
+  component: Message,
   parameters: {
     layout: "centered",
   },
-} satisfies Meta<typeof SocialMessageBubbleDefault>;
+  args: { variant: "bubble-default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Message>, { variant: "bubble-default" }>
+>;
 
 export default meta;
 

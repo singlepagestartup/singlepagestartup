@@ -10,6 +10,7 @@ export function Component(props: IComponentPropsExtended) {
       isServer={props.isServer}
       apiProps={{
         params: {
+          orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
           filters: {
             and: [
               {
@@ -55,12 +56,15 @@ export function Component(props: IComponentPropsExtended) {
                   options={
                     data?.map((option) => {
                       return [
-                        option,
-                        option.title?.[props.language] || "",
+                        option.id,
+                        option.title?.[props.language] ||
+                          option.title?.en ||
+                          "",
                         <Option
                           isServer={false}
                           variant={option.variant as any}
                           data={option}
+                          dataSource="props"
                           language={props.language}
                         />,
                       ];

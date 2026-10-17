@@ -1,7 +1,11 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type { IComponentProps, ProductCardRelatedProps } from "./interface";
+export type { ProductCardRelatedProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -29,7 +33,7 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
 /**
@@ -39,18 +43,8 @@ function Icon(props: {
  * Owned by the ecommerce module (model: product).
  * Source: ProductPage WidgetRelated card (lines 653-679).
  */
-export interface ProductCardRelatedProps {
-  variant?: string;
-  slug: string;
-  image: string;
-  category: string;
-  priceLabel: string;
-  title: string;
-  subtitle: string;
-  href?: string;
-  target?: "_blank" | "_parent" | "_self" | "_top";
-}
-export function ProductCardRelated(props?: Partial<ProductCardRelatedProps>) {
+
+export function ProductCardRelated(props?: IComponentProps) {
   const { slug, image, priceLabel, title, subtitle, href, target } = {
     ...defaultProductCardRelatedProps,
     ...props,
@@ -62,7 +56,7 @@ export function ProductCardRelated(props?: Partial<ProductCardRelatedProps>) {
       target={target}
       rel={target === "_blank" ? "noreferrer" : undefined}
       aria-label={`View ${title}`}
-      className="group flex h-full min-w-0 cursor-pointer items-start gap-4 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 transition motion-reduce:transition-none hover:border-[var(--color-sps-graphite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+      className="group flex h-full min-w-0 cursor-pointer items-start gap-4 rounded-2xl border border-border bg-card p-5 transition motion-reduce:transition-none hover:border-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       data-ds-block="ecommerce.product.card-related"
       data-ds-layer="singlepage"
       data-module="ecommerce"
@@ -75,19 +69,19 @@ export function ProductCardRelated(props?: Partial<ProductCardRelatedProps>) {
         className="block h-20 w-20 shrink-0 self-start rounded-xl object-cover"
       />
       <div className="flex min-w-0 flex-1 flex-col">
-        <h3 className="text-lg font-semibold leading-6 text-[var(--color-sps-graphite)]">
+        <h3 className="text-lg font-semibold leading-6 text-foreground">
           {title}
         </h3>
         {subtitle ? (
-          <p className="mt-2 text-sm leading-6 text-[var(--color-sps-muted)]">
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
             {subtitle}
           </p>
         ) : null}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <span className="text-sm font-semibold text-[var(--color-sps-graphite)]">
+          <span className="text-sm font-semibold text-foreground">
             {priceLabel}
           </span>
-          <span className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-sps-graphite)]">
+          <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
             View <ArrowUpRight className="h-5 w-5" />
           </span>
         </div>

@@ -3,6 +3,10 @@ export {
   type IMiddlewareGeneric as IRequestSubjectIdOwnerMiddlewareGeneric,
 } from "./lib/request-subject-is-owner";
 export {
+  Middleware as RequestSubjectOwnsIdentity,
+  type IMiddlewareGeneric as IRequestSubjectOwnsIdentityMiddlewareGeneric,
+} from "./lib/request-subject-owns-identity";
+export {
   Middleware as RequestProfileSubjectIdOwner,
   type IMiddlewareGeneric as IRequestProfileSubjectIdOwnerMiddlewareGeneric,
 } from "./lib/request-profile-subject-is-owner";

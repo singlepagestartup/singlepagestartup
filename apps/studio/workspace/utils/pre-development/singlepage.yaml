@@ -5,4 +5,3 @@ active_artifacts:
   - brief
 blockers:
   - brief/singlepage.md#confirmation
-  - design/singlepage.md#confirmation

@@ -7,15 +7,24 @@ export { util as hash } from "./lib/hash";
 export * from "./lib/envs";
 export * from "./lib/secret-strength";
 export * from "./lib/constants";
+export * from "./lib/ai-chat-attachments";
 export * from "./lib/topics";
 export * from "./lib/routes";
 export type { NextRequestOptions } from "./lib/types";
+export type * from "./lib/types/consistency";
+export * from "./lib/constants/consistency";
+export * from "./lib/constants/chat-scroll";
+export * from "./lib/consistency-response";
 export { util as responsePipe } from "./lib/response-pipe";
 export { util as randomWordsGenerator } from "./lib/random-words-generator";
 export { util as limitedParallelExecution } from "./lib/limited-parallel-execution";
 export { util as getNestedValue } from "./lib/get-nested-value";
 export { util as saveLanguageContext } from "./lib/save-language-context";
-export { util as createMemoryCache } from "./lib/memory-cache";
+export {
+  util as createMemoryCache,
+  observeMemoryCache,
+  invalidateMemoryCacheEntries,
+} from "./lib/memory-cache";
 export { util as telegramBotServiceMessages } from "./lib/telegram-bot-service-messages";
 export { normalizeAiResponseText } from "./lib/ai-response-text/singlepage";
 export * from "./lib/audio-transcription";
@@ -23,3 +32,5 @@ export * from "./lib/telegram-voice-transcription";
 export { util as getPagination } from "./lib/get-pagination";
 
 export * from "./lib/knowledge-content";
+
+export { consistencyRequestOptions } from "./lib/consistency-response/request-options";

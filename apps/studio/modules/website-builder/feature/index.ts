@@ -1,9 +1,13 @@
-export { Component, type IComponentProps } from "./Component";
+export { Component } from "./Component";
+export type { IComponentProps } from "./interface";
 
-export type { FeatureTestimotionalProps } from "./singlepage/testimotional/Component";
+export type { FeatureTestimotionalProps } from "./interface";
 
-export type { FeatureListItemDefaultProps } from "./singlepage/list-item-default/Component";
+export type { FeatureListItemDefaultProps } from "./interface";
 
-export type { FeatureBadgeDefaultProps } from "./singlepage/badge-default/Component";
+export type { FeatureBadgeDefaultProps } from "./interface";
 
-export type { FeatureStatusDefaultProps } from "./singlepage/status-default/Component";
+export type { FeatureStatusDefaultProps } from "./interface";
+
+export { Skeleton } from "./Skeleton";
+export type { ISkeletonProps } from "./interface";

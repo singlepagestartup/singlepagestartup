@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as HostModuleWidget } from "../../index";
+import { Component as Widget } from "../../index";
 const meta = {
-  title: "Modules/Host/Models/Widget/Singlepage/list",
-  component: HostModuleWidget,
+  id: "modules-host-models-widget-singlepage-list",
+  title: "Modules/Host/Widget/Singlepage/list",
+  component: Widget,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof HostModuleWidget>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Widget>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

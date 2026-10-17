@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-social-module-profile-select-ai-chat",
+  "title": "me-social-module-profile-select-ai-chat",
+  "description": "Current Subject project selector with loading, empty, and populated states.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-social-module-profile-select-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-social-module-profile-select-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

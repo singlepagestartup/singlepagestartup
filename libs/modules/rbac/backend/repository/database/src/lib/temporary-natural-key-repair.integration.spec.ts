@@ -559,6 +559,64 @@ describe("Given: duplicate Telegram chats, profiles, and threads", () => {
   });
 });
 
+describe("Given: an AI Chat project with document and discussion threads", () => {
+  it("Then: Telegram repair ignores and preserves every project thread", async () => {
+    const context = await createTestContext();
+    const tables = context.telegramTables;
+    const chatId = randomUUID();
+    const threadIds = Array.from({ length: 7 }, () => randomUUID());
+    try {
+      await context.sql.unsafe(
+        `INSERT INTO ${quoteIdentifier(tables.chat)}
+          (id, created_at, updated_at, variant, slug)
+         VALUES ($1, NOW(), NOW(), 'ai-chat', 'project')`,
+        [chatId],
+      );
+      for (const [index, threadId] of threadIds.entries()) {
+        await context.sql.unsafe(
+          `INSERT INTO ${quoteIdentifier(tables.thread)}
+            (id, created_at, updated_at, variant, slug)
+           VALUES ($1, NOW(), NOW(), 'default', $2)`,
+          [threadId, `project-thread-${index}`],
+        );
+        await context.sql.unsafe(
+          `INSERT INTO ${quoteIdentifier(tables.chatsToThreads)}
+            (id, created_at, updated_at, ct_id, td_id)
+           VALUES ($1, NOW(), NOW(), $2, $3)`,
+          [randomUUID(), chatId, threadId],
+        );
+      }
+      for (const mode of ["check", "apply", "apply"] as const) {
+        const result = await repairTelegramNaturalKeys({
+          mode,
+          sql: context.sql,
+          tables,
+        });
+        expect(Object.values(result.after).every((count) => count === 0)).toBe(
+          true,
+        );
+        expect(result.changes.threadsDeleted).toBe(0);
+      }
+      const remaining = await context.sql.unsafe<
+        { id: string; slug: string }[]
+      >(`SELECT id, slug FROM ${quoteIdentifier(tables.thread)} ORDER BY slug`);
+      expect(remaining.map((row) => row.id)).toEqual(threadIds);
+      expect(remaining.map((row) => row.slug)).toEqual(
+        threadIds.map((_, index) => `project-thread-${index}`),
+      );
+      const links = await context.sql.unsafe<{ td_id: string }[]>(
+        `SELECT td_id FROM ${quoteIdentifier(tables.chatsToThreads)} WHERE ct_id = $1`,
+        [chatId],
+      );
+      expect(links.map((row) => row.td_id).sort()).toEqual(
+        [...threadIds].sort(),
+      );
+    } finally {
+      await destroyTestContext(context);
+    }
+  });
+});
+
 describe("Given: a fresh database before RBAC migrations", () => {
   /**
    * BDD Scenario: Social tables exist before the RBAC ownership graph.

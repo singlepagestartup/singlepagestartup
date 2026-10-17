@@ -1,20 +1,22 @@
+import { Component as Page } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { HomeDefault } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-root",
-  title: "Modules/Host/Models/Page/Singlepage",
-  component: HomeDefault,
+  title: "Modules/Host/Page/Singlepage/root",
+  component: Page,
   parameters: {
     layout: "fullscreen",
   },
-} satisfies Meta<typeof HomeDefault>;
+  args: { variant: "root" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Page>, { variant: "root" }>
+>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "/",
+  name: "Default",
 };

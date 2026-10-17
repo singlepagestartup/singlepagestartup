@@ -1,6 +1,4 @@
-import { api as spsHostPageApi } from "@sps/host/models/page/sdk/server";
 import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
-import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { internationalization } from "@sps/shared-configuration";
 import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
 import { notFound } from "next/navigation";
@@ -12,22 +10,9 @@ export const dynamicParams = true;
 export const experimental_ppr = true;
 
 export async function generateStaticParams() {
-  const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
-
-  const urls = await spsHostPageApi.urls({ catchErrors: true });
-
-  if (!productionBuild) {
-    return (
-      urls?.filter((url) => {
-        if (url.url.length === 0) {
-          return false;
-        }
-
-        return true;
-      }) || []
-    );
-  }
-
+  // Dynamic masks include user-owned entities and can expand to millions of
+  // paths. Both build and dev leave the manifest empty; dynamicParams permits
+  // on-demand rendering, subject to each page's fetch and cache behavior.
   return [];
 }
 

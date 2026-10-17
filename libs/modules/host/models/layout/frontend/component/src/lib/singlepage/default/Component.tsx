@@ -15,79 +15,87 @@ export function Component(props: IComponentPropsExtended) {
         props.className,
       )}
     >
-      <LayoutsToWidgets
-        isServer={props.isServer}
-        variant="find"
-        apiProps={{
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "layoutId",
-                  method: "eq",
-                  value: props.data.id,
-                },
-                {
-                  column: "variant",
-                  method: "eq",
-                  value: "default",
-                },
-              ],
+      {props.before === undefined ? (
+        <LayoutsToWidgets
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "layoutId",
+                    method: "eq",
+                    value: props.data.id,
+                  },
+                  {
+                    column: "variant",
+                    method: "eq",
+                    value: "default",
+                  },
+                ],
+              },
             },
-          },
-        }}
-      >
-        {({ data }) => {
-          return data?.map((entity, index) => {
-            return (
-              <LayoutsToWidgets
-                key={index}
-                isServer={props.isServer}
-                variant={entity.variant as any}
-                data={entity}
-                language={props.language}
-              />
-            );
-          });
-        }}
-      </LayoutsToWidgets>
+          }}
+        >
+          {({ data }) => {
+            return data?.map((entity) => {
+              return (
+                <LayoutsToWidgets
+                  key={entity.id}
+                  isServer={props.isServer}
+                  variant={entity.variant as any}
+                  data={entity}
+                  language={props.language}
+                />
+              );
+            });
+          }}
+        </LayoutsToWidgets>
+      ) : (
+        props.before
+      )}
       {props.children}
-      <LayoutsToWidgets
-        isServer={props.isServer}
-        variant="find"
-        apiProps={{
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "layoutId",
-                  method: "eq",
-                  value: props.data.id,
-                },
-                {
-                  column: "variant",
-                  method: "eq",
-                  value: "additional",
-                },
-              ],
+      {props.after === undefined ? (
+        <LayoutsToWidgets
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "layoutId",
+                    method: "eq",
+                    value: props.data.id,
+                  },
+                  {
+                    column: "variant",
+                    method: "eq",
+                    value: "additional",
+                  },
+                ],
+              },
             },
-          },
-        }}
-      >
-        {({ data }) => {
-          return data?.map((entity, index) => {
-            return (
-              <LayoutsToWidgets
-                key={index}
-                isServer={props.isServer}
-                variant="default"
-                data={entity}
-                language={props.language}
-              />
-            );
-          });
-        }}
-      </LayoutsToWidgets>
+          }}
+        >
+          {({ data }) => {
+            return data?.map((entity) => {
+              return (
+                <LayoutsToWidgets
+                  key={entity.id}
+                  isServer={props.isServer}
+                  variant="default"
+                  data={entity}
+                  language={props.language}
+                />
+              );
+            });
+          }}
+        </LayoutsToWidgets>
+      ) : (
+        props.after
+      )}
     </div>
   );
 }

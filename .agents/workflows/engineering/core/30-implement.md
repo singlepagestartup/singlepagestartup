@@ -30,6 +30,9 @@ Follow `.agents/contracts/engineering/code-placement.md`: before creating any fi
 
 ## Status Gate
 
+Frontend work also loads `.agents/contracts/engineering/frontend-components.md`
+before changing a variant or composing it into Host.
+
 **Entry**: Issue must be in "Ready for Dev" or "In Dev" status (the latter allows resuming an interrupted session)
 
 ```bash

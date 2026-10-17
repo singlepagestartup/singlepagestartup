@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as CrmModuleOption } from "../../index";
+import { Component as Option } from "../../index";
 
 import fixture from "../admin-v2-table/data.json";
 
 const meta = {
-  title: "Modules/CRM/Models/Option/Singlepage/admin-v2-card",
-  component: CrmModuleOption,
+  id: "modules-crm-models-option-singlepage-admin-v2-card",
+  title: "Modules/CRM/Option/Singlepage/admin-v2-card",
+  component: Option,
   args: { variant: "admin-v2-card", id: fixture.records[0].id },
   argTypes: { id: { control: "text" } },
-} satisfies Meta<typeof CrmModuleOption>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Option>, { variant: "admin-v2-card" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

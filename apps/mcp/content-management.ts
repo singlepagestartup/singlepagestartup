@@ -456,7 +456,7 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Preview SinglePageStartup page content graph",
       description:
-        "Resolve a page URL into page widgets, host widgets, external widget relations, and supported content candidates.",
+        "Resolve a page URL through page widgets, host widgets and external widget relations. Include one level of widgets-to-website-builder-module-widgets content links when available. Read-only; other relations use relation-record tools.",
       inputSchema: HostGraphPreviewInputSchema.shape,
     },
     withAuth(async (args, extra) => {

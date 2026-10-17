@@ -2,14 +2,14 @@ import { expect, test } from "bun:test";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Component as HostModuleLayout } from "../../index";
-import { Component as HostModulePage } from "../../../page/index";
+import { Component as Layout } from "../../index";
+import { Component as Page } from "../../../page/index";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
 
 const studio = path.resolve(import.meta.dir, "../../../../..");
 
 test("landing Page places native widgets inside one Layout and injects Subject and Social Chat", () => {
-  const html = renderToStaticMarkup(<HostModulePage variant="ai-chat" />);
+  const html = renderToStaticMarkup(<Page variant="ai-chat" />);
   expect(html.match(/data-ds-block="host\.layout\.[^"]+"/g)).toEqual([
     'data-ds-block="host.layout.ai-chat-landing"',
   ]);
@@ -19,7 +19,7 @@ test("landing Page places native widgets inside one Layout and injects Subject a
     "website-builder.logotype.brand-ai-chat",
     "website-builder.buttons-array.navbar-ai-chat",
     "website-builder.button.navbar-ai-chat",
-    "rbac.subject.account",
+    "rbac.subject.me-account",
   ])
     expect(header).toContain(`data-ds-block="${block}"`);
   expect(header).toContain('href="#workflow"');
@@ -45,14 +45,14 @@ test("landing Page places native widgets inside one Layout and injects Subject a
 
 test("website Layout receives account/cart slots and keeps them out of main", () => {
   const html = renderToStaticMarkup(
-    <HostModuleLayout
+    <Layout
       variant="website"
       subjectAccount={<button>Subject slot</button>}
       cartButton={<button>Cart slot</button>}
       cartDrawer={<aside>Controlled drawer</aside>}
     >
       <main>Page content</main>
-    </HostModuleLayout>,
+    </Layout>,
   );
   const header = html.match(/<header\b[\s\S]*?<\/header>/)?.[0] ?? "";
   expect(header).toContain("Subject slot");
@@ -66,15 +66,15 @@ test("website Layout receives account/cart slots and keeps them out of main", ()
   expect(html).toContain(
     'data-ds-block="website-builder.widget.footer-compact"',
   );
-  expect(html).not.toContain('data-ds-block="rbac.subject.account"');
+  expect(html).not.toContain('data-ds-block="rbac.subject.me-account"');
   expect(html).not.toContain('data-ds-block="ecommerce.cart.drawer-default"');
 });
 
 test("website Layout delegates sign in to Subject and cart to Ecommerce", () => {
   const html = renderToStaticMarkup(
-    <HostModuleLayout variant="website" signedIn={false} />,
+    <Layout variant="website" signedIn={false} />,
   );
-  expect(html).toContain('data-ds-block="rbac.subject.account"');
+  expect(html).toContain('data-ds-block="rbac.subject.me-account"');
   expect(html).toContain('data-ds-block="ecommerce.cart.button-default"');
   expect(html).toContain("Sign in");
   expect(html).not.toContain("Admin Panel");
@@ -97,7 +97,8 @@ test("public Pages declare Layout and do not import their own navigation/footer"
     expect(source).not.toContain("HostNavbarDefault");
     expect(source).not.toContain('variant="navbar-default"');
     expect(source).not.toContain('variant="footer-');
-    expect(source).toContain("HostModuleLayout");
+    expect(source).toContain("as Layout");
+    expect(source).toMatch(/from ["'][^"']+\/layout(?:\/index)?["']/);
   }
 });
 

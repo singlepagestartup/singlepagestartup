@@ -1,3 +1,4 @@
+import type { IRequestSubmission as ICrmRequestSubmission } from "@sps/crm/models/request/sdk/model";
 import { serverHost, route, IModel } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
@@ -17,10 +18,18 @@ export interface IProps {
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
-  data: any;
+  data: ICrmRequestSubmission;
 }
 
-export type IResult = IModel;
+export type IResult = IModel & {
+  submissionResult: {
+    saved: true;
+    requestId: string;
+    formId: string;
+    notificationStatus: "queued" | "sent" | "failed";
+    replayed: boolean;
+  };
+};
 
 export async function action(props: IProps): Promise<IResult> {
   const {

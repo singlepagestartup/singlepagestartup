@@ -41,6 +41,8 @@
       "@sps/host/*": ["libs/modules/host/*"],
       "@sps/mcp": ["apps/mcp/src/index.ts"],
       "@sps/middlewares": ["libs/middlewares/src/index.ts"],
+      "@sps/revalidation": ["libs/middlewares/src/lib/revalidation/index.ts"],
+      "@sps/http-cache": ["libs/middlewares/src/lib/http-cache/index.ts"],
       "@sps/notification/*": ["libs/modules/notification/*"],
       "@sps/providers-db": ["libs/providers/db/src/index.ts"],
       "@sps/providers-file-storage": [
@@ -89,9 +91,17 @@
         "tools/plugins/sps-generator-plugin/src/index.ts"
       ],
       "@sps/startup/*": ["libs/modules/startup/*"],
-      "@sps/telegram/*": ["libs/modules/telegram/*"],
+      "@sps/ui-adapter/toast": [
+        "libs/shared/ui/adapter/src/lib/toast/index.tsx"
+      ],
       "@sps/ui-adapter": ["libs/shared/ui/adapter/src/index.ts"],
-      "@sps/website-builder/*": ["libs/modules/website-builder/*"]
+      "@sps/website-builder/*": ["libs/modules/website-builder/*"],
+      "@sps/shared-utils/chat-scroll": [
+        "libs/shared/utils/src/lib/constants/chat-scroll.ts"
+      ],
+      "@sps/shared-frontend-client-utils/chat-scroll": [
+        "libs/shared/frontend/client/utils/src/lib/chat-scroll/index.ts"
+      ]
     },
     "typeRoots": [
       "./node_modules/@types",

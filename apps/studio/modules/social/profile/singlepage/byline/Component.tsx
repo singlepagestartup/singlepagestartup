@@ -1,3 +1,5 @@
+import type { IComponentProps, ProfileBylineProps } from "./interface";
+export type { ProfileBylineProps } from "./interface";
 /**
  * social.profile.byline
  *
@@ -5,8 +7,8 @@
  * Display components in other modules (e.g. the blog featured card or article
  * cards) compose this via import instead of re-implementing the markup.
  *
- * size "sm" → avatar h-11 w-11, name text-sm text-[var(--color-sps-graphite)]  (blog featured)
- * size "xs" → avatar h-6 w-6, name text-xs text-[var(--color-sps-muted)]  (blog grid cards)
+ * size "sm" → avatar h-11 w-11, name text-sm text-foreground  (blog featured)
+ * size "xs" → avatar h-6 w-6, name text-xs text-muted-foreground  (blog grid cards)
  */
 
 const sarahAvatar =
@@ -20,11 +22,7 @@ export const defaultProfileBylineProps = {
   size: "sm" as "sm" | "xs",
 };
 
-export type ProfileBylineProps = typeof defaultProfileBylineProps;
-
-export function ProfileByline(
-  props?: Partial<ProfileBylineProps> & { variant?: string },
-) {
+export function ProfileByline(props?: IComponentProps) {
   const { name, avatar, href, size, inverse } = {
     ...defaultProfileBylineProps,
     ...props,
@@ -32,9 +30,9 @@ export function ProfileByline(
 
   const isSm = size !== "xs";
   const avatarClassName = isSm
-    ? "h-11 w-11 rounded-full border border-[var(--color-sps-line)] object-cover"
-    : "h-6 w-6 rounded-full border border-[var(--color-sps-line)] object-cover";
-  const nameClassName = `inline-flex min-h-11 items-center rounded-lg font-medium focus-visible:outline-2 focus-visible:outline-offset-2 ${isSm ? "text-sm" : "text-xs"} ${inverse ? "text-[var(--color-sps-white)]" : "text-[var(--color-sps-graphite)]"}`;
+    ? "h-11 w-11 rounded-full border border-border object-cover"
+    : "h-6 w-6 rounded-full border border-border object-cover";
+  const nameClassName = `inline-flex min-h-11 items-center rounded-lg font-medium focus-visible:outline-2 focus-visible:outline-offset-2 ${isSm ? "text-sm" : "text-xs"} ${inverse ? "text-default-foreground" : "text-foreground"}`;
   const avatarNode = (
     <img src={avatar} alt={name} className={avatarClassName} />
   );

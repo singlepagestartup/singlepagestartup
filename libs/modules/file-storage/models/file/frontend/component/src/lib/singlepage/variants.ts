@@ -10,6 +10,7 @@ import { Component as AdminTable } from "./admin/table";
 import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
+import { Component as AttachmentAiChat } from "./attachment-ai-chat";
 
 export const variants = {
   find: Find,
@@ -24,4 +25,5 @@ export const variants = {
   "admin-v2-card": AdminV2Card,
   "admin-v2-sidebar-item": AdminV2SidebarItem,
   default: Default,
+  "attachment-ai-chat": AttachmentAiChat,
 };

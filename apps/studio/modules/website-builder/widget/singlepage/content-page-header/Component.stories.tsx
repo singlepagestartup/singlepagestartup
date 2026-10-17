@@ -1,12 +1,19 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import { ContentPageHeader, defaultContentPageHeaderProps } from "./Component";
+import { defaultContentPageHeaderProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Widget/Singlepage/content-page-header",
-  component: ContentPageHeader,
+  id: "modules-website-builder-models-widget-singlepage-content-page-header",
+  title: "Modules/Website-Builder/Widget/Singlepage/content-page-header",
+  component: Widget,
   parameters: { layout: "fullscreen" },
-  args: defaultContentPageHeaderProps,
-} satisfies Meta<typeof ContentPageHeader>;
+  args: { ...defaultContentPageHeaderProps, variant: "content-page-header" },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Widget>,
+    { variant: "content-page-header" }
+  >
+>;
 
 export default meta;
 

@@ -128,7 +128,7 @@ function ThreadOverview({ navigation, messageCreate }: IThreadOverviewProps) {
         <div
           className={`${pane === "chat" ? "flex" : "hidden"} min-h-0 min-w-0 flex-col overflow-y-auto @[900px]/chat:flex`}
         >
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div data-ai-chat-messages className="min-h-0 flex-1 overflow-y-auto">
             <ThreadMessageList className="min-h-[50dvh] @[760px]/workspace:min-h-0" />
             {proposal && (
               <div

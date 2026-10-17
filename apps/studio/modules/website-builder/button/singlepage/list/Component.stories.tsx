@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as WebsiteBuilderModuleButton } from "../../index";
+import { Component as Button } from "../../index";
 const meta = {
-  title: "Modules/Website-Builder/Models/Button/Singlepage/list",
-  component: WebsiteBuilderModuleButton,
+  id: "modules-website-builder-models-button-singlepage-list",
+  title: "Modules/Website-Builder/Button/Singlepage/list",
+  component: Button,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof WebsiteBuilderModuleButton>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Button>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

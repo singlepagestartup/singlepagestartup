@@ -1,13 +1,17 @@
+import { Component as Feature } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { FeatureCard, defaultFeatureCardProps } from "./Component";
+import { defaultFeatureCardProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Feature/Singlepage/card",
-  component: FeatureCard,
+  id: "modules-website-builder-models-feature-singlepage-card",
+  title: "Modules/Website-Builder/Feature/Singlepage/card",
+  component: Feature,
   parameters: { layout: "centered" },
-  args: defaultFeatureCardProps,
-} satisfies Meta<typeof FeatureCard>;
+  args: { ...defaultFeatureCardProps, variant: "card" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Feature>, { variant: "card" }>
+>;
 
 export default meta;
 

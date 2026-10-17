@@ -1,7 +1,18 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  OrderCheckoutNextStep,
+  OrderCheckoutConfirmationDefaultProps,
+} from "./interface";
+export type {
+  OrderCheckoutNextStep,
+  OrderCheckoutConfirmationDefaultProps,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -29,31 +40,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface OrderCheckoutNextStep {
-  title: string;
-  description: string;
-}
-export interface OrderCheckoutConfirmationDefaultProps {
-  variant?: string;
-  title: string;
-  description: string;
-  email: string;
-  orderId: string;
-  date: string;
-  amount: string;
-  status: string;
-  nextSteps: OrderCheckoutNextStep[];
-  continueShoppingLabel: string;
-  continueShoppingHref: string;
-  homeLabel: string;
-  homeHref: string;
-}
-export function OrderCheckoutConfirmationDefault(
-  props?: Partial<OrderCheckoutConfirmationDefaultProps>,
-) {
+export function OrderCheckoutConfirmationDefault(props?: IComponentProps) {
   const {
     title,
     description,
@@ -80,17 +70,17 @@ export function OrderCheckoutConfirmationDefault(
       data-model="order"
       data-variant={props?.variant ?? "checkout-confirmation-default"}
     >
-      <section className="flex flex-col gap-5 rounded-3xl bg-[var(--color-sps-graphite)] p-6 text-[var(--color-sps-white)] sm:flex-row sm:items-start sm:p-8">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-sps-green)] text-[var(--color-sps-graphite)]">
+      <section className="flex flex-col gap-5 rounded-3xl bg-default p-6 text-default-foreground sm:flex-row sm:items-start sm:p-8">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
           <PartyPopper className="h-6 w-6" />
         </div>
         <div className="min-w-0">
           <h2 className="text-2xl font-semibold leading-tight sm:text-3xl">
             {title}
           </h2>
-          <p className="mt-3 break-words text-base leading-7 text-[var(--color-sps-muted-inverse)]">
+          <p className="mt-3 break-words text-base leading-7 text-default-muted-foreground">
             {description}{" "}
-            <span className="font-semibold text-[var(--color-sps-white)]">
+            <span className="font-semibold text-default-foreground">
               {email}
             </span>
             .
@@ -98,9 +88,9 @@ export function OrderCheckoutConfirmationDefault(
         </div>
       </section>
       <div className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
-        <section className="min-w-0 rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-8 lg:h-full">
+        <section className="min-w-0 rounded-3xl border border-border bg-card p-5 sm:p-8 lg:h-full">
           <h3 className="text-xl font-semibold">Order details</h3>
-          <dl className="mt-6 divide-y divide-[var(--color-sps-line)]">
+          <dl className="mt-6 divide-y divide-border">
             {[
               ["Order ID", orderId],
               ["Date", date],
@@ -110,15 +100,15 @@ export function OrderCheckoutConfirmationDefault(
                 key={label}
                 className="flex justify-between gap-4 py-4 text-sm"
               >
-                <dt className="text-[var(--color-sps-muted)]">{label}</dt>
+                <dt className="text-muted-foreground">{label}</dt>
                 <dd className="min-w-0 break-words text-right font-semibold">
                   {value}
                 </dd>
               </div>
             ))}
             <div className="flex items-center justify-between gap-4 py-4 text-sm">
-              <dt className="text-[var(--color-sps-muted)]">Status</dt>
-              <dd className="inline-flex items-center gap-2 rounded-full bg-[var(--color-sps-green)] px-3 py-1.5 text-sm font-medium text-[var(--color-sps-graphite)]">
+              <dt className="text-muted-foreground">Status</dt>
+              <dd className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-3 py-1.5 text-sm font-medium">
                 <Icon name="check" />
                 {status
                   .replaceAll("_", " ")
@@ -127,19 +117,19 @@ export function OrderCheckoutConfirmationDefault(
             </div>
           </dl>
         </section>
-        <section className="min-w-0 rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-8 lg:h-full">
+        <section className="min-w-0 rounded-3xl border border-border bg-card p-5 sm:p-8 lg:h-full">
           <h3 className="text-xl font-semibold">What happens next?</h3>
           <ol className="mt-6 space-y-6">
             {nextSteps.map((step, index) => (
               <li key={step.title} className="flex gap-4">
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[var(--color-sps-grey)] text-sm font-semibold">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-muted text-sm font-semibold">
                   {index + 1}
                 </span>
                 <div className="min-w-0">
                   <h4 className="text-base font-semibold leading-6">
                     {step.title}
                   </h4>
-                  <p className="mt-2 text-sm leading-6 text-[var(--color-sps-muted)]">
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     {step.description}
                   </p>
                 </div>
@@ -161,12 +151,12 @@ export function OrderCheckoutConfirmationDefault(
 }
 const PartyPopper = createIcon("confetti");
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  button: `${buttonBase} bg-[var(--color-sps-green)] text-[var(--color-sps-graphite)] enabled:hover:brightness-95 ${focus}`,
-  secondary: `${buttonBase} border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)] enabled:hover:bg-[var(--color-sps-grey)] ${focus}`,
+  button: `${buttonBase} bg-primary text-primary-foreground enabled:hover:brightness-95 ${focus}`,
+  secondary: `${buttonBase} border border-border bg-card text-foreground enabled:hover:bg-muted ${focus}`,
 };
 export const defaultOrderCheckoutConfirmationDefaultProps: OrderCheckoutConfirmationDefaultProps =
   {
@@ -197,7 +187,7 @@ export const defaultOrderCheckoutConfirmationDefaultProps: OrderCheckoutConfirma
     ],
     continueShoppingLabel: "Continue shopping",
     continueShoppingHref:
-      "/?path=/story/modules-host-models-page-singlepage-ecommerce-products--default",
+      "/?path=/story/modules-host-models-page-singlepage-ecommerce-module-product-find--default",
     homeLabel: "Back to home",
     homeHref: "/?path=/story/modules-host-models-page-singlepage-root--default",
   };

@@ -65,7 +65,7 @@ export function ServicePage({
     <ProjectHrefContext.Provider value={projectHref}>
       <div
         data-sps-theme="singlepage"
-        className="@container min-w-0 bg-sps-grey text-sps-graphite font-sps"
+        className="@container min-w-0 bg-muted text-foreground font-default"
       >
         <main className="mx-auto max-w-6xl px-5 py-7 @[640px]:px-8 @[640px]:py-10">
           <a
@@ -73,7 +73,7 @@ export function ServicePage({
               "/ai-chat/social/profiles/example",
               projectHref,
             )}
-            className={`mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-sps-muted hover:text-sps-graphite ${kit.focus}`}
+            className={`mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground ${kit.focus}`}
           >
             <Icon name="arrow-left" />
             {copy.labels["back-label"]}
@@ -89,7 +89,7 @@ export function ServicePage({
 function PageIntro({ section }: { section: IWebsiteSection }) {
   return (
     <div className="mb-8 max-w-2xl">
-      <div className="mb-4 h-1 w-10 rounded-full bg-sps-green" />
+      <div className="mb-4 h-1 w-10 rounded-full bg-primary text-primary-foreground" />
       <h1 className="text-3xl font-semibold leading-tight tracking-tight @[640px]:text-4xl">
         {section.title}
       </h1>
@@ -181,7 +181,7 @@ export function SectionText({
   const projectHref = useContext(ProjectHrefContext);
   return (
     <div
-      className={`space-y-3 ${size === "xs" ? "text-xs [&>div]:text-xs [&>div]:leading-relaxed" : "text-sm"} leading-relaxed [&_p]:m-0 [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-4 [&_strong]:font-semibold ${tone === "dark" ? "text-white/80 [&_a]:text-white [&_strong]:text-white" : "text-sps-muted [&_a]:text-sps-graphite [&_strong]:text-sps-graphite"}`}
+      className={`space-y-3 ${size === "xs" ? "text-xs [&>div]:text-xs [&>div]:leading-relaxed" : "text-sm"} leading-relaxed [&_p]:m-0 [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-4 [&_strong]:font-semibold ${tone === "dark" ? "text-default-foreground/80 [&_a]:text-default-foreground [&_strong]:text-default-foreground" : "text-muted-foreground [&_a]:text-foreground [&_strong]:text-foreground"}`}
     >
       {section.paragraphs.map((paragraph, index) => (
         <MarkdownDocument key={index}>
@@ -207,7 +207,7 @@ export function PageSection({
     <section className={`${kit.card} p-5 @[640px]:p-6 ${className}`}>
       <h2 className="flex items-center gap-3 text-xl font-semibold">
         {icon ? (
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sps-grey">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
             <Icon name={icon} />
           </span>
         ) : null}
@@ -257,7 +257,7 @@ export function TextField({
         </p>
       ) : null}
       {error ? (
-        <p id={`${id}-error`} className="text-sm text-sps-danger">
+        <p id={`${id}-error`} className="text-sm text-destructive">
           {error}
         </p>
       ) : null}
@@ -309,7 +309,7 @@ export function PasswordField({
         </p>
       ) : null}
       {error ? (
-        <p id={`${id}-error`} className="text-sm text-sps-danger">
+        <p id={`${id}-error`} className="text-sm text-destructive">
           {error}
         </p>
       ) : null}
@@ -321,7 +321,7 @@ export function Feedback({ children, kind = "success" }: IFeedbackProps) {
   return (
     <div
       role={kind === "error" ? "alert" : "status"}
-      className={`flex items-start gap-3 rounded-xl border p-4 text-sm leading-relaxed ${kind === "error" ? "border-sps-danger-line bg-sps-danger-surface text-sps-danger" : "border-sps-line bg-sps-grey"}`}
+      className={`flex items-start gap-3 rounded-xl border p-4 text-sm leading-relaxed ${kind === "error" ? "border-destructive-border bg-destructive-surface text-destructive" : "border-border bg-muted"}`}
     >
       <Icon
         name={
@@ -331,7 +331,7 @@ export function Feedback({ children, kind = "success" }: IFeedbackProps) {
               ? "question"
               : "check-circle"
         }
-        className={kind === "success" ? "text-sps-graphite" : ""}
+        className={kind === "success" ? "text-foreground" : ""}
       />
       <div className="min-w-0">{children}</div>
     </div>
@@ -347,20 +347,20 @@ export function ServiceDocument({ eyebrow, text }: IServiceDocumentProps) {
   return (
     <div
       data-sps-theme="singlepage"
-      className="min-h-screen bg-sps-grey text-sps-graphite font-sps"
+      className="min-h-screen bg-muted text-foreground font-default"
     >
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-sps-line bg-white px-6 py-5">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-card px-6 py-5">
         <img
           alt="SinglePageStartup"
           className="h-auto w-52 max-w-full"
           src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-primary-lockup.svg"
         />
-        <span className="rounded-full border border-sps-line bg-sps-grey px-3 py-1.5 text-sm font-medium">
+        <span className="rounded-full border border-border bg-muted px-3 py-1.5 text-sm font-medium">
           {eyebrow}
         </span>
       </header>
       <main className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-16">
-        <article className="min-w-0 rounded-2xl border border-sps-line bg-sps-white p-5 sm:p-8 lg:p-10 [&>div]:text-base [&>div]:text-sps-graphite [&>div_h1]:text-4xl [&>div_h1]:font-semibold [&>div_h1]:leading-tight [&>div_h1]:tracking-normal [&>div_h1]:text-sps-graphite [&>div_h1]:font-sps sm:[&>div_h1]:text-6xl [&>div_h2]:mt-10 [&>div_h2]:text-3xl [&>div_h2]:leading-tight [&>div_h2]:text-sps-graphite [&>div_h2]:font-sps [&>div_h3]:text-lg [&>div_h3]:text-sps-graphite [&>div_a]:text-sps-graphite [&>div_a]:decoration-sps-line [&>div_blockquote]:border-sps-line [&>div_code]:bg-sps-grey [&>div_td]:border-sps-line [&>div_td]:p-3 [&>div_th]:border-sps-line [&>div_th]:bg-sps-grey [&>div_th]:p-3 [&>div_table]:text-sm">
+        <article className="min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-8 lg:p-10 [&>div]:text-base [&>div]:text-foreground [&>div_h1]:text-4xl [&>div_h1]:font-semibold [&>div_h1]:leading-tight [&>div_h1]:tracking-normal [&>div_h1]:text-foreground [&>div_h1]:font-default sm:[&>div_h1]:text-6xl [&>div_h2]:mt-10 [&>div_h2]:text-3xl [&>div_h2]:leading-tight [&>div_h2]:text-foreground [&>div_h2]:font-default [&>div_h3]:text-lg [&>div_h3]:text-foreground [&>div_a]:text-foreground [&>div_a]:decoration-border [&>div_blockquote]:border-border [&>div_code]:bg-muted [&>div_td]:border-border [&>div_td]:p-3 [&>div_th]:border-border [&>div_th]:bg-muted [&>div_th]:p-3 [&>div_table]:text-sm">
           <MarkdownDocument>{text}</MarkdownDocument>
         </article>
       </main>
@@ -381,7 +381,7 @@ export function PanelHeader({
   actions,
 }: IPanelHeaderProps) {
   return (
-    <header className="sticky top-18 z-10 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-sps-line bg-sps-white p-4 @[760px]/workspace:top-0">
+    <header className="sticky top-18 z-10 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-card p-4 @[760px]/workspace:top-0">
       <div className="flex min-w-0 items-center gap-3">
         {navigation}
         <div className="min-w-0">

@@ -1,0 +1,10 @@
+{
+  "id": "815c3653-933e-4938-b768-1124be773268",
+  "createdAt": "2026-10-11T01:59:08.637Z",
+  "updatedAt": "2026-10-11T22:46:42.651Z",
+  "variant": "default",
+  "title": "AI Chat layout",
+  "className": "@container min-h-screen min-w-0 flex flex-col bg-muted font-default text-foreground",
+  "adminTitle": "AI Chat layout",
+  "slug": "ai-chat-layout"
+}

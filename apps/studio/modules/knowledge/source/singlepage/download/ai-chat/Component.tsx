@@ -1,30 +1,29 @@
 "use client";
-import { Component as WebsiteBuilderModuleFeature } from "../../../../../website-builder/feature/index";
+import type { IComponentProps, ISourceDownloadProps } from "./interface";
+export type { ISourceDownloadProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../../shared/icon";
 
 import { Component as WebsiteBuilderModuleButton } from "../../../../../website-builder/button/index";
 import {
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
 } from "react";
-import type IconGlyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { useSource } from "../../overview/document/ai-chat/Source";
+import type IconGlyphs from "../../../../../shared/icon/singlepage/phosphor/icons.json";
+import { useSource } from "../../id/ai-chat/Source";
 function Icon(props: {
   name: keyof typeof IconGlyphs;
   size?: 20 | 24;
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface ISourceDownloadProps {
-  variant?: string;
-  label?: string;
-}
 export function Component({
   variant = "download-ai-chat",
   label = ".md",
-}: ISourceDownloadProps) {
+}: IComponentProps) {
   const { source } = useSource();
   function download() {
     const url = URL.createObjectURL(

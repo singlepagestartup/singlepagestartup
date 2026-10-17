@@ -15,6 +15,36 @@ import type { ITopicRule } from "./index";
  */
 export const topicRules: ITopicRule[] = [
   {
+    routeTemplate: "/api/rbac/identities/[rbac.identities.id]/change-password",
+    topics: ["rbac.identities", "rbac.identities.[rbac.identities.id]"],
+    stop: true,
+  },
+  ...["find-by-url", "url-segment-value", "urls"].map(
+    (operation): ITopicRule => ({
+      routeTemplate: `/api/host/pages/${operation}`,
+      topics: ["host.pages"],
+      stop: true,
+    }),
+  ),
+  {
+    // Order totals are an aggregate over quantities, product price attributes
+    // and currencies. Both HTTP-cache versions and realtime subscribers must
+    // observe those collections rather than the literal RPC name `total`.
+    routeTemplate: "/api/ecommerce/orders/[ecommerce.orders.id]/total",
+    topics: [
+      "ecommerce.orders",
+      "ecommerce.orders-to-products",
+      "ecommerce.products",
+      "ecommerce.products-to-attributes",
+      "ecommerce.attribute-keys",
+      "ecommerce.attribute-keys-to-attributes",
+      "ecommerce.attributes",
+      "ecommerce.attributes-to-billing-module-currencies",
+      "billing.currencies",
+    ],
+    stop: true,
+  },
+  {
     routeTemplate: "/api/knowledge/sources-to-file-storage-module-files",
     topics: [
       "knowledge.sources-to-file-storage-module-files",
@@ -28,6 +58,7 @@ export const topicRules: ITopicRule[] = [
     routeTemplate: "/api/knowledge/sources",
     topics: [
       "knowledge.sources",
+      "knowledge.sources-to-file-storage-module-files",
       "knowledge.chunks",
       "knowledge.sources-to-chunks",
     ],
@@ -84,6 +115,10 @@ export const topicRules: ITopicRule[] = [
       "social.chats.[social.chats.id].actions",
       "social.profiles-to-knowledge-module-sources",
       "knowledge.sources",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+      "knowledge.sources-to-file-storage-module-files",
+      "social.messages-to-knowledge-module-sources",
       "rbac.subjects-to-billing-module-currencies",
     ],
     stop: true,
@@ -98,6 +133,9 @@ export const topicRules: ITopicRule[] = [
     topics: [
       "social.profiles-to-knowledge-module-sources",
       "knowledge.sources",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+      "knowledge.sources-to-file-storage-module-files",
     ],
     stop: true,
   },
@@ -108,6 +146,9 @@ export const topicRules: ITopicRule[] = [
     topics: [
       "social.profiles-to-knowledge-module-sources",
       "knowledge.sources",
+      "knowledge.chunks",
+      "knowledge.sources-to-chunks",
+      "knowledge.sources-to-file-storage-module-files",
     ],
     stop: true,
   },

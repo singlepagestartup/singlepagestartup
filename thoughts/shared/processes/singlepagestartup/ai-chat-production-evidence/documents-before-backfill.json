@@ -1,0 +1,122 @@
+[
+  {
+    "profileId": "ca352177-18af-4e28-a67b-a92008f28776",
+    "title": {
+      "en": "Pottery workshop — production demo",
+      "ru": "Pottery workshop — production demo"
+    },
+    "chatId": "0eb10e80-8f4d-46d1-b21f-c2077924480c",
+    "primaryThreadId": "85d4789a-9680-47b9-b1e1-14a063702d7f",
+    "threads": [
+      {
+        "id": "85d4789a-9680-47b9-b1e1-14a063702d7f",
+        "title": "Products.md",
+        "metadata": {
+          "aiChatDocument": {
+            "profileId": "ca352177-18af-4e28-a67b-a92008f28776",
+            "sourceIds": [
+              "07fbfa0c-1024-4dc0-aa3a-b5374e611ca9"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "profileId": "98f95262-957a-4388-b6d1-56f676bca793",
+    "title": {
+      "en": "Blue Kiln — live demo",
+      "ru": "Blue Kiln — live demo"
+    },
+    "chatId": "7c3df3ec-f82d-429e-96e8-8ba7e8f16772",
+    "primaryThreadId": "49d7a40e-685e-4469-9298-7c015c7d9631",
+    "threads": [
+      {
+        "id": "49d7a40e-685e-4469-9298-7c015c7d9631",
+        "title": "Products.md",
+        "metadata": {
+          "aiChatDocument": {
+            "profileId": "98f95262-957a-4388-b6d1-56f676bca793",
+            "sourceIds": [
+              "7e0546c8-b6b9-48b9-815c-5e7f31d6ebf9",
+              "77520cd1-2458-490d-9e0d-d1380af41961"
+            ]
+          }
+        }
+      },
+      {
+        "id": "e1b26821-a31a-41f9-a90b-ea6a19456331",
+        "title": "Pickup and booking checks",
+        "metadata": {
+          "aiChatDocument": {
+            "profileId": "98f95262-957a-4388-b6d1-56f676bca793",
+            "sourceIds": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "profileId": "7b2b64ad-b5b5-4ca0-a4b8-9d8d99ebabf9",
+    "title": {
+      "en": "Orchid bicycle studio — verified isolation",
+      "ru": "Orchid bicycle studio — isolation demo"
+    },
+    "chatId": "da138b6f-e02f-43d2-a193-5c815f54042e",
+    "primaryThreadId": "a2a617b3-e267-4d42-8091-3a7b08be6c15",
+    "threads": [
+      {
+        "id": "a2a617b3-e267-4d42-8091-3a7b08be6c15",
+        "title": "Products.md",
+        "metadata": {
+          "aiChatDocument": {
+            "profileId": "7b2b64ad-b5b5-4ca0-a4b8-9d8d99ebabf9",
+            "sourceIds": [
+              "479f6f43-eedb-4592-aa2c-a0e3e83fd27b"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "profileId": "1d612e7e-84c5-483a-a41a-3a9a09423134",
+    "title": {
+      "en": "REST profile — verification"
+    },
+    "chatId": "4da2dd28-0dce-4850-97de-a6c44cbf15f3",
+    "primaryThreadId": "933dc620-2543-4ac5-8ede-5c90458193d4",
+    "threads": [
+      {
+        "id": "933dc620-2543-4ac5-8ede-5c90458193d4",
+        "title": "Products.md",
+        "metadata": {
+          "aiChatDocument": {
+            "profileId": "1d612e7e-84c5-483a-a41a-3a9a09423134",
+            "sourceIds": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+    "title": {
+      "en": "Automatic fields — verification"
+    },
+    "chatId": "eac14dca-04ba-4b7b-b20f-be43cc755b8e",
+    "primaryThreadId": "d4ffce05-e931-4c7e-8ee0-5efcd2aa830a",
+    "threads": [
+      {
+        "id": "d4ffce05-e931-4c7e-8ee0-5efcd2aa830a",
+        "title": "Products.md",
+        "metadata": {
+          "aiChatDocument": {
+            "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+            "sourceIds": []
+          }
+        }
+      }
+    ]
+  }
+]

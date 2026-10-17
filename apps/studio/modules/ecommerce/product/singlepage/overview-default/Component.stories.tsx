@@ -1,18 +1,19 @@
+import { Component as Product } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  ProductOverviewDefault,
-  defaultProductOverviewDefaultProps,
-} from "./Component";
+import { defaultProductOverviewDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/Ecommerce/Models/Product/Singlepage/overview-default",
-  component: ProductOverviewDefault,
+  id: "modules-ecommerce-models-product-singlepage-overview-default",
+  title: "Modules/Ecommerce/Product/Singlepage/overview-default",
+  component: Product,
   parameters: {
     layout: "fullscreen",
   },
-  args: defaultProductOverviewDefaultProps,
-} satisfies Meta<typeof ProductOverviewDefault>;
+  args: { ...defaultProductOverviewDefaultProps, variant: "overview-default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Product>, { variant: "overview-default" }>
+>;
 
 export default meta;
 

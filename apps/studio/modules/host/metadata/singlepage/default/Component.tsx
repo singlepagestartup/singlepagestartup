@@ -1,19 +1,17 @@
+import type { IComponentProps, IHostMetadataDefaultProps } from "./interface";
+export type { IHostMetadataDefaultProps } from "./interface";
 import {
   HostRecordPreview,
   HostStudioProvider,
   type IHostStudioProviderProps,
 } from "../../../page/singlepage/composition/HostRecords/index";
 import { createHostStudioState } from "../../../page/singlepage/composition/HostRecords/state/index";
-export interface IHostMetadataDefaultProps
-  extends Omit<IHostStudioProviderProps, "children"> {
-  variant?: string;
-  id?: string;
-}
+
 export function HostMetadataDefault({
   variant = "default",
   id,
   ...provider
-}: IHostMetadataDefaultProps = {}) {
+}: IComponentProps = {}) {
   return (
     <HostStudioProvider {...provider}>
       <HostRecordPreview

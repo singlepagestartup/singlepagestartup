@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { IComponentPropsExtended } from "../interface";
-import { AdminComponent as Telegram } from "@sps/telegram/frontend/component";
 import { AdminComponent as Agent } from "@sps/agent/frontend/component";
 import { AdminComponent as Host } from "@sps/host/frontend/component";
 import { AdminComponent as WebsiteBuilder } from "@sps/website-builder/frontend/component";
@@ -117,13 +116,6 @@ export function Component(props: IComponentPropsExtended) {
                   active={widget === "blog"}
                 />
                 <Button
-                  title="telegram"
-                  onClick={() => {
-                    setWidget("telegram");
-                  }}
-                  active={widget === "telegram"}
-                />
-                <Button
                   title="agent"
                   onClick={() => {
                     setWidget("agent");
@@ -182,9 +174,6 @@ export function Component(props: IComponentPropsExtended) {
                 ) : null}
                 {widget === "ecommerce" ? (
                   <Ecommerce {...props} isServer={false} variant="default" />
-                ) : null}
-                {widget === "telegram" ? (
-                  <Telegram {...props} isServer={false} variant="default" />
                 ) : null}
                 {widget === "agent" ? (
                   <Agent {...props} isServer={false} variant="default" />

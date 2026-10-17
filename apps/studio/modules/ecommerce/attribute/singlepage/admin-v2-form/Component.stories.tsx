@@ -1,11 +1,15 @@
+import { Component as Attribute } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import { EcommerceAttributeAdminV2Form } from "./Component";
+
 const meta = {
   id: "modules-ecommerce-models-attribute-singlepage-admin-v2-form",
-  title: "Modules/Ecommerce/Models/Attribute/Singlepage/admin-v2-form",
-  component: EcommerceAttributeAdminV2Form,
+  title: "Modules/Ecommerce/Attribute/Singlepage/admin-v2-form",
+  component: Attribute,
   parameters: { layout: "fullscreen" },
-} satisfies Meta<typeof EcommerceAttributeAdminV2Form>;
+  args: { variant: "admin-v2-form" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Attribute>, { variant: "admin-v2-form" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

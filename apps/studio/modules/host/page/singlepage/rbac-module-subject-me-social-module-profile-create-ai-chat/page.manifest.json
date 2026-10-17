@@ -1,0 +1,50 @@
+{
+  "id": "rbac-module-subject-me-social-module-profile-create-ai-chat",
+  "title": "rbac-module-subject-me-social-module-profile-create-ai-chat",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Concrete AI Chat Page: rbac-module-subject-me-social-module-profile-create-ai-chat.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "rbac-module-subject-me-social-module-profile-create-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "blocks": [
+    {
+      "id": "host.layout.ai-chat-dashboard",
+      "path": "../../../layout/singlepage/ai-chat-dashboard"
+    },
+    {
+      "id": "social.profile.select-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/select/ai-chat/project"
+    },
+    {
+      "id": "rbac.subject.me-account",
+      "path": "../../../../rbac/subject/singlepage/me/account"
+    },
+    {
+      "id": "social.profile.select-ai-chat-project",
+      "path": "../../../../social/profile/singlepage/select/ai-chat/project"
+    },
+    {
+      "id": "website-builder.widget.content-ai-chat-profile-create",
+      "path": "../../../../website-builder/widget/singlepage/content/ai-chat/profile-create"
+    },
+    {
+      "id": "rbac.subject.me-social-module-profile-create-ai-chat",
+      "path": "../../../../rbac/subject/singlepage/me/social-module/profile/create/ai-chat"
+    },
+    {
+      "id": "website-builder.widget.content-ai-chat-materials-processing",
+      "path": "../../../../website-builder/widget/singlepage/content/ai-chat/materials-processing"
+    }
+  ]
+}

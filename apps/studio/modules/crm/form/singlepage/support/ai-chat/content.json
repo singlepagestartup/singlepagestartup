@@ -1,0 +1,26 @@
+{
+  "title": "Support request",
+  "fields": {
+    "topic": {
+      "label": "Topic",
+      "placeholder": "Select a topic"
+    },
+    "details": {
+      "label": "What happened?",
+      "placeholder": "Describe what you tried and what happened."
+    },
+    "result": {
+      "label": "What result do you need?",
+      "placeholder": "Tell us what you want to continue or correct."
+    }
+  },
+  "topics": [
+    "Account access",
+    "Project documents",
+    "Files and images",
+    "Chat threads and topics",
+    "Export",
+    "Tokens and payment",
+    "Other"
+  ]
+}

@@ -1,15 +1,17 @@
+import { Component as Product } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { EcommerceProductAdminV2List } from "./Component";
 
 const meta = {
   id: "modules-ecommerce-models-product-singlepage-admin-v2-list",
-  title: "Modules/Ecommerce/Models/Product/Singlepage/admin-v2-list",
-  component: EcommerceProductAdminV2List,
+  title: "Modules/Ecommerce/Product/Singlepage/admin-v2-list",
+  component: Product,
   parameters: {
     layout: "centered",
   },
-} satisfies Meta<typeof EcommerceProductAdminV2List>;
+  args: { variant: "admin-v2-list" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Product>, { variant: "admin-v2-list" }>
+>;
 
 export default meta;
 

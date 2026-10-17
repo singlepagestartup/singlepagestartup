@@ -46,7 +46,7 @@ function setup() {
     synthesize: jest.fn(async () => "Актуальный вывод"),
   };
   const service = new MaterialService({
-    repository: repository as any,
+    source: repository as any,
     media: media as any,
   });
   return {

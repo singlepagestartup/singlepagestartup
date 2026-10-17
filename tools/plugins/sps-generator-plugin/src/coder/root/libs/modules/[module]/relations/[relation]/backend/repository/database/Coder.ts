@@ -1,3 +1,4 @@
+import { util as getRelationModelNames } from "../../../../../../../../../utils/get-relation-model-names";
 import {
   ProjectConfiguration,
   Tree,
@@ -65,7 +66,9 @@ export class Coder {
     const leftModelModuleName = leftModel.module;
     const leftModelName = leftModel.name;
 
-    const leftModelNameStyles = getNameStyles({
+    const leftModelNameStyles = getRelationModelNames({
+      ownerModule: this.parent.parent.parent.parent.parent.name,
+      module: leftModelModuleName,
       name: leftModelName,
     });
 
@@ -79,7 +82,9 @@ export class Coder {
 
     const rightModelModuleName = rightModel.module;
     const rightModelName = rightModel.name;
-    const rightModelNameStyles = getNameStyles({
+    const rightModelNameStyles = getRelationModelNames({
+      ownerModule: this.parent.parent.parent.parent.parent.name,
+      module: rightModelModuleName,
       name: rightModelName,
     });
 
@@ -156,6 +161,10 @@ export class Coder {
                     {
                       command:
                         "drizzle-kit generate --config=./src/lib/config.ts",
+                    },
+                    {
+                      command:
+                        "npx nx run @sps/providers-db:repository-generate",
                     },
                   ],
                 },

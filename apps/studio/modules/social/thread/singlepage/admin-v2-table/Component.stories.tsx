@@ -1,12 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as SocialModuleThread } from "../../index";
+import { Component as Thread } from "../../index";
 
 const meta = {
-  title: "Modules/Social/Models/Thread/Singlepage/admin-v2-table",
-  component: SocialModuleThread,
+  id: "modules-social-models-thread-singlepage-admin-v2-table",
+  title: "Modules/Social/Thread/Singlepage/admin-v2-table",
+  component: Thread,
   argTypes: { empty: { control: "boolean" } },
   args: { variant: "admin-v2-table", empty: false },
-} satisfies Meta<typeof SocialModuleThread>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Thread>, { variant: "admin-v2-table" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

@@ -1,96 +1,139 @@
 "use client";
-import IconGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import type { IProjectFile } from "../../../../../../../social/profile/singlepage/scope/ai-chat/project/state";
-import { memo } from "react";
-function Icon({
+import Glyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
+function WebsiteBuilderModuleFeature({
   name,
   size = 20,
   className = "",
   svgProps,
 }: {
-  name: keyof typeof IconGlyphs;
+  variant?: string;
+  name: keyof typeof Glyphs;
   size?: 20 | 24;
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  const geometry = IconGlyphs[name]
+  const geometry = Glyphs[name]
     ?.replace(/^\s*<svg\b[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
   if (!geometry) throw new Error("Missing Phosphor icon: " + name);
   return (
     <svg
-      className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
       width={size}
       height={size}
       viewBox="0 0 256 256"
       fill="currentColor"
-      data-icon-family="phosphor"
-      data-icon-name={name}
-      data-icon-weight="regular"
       aria-hidden="true"
-      focusable="false"
+      className={`shrink-0 ${className}`}
       {...svgProps}
       dangerouslySetInnerHTML={{ __html: geometry }}
     />
   );
 }
+import type { IProjectFile } from "../../../../../../../social/profile/singlepage/scope/ai-chat/project/state";
+import { memo, useCallback } from "react";
 export interface IPendingFileProps {
+  variant?: string;
   file: IProjectFile;
   onRemove: (id: string) => void;
+  onMove?: (id: string, direction: -1 | 1) => void;
+  onReorder?: (id: string, targetId: string) => void;
+  first?: boolean;
+  last?: boolean;
+  disabled?: boolean;
 }
-const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--workspace-brand-foreground)]";
-const buttonBase =
-  "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
-const kit = {
-  button: `${buttonBase} bg-[color:var(--workspace-brand-accent)] text-[color:var(--workspace-brand-foreground)] enabled:hover:brightness-95 ${focus}`,
-  secondary: `${buttonBase} border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] text-[color:var(--workspace-brand-foreground)] enabled:hover:bg-[color:var(--workspace-brand-background)] ${focus}`,
-  plain: `${buttonBase} text-[color:var(--workspace-brand-muted)] enabled:hover:text-[color:var(--workspace-brand-foreground)] ${focus}`,
-  danger: `${buttonBase} border border-[color:var(--workspace-brand-danger-line)] bg-[color:var(--workspace-brand-danger-surface)] text-[color:var(--workspace-brand-danger)] enabled:hover:brightness-95 ${focus}`,
-  field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] px-4 py-2 text-base text-[color:var(--workspace-brand-foreground)] outline-none transition motion-reduce:transition-none placeholder:text-[color:var(--workspace-brand-muted)] focus-visible:border-[color:var(--workspace-brand-foreground)] focus-visible:ring-2 focus-visible:ring-[color:var(--workspace-brand-foreground)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--workspace-brand-surface)] disabled:cursor-not-allowed disabled:bg-[color:var(--workspace-brand-background)] disabled:text-[color:var(--workspace-brand-muted)] disabled:opacity-60 [&[readonly]]:bg-[color:var(--workspace-brand-background)] aria-invalid:border-[color:var(--workspace-brand-danger)] aria-invalid:focus-visible:ring-[color:var(--workspace-brand-danger)]",
-  checkbox:
-    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] text-[color:var(--workspace-brand-foreground)] checked:border-transparent checked:bg-[color:var(--workspace-brand-accent)] indeterminate:border-transparent indeterminate:bg-[color:var(--workspace-brand-accent)] disabled:cursor-not-allowed",
-  card: "min-w-0 rounded-2xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] p-5",
-  muted: "text-[color:var(--workspace-brand-muted)]",
-  label: "text-sm font-semibold text-[color:var(--workspace-brand-foreground)]",
-  focus: focus,
-};
 export const Component = memo(function Component({
+  variant = "list-item-pending-ai-chat",
   file,
   onRemove,
+  onMove,
+  onReorder,
+  first = false,
+  last = false,
+  disabled = false,
 }: IPendingFileProps) {
+  const remove = useCallback(() => onRemove(file.id), [onRemove, file.id]);
   return (
     <li
       data-ds-block="file-storage.file.list-item-pending-ai-chat"
+      data-id={file.id}
       data-module="file-storage"
       data-model="file"
-      data-id={file.id}
-      data-variant="list-item-pending-ai-chat"
-      className="flex min-w-0 items-center gap-2 rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-background)] p-2"
+      data-variant={variant}
+      draggable={!!onReorder && !disabled}
+      onDragStart={(event) => {
+        event.dataTransfer.setData("text/plain", file.id);
+        event.dataTransfer.effectAllowed = "move";
+      }}
+      onDragOver={(event) => {
+        if (!disabled && onReorder) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+        }
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        if (!disabled)
+          onReorder?.(event.dataTransfer.getData("text/plain"), file.id);
+      }}
+      className={`relative w-36 shrink-0 rounded-xl border border-border bg-muted/30 p-2 sm:w-40 ${onReorder && !disabled ? "cursor-grab active:cursor-grabbing" : ""}`}
     >
-      {file.mimeType?.startsWith("image/") && file.fileUrl ? (
-        <img
-          src={file.fileUrl}
-          alt={file.name}
-          className="size-10 shrink-0 rounded-lg object-contain"
-        />
-      ) : (
-        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[color:var(--workspace-brand-surface)]">
-          <Icon name="file-text" className="size-5" />
-        </span>
-      )}
-      <span className="min-w-0 flex-1 break-words text-xs leading-5">
-        {file.name}
-      </span>
       <button
         type="button"
-        onClick={() => onRemove(file.id)}
         aria-label={`Remove ${file.name}`}
-        className={`grid size-11 shrink-0 place-items-center rounded-lg hover:bg-[color:var(--workspace-brand-surface)] ${kit.focus}`}
+        disabled={disabled}
+        onClick={remove}
+        className="absolute right-1 top-1 z-10 grid size-6 place-items-center rounded-full bg-foreground text-background hover:opacity-80 disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       >
-        <Icon name="x" className="size-4" />
+        <WebsiteBuilderModuleFeature
+          variant="icon"
+          name="x"
+          className="size-4"
+        />
       </button>
+      <div className="flex h-20 items-center justify-center overflow-hidden rounded-lg bg-neutral-500">
+        {file.mimeType?.startsWith("image/") && file.fileUrl ? (
+          <img
+            src={file.fileUrl}
+            alt={file.name}
+            draggable={false}
+            className="h-full w-full object-contain"
+          />
+        ) : (
+          <WebsiteBuilderModuleFeature
+            variant="icon"
+            name="file-text"
+            className="size-7 text-background"
+          />
+        )}
+      </div>
+      <p title={file.name} className="mt-2 truncate text-xs font-medium">
+        {file.name}
+      </p>
+      <div className="mt-1 flex items-center justify-between gap-1">
+        <span className="text-xs text-muted-foreground">
+          {Math.max(1, Math.ceil(file.size / 1024))} KB
+        </span>
+        {onMove && (
+          <div className="flex">
+            {([-1, 1] as const).map((direction) => (
+              <button
+                key={direction}
+                type="button"
+                aria-label={`Move ${file.name} ${direction === -1 ? "earlier" : "later"}`}
+                disabled={disabled || (direction === -1 ? first : last)}
+                onClick={() => onMove(file.id, direction)}
+                className="grid size-8 place-items-center rounded-md hover:bg-muted disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground"
+              >
+                <WebsiteBuilderModuleFeature
+                  variant="icon"
+                  name={direction === -1 ? "caret-left" : "caret-right"}
+                  className="size-4"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </li>
   );
 });

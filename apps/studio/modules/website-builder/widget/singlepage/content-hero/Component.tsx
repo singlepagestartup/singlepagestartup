@@ -1,18 +1,20 @@
+import type { IComponentProps, ContentHeroProps } from "./interface";
+export type { ContentHeroProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import {
-  Component as WebsiteBuilderModuleButtonsArray,
+  Component as ButtonsArray,
   type ButtonsArrayItem,
 } from "../../../buttons-array/index";
 import {
-  Component as WebsiteBuilderModuleFeature,
+  Component as Feature,
   type FeatureBadgeDefaultProps,
   type FeatureStatusDefaultProps,
 } from "../../../feature/index";
-interface IModuleIconProps extends SVGProps<SVGSVGElement> {
-  size?: number;
-}
+
 type IconName = keyof typeof IconGlyphs;
 function createIcon(name: IconName) {
   const Component = forwardRef<SVGSVGElement, IModuleIconProps>(
@@ -37,13 +39,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export type ContentHeroProps = typeof defaultContentHeroProps;
-export function ContentHero(
-  props?: Partial<ContentHeroProps> & { variant?: string },
-) {
+export function ContentHero(props?: IComponentProps) {
   const {
     feature,
     title,
@@ -55,7 +54,7 @@ export function ContentHero(
   } = { ...defaultContentHeroProps, ...props };
   return (
     <div
-      className="w-full bg-[var(--color-sps-grey)] py-8 sm:py-12"
+      className="w-full bg-muted py-8 sm:py-12"
       data-ds-block="website-builder.widget.content-hero"
       data-ds-layer="singlepage"
       data-module="website-builder"
@@ -63,33 +62,30 @@ export function ContentHero(
       data-variant={props?.variant ?? "content-hero"}
     >
       <div className="mx-auto grid w-full max-w-7xl gap-0 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-        <div className="flex min-w-0 flex-col items-start justify-center rounded-t-3xl bg-[var(--color-sps-graphite)] p-6 sm:p-10 lg:rounded-l-3xl lg:rounded-tr-none lg:p-12">
+        <div className="flex min-w-0 flex-col items-start justify-center rounded-t-3xl bg-default p-6 sm:p-10 lg:rounded-l-3xl lg:rounded-tr-none lg:p-12">
           <div className="mb-6">
-            <WebsiteBuilderModuleFeature {...feature} variant="badge-default" />
+            <Feature {...feature} variant="badge-default" />
           </div>
-          <h1 className="max-w-[14ch] text-[2.5rem] font-semibold leading-[1.08] tracking-normal text-white sm:text-5xl xl:text-[4rem]">
+          <h1 className="max-w-[14ch] text-[2.5rem] font-semibold leading-[1.08] tracking-normal text-default-foreground sm:text-5xl xl:text-[4rem]">
             {title}
           </h1>
-          <p className="mt-6 max-w-lg text-base leading-7 text-[var(--color-sps-muted-inverse)] sm:text-lg sm:leading-8">
+          <p className="mt-6 max-w-lg text-base leading-7 text-default-muted-foreground sm:text-lg sm:leading-8">
             {description}
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3 [&_a]:focus-visible:outline-[var(--color-sps-white)]">
-            <WebsiteBuilderModuleButtonsArray
-              variant="default"
-              buttons={buttons}
-            />
+          <div className="mt-8 flex flex-wrap items-center gap-3 [&_a]:focus-visible:outline-card">
+            <ButtonsArray variant="default" buttons={buttons} />
           </div>
         </div>
-        <div className="relative aspect-square min-w-0 overflow-hidden rounded-b-3xl bg-[var(--color-sps-white)] lg:aspect-auto lg:min-h-[36rem] lg:rounded-r-3xl lg:rounded-bl-none">
+        <div className="relative aspect-square min-w-0 overflow-hidden rounded-b-3xl bg-card lg:aspect-auto lg:min-h-[36rem] lg:rounded-r-3xl lg:rounded-bl-none">
           <img
             className="absolute inset-0 h-full w-full object-cover"
             src={mediaSrc}
             alt={mediaAlt}
           />
-          <WebsiteBuilderModuleFeature
+          <Feature
             {...statusFeature}
             variant="status-default"
-            className="absolute bottom-5 left-5 right-5 border-0 bg-white/95 p-4 backdrop-blur-sm sm:bottom-6 sm:left-6 sm:right-6"
+            className="absolute bottom-5 left-5 right-5 border-0 bg-card/95 p-4 backdrop-blur-sm sm:bottom-6 sm:left-6 sm:right-6"
           />
         </div>
       </div>
@@ -128,3 +124,5 @@ export const defaultContentHeroProps = {
     value: "All systems operational",
   } satisfies Partial<FeatureStatusDefaultProps>,
 };
+
+import type { IModuleIconProps } from "./interface";

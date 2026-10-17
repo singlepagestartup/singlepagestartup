@@ -15,10 +15,7 @@ import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icon
 import type { IAIChatServicePageContent } from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
 import { useId, useState } from "react";
 import { Component as RbacModuleSubject } from "../../../subject/index";
-import {
-  useStudioAccount,
-  useAIChatProjectHref,
-} from "../../../subject/singlepage/account/Account";
+import { useStudioAccount } from "../../../subject/singlepage/account/Account";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -184,7 +181,6 @@ export function SubjectMeAccountSettings({
   initialSection = "profile",
 }: SubjectMeAccountSettingsProps = {}) {
   const session = useStudioAccount();
-  const projectHref = useAIChatProjectHref();
   const [activeSection, setActiveSection] = useState<string>(initialSection);
   const [signedOut, setSignedOut] = useState(false);
   const id = useId();
@@ -232,15 +228,6 @@ export function SubjectMeAccountSettings({
       data-ds-layer="singlepage"
     >
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        {showTokens && (
-          <a
-            href={projectHref}
-            className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm text-[color:var(--workspace-brand-muted)]"
-          >
-            <ArrowLeft className="size-4" />
-            Back to workspace
-          </a>
-        )}
         <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -275,7 +262,7 @@ export function SubjectMeAccountSettings({
               href={
                 showTokens
                   ? "/ai-chat/rbac/subjects/authentication/select-method"
-                  : "/?path=/story/modules-host-models-page-singlepage-rbac-subject-authentication-select-method--default"
+                  : "/?path=/story/modules-host-models-page-singlepage-rbac-module-subject-me-authentication-select-method--default"
               }
               target={showTokens ? undefined : "_top"}
             >
@@ -347,7 +334,6 @@ export function SubjectMeAccountSettings({
   );
 }
 const LogOut = createIcon("sign-out");
-const ArrowLeft = createIcon("arrow-left");
 const focus =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-foreground)]";
 const buttonBase =

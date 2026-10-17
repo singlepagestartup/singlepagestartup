@@ -1,11 +1,13 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../feature/index";
+import type { IComponentProps, ContentFeatureFindCardProps } from "./interface";
+export type { ContentFeatureFindCardProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+import { Component as Feature } from "../../../feature/index";
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 type ModuleIcon = ReturnType<typeof createIcon>;
-interface IModuleIconProps extends SVGProps<SVGSVGElement> {
-  size?: number;
-}
+
 type IconName = keyof typeof IconGlyphs;
 function createIcon(name: IconName) {
   const Component = forwardRef<SVGSVGElement, IModuleIconProps>(
@@ -30,7 +32,7 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
 interface FeatureItem {
@@ -49,25 +51,22 @@ function SectionHeader({
 }) {
   return (
     <div className="mb-8 max-w-2xl sm:mb-10">
-      <p className="mb-2 text-sm font-semibold tracking-normal text-[var(--color-sps-muted)]">
+      <p className="mb-2 text-sm font-semibold tracking-normal text-muted-foreground">
         {eyebrow}
       </p>
-      <h2 className="text-[2rem] font-semibold leading-tight tracking-normal sm:text-[2.5rem] text-[var(--color-sps-graphite)]">
+      <h2 className="text-[2rem] font-semibold leading-tight tracking-normal sm:text-[2.5rem] text-foreground">
         {title}
       </h2>
       {description ? (
-        <p className="text-base leading-7 text-[var(--color-sps-muted)] mt-3">
+        <p className="text-base leading-7 text-muted-foreground mt-3">
           {description}
         </p>
       ) : null}
     </div>
   );
 }
-export type ContentFeatureFindCardProps =
-  typeof defaultContentFeatureFindCardProps;
-export function ContentFeatureFindCard(
-  props?: Partial<ContentFeatureFindCardProps> & { variant?: string },
-) {
+
+export function ContentFeatureFindCard(props?: IComponentProps) {
   const { eyebrow, title, description, features } = {
     ...defaultContentFeatureFindCardProps,
     ...props,
@@ -75,7 +74,7 @@ export function ContentFeatureFindCard(
   return (
     <div
       id="features"
-      className="w-full bg-[var(--color-sps-grey)] py-12 sm:py-16"
+      className="w-full bg-muted py-12 sm:py-16"
       data-ds-block="website-builder.widget.content-feature-find-card"
       data-ds-layer="singlepage"
       data-module="website-builder"
@@ -93,7 +92,7 @@ export function ContentFeatureFindCard(
           data-ds-imports="website-builder.feature.card"
         >
           {features.map((feature) => (
-            <WebsiteBuilderModuleFeature
+            <Feature
               variant="card"
               key={feature.title}
               icon={feature.icon}
@@ -170,3 +169,5 @@ export const defaultContentFeatureFindCardProps = {
     },
   ] satisfies FeatureItem[],
 };
+
+import type { IModuleIconProps } from "./interface";

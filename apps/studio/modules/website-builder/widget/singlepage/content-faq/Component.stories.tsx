@@ -1,12 +1,16 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import { ContentFaq, defaultContentFaqProps } from "./Component";
+import { defaultContentFaqProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Widget/Singlepage/content-faq",
-  component: ContentFaq,
+  id: "modules-website-builder-models-widget-singlepage-content-faq",
+  title: "Modules/Website-Builder/Widget/Singlepage/content-faq",
+  component: Widget,
   parameters: { layout: "fullscreen" },
-  args: defaultContentFaqProps,
-} satisfies Meta<typeof ContentFaq>;
+  args: { ...defaultContentFaqProps, variant: "content-faq" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Widget>, { variant: "content-faq" }>
+>;
 
 export default meta;
 

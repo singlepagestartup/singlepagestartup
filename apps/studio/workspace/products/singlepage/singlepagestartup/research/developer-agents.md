@@ -13,8 +13,8 @@ sales_dimensions:
   - journey
 review:
   dependencies:
-    brief: 875a271cca75b070f276f7ceced7e439bd642272c7b0b289166050ac0f3a82e0
-    product.singlepagestartup.sales: 5f4d91f14898077c62d3576a0dd298c4393d3aa788e05df4d42bf6d85b0cbf13
+    brief: 1fcbfd98ca6f0c346a752a38256f36a69d324fcef58b6355c9a15a3eda8c624d
+    product.singlepagestartup.sales: b291b673e781bdb8836db7bf5c10d7b7099beeb3bcfa98038f935f26d66f2d1a
 ---
 
 # Coding agents acting for people: evidence and Sales implications

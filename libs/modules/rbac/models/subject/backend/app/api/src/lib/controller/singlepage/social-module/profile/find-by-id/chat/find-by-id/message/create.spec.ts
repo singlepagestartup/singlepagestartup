@@ -1,3 +1,15 @@
+jest.mock("@sps/shared-backend-api", () => ({
+  withConsistencyDatabase: async (
+    _db: unknown,
+    operation: () => Promise<unknown>,
+  ) => operation(),
+}));
+jest.mock("@sps/shared-backend-database-config", () => ({
+  getDrizzle: () => ({
+    transaction: async (operation: (db: unknown) => Promise<unknown>) =>
+      operation({}),
+  }),
+}));
 /**
  * BDD Suite: rbac social message create author relation.
  *
@@ -17,6 +29,7 @@ const mockRbacSubjectNotify = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   return {
+    ...jest.requireActual("@sps/shared-utils"),
     AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY: "telegramVoiceTranscription",
     AUDIO_TRANSCRIPTION_ACTION_TYPE: "audio_transcription_completed",
     AUDIO_TRANSCRIPTION_DEFAULT_MODEL: "gpt-4o-transcribe",
@@ -25,11 +38,15 @@ jest.mock("@sps/shared-utils", () => {
     OPEN_AI_TRANSCRIPTION_MODEL: undefined,
     RBAC_JWT_SECRET: "jwt-secret",
     RBAC_SECRET_KEY: "rbac-secret",
+    assertSupportedAiChatAttachments:
+      jest.requireActual("@sps/shared-utils").assertSupportedAiChatAttachments,
+    AI_CHAT_DOCUMENTS: [{ key: "brief", skillSlug: "ai-chat-account-manager" }],
   };
 });
 
 jest.mock("@sps/backend-utils", () => {
   return {
+    ...jest.requireActual("@sps/backend-utils"),
     getHttpErrorType: (error: Error) => ({
       status: 400,
       message: error.message,
@@ -145,6 +162,29 @@ function createService() {
       .fn()
       .mockResolvedValue(undefined),
     socialModule: {
+      message: {
+        create: (...args: unknown[]) => mockSocialModuleMessageCreate(...args),
+      },
+      profilesToMessages: {
+        create: (...args: unknown[]) =>
+          mockSocialModuleProfilesToMessagesCreate(...args),
+      },
+      chatsToMessages: {
+        create: (...args: unknown[]) =>
+          mockSocialModuleChatsToMessagesCreate(...args),
+      },
+      threadsToMessages: {
+        create: (...args: unknown[]) =>
+          mockSocialModuleThreadsToMessagesCreate(...args),
+      },
+      chat: {
+        findById: jest
+          .fn()
+          .mockResolvedValue({ id: "chat-1", variant: "ai-chat" }),
+      },
+      thread: {
+        findById: jest.fn().mockResolvedValue({ id: "thread-1", metadata: {} }),
+      },
       profilesToChats: {
         find: jest.fn().mockResolvedValue([
           {
@@ -160,6 +200,8 @@ function createService() {
         }),
       },
       messagesToFileStorageModuleFiles: {
+        create: (...args: unknown[]) =>
+          mockSocialModuleMessagesToFilesCreate(...args),
         find: jest.fn().mockResolvedValue([]),
       },
     },
@@ -216,17 +258,18 @@ describe("Given: rbac social message create author relation", () => {
         messageId: "message-1",
         profileId: "profile-1",
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "rbac-secret",
-        },
-      },
     });
     expect(events.indexOf("profiles-to-messages")).toBeGreaterThanOrEqual(0);
     expect(events.indexOf("response")).toBeGreaterThan(
       events.indexOf("profiles-to-messages"),
     );
     expect(handler.notifyOtherSubjectsInChat).toHaveBeenCalled();
+    expect(context.json).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        authorProfileIds: ["profile-1"],
+        attachments: [],
+      }),
+    });
   });
 
   /**
@@ -330,17 +373,114 @@ describe("Given: rbac social message create author relation", () => {
           },
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "rbac-secret",
-        },
-      },
     });
     expect(context.header).not.toHaveBeenCalledWith(
       "X-SPS-SKIP-ACTION-LOGGER",
       "1",
     );
     expect(events).toEqual(["response"]);
+  });
+
+  it("When: a document message arrives via API Then: its linked profession is persisted", async () => {
+    const service = createService();
+    service.socialModule.thread.findById.mockResolvedValue({
+      id: "thread-1",
+      metadata: {
+        aiChatDocument: {
+          key: "brief",
+          profileId: "assistant-profile",
+          sourceIds: ["brief-source"],
+        },
+      },
+    });
+    service.socialModule.skill = {
+      find: jest.fn().mockResolvedValue([
+        {
+          id: "brief-skill",
+          slug: "ai-chat-account-manager-assistant-profile",
+          description: "Current instructions",
+        },
+      ]),
+    };
+    service.socialModule.profilesToSkills = {
+      find: jest
+        .fn()
+        .mockResolvedValue([
+          { profileId: "assistant-profile", skillId: "brief-skill" },
+        ]),
+    };
+    const skill = {
+      id: "brief-skill",
+      slug: "ai-chat-account-manager-assistant-profile",
+    };
+    service.socialModuleProfileDocumentSkillFind = jest
+      .fn()
+      .mockResolvedValue(skill);
+    const handler = new Handler(service);
+    handler.notifyOtherSubjectsInChat = jest.fn().mockResolvedValue(undefined);
+    await handler.execute(
+      createContext([], {
+        description: "/ai-chat-account-manager\n\nPrepare the brief",
+        metadata: {
+          aiChatDocumentSourceId: "brief-source",
+          rbacAiReactionRequest: {
+            version: 1,
+            modelId: "auto",
+            reasoning: "auto",
+            skillIds: ["unrelated-skill"],
+            useKnowledgeSearch: false,
+          },
+        },
+      }),
+      jest.fn(),
+    );
+    expect(mockSocialModuleMessageCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          description:
+            "/ai-chat-account-manager-assistant-profile\n\nPrepare the brief",
+          metadata: {
+            aiChatDocumentSourceId: "brief-source",
+            rbacAiReactionRequest: {
+              version: 1,
+              modelId: "auto",
+              reasoning: "auto",
+              skillIds: ["brief-skill"],
+              useKnowledgeSearch: false,
+            },
+          },
+        },
+      }),
+    );
+    expect(service.socialModuleProfileDocumentSkillFind).toHaveBeenCalledWith({
+      socialModuleProfileId: "assistant-profile",
+      documentKey: "brief",
+    });
+    expect(service.socialModule.profilesToSkills.find).not.toHaveBeenCalled();
+  });
+
+  it("When: a document selects another document's Source Then: no message is written", async () => {
+    const service = createService();
+    service.socialModule.thread.findById.mockResolvedValue({
+      id: "thread-1",
+      metadata: {
+        aiChatDocument: {
+          key: "brief",
+          profileId: "assistant-profile",
+          sourceIds: ["brief-source"],
+        },
+      },
+    });
+    await expect(
+      new Handler(service).execute(
+        createContext([], {
+          description: "Edit this",
+          metadata: { aiChatDocumentSourceId: "another-source" },
+        }),
+        jest.fn(),
+      ),
+    ).rejects.toThrow("does not belong to this document");
+    expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
   });
 
   /**
@@ -384,11 +524,6 @@ describe("Given: rbac social message create author relation", () => {
       data: {
         messageId: "message-1",
         profileId: "profile-1",
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "rbac-secret",
-        },
       },
     });
     expect(handler.notifyOtherSubjectsInChat).not.toHaveBeenCalled();
@@ -476,4 +611,22 @@ describe("Given: rbac social message create author relation", () => {
       },
     });
   });
+});
+
+it("rejects unsupported AI Chat uploads before creating a message or uploading any file", async () => {
+  jest.clearAllMocks();
+  const context = createContext([]);
+  const body = new FormData();
+  body.set("data", JSON.stringify({ description: "Review the logo" }));
+  body.set(
+    "files",
+    new File(["<svg/>"], "logo.svg", { type: "image/svg+xml" }),
+  );
+  context.req.formData.mockResolvedValue(body);
+  const handler = new Handler(createService());
+  await expect(handler.execute(context, jest.fn())).rejects.toThrow(
+    "Unsupported files: logo.svg",
+  );
+  expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
+  expect(mockFileStorageFileCreate).not.toHaveBeenCalled();
 });

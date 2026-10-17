@@ -1,4 +1,3 @@
-import { HOST_SERVICE_URL } from "@sps/shared-utils";
 import { ImageResponse } from "next/og";
 import { NextRequest, NextResponse } from "next/server";
 import QueryString from "qs";
@@ -332,10 +331,6 @@ export const GET = async (request: NextRequest) => {
     const params = searchParams.toString();
     const parsedParams = QueryString.parse(params);
 
-    if (!HOST_SERVICE_URL) {
-      throw new Error("Configuration error. Host URL not found");
-    }
-
     const width = parsedParams?.["width"] ? Number(parsedParams["width"]) : 512;
     const height = parsedParams?.["height"]
       ? Number(parsedParams["height"])
@@ -362,98 +357,40 @@ export const GET = async (request: NextRequest) => {
 
     for (const fontType of Object.keys(fontsURLs)) {
       for (const fontStyle of fontsURLs[fontType as keyof typeof fontsURLs]) {
-        let repeats = 0;
-        let isSuccess = false;
-        const maxRetries = 3;
+        let fontData: Buffer;
 
-        while (!isSuccess && repeats < maxRetries) {
-          try {
-            const fileName = path.basename(fontStyle.url.pathname);
-
-            const possiblePaths = [
-              path.join(process.cwd(), "styles", "fonts", fontType, fileName),
-              path.join(process.cwd(), ".next", "server", "assets", fileName),
-              fontStyle.url.pathname,
-            ];
-
-            let fontData: Buffer | ArrayBuffer | null = null;
-            let usedPath = "";
-
-            try {
-              console.log(
-                `Trying to fetch font from: ${HOST_SERVICE_URL}${fontStyle.url}`,
-              );
-              const response = await fetch(
-                `${HOST_SERVICE_URL}${fontStyle.url}`,
-                {
-                  cache: "no-store",
-                  headers: {
-                    "Cache-Control": "no-store",
-                  },
-                },
-              );
-
-              if (!response.ok) {
-                throw new Error(
-                  `Failed to fetch ${fontStyle.url}: ${response.status}`,
-                );
-              }
-
-              fontData = await response.arrayBuffer();
-              usedPath = `${HOST_SERVICE_URL}${fontStyle.url}`;
-            } catch (error) {
-              console.log(
-                `Failed to fetch font: ${
-                  error instanceof Error ? error.message : String(error)
-                }`,
-              );
-
-              for (const fontPath of possiblePaths) {
-                try {
-                  const fileData = await fs.readFile(fontPath);
-                  fontData = fileData;
-                  usedPath = fontPath;
-                  break;
-                } catch (err) {
-                  console.log(
-                    `Failed to read from ${fontPath}: ${
-                      err instanceof Error ? err.message : String(err)
-                    }`,
-                  );
-                  continue;
-                }
-              }
-            }
-
-            if (!fontData) {
-              throw new Error(
-                "Font file not found in any of the possible locations",
-              );
-            }
-
-            fonts.push({
-              name: fontType,
-              data: fontData,
-              style: fontStyle.style,
-              weight: fontStyle.weight,
-            });
-
-            isSuccess = true;
-          } catch (error) {
-            repeats++;
-            console.error(
-              `Attempt ${repeats} failed for ${fontStyle.url.pathname}:`,
-              error,
-            );
-            if (repeats >= maxRetries) {
-              console.error(
-                `Max retries reached for ${fontStyle.url.pathname}. Skipping...`,
-              );
-              break;
-            }
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Webpack's relative-URL runtime exposes /_next/static/media/... with
+        // an empty protocol. Resolve that public asset path in the build first.
+        const staticMediaPath = fontStyle.url.pathname.split(
+          "/_next/static/media/",
+        )[1];
+        if (staticMediaPath) {
+          fontData = await fs.readFile(
+            path.join(
+              process.cwd(),
+              process.env.SPS_HOST_DIST_DIR || ".next",
+              "static",
+              "media",
+              path.basename(decodeURIComponent(staticMediaPath)),
+            ),
+          );
+        } else if (fontStyle.url.protocol === "file:") {
+          // Turbopack emits a file URL pointing directly at the bundled font.
+          fontData = await fs.readFile(fontStyle.url);
+        } else {
+          const response = await fetch(fontStyle.url, { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`Failed to load font: ${response.status}`);
           }
+          fontData = Buffer.from(await response.arrayBuffer());
         }
+
+        fonts.push({
+          name: fontType,
+          data: fontData,
+          style: fontStyle.style,
+          weight: fontStyle.weight,
+        });
       }
     }
 

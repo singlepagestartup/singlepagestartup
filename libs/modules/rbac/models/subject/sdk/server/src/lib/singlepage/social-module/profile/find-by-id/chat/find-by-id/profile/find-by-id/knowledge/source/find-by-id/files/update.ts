@@ -20,6 +20,7 @@ export interface IProps {
     removeFileId?: string;
     replaceFileId?: string;
     reanalyze?: boolean;
+    expectedContentHash?: string;
   };
 }
 export type SourceFile = { file: IFile; relation: IRelation };
@@ -27,6 +28,7 @@ export type IResult = {
   files: SourceFile[];
   source: ISource | null;
   processingError?: string;
+  analysisPending?: boolean;
 };
 export async function action(props: IProps): Promise<IResult> {
   const body = new FormData();
@@ -36,6 +38,8 @@ export async function action(props: IProps): Promise<IResult> {
   if (props.data.reanalyze) body.set("reanalyze", "true");
   if (props.data.replaceFileId)
     body.set("replaceFileId", props.data.replaceFileId);
+  if (props.data.expectedContentHash !== undefined)
+    body.set("expectedContentHash", props.data.expectedContentHash);
   const res = await fetch(
     `${props.host || serverHost}${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${props.targetSocialModuleProfileId}/knowledge/sources/${props.knowledgeModuleSourceId}/files`,
     { credentials: "include", method: "POST", body, ...props.options },

@@ -1,19 +1,15 @@
-import { Component as WebsiteBuilderModuleButton } from "../../../button/index";
+import type { IComponentProps, INavbarButtonsProps } from "./interface";
+export type { INavbarButtonsProps } from "./interface";
+import { Component as Button } from "../../../button/index";
 
-export interface INavbarButtonsProps {
-  variant?: string;
-  activeHref?: string;
-  orientation?: "horizontal" | "vertical";
-  onNavigate?: () => void;
-}
 const links = [
   { label: "Home", href: "/", story: "root" },
   {
     label: "Services",
     href: "/ecommerce/products",
-    story: "ecommerce-products",
+    story: "ecommerce-module-product-find",
   },
-  { label: "Blog", href: "/blog", story: "blog" },
+  { label: "Blog", href: "/blog", story: "blog-module-article-find" },
   { label: "Chat", href: "/chat", disabled: true },
 ];
 export function Component({
@@ -21,7 +17,7 @@ export function Component({
   activeHref = "/",
   orientation = "horizontal",
   onNavigate,
-}: INavbarButtonsProps = {}) {
+}: IComponentProps = {}) {
   return (
     <nav
       aria-label="Primary"
@@ -32,7 +28,7 @@ export function Component({
       data-variant={variant}
     >
       {links.map((link) => (
-        <WebsiteBuilderModuleButton
+        <Button
           key={link.href}
           variant="navigation"
           label={link.label}

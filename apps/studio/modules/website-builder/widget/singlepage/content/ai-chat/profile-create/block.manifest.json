@@ -1,0 +1,27 @@
+{
+  "id": "website-builder.widget.content-ai-chat-profile-create",
+  "title": "content-ai-chat-profile-create",
+  "description": "Static project introduction with a form slot.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-ai-chat-profile-create"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "variantName": "content-ai-chat-profile-create",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

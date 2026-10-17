@@ -17,6 +17,7 @@ import { queryBuilder } from "../../query-builder";
 import { type IFilter } from "../../query-builder/filters";
 import { FindServiceProps } from "../../services/interfaces";
 import { type IRepository } from "../interface";
+import { consistencyContext, trackRepositoryRead } from "./context";
 
 function isDateSchema(value: unknown): boolean {
   if (value instanceof ZodDate) {
@@ -34,7 +35,16 @@ function isDateSchema(value: unknown): boolean {
 export class Database<T extends PgTableWithColumns<any>>
   implements IRepository
 {
-  db: PostgresJsDatabase<any>;
+  private database: PostgresJsDatabase<any>;
+  get db(): PostgresJsDatabase<any> {
+    // Explicit owner transaction clones retain precedence over ambient scope.
+    return typeof (this.database as any)?.rollback === "function"
+      ? this.database
+      : consistencyContext.getStore()?.database || this.database;
+  }
+  set db(value: PostgresJsDatabase<any>) {
+    this.database = value;
+  }
   Table: T;
   insertSchema: ZodObject<any>;
   selectSchema: ZodObject<any>;
@@ -53,6 +63,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
   async find(props?: FindServiceProps): Promise<T["$inferSelect"][]> {
     try {
+      await trackRepositoryRead(this.Table, this.db, props?.params?.filters);
       const filters = queryBuilder.filters({
         table: this.Table as T,
         queryFunctions: methods,
@@ -74,15 +85,20 @@ export class Database<T extends PgTableWithColumns<any>>
         );
       }
 
-      const order =
-        props?.params?.orderBy?.and?.length &&
-        props.params.orderBy.and[0].method
-          ? methods[props.params.orderBy.and[0].method as any](
-              this.Table[props.params.orderBy.and[0].column],
-            )
-          : "orderIndex" in this.Table
-            ? methods.asc(this.Table.orderIndex)
-            : null;
+      const order = (props?.params?.orderBy?.and || []).map(
+        ({ column, method }) => {
+          if (!["asc", "desc"].includes(method) || !this.Table[column])
+            throw new Error("Invalid orderBy");
+          return methods[method](this.Table[column]);
+        },
+      );
+      if (!order.length && "orderIndex" in this.Table)
+        order.push(methods.asc(this.Table.orderIndex));
+      if (
+        "id" in this.Table &&
+        !props?.params?.orderBy?.and?.some(({ column }) => column === "id")
+      )
+        order.push(methods.asc(this.Table.id));
 
       const records = await this.db
         .select()
@@ -90,7 +106,7 @@ export class Database<T extends PgTableWithColumns<any>>
         .where(filters ? methods.and(...filters) : undefined)
         .limit(Number(props?.params?.limit) as number)
         .offset(Number(props?.params?.offset) as number)
-        .orderBy(order)
+        .orderBy(...order)
         .execute();
 
       const sanitizedRecords = records.map((record) => {
@@ -112,6 +128,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
   async count(props?: FindServiceProps): Promise<number> {
     try {
+      await trackRepositoryRead(this.Table, this.db, props?.params?.filters);
       const filters = queryBuilder.filters({
         table: this.Table as T,
         queryFunctions: methods,
@@ -138,6 +155,9 @@ export class Database<T extends PgTableWithColumns<any>>
 
   async findByField(field: string, value: any): Promise<any> {
     try {
+      await trackRepositoryRead(this.Table, this.db, {
+        and: [{ column: field, method: "eq", value }],
+      });
       if (!this.Table[field]) {
         throw new Error(`Field ${field} does not exist on table ${this.Table}`);
       }

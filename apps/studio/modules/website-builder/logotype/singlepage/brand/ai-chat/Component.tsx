@@ -1,23 +1,22 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../feature/index";
-import type IconGlyphs from "../../../../feature/singlepage/icon/icons.json";
+import type { IComponentProps, IComponentVariantProps } from "./interface";
+export type { IComponentVariantProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../../shared/icon";
+
+import type IconGlyphs from "../../../../../shared/icon/singlepage/phosphor/icons.json";
 function Icon(props: {
   name: keyof typeof IconGlyphs;
   size?: 20 | 24;
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-interface IComponentVariantProps {
-  variant?: string;
-}
-export function Component({
-  variant = "brand-ai-chat",
-}: IComponentVariantProps = {}) {
+export function Component({ variant = "brand-ai-chat" }: IComponentProps = {}) {
   return (
     <a
-      href="/ai-chat/"
+      href="/"
       data-ds-block="website-builder.logotype.brand-ai-chat"
       data-id="ai-chat-logotype"
       className={`group relative isolate inline-flex shrink-0 items-center gap-3 rounded-xl ${kit.focus}`}
@@ -28,7 +27,7 @@ export function Component({
     >
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute -inset-3 -z-10 rounded-full bg-linear-to-r from-sps-green via-sps-green/30 to-sps-grey opacity-0 blur-lg transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+        className="pointer-events-none absolute -inset-3 -z-10 rounded-full bg-linear-to-r from-primary via-primary/30 to-muted opacity-0 blur-lg transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
       />
       <svg
         aria-hidden="true"
@@ -127,13 +126,13 @@ export function Component({
       </svg>
       <span className="text-lg font-semibold tracking-tight">
         sps{" "}
-        <span className="text-sps-muted transition-colors group-hover:text-sps-graphite group-focus-visible:text-sps-graphite motion-reduce:transition-none">
+        <span className="text-muted-foreground transition-colors group-hover:text-foreground group-focus-visible:text-foreground motion-reduce:transition-none">
           ai chat
         </span>
       </span>
       <span
         aria-hidden="true"
-        className="absolute -right-3 -top-2 scale-50 text-sps-green opacity-0 transition-all duration-300 group-hover:rotate-12 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+        className="absolute -right-3 -top-2 scale-50 text-primary opacity-0 transition-all duration-300 group-hover:rotate-12 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
       >
         <Icon name="star" className="size-4" />
       </span>
@@ -141,7 +140,7 @@ export function Component({
   );
 }
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sps-graphite";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {

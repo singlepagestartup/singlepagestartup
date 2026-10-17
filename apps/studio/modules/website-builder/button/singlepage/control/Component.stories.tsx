@@ -1,11 +1,18 @@
+import { Component as Button } from "../..";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component } from "./Component";
 
 const meta = {
-  title: "Modules/Website-Builder/Models/Button/Singlepage/control",
-  component: Component,
-  args: { children: "Continue", appearance: "primary" },
-} satisfies Meta<typeof Component>;
+  id: "modules-website-builder-models-button-singlepage-control",
+  title: "Modules/Website-Builder/Button/Singlepage/control",
+  component: Button,
+  args: {
+    children: "Continue",
+    appearance: "primary",
+    variant: "control",
+  },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Button>, { variant: "control" }>
+>;
 export const Default: StoryObj<typeof meta> = {};
 
 export default meta;

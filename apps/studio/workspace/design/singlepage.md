@@ -78,9 +78,10 @@ sources:
       - Intended perception
       - Meaning and message hierarchy
       - Consistency rules
-    supports: One compact project page becoming a private landing-page preview, then a GitHub repository
-      and a public site on the user's server; people remain visible in the work, while reusable
-      foundations and human-directed agent work support later product needs.
+    supports: Shortened written project and separate product documents, with visible shortcomings,
+      user corrections and accepted text for later chat and export; people remain visible in the
+      work. Landing-page assembly and server deployment belong to subsequent development, while
+      reusable functions and human-directed agent work support separate software needs.
     limitation: Editorial images, interface compositions and conceptual diagrams do not prove provider
       integration, deployment speed, market response, useful answers, adoption, implemented
       architecture or successful setup.
@@ -124,6 +125,8 @@ media_review:
       - singlepage-generated-living-focus-photography-business-conversation-square
       - singlepage-generated-living-focus-photography-moment-of-focus-square
       - singlepage-generated-living-focus-photography-work-in-motion-square
+      - singlepage-generated-living-focus-photography-project-start-v1-square
+      - singlepage-generated-living-focus-photography-project-progress-v1-square
     reference_fit: Cool daylight and warm natural skin connect the set. Conversation gesture, reflective
       stillness and a physical order handover remain distinct; subjects, gestures, scene props and
       full framing are plausible.
@@ -158,6 +161,8 @@ media_review:
       - singlepage-generated-living-focus-photography-business-conversation
       - singlepage-generated-living-focus-photography-moment-of-focus
       - singlepage-generated-living-focus-photography-work-in-motion
+      - singlepage-generated-living-focus-photography-project-start-v1
+      - singlepage-generated-living-focus-photography-project-progress-v1
     square_adaptation_review:
       status: visually-verified
       source: Production-agent source comparison and coordinator source and browser review, 2026-10-04.
@@ -564,7 +569,7 @@ The twelve interface references support neutral work surfaces, explicit states a
 
 **Living Focus** brings people and their work into a clear digital workspace. Close, candid photography carries movement and attention; cool white surfaces and graphite panels give decisions room to stand out. Direct Onest typography keeps the interface readable, while lime marks the next useful action and the current selection.
 
-The same visual language connects supplied materials, the reviewed project model, a landing-page sandbox and publication on the user's server. Photography shows human work; interface captures explain observed product states. Sparse diagrams support later explanations of software reuse and human-directed agent work.
+The same visual language connects supplied materials, shortened written project and product documents, corrections and accepted text for later chat and export. Landing-page assembly and server deployment belong to subsequent development. Photography shows human work; interface captures explain observed product states. Sparse diagrams support explanations of software reuse and human-directed agent work.
 
 ### Reusable graphic language
 
@@ -833,15 +838,19 @@ Square preparation instruction for future outputs: retain the complete supplied 
 
 ### Generation examples
 
-| Example               | Use             | Content brief                                                                                | Avoid                   | Asset ID                                                                     |
-| --------------------- | --------------- | -------------------------------------------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------- |
-| Business conversation | Collaboration   | Two business partners exchange an idea, with a natural gesture and a clear human connection. | Posed meeting stock     | `singlepage-generated-living-focus-photography-business-conversation-square` |
-| Moment of focus       | Human attention | A business owner considers an idea, with close framing and soft depth.                       | Generic office portrait | `singlepage-generated-living-focus-photography-moment-of-focus-square`       |
-| Work in motion        | Everyday work   | A person carries out a practical business task; the action and gesture remain readable.      | Staged success claims   | `singlepage-generated-living-focus-photography-work-in-motion-square`        |
+| Example               | Use                      | Content brief                                                                                              | Avoid                   | Asset ID                                                                     |
+| --------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------- |
+| Business conversation | Collaboration            | Two business partners exchange an idea, with a natural gesture and a clear human connection.               | Posed meeting stock     | `singlepage-generated-living-focus-photography-business-conversation-square` |
+| Moment of focus       | Human attention          | A business owner considers an idea, with close framing and soft depth.                                     | Generic office portrait | `singlepage-generated-living-focus-photography-moment-of-focus-square`       |
+| Work in motion        | Everyday work            | A person carries out a practical business task; the action and gesture remain readable.                    | Staged success claims   | `singlepage-generated-living-focus-photography-work-in-motion-square`        |
+| Project start         | Independent project work | A woman works on her own project with a laptop and notebook in cool window daylight.                       | Posed success claims    | `singlepage-generated-living-focus-photography-project-start-v1-square`      |
+| Project progress      | Review and refinement    | A man reviews a project sketch beside his laptop, with a relaxed expression and a visible working gesture. | Customer testimonials   | `singlepage-generated-living-focus-photography-project-progress-v1-square`   |
 
 ### Review and quality gate
 
-Compare each new square derivative with its original at 100%, display and small-preview sizes. Verify that the complete original frame remains intact and the outpainted area continues its light, perspective and detail. Check cool daylight, natural skin, expressive gestures, anatomy, scene plausibility and a legible point of attention. Reject any crop, reframing, stretched proportions, lost detail or visible outpainting seam. Review the three squares together for consistent presentation while their subjects and composition remain distinct. The examples show prepared derivatives of the registered production masters; original generation prompts, separate adaptation instructions, source links and review status remain in Assets and metadata.
+Compare each new square derivative with its original at 100%, display and small-preview sizes. Verify that the complete original frame remains intact and the outpainted area continues its light, perspective and detail. Check cool daylight, natural skin, expressive gestures, anatomy, scene plausibility and a legible point of attention. Reject any crop, reframing, stretched proportions, lost detail or visible outpainting seam. Review the photography set together for consistent presentation while its subjects and compositions remain distinct. The examples show prepared derivatives of the registered production masters; original generation prompts, separate adaptation instructions, source links and review status remain in Assets and metadata.
+
+Project start and Project progress are reusable on account, onboarding and project pages, and in related marketing materials. AI Chat registration uses them as a vertical pair, with the materials-information card over the lower desk area of Project progress. Keep faces and working gestures visible, preserve the square proportions and keep text and controls as separate accessible elements. Both scenes depict fictional people; they supply atmosphere rather than customer evidence.
 
 ## Illustration and diagrams
 
@@ -851,9 +860,10 @@ Illustration explains reusable functions, product adaptation and human-directed 
 
 ### Core journey composition
 
-- Keep the reviewed project model as the stable content anchor as materials become structured decisions and a landing-page sandbox.
+- Keep the reviewed project and each product's written documents as the stable content anchor while the user corrects shortcomings, accepts the text and reuses it in chat or exports it.
 - Reuse recognizable content fragments across states so the relationship remains clear.
-- Reveal research, documents and products when they become relevant; do not imply that every area must be complete before a useful preview exists.
+- Reveal research, documents and products when they become relevant; unanswered questions can remain open while the user reviews the draft.
+- Label landing-page assembly and server deployment as subsequent development, separate from the first-stage written documents.
 - Show Code Framework in response to a concrete software need, connecting the intended product to relevant reusable functions and the user's server.
 
 ### Style master prompt
@@ -880,4 +890,4 @@ Compare defining lines, secondary detail, restrained lime and meaningful relatio
 
 ## Outputs and provenance
 
-Current reusable outputs are the Onest primary lockup, the preserved avatar and favicon, three prepared square photographs and three square illustration derivatives on pure white registered under `living-focus`, plus the licensed proposed Phosphor Regular icons. The photography and illustration masters remain preserved production sources. The square-image rule does not change identity lockup formats. The font and concept selection are scoped operator decisions; the completed system and new derivatives remain available for visual review. Assets stores exact prompts, source paths, hashes, rights and lifecycle. Product compositions use actual product copy and evidence under their own owners.
+Current reusable outputs are the Onest primary lockup, the preserved avatar and favicon, five prepared square photographs and three square illustration derivatives on pure white registered under `living-focus`, plus the licensed proposed Phosphor Regular icons. The photography and illustration masters remain preserved production sources. The square-image rule does not change identity lockup formats. The font and concept selection are scoped operator decisions; the completed system and new derivatives remain available for visual review. Assets stores exact prompts, source paths, hashes, rights and lifecycle. Product compositions use actual product copy and evidence under their own owners.

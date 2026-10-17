@@ -1,0 +1,15 @@
+{
+  "status": "VERIFIED",
+  "ownerTestSubjectId": "82c79454-2c5d-440a-ade8-4ed2dd303f59",
+  "otherTestSubjectId": "5cc746a6-3aa2-4d4e-88e3-046ed36c9acd",
+  "registeredIdentityCount": 1,
+  "emailUpdated": true,
+  "emailLoginPreservesSubject": true,
+  "passwordUpdated": true,
+  "oldPasswordRejected": true,
+  "newPasswordAuthenticates": true,
+  "credentialFieldsAbsent": true,
+  "foreignIdentityReadStatus": 403,
+  "personalProfileCountAfterRepeatedLogin": 1,
+  "personalProfilePreserved": true
+}

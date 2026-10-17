@@ -1,15 +1,17 @@
+import { Component as Thread } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { SocialThreadListDefault } from "./Component";
 
 const meta = {
   id: "modules-social-models-thread-singlepage-list-default",
-  title: "Modules/Social/Models/Thread/Singlepage/list-default",
-  component: SocialThreadListDefault,
+  title: "Modules/Social/Thread/Singlepage/list-default",
+  component: Thread,
   parameters: {
     layout: "centered",
   },
-} satisfies Meta<typeof SocialThreadListDefault>;
+  args: { variant: "list-default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Thread>, { variant: "list-default" }>
+>;
 
 export default meta;
 

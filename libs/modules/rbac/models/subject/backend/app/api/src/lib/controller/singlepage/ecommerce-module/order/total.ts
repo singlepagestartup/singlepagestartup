@@ -8,6 +8,8 @@ import { type IResult } from "@sps/ecommerce/models/order/sdk/server";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 
+import { withConsistencySnapshot } from "@sps/shared-backend-api";
+
 export class Handler {
   service: Service;
 
@@ -43,108 +45,111 @@ export class Handler {
         throw new Error("Validation error. Only order owner can update order");
       }
 
-      const subjectsToEcommerceModuleOrders =
-        await this.service.subjectsToEcommerceModuleOrders.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "subjectId",
-                  method: "eq",
-                  value: id,
-                },
-              ],
+      return await withConsistencySnapshot(async () => {
+        const subjectsToEcommerceModuleOrders =
+          await this.service.subjectsToEcommerceModuleOrders.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "subjectId",
+                    method: "eq",
+                    value: id,
+                  },
+                ],
+              },
             },
-          },
-        });
-
-      if (!subjectsToEcommerceModuleOrders?.length) {
-        return c.json({
-          data: [],
-        });
-      }
-
-      const ecommerceModuleOrdersWithCartType =
-        await this.service.ecommerceModule.order.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: subjectsToEcommerceModuleOrders.map(
-                    (subjectToEcommerceModuleOrder) =>
-                      subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
-                  ),
-                },
-                {
-                  column: "type",
-                  method: "eq",
-                  value: "cart",
-                },
-                {
-                  column: "status",
-                  method: "eq",
-                  value: "new",
-                },
-              ],
-            },
-          },
-        });
-
-      if (!ecommerceModuleOrdersWithCartType?.length) {
-        return c.json({
-          data: [],
-        });
-      }
-
-      const totalsMap = new Map<
-        string,
-        {
-          billingModuleCurrency: IBillingModuleCurrency;
-          total: number;
-          orders: (IEcommerceModuleOrder & {
-            total: IResult["ITotalResult"];
-          })[];
-        }
-      >();
-
-      for (const ecommerceModuleOrder of ecommerceModuleOrdersWithCartType) {
-        const ecommerceModuleOrderTotals =
-          await this.service.ecommerceModule.order.findByIdTotal({
-            id: ecommerceModuleOrder.id,
           });
 
-        for (const ecommerceModuleOrderTotal of ecommerceModuleOrderTotals) {
-          const currencyId = ecommerceModuleOrderTotal.billingModuleCurrency.id;
-          if (totalsMap.has(currencyId)) {
-            const entry = totalsMap.get(currencyId)!;
-            entry.total += ecommerceModuleOrderTotal.total;
+        if (!subjectsToEcommerceModuleOrders?.length) {
+          return c.json({
+            data: [],
+          });
+        }
 
-            if (!entry.orders.some((o) => o.id === ecommerceModuleOrder.id)) {
-              entry.orders.push({
-                ...ecommerceModuleOrder,
-                total: ecommerceModuleOrderTotals,
-              });
-            }
-          } else {
-            totalsMap.set(currencyId, {
-              billingModuleCurrency:
-                ecommerceModuleOrderTotal.billingModuleCurrency,
-              total: ecommerceModuleOrderTotal.total,
-              orders: [
-                {
+        const ecommerceModuleOrdersWithCartType =
+          await this.service.ecommerceModule.order.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: subjectsToEcommerceModuleOrders.map(
+                      (subjectToEcommerceModuleOrder) =>
+                        subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
+                    ),
+                  },
+                  {
+                    column: "type",
+                    method: "eq",
+                    value: "cart",
+                  },
+                  {
+                    column: "status",
+                    method: "eq",
+                    value: "new",
+                  },
+                ],
+              },
+            },
+          });
+
+        if (!ecommerceModuleOrdersWithCartType?.length) {
+          return c.json({
+            data: [],
+          });
+        }
+
+        const totalsMap = new Map<
+          string,
+          {
+            billingModuleCurrency: IBillingModuleCurrency;
+            total: number;
+            orders: (IEcommerceModuleOrder & {
+              total: IResult["ITotalResult"];
+            })[];
+          }
+        >();
+
+        for (const ecommerceModuleOrder of ecommerceModuleOrdersWithCartType) {
+          const ecommerceModuleOrderTotals =
+            await this.service.ecommerceModule.order.findByIdTotal({
+              id: ecommerceModuleOrder.id,
+            });
+
+          for (const ecommerceModuleOrderTotal of ecommerceModuleOrderTotals) {
+            const currencyId =
+              ecommerceModuleOrderTotal.billingModuleCurrency.id;
+            if (totalsMap.has(currencyId)) {
+              const entry = totalsMap.get(currencyId)!;
+              entry.total += ecommerceModuleOrderTotal.total;
+
+              if (!entry.orders.some((o) => o.id === ecommerceModuleOrder.id)) {
+                entry.orders.push({
                   ...ecommerceModuleOrder,
                   total: ecommerceModuleOrderTotals,
-                },
-              ],
-            });
+                });
+              }
+            } else {
+              totalsMap.set(currencyId, {
+                billingModuleCurrency:
+                  ecommerceModuleOrderTotal.billingModuleCurrency,
+                total: ecommerceModuleOrderTotal.total,
+                orders: [
+                  {
+                    ...ecommerceModuleOrder,
+                    total: ecommerceModuleOrderTotals,
+                  },
+                ],
+              });
+            }
           }
         }
-      }
 
-      return c.json({
-        data: Array.from(totalsMap.values()),
+        return c.json({
+          data: Array.from(totalsMap.values()),
+        });
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

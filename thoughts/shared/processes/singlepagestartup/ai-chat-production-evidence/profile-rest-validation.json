@@ -1,0 +1,35 @@
+{
+  "scope": "Subject Profile REST collection and client workspace composition",
+  "routes": {
+    "find": "GET /api/rbac/subjects/:id/social-module/profiles",
+    "create": "POST /api/rbac/subjects/:id/social-module/profiles",
+    "result": "Profile model or Profile model list",
+    "get_writes": false
+  },
+  "checks": {
+    "jest": { "suites": 8, "tests": 28, "passed": true },
+    "composition_after_cache_change": {
+      "suites": 1,
+      "tests": 3,
+      "passed": true
+    },
+    "host_typescript": { "passed": true },
+    "api_typescript": {
+      "baseline_diagnostics": 25,
+      "current_diagnostics": 25,
+      "new_diagnostics": 0
+    },
+    "code_placement": { "passed": true },
+    "git_whitespace": { "passed": true },
+    "original_dirty_file_hashes": { "changed": [] }
+  },
+  "browser": {
+    "created_profile_name": "REST profile — verification",
+    "profile_id": "1d612e7e-84c5-483a-a41a-3a9a09423134",
+    "chat_id": "4da2dd28-0dce-4850-97de-a6c44cbf15f3",
+    "thread_id": "933dc620-2543-4ac5-8ede-5c90458193d4",
+    "collection_lists_multiple_profiles": true,
+    "existing_project_loads_after_reload": true,
+    "screenshot": "profile-rest-creation.png"
+  }
+}

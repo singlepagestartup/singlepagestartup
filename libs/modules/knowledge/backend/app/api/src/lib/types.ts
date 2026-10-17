@@ -7,6 +7,11 @@ export interface KnowledgeSourceInput {
   description?: string | null;
 }
 
+export interface KnowledgeMissingFilesError extends Error {
+  code: "KNOWLEDGE_FILES_NOT_FOUND";
+  fileIds: string[];
+}
+
 export type KnowledgeSourceIndexInput = typeof Table.$inferSelect;
 
 export interface KnowledgeChunkInput {

@@ -1,7 +1,7 @@
 {
   "$schema": "../../../../../block.schema.json",
   "id": "social.profile.article-find-by-id-comment-form-default",
-  "title": "Social Profile / Article Find By Id Comment Form Default",
+  "title": "article-find-by-id-comment-form-default",
   "description": "Article comment composer form for a social profile context.",
   "layer": "singlepage",
   "state": "draft",

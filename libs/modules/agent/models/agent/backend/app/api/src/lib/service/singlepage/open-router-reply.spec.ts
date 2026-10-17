@@ -1156,3 +1156,62 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
     expect(telegramBotCommandReplyMessageCreate).not.toHaveBeenCalled();
   });
 });
+
+describe("Given web AI Chat uses token billing and Telegram uses subscription gates", () => {
+  const props = (variant: string) =>
+    ({
+      jwtToken: "caller-jwt",
+      rbacModuleSubject: { id: "agent" },
+      shouldReplySocialModuleProfile: { id: "AI" },
+      socialModuleChat: { id: "chat", variant },
+      socialModuleMessage: { id: "message", description: "Project question" },
+      messageFromSocialModuleProfile: { id: "human" },
+    }) as any;
+  function withoutSubscription() {
+    const svc = createService();
+    (svc as any).getTelegramRequiredSubscriptionChannelConfiguration = jest
+      .fn()
+      .mockReturnValue({
+        isConfigured: true,
+        isPartiallyConfigured: false,
+        name: "Channel",
+        link: "https://t.me/example",
+      });
+    (svc as any).rbacModule.role.find.mockResolvedValue([
+      { id: "subscriber", slug: "required-telegram-channel-subscriber" },
+    ]);
+    (svc as any).rbacModule.subjectsToRoles.find.mockResolvedValue([]);
+    (
+      svc as any
+    ).statusMessages.openRouterRequiredTelegamChannelSubscriptionError = {
+      ru: "Subscribe to channel",
+    };
+    return svc;
+  }
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockedSign.mockResolvedValue("signed-jwt");
+    mockedReactByOpenRouter.mockResolvedValue({});
+  });
+  it("When a web project has no Telegram or tariff membership Then it reaches the existing RBAC OpenRouter billing route", async () => {
+    await withoutSubscription().openRouterReplyMessageCreate(props("ai-chat"));
+    expect(mockedReactByOpenRouter).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "subject-openrouter",
+        socialModuleChatId: "chat",
+      }),
+    );
+    expect(mockedThreadMessageCreate).not.toHaveBeenCalled();
+  });
+  it("When a Telegram member lacks required channel membership Then its channel gate still applies", async () => {
+    await withoutSubscription().openRouterReplyMessageCreate(props("telegram"));
+    expect(mockedReactByOpenRouter).not.toHaveBeenCalled();
+    expect(mockedThreadMessageCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          description: expect.stringContaining("Subscribe to channel"),
+        }),
+      }),
+    );
+  });
+});

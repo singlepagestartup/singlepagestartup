@@ -1,11 +1,7 @@
-import { Component as WebsiteBuilderModuleButton } from "../../../../button/index";
+import type { IComponentProps, IHeaderButtonsProps } from "./interface";
+export type { IHeaderButtonsProps } from "./interface";
+import { Component as Button } from "../../../../button/index";
 
-export interface IHeaderButtonsProps {
-  variant?: string;
-  id: string;
-  activeHref?: string;
-  onNavigate?: () => void;
-}
 const buttonIds: Record<string, string> = {
   "ai-chat-try": "ai-chat-try",
   "ai-chat-help": "ai-chat-help",
@@ -17,7 +13,7 @@ export function Component({
   id,
   activeHref,
   onNavigate,
-}: IHeaderButtonsProps) {
+}: IComponentProps) {
   const buttonId = buttonIds[id];
   if (!buttonId) return null;
   return (
@@ -29,7 +25,7 @@ export function Component({
       data-model="buttons-array"
       data-variant={variant}
     >
-      <WebsiteBuilderModuleButton
+      <Button
         variant="navbar-ai-chat"
         id={buttonId}
         activeHref={activeHref}

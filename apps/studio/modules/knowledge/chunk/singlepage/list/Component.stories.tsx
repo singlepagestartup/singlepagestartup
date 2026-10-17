@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as KnowledgeModuleChunk } from "../../index";
+import { Component as Chunk } from "../../index";
 const meta = {
-  title: "Modules/Knowledge/Models/Chunk/Singlepage/list",
-  component: KnowledgeModuleChunk,
+  id: "modules-knowledge-models-chunk-singlepage-list",
+  title: "Modules/Knowledge/Chunk/Singlepage/list",
+  component: Chunk,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof KnowledgeModuleChunk>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Chunk>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

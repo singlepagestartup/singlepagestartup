@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as HostModulePage } from "../../index";
+import { Component as Page } from "../../index";
 
 import fixture from "../admin-v2-table/data.json";
 
 const meta = {
-  title: "Modules/Host/Models/Page/Singlepage/admin-v2-card",
-  component: HostModulePage,
+  id: "modules-host-models-page-singlepage-admin-v2-card",
+  title: "Modules/Host/Page/Singlepage/admin-v2-card",
+  component: Page,
   args: { variant: "admin-v2-card", id: fixture.records[0].id },
   argTypes: { id: { control: "text" } },
-} satisfies Meta<typeof HostModulePage>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Page>, { variant: "admin-v2-card" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

@@ -1,27 +1,27 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { defaultRbacIdentities } from "../../../shared";
-import { Component as RbacModuleIdentity } from "../../index";
-import type { IdentityCardDefaultProps } from "./Component";
-import { Component as RbacModuleSubject } from "../../../subject/index";
-function Example(props: Partial<IdentityCardDefaultProps>) {
+import { Component as Identity } from "../../index";
+import type { IdentityCardDefaultProps } from "./interface";
+import { Component as Subject } from "../../../subject/index";
+function Component(props: Partial<IdentityCardDefaultProps>) {
   return (
-    <RbacModuleIdentity
+    <Identity
       {...props}
       variant="card-default"
       renderFlow={({ identity, action, onClose, onUpdate }) =>
         action === "reconnect" ? (
-          <RbacModuleSubject
-            variant="authentication-provider-connect-default"
+          <Subject
+            variant="me-authentication-provider-connect-default"
             provider={identity.provider}
             account={identity.account || identity.email}
             onCancel={onClose}
             onComplete={(account) => onUpdate({ ...identity, account })}
           />
         ) : (
-          <RbacModuleSubject
+          <Subject
             key={action}
-            variant="authentication-email-and-password-account-change-default"
+            variant="me-authentication-email-and-password-account-change-default"
             kind={action === "change-email" ? "email" : "password"}
             email={identity.email}
             onCancel={onClose}
@@ -36,12 +36,13 @@ function Example(props: Partial<IdentityCardDefaultProps>) {
 }
 
 const meta = {
-  title: "Modules/RBAC/Models/Identity/Singlepage/card-default",
-  component: Example,
+  id: "modules-rbac-models-identity-singlepage-card-default",
+  title: "Modules/RBAC/Identity/Singlepage/card-default",
+  component: Component,
   args: {
     identity: defaultRbacIdentities[0],
   },
-} satisfies Meta<typeof Example>;
+} satisfies Meta<typeof Component>;
 
 export default meta;
 

@@ -1,15 +1,19 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ContentDefault, defaultContentProps } from "./Component";
+import { defaultContentProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Widget/Singlepage/content-default",
-  component: ContentDefault,
+  id: "modules-website-builder-models-widget-singlepage-content-default",
+  title: "Modules/Website-Builder/Widget/Singlepage/content-default",
+  component: Widget,
   parameters: {
     layout: "fullscreen",
   },
-  args: defaultContentProps,
-} satisfies Meta<typeof ContentDefault>;
+  args: { ...defaultContentProps, variant: "content-default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Widget>, { variant: "content-default" }>
+>;
 
 export default meta;
 

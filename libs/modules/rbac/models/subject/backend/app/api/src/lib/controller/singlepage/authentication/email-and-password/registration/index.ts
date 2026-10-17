@@ -4,7 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
 import { Service } from "../../../../../service";
 import { setCookie } from "hono/cookie";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { authorization, getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -26,11 +26,17 @@ export class Handler {
       }
 
       const data = JSON.parse(body["data"]);
+      const token = authorization(c);
+      const session = token
+        ? await jwt.verify(token, RBAC_JWT_SECRET)
+        : undefined;
+      const subjectId = session?.subject?.["id"];
 
       const entity = await this.service.authenticationLoginAndPassowrd({
         data,
         type: "registration",
         roles: data.roles || [],
+        subjectId: typeof subjectId === "string" ? subjectId : undefined,
       });
 
       const decodedJwt = await jwt.verify(entity.jwt, RBAC_JWT_SECRET);

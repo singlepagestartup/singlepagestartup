@@ -185,7 +185,10 @@ function inspectionQuery(tables: ITelegramNaturalKeyRepairTables) {
       SELECT relation.ct_id, COUNT(DISTINCT thread.id)::bigint AS row_count
       FROM "${tables.chatsToThreads}" relation
       INNER JOIN "${tables.thread}" thread ON thread.id = relation.td_id
-      WHERE thread.variant = 'default'
+      INNER JOIN "${tables.chat}" chat ON chat.id = relation.ct_id
+      WHERE chat.variant = 'telegram'
+        AND chat.source_system_id IS NOT NULL
+        AND thread.variant = 'default'
       GROUP BY relation.ct_id
       HAVING COUNT(DISTINCT thread.id) > 1
     ),
@@ -196,7 +199,10 @@ function inspectionQuery(tables: ITelegramNaturalKeyRepairTables) {
         COUNT(DISTINCT thread.id)::bigint AS row_count
       FROM "${tables.chatsToThreads}" relation
       INNER JOIN "${tables.thread}" thread ON thread.id = relation.td_id
-      WHERE thread.variant = 'telegram'
+      INNER JOIN "${tables.chat}" chat ON chat.id = relation.ct_id
+      WHERE chat.variant = 'telegram'
+        AND chat.source_system_id IS NOT NULL
+        AND thread.variant = 'telegram'
         AND thread.source_system_id IS NOT NULL
       GROUP BY relation.ct_id, thread.source_system_id
       HAVING COUNT(DISTINCT thread.id) > 1

@@ -1,0 +1,121 @@
+{
+  "id": "100372b5-c984-4766-823d-76e0d829526f",
+  "prevId": "c6597dcd-0e9a-4dd3-8aad-753b89fd4d2b",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.rc_ws_to_cm_me_ws_l65": {
+      "name": "rc_ws_to_cm_me_ws_l65",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wt_id": {
+          "name": "wt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cm_me_wt_id": {
+          "name": "cm_me_wt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "rc_ws_to_cm_me_ws_l65_wt_id_sps_rc_widget_id_fk": {
+          "name": "rc_ws_to_cm_me_ws_l65_wt_id_sps_rc_widget_id_fk",
+          "tableFrom": "rc_ws_to_cm_me_ws_l65",
+          "tableTo": "sps_rc_widget",
+          "columnsFrom": [
+            "wt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "rc_ws_to_cm_me_ws_l65_cm_me_wt_id_sps_cm_widget_id_fk": {
+          "name": "rc_ws_to_cm_me_ws_l65_cm_me_wt_id_sps_cm_widget_id_fk",
+          "tableFrom": "rc_ws_to_cm_me_ws_l65",
+          "tableTo": "sps_cm_widget",
+          "columnsFrom": [
+            "cm_me_wt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "rc_ws_to_cm_me_ws_l65_wt_id_cm_me_wt_id_unique": {
+          "name": "rc_ws_to_cm_me_ws_l65_wt_id_cm_me_wt_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "wt_id",
+            "cm_me_wt_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

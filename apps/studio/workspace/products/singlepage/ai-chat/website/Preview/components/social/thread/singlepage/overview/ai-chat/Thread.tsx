@@ -1,4 +1,5 @@
 "use client";
+
 import {
   createContext,
   useCallback,
@@ -7,11 +8,15 @@ import {
   type ReactNode,
 } from "react";
 import type { IProjectMessage } from "../../../../profile/singlepage/scope/ai-chat/project/state";
-import type { IAIChatThread } from "./state";
 import { useSource } from "../../../../../knowledge/source/singlepage/overview/document/ai-chat/Source";
 import { useFiles } from "../../../../../file-storage/file/singlepage/list/attachments/ai-chat/Files";
 import { knowledgeAgent } from "../../../../profile/singlepage/agent/overview/ai-chat/index";
-import { appendThreadExchange } from "./state";
+import {
+  type IAIChatThread,
+  appendThreadExchange,
+  moveThreadAttachment,
+  reorderThreadAttachment,
+} from "./state";
 
 interface IThreadContext {
   thread: IAIChatThread;
@@ -21,6 +26,8 @@ interface IThreadContext {
   fileIds: string[];
   attach: (ids: string[]) => void;
   remove: (id: string) => void;
+  move: (id: string, direction: -1 | 1) => void;
+  reorder: (id: string, targetId: string) => void;
   workingOn: "whole" | "source";
   setWorkingOn: (value: "whole" | "source") => void;
   send: () => void;
@@ -36,6 +43,8 @@ interface IThreadProviderProps {
   data?: IAIChatThread;
   children: ReactNode;
   initialMessages?: IProjectMessage[];
+  initialFileIds?: string[];
+  initialDraft?: string;
 }
 const ThreadContext = createContext<IThreadContext | null>(null);
 export function ThreadProvider(props: IThreadProviderProps) {
@@ -50,6 +59,8 @@ function ThreadStateProvider({
   data: suppliedThread,
   children,
   initialMessages,
+  initialFileIds = [],
+  initialDraft = "",
 }: IThreadProviderProps) {
   const { source, fileIds: sourceFileIds, edit } = useSource();
   const { files } = useFiles();
@@ -70,8 +81,8 @@ function ThreadStateProvider({
         },
       ],
   );
-  const [draft, setDraft] = useState("");
-  const [fileIds, setFileIds] = useState<string[]>([]);
+  const [draft, setDraft] = useState(initialDraft);
+  const [fileIds, setFileIds] = useState<string[]>(initialFileIds);
   const [workingOn, setWorkingOn] = useState<"whole" | "source">("whole");
   const [pane, setPane] = useState<"chat" | "document">("chat");
   const [proposal, setProposal] = useState<IThreadContext["proposal"]>(null);
@@ -86,13 +97,25 @@ function ThreadStateProvider({
       setFileIds((current) => current.filter((value) => value !== id)),
     [],
   );
+  const reorder = useCallback(
+    (id: string, targetId: string) =>
+      setFileIds((current) => reorderThreadAttachment(current, id, targetId)),
+    [],
+  );
+  const move = useCallback(
+    (id: string, direction: -1 | 1) =>
+      setFileIds((current) => moveThreadAttachment(current, id, direction)),
+    [],
+  );
   const discuss = useCallback(() => {
     setWorkingOn("source");
     setPane("chat");
   }, []);
   function send() {
     const text = draft.trim();
-    const pending = files.filter((file) => fileIds.includes(file.id));
+    const pending = fileIds.flatMap(
+      (id) => files.find((file) => file.id === id) ?? [],
+    );
     if (!text && !pending.length) return;
 
     const sourceFiles = files.filter((file) => sourceFileIds.includes(file.id));
@@ -141,6 +164,8 @@ function ThreadStateProvider({
         fileIds,
         attach,
         remove,
+        move,
+        reorder,
         workingOn,
         setWorkingOn,
         send,

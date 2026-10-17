@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as HostModulePage } from "../../index";
+import { Component as Page } from "../../index";
 const meta = {
-  title: "Modules/Host/Models/Page/Singlepage/list",
-  component: HostModulePage,
+  id: "modules-host-models-page-singlepage-list",
+  title: "Modules/Host/Page/Singlepage/list",
+  component: Page,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof HostModulePage>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Page>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

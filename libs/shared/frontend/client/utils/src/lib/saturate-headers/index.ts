@@ -1,7 +1,7 @@
 import { authorization } from "..";
 
 export function util(props?: Record<string, any>) {
-  let saturatedHeaders = { ...(props || {}) };
+  let saturatedHeaders = { "X-SPS-Consistency": "1", ...(props || {}) };
   const authrizationHeaders = authorization.headers();
 
   if (Object.keys(authrizationHeaders)) {

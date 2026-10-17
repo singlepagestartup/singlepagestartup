@@ -1,15 +1,19 @@
+import { Component as Cart } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { CartButtonDefault, defaultCartButtonDefaultProps } from "./Component";
+import { defaultCartButtonDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/Ecommerce/Models/Cart/Singlepage/cart-button-default",
-  component: CartButtonDefault,
+  id: "modules-ecommerce-models-cart-singlepage-cart-button-default",
+  title: "Modules/Ecommerce/Cart/Singlepage/cart-button-default",
+  component: Cart,
   parameters: {
     layout: "centered",
   },
-  args: defaultCartButtonDefaultProps,
-} satisfies Meta<typeof CartButtonDefault>;
+  args: { ...defaultCartButtonDefaultProps, variant: "button-default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Cart>, { variant: "button-default" }>
+>;
 
 export default meta;
 

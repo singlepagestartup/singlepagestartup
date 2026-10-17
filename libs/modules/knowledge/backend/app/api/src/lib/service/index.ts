@@ -6,7 +6,8 @@ import {
 import { LlmChatClient } from "../generation";
 import { KnowledgeIndexer } from "../indexer";
 import { LlmModelClient } from "../models";
-import { KnowledgeRepository } from "../repository";
+import type { Service as SourceService } from "@sps/knowledge/models/source/backend/app/api/src/lib/service";
+import { createKnowledgeServices } from "../composition";
 import {
   DEFAULT_KNOWLEDGE_GENERATION_MODEL_SLUG,
   KnowledgeGenerationModelSlug,
@@ -21,20 +22,20 @@ export interface IKnowledgePersona {
 }
 
 export class KnowledgeService {
-  private repository: KnowledgeRepository;
+  readonly source: SourceService;
   private embeddingClient: IKnowledgeEmbeddingClient;
   private generationClient: LlmChatClient;
   private modelClient: LlmModelClient;
   private materialService: MaterialService;
 
   constructor(props?: {
-    repository?: KnowledgeRepository;
+    source?: SourceService;
     embeddingClient?: IKnowledgeEmbeddingClient;
     generationClient?: LlmChatClient;
     modelClient?: LlmModelClient;
   }) {
     const config = getKnowledgeConfiguration();
-    this.repository = props?.repository || new KnowledgeRepository();
+    this.source = props?.source || createKnowledgeServices().source;
     this.embeddingClient =
       props?.embeddingClient || createKnowledgeEmbeddingClient();
     this.generationClient =
@@ -47,12 +48,12 @@ export class KnowledgeService {
       new LlmModelClient({
         baseUrl: config.llm.url,
       });
-    this.materialService = new MaterialService({ repository: this.repository });
+    this.materialService = new MaterialService({ source: this.source });
   }
 
   async status() {
     const config = getKnowledgeConfiguration();
-    const counts = await this.repository.getStatus();
+    const counts = await this.source.getStatus();
 
     return {
       ...counts,
@@ -79,7 +80,7 @@ export class KnowledgeService {
       return [];
     }
 
-    const sources = await this.repository.findSourcesByIds(sourceIds);
+    const sources = await this.source.findSourcesByIds(sourceIds);
     const sourcesById = new Map(
       sources.map((source) => {
         return [source.id, source];
@@ -93,18 +94,33 @@ export class KnowledgeService {
       });
   }
 
+  async sourceFiles(sourceId: string) {
+    return this.source.sourceFiles(sourceId);
+  }
+
   async updateSource(props: {
     sourceId: string;
     title?: string;
     content: string;
     description?: string | null;
     expectedContentHash?: string;
+    fileIds?: string[];
   }) {
-    const source = await this.repository.updateSource(props);
+    const updated = await this.source.updateSourceWithAttachments(props);
+    const source = updated?.source;
     if (!source)
       throw new Error(`Knowledge Source ${props.sourceId} was not found.`);
+    let processingError: string | undefined;
+    if (updated?.attachmentsChanged) {
+      try {
+        await this.rebuildFiles(source.id);
+      } catch (error) {
+        processingError =
+          error instanceof Error ? error.message : String(error);
+      }
+    }
     let indexError: string | undefined;
-    if (source.indexedContentHash !== source.contentHash) {
+    if (!processingError && source.indexedContentHash !== source.contentHash) {
       try {
         await this.index({ sourceId: source.id });
       } catch (error) {
@@ -113,26 +129,25 @@ export class KnowledgeService {
       }
     }
     return {
-      source: await this.repository.findSourceById(source.id),
+      source: await this.source.findSourceById(source.id),
       indexError,
+      processingError,
     };
   }
 
   async deleteSource(sourceId: string) {
-    const source = await this.repository.findSourceById(sourceId);
+    const source = await this.source.findSourceById(sourceId);
 
     if (!source) {
       throw new Error(`Knowledge source ${sourceId} was not found.`);
     }
 
-    return this.repository.deleteSourceWithDerivedData(sourceId);
+    return this.source.deleteSourceWithDerivedData(sourceId);
   }
 
   async updateStoredFile(props: {
     id: string;
-    data: NonNullable<
-      Parameters<KnowledgeRepository["mutateStoredFile"]>[0]["data"]
-    >;
+    data: NonNullable<Parameters<SourceService["mutateStoredFile"]>[0]["data"]>;
   }) {
     if (
       !props.data ||
@@ -148,9 +163,9 @@ export class KnowledgeService {
   }
 
   private async mutateStoredFile(
-    props: Parameters<KnowledgeRepository["mutateStoredFile"]>[0],
+    props: Parameters<SourceService["mutateStoredFile"]>[0],
   ) {
-    const result = await this.repository.mutateStoredFile(props);
+    const result = await this.source.mutateStoredFile(props);
     const results = await Promise.allSettled(
       result.sourceIds.map((sourceId) => this.rebuildFiles(sourceId)),
     );
@@ -166,6 +181,7 @@ export class KnowledgeService {
 
   async search(props: {
     query: string;
+    sessionId?: string;
     topK?: number;
     neighborWindow?: number;
     finalTopK?: number;
@@ -187,7 +203,9 @@ export class KnowledgeService {
     }
 
     const config = getKnowledgeConfiguration();
-    const embedding = await this.embeddingClient.embed(query);
+    const embedding = props.sessionId
+      ? await this.embeddingClient.embed(query, { sessionId: props.sessionId })
+      : await this.embeddingClient.embed(query);
     const topK = Math.min(
       Math.max(Number(props.topK || config.search.defaultTopK), 1),
       50,
@@ -196,7 +214,7 @@ export class KnowledgeService {
       Math.max(Math.floor(Number(props.neighborWindow || 0)), 0),
       5,
     );
-    const seedChunks = await this.repository.searchChunks({
+    const seedChunks = await this.source.searchChunks({
       embedding,
       topK,
       minSimilarity: props.minSimilarity,
@@ -204,7 +222,7 @@ export class KnowledgeService {
     });
 
     const neighborChunks = neighborWindow
-      ? await this.repository.findNeighborChunks({
+      ? await this.source.findNeighborChunks({
           window: neighborWindow,
           seeds: seedChunks
             .filter((chunk) => Boolean(chunk.sourceId))
@@ -289,7 +307,7 @@ export class KnowledgeService {
   }) {
     if (!props?.dryRun) await this.assertEmbeddingModelDimensions();
     const indexer = new KnowledgeIndexer({
-      repository: this.repository,
+      source: this.source,
       embeddingClient: this.embeddingClient,
     });
 
@@ -298,14 +316,14 @@ export class KnowledgeService {
 
   async reindexSource(id: string) {
     await this.assertEmbeddingModelDimensions();
-    const source = await this.repository.findSourceById(id);
+    const source = await this.source.findSourceById(id);
 
     if (!source) {
       throw new Error(`Knowledge source ${id} was not found.`);
     }
 
     const indexer = new KnowledgeIndexer({
-      repository: this.repository,
+      source: this.source,
       embeddingClient: this.embeddingClient,
     });
 
@@ -324,7 +342,9 @@ export class KnowledgeService {
     if (!slug) throw new Error("Knowledge learn slug is required.");
     if (!props.content.trim() && !props.fileIds?.length)
       throw new Error("Knowledge learn content or files are required.");
-    const source = await this.repository.upsertSourceBySlug(
+    if (props.fileIds?.length)
+      await this.source.validateAttachments(props.fileIds);
+    const source = await this.source.upsertSourceBySlug(
       {
         slug,
         title: props.title.trim() || "Knowledge",
@@ -337,7 +357,7 @@ export class KnowledgeService {
     await props.onSourceSaved?.(source.id);
     let processingError: string | undefined;
     if (props.fileIds?.length) {
-      await this.repository.attachFiles(source.id, props.fileIds);
+      await this.source.attachFiles(source.id, props.fileIds);
       try {
         await this.rebuildFiles(source.id);
       } catch (error) {
@@ -354,7 +374,7 @@ export class KnowledgeService {
       console.error("Knowledge indexing failed", source.id, indexError);
     }
     return {
-      source: await this.repository.findSourceById(source.id),
+      source: await this.source.findSourceById(source.id),
       index,
       indexError,
       processingError,

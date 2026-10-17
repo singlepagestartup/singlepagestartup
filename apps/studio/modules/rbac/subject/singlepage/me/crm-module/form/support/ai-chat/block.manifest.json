@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-crm-module-form-support-ai-chat",
+  "title": "me-crm-module-form-support-ai-chat",
+  "description": "Current Subject fills and submits a local support request.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-crm-module-form-support-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-crm-module-form-support-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

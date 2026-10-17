@@ -66,6 +66,51 @@ jest.mock("@sps/shared-backend-api", () => {
 
 import { Service } from ".";
 
+describe("owned password changes through the Identity service", () => {
+  it("reads and writes through its service methods without HTTP and stores only a bcrypt hash", async () => {
+    const salt = await bcrypt.genSalt(4);
+    const identity = {
+      id: "credential",
+      provider: "email_and_password",
+      salt,
+      password: await bcrypt.hash("current-password", salt),
+    };
+    const service = new Service({} as any);
+    const findById = jest.fn(async () => identity);
+    const update = jest.fn(async ({ data }: any) => data);
+    Object.assign(service, { findById, update });
+    const result = await service.changePassword({
+      id: identity.id,
+      data: { password: "current-password", newPassword: "next-password" },
+    });
+    expect(findById).toHaveBeenCalledWith({ id: identity.id });
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(result.password).not.toBe("next-password");
+    expect(await bcrypt.compare("next-password", result.password!)).toBe(true);
+  });
+
+  it("rejects the wrong current password before writing", async () => {
+    const salt = await bcrypt.genSalt(4);
+    const service = new Service({} as any);
+    const update = jest.fn();
+    Object.assign(service, {
+      findById: jest.fn(async () => ({
+        id: "credential",
+        salt,
+        password: await bcrypt.hash("current-password", salt),
+      })),
+      update,
+    });
+    await expect(
+      service.changePassword({
+        id: "credential",
+        data: { password: "wrong-password", newPassword: "next-password" },
+      }),
+    ).rejects.toThrow("Invalid credentials");
+    expect(update).not.toHaveBeenCalled();
+  });
+});
+
 function register(login: string, password = "correct horse battery") {
   return new Service({} as any).emailAndPassowrd({
     data: { type: "registration", login, password },

@@ -1,6 +1,6 @@
 {
   "id": "social.profile.overview-default",
-  "title": "Social Profile / Overview Default",
+  "title": "overview-default",
   "description": "Public profile overview with avatar, name, role, location and social links.",
   "layer": "singlepage",
   "state": "draft",

@@ -59,6 +59,19 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        {" "}
+        {props.widgetsToCrmModuleWidgets
+          ? props.widgetsToCrmModuleWidgets({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}{" "}
+        {props.widgetsToWebsiteBuilderModuleWidgets
+          ? props.widgetsToWebsiteBuilderModuleWidgets({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
         <FormField
           ui="shadcn"
           type="text"
@@ -67,7 +80,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type admin title"
         />
-
         <AgregatedInput title="Title">
           {internationalization.languages.map((language) => {
             return (
@@ -83,7 +95,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Subtitle">
           {internationalization.languages.map((language) => {
             return (
@@ -99,7 +110,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Description">
           {internationalization.languages.map((language) => {
             return (
@@ -115,7 +125,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <FormField
           ui="shadcn"
           type="text"
@@ -124,7 +133,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type slug"
         />
-
         <FormField
           ui="shadcn"
           type="text"
@@ -133,7 +141,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type class name"
         />
-
         <FormField
           ui="shadcn"
           type="select"

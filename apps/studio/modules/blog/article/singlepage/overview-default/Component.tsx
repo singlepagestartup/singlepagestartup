@@ -1,3 +1,5 @@
+import type { IComponentProps, ArticleOverviewDefaultProps } from "./interface";
+export type { ArticleOverviewDefaultProps } from "./interface";
 import {
   ArticleCover,
   defaultArticleCoverProps,
@@ -9,17 +11,12 @@ import {
   type ArticleDetailProps,
 } from "../detail/Component";
 
-export type ArticleOverviewDefaultProps = ArticleDetailProps &
-  Pick<ArticleCoverProps, "coverImage">;
-
 export const defaultArticleOverviewDefaultProps = {
   ...defaultArticleDetailProps,
   coverImage: defaultArticleCoverProps.coverImage,
 } satisfies ArticleOverviewDefaultProps;
 
-export function ArticleOverviewDefault(
-  props?: Partial<ArticleOverviewDefaultProps> & { variant?: string },
-) {
+export function ArticleOverviewDefault(props?: IComponentProps) {
   const article = { ...defaultArticleOverviewDefaultProps, ...props };
 
   return (
@@ -34,6 +31,7 @@ export function ArticleOverviewDefault(
     >
       <ArticleDetail
         {...article}
+        variant="detail"
         cover={
           <ArticleCover coverImage={article.coverImage} title={article.title} />
         }

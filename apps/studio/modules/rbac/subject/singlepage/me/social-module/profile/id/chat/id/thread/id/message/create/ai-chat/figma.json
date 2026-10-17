@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "variantName": "me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.subject.me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/subject/singlepage/me/social-module/profile/id/chat/id/thread/id/message/create/ai-chat",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/subject/singlepage/me/social-module/profile/id/chat/id/thread/id/message/create/ai-chat/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/subject/singlepage/me/social-module/profile/id/chat/id/thread/id/message/create/ai-chat/Component.stories.tsx"
+  }
+}

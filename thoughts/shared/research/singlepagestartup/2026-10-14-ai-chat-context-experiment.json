@@ -1,0 +1,4284 @@
+{
+  "settings": {
+    "model": "openai/gpt-6.1-sol",
+    "reasoning": "high",
+    "budget": 5,
+    "softInputTokens": 12000,
+    "summaryTrigger": 8000,
+    "summaryBatch": 16000,
+    "summaryOutput": 2048,
+    "summaryTarget": 1000
+  },
+  "pairedTasksAttempted": 12,
+  "pairedTasksCompleted": 11,
+  "successfulAnswers": 23,
+  "criticalErrorsInCompletedCases": 0,
+  "activation": "full",
+  "activationReason": "The full visual task second step was prevented before payment by the $5 total-budget reservation guard. compact visual task passed, but the twelfth pair remains incomplete.",
+  "comparison": {
+    "full": {
+      "credits": 1.559028931,
+      "internalUsd": 1.5745967600000002,
+      "inputTokens": 1138076,
+      "outputTokens": 8883,
+      "cachedTokens": 108919,
+      "cacheWriteTokens": 612080,
+      "reasoningTokens": 620,
+      "calls": 88,
+      "summaryCalls": 0,
+      "medianDurationMs": 12866,
+      "fallbacks": 0
+    },
+    "compact": {
+      "credits": 0.303646378,
+      "internalUsd": 0.30653603800000007,
+      "inputTokens": 529895,
+      "outputTokens": 10493,
+      "cachedTokens": 14435,
+      "cacheWriteTokens": 101965,
+      "reasoningTokens": 883,
+      "calls": 89,
+      "summaryCalls": 1,
+      "medianDurationMs": 6093,
+      "fallbacks": 0
+    }
+  },
+  "creditsReduction": 0.8052336477134946,
+  "visualAttempt": {
+    "full": {
+      "credits": 0.133722363,
+      "internalUsd": 0.135070498,
+      "inputTokens": 59885,
+      "outputTokens": 227,
+      "cachedTokens": 0,
+      "cacheWriteTokens": 53763,
+      "reasoningTokens": 0,
+      "calls": 3,
+      "summaryCalls": 0,
+      "medianDurationMs": 8191,
+      "fallbacks": 0
+    },
+    "compact": {
+      "credits": 0.05047752,
+      "internalUsd": 0.050984798000000005,
+      "inputTokens": 45881,
+      "outputTokens": 2271,
+      "cachedTokens": 28963,
+      "cacheWriteTokens": 10787,
+      "reasoningTokens": 490,
+      "calls": 6,
+      "summaryCalls": 1,
+      "medianDurationMs": 62412,
+      "fallbacks": 0
+    }
+  },
+  "finalTrialCredits": 2.046875192,
+  "preliminaryTrialCredits": 2.3257502679999997,
+  "knownComparisonCredits": 4.37262546,
+  "earlierResearchReserveUpperBound": 0.2,
+  "abortedCallReservedUpperBound": 0.1,
+  "budgetUpperBound": 4.672625459999999,
+  "budgetBlockedCall": {
+    "caseId": "attachment",
+    "mode": "full",
+    "spentAtAttempt": 4.318501561999998,
+    "nextMaximumReservation": 0.709925,
+    "budget": 5
+  },
+  "records": [
+    {
+      "caseId": "prices",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 25,
+        "retainedMessages": 25,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18810,
+        "inputEstimatedTokens": 24517,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 13,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_unsummarized_history_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.14271418,
+      "durationMs": 15073,
+      "writeCount": 0,
+      "credits": 0.14131494,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000121884,
+          "durationMs": 521,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2902,
+            "output_tokens": 161,
+            "cost": 0.000121884
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 2.7e-7,
+          "durationMs": 4574,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 27,
+            "total_tokens": 27,
+            "cost": 2.7e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 2.7e-7,
+              "upstream_inference_prompt_cost": 2.7e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000323862,
+          "durationMs": 612,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7711,
+            "output_tokens": 112,
+            "cost": 0.000323862
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00034209,
+          "durationMs": 659,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8145,
+            "output_tokens": 130,
+            "cost": 0.00034209
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000326424,
+          "durationMs": 1251,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7772,
+            "output_tokens": 112,
+            "cost": 0.000326424
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000365484,
+          "durationMs": 334,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8702,
+            "output_tokens": 130,
+            "cost": 0.000365484
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000355488,
+          "durationMs": 336,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8464,
+            "output_tokens": 130,
+            "cost": 0.000355488
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000332892,
+          "durationMs": 354,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7926,
+            "output_tokens": 112,
+            "cost": 0.000332892
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000140196,
+          "durationMs": 394,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3338,
+            "output_tokens": 22,
+            "cost": 0.000140196
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00034797,
+          "durationMs": 395,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8285,
+            "output_tokens": 112,
+            "cost": 0.00034797
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00010689,
+          "durationMs": 340,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2545,
+            "output_tokens": 22,
+            "cost": 0.00010689
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.6748925,
+          "credits": 0.13855149,
+          "durationMs": 6817,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 55933,
+            "completion_tokens": 12,
+            "total_tokens": 55945,
+            "cost": 0.13855149,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 55930,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.139951,
+              "upstream_inference_prompt_cost": 0.139831,
+              "upstream_inference_completions_cost": 0.00012
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "unknown-period",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 25,
+        "retainedMessages": 25,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18818,
+        "inputEstimatedTokens": 25006,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 13,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_unsummarized_history_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.144001824,
+      "durationMs": 10762,
+      "writeCount": 0,
+      "credits": 0.142588289,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000122388,
+          "durationMs": 324,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2914,
+            "output_tokens": 161,
+            "cost": 0.000122388
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 3.5e-7,
+          "durationMs": 346,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 35,
+            "total_tokens": 35,
+            "cost": 3.5e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 3.5e-7,
+              "upstream_inference_prompt_cost": 3.5e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000326928,
+          "durationMs": 376,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7784,
+            "output_tokens": 112,
+            "cost": 0.000326928
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00031584,
+          "durationMs": 378,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7520,
+            "output_tokens": 112,
+            "cost": 0.00031584
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00032676,
+          "durationMs": 419,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7780,
+            "output_tokens": 112,
+            "cost": 0.00032676
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00036582,
+          "durationMs": 357,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8710,
+            "output_tokens": 130,
+            "cost": 0.00036582
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000333858,
+          "durationMs": 358,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7949,
+            "output_tokens": 112,
+            "cost": 0.000333858
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000349356,
+          "durationMs": 358,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8318,
+            "output_tokens": 112,
+            "cost": 0.000349356
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00036498,
+          "durationMs": 344,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8690,
+            "output_tokens": 130,
+            "cost": 0.00036498
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000107394,
+          "durationMs": 289,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2557,
+            "output_tokens": 22,
+            "cost": 0.000107394
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.676115,
+          "credits": 0.139974615,
+          "durationMs": 8197,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 56336,
+            "completion_tokens": 55,
+            "total_tokens": 56391,
+            "cost": 0.139974615,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 56333,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.1413885,
+              "upstream_inference_prompt_cost": 0.1408385,
+              "upstream_inference_completions_cost": 0.00055
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "goal",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 25,
+        "retainedMessages": 25,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18814,
+        "inputEstimatedTokens": 29521,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 13,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_unsummarized_history_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.16151695000000002,
+      "durationMs": 26031,
+      "writeCount": 0,
+      "credits": 0.159928096,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000121716,
+          "durationMs": 339,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2898,
+            "output_tokens": 161,
+            "cost": 0.000121716
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 2.4e-7,
+          "durationMs": 624,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 24,
+            "total_tokens": 24,
+            "cost": 2.4e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 2.4e-7,
+              "upstream_inference_prompt_cost": 2.4e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000325458,
+          "durationMs": 304,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7749,
+            "output_tokens": 112,
+            "cost": 0.000325458
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000326802,
+          "durationMs": 327,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7781,
+            "output_tokens": 130,
+            "cost": 0.000326802
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000353976,
+          "durationMs": 345,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8428,
+            "output_tokens": 130,
+            "cost": 0.000353976
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000334026,
+          "durationMs": 344,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7953,
+            "output_tokens": 112,
+            "cost": 0.000334026
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00034545,
+          "durationMs": 356,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8225,
+            "output_tokens": 112,
+            "cost": 0.00034545
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000359184,
+          "durationMs": 359,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8552,
+            "output_tokens": 130,
+            "cost": 0.000359184
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000300216,
+          "durationMs": 347,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7148,
+            "output_tokens": 94,
+            "cost": 0.000300216
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000106722,
+          "durationMs": 352,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2541,
+            "output_tokens": 22,
+            "cost": 0.000106722
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.6727200000000001,
+          "credits": 0.13708629,
+          "durationMs": 7419,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 55217,
+            "completion_tokens": 43,
+            "total_tokens": 55260,
+            "cost": 0.13708629,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 55214,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.138471,
+              "upstream_inference_prompt_cost": 0.138041,
+              "upstream_inference_completions_cost": 0.00043
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_iteration",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 3.4e-7,
+          "durationMs": 3807,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 34,
+            "total_tokens": 34,
+            "cost": 3.4e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 3.4e-7,
+              "upstream_inference_prompt_cost": 3.4e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_iteration",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.6874,
+          "credits": 0.020267676,
+          "durationMs": 11742,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 60043,
+            "completion_tokens": 288,
+            "total_tokens": 60331,
+            "cost": 0.020267676,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 55214,
+              "cache_write_tokens": 4826,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0204724,
+              "upstream_inference_prompt_cost": 0.0175924,
+              "upstream_inference_completions_cost": 0.00288
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 115,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "scope",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 25,
+        "retainedMessages": 25,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18814,
+        "inputEstimatedTokens": 25001,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 13,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_unsummarized_history_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.145375914,
+      "durationMs": 14794,
+      "writeCount": 0,
+      "credits": 0.143946724,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000121968,
+          "durationMs": 358,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2904,
+            "output_tokens": 161,
+            "cost": 0.000121968
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 3.7e-7,
+          "durationMs": 368,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 37,
+            "total_tokens": 37,
+            "cost": 3.7e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 3.7e-7,
+              "upstream_inference_prompt_cost": 3.7e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000326508,
+          "durationMs": 465,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7774,
+            "output_tokens": 112,
+            "cost": 0.000326508
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00034167,
+          "durationMs": 463,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8135,
+            "output_tokens": 130,
+            "cost": 0.00034167
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000329784,
+          "durationMs": 467,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7852,
+            "output_tokens": 112,
+            "cost": 0.000329784
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000353514,
+          "durationMs": 506,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8417,
+            "output_tokens": 130,
+            "cost": 0.000353514
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00036099,
+          "durationMs": 506,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8595,
+            "output_tokens": 130,
+            "cost": 0.00036099
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000338226,
+          "durationMs": 507,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8053,
+            "output_tokens": 112,
+            "cost": 0.000338226
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00014028,
+          "durationMs": 305,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3340,
+            "output_tokens": 22,
+            "cost": 0.00014028
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000106974,
+          "durationMs": 392,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2547,
+            "output_tokens": 22,
+            "cost": 0.000106974
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.6761025,
+          "credits": 0.14152644,
+          "durationMs": 11921,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 56331,
+            "completion_tokens": 213,
+            "total_tokens": 56544,
+            "cost": 0.14152644,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 56328,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.142956,
+              "upstream_inference_prompt_cost": 0.140826,
+              "upstream_inference_completions_cost": 0.00213
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "names",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 25,
+        "retainedMessages": 25,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18806,
+        "inputEstimatedTokens": 27852,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 13,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_unsummarized_history_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.150060774,
+      "durationMs": 9738,
+      "writeCount": 0,
+      "credits": 0.148588044,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00012012,
+          "durationMs": 339,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2860,
+            "output_tokens": 161,
+            "cost": 0.00012012
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 1.8e-7,
+          "durationMs": 386,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 18,
+            "total_tokens": 18,
+            "cost": 1.8e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 1.8e-7,
+              "upstream_inference_prompt_cost": 1.8e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000322518,
+          "durationMs": 389,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7679,
+            "output_tokens": 112,
+            "cost": 0.000322518
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000353724,
+          "durationMs": 392,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8422,
+            "output_tokens": 112,
+            "cost": 0.000353724
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00034041,
+          "durationMs": 415,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8105,
+            "output_tokens": 112,
+            "cost": 0.00034041
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000337176,
+          "durationMs": 304,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8028,
+            "output_tokens": 112,
+            "cost": 0.000337176
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000319956,
+          "durationMs": 416,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7618,
+            "output_tokens": 112,
+            "cost": 0.000319956
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000345366,
+          "durationMs": 417,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8223,
+            "output_tokens": 112,
+            "cost": 0.000345366
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000160314,
+          "durationMs": 301,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3817,
+            "output_tokens": 40,
+            "cost": 0.000160314
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000365064,
+          "durationMs": 314,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8692,
+            "output_tokens": 130,
+            "cost": 0.000365064
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000105126,
+          "durationMs": 428,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2503,
+            "output_tokens": 22,
+            "cost": 0.000105126
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.68323,
+          "credits": 0.14581809,
+          "durationMs": 6902,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 58685,
+            "completion_tokens": 58,
+            "total_tokens": 58743,
+            "cost": 0.14581809,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 58682,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.147291,
+              "upstream_inference_prompt_cost": 0.146711,
+              "upstream_inference_completions_cost": 0.00058
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "correction",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 26,
+        "retainedMessages": 26,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18850,
+        "inputEstimatedTokens": 23203,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 13,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_unsummarized_history_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.14177602,
+      "durationMs": 14142,
+      "writeCount": 0,
+      "credits": 0.140391105,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000109914,
+          "durationMs": 298,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2617,
+            "output_tokens": 161,
+            "cost": 0.000109914
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 1.32e-6,
+          "durationMs": 2959,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 33,
+            "total_tokens": 33,
+            "cost": 1.32e-6,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 1.32e-6,
+              "upstream_inference_prompt_cost": 1.32e-6,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000371658,
+          "durationMs": 389,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8849,
+            "output_tokens": 130,
+            "cost": 0.000371658
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000334026,
+          "durationMs": 405,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7953,
+            "output_tokens": 130,
+            "cost": 0.000334026
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000344988,
+          "durationMs": 442,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8214,
+            "output_tokens": 130,
+            "cost": 0.000344988
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000344904,
+          "durationMs": 299,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8212,
+            "output_tokens": 130,
+            "cost": 0.000344904
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000356496,
+          "durationMs": 340,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8488,
+            "output_tokens": 130,
+            "cost": 0.000356496
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00035679,
+          "durationMs": 497,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8495,
+            "output_tokens": 130,
+            "cost": 0.00035679
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000123564,
+          "durationMs": 323,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2942,
+            "output_tokens": 22,
+            "cost": 0.000123564
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000375438,
+          "durationMs": 326,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8939,
+            "output_tokens": 130,
+            "cost": 0.000375438
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000339822,
+          "durationMs": 343,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8091,
+            "output_tokens": 112,
+            "cost": 0.000339822
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 9.492e-5,
+          "durationMs": 347,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2260,
+            "output_tokens": 22,
+            "cost": 9.492e-5
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.6716075,
+          "credits": 0.137237265,
+          "durationMs": 8763,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 54846,
+            "completion_tokens": 151,
+            "total_tokens": 54997,
+            "cost": 0.137237265,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 54843,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.1386235,
+              "upstream_inference_prompt_cost": 0.1371135,
+              "upstream_inference_completions_cost": 0.00151
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 69,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "draft",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 25,
+        "retainedMessages": 25,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18845,
+        "inputEstimatedTokens": 22318,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 13,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_exact_document_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.136007038,
+      "durationMs": 9432,
+      "writeCount": 0,
+      "credits": 0.134649378,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000128016,
+          "durationMs": 318,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3048,
+            "output_tokens": 161,
+            "cost": 0.000128016
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000113022,
+          "durationMs": 338,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2691,
+            "output_tokens": 22,
+            "cost": 0.000113022
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.66864,
+          "credits": 0.13440834,
+          "durationMs": 8435,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 53859,
+            "completion_tokens": 112,
+            "total_tokens": 53971,
+            "cost": 0.13440834,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 53856,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.135766,
+              "upstream_inference_prompt_cost": 0.134646,
+              "upstream_inference_completions_cost": 0.00112
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "archive",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 25,
+        "retainedMessages": 25,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18867,
+        "inputEstimatedTokens": 22961,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 13,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_unsummarized_history_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.143229546,
+      "durationMs": 15229,
+      "writeCount": 0,
+      "credits": 0.141799671,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00012852,
+          "durationMs": 304,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3060,
+            "output_tokens": 161,
+            "cost": 0.00012852
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000113526,
+          "durationMs": 326,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2703,
+            "output_tokens": 22,
+            "cost": 0.000113526
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.6681575000000001,
+          "credits": 0.133450515,
+          "durationMs": 8236,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 53708,
+            "completion_tokens": 53,
+            "total_tokens": 53761,
+            "cost": 0.133450515,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 53705,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.1347985,
+              "upstream_inference_prompt_cost": 0.1342685,
+              "upstream_inference_completions_cost": 0.00053
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_iteration",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.671,
+          "credits": 0.00810711,
+          "durationMs": 5845,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 54581,
+            "completion_tokens": 63,
+            "total_tokens": 54644,
+            "cost": 0.00810711,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 53705,
+              "cache_write_tokens": 873,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.008189,
+              "upstream_inference_prompt_cost": 0.007559,
+              "upstream_inference_completions_cost": 0.00063
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "reject",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 25,
+        "retainedMessages": 25,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18816,
+        "inputEstimatedTokens": 21908,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 694,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 13,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_exact_document_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.135337478,
+      "durationMs": 9129,
+      "writeCount": 0,
+      "credits": 0.133986543,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000135744,
+          "durationMs": 331,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3232,
+            "output_tokens": 209,
+            "cost": 0.000135744
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000108234,
+          "durationMs": 353,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2577,
+            "output_tokens": 22,
+            "cost": 0.000108234
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.66837,
+          "credits": 0.133742565,
+          "durationMs": 8058,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 53798,
+            "completion_tokens": 60,
+            "total_tokens": 53858,
+            "cost": 0.133742565,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 53795,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.1350935,
+              "upstream_inference_prompt_cost": 0.1344935,
+              "upstream_inference_completions_cost": 0.0006
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 40,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "confirm-index-failed",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 25,
+        "retainedMessages": 25,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18822,
+        "inputEstimatedTokens": 22012,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 694,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 13,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_exact_document_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.13667909400000003,
+      "durationMs": 10988,
+      "writeCount": 1,
+      "credits": 0.135314784,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000137844,
+          "durationMs": 395,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3282,
+            "output_tokens": 209,
+            "cost": 0.000137844
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00011025,
+          "durationMs": 306,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2625,
+            "output_tokens": 22,
+            "cost": 0.00011025
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.6686325000000001,
+          "credits": 0.13506669,
+          "durationMs": 9901,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 53885,
+            "completion_tokens": 172,
+            "total_tokens": 54057,
+            "cost": 0.13506669,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 53882,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.136431,
+              "upstream_inference_prompt_cost": 0.134711,
+              "upstream_inference_completions_cost": 0.00172
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 131,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "confirm-again",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 25,
+        "retainedMessages": 25,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18809,
+        "inputEstimatedTokens": 21930,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 694,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 13,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_exact_document_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.137897942,
+      "durationMs": 12866,
+      "writeCount": 0,
+      "credits": 0.136521357,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00013356,
+          "durationMs": 388,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3180,
+            "output_tokens": 209,
+            "cost": 0.00013356
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000105882,
+          "durationMs": 332,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2521,
+            "output_tokens": 22,
+            "cost": 0.000105882
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.668425,
+          "credits": 0.136281915,
+          "durationMs": 11807,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 53816,
+            "completion_tokens": 312,
+            "total_tokens": 54128,
+            "cost": 0.136281915,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 53813,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.1376585,
+              "upstream_inference_prompt_cost": 0.1345385,
+              "upstream_inference_completions_cost": 0.00312
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 265,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "attachment",
+      "mode": "full",
+      "metrics": {
+        "version": 1,
+        "mode": "full",
+        "historyMessages": 25,
+        "retainedMessages": 25,
+        "summarizedMessages": 0,
+        "historyEstimatedTokens": 18902,
+        "inputEstimatedTokens": 22183,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 0,
+        "originalMediaParts": 14,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_unsummarized_history_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 0
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.135070498,
+      "durationMs": 8191,
+      "writeCount": 0,
+      "credits": 0.133722363,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000135996,
+          "durationMs": 473,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3238,
+            "output_tokens": 165,
+            "cost": 0.000135996
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000121002,
+          "durationMs": 357,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2881,
+            "output_tokens": 22,
+            "cost": 0.000121002
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.6683325,
+          "credits": 0.133465365,
+          "durationMs": 6876,
+          "mediaParts": 13,
+          "usage": {
+            "prompt_tokens": 53766,
+            "completion_tokens": 40,
+            "total_tokens": 53806,
+            "cost": 0.133465365,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 53763,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.1348135,
+              "upstream_inference_prompt_cost": 0.1344135,
+              "upstream_inference_completions_cost": 0.0004
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "model_error",
+      "review": "blocked_by_budget_reservation"
+    },
+    {
+      "caseId": "prices",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 25,
+        "retainedMessages": 8,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18810,
+        "inputEstimatedTokens": 10811,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 1103,
+        "originalMediaParts": 0,
+        "summaryCalls": 1,
+        "budgetExceeded": false,
+        "budgetExceededReason": null,
+        "fallbackReason": null,
+        "durationMs": 44972
+      },
+      "summaryCalls": 1,
+      "internalUsd": 0.07361768000000002,
+      "durationMs": 50261,
+      "writeCount": 0,
+      "credits": 0.072909405,
+      "calls": [
+        {
+          "purpose": "context_summary",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.059695,
+          "credits": 0.048518415,
+          "durationMs": 44044,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 12456,
+            "completion_tokens": 1787,
+            "total_tokens": 14243,
+            "cost": 0.048518415,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 12453,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0490085,
+              "upstream_inference_prompt_cost": 0.0311385,
+              "upstream_inference_completions_cost": 0.01787
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 382,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000121884,
+          "durationMs": 481,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2902,
+            "output_tokens": 161,
+            "cost": 0.000121884
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 2.7e-7,
+          "durationMs": 1194,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 27,
+            "total_tokens": 27,
+            "cost": 2.7e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 2.7e-7,
+              "upstream_inference_prompt_cost": 2.7e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000323862,
+          "durationMs": 398,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7711,
+            "output_tokens": 112,
+            "cost": 0.000323862
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000326424,
+          "durationMs": 399,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7772,
+            "output_tokens": 112,
+            "cost": 0.000326424
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00034209,
+          "durationMs": 399,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8145,
+            "output_tokens": 130,
+            "cost": 0.00034209
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000365484,
+          "durationMs": 409,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8702,
+            "output_tokens": 130,
+            "cost": 0.000365484
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000355488,
+          "durationMs": 410,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8464,
+            "output_tokens": 130,
+            "cost": 0.000355488
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000332892,
+          "durationMs": 410,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7926,
+            "output_tokens": 112,
+            "cost": 0.000332892
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000140196,
+          "durationMs": 319,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3338,
+            "output_tokens": 22,
+            "cost": 0.000140196
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00034797,
+          "durationMs": 360,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8285,
+            "output_tokens": 112,
+            "cost": 0.00034797
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00010689,
+          "durationMs": 313,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2545,
+            "output_tokens": 22,
+            "cost": 0.00010689
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.10925750000000001,
+          "credits": 0.02162754,
+          "durationMs": 1782,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 8691,
+            "completion_tokens": 12,
+            "total_tokens": 8703,
+            "cost": 0.02162754,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 8688,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.021846,
+              "upstream_inference_prompt_cost": 0.021726,
+              "upstream_inference_completions_cost": 0.00012
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "unknown-period",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 25,
+        "retainedMessages": 8,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18818,
+        "inputEstimatedTokens": 11299,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 1103,
+        "originalMediaParts": 0,
+        "summaryCalls": 0,
+        "budgetExceeded": false,
+        "budgetExceededReason": null,
+        "fallbackReason": null,
+        "durationMs": 15
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.025970022000000002,
+      "durationMs": 5726,
+      "writeCount": 0,
+      "credits": 0.025737737,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000122388,
+          "durationMs": 373,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2914,
+            "output_tokens": 161,
+            "cost": 0.000122388
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 3.5e-7,
+          "durationMs": 617,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 35,
+            "total_tokens": 35,
+            "cost": 3.5e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 3.5e-7,
+              "upstream_inference_prompt_cost": 3.5e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000326928,
+          "durationMs": 357,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7784,
+            "output_tokens": 112,
+            "cost": 0.000326928
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00032403,
+          "durationMs": 358,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7715,
+            "output_tokens": 112,
+            "cost": 0.00032403
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00031584,
+          "durationMs": 385,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7520,
+            "output_tokens": 112,
+            "cost": 0.00031584
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00032214,
+          "durationMs": 376,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7670,
+            "output_tokens": 112,
+            "cost": 0.00032214
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000334866,
+          "durationMs": 377,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7973,
+            "output_tokens": 112,
+            "cost": 0.000334866
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000355278,
+          "durationMs": 379,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8459,
+            "output_tokens": 112,
+            "cost": 0.000355278
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000136038,
+          "durationMs": 312,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3239,
+            "output_tokens": 22,
+            "cost": 0.000136038
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00036162,
+          "durationMs": 315,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8610,
+            "output_tokens": 130,
+            "cost": 0.00036162
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000107394,
+          "durationMs": 341,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2557,
+            "output_tokens": 22,
+            "cost": 0.000107394
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.1104775,
+          "credits": 0.023030865,
+          "durationMs": 2995,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 9094,
+            "completion_tokens": 53,
+            "total_tokens": 9147,
+            "cost": 0.023030865,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 9091,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0232635,
+              "upstream_inference_prompt_cost": 0.0227335,
+              "upstream_inference_completions_cost": 0.00053
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "goal",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 25,
+        "retainedMessages": 8,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18814,
+        "inputEstimatedTokens": 15556,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 1103,
+        "originalMediaParts": 0,
+        "summaryCalls": 0,
+        "budgetExceeded": true,
+        "budgetExceededReason": "preserve_unsummarized_history_and_recent_messages",
+        "fallbackReason": null,
+        "durationMs": 6
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.037722750000000006,
+      "durationMs": 12887,
+      "writeCount": 0,
+      "credits": 0.037371898,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000121716,
+          "durationMs": 384,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2898,
+            "output_tokens": 161,
+            "cost": 0.000121716
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 2.4e-7,
+          "durationMs": 1284,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 24,
+            "total_tokens": 24,
+            "cost": 2.4e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 2.4e-7,
+              "upstream_inference_prompt_cost": 2.4e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000326802,
+          "durationMs": 426,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7781,
+            "output_tokens": 130,
+            "cost": 0.000326802
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000325458,
+          "durationMs": 427,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7749,
+            "output_tokens": 112,
+            "cost": 0.000325458
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000353976,
+          "durationMs": 447,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8428,
+            "output_tokens": 130,
+            "cost": 0.000353976
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000359184,
+          "durationMs": 308,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8552,
+            "output_tokens": 130,
+            "cost": 0.000359184
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000334026,
+          "durationMs": 313,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7953,
+            "output_tokens": 112,
+            "cost": 0.000334026
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00034545,
+          "durationMs": 344,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8225,
+            "output_tokens": 112,
+            "cost": 0.00034545
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000300216,
+          "durationMs": 318,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7148,
+            "output_tokens": 94,
+            "cost": 0.000300216
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000106722,
+          "durationMs": 339,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2541,
+            "output_tokens": 22,
+            "cost": 0.000106722
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.10708500000000001,
+          "credits": 0.02022174,
+          "durationMs": 2629,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 7975,
+            "completion_tokens": 49,
+            "total_tokens": 8024,
+            "cost": 0.02022174,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 7972,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.020426,
+              "upstream_inference_prompt_cost": 0.019936,
+              "upstream_inference_completions_cost": 0.00049
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_iteration",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 4e-7,
+          "durationMs": 1152,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 40,
+            "total_tokens": 40,
+            "cost": 4e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 4e-7,
+              "upstream_inference_prompt_cost": 4e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_iteration",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.121115,
+          "credits": 0.014575968,
+          "durationMs": 5538,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 12587,
+            "completion_tokens": 239,
+            "total_tokens": 12826,
+            "cost": 0.014575968,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 7972,
+              "cache_write_tokens": 4612,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0147232,
+              "upstream_inference_prompt_cost": 0.0123332,
+              "upstream_inference_completions_cost": 0.00239
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 81,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "scope",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 25,
+        "retainedMessages": 8,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18814,
+        "inputEstimatedTokens": 11294,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 1103,
+        "originalMediaParts": 0,
+        "summaryCalls": 0,
+        "budgetExceeded": false,
+        "budgetExceededReason": null,
+        "fallbackReason": null,
+        "durationMs": 6
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.027590914,
+      "durationMs": 7997,
+      "writeCount": 0,
+      "credits": 0.027339574000000002,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000121968,
+          "durationMs": 298,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2904,
+            "output_tokens": 161,
+            "cost": 0.000121968
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 3.7e-7,
+          "durationMs": 307,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 37,
+            "total_tokens": 37,
+            "cost": 3.7e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 3.7e-7,
+              "upstream_inference_prompt_cost": 3.7e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000329784,
+          "durationMs": 315,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7852,
+            "output_tokens": 112,
+            "cost": 0.000329784
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000326508,
+          "durationMs": 322,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7774,
+            "output_tokens": 112,
+            "cost": 0.000326508
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000339654,
+          "durationMs": 340,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8087,
+            "output_tokens": 130,
+            "cost": 0.000339654
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00035553,
+          "durationMs": 338,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8465,
+            "output_tokens": 130,
+            "cost": 0.00035553
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00036099,
+          "durationMs": 339,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8595,
+            "output_tokens": 130,
+            "cost": 0.00036099
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000338226,
+          "durationMs": 345,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8053,
+            "output_tokens": 112,
+            "cost": 0.000338226
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00014028,
+          "durationMs": 298,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3340,
+            "output_tokens": 22,
+            "cost": 0.00014028
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000106974,
+          "durationMs": 970,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2547,
+            "output_tokens": 22,
+            "cost": 0.000106974
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.11046500000000001,
+          "credits": 0.02491929,
+          "durationMs": 5116,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 9089,
+            "completion_tokens": 245,
+            "total_tokens": 9334,
+            "cost": 0.02491929,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 9086,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.025171,
+              "upstream_inference_prompt_cost": 0.022721,
+              "upstream_inference_completions_cost": 0.00245
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "names",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 25,
+        "retainedMessages": 8,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18806,
+        "inputEstimatedTokens": 11406,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 1103,
+        "originalMediaParts": 0,
+        "summaryCalls": 0,
+        "budgetExceeded": false,
+        "budgetExceededReason": null,
+        "fallbackReason": null,
+        "durationMs": 7
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.026244212000000003,
+      "durationMs": 5103,
+      "writeCount": 0,
+      "credits": 0.026009307,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00012012,
+          "durationMs": 320,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2860,
+            "output_tokens": 161,
+            "cost": 0.00012012
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 1.8e-7,
+          "durationMs": 351,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 18,
+            "total_tokens": 18,
+            "cost": 1.8e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 1.8e-7,
+              "upstream_inference_prompt_cost": 1.8e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00032697,
+          "durationMs": 353,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7785,
+            "output_tokens": 112,
+            "cost": 0.00032697
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000349272,
+          "durationMs": 355,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8316,
+            "output_tokens": 112,
+            "cost": 0.000349272
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00034041,
+          "durationMs": 359,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8105,
+            "output_tokens": 112,
+            "cost": 0.00034041
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000337176,
+          "durationMs": 508,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8028,
+            "output_tokens": 112,
+            "cost": 0.000337176
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000338772,
+          "durationMs": 509,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8066,
+            "output_tokens": 112,
+            "cost": 0.000338772
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000329154,
+          "durationMs": 511,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7837,
+            "output_tokens": 112,
+            "cost": 0.000329154
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000126252,
+          "durationMs": 352,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3006,
+            "output_tokens": 22,
+            "cost": 0.000126252
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00036246,
+          "durationMs": 356,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8630,
+            "output_tokens": 130,
+            "cost": 0.00036246
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000105126,
+          "durationMs": 292,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2503,
+            "output_tokens": 22,
+            "cost": 0.000105126
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.11074500000000001,
+          "credits": 0.023273415,
+          "durationMs": 2557,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 9180,
+            "completion_tokens": 56,
+            "total_tokens": 9236,
+            "cost": 0.023273415,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 9177,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0235085,
+              "upstream_inference_prompt_cost": 0.0229485,
+              "upstream_inference_completions_cost": 0.00056
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "correction",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 26,
+        "retainedMessages": 9,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18850,
+        "inputEstimatedTokens": 8987,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 1103,
+        "originalMediaParts": 0,
+        "summaryCalls": 0,
+        "budgetExceeded": false,
+        "budgetExceededReason": null,
+        "fallbackReason": null,
+        "durationMs": 7
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.022071146000000003,
+      "durationMs": 8218,
+      "writeCount": 0,
+      "credits": 0.021880191,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000109914,
+          "durationMs": 301,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2617,
+            "output_tokens": 161,
+            "cost": 0.000109914
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "retrieval",
+          "model": "qwen/qwen3-embedding-8b",
+          "endpoint": "embeddings",
+          "maximumReserved": 0.005,
+          "credits": 3.3e-7,
+          "durationMs": 2777,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 33,
+            "total_tokens": 33,
+            "cost": 3.3e-7,
+            "is_byok": false,
+            "cost_details": {
+              "upstream_inference_cost": 3.3e-7,
+              "upstream_inference_prompt_cost": 3.3e-7,
+              "upstream_inference_completions_cost": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000344988,
+          "durationMs": 312,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8214,
+            "output_tokens": 130,
+            "cost": 0.000344988
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000334026,
+          "durationMs": 319,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7953,
+            "output_tokens": 130,
+            "cost": 0.000334026
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000333984,
+          "durationMs": 428,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 7952,
+            "output_tokens": 112,
+            "cost": 0.000333984
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000353472,
+          "durationMs": 374,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8416,
+            "output_tokens": 130,
+            "cost": 0.000353472
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000341586,
+          "durationMs": 375,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8133,
+            "output_tokens": 130,
+            "cost": 0.000341586
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.0003633,
+          "durationMs": 393,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8650,
+            "output_tokens": 130,
+            "cost": 0.0003633
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000293706,
+          "durationMs": 315,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 6993,
+            "output_tokens": 94,
+            "cost": 0.000293706
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "knowledge_rerank",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00037275,
+          "durationMs": 352,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 8875,
+            "output_tokens": 130,
+            "cost": 0.00037275
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 9.492e-5,
+          "durationMs": 386,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2260,
+            "output_tokens": 22,
+            "cost": 9.492e-5
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.10469750000000001,
+          "credits": 0.018937215,
+          "durationMs": 3274,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 7184,
+            "completion_tokens": 117,
+            "total_tokens": 7301,
+            "cost": 0.018937215,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 7181,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0191285,
+              "upstream_inference_prompt_cost": 0.0179585,
+              "upstream_inference_completions_cost": 0.00117
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 37,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "draft",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 25,
+        "retainedMessages": 8,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18845,
+        "inputEstimatedTokens": 8624,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 1103,
+        "originalMediaParts": 0,
+        "summaryCalls": 0,
+        "budgetExceeded": false,
+        "budgetExceededReason": null,
+        "fallbackReason": null,
+        "durationMs": 7
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.017909538,
+      "durationMs": 3755,
+      "writeCount": 0,
+      "credits": 0.017732853,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000128016,
+          "durationMs": 300,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3048,
+            "output_tokens": 161,
+            "cost": 0.000128016
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000113022,
+          "durationMs": 295,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2691,
+            "output_tokens": 22,
+            "cost": 0.000113022
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.10301500000000001,
+          "credits": 0.017491815,
+          "durationMs": 2957,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 6620,
+            "completion_tokens": 112,
+            "total_tokens": 6732,
+            "cost": 0.017491815,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 6617,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0176685,
+              "upstream_inference_prompt_cost": 0.0165485,
+              "upstream_inference_completions_cost": 0.00112
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "archive",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 25,
+        "retainedMessages": 8,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18867,
+        "inputEstimatedTokens": 9257,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 1103,
+        "originalMediaParts": 0,
+        "summaryCalls": 0,
+        "budgetExceeded": false,
+        "budgetExceededReason": null,
+        "fallbackReason": null,
+        "durationMs": 6
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.020400346000000003,
+      "durationMs": 4774,
+      "writeCount": 0,
+      "credits": 0.020198763,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00012852,
+          "durationMs": 321,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3060,
+            "output_tokens": 161,
+            "cost": 0.00012852
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000113526,
+          "durationMs": 303,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2703,
+            "output_tokens": 22,
+            "cost": 0.000113526
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.10252250000000002,
+          "credits": 0.016526565,
+          "durationMs": 1959,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 6466,
+            "completion_tokens": 53,
+            "total_tokens": 6519,
+            "cost": 0.016526565,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 6463,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0166935,
+              "upstream_inference_prompt_cost": 0.0161635,
+              "upstream_inference_completions_cost": 0.00053
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_iteration",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.10537,
+          "credits": 0.003430152,
+          "durationMs": 1898,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 7339,
+            "completion_tokens": 63,
+            "total_tokens": 7402,
+            "cost": 0.003430152,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 6463,
+              "cache_write_tokens": 873,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0034648,
+              "upstream_inference_prompt_cost": 0.0028348,
+              "upstream_inference_completions_cost": 0.00063
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "reject",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 25,
+        "retainedMessages": 8,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18816,
+        "inputEstimatedTokens": 8190,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 694,
+        "summaryEstimatedTokens": 1103,
+        "originalMediaParts": 0,
+        "summaryCalls": 0,
+        "budgetExceeded": false,
+        "budgetExceededReason": null,
+        "fallbackReason": null,
+        "durationMs": 6
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.016817310000000002,
+      "durationMs": 3506,
+      "writeCount": 0,
+      "credits": 0.016651575000000002,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000135576,
+          "durationMs": 644,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3228,
+            "output_tokens": 209,
+            "cost": 0.000135576
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000108234,
+          "durationMs": 306,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2577,
+            "output_tokens": 22,
+            "cost": 0.000108234
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.102705,
+          "credits": 0.016407765,
+          "durationMs": 2355,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 6546,
+            "completion_tokens": 21,
+            "total_tokens": 6567,
+            "cost": 0.016407765,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 6543,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0165735,
+              "upstream_inference_prompt_cost": 0.0163635,
+              "upstream_inference_completions_cost": 0.00021
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "confirm-index-failed",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 25,
+        "retainedMessages": 8,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18822,
+        "inputEstimatedTokens": 8299,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 694,
+        "summaryEstimatedTokens": 1103,
+        "originalMediaParts": 0,
+        "summaryCalls": 0,
+        "budgetExceeded": false,
+        "budgetExceededReason": null,
+        "fallbackReason": null,
+        "durationMs": 6
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.018299094000000002,
+      "durationMs": 6093,
+      "writeCount": 1,
+      "credits": 0.018118584,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000137844,
+          "durationMs": 318,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3282,
+            "output_tokens": 209,
+            "cost": 0.000137844
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.00011025,
+          "durationMs": 291,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2625,
+            "output_tokens": 22,
+            "cost": 0.00011025
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.10297750000000001,
+          "credits": 0.01787049,
+          "durationMs": 5274,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 6637,
+            "completion_tokens": 146,
+            "total_tokens": 6783,
+            "cost": 0.01787049,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 6634,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.018051,
+              "upstream_inference_prompt_cost": 0.016591,
+              "upstream_inference_completions_cost": 0.00146
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 114,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "confirm-again",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 25,
+        "retainedMessages": 8,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18809,
+        "inputEstimatedTokens": 8228,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 694,
+        "summaryEstimatedTokens": 1103,
+        "originalMediaParts": 0,
+        "summaryCalls": 0,
+        "budgetExceeded": false,
+        "budgetExceededReason": null,
+        "fallbackReason": null,
+        "durationMs": 6
+      },
+      "summaryCalls": 0,
+      "internalUsd": 0.019893026,
+      "durationMs": 7912,
+      "writeCount": 0,
+      "credits": 0.019696491,
+      "calls": [
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000133644,
+          "durationMs": 312,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3182,
+            "output_tokens": 209,
+            "cost": 0.000133644
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000105882,
+          "durationMs": 354,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2521,
+            "output_tokens": 22,
+            "cost": 0.000105882
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.1028,
+          "credits": 0.019456965,
+          "durationMs": 7055,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 6578,
+            "completion_tokens": 321,
+            "total_tokens": 6899,
+            "cost": 0.019456965,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 6575,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0196535,
+              "upstream_inference_prompt_cost": 0.0164435,
+              "upstream_inference_completions_cost": 0.00321
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 269,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    },
+    {
+      "caseId": "attachment",
+      "mode": "compact",
+      "metrics": {
+        "version": 1,
+        "mode": "compact",
+        "historyMessages": 25,
+        "retainedMessages": 8,
+        "summarizedMessages": 17,
+        "historyEstimatedTokens": 18902,
+        "inputEstimatedTokens": 9370,
+        "knowledgeEstimatedTokens": 0,
+        "toolsEstimatedTokens": 878,
+        "summaryEstimatedTokens": 1025,
+        "originalMediaParts": 1,
+        "summaryCalls": 1,
+        "budgetExceeded": false,
+        "budgetExceededReason": null,
+        "fallbackReason": null,
+        "durationMs": 49532
+      },
+      "summaryCalls": 1,
+      "internalUsd": 0.050984798000000005,
+      "durationMs": 62412,
+      "writeCount": 0,
+      "credits": 0.05047752,
+      "calls": [
+        {
+          "purpose": "context_summary",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.059695,
+          "credits": 0.019355787,
+          "durationMs": 48065,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 12456,
+            "completion_tokens": 1830,
+            "total_tokens": 14286,
+            "cost": 0.019355787,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 12453,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0195513,
+              "upstream_inference_prompt_cost": 0.0012513,
+              "upstream_inference_completions_cost": 0.0183
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 490,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "classification",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000135996,
+          "durationMs": 558,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 3238,
+            "output_tokens": 165,
+            "cost": 0.000135996
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_selection",
+          "model": "typesafe/jev-1.13",
+          "endpoint": "decisions",
+          "maximumReserved": 0.025,
+          "credits": 0.000121002,
+          "durationMs": 334,
+          "mediaParts": 0,
+          "usage": {
+            "input_tokens": 2881,
+            "output_tokens": 22,
+            "cost": 0.000121002
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "generation",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.10250000000000001,
+          "credits": 0.01638054,
+          "durationMs": 2285,
+          "mediaParts": 0,
+          "usage": {
+            "prompt_tokens": 6459,
+            "completion_tokens": 40,
+            "total_tokens": 6499,
+            "cost": 0.01638054,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 6456,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.016546,
+              "upstream_inference_prompt_cost": 0.016146,
+              "upstream_inference_completions_cost": 0.0004
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_iteration",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.1441,
+          "credits": 0.010064934,
+          "durationMs": 3399,
+          "mediaParts": 1,
+          "usage": {
+            "prompt_tokens": 10057,
+            "completion_tokens": 52,
+            "total_tokens": 10109,
+            "cost": 0.010064934,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 6456,
+              "cache_write_tokens": 3598,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0101666,
+              "upstream_inference_prompt_cost": 0.0096466,
+              "upstream_inference_completions_cost": 0.00052
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        },
+        {
+          "purpose": "tool_iteration",
+          "model": "openai/gpt-6.1-sol",
+          "endpoint": "completions",
+          "maximumReserved": 0.14652,
+          "credits": 0.004419261,
+          "durationMs": 5964,
+          "mediaParts": 1,
+          "usage": {
+            "prompt_tokens": 10790,
+            "completion_tokens": 162,
+            "total_tokens": 10952,
+            "cost": 0.004419261,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 10054,
+              "cache_write_tokens": 733,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0044639,
+              "upstream_inference_prompt_cost": 0.0028439,
+              "upstream_inference_completions_cost": 0.00162
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "errorCode": null
+        }
+      ],
+      "stopReason": "final_text",
+      "review": "passed"
+    }
+  ]
+}

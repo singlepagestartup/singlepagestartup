@@ -1,0 +1,97 @@
+{
+  "date": "2026-10-12",
+  "routeOwner": "host.page.default and Host Widget external adapters",
+  "layoutSlots": ["before", "children", "after"],
+  "layoutUrlProp": false,
+  "layoutRelationUrlProps": false,
+  "externalWidgetUrlProps": false,
+  "websiteBuilderNavbarParameters": ["language", "helpSelected"],
+  "rbacAccountParameters": ["language", "settingsSelected"],
+  "workspace": {
+    "footers": 1,
+    "headers": 1,
+    "helpCurrent": null,
+    "layoutId": "815c3653-933e-4938-b768-1124be773268",
+    "layoutWidgetLinks": [
+      "7336f18b-7850-4ea2-b73b-fb44e1579bbc",
+      "c616e30a-d033-462a-9096-46c41d8f4dc6"
+    ],
+    "projectLabel": "Blue Kiln \u2014 live demo",
+    "selectedThread": "e1b26821-a31a-41f9-a90b-ea6a19456331"
+  },
+  "help": {
+    "footers": 1,
+    "headers": 1,
+    "helpCurrent": "page"
+  },
+  "accountSettings": {
+    "settingsHref": "/en/ai-chat/settings",
+    "settingsCurrent": "page",
+    "page": "http://localhost:3000/en/ai-chat/settings"
+  },
+  "checks": {
+    "tests": {
+      "passed": 10,
+      "total": 10,
+      "suites": 3
+    },
+    "hostTypeScript": "passed",
+    "codePlacement": "passed",
+    "whitespace": "passed",
+    "browserConsoleErrorsAfterRecovery": []
+  },
+  "databaseWrites": false,
+  "sourceFiles": [
+    "libs/modules/host/models/layout/frontend/component/src/lib/singlepage/default/interface.ts",
+    "libs/modules/host/relations/pages-to-layouts/frontend/component/src/lib/singlepage/default/interface.ts",
+    "libs/modules/host/relations/layouts-to-widgets/frontend/component/src/lib/singlepage/default/interface.ts",
+    "libs/modules/host/relations/pages-to-layouts/frontend/component/src/lib/singlepage/default/Component.tsx",
+    "libs/modules/host/relations/layouts-to-widgets/frontend/component/src/lib/singlepage/default/Component.tsx",
+    "libs/modules/host/models/layout/frontend/component/src/lib/singlepage/default/Component.tsx",
+    "libs/modules/host/models/page/frontend/component/src/lib/singlepage/default/Component.tsx",
+    "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/website-builder/Component.tsx",
+    "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/rbac/Component.tsx",
+    "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/navbar-ai-chat/interface.ts",
+    "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/navbar-ai-chat/Component.tsx",
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-settings-ai-chat/interface.ts",
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-profile-settings-ai-chat/interface.ts",
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-chat-id-thread-create-ai-chat/interface.ts",
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-create-ai-chat/interface.ts",
+    "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-profile-settings/interface.ts",
+    "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-authentication-forgot-password-ai-chat/interface.ts",
+    "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-authentication-reset-password-ai-chat/interface.ts",
+    "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-authentication-registration-ai-chat/interface.ts",
+    "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-authentication-select-method-ai-chat/interface.ts",
+    "libs/modules/host/models/page/frontend/component/src/lib/singlepage/default/Component.spec.tsx",
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-account-ai-chat/interface.ts",
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-account-ai-chat/Component.tsx",
+    "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/website-builder/widget/singlepage/navbar-ai-chat/Component.tsx",
+    "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/sidebar-ai-chat-project/Component.tsx",
+    "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/sidebar-ai-chat-project/interface.ts",
+    "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/list-item-sidebar-ai-chat/Component.tsx",
+    "libs/modules/social/models/thread/frontend/component/src/lib/singlepage/list-item-sidebar-ai-chat/interface.ts",
+    "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/thread-list-sidebar-ai-chat/interface.ts",
+    "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/thread-list-sidebar-ai-chat/Component.tsx",
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-navigation-ai-chat/interface.ts",
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-navigation-ai-chat/Component.tsx",
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-chat-id-thread-id-ai-chat/Component.tsx",
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-chat-id-thread-create-ai-chat/Component.tsx",
+    "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/me-social-module-profile-id-settings-ai-chat/Component.tsx",
+    "libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/website-builder/Component.spec.tsx",
+    "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-social-module-profile-id-chat-id-thread-id-ai-chat/Component.tsx",
+    "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-social-module-profile-id-chat-id-thread-create-ai-chat/Component.tsx",
+    "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/subject-me-social-module-profile-id-settings-ai-chat/Component.tsx",
+    "libs/modules/host/models/layout/README.md",
+    "libs/modules/host/models/page/README.md",
+    "libs/modules/host/relations/layouts-to-widgets/README.md",
+    "libs/modules/host/relations/widgets-to-external-widgets/README.md",
+    "libs/modules/website-builder/models/widget/README.md",
+    "thoughts/shared/processes/singlepagestartup/ISSUE-ai-chat-production-integration.md",
+    "libs/modules/host/relations/pages-to-layouts/README.md"
+  ],
+  "developmentServer": {
+    "port": 3000,
+    "automaticMemoryThresholdRestart": true,
+    "recovered": true
+  }
+}

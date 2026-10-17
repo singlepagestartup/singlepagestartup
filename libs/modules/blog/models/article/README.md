@@ -32,9 +32,9 @@ Articles are the primary content entries in the blog, storing localized text and
 
 The Social-owned
 [profiles-to-blog-module-articles](../../../social/relations/profiles-to-blog-module-articles/README.md)
-relation connects an article to one or more profiles. Both article admin forms
-expose a Profiles section scoped to the current article. Admin-v2 relation rows
-can open the linked profile or article editor.
+relation connects an article to one or more profiles. Social profile admin forms
+own management of these links; Blog article forms own article editing and do not
+import Social. Admin-v2 relation rows can open the linked article editor.
 
 Profile lists render the existing article `default` card through the profile's
 `articles-default` variant. Reading links and articles uses existing RBAC

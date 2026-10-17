@@ -55,6 +55,160 @@ const CID = "e3d65d9b-60fa-4e6b-8e4d-7a93960bc249";
 const TID = "38529ce7-f88d-45d3-9f34-f40b6a3bf82c";
 const MID = "e9fb51ab-dd98-4d5c-b3f8-7466ce7e440e";
 
+describe("cached aggregate readers", () => {
+  /**
+   * Given: an aggregate response is warm in the HTTP cache.
+   * When: a collection used by the aggregate changes through another route.
+   * Then: the next GET computes the new value instead of serving the old body.
+   */
+  const orderTotals = [
+    "ecommerce/orders",
+    "ecommerce/orders-to-products",
+    "ecommerce/products",
+    "ecommerce/products-to-attributes",
+    "ecommerce/attribute-keys",
+    "ecommerce/attribute-keys-to-attributes",
+    "ecommerce/attributes",
+    "ecommerce/attributes-to-billing-module-currencies",
+    "billing/currencies",
+  ].map((collection) => ({
+    name: `order total after ${collection} changes`,
+    readPath: `/api/ecommerce/orders/${SID}/total`,
+    mutationPath: `/api/${collection}/${SID}`,
+    cacheable: true,
+  }));
+  const pageReaders = ["find-by-url", "url-segment-value", "urls"].flatMap(
+    (operation) =>
+      ["host/pages", "blog/articles"].map((collection) => ({
+        name: `host ${operation} after ${collection} changes`,
+        readPath: `/api/host/pages/${operation}?url=%2Fprojects%2Fnew&segment=projectId`,
+        mutationPath: `/api/${collection}/${SID}`,
+        cacheable: false,
+      })),
+  );
+  it.each([...orderTotals, ...pageReaders])(
+    "refreshes $name",
+    async ({ readPath, mutationPath, cacheable }) => {
+      const values = new Map<string, string>();
+      const middleware = new Middleware();
+      middleware.storeProvider = {
+        async get({ prefix, key }: { prefix: string; key: string }) {
+          return values.get(`${prefix}:${key}`) ?? null;
+        },
+        async set({
+          prefix,
+          key,
+          value,
+        }: {
+          prefix: string;
+          key: string;
+          value: string;
+        }) {
+          values.set(`${prefix}:${key}`, value);
+        },
+        async incr({ prefix, key }: { prefix: string; key: string }) {
+          const next = Number(values.get(`${prefix}:${key}`) ?? 0) + 1;
+          values.set(`${prefix}:${key}`, String(next));
+          return next;
+        },
+      } as any;
+      const app = new Hono();
+      app.use(middleware.init());
+      let value = 10;
+      const read = jest.fn((c: any) => c.json({ data: { value } }));
+      app.get(readPath.split("?")[0], read);
+      app.patch(mutationPath, (c) => {
+        value = 20;
+        return c.json({ data: { id: SID } });
+      });
+
+      expect(await (await app.request(readPath)).json()).toEqual({
+        data: { value: 10 },
+      });
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(await (await app.request(readPath)).json()).toEqual({
+        data: { value: 10 },
+      });
+      expect(read).toHaveBeenCalledTimes(cacheable ? 1 : 2);
+      expect(
+        [...values.keys()].some((key) => key.startsWith("http-cache:data:")),
+      ).toBe(cacheable);
+
+      expect(
+        (await app.request(mutationPath, { method: "PATCH" })).status,
+      ).toBe(200);
+      expect(await (await app.request(readPath)).json()).toEqual({
+        data: { value: 20 },
+      });
+      expect(read).toHaveBeenCalledTimes(cacheable ? 2 : 3);
+      await new Promise((resolve) => setImmediate(resolve));
+    },
+  );
+});
+
+/**
+ * BDD Scenario: Subject-scoped responses cannot bypass ownership checks.
+ * Given: the HTTP cache runs before authorization and an owner reads private data.
+ * When: an anonymous caller or another account requests the same URL.
+ * Then: authorization still rejects the request and no private body is cached.
+ */
+describe("subject response isolation", () => {
+  it.each([
+    `/api/rbac/subjects/${SID}/social-module/profiles`,
+    `/api/rbac/subjects/${SID}/social-module/profiles/projects`,
+    `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/avatar`,
+    `/api/rbac/subjects/${SID}/billing-module/balance`,
+    `/api/rbac/subjects/${SID}/identities`,
+    `/api/rbac/subjects/${SID}/ecommerce-module/orders`,
+  ])("authorizes each caller after an owner reads %s", async (url) => {
+    const values = new Map<string, string>();
+    const middleware = new Middleware();
+    middleware.storeProvider = {
+      async get({ prefix, key }: { prefix: string; key: string }) {
+        return values.get(`${prefix}:${key}`) ?? null;
+      },
+      async set({
+        prefix,
+        key,
+        value,
+      }: {
+        prefix: string;
+        key: string;
+        value: string;
+      }) {
+        values.set(`${prefix}:${key}`, value);
+      },
+      async incr() {
+        return 1;
+      },
+    } as any;
+    const app = new Hono();
+    const authorize = jest.fn(async (c: any, next: () => Promise<void>) => {
+      if (c.req.header("Authorization") !== "Bearer owner")
+        return c.json({ error: "Forbidden" }, 403);
+      await next();
+    });
+    app.use(middleware.init());
+    app.use(authorize);
+    app.get(url, (c) => c.json({ data: "owner-private" }));
+
+    const owner = await app.request(url, {
+      headers: { Authorization: "Bearer owner" },
+    });
+    expect(owner.status).toBe(200);
+    await new Promise((resolve) => setImmediate(resolve));
+    for (const headers of [{}, { Authorization: "Bearer another-account" }]) {
+      const denied = await app.request(url, { headers });
+      expect(denied.status).toBe(403);
+      expect(await denied.json()).toEqual({ error: "Forbidden" });
+    }
+    expect(authorize).toHaveBeenCalledTimes(3);
+    expect(
+      [...values.keys()].some((key) => key.startsWith("http-cache:data:")),
+    ).toBe(false);
+  });
+});
+
 const threadMessagesPath = `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/chats/${CID}/threads/${TID}/messages`;
 const chatScopedMessagePath = `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/chats/${CID}/messages/${TID}`;
 
@@ -297,7 +451,11 @@ describe("HTTP-cache clear route access and namespace isolation", () => {
     await expect(response.json()).resolves.toEqual({
       message: "Cache cleared",
     });
-    expect(deletedPrefixes).toEqual(["http-cache:data", "http-cache:version"]);
+    expect(deletedPrefixes).toEqual([
+      "http-cache:data",
+      "http-cache:version",
+      "sps-consistency:v1",
+    ]);
     expect(keys).not.toContain(
       "http-cache:data:/api/pages:v0:t0:response-hash",
     );

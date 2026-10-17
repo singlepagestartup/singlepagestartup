@@ -1,3 +1,6 @@
+import { Component as ListItemSidebarAiChat } from "./list-item-sidebar-ai-chat";
+import { Component as DownloadAiChat } from "./download-ai-chat";
+import { Component as IdAiChat } from "./id-ai-chat";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -11,6 +14,9 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Find } from "./find";
 import { Component as Default } from "./default";
 export const variants = {
+  "list-item-sidebar-ai-chat": ListItemSidebarAiChat,
+  "download-ai-chat": DownloadAiChat,
+  "id-ai-chat": IdAiChat,
   "admin-select-input": AdminSelectInput,
   "admin-table": AdminTable,
   "admin-form": AdminForm,

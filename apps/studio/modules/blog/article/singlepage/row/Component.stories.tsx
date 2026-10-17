@@ -1,15 +1,19 @@
+import { Component as Article } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ArticleRow, defaultArticleRowProps } from "./Component";
+import { defaultArticleRowProps } from "./Component";
 
 const meta = {
-  title: "Modules/Blog/Models/Article/Singlepage/row",
-  component: ArticleRow,
+  id: "modules-blog-models-article-singlepage-row",
+  title: "Modules/Blog/Article/Singlepage/row",
+  component: Article,
   parameters: {
     layout: "padded",
   },
-  args: defaultArticleRowProps,
-} satisfies Meta<typeof ArticleRow>;
+  args: { ...defaultArticleRowProps, variant: "row" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Article>, { variant: "row" }>
+>;
 
 export default meta;
 

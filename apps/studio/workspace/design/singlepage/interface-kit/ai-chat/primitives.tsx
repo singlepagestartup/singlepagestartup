@@ -142,31 +142,31 @@ export type IconName =
   | "x";
 
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sps-graphite";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 
 export const kit = {
-  button: `${buttonBase} bg-sps-green text-sps-graphite enabled:hover:brightness-95 ${focus}`,
-  secondary: `${buttonBase} border border-sps-line bg-sps-white text-sps-graphite enabled:hover:bg-sps-grey ${focus}`,
-  plain: `${buttonBase} text-sps-muted enabled:hover:text-sps-graphite ${focus}`,
-  danger: `${buttonBase} border border-sps-danger-line bg-sps-danger-surface text-sps-danger enabled:hover:brightness-95 ${focus}`,
+  button: `${buttonBase} bg-primary text-primary-foreground enabled:hover:brightness-95 ${focus}`,
+  secondary: `${buttonBase} border border-border bg-card text-foreground enabled:hover:bg-muted ${focus}`,
+  plain: `${buttonBase} text-muted-foreground enabled:hover:text-foreground ${focus}`,
+  danger: `${buttonBase} border border-destructive-border bg-destructive-surface text-destructive enabled:hover:brightness-95 ${focus}`,
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-sps-line bg-sps-white px-4 py-2 text-base text-sps-graphite outline-none transition motion-reduce:transition-none placeholder:text-sps-muted focus-visible:border-sps-graphite focus-visible:ring-2 focus-visible:ring-sps-graphite focus-visible:ring-offset-2 focus-visible:ring-offset-sps-white disabled:cursor-not-allowed disabled:bg-sps-grey disabled:text-sps-muted disabled:opacity-60 [&[readonly]]:bg-sps-grey aria-invalid:border-sps-danger aria-invalid:focus-visible:ring-sps-danger",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
   checkbox:
-    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-sps-line bg-sps-white text-sps-graphite checked:border-transparent checked:bg-sps-green indeterminate:border-transparent indeterminate:bg-sps-green disabled:cursor-not-allowed",
-  card: "min-w-0 rounded-2xl border border-sps-line bg-sps-white p-5",
-  muted: "text-sps-muted",
-  label: "text-sm font-semibold text-sps-graphite",
+    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-border bg-card text-foreground checked:border-transparent checked:bg-primary indeterminate:border-transparent indeterminate:bg-primary disabled:cursor-not-allowed",
+  card: "min-w-0 rounded-2xl border border-border bg-card p-5",
+  muted: "text-muted-foreground",
+  label: "text-sm font-semibold text-foreground",
   focus,
 };
 
 export const picker = {
-  trigger: `${kit.field} flex h-12 items-center justify-between gap-3 rounded-lg text-left text-sm font-normal shadow-sm focus-visible:ring-[3px] focus-visible:ring-sps-graphite/20 focus-visible:ring-offset-0 [&>span]:truncate`,
-  icon: "pointer-events-none text-sps-muted",
+  trigger: `${kit.field} flex h-12 items-center justify-between gap-3 rounded-lg text-left text-sm font-normal shadow-sm focus-visible:ring-[3px] focus-visible:ring-foreground/20 focus-visible:ring-offset-0 [&>span]:truncate`,
+  icon: "pointer-events-none text-muted-foreground",
   content:
-    "z-50 max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-sps-line bg-sps-white font-sps text-sps-graphite shadow-md",
-  item: "relative flex min-h-9 w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-3 text-sm outline-none data-[highlighted]:bg-sps-grey data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+    "z-50 max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-border bg-card font-default text-foreground shadow-md",
+  item: "relative flex min-h-9 w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-3 text-sm outline-none data-[highlighted]:bg-muted data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
 };
 
 // Official Phosphor Regular 2.1.1 files; their paths are retained unchanged.
@@ -237,11 +237,11 @@ export const Checkbox = forwardRef<HTMLInputElement, ICheckboxProps>(
         />
         <Icon
           name="check"
-          className="pointer-events-none absolute h-3.5 w-3.5 text-sps-graphite opacity-0 peer-checked:opacity-100 peer-indeterminate:hidden"
+          className="pointer-events-none absolute h-3.5 w-3.5 text-foreground opacity-0 peer-checked:opacity-100 peer-indeterminate:hidden"
         />
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute hidden h-0.5 w-2.5 rounded-full bg-sps-graphite peer-indeterminate:block"
+          className="pointer-events-none absolute hidden h-0.5 w-2.5 rounded-full bg-default peer-indeterminate:block"
         />
       </span>
     );
@@ -336,7 +336,7 @@ export function Specimen({
   return (
     <article
       data-specimen={id}
-      className={`${kit.card} p-5 text-sps-graphite sm:p-6 md:p-8`}
+      className={`${kit.card} p-5 text-foreground sm:p-6 md:p-8`}
     >
       <h3 className="text-base font-semibold leading-[26px]">{title}</h3>
       <p className={`mt-2 max-w-3xl text-sm leading-[22px] ${kit.muted}`}>
@@ -344,7 +344,7 @@ export function Specimen({
       </p>
       {guidance}
       <div className="mt-6 min-w-0">{children}</div>
-      <details className="mt-6 border-t border-sps-line pt-4 text-xs leading-5">
+      <details className="mt-6 border-t border-border pt-4 text-xs leading-5">
         <summary
           className={`w-fit cursor-pointer rounded-md font-medium ${kit.focus}`}
         >
@@ -387,7 +387,7 @@ export function Surface({
   return (
     <Tag
       className={twMerge(
-        "min-w-0 overflow-hidden rounded-2xl border border-sps-line bg-sps-white",
+        "min-w-0 overflow-hidden rounded-2xl border border-border bg-card",
         className,
       )}
       {...props}

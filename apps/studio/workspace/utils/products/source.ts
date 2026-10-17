@@ -45,7 +45,11 @@ interface IProductSurfaceModule {
 }
 
 const componentModules = import.meta.glob<IProductSurfaceModule>(
-  "../../products/{singlepage,startup}/**/*.{tsx,jsx}",
+  [
+    "../../products/{singlepage,startup}/**/*.{tsx,jsx}",
+    "!../../products/**/*.{test,spec,stories}.{tsx,jsx}",
+    "!../../products/**/__tests__/**",
+  ],
   { eager: true },
 );
 const presentationModules = componentModules as Record<

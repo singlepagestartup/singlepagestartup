@@ -1,12 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as BroadcastModuleMessage } from "../../index";
+import { Component as Message } from "../../index";
 
 const meta = {
-  title: "Modules/Broadcast/Models/Message/Singlepage/admin-v2-table",
-  component: BroadcastModuleMessage,
+  id: "modules-broadcast-models-message-singlepage-admin-v2-table",
+  title: "Modules/Broadcast/Message/Singlepage/admin-v2-table",
+  component: Message,
   argTypes: { empty: { control: "boolean" } },
   args: { variant: "admin-v2-table", empty: false },
-} satisfies Meta<typeof BroadcastModuleMessage>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Message>, { variant: "admin-v2-table" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

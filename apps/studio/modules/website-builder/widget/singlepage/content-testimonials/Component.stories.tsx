@@ -1,16 +1,19 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import {
-  ContentTestimonials,
-  defaultContentTestimonialsProps,
-} from "./Component";
+import { defaultContentTestimonialsProps } from "./Component";
 
 const meta = {
-  title:
-    "Modules/Website Builder/Models/Widget/Singlepage/content-testimonials",
-  component: ContentTestimonials,
+  id: "modules-website-builder-models-widget-singlepage-content-testimonials",
+  title: "Modules/Website-Builder/Widget/Singlepage/content-testimonials",
+  component: Widget,
   parameters: { layout: "fullscreen" },
-  args: defaultContentTestimonialsProps,
-} satisfies Meta<typeof ContentTestimonials>;
+  args: { ...defaultContentTestimonialsProps, variant: "content-testimonials" },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Widget>,
+    { variant: "content-testimonials" }
+  >
+>;
 
 export default meta;
 

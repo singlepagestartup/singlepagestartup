@@ -9,7 +9,6 @@ import {
 } from "react";
 import IconGlyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
 import { useState } from "react";
-import { Component as SocialModuleProfile } from "../../../../profile/index";
 interface IFeedbackProps {
   children: ReactNode;
   kind?: "success" | "error" | "info";
@@ -123,7 +122,6 @@ export interface IThreadCreateProps {
 }
 export function Component({ chatId, cancelHref }: IThreadCreateProps) {
   const [title, setTitle] = useState("");
-  const [hasAgent, setHasAgent] = useState(false);
   const [previewed, setPreviewed] = useState(false);
   return (
     <form
@@ -131,13 +129,12 @@ export function Component({ chatId, cancelHref }: IThreadCreateProps) {
       data-chat-id={chatId}
       onSubmit={(event) => {
         event.preventDefault();
-        if (title.trim() && hasAgent) setPreviewed(true);
+        if (title.trim()) setPreviewed(true);
       }}
       className="mx-auto grid w-full max-w-xl gap-5 overflow-y-auto p-5 @[640px]:p-8"
     >
       <p className={`text-sm leading-6 ${kit.muted}`}>
-        Give this thread a name and choose an agent. The agent uses the
-        project's knowledge.
+        Give this thread a name.
       </p>
       <TextField
         label="Thread name"
@@ -150,15 +147,8 @@ export function Component({ chatId, cancelHref }: IThreadCreateProps) {
         maxLength={100}
         placeholder="What do you want to work on?"
       />
-      <SocialModuleProfile
-        variant="agent-select-ai-chat"
-        onChange={(selected) => {
-          setHasAgent(selected);
-          setPreviewed(false);
-        }}
-      />
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" disabled={!title.trim() || !hasAgent}>
+        <Button type="submit" disabled={!title.trim()}>
           <Icon name="chat-circle" />
           Create thread
         </Button>

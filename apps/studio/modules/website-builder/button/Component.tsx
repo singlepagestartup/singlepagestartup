@@ -1,23 +1,11 @@
-import {
-  forwardRef,
-  type ComponentProps,
-  type ComponentType,
-  type RefAttributes,
-} from "react";
+import type { ComponentType } from "react";
+import type { IComponentProps } from "./interface";
 import { variants } from "./variants";
 
-export type IComponentProps = {
-  [Variant in keyof typeof variants]: { variant: Variant } & ComponentProps<
-    (typeof variants)[Variant]
-  >;
-}[keyof typeof variants];
-
-export const Component = forwardRef<HTMLButtonElement, IComponentProps>(
-  function Component(props, ref) {
-    const Comp = variants[props.variant] as ComponentType<
-      IComponentProps & RefAttributes<HTMLButtonElement>
-    >;
-    if (!Comp) return <></>;
-    return <Comp {...props} ref={ref} />;
-  },
-);
+export function Component(props: IComponentProps) {
+  const ChildComponent = variants[
+    props.variant
+  ] as ComponentType<IComponentProps>;
+  if (!ChildComponent) return <></>;
+  return <ChildComponent {...props} />;
+}

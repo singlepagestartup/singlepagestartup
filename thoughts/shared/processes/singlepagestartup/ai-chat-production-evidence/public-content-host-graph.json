@@ -1,0 +1,51 @@
+{
+  "pages": [
+    {
+      "key": "landing",
+      "pageId": "c9d1562a-ff09-4381-a46d-23d67fa62643",
+      "hostWidgetId": "5600ca7a-e9fd-4e88-ba5b-91e07505dc4b",
+      "externalRelationId": "3b13be5c-8219-4020-afac-d407bf72e6f3",
+      "externalModule": "website-builder",
+      "externalWidgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+      "variant": "landing-ai-chat"
+    },
+    {
+      "key": "sign-in",
+      "pageId": "7068a7fc-c85c-49f9-9f4d-37ece256a38c",
+      "hostWidgetId": "c8bd3e55-d091-40f3-b00b-ba6a2e72e9c3",
+      "externalRelationId": "179f31bd-185b-48a7-baf3-e5642c8db0f5",
+      "externalModule": "rbac",
+      "externalWidgetId": "699ab73b-dc60-4361-b446-639ea2733ef8",
+      "variant": "subject-me-authentication-select-method-ai-chat"
+    },
+    {
+      "key": "forgot-password",
+      "pageId": "66f99ba7-2cc2-407b-bfa9-7ef3e55a7cf4",
+      "hostWidgetId": "6921d9a3-3508-4994-94f3-c88b0828d106",
+      "externalRelationId": "94c91bef-3f9d-4b30-a908-cdb29af6b77e",
+      "externalModule": "rbac",
+      "externalWidgetId": "219564c8-5ea5-4a75-a844-143ebc42d626",
+      "variant": "subject-me-authentication-forgot-password-ai-chat"
+    },
+    {
+      "key": "reset-password",
+      "pageId": "cdd585f7-62a8-4344-96c6-f9b593d37f1c",
+      "hostWidgetId": "06c6b2be-5e47-4e51-af48-1bdf6ee09098",
+      "externalRelationId": "04d06a00-661a-4083-9af8-31fd4f432e3c",
+      "externalModule": "rbac",
+      "externalWidgetId": "3d36832c-cec5-4e31-bc36-778cb5dd37af",
+      "variant": "subject-me-authentication-reset-password-ai-chat"
+    },
+    {
+      "key": "help",
+      "pageId": "01f39ad8-5b96-4121-adc1-2a79951c0e2a",
+      "hostWidgetId": "02895855-e6ed-4044-a002-7e4026a6f706",
+      "externalRelationId": "62e6ca8b-f720-463b-8623-1c4d231886d7",
+      "externalModule": "website-builder",
+      "externalWidgetId": "891660ec-0b4d-4051-b595-e3f0debcefaa",
+      "variant": "content-ai-chat-help"
+    }
+  ],
+  "retiredWidgetCount": 2,
+  "retiredLinks": []
+}

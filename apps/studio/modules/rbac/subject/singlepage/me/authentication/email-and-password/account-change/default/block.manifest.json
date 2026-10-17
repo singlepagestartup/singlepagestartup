@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-authentication-email-and-password-account-change-default",
+  "title": "me-authentication-email-and-password-account-change-default",
+  "description": "Local account settings interaction.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-authentication-email-and-password-account-change-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-authentication-email-and-password-account-change-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

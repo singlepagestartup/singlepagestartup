@@ -71,7 +71,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     type: string;
   }) {
     const cacheKey = `permissions:templates:${props.type}:${props.method.toUpperCase()}`;
-    let permissions = cache.get<(typeof Table)["$inferSelect"][]>(cacheKey);
+    let permissions =
+      await cache.getAsync<(typeof Table)["$inferSelect"][]>(cacheKey);
 
     if (!permissions) {
       permissions = await this.find({
@@ -169,7 +170,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   protected async getPermissionBillingRequirements(permissionId: string) {
     const cacheKey = `permission:${permissionId}:billing-requirements`;
     let requirements =
-      cache.get<IPermissionsToBillingModuleCurrencies[]>(cacheKey);
+      await cache.getAsync<IPermissionsToBillingModuleCurrencies[]>(cacheKey);
 
     if (!requirements) {
       const fetched =

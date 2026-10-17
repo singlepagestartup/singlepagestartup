@@ -1,13 +1,15 @@
 import type { ComponentProps, ComponentType } from "react";
-import { Component as Variant0 } from "./singlepage/list/item/pending/ai-chat/index";
-import { Component as Variant1 } from "./singlepage/list/attachments/ai-chat/index";
-import { Component as Variant2 } from "./singlepage/list/item/asset/ai-chat/index";
-import { Component as Variant3 } from "./singlepage/overview/ai-chat/index";
+import { Component as ListItemPendingAiChat } from "./singlepage/list/item/pending/ai-chat/index";
+import { Component as ListAttachmentsAiChat } from "./singlepage/list/attachments/ai-chat/index";
+import { Component as ListItemAssetAiChat } from "./singlepage/list/item/asset/ai-chat/index";
+import { Component as OverviewAiChat } from "./singlepage/overview/ai-chat/index";
+import { Component as AttachmentAiChat } from "./singlepage/attachment/ai-chat";
 const variants = {
-  "list-item-pending-ai-chat": Variant0,
-  "list-attachments-ai-chat": Variant1,
-  "list-item-asset-ai-chat": Variant2,
-  "overview-ai-chat": Variant3,
+  "attachment-ai-chat": AttachmentAiChat,
+  "list-item-pending-ai-chat": ListItemPendingAiChat,
+  "list-attachments-ai-chat": ListAttachmentsAiChat,
+  "list-item-asset-ai-chat": ListItemAssetAiChat,
+  "overview-ai-chat": OverviewAiChat,
 };
 type Props = {
   [V in keyof typeof variants]: { variant: V } & ComponentProps<

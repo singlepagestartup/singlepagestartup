@@ -32,7 +32,7 @@ export function Component(props: IComponentPropsExtended) {
           return data?.map((entity, index) => {
             return (
               <<%= right_model_name_pascal_cased %>
-                key={index}
+                key={entity.id}
                 isServer={props.isServer}
                 variant={entity.variant as any}
                 data={entity}

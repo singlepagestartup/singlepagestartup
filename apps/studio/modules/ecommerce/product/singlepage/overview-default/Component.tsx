@@ -1,7 +1,24 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  ProductOverviewBreadcrumbItem,
+  ProductOverviewHero,
+  ProductOverviewStat,
+  ProductOverviewRelatedProduct,
+  ProductOverviewDefaultProps,
+} from "./interface";
+export type {
+  ProductOverviewBreadcrumbItem,
+  ProductOverviewHero,
+  ProductOverviewStat,
+  ProductOverviewRelatedProduct,
+  ProductOverviewDefaultProps,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps, ReactNode } from "react";
 import { twMerge, twMerge as twMergePresentation } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
 import { ProductCardRelated } from "../card-related/Component";
 import {
@@ -60,45 +77,9 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface ProductOverviewBreadcrumbItem {
-  label: string;
-  href: string;
-}
-export interface ProductOverviewHero {
-  image: string;
-  title: string;
-  subtitle: string;
-  category: string;
-  badge?: string;
-  description: string;
-  breadcrumb: ProductOverviewBreadcrumbItem[];
-}
-export interface ProductOverviewStat {
-  value: string;
-  label: string;
-}
-export interface ProductOverviewRelatedProduct {
-  id: string;
-  slug: string;
-  title: string;
-  subtitle: string;
-  category: string;
-  priceLabel: string;
-  image: string;
-  href?: string;
-  target?: "_blank" | "_parent" | "_self" | "_top";
-}
-export interface ProductOverviewDefaultProps {
-  variant?: string;
-  hero: ProductOverviewHero;
-  stats: ProductOverviewStat[];
-  related: ProductOverviewRelatedProduct[];
-  purchase: Partial<typeof defaultProductOverviewPurchaseProps>;
-  cta: Partial<typeof defaultProductOverviewCtaProps>;
-}
 function ProductOverviewHeroSection({ hero }: { hero: ProductOverviewHero }) {
   return (
     <section
@@ -108,34 +89,31 @@ function ProductOverviewHeroSection({ hero }: { hero: ProductOverviewHero }) {
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <nav
           aria-label="Breadcrumb"
-          className="mb-6 flex flex-wrap items-center gap-2 text-sm text-[var(--color-sps-muted)]"
+          className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
         >
           {hero.breadcrumb.map((crumb) => (
             <span key={crumb.href} className="inline-flex items-center gap-2">
               <a
                 href={crumb.href}
-                className="rounded transition hover:text-[var(--color-sps-graphite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+                className="rounded transition hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
               >
                 {crumb.label}
               </a>
               <ChevronRight className="h-5 w-5" />
             </span>
           ))}
-          <span
-            aria-current="page"
-            className="text-[var(--color-sps-graphite)]"
-          >
+          <span aria-current="page" className="text-foreground">
             {hero.title}
           </span>
         </nav>
         <div className="grid overflow-hidden rounded-3xl lg:grid-cols-2">
-          <div className="flex flex-col justify-center bg-[var(--color-sps-graphite)] p-6 text-[var(--color-sps-white)] sm:p-10 lg:p-12">
+          <div className="flex flex-col justify-center bg-default p-6 text-default-foreground sm:p-10 lg:p-12">
             <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="rounded-full border border-[var(--color-sps-muted-inverse)]/40 px-3 py-1">
+              <span className="rounded-full border border-default-muted-foreground/40 px-3 py-1">
                 {hero.category}
               </span>
               {hero.badge ? (
-                <span className="rounded-full bg-[var(--color-sps-green)] px-3 py-1 font-semibold text-[var(--color-sps-graphite)]">
+                <span className="rounded-full bg-primary text-primary-foreground px-3 py-1 font-semibold">
                   {hero.badge}
                 </span>
               ) : null}
@@ -143,20 +121,20 @@ function ProductOverviewHeroSection({ hero }: { hero: ProductOverviewHero }) {
             <h1 className="mt-8 max-w-xl text-4xl font-semibold leading-[1.08] sm:text-5xl lg:text-6xl">
               {hero.title}
             </h1>
-            <p className="mt-5 max-w-lg text-2xl font-semibold leading-8 text-[var(--color-sps-white)]">
+            <p className="mt-5 max-w-lg text-2xl font-semibold leading-8 text-default-foreground">
               {hero.subtitle}
             </p>
-            <p className="mt-5 max-w-lg text-base leading-7 text-[var(--color-sps-muted-inverse)]">
+            <p className="mt-5 max-w-lg text-base leading-7 text-default-muted-foreground">
               {hero.description}
             </p>
             <a
               href="#product-purchase"
-              className="mt-8 inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-xl bg-[var(--color-sps-green)] px-5 py-3 text-sm font-semibold text-[var(--color-sps-graphite)] transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-white)]"
+              className="mt-8 inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 py-3 text-sm font-semibold transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-card"
             >
               Explore this service <ArrowRight className="h-5 w-5" />
             </a>
           </div>
-          <div className="min-w-0 bg-[var(--color-sps-white)]">
+          <div className="min-w-0 bg-card">
             <img
               src={hero.image}
               alt={hero.title}
@@ -183,12 +161,12 @@ function ProductOverviewStatsSection({
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="min-w-0 rounded-2xl bg-[var(--color-sps-white)] p-5 sm:p-6"
+              className="min-w-0 rounded-2xl bg-card p-5 sm:p-6"
             >
-              <p className="text-3xl font-semibold text-[var(--color-sps-graphite)] sm:text-4xl">
+              <p className="text-3xl font-semibold text-foreground sm:text-4xl">
                 {stat.value}
               </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--color-sps-muted)]">
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 {stat.label}
               </p>
             </div>
@@ -209,10 +187,10 @@ function ProductOverviewRelatedSection({
       data-ds-section="product-overview-related"
     >
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <p className="mb-2 text-xs text-[var(--color-sps-muted)] ">
+        <p className="mb-2 text-xs text-muted-foreground ">
           You might also need
         </p>
-        <h2 className="text-3xl font-semibold leading-tight text-[var(--color-sps-graphite)] sm:text-4xl">
+        <h2 className="text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
           Related services
         </h2>
         <div className="mt-8 grid gap-4 lg:grid-cols-3">
@@ -234,9 +212,7 @@ function ProductOverviewRelatedSection({
     </section>
   );
 }
-export function ProductOverviewDefault(
-  props?: Partial<ProductOverviewDefaultProps>,
-) {
+export function ProductOverviewDefault(props?: IComponentProps) {
   const { hero, stats, related, purchase, cta } = {
     ...defaultProductOverviewDefaultProps,
     ...props,
@@ -261,7 +237,7 @@ export function ProductOverviewDefault(
     : undefined;
   return (
     <div
-      className="w-full bg-[var(--color-sps-grey)] text-[var(--color-sps-graphite)] antialiased"
+      className="w-full bg-muted text-foreground antialiased"
       data-ds-block="ecommerce.product.overview-default"
       data-ds-imports="ecommerce.product.overview-purchase ecommerce.product.gallery ecommerce.product.card-related ecommerce.product.overview-cta website-builder.widget.content-feature-find-grid website-builder.widget.content-testimonials website-builder.widget.content-faq"
       data-ds-layer="singlepage"

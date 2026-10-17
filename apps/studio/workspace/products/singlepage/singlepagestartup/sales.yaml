@@ -75,7 +75,7 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    product.singlepagestartup.product: e3253843d86e58992383045ce21c35e86660edf9d74dd8f9ede39bf2c16ac730
+    product.singlepagestartup.product: f3730e0bc1b4a613fcd4b2d66156eeecdcd3f171030b00d691b28cdf81ee0f2b
 segments:
   - id: makers
     name: Makers building with a coding agent

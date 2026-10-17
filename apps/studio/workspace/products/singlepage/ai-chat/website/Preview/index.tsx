@@ -30,22 +30,26 @@ export interface IAIChatPreviewProps {
 }
 const servicePages = {
   landing: "ai-chat",
-  register: "ai-chat-rbac-subjects-authentication-registration",
-  login: "ai-chat-rbac-subjects-authentication-select-method",
-  "account-settings": "ai-chat-rbac-subjects-settings",
+  register: "rbac-module-subject-me-authentication-registration-ai-chat",
+  login: "rbac-module-subject-me-authentication-select-method-ai-chat",
+  "account-settings": "rbac-module-subject-me-settings-ai-chat",
   help: "ai-chat-help",
-  tokens: "ai-chat-rbac-subjects-tokens",
-  "profile-create": "ai-chat-social-profiles-create",
+  tokens:
+    "rbac-module-subject-me-ecommerce-module-order-checkout-tokens-ai-chat",
+  "profile-create":
+    "rbac-module-subject-me-social-module-profile-create-ai-chat",
 } as const;
 const profilePages = {
-  "profile-overview": "ai-chat-social-profiles-social-profiles-id",
-  "profile-settings": "ai-chat-social-profiles-social-profiles-id-settings",
+  "profile-overview":
+    "rbac-module-subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+  "profile-settings":
+    "rbac-module-subject-me-social-module-profile-id-settings-ai-chat",
 } as const;
 function ProfilePage({ route }: { route: IAIChatRoute }) {
   if (route.page === "thread-create")
     return (
       <HostModulePage
-        variant="ai-chat-social-profiles-social-profiles-id-chats-social-chats-id-threads-create"
+        variant="rbac-module-subject-me-social-module-profile-id-chat-id-thread-create-ai-chat"
         profileId={route.profileId!}
         chatId={route.chatId!}
       />
@@ -69,9 +73,9 @@ function Pages({
   return (
     <>
       {serviceVariant ===
-      "ai-chat-rbac-subjects-authentication-select-method" ? (
+      "rbac-module-subject-me-authentication-select-method-ai-chat" ? (
         <HostModulePage
-          variant="ai-chat-rbac-subjects-authentication-select-method"
+          variant="rbac-module-subject-me-authentication-select-method-ai-chat"
           copy={loginCopy}
         />
       ) : (

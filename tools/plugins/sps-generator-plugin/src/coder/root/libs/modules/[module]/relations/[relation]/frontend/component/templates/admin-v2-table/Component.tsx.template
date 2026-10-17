@@ -8,7 +8,7 @@ export function Component(props: IComponentPropsExtended) {
       {props.data.map((entity, index) => {
         return (
           <AdminTableRow
-            key={index}
+            key={entity.id}
             module="<%= module_name %>"
             name="<%= relation_name %>"
             isServer={props.isServer}

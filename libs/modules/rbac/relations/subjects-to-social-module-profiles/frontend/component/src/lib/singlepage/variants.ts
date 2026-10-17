@@ -19,4 +19,5 @@ export const variants = {
   "admin-v2-form": AdminV2Form,
   find: Find,
   default: Default,
+  assistant: Default,
 };

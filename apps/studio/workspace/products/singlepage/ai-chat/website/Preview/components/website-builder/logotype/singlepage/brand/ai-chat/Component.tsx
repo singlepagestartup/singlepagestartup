@@ -45,7 +45,7 @@ export function Component() {
     >
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute -inset-3 -z-10 rounded-full bg-linear-to-r from-sps-green via-sps-green/30 to-sps-grey opacity-0 blur-lg transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+        className="pointer-events-none absolute -inset-3 -z-10 rounded-full bg-linear-to-r from-primary via-primary/30 to-muted opacity-0 blur-lg transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
       />
       <svg
         aria-hidden="true"

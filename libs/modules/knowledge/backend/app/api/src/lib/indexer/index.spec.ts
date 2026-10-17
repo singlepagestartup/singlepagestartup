@@ -25,7 +25,7 @@ function setup(
     repository,
     embeddingClient,
     indexer: new KnowledgeIndexer({
-      repository: repository as any,
+      source: repository as any,
       embeddingClient: embeddingClient as any,
     }),
   };

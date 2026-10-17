@@ -14,7 +14,12 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/knowledge/sources";
-export const variants = ["default"];
+export const variants = [
+  "id-sidebar-ai-chat",
+  "form-ai-chat",
+  "id-ai-chat",
+  "default",
+];
 export const query = {};
 export const options = {
   next: {

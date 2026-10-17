@@ -37,6 +37,82 @@ function createTool(
   };
 }
 
+it("finishes a staged proposal without another generative call or a false model error", async () => {
+  const tool = createTool({ source: "knowledge", completeAfterSuccess: true });
+  const generate = jest.fn().mockResolvedValue({
+    text: "",
+    toolCalls: [
+      {
+        id: "proposal",
+        type: "function",
+        function: {
+          name: tool.definition.function.name,
+          arguments: '{"id":"draft"}',
+        },
+      },
+    ],
+    billing: null,
+  });
+  const result = await new SocialProfileAiToolLoop().run({
+    context: [{ role: "user", content: "Prepare a draft" }],
+    modelCandidateIds: ["openai/gpt-6.1-sol"],
+    tools: [tool],
+    generate,
+    language: "ru",
+  });
+  expect(generate).toHaveBeenCalledTimes(1);
+  expect(result.trace.stopReason).toBe("final_text");
+  expect(result.finalText).toBe("Предложение готово к проверке.");
+  expect(result.trace.calls).toHaveLength(1);
+});
+
+it("requires the proposal tool before accepting a document revision as complete", async () => {
+  const tool = createTool({ source: "knowledge", completeAfterSuccess: true });
+  const generate = jest
+    .fn()
+    .mockResolvedValueOnce({ text: "A revised draft without a tool call" })
+    .mockResolvedValueOnce({
+      text: "",
+      toolCalls: [
+        {
+          id: "staged",
+          type: "function",
+          function: {
+            name: tool.definition.function.name,
+            arguments: '{"id":"revised"}',
+          },
+        },
+      ],
+    });
+  const result = await new SocialProfileAiToolLoop().run({
+    context: [{ role: "user", content: "Revise the proposed document" }],
+    modelCandidateIds: ["test/answer"],
+    tools: [tool],
+    requiredCompletionToolName: tool.definition.function.name,
+    generate,
+  });
+  expect(generate).toHaveBeenCalledTimes(2);
+  expect(result.trace.calls).toHaveLength(1);
+  expect(result.trace.stopReason).toBe("final_text");
+});
+
+it("reports an unstaged revision as an error when the model keeps avoiding the tool", async () => {
+  const tool = createTool({ source: "knowledge", completeAfterSuccess: true });
+  const generate = jest
+    .fn()
+    .mockResolvedValue({ text: "The revision is ready" });
+  const result = await new SocialProfileAiToolLoop().run({
+    context: [{ role: "user", content: "Revise the proposed document" }],
+    modelCandidateIds: ["test/answer"],
+    tools: [tool],
+    requiredCompletionToolName: tool.definition.function.name,
+    generate,
+  });
+  expect(generate).toHaveBeenCalledTimes(2);
+  expect(result.trace.calls).toHaveLength(0);
+  expect(result.trace.stopReason).toBe("model_error");
+});
+
 describe("Given: a bounded social.profile AI tool loop", () => {
   /**
    * BDD Scenario
@@ -241,6 +317,92 @@ describe("Given: a bounded social.profile AI tool loop", () => {
       expect(result.trace.calls).toEqual([]);
     },
   );
+
+  it("allows a declared long-running tool to finish after the default thirty-second deadline", async () => {
+    jest.useFakeTimers();
+    try {
+      const tool = createTool({
+        source: "knowledge",
+        timeoutMs: 240_000,
+        execute: jest.fn(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(() => resolve({ saved: true }), 35_000),
+            ),
+        ),
+      });
+      const generate = jest
+        .fn()
+        .mockResolvedValueOnce({
+          text: "",
+          toolCalls: [
+            {
+              id: "long-call",
+              type: "function",
+              function: {
+                name: tool.definition.function.name,
+                arguments: "{}",
+              },
+            },
+          ],
+          billing: null,
+        })
+        .mockResolvedValueOnce({ text: "Saved", billing: null });
+      const task = new SocialProfileAiToolLoop().run({
+        context: [{ role: "user", content: "Save the file" }],
+        modelCandidateIds: ["primary"],
+        tools: [tool],
+        generate,
+      });
+      await jest.advanceTimersByTimeAsync(35_000);
+      const result = await task;
+      expect(result.finalText).toBe("Saved");
+      expect(result.trace.stopReason).toBe("final_text");
+      expect(result.trace.calls).toEqual([
+        expect.objectContaining({
+          name: tool.definition.function.name,
+          status: "success",
+        }),
+      ]);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("bounds a tool-specific timeout by the remaining total deadline", async () => {
+    jest.useFakeTimers();
+    try {
+      const tool = createTool({
+        timeoutMs: 600_000,
+        execute: jest.fn(() => new Promise(() => undefined)),
+      });
+      const task = new SocialProfileAiToolLoop().run({
+        context: [{ role: "user", content: "Wait" }],
+        modelCandidateIds: ["primary"],
+        tools: [tool],
+        generate: jest.fn(async () => ({
+          text: "",
+          toolCalls: [
+            {
+              id: "long-call",
+              type: "function" as const,
+              function: {
+                name: tool.definition.function.name,
+                arguments: "{}",
+              },
+            },
+          ],
+          billing: null,
+        })),
+      });
+      await jest.advanceTimersByTimeAsync(300_000);
+      const result = await task;
+      expect(result.trace.stopReason).toBe("total_timeout");
+      expect(result.trace.calls).toEqual([]);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 
   /**
    * BDD Scenario
@@ -598,4 +760,90 @@ describe("Given: a bounded social.profile AI tool loop", () => {
       trace: { stopReason: "final_text" },
     });
   });
+});
+
+it("places original media after all tool responses in a multi-call step", async () => {
+  const tool = createTool({
+    source: "context",
+    additionalContext: () => [
+      {
+        role: "user",
+        content: [
+          {
+            type: "image_url",
+            image_url: { url: "https://example.test/original.png" },
+          },
+        ],
+      },
+    ],
+  });
+  const generate = jest
+    .fn()
+    .mockResolvedValueOnce({
+      text: "",
+      toolCalls: [1, 2].map((id) => ({
+        id: String(id),
+        type: "function",
+        function: {
+          name: tool.definition.function.name,
+          arguments: '{"id":"same"}',
+        },
+      })),
+      billing: null,
+    })
+    .mockResolvedValueOnce({ text: "understood", billing: null });
+  const result = await new SocialProfileAiToolLoop().run({
+    context: [{ role: "user", content: "Read originals" }],
+    modelCandidateIds: ["test"],
+    tools: [tool],
+    generate,
+  });
+  expect(result.context.map((message) => message.role)).toEqual([
+    "user",
+    "assistant",
+    "tool",
+    "tool",
+    "user",
+    "user",
+  ]);
+  expect(result.context[2].tool_call_id).toBe("1");
+  expect(result.context[3].tool_call_id).toBe("2");
+});
+
+it("pairs every declared tool response before finishing a step that staged a draft", async () => {
+  const stage = createTool({ completeAfterSuccess: true });
+  const read = createTool({
+    definition: {
+      type: "function",
+      function: {
+        name: "read",
+        parameters: { type: "object", properties: { id: { type: "string" } } },
+      },
+    },
+  });
+  const generate = jest.fn().mockResolvedValue({
+    text: "",
+    toolCalls: [stage, read].map((tool, index) => ({
+      id: String(index),
+      type: "function",
+      function: {
+        name: tool.definition.function.name,
+        arguments: '{"id":"draft"}',
+      },
+    })),
+    billing: null,
+  });
+  const result = await new SocialProfileAiToolLoop().run({
+    context: [{ role: "user", content: "Draft with original material" }],
+    modelCandidateIds: ["test"],
+    tools: [stage, read],
+    generate,
+  });
+  expect(
+    result.context
+      .filter((message) => message.role === "tool")
+      .map((message) => message.tool_call_id),
+  ).toEqual(["0", "1"]);
+  expect(read.execute).toHaveBeenCalled();
+  expect(generate).toHaveBeenCalledTimes(1);
 });

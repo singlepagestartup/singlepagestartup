@@ -45,7 +45,7 @@ The endpoint validates subject/profile/chat/message access, requires the replyin
 
 The web composer does not call this endpoint. It creates one message and persists the complete user-selected execution settings in `message.metadata.rbacAiReactionRequest`: contract version, model id, reasoning, skill ids, and Knowledge-search flag. The RBAC Subject SDK model owns the typed parser/normalizer; Social stores the envelope as opaque metadata. The action logger launches Agent once, Agent dispatches every automatic profile connected to the chat, and each OpenRouter execution reloads the same answer settings from the saved message. The replying profile is supplied by Agent from chat membership and is validated by the endpoint; it is not selected by message metadata. Internal query/body data cannot override persisted model, skill, or Knowledge settings. Messages without an envelope use safe automatic defaults.
 
-If the message starts with `@knowledge /learn`, the endpoint strips the controls, calls `KnowledgeService.learnContent(...)` once for the message text and all of its Files (PDF, image, video, audio, or UTF-8 text), and creates the Social `profiles-to-knowledge-module-sources` relation for the replying AI profile if needed. Normal replies load and search Knowledge only when their persisted message text explicitly contains `@knowledge`; without that mention no RAG context or Knowledge tool is added. Explicit retrieval stays scoped to the profile-Source relation, and the final AI answer is saved as a social message in the same thread. A separate Knowledge-only reaction endpoint is not exposed.
+If the message starts with `@knowledge /learn`, the endpoint strips the controls, calls `KnowledgeService.learnContent(...)` once for the message text and all of its Files (PDF, image, video, audio, or UTF-8 text), and creates the Social `profiles-to-knowledge-module-sources` relation for the replying AI profile if needed. AI Chat replies enable Knowledge search by default; other channels can request it with `useKnowledgeSearch` or `@knowledge`. Jev can also classify a request as reading or editing Knowledge. Retrieval stays scoped to the profile-Source relation, and the final AI answer is saved as a social message in the same thread. A separate Knowledge-only reaction endpoint is not exposed.
 
 The persisted control syntax is channel-independent. The web composer inserts
 `@knowledge /learn`, while the Telegram adapter maps private `/learn`, group
@@ -56,7 +56,70 @@ learning or retrieval pipeline.
 
 The shared OpenRouter generation context is transport-neutral and does not force text-only output or a Telegram response length. This keeps tool-call protocol messages available to every supported model and channel. Telegram-specific message splitting remains in the Notification delivery service.
 
+Auto model selection uses the local enabled catalogue in
+`libs/shared/utils/src/lib/constants/open-router-models.ts`. The catalogue allows
+only `openai/gpt-6.1-sol` for text, coding, and image/file analysis. Every reply
+uses `high` reasoning, including messages saved with another reasoning setting.
+Manual selection requires an enabled catalogue entry, and the composer model
+list exposes that model with `high` as its only reasoning effort.
+
+RBAC filters candidates by input/output modalities and provider availability.
+A single compatible candidate is selected without a Jev model-selection call.
+For multiple candidates, Jev Decisions chooses using capabilities and pricing;
+an invalid decision retains the compatible list in priority order. Generation
+sends a concrete model ID. GPT 6.1 Sol has text output through OpenRouter.
+The automatic image-generation route returns an unavailable notice and settles
+only the decision calls already made; it does not call another answering model.
+
+AI Chat composers accumulate file selections in one horizontally scrolling row
+above the text field. Cards have previews, removal, drag reordering and arrow
+controls. Cmd+Enter or Ctrl+Enter submits; Enter inserts a line.
+The document target selector is hidden; section discussion can still set the
+Source target. New message and Knowledge uploads accept PNG, JPG, WebP, GIF,
+PDF, TXT, MD, CSV and JSON. Both pickers and RBAC endpoints reject other formats,
+including SVG. Previously stored SVG images remain readable and are rendered
+as PNG for model input without changing their originals.
+The Knowledge sidebar shows two file cards in two columns. Show more expands
+all remaining rows vertically. Each card opens the original File and can
+unlink it from that Source; its pending state is scoped to the selected file.
+Sent messages and document proposals show attachments in a horizontally
+scrolling gallery, in submission order; each card opens the original File.
+Proposal replies link every proposed File without duplicating its stored bytes.
+Their `knowledge.documentProposalFileIds` metadata marks these links as previews;
+OpenRouter receives the originals from user messages without repeating the
+assistant's gallery in the model context.
+Confirmation transfers the same complete File list to the Source. Background
+refetches retain mounted chat records. New replies scroll to the latest message;
+loading previews keeps that position unless the user has scrolled to older messages.
+The text field starts at 128 px and can be resized vertically from its bottom
+right corner, between 96 px and the smaller of half the viewport or 480 px.
+The project frame fills the viewport below the header and page margins. The
+composer can scroll within three quarters of the conversation pane, leaving
+the message history accessible when the input and attachment strip are tall.
+The submitted order is preserved in message-file relations. A successful
+document proposal completes the generation loop; its exact text and attachments
+remain pending until a later confirmation. Revising that proposal preserves its
+attachments. A revision request makes the earlier proposal unconfirmable with
+`needs_revision` status; its files remain available if generation must be retried.
+Draft and revision requests require a successful proposal tool call before the
+generation loop reports completion. Confirmed updates attach new files while retaining existing Source
+attachments and indexing the saved content.
+
 When the replying `social.profile` invokes a linked skill, profile Knowledge search, or MCP tool, the bounded tool loop emits presentation-safe lifecycle events. RBAC lazily creates one `social.action` with `variant="ai-execution"` for that run, relates it to the current chat, thread, and replying profile, and updates the same action through requested, running, succeeded/failed, and terminal states. The typed action payload contains only safe labels, tool/server identifiers, normalized status, timestamps, result byte counts, and message/profile/run ids; it never contains tool arguments/results, bearer credentials, prompts, hidden reasoning, or stack traces. Existing WebSocket invalidation updates the specialized conversation row in place. Runs without tool calls create no execution action, and progress persistence cannot prevent the final `social.profile` reply.
+
+`profile_knowledge_files` lists a linked Source's attachment IDs and current
+content hash in pages. An explicit current request to remove an attachment
+exposes `profile_knowledge_file_detach`, including in document threads where
+generic MCP and direct text writes remain disabled. The tool uses the scoped
+RBAC Files SDK, validates the document target, and checks the Source hash and
+attachment list inside the database transaction. Detachment retains the stored
+File and chat attachments, preserves human notes, and rebuilds materials and
+the index. Detachment returns after the database write with `analysisPending`
+when rebuilding remains unfinished. A separate scoped reanalysis request
+publishes completion through the existing cache and WebSocket middleware.
+The model reports the unlink separately from index readiness; analysis errors
+leave the Source unindexed and are logged without retrying the removal.
+Attachment requests neither approve a pending text proposal nor replace it.
 
 RBAC also owns profile-scoped document operations for the Social chat sidebar:
 
@@ -70,12 +133,22 @@ These routes validate subject/profile access and the Social profile-Source relat
 
 Telegram personal AI provisioning also ensures one existing-model RBAC grant
 for the profile owner. The role slug is
-`social-profile-<social-profile-id>-knowledge-owner`; fourteen chat-scoped
+`social-profile-<social-profile-id>-knowledge-owner`; sixteen chat-scoped
 assistant-management permissions cover profile listing/update/avatar, six
-skill operations, and five Knowledge Source operations. They keep the target
+skill operations, five Knowledge Source operations, and two Source attachment
+operations. They keep the target
 AI profile UUID literal, and the role is
 assigned to the authenticated owner through `subjects-to-roles`. No
 profile-to-role relation or extra authorization middleware is introduced.
+
+The AI Chat account menu reads the single token balance through
+`GET /api/rbac/subjects/:id/billing-module/balance`. The private account role
+grants that exact Subject path, and owner middleware rejects another Subject.
+Project, Skill and Source record wrappers use scoped SDK query functions.
+Scoped message responses include their authors and ordered Files, so chat
+rows need no global relation or File listing permission. Reading an owned
+assistant's Knowledge repairs older attachment grants; shared Chat membership
+alone does not create an owner grant.
 
 ### Natural-key integrity and concurrent Telegram bootstrap
 
@@ -121,6 +194,24 @@ free-subscription provisioning only when bootstrap returns
 `shouldCheckoutFreeSubscription=true` (registration or `/start`); ordinary
 messages remain independent from billing.
 
+Email/password, OAuth and wallet authentication ensure the shared
+`free-subscription` product after creating the personal profile. Existing
+active subscriptions retain their terms; signing in again does not create a
+second order or grant another allowance. A new free order completes local
+zero-price invoice settlement and delivery before authentication returns,
+so its role and token balance are ready for the first assistant request.
+
+Configure the free product through the runtime API or admin interface: price
+zero, interval `day`, token top-up `3000`, and the associated access role.
+Keep its interval and top-up attributes separate from other tariffs. The
+internal `dummy` provider must be allowed for web provisioning. Free invoices
+settle locally and do not call a payment provider. The existing Order check
+and RBAC Subject check jobs expire and renew each daily period; renewal resets
+the single token balance to 3000 and delivers the next daily allowance.
+All requests continue to debit that balance through the existing BillRoute.
+These jobs must run in the deployment. Repository data snapshots are not the
+configuration interface.
+
 ### Repair and rollout
 
 The canonical API deployment runs this compatibility repair on every API
@@ -154,6 +245,10 @@ subject IDs that will be retained or detached; provider accounts, email values,
 permission paths, and row payloads are not logged. This compatibility code is
 removed only after the downstream rollout tracked by issue #216; its generated
 migrations and permanent constraints remain.
+
+Default and topic thread checks use only Telegram Chats with a provider ID,
+matching the repair's write scope. AI Chat documents and discussion threads
+may share the `default` variant and remain separate records.
 
 ---
 

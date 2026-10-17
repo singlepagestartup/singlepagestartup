@@ -4,6 +4,12 @@
 
 The Blog module manages long-form content, categories, and widgets that present articles in different layouts. It defines the content data for articles and categories and the relations that connect them to media, website-builder widgets, and ecommerce products.
 
+## Layering boundary
+
+Social profiles own authorship links to Blog articles. Blog owns article content
+and lower-module relations; its admin forms do not import Social components.
+Profile/article links are managed from the Social profile admin.
+
 ### It solves the following tasks:
 
 - Stores localized article and category content.

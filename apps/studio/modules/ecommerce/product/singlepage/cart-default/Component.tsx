@@ -1,4 +1,15 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  ProductCartDefaultItem,
+  ProductCartDefaultProps,
+} from "./interface";
+export type {
+  ProductCartDefaultItem,
+  ProductCartDefaultProps,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import {
   forwardRef,
   type SVGProps,
@@ -8,7 +19,7 @@ import {
 } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import { formatCartMoney } from "../../../cart/shared";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
@@ -37,29 +48,9 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface ProductCartDefaultItem {
-  id: string;
-  slug: string;
-  title: string;
-  image: string;
-  priceLabel: string;
-  price: number;
-  quantity: number;
-}
-export interface ProductCartDefaultProps {
-  variant?: string;
-  item: ProductCartDefaultItem;
-  compact?: boolean;
-  href?: string;
-  showRemove?: boolean;
-  target?: "_blank" | "_parent" | "_self" | "_top";
-  onDecrease?: (item: ProductCartDefaultItem) => void;
-  onIncrease?: (item: ProductCartDefaultItem) => void;
-  onRemove?: (item: ProductCartDefaultItem) => void;
-}
 const Trash2 = createIcon("trash");
 const Plus = createIcon("plus");
 const Minus = createIcon("minus");
@@ -94,7 +85,7 @@ export const defaultProductCartDefaultProps: ProductCartDefaultProps = {
   showRemove: true,
 };
 export const ProductCartDefault = memo(function ProductCartDefault(
-  props: Partial<ProductCartDefaultProps>,
+  props: IComponentProps,
 ) {
   const {
     item,
@@ -120,7 +111,7 @@ export const ProductCartDefault = memo(function ProductCartDefault(
       data-variant={props.variant ?? "cart-default"}
     >
       <a
-        className="block h-20 w-20 shrink-0 self-start overflow-hidden rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+        className="block h-20 w-20 shrink-0 self-start overflow-hidden rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
         href={productHref}
         target={target}
       >
@@ -135,13 +126,13 @@ export const ProductCartDefault = memo(function ProductCartDefault(
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <a
-              className="block break-words text-sm font-semibold text-[var(--color-sps-graphite)] no-underline transition hover:text-[var(--color-sps-muted)]"
+              className="block break-words text-sm font-semibold text-foreground no-underline transition hover:text-muted-foreground"
               href={productHref}
               target={target}
             >
               {item.title}
             </a>
-            <span className="mt-0.5 block text-xs text-[var(--color-sps-muted)]">
+            <span className="mt-0.5 block text-xs text-muted-foreground">
               {item.priceLabel}
             </span>
           </div>
@@ -149,7 +140,7 @@ export const ProductCartDefault = memo(function ProductCartDefault(
             <Button
               variant="plain"
               aria-label={`Remove ${item.title}`}
-              className="h-11 w-11 shrink-0 px-0 hover:bg-[var(--color-sps-danger-surface)] hover:text-[var(--color-sps-danger)]"
+              className="h-11 w-11 shrink-0 px-0 hover:bg-destructive-surface hover:text-destructive"
               onClick={() => onRemove?.(item)}
             >
               <Trash2 className="h-5 w-5" />
@@ -159,14 +150,14 @@ export const ProductCartDefault = memo(function ProductCartDefault(
 
         <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-3">
           {compact ? (
-            <span className="text-xs text-[var(--color-sps-muted)]">
+            <span className="text-xs text-muted-foreground">
               Qty: {item.quantity}
             </span>
           ) : (
             <div
               role="group"
               aria-label={`${item.title} quantity`}
-              className="flex items-center gap-1 rounded-xl bg-[var(--color-sps-grey)] p-1"
+              className="flex items-center gap-1 rounded-xl bg-muted p-1"
             >
               <Button
                 variant="plain"
@@ -192,7 +183,7 @@ export const ProductCartDefault = memo(function ProductCartDefault(
               </Button>
             </div>
           )}
-          <span className="text-sm font-semibold text-[var(--color-sps-graphite)]">
+          <span className="text-sm font-semibold text-foreground">
             {formatCartMoney(item.price * item.quantity)}
           </span>
         </div>

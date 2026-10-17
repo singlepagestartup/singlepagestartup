@@ -1,5 +1,10 @@
+import type {
+  IComponentProps,
+  ContentFeatureFindTestimotionalsProps,
+} from "./interface";
+export type { ContentFeatureFindTestimotionalsProps } from "./interface";
 import {
-  Component as WebsiteBuilderModuleFeature,
+  Component as Feature,
   type FeatureTestimotionalProps,
 } from "../../../feature/index";
 
@@ -23,14 +28,14 @@ function SectionHeader({
 }) {
   return (
     <div className="mb-8 max-w-2xl sm:mb-10">
-      <p className="mb-2 text-sm font-semibold tracking-normal text-[var(--color-sps-muted)]">
+      <p className="mb-2 text-sm font-semibold tracking-normal text-muted-foreground">
         {eyebrow}
       </p>
-      <h2 className="text-[2rem] font-semibold leading-tight tracking-normal sm:text-[2.5rem] text-[var(--color-sps-graphite)]">
+      <h2 className="text-[2rem] font-semibold leading-tight tracking-normal sm:text-[2.5rem] text-foreground">
         {title}
       </h2>
       {description ? (
-        <p className="text-base leading-7 text-[var(--color-sps-muted)] mt-3">
+        <p className="text-base leading-7 text-muted-foreground mt-3">
           {description}
         </p>
       ) : null}
@@ -66,12 +71,7 @@ export const defaultContentFeatureFindTestimotionalsProps = {
   ] satisfies TestimonialItem[],
 };
 
-export type ContentFeatureFindTestimotionalsProps =
-  typeof defaultContentFeatureFindTestimotionalsProps;
-
-export function ContentFeatureFindTestimotionals(
-  props?: Partial<ContentFeatureFindTestimotionalsProps> & { variant?: string },
-) {
+export function ContentFeatureFindTestimotionals(props?: IComponentProps) {
   const { eyebrow, title, testimonials } = {
     ...defaultContentFeatureFindTestimotionalsProps,
     ...props,
@@ -79,7 +79,7 @@ export function ContentFeatureFindTestimotionals(
 
   return (
     <div
-      className="w-full bg-[var(--color-sps-grey)] py-12 sm:py-16"
+      className="w-full bg-muted py-12 sm:py-16"
       data-ds-block="website-builder.widget.content-feature-find-testimotionals"
       data-ds-layer="singlepage"
       data-module="website-builder"
@@ -93,7 +93,7 @@ export function ContentFeatureFindTestimotionals(
           data-ds-imports="website-builder.feature.testimotional"
         >
           {testimonials.map((testimonial) => (
-            <WebsiteBuilderModuleFeature
+            <Feature
               key={testimonial.name}
               {...testimonial}
               variant="testimotional"

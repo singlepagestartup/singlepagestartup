@@ -1,4 +1,5 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import {
   forwardRef,
   type SVGProps,
@@ -10,7 +11,7 @@ import {
   useState,
 } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import type { SocialPreviewProfile } from "./Component";
 import type { SocialPreviewAttachment } from "../../../widget/singlepage/chat-overview-default/utils";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
@@ -40,7 +41,7 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
 interface IChatImagePickerProps {
@@ -68,10 +69,10 @@ export function ChatImagePicker({
   }, [file]);
   const url = preview || image?.url;
   return (
-    <fieldset className="min-w-0 rounded-2xl bg-[var(--color-sps-grey)] p-4">
+    <fieldset className="min-w-0 rounded-2xl bg-muted p-4">
       <legend className={kit.label}>Chat image</legend>
       <div className="flex min-w-0 flex-wrap items-center gap-4">
-        <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)]">
+        <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border bg-card">
           {url ? (
             <img
               src={url}
@@ -79,7 +80,7 @@ export function ChatImagePicker({
               className="h-full w-full object-cover"
             />
           ) : (
-            <Image className="h-6 w-6 text-[var(--color-sps-muted)]" />
+            <Image className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
         <div className="min-w-0 flex-1">
@@ -134,7 +135,7 @@ export function ChatImagePicker({
         }}
       />
       {error && (
-        <p role="alert" className="mt-2 text-sm text-[var(--color-sps-danger)]">
+        <p role="alert" className="mt-2 text-sm text-destructive">
           {error}
         </p>
       )}
@@ -217,7 +218,7 @@ export function ChatParticipantPicker({
           {scope === "member" ? "Search profiles" : "Search participants"}
         </span>
         <span className="relative block">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--color-sps-muted)]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <input
             ref={input}
             type="search"
@@ -280,16 +281,16 @@ const Search = createIcon("magnifying-glass");
 const Plus = createIcon("plus");
 const Image = createIcon("image");
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  secondary: `${buttonBase} border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)] enabled:hover:bg-[var(--color-sps-grey)] ${focus}`,
-  plain: `${buttonBase} text-[var(--color-sps-muted)] enabled:hover:text-[var(--color-sps-graphite)] ${focus}`,
+  secondary: `${buttonBase} border border-border bg-card text-foreground enabled:hover:bg-muted ${focus}`,
+  plain: `${buttonBase} text-muted-foreground enabled:hover:text-foreground ${focus}`,
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 py-2 text-base text-[var(--color-sps-graphite)] outline-none transition motion-reduce:transition-none placeholder:text-[var(--color-sps-muted)] focus-visible:border-[var(--color-sps-graphite)] focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-sps-white)] disabled:cursor-not-allowed disabled:bg-[var(--color-sps-grey)] disabled:text-[var(--color-sps-muted)] disabled:opacity-60 [&[readonly]]:bg-[var(--color-sps-grey)] aria-invalid:border-[var(--color-sps-danger)] aria-invalid:focus-visible:ring-[var(--color-sps-danger)]",
-  muted: "text-[var(--color-sps-muted)]",
-  label: "text-sm font-semibold text-[var(--color-sps-graphite)]",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
+  muted: "text-muted-foreground",
+  label: "text-sm font-semibold text-foreground",
   focus: focus,
 };
 const ParticipantChip = memo(function ParticipantChip({
@@ -299,7 +300,7 @@ const ParticipantChip = memo(function ParticipantChip({
   onRemove,
 }: IParticipantChipProps) {
   return (
-    <li className="flex min-w-0 max-w-full items-center gap-1 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] pl-3">
+    <li className="flex min-w-0 max-w-full items-center gap-1 rounded-xl border border-border bg-muted pl-3">
       <span className="min-w-0 break-words text-sm">{profile.name}</span>
       <button
         type="button"
@@ -319,7 +320,7 @@ const SearchResultRow = memo(function SearchResultRow({
   onAdd,
 }: ISearchResultRowProps) {
   return (
-    <li className="flex min-h-14 min-w-0 items-center justify-between gap-3 rounded-xl bg-[var(--color-sps-grey)] px-3 py-2">
+    <li className="flex min-h-14 min-w-0 items-center justify-between gap-3 rounded-xl bg-muted px-3 py-2">
       <span className="min-w-0">
         <span className="block break-words text-sm font-semibold">
           {profile.name}

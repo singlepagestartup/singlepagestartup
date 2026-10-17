@@ -11,17 +11,15 @@ export interface IComponentProps {
   data: {
     crm: {
       form: ICrmModuleForm & {
-        steps: [
-          {
-            inputs: (ICrmModuleInput & {
-              string?: string;
-              number?: number;
-              boolean?: boolean;
-              file?: File;
-              option?: ICrmModuleOption;
-            })[];
-          },
-        ];
+        steps: {
+          inputs: (ICrmModuleInput & {
+            string?: string;
+            number?: number;
+            boolean?: boolean;
+            file?: File;
+            option?: ICrmModuleOption;
+          })[];
+        }[];
       };
     };
     rbac: {

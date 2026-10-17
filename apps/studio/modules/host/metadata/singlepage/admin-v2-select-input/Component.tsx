@@ -1,22 +1,21 @@
+import type {
+  IComponentProps,
+  IHostMetadataAdminV2SelectInputProps,
+} from "./interface";
+export type { IHostMetadataAdminV2SelectInputProps } from "./interface";
 import {
   HostModelSelect,
   HostStudioProvider,
   type IHostStudioProviderProps,
 } from "../../../page/singlepage/composition/HostRecords/index";
-export interface IHostMetadataAdminV2SelectInputProps
-  extends Omit<IHostStudioProviderProps, "children"> {
-  variant?: string;
-  value?: string;
-  onValueChange?: (value: string) => void;
-  disabled?: boolean;
-}
+
 export function HostMetadataAdminV2SelectInput({
   variant = "admin-v2-select-input",
   value,
   onValueChange,
   disabled,
   ...provider
-}: IHostMetadataAdminV2SelectInputProps = {}) {
+}: IComponentProps = {}) {
   return (
     <HostStudioProvider {...provider}>
       <HostModelSelect

@@ -1,13 +1,12 @@
+import type { IComponentProps, IComponentVariantProps } from "./interface";
+export type { IComponentVariantProps } from "./interface";
 import { Component as EcommerceModuleProduct } from "../../../../ecommerce/product/index";
 
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
-interface IComponentVariantProps {
-  variant?: string;
-}
 export function AdminModelList({
   variant = "admin-model-list",
-}: IComponentVariantProps = {}) {
+}: IComponentProps = {}) {
   return (
     <div
       data-ds-page="host.page.admin-model-list"

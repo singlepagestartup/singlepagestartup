@@ -1,17 +1,14 @@
 "use client";
+import type { IComponentProps, IThreadMessageListProps } from "./interface";
+export type { IThreadMessageListProps } from "./interface";
 
-import { Component as SocialModuleMessage } from "../../../../../message/index";
-import { useThread } from "../../../overview/ai-chat/Thread";
-
-export interface IThreadMessageListProps {
-  variant?: string;
-  className?: string;
-}
+import { Component as Message } from "../../../../../message/index";
+import { useThread } from "../../../id/ai-chat/Thread";
 
 export function Component({
   variant = "message-list-ai-chat",
   className,
-}: IThreadMessageListProps) {
+}: IComponentProps) {
   const { thread, messages } = useThread();
   return (
     <div
@@ -22,7 +19,7 @@ export function Component({
       data-model="thread"
       data-variant={variant}
     >
-      <SocialModuleMessage
+      <Message
         variant="list-ai-chat"
         threadId={thread.id}
         messages={messages}

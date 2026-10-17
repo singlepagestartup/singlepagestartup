@@ -10,6 +10,7 @@ import { IComponentProps as IAdminTableComponentProps } from "./admin/table/inte
 import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input/interface";
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
+import { IComponentProps as IAttachmentAiChatComponentProps } from "./attachment-ai-chat/interface";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -23,4 +24,5 @@ export type IComponentProps =
   | IAdminV2SelectInputComponentProps
   | IAdminV2TableComponentProps
   | IAdminV2TableRowComponentProps
-  | IDefaultComponentProps;
+  | IDefaultComponentProps
+  | IAttachmentAiChatComponentProps;

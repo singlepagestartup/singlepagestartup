@@ -1,0 +1,49 @@
+{
+  "url": "http://localhost:3000/en/ai-chat/social/profiles/9a48b93b-625a-4e45-84aa-39500e5ac4d7/chats/eac14dca-04ba-4b7b-b20f-be43cc755b8e/threads/d4ffce05-e931-4c7e-8ee0-5efcd2aa830a",
+  "dom": {
+    "chatId": "eac14dca-04ba-4b7b-b20f-be43cc755b8e",
+    "chatInsideProfile": true,
+    "footerCount": 1,
+    "footerLayout": "815c3653-933e-4938-b768-1124be773268",
+    "navbarCount": 1,
+    "navbarInsideRbacWidget": false,
+    "navbarLayout": "815c3653-933e-4938-b768-1124be773268",
+    "profileId": "9a48b93b-625a-4e45-84aa-39500e5ac4d7",
+    "threadId": "d4ffce05-e931-4c7e-8ee0-5efcd2aa830a",
+    "threadInsideChat": true
+  },
+  "checks": {
+    "hostTypeScript": "passed",
+    "hostAdapterTests": {
+      "suites": 1,
+      "tests": 3,
+      "result": "passed"
+    },
+    "rbacTests": {
+      "suites": 4,
+      "tests": 6,
+      "result": "passed"
+    },
+    "codePlacement": "passed",
+    "gitWhitespace": "passed",
+    "freshWorkspaceConsoleErrors": [],
+    "mobileDocument": {
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "viewportOverrideReset": true
+    },
+    "browserScreens": [
+      "workspace",
+      "project settings",
+      "create thread",
+      "account settings",
+      "sign-in methods",
+      "purchases",
+      "help",
+      "project creation",
+      "sign-in",
+      "registration"
+    ],
+    "dataMutationsDuringBrowserVerification": false
+  }
+}

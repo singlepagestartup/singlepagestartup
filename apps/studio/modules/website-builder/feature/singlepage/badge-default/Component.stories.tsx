@@ -1,16 +1,17 @@
+import { Component as Feature } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  FeatureBadgeDefault,
-  defaultFeatureBadgeDefaultProps,
-} from "./Component";
+import { defaultFeatureBadgeDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Feature/Singlepage/badge-default",
-  component: FeatureBadgeDefault,
+  id: "modules-website-builder-models-feature-singlepage-badge-default",
+  title: "Modules/Website-Builder/Feature/Singlepage/badge-default",
+  component: Feature,
   parameters: { layout: "centered" },
-  args: defaultFeatureBadgeDefaultProps,
-} satisfies Meta<typeof FeatureBadgeDefault>;
+  args: { ...defaultFeatureBadgeDefaultProps, variant: "badge-default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Feature>, { variant: "badge-default" }>
+>;
 
 export default meta;
 

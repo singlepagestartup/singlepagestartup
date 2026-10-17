@@ -1,20 +1,17 @@
-import {
-  Component as WebsiteBuilderModuleWidget,
-  type INavbarAiChatProps,
-} from "../../../index";
+import { Component as Widget, type INavbarAiChatProps } from "../../../index";
 
 import type { Meta, StoryObj } from "@storybook/react";
-function Example(props: INavbarAiChatProps) {
+function Component(props: INavbarAiChatProps) {
   return (
-    <div className="@container min-h-56 font-sps">
-      <WebsiteBuilderModuleWidget {...props} variant="navbar-ai-chat" />
+    <div className="@container min-h-56 font-default">
+      <Widget {...props} variant="navbar-ai-chat" />
     </div>
   );
 }
 const meta = {
   id: "modules-website-builder-models-widget-singlepage-navbar-ai-chat",
-  title: "Modules/Website-Builder/Models/Widget/Singlepage/navbar/ai-chat",
-  component: Example,
+  title: "Modules/Website-Builder/Widget/Singlepage/navbar/ai-chat",
+  component: Component,
   parameters: { layout: "fullscreen" },
   args: {
     buttonsArrayId: "ai-chat-help",
@@ -51,7 +48,7 @@ const meta = {
     profileSelect: { control: false },
     subjectAccount: { control: false },
   },
-} satisfies Meta<typeof Example>;
+} satisfies Meta<typeof Component>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};
 export const Inline: StoryObj<typeof meta> = {

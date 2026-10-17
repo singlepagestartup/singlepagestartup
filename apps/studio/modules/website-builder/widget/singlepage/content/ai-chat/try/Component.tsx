@@ -1,17 +1,14 @@
+import type { IComponentProps, IAIChatTryProps } from "./interface";
+export type { IAIChatTryProps } from "./interface";
 import type { ReactNode } from "react";
 import type { IWebsiteSection } from "../content";
 import defaultContent from "./content.json";
 
-export interface IAIChatTryProps {
-  variant?: string;
-  content?: { workflow: IWebsiteSection; uploadNote: string };
-  children?: ReactNode;
-}
 export function Component({
   variant = "content-ai-chat-try",
   content = defaultContent,
   children,
-}: IAIChatTryProps = {}) {
+}: IComponentProps = {}) {
   return (
     <section
       id="workflow"
@@ -23,14 +20,14 @@ export function Component({
     >
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-xl">
-          <h2 className="font-sps text-3xl font-semibold leading-tight tracking-normal">
+          <h2 className="font-default text-3xl font-semibold leading-tight tracking-normal">
             {content.workflow.title}
           </h2>
-          <p className="mt-3 text-base leading-7 text-sps-muted">
+          <p className="mt-3 text-base leading-7 text-muted-foreground">
             {content.workflow.paragraphs[0]}
           </p>
         </div>
-        <p className="max-w-xs text-xs leading-5 text-sps-muted">
+        <p className="max-w-xs text-xs leading-5 text-muted-foreground">
           {content.uploadNote}
         </p>
       </div>

@@ -49,6 +49,7 @@ export function appendThreadExchange(
       text: text
         ? `Local preview: check the proposed update before applying it to ${source.title} knowledge.`
         : "Local preview: your files are attached to this message.",
+      files: files.map(copyFile),
       workingOn: scope,
       filesUsed: [
         ...new Map(
@@ -68,4 +69,39 @@ export function appendThreadExchange(
       ],
     },
   ];
+}
+
+export function threadDocumentMarkdown(
+  fileName: string,
+  sources: IAIChatSource[],
+): string {
+  return `# ${fileName.replace(/\.md$/i, "")}\n\n${sources
+    .map((source) => `## ${source.title}\n\n${source.content}`)
+    .join("\n\n")}\n`;
+}
+
+export function reorderThreadAttachment(
+  ids: string[],
+  id: string,
+  targetId: string,
+): string[] {
+  const from = ids.indexOf(id),
+    to = ids.indexOf(targetId);
+  if (from < 0 || to < 0 || from === to) return ids;
+  const next = [...ids];
+  next.splice(from, 1);
+  next.splice(to, 0, id);
+  return next;
+}
+export function moveThreadAttachment(
+  ids: string[],
+  id: string,
+  direction: -1 | 1,
+): string[] {
+  const from = ids.indexOf(id),
+    to = from + direction;
+  if (from < 0 || to < 0 || to >= ids.length) return ids;
+  const next = [...ids];
+  [next[from], next[to]] = [next[to], next[from]];
+  return next;
 }

@@ -144,3 +144,73 @@ describe("Given: rbac.subject profile AI service composition", () => {
     ).resolves.toBe(startupSession);
   });
 });
+
+it("routes context creation through the replaceable Subject factory with its module dependencies", () => {
+  const factory = jest.fn().mockReturnValue({ mode: "compact" });
+  const service = Object.assign(Object.create(StartupService.prototype), {
+    socialModule: { thread: {} },
+    fileStorageModule: { file: {} },
+    createSocialModuleProfileAiContextService: factory,
+  }) as StartupService;
+  const props = {
+    chatId: "chat",
+    threadId: "thread",
+    profileId: "profile",
+    triggerMessageId: "trigger",
+    resetMessageId: null,
+    history: [],
+    documentThread: false,
+  };
+  expect(service.socialModuleProfileAiContextCreate(props)).toEqual({
+    mode: "compact",
+  });
+  expect(factory).toHaveBeenCalledWith({
+    ...props,
+    socialModule: service.socialModule,
+    fileStorageModule: service.fileStorageModule,
+  });
+});
+
+it("resolves document skills through the Subject factory and permits a startup override", async () => {
+  const skill = {
+    id: "profession",
+    slug: "brief-profile",
+    description: "Instructions",
+  };
+  const find = jest.fn().mockResolvedValue(skill);
+  class CustomSubjectService extends StartupService {
+    protected override getSocialModuleProfileSkillsService() {
+      return { forDocument: find } as ReturnType<
+        Service["getSocialModuleProfileSkillsService"]
+      >;
+    }
+  }
+  const service = Object.create(
+    CustomSubjectService.prototype,
+  ) as CustomSubjectService;
+  await expect(
+    service.socialModuleProfileDocumentSkillFind({
+      socialModuleProfileId: "profile",
+      documentKey: "brief",
+    }),
+  ).resolves.toBe(skill);
+  expect(find).toHaveBeenCalledWith("profile", "brief");
+});
+
+it("uses the replaceable Product checkout factory without a Subject SDK request", async () => {
+  const execute = jest
+    .fn()
+    .mockResolvedValue({ checkoutUrl: "https://example.test" });
+  const service = Object.assign(Object.create(StartupService.prototype), {
+    getEcommerceProductCheckoutService: () => ({ execute }),
+  }) as StartupService;
+  const props = {
+    id: "subject",
+    productId: "product",
+    data: { provider: "dummy" },
+  };
+  await expect(service.ecommerceProductCheckout(props)).resolves.toEqual({
+    checkoutUrl: "https://example.test",
+  });
+  expect(execute).toHaveBeenCalledWith(props);
+});

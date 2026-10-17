@@ -2257,7 +2257,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       const telegramRequiredSubscriptionChannel =
         this.getTelegramRequiredSubscriptionChannelConfiguration();
 
-      if (telegramRequiredSubscriptionChannel.isPartiallyConfigured) {
+      if (
+        props.socialModuleChat.variant === "telegram" &&
+        telegramRequiredSubscriptionChannel.isPartiallyConfigured
+      ) {
         throw new Error(
           "Configuration error. Telegram required subscription channel information is incomplete. Set TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID, TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME, and TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK together, or omit all three to disable subscription enforcement.",
         );
@@ -2343,6 +2346,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
       if (
+        props.socialModuleChat.variant === "telegram" &&
         telegramRequiredSubscriptionChannel.isConfigured &&
         requiredTelegramChannelSubscriptionRbacModuleRole &&
         !requiredTelegramChannelSubscriptionRbacModuleSubjectToRole
@@ -2380,7 +2384,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
       }
 
-      if (!rbacModuleSubjectToPayableRoles?.length) {
+      if (
+        props.socialModuleChat.variant !== "ai-chat" &&
+        !rbacModuleSubjectToPayableRoles?.length
+      ) {
         return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
           {
             id: props.rbacModuleSubject.id,

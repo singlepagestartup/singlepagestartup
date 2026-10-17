@@ -9,6 +9,35 @@
 - Data access must go through module SDK providers (`Provider`, `clientApi`, `serverApi`). Relation components should use `variant="find"` with filters supplied via `apiProps.params.filters.and`.
 - For advanced fetching/transform logic, mirror the `singlepage/default` pattern: move data-handling into `client.tsx` / `server.tsx` wrappers so `Component.tsx` stays purely presentational.
 
+## Theme and fonts
+
+`styles/presets/shadcn.ts` defines the light and dark defaults through semantic
+CSS variables. Components use `primary` / `primary-foreground` for actions,
+`default` / `default-foreground` / `default-muted-foreground` for strong surfaces,
+`card`, `muted`, `foreground`, `muted-foreground`, `border`, and `input` for
+ordinary surfaces, text and fields. Errors use `destructive`,
+`destructive-surface`, and `destructive-border`.
+
+A downstream project changes the corresponding variables in its Host preset or
+base theme, such as `--primary` and `--primary-foreground`, without editing module
+components. Color values are HSL channels, for example `270 60% 50%`.
+Tailwind opacity modifiers such as `bg-primary/25` remain available.
+
+`font-default` and `font-sans` both use `--font-default`. `font-primary` uses
+`--font-primary`. `app/fonts.tsx` loads those two existing roles from
+`styles/fonts/Default` and `styles/fonts/Primary`; downstream projects replace
+those files with their own fonts.
+
+Studio's independent `runtime/theme.css` exposes the same semantic color and
+font roles. Its font assets remain local to Studio.
+
+The image generator resolves fonts according to the build output. Turbopack
+file URLs are read directly. Webpack can return relative
+`/_next/static/media/...` URLs with an empty protocol; these map to the active
+build directory's `static/media` files (`SPS_HOST_DIST_DIR`, or `.next`).
+Absolute HTTP URLs use HTTP loading. Source font names and emitted names can
+differ because the build adds content hashes.
+
 ## Locale redirects
 
 Locale middleware adds the default language prefix while preserving the request
@@ -18,6 +47,13 @@ explicit port. The path and query parameters remain in the redirect.
 
 `skipMiddlewareUrlNormalize` prevents Next from rewriting loopback hosts in the
 outgoing Location header; a login on `127.0.0.1` keeps the same cookie origin.
+
+The catch-all page keeps `generateStaticParams()` empty in development and
+production. With `dynamicParams = true`, the Host page reader resolves each
+requested URL on demand. Expanding every page mask across user-owned entities
+can exceed Next's fixed 5 MiB development static-path cache and repeat that
+expensive enumeration on each request. The URL enumeration API remains available
+for explicit consumers such as the sitemap.
 
 ## Testing
 

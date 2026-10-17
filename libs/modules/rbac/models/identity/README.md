@@ -39,3 +39,15 @@ different subjects and authentication methods.
 - `admin-select-input`: admin select input for choosing an identity.
 - `admin-table`: admin table listing identities.
 - `admin-table-row`: admin row showing identity fields.
+
+## Credential changes
+
+`changePassword` reads and updates through the effective Identity service,
+validates the current password against its bcrypt hash, and stores only the new
+hash. It does not call its own HTTP API. The Subject-owned endpoint checks both
+the requesting user and Identity relation before invoking this method.
+
+The generic `/:id/change-password` endpoint explicitly publishes
+`rbac.identities` and the Identity detail topic, so removing internal HTTP calls
+does not remove realtime invalidation. HTTP responses apply the Identity output
+schema at the boundary.

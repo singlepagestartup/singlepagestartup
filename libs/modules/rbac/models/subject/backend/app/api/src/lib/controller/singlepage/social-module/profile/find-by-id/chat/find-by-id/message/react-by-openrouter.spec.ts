@@ -8,6 +8,7 @@
 
 jest.mock("@sps/backend-utils", () => {
   return {
+    ...jest.requireActual("@sps/backend-utils"),
     blobifyFiles: jest.fn(async () => ["generated-file"]),
     getHttpErrorType: jest.fn((error) => {
       const message = error instanceof Error ? error.message : String(error);
@@ -21,9 +22,11 @@ jest.mock("@sps/backend-utils", () => {
   };
 });
 
+import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { Handler } from "./react-by-openrouter";
 import { blobifyFiles } from "@sps/backend-utils";
 import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
+import { AI_CHAT_DOCUMENTS } from "@sps/shared-utils";
 import type { KnowledgeSearchResult } from "@sps/knowledge/backend/app/api/src/lib/types";
 
 interface IFindThreadMessageIdsInChatHandler {
@@ -35,7 +38,7 @@ interface IFindThreadMessageIdsInChatHandler {
 
 interface IOpenRouterModelRouterConfigHandler {
   getEnabledCandidatesByClass(
-    modelClass: "CLASSIFIER" | "CHAT" | "CODER" | "VISION" | "IMAGE",
+    modelClass: "CHAT" | "CODER" | "VISION" | "IMAGE",
   ): Array<{
     id: string;
     priority: number;
@@ -425,15 +428,15 @@ function createKnowledgeSearchResult(
 describe("Given: OpenRouter thread context and reply validation", () => {
   /**
    * BDD Scenario
-   * Given: OpenRouter exposes the July 2026 generation model families.
+   * Given: only GPT 6.1 Sol is enabled for answering requests.
    * When: automatic-routing candidates are loaded.
-   * Then: current GPT, MiniMax, Claude, Gemini, and Kimi models replace stale and unavailable candidates.
+   * Then: text, coding, and visual analysis use that model; image generation has no candidate.
    */
-  it("When: autorouting candidates are loaded Then: only the current configured model families are used", () => {
+  it("When: autorouting candidates are loaded Then: only GPT 6.1 Sol is allowed", () => {
     const handler = Object.create(
       Handler.prototype,
     ) as IOpenRouterModelRouterConfigHandler;
-    const classes = ["CLASSIFIER", "CHAT", "CODER", "VISION", "IMAGE"] as const;
+    const classes = ["CHAT", "CODER", "VISION", "IMAGE"] as const;
     const idsByClass = Object.fromEntries(
       classes.map((modelClass) => [
         modelClass,
@@ -444,38 +447,11 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     );
     const allIds = Object.values(idsByClass).flat();
 
-    expect(idsByClass.CLASSIFIER[0]).toBe("openai/gpt-5.6-luna");
-    expect(idsByClass.CHAT).toEqual(
-      expect.arrayContaining([
-        "openai/gpt-5.6-terra",
-        "minimax/minimax-m3",
-        "minimax/minimax-m2.7",
-        "anthropic/claude-sonnet-5",
-        "google/gemini-3.5-flash",
-      ]),
-    );
-    expect(idsByClass.CODER).toEqual(
-      expect.arrayContaining([
-        "openai/gpt-5.6-sol",
-        "minimax/minimax-m2.7",
-        "moonshotai/kimi-k2.7-code",
-        "google/gemini-3.5-flash",
-      ]),
-    );
-    expect(idsByClass.VISION).toContain("google/gemini-3.5-flash");
-    expect(idsByClass.IMAGE.slice(0, 2)).toEqual([
-      "google/gemini-3.1-flash-image",
-      "google/gemini-3.1-flash-lite-image",
-    ]);
-    expect(allIds).not.toEqual(
-      expect.arrayContaining([
-        "openai/gpt-5.2",
-        "openai/gpt-5.2-codex",
-        "black-forest-labs/flux.2-pro",
-        "sourceful/riverflow-v2-standard-preview",
-        "bytedance-seed/seedream-4.5",
-      ]),
-    );
+    expect(idsByClass.CHAT).toEqual(["openai/gpt-6.1-sol"]);
+    expect(idsByClass.CODER).toEqual(["openai/gpt-6.1-sol"]);
+    expect(idsByClass.VISION).toEqual(["openai/gpt-6.1-sol"]);
+    expect(idsByClass.IMAGE).toEqual([]);
+    expect([...new Set(allIds)]).toEqual(["openai/gpt-6.1-sol"]);
   });
 
   /**
@@ -554,7 +530,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     ).toEqual({
       version: 1,
       modelId: "auto",
-      reasoning: "auto",
+      reasoning: "high",
       skillIds: [],
       useKnowledgeSearch: false,
     });
@@ -583,11 +559,42 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     ).toEqual({
       version: 1,
       modelId: "auto",
-      reasoning: "auto",
+      reasoning: "high",
       skillIds: [],
       useKnowledgeSearch: false,
     });
   });
+
+  it.each(["low", "none", "xhigh"])(
+    "enforces high reasoning when persisted intent requests %s",
+    (reasoning) => {
+      const handler = Object.create(
+        Handler.prototype,
+      ) as IOpenRouterPersistedRequestHandler;
+      expect(
+        handler.resolveAiReactionRequest({
+          data: {},
+          socialModuleMessage: {
+            metadata: {
+              rbacAiReactionRequest: {
+                version: 1,
+                modelId: "openai/gpt-6.1-sol",
+                reasoning,
+                skillIds: ["skill-1"],
+                useKnowledgeSearch: true,
+              },
+            },
+          },
+        }),
+      ).toEqual({
+        version: 1,
+        modelId: "openai/gpt-6.1-sol",
+        reasoning: "high",
+        skillIds: ["skill-1"],
+        useKnowledgeSearch: true,
+      });
+    },
+  );
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -1155,13 +1162,18 @@ describe("Given: OpenRouter thread context and reply validation", () => {
    * Then: both original text files and the image stay attached while extracted text is used only for routing.
    */
   it("When: several files are attached Then: originals drive generation and text previews drive routing", async () => {
-    const handler = new Handler(
-      {} as any,
-    ) as unknown as IOpenRouterAttachmentContextHandler;
-    jest
-      .spyOn(handler as any, "readFileStorageModuleFile")
-      .mockResolvedValueOnce("Часть 1: кота на фотографии зовут Барсик.")
-      .mockResolvedValueOnce("Часть 2: любимая игрушка Барсика — зелёный мяч.");
+    const readBytes = jest
+      .fn()
+      .mockResolvedValueOnce(
+        Buffer.from("Часть 1: кота на фотографии зовут Барсик."),
+      )
+      .mockResolvedValueOnce(
+        Buffer.from("Часть 2: любимая игрушка Барсика — зелёный мяч."),
+      )
+      .mockResolvedValueOnce(Buffer.from([0xff, 0xd8, 0xff]));
+    const handler = new Handler({
+      fileStorageModule: { file: { readBytes } },
+    } as any) as unknown as IOpenRouterAttachmentContextHandler;
 
     const resolved = await handler.resolveOpenRouterMessageContext({
       messageDescription:
@@ -1180,6 +1192,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         {
           extension: "jpeg",
           file: "/file-storage/static/cat.jpeg",
+          adminTitle: "Барсик.jpeg",
           mimeType: "image/jpeg",
         },
       ],
@@ -1188,25 +1201,23 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     expect(resolved.content).toEqual([
       {
         type: "text",
-        text: [
-          "Ответь, как зовут кота и какая у него любимая игрушка.",
-          "Attached file: cat-part-1.txt",
-          "Attached file: cat-part-2.txt",
-          "Attached image: cat.jpeg",
-        ].join("\n\n"),
+        text: "Ответь, как зовут кота и какая у него любимая игрушка.",
       },
+      { type: "text", text: "Attached file: cat-part-1.txt" },
       {
         type: "file_url",
         file_url: {
           url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/file-storage/static/cat-part-1.txt`,
         },
       },
+      { type: "text", text: "Attached file: cat-part-2.txt" },
       {
         type: "file_url",
         file_url: {
           url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/file-storage/static/cat-part-2.txt`,
         },
       },
+      { type: "text", text: "Attached image: Барсик.jpeg" },
       {
         type: "image_url",
         image_url: {
@@ -1233,6 +1244,64 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       ]),
     ).toEqual(["text", "image", "file"]);
   });
+
+  /**
+   * BDD Scenario
+   * Given: an assistant proposal shows copies of the user's attachment references.
+   * When: message content is prepared for OpenRouter.
+   * Then: preview copies are omitted while the original user attachments remain.
+   */
+  it("does not repeat proposal-gallery files in model context, while preserving original message attachments", async () => {
+    const readBytes = jest.fn(async () =>
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    );
+    const handler = new Handler({
+      fileStorageModule: { file: { readBytes } },
+    } as any) as any;
+    const props = {
+      messageDescription: "Proposed notes",
+      fileStorageFiles: [
+        { id: "reference", file: "/reference.png", mimeType: "image/png" },
+      ],
+    };
+    expect(
+      (
+        await handler.resolveOpenRouterMessageContext({
+          ...props,
+          presentationOnlyFileIds: ["reference"],
+        })
+      ).content,
+    ).toBe("Proposed notes");
+    const original = await handler.resolveOpenRouterMessageContext(props);
+    expect(original.content).toEqual(
+      expect.arrayContaining([expect.objectContaining({ type: "image_url" })]),
+    );
+  });
+
+  it.each([
+    { file: "/legacy.svg", extension: "svg", mimeType: "image/svg+xml" },
+    { file: "/renamed.png", extension: "png", mimeType: "image/png" },
+    { file: "/notes.txt", extension: "txt", mimeType: "text/plain" },
+  ])(
+    "excludes legacy SVG bytes from every model content part: $file",
+    async (file) => {
+      const readBytes = jest.fn(async () =>
+        Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'),
+      );
+      const handler = new Handler({
+        fileStorageModule: { file: { readBytes } },
+      } as any) as any;
+      const result = await handler.resolveOpenRouterMessageContext({
+        messageDescription: "Keep notes",
+        fileStorageFiles: [file],
+      });
+      expect(result.content).toBe("Keep notes");
+      expect(result.routingText).toContain("Unsupported attachment excluded");
+      expect(JSON.stringify(result.content)).not.toContain("image_url");
+      expect(JSON.stringify(result.content)).not.toContain("file_url");
+      expect(JSON.stringify(result.content)).not.toContain("<svg");
+    },
+  );
 
   /**
    * BDD Scenario
@@ -1275,10 +1344,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       {} as any,
     ) as unknown as IOpenRouterKnowledgeControlsHandler;
     const manualModel = handler.resolveManualOpenRouterModel({
-      modelId: "openai/gpt-5.5",
+      modelId: "openai/gpt-6.1-sol",
       models: [
         {
-          id: "openai/gpt-5.5",
+          id: "openai/gpt-6.1-sol",
           architecture: {
             input_modalities: ["text"],
             output_modalities: ["text"],
@@ -1306,6 +1375,27 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       complexity: "medium",
       risk_level: "low",
     });
+  });
+
+  it("rejects a formerly allowed model even when the provider still lists it", () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterKnowledgeControlsHandler;
+    expect(() =>
+      handler.resolveManualOpenRouterModel({
+        modelId: "minimax/minimax-m3",
+        models: [
+          {
+            id: "minimax/minimax-m3",
+            architecture: {
+              input_modalities: ["text"],
+              output_modalities: ["text"],
+            },
+          },
+        ],
+        requiredInputModalitiesList: ["text"],
+      }),
+    ).toThrow("not in the local allowed model catalogue");
   });
 
   /**
@@ -1472,7 +1562,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       sanitizedQuery: "What should we answer?",
       requestedKnowledgeSearch: false,
       requestedSkillIds: [],
-      selectedModelId: "openai/gpt-5.5",
+      selectedModelId: "openai/gpt-6.1-sol",
       threadContext: [],
     });
 
@@ -1604,7 +1694,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       {
         role: "system",
         content:
-          "Answer in ru language. Use portable Markdown only. Do not use LaTeX delimiters or commands. Write formulas with plain text and Unicode mathematical symbols so the same answer is readable in web chat and Telegram.",
+          "Answer in the language requested by the current user; otherwise use the language of their latest message. Use portable Markdown only. Do not add emoji or decorative pictograms to replies, headings, lists, or status text. Do not use LaTeX delimiters or commands. Write formulas with plain text and Unicode mathematical symbols so the same answer is readable in web chat and Telegram.",
       },
       profileSystemMessage,
       {
@@ -1612,6 +1702,20 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         content: "Поправь текст",
       },
     ]);
+  });
+
+  it("excludes both old emoji-prefixed and plain generation statuses from model history", () => {
+    const handler = new Handler({} as any) as any;
+    for (const status of [
+      "Генерирую ответ с помощью openai/gpt-6.1-sol. Пожалуйста, подождите.",
+      "🏥 Генерирую ответ с помощью openai/gpt-6.1-sol. Пожалуйста, подождите.",
+      "👨🏻‍⚕️ Выбираю модель для ответа. Пожалуйста, подождите.",
+    ]) {
+      expect(handler.isOpenRouterProgressStatusMessage(status)).toBe(true);
+    }
+    expect(
+      handler.isOpenRouterProgressStatusMessage("Ответ на вопрос о проекте"),
+    ).toBe(false);
   });
 
   /**
@@ -1672,11 +1776,9 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       }),
     ]);
     const openRouter = {
-      generate: jest.fn(async () => ({
-        text: JSON.stringify({
-          selected_chunk_ids: ["chunk-1"],
-          reason: "Directly answers the question.",
-        }),
+      generate: jest.fn(),
+      decide: jest.fn(async () => ({
+        answers: { chunk_0: { type: "noul", noul: 0.95 } },
         billing: null,
       })),
     };
@@ -1716,7 +1818,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         sanitizedQuery: "Question",
         requestedKnowledgeSearch: false,
         requestedSkillIds: [],
-        selectedModelId: "openai/gpt-5.5",
+        selectedModelId: "openai/gpt-6.1-sol",
         threadContext: [],
       }),
     ).resolves.toMatchObject({
@@ -1749,7 +1851,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         effort: "low",
         exclude: true,
       },
-      selectedModelId: "openai/gpt-5.5",
+      selectedModelId: "openai/gpt-6.1-sol",
       threadContext: [
         {
           role: "user",
@@ -1764,15 +1866,13 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       neighborWindow: 1,
       sourceIds: ["document-1"],
     });
-    expect(openRouter.generate).toHaveBeenCalledWith(
+    expect(openRouter.decide).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: "openai/gpt-5.5",
-        reasoning: {
-          effort: "low",
-          exclude: true,
-        },
+        model: "typesafe/jev-1.13",
+        state: expect.objectContaining({ query: "Question" }),
       }),
     );
+    expect(openRouter.generate).not.toHaveBeenCalled();
     expect(context).toMatchObject({
       useKnowledgeSearch: true,
       searchSourceIds: ["document-1"],
@@ -1801,7 +1901,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
   /**
    * BDD Scenario
    * Given: explicit @knowledge retrieval returns irrelevant candidate chunks.
-   * When: the structured reranker validly selects no chunk ids.
+   * When: JEV assigns no candidate a relevant probability.
    * Then: no fallback chunks are injected into the final generation context.
    */
   it("When: Knowledge rerank selects no chunks Then: the RAG context stays empty", async () => {
@@ -1812,11 +1912,8 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       }),
     ]);
     const openRouter = {
-      generate: jest.fn(async () => ({
-        text: JSON.stringify({
-          selected_chunk_ids: [],
-          reason: "The candidate does not answer the question.",
-        }),
+      decide: jest.fn(async () => ({
+        answers: { chunk_0: { type: "noul", noul: 0.01 } },
         billing: null,
       })),
     };
@@ -1857,7 +1954,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       sanitizedQuery: "Question",
       requestedKnowledgeSearch: true,
       requestedSkillIds: [],
-      selectedModelId: "openai/gpt-5.5",
+      selectedModelId: "openai/gpt-6.1-sol",
       threadContext: [],
     });
 
@@ -1866,7 +1963,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       candidateCount: 1,
       rerankedSourceIds: [],
       rerankFallbackReason: null,
-      rerankReason: "The candidate does not answer the question.",
+      rerankReason: "JEV passage relevance",
     });
   });
 
@@ -2189,11 +2286,11 @@ describe("Given: OpenRouter thread context and reply validation", () => {
 
   /**
    * BDD Scenario
-   * Given: OpenRouter returns invalid JSON during Knowledge rerank.
+   * Given: OpenRouter returns an invalid Decisions response during Knowledge rerank.
    * When: Knowledge context is resolved.
    * Then: deterministic retrieval order is used and fallback metadata is recorded.
    */
-  it("When: Knowledge rerank returns invalid JSON Then: retrieval order fallback is used", async () => {
+  it("When: Knowledge rerank returns an invalid Decisions response Then: retrieval order fallback is used", async () => {
     const search = jest.fn(async () => [
       createKnowledgeSearchResult({
         id: "chunk-1",
@@ -2206,8 +2303,8 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       }),
     ]);
     const openRouter = {
-      generate: jest.fn(async () => ({
-        text: "not json",
+      decide: jest.fn(async () => ({
+        error: { message: "Invalid Decisions response" },
         billing: null,
       })),
     };
@@ -2248,7 +2345,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       sanitizedQuery: "Question",
       requestedKnowledgeSearch: true,
       requestedSkillIds: [],
-      selectedModelId: "openai/gpt-5.5",
+      selectedModelId: "openai/gpt-6.1-sol",
       threadContext: [],
     });
 
@@ -2259,8 +2356,455 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     expect(context.retrieval).toMatchObject({
       candidateCount: 2,
       rerankedSourceIds: ["chunk-1", "chunk-2"],
-      rerankFallbackReason:
-        "knowledge rerank returned invalid selected_chunk_ids",
+      rerankFallbackReason: "JEV rerank failed; using retrieval order.",
+    });
+  });
+  it("creates the first profile Source from a natural save request and attaches only the current message files", async () => {
+    const relationCreate = jest.fn(async () => ({}));
+    const originCreate = jest.fn(async () => ({}));
+    const messageFiles = jest.fn(async () => [
+      { fileStorageModuleFileId: "file-1" },
+    ]);
+    const handler = new Handler({
+      socialModule: {
+        profilesToKnowledgeModuleSources: {
+          find: jest.fn(async () => []),
+          create: relationCreate,
+        },
+        messagesToKnowledgeModuleSources: { findOrCreate: originCreate },
+        messagesToFileStorageModuleFiles: { find: messageFiles },
+      },
+    } as any) as any;
+    const learnContent = jest.fn(async (props) => {
+      await props.onSourceSaved("new-source");
+      return {
+        source: {
+          id: "new-source",
+          contentHash: "hash",
+          indexedContentHash: "hash",
+        },
+      };
+    });
+    handler.knowledgeService = { learnContent };
+    const tools = handler.buildProfileCapabilityTools({
+      availableSkills: [],
+      knowledgeSourceIds: [],
+      knowledgeAction: "create",
+      replyProfileId: "profile-1",
+      socialModuleMessage: { id: "message-1" },
+    });
+    const create = tools.find(
+      (tool: any) =>
+        tool.definition.function.name === "profile_knowledge_create",
+    );
+    expect(create).toBeDefined();
+    expect(create.timeoutMs).toBe(240_000);
+    const result = await create.execute({
+      title: "Lesson",
+      userContext: "My note",
+    });
+    expect(result.sourceId).toBe("new-source");
+    expect(learnContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: "My note",
+        fileIds: ["file-1"],
+        slug: "knowledge-profile-1-message-1",
+      }),
+    );
+    expect(relationCreate).toHaveBeenCalledWith({
+      data: { profileId: "profile-1", knowledgeModuleSourceId: "new-source" },
+    });
+    expect(originCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          messageId: "message-1",
+          knowledgeModuleSourceId: "new-source",
+          kind: "origin",
+        }),
+      }),
+    );
+  });
+
+  it("selects the sole allowed candidate without another Jev or generation call", async () => {
+    const handler = Object.create(Handler.prototype) as any;
+    const openRouter = { generate: jest.fn(), decide: jest.fn() };
+    const billingLedger: any[] = [];
+    const candidates = handler.getEnabledCandidatesByClass("VISION");
+    expect(
+      handler.resolveModelCandidates({
+        modelClass: "VISION",
+        requiredInputModalitiesList: ["text", "image", "file"],
+        expectedOutputModality: "text",
+      }),
+    ).toEqual(candidates);
+    expect(
+      handler.resolveModelCandidates({
+        modelClass: "VISION",
+        requiredInputModalitiesList: ["text"],
+        expectedOutputModality: "image",
+      }),
+    ).toEqual([]);
+    expect(
+      await handler.selectModelCandidatesForRequest({
+        openRouter,
+        billingLedger,
+        requestText: "Analyze the attached references",
+        selectedModelClass: "VISION",
+        modelCandidates: candidates,
+      }),
+    ).toEqual({
+      selectedModelId: "openai/gpt-6.1-sol",
+      orderedCandidateIds: ["openai/gpt-6.1-sol"],
+      selectedBy: "single",
+    });
+    expect(openRouter.decide).not.toHaveBeenCalled();
+    expect(openRouter.generate).not.toHaveBeenCalled();
+    expect(billingLedger).toEqual([]);
+  });
+
+  it("uses Jev to choose only a local allowed candidate, with an allowed priority fallback", async () => {
+    const handler = Object.create(Handler.prototype) as any;
+    const decide = jest.fn(async () => ({
+      answers: { model: { type: "choice", choice: "cheap" } },
+      billing: null,
+    }));
+    const openRouter = { generate: jest.fn(), decide };
+    const props = {
+      openRouter,
+      billingLedger: [],
+      requestText: "Explain this",
+      selectedModelClass: "CHAT",
+      modelCandidates: [
+        { id: "strong", priority: 100, strengths: ["reasoning"] },
+        { id: "cheap", priority: 90, strengths: ["cost_efficiency"] },
+      ],
+    };
+    expect(await handler.selectModelCandidatesForRequest(props)).toEqual({
+      selectedModelId: "cheap",
+      orderedCandidateIds: ["cheap", "strong"],
+      selectedBy: "jev",
+    });
+    decide.mockResolvedValueOnce({
+      answers: { model: { type: "choice", choice: "outside" } },
+      billing: null,
+    });
+    expect(await handler.selectModelCandidatesForRequest(props)).toEqual({
+      selectedModelId: "strong",
+      orderedCandidateIds: ["strong", "cheap"],
+      selectedBy: "priority",
+    });
+    expect(openRouter.generate).not.toHaveBeenCalled();
+    expect(decide.mock.calls[0][0].model).toBe("typesafe/jev-1.13");
+  });
+});
+
+it.each(["shared", "private"])(
+  "keeps Knowledge available without activating %s document professions in ordinary threads",
+  async (kind) => {
+    const skills = AI_CHAT_DOCUMENTS.map((document, index) => ({
+      id: `profession-${index}`,
+      slug:
+        kind === "private"
+          ? `${document.skillSlug}-assistant`
+          : document.skillSlug,
+      title: document.title,
+      description: "Current manually edited role instructions",
+    }));
+    const handler = new Handler({
+      socialModule: {
+        profilesToSkills: {
+          find: jest.fn(async () =>
+            skills.map((skill) => ({ skillId: skill.id })),
+          ),
+        },
+        skill: { find: jest.fn(async () => skills) },
+        profilesToKnowledgeModuleSources: {
+          find: jest.fn(async () =>
+            ["brief", "strategy", "brand", "design", "products"].map((id) => ({
+              knowledgeModuleSourceId: id,
+            })),
+          ),
+        },
+      },
+    } as any) as any;
+    handler.knowledgeService = { search: jest.fn(async () => []) };
+    const props = {
+      billingLedger: [],
+      openRouter: {} as any,
+      replyProfile: { id: "assistant" },
+      socialModuleMessage: { description: "Explain my project" },
+      sanitizedQuery: "Explain my project",
+      requestedKnowledgeSearch: true,
+      requestedSkillIds: [],
+      selectedModelId: null,
+      threadContext: [],
+      isAIChat: true,
+    };
+    const ordinary = await handler.resolveOpenRouterKnowledgeContext(props);
+    expect(ordinary.availableSkills).toEqual([]);
+    expect(ordinary.promptSkills).toEqual([]);
+    expect(ordinary.skillMessagePrefix).toBe("");
+    expect(ordinary.knowledgeSourceIds).toEqual([
+      "brief",
+      "strategy",
+      "brand",
+      "design",
+      "products",
+    ]);
+    const explicit = await handler.resolveOpenRouterKnowledgeContext({
+      ...props,
+      socialModuleMessage: {
+        description: `/${skills[1].slug}\nExplain my project`,
+      },
+    });
+    expect(explicit.availableSkills).toEqual([skills[1]]);
+    expect(explicit.promptSkills).toEqual([skills[1]]);
+    expect(explicit.requestedSkillIds).toEqual([skills[1].id]);
+    expect(
+      explicit.skillMessagePrefix.match(
+        /Current manually edited role instructions/g,
+      ),
+    ).toHaveLength(1);
+    const selected = await handler.resolveOpenRouterKnowledgeContext({
+      ...props,
+      requestedSkillIds: [skills[2].id],
+    });
+    expect(selected.promptSkills).toEqual([skills[2]]);
+    await expect(
+      handler.resolveOpenRouterKnowledgeContext({
+        ...props,
+        requestedSkillIds: ["unlinked-profession"],
+      }),
+    ).rejects.toThrow("not linked to profile");
+    const document = await handler.resolveOpenRouterKnowledgeContext({
+      ...props,
+      documentSkill: skills[0],
+    });
+    expect(document.promptSkills).toEqual([skills[0]]);
+    expect(
+      document.skillMessagePrefix.match(
+        /Current manually edited role instructions/g,
+      ),
+    ).toHaveLength(1);
+  },
+);
+
+it("document tools offer proposals and reads while direct Knowledge writers are absent", () => {
+  const handler = new Handler({ socialModule: {} } as any) as any;
+  const tools = handler.buildProfileCapabilityTools({
+    availableSkills: [],
+    knowledgeSourceIds: ["own-source", "other-document-source"],
+    knowledgeAction: "update",
+    replyProfileId: "assistant",
+    socialModuleMessage: { id: "request" },
+    disableKnowledgeWrites: true,
+    documentContext: {
+      targetSourceId: "own-source",
+      document: {
+        key: "brief",
+        profileId: "assistant",
+        sourceIds: ["own-source"],
+      },
+      thread: { id: "thread" },
+      proposal: null,
+    },
+  });
+  expect(tools.map((tool: any) => tool.definition.function.name)).toEqual([
+    "profile_knowledge_propose",
+    "profile_knowledge_search",
+    "profile_knowledge_read",
+  ]);
+});
+
+it("resolves the agent subject separately from the assistant ownership relation", async () => {
+  const findById = jest.fn(async ({ id }) => ({ id, variant: "agent" }));
+  const handler = new Handler({
+    subjectsToSocialModuleProfiles: {
+      find: jest.fn(async () => [
+        { subjectId: "owner", variant: "assistant" },
+        { subjectId: "agent", variant: "default" },
+      ]),
+    },
+    findById,
+  } as any) as any;
+  expect(await handler.resolveRbacSubjectForSocialProfile("assistant")).toEqual(
+    { id: "agent", variant: "agent" },
+  );
+  expect(findById).toHaveBeenCalledWith({ id: "agent" });
+});
+
+describe("Scoped Knowledge attachment tools", () => {
+  afterEach(() => jest.restoreAllMocks());
+  const scope = {
+    id: "subject",
+    socialModuleProfileId: "requester",
+    socialModuleChatId: "chat",
+    targetSocialModuleProfileId: "assistant",
+  };
+  function capabilities(action?: "detach", documentSourceIds = ["brief"]) {
+    const handler = new Handler({ socialModule: {} } as any) as any;
+    handler.knowledgeService = {
+      listSources: jest.fn(async ({ sourceIds }: any) => [
+        { id: sourceIds[0], title: "Brief", contentHash: "hash" },
+      ]),
+    };
+    return handler.buildProfileCapabilityTools({
+      availableSkills: [],
+      knowledgeSourceIds: ["brief", "strategy"],
+      knowledgeAction: "update",
+      disableKnowledgeWrites: true,
+      knowledgeFileScope: scope,
+      knowledgeFileAction: action,
+      socialModuleMessage: {
+        id: "request",
+        description: "Remove the selected file",
+      },
+      documentContext: {
+        document: {
+          key: "brief",
+          profileId: "assistant",
+          sourceIds: documentSourceIds,
+        },
+        targetSourceId: "brief",
+      },
+    });
+  }
+  it("offers reads but no attachment mutation without an explicit current removal classification", () => {
+    const names = capabilities().map(
+      (tool: any) => tool.definition.function.name,
+    );
+    expect(names).toContain("profile_knowledge_files");
+    expect(names).not.toContain("profile_knowledge_file_detach");
+    expect(names).not.toContain("profile_knowledge_edit");
+  });
+  it("keeps an empty document read-only even when other profile Sources exist, without exposing an empty enum", () => {
+    const tools = capabilities("detach", []);
+    expect(
+      tools.map((tool: any) => tool.definition.function.name),
+    ).not.toContain("profile_knowledge_file_detach");
+    for (const tool of tools)
+      for (const parameter of Object.values(
+        tool.definition.function.parameters.properties || {},
+      ) as any[])
+        if (parameter.enum) expect(parameter.enum.length).toBeGreaterThan(0);
+  });
+  it("lists exact file IDs and unlinks the selected file through the scoped SDK without editing document text", async () => {
+    const find = jest
+      .spyOn(
+        subjectApi,
+        "socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFind",
+      )
+      .mockResolvedValue([
+        {
+          relation: { id: "link" },
+          file: {
+            id: "svg-file",
+            adminTitle: "Frame 163.svg",
+            mimeType: "image/svg+xml",
+            extension: "svg",
+            file: "/frame.svg",
+          },
+        },
+      ] as any);
+    const update = jest
+      .spyOn(
+        subjectApi,
+        "socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate",
+      )
+      .mockResolvedValue({
+        files: [],
+        source: { contentHash: "new-hash", indexedContentHash: "new-hash" },
+      } as any);
+    const tools = capabilities("detach");
+    expect(
+      tools.map((tool: any) => tool.definition.function.name),
+    ).not.toContain("profile_knowledge_propose");
+    const list = tools.find(
+      (tool: any) =>
+        tool.definition.function.name === "profile_knowledge_files",
+    );
+    const detach = tools.find(
+      (tool: any) =>
+        tool.definition.function.name === "profile_knowledge_file_detach",
+    );
+    await expect(list.execute({ sourceId: "brief" })).resolves.toMatchObject({
+      contentHash: "hash",
+      total: 1,
+      files: [{ id: "svg-file", name: "Frame 163.svg" }],
+    });
+    expect(find).toHaveBeenCalledWith(
+      expect.objectContaining({ ...scope, knowledgeModuleSourceId: "brief" }),
+    );
+    await expect(
+      detach.execute({
+        sourceId: "brief",
+        fileId: "svg-file",
+        expectedContentHash: "hash",
+      }),
+    ).resolves.toMatchObject({
+      status: "detached",
+      remainingFiles: 0,
+      indexed: true,
+    });
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ...scope,
+        knowledgeModuleSourceId: "brief",
+        data: { removeFileId: "svg-file", expectedContentHash: "hash" },
+      }),
+    );
+    expect(
+      tools.map((tool: any) => tool.definition.function.name),
+    ).not.toContain("profile_knowledge_edit");
+  });
+  it("rejects foreign or other-document Sources and stale versions, and reports analysis failure after a successful unlink", async () => {
+    const update = jest
+      .spyOn(
+        subjectApi,
+        "socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate",
+      )
+      .mockResolvedValue({
+        files: [],
+        source: { contentHash: "new-hash", indexedContentHash: null },
+        processingError: "Embedding unavailable",
+        analysisPending: true,
+      } as any);
+    const detach = capabilities("detach").find(
+      (tool: any) =>
+        tool.definition.function.name === "profile_knowledge_file_detach",
+    );
+    await expect(
+      detach.execute({
+        sourceId: "foreign",
+        fileId: "file",
+        expectedContentHash: "hash",
+      }),
+    ).rejects.toThrow("scope");
+    await expect(
+      detach.execute({
+        sourceId: "strategy",
+        fileId: "file",
+        expectedContentHash: "hash",
+      }),
+    ).rejects.toThrow("current document");
+    await expect(
+      detach.execute({
+        sourceId: "brief",
+        fileId: "file",
+        expectedContentHash: "stale",
+      }),
+    ).rejects.toThrow("contentHash");
+    expect(update).not.toHaveBeenCalled();
+    await expect(
+      detach.execute({
+        sourceId: "brief",
+        fileId: "file",
+        expectedContentHash: "hash",
+      }),
+    ).resolves.toMatchObject({
+      status: "detached",
+      indexed: false,
+      processingError: "Embedding unavailable",
     });
   });
 });

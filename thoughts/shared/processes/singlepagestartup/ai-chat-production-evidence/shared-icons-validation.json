@@ -1,0 +1,50 @@
+{
+  "sharedDirectory": "libs/shared/ui/adapter/src/lib/icons",
+  "glyphCount": 17,
+  "geometryPreserved": true,
+  "consumerFiles": 18,
+  "staticDiagramPath": "apps/host/public/images/pdf/diagram.svg",
+  "diagramSha256": "20398bfb181ad87516c283f64a2c1619cc2b562f1dadb4f8667390209a931a1a",
+  "staticLibImages": 0,
+  "workspace": {
+    "featureIconWrappers": 0,
+    "logos": [
+      {
+        "height": 200,
+        "loaded": true,
+        "width": 200
+      },
+      {
+        "height": 200,
+        "loaded": true,
+        "width": 200
+      }
+    ],
+    "phosphorIcons": 15
+  },
+  "select": {
+    "checkIcons": [
+      {
+        "height": 15.99609375,
+        "width": 15.99609375
+      }
+    ],
+    "featureIconWrappers": 0,
+    "selectedOption": "Project documents"
+  },
+  "pdfImage": [
+    {
+      "height": 240,
+      "loaded": true,
+      "src": "/images/pdf/diagram.svg",
+      "width": 640
+    }
+  ],
+  "pdfStatus": "ready",
+  "hostTypeScript": "passed",
+  "tests": {
+    "suites": 4,
+    "passed": 7
+  },
+  "productionConsoleErrors": 0
+}

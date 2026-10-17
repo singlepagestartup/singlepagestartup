@@ -31,6 +31,13 @@ export function readKnowledgeMaterials(content: string) {
   return match ? content.slice(match[0].length).trim() : "";
 }
 
+/** Return document text without internal reconstruction delimiters. */
+export function readKnowledgeDocumentContent(content: string) {
+  return [readKnowledgeUserContext(content), readKnowledgeMaterials(content)]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
 export function replaceKnowledgeUserContext(content: string, context: string) {
   const match = content.match(USER_BLOCK);
   if (!match) return context;

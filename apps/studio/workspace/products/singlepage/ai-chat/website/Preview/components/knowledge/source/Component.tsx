@@ -1,11 +1,11 @@
 import type { ComponentProps, ComponentType } from "react";
-import { Component as Variant0 } from "./singlepage/download/ai-chat/index";
-import { Component as Variant1 } from "./singlepage/list/item/document/ai-chat/index";
-import { Component as Variant2 } from "./singlepage/overview/document/ai-chat/index";
+import { Component as DownloadAiChat } from "./singlepage/download/ai-chat/index";
+import { Component as ListItemDocumentAiChat } from "./singlepage/list/item/document/ai-chat/index";
+import { Component as OverviewDocumentAiChat } from "./singlepage/overview/document/ai-chat/index";
 const variants = {
-  "download-ai-chat": Variant0,
-  "list-item-document-ai-chat": Variant1,
-  "overview-document-ai-chat": Variant2,
+  "download-ai-chat": DownloadAiChat,
+  "list-item-document-ai-chat": ListItemDocumentAiChat,
+  "overview-document-ai-chat": OverviewDocumentAiChat,
 };
 type Props = {
   [V in keyof typeof variants]: { variant: V } & ComponentProps<

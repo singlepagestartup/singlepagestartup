@@ -1,15 +1,22 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import {
-  ArticleFindCardDefault,
-  defaultArticleFindCardDefaultProps,
-} from "./Component";
+import { defaultArticleFindCardDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/Blog/Models/Widget/Singlepage/article-find-card-default",
-  component: ArticleFindCardDefault,
+  id: "modules-blog-models-widget-singlepage-article-find-card-default",
+  title: "Modules/Blog/Widget/Singlepage/article-find-card-default",
+  component: Widget,
   parameters: { layout: "fullscreen" },
-  args: defaultArticleFindCardDefaultProps,
-} satisfies Meta<typeof ArticleFindCardDefault>;
+  args: {
+    ...defaultArticleFindCardDefaultProps,
+    variant: "article-find-card-default",
+  },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Widget>,
+    { variant: "article-find-card-default" }
+  >
+>;
 
 export default meta;
 

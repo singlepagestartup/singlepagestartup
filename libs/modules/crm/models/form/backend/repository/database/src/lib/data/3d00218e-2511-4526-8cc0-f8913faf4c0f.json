@@ -1,0 +1,14 @@
+{
+  "id": "3d00218e-2511-4526-8cc0-f8913faf4c0f",
+  "createdAt": "2026-10-11T20:42:47.519Z",
+  "updatedAt": "2026-10-11T20:42:47.519Z",
+  "variant": "support-ai-chat",
+  "title": {
+    "en": "Support request"
+  },
+  "subtitle": {},
+  "description": {},
+  "className": null,
+  "adminTitle": "AI Chat support",
+  "slug": "ai-chat-support"
+}

@@ -1,4 +1,15 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  SocialThreadListDefaultProps,
+  SocialPreviewProfile,
+} from "./interface";
+export type {
+  SocialThreadListDefaultProps,
+  SocialPreviewProfile,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import {
   forwardRef,
   type SVGProps,
@@ -9,7 +20,7 @@ import {
   useState,
 } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import { Component as SocialChatSettings } from "../chat-settings/index";
 import {
   createPreviewAttachmentStore,
@@ -42,37 +53,15 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface SocialThreadListDefaultProps {
-  variant?: string;
-  title: string;
-  description: string;
-  selectedId?: string;
-  onSelectThread?: (id: string) => void;
-  onOpenSettings?: () => void;
-  chatImage?: SocialPreviewAttachment;
-  threads: Array<{
-    id: string;
-    title: string;
-    excerpt: string;
-    date: string;
-    unread: number;
-    author?: string;
-    active?: boolean;
-    pinned?: boolean;
-    description?: string;
-  }>;
-}
 interface IThreadRowProps {
   thread: SocialThreadListDefaultProps["threads"][number];
   active: boolean;
   onSelect: (id: string) => void;
 }
-export function SocialThreadListDefault(
-  props?: Partial<SocialThreadListDefaultProps>,
-) {
+export function SocialThreadListDefault(props?: IComponentProps) {
   const { title, description, threads, onSelectThread, onOpenSettings } = {
     ...defaultSocialThreadListDefaultProps,
     ...props,
@@ -110,7 +99,7 @@ export function SocialThreadListDefault(
   );
   return (
     <aside
-      className="flex min-w-0 flex-col border-b border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] md:h-full md:border-b-0 md:border-r"
+      className="flex min-w-0 flex-col border-b border-border bg-muted md:h-full md:border-b-0 md:border-r"
       data-ds-block="social.thread.list-default"
       data-ds-layer="singlepage"
       data-module="social"
@@ -118,7 +107,7 @@ export function SocialThreadListDefault(
       data-variant={props?.variant ?? "list-default"}
     >
       <div className="flex items-center gap-3 px-5 pb-3 pt-5">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--color-sps-white)]">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-card">
           {chatImage ? (
             <img
               src={chatImage.url}
@@ -133,7 +122,7 @@ export function SocialThreadListDefault(
           <h2 className="truncate text-lg font-semibold">
             {onOpenSettings ? title : localTitle}
           </h2>
-          <p className="mt-1 text-xs text-[var(--color-sps-muted)]">
+          <p className="mt-1 text-xs text-muted-foreground">
             {onOpenSettings ? description : localDescription}
           </p>
         </div>
@@ -144,13 +133,13 @@ export function SocialThreadListDefault(
           ref={settingsTrigger}
           aria-label="Chat settings"
           type="button"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl hover:bg-[var(--color-sps-white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl hover:bg-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
         >
           <Settings className="h-5 w-5" />
         </button>
       </div>
       <label className="relative mx-4 mb-4 block">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--color-sps-muted)]" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
         <input
           aria-label="Search threads"
           value={query}
@@ -169,7 +158,7 @@ export function SocialThreadListDefault(
           />
         ))}
         {visible.length === 0 ? (
-          <p className="p-5 text-sm text-[var(--color-sps-muted)]">
+          <p className="p-5 text-sm text-muted-foreground">
             No matching threads.
           </p>
         ) : null}
@@ -206,23 +195,19 @@ export function SocialThreadListDefault(
     </aside>
   );
 }
-export interface SocialPreviewProfile {
-  id: string;
-  name: string;
-  context?: string;
-}
+
 const X = createIcon("x");
 const Settings = createIcon("gear-six");
 const Search = createIcon("magnifying-glass");
 const Pin = createIcon("push-pin");
 const MessageSquare = createIcon("chat");
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 py-2 text-base text-[var(--color-sps-graphite)] outline-none transition motion-reduce:transition-none placeholder:text-[var(--color-sps-muted)] focus-visible:border-[var(--color-sps-graphite)] focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-sps-white)] disabled:cursor-not-allowed disabled:bg-[var(--color-sps-grey)] disabled:text-[var(--color-sps-muted)] disabled:opacity-60 [&[readonly]]:bg-[var(--color-sps-grey)] aria-invalid:border-[var(--color-sps-danger)] aria-invalid:focus-visible:ring-[var(--color-sps-danger)]",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
 };
 export const defaultSocialThreadListDefaultProps: SocialThreadListDefaultProps =
   {
@@ -267,7 +252,7 @@ const ThreadRow = memo(function ThreadRow({
       type="button"
       aria-pressed={active}
       onClick={() => onSelect(thread.id)}
-      className={`w-full rounded-2xl border p-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)] ${active ? "border-[var(--color-sps-line)] bg-[var(--color-sps-white)]" : "border-transparent hover:bg-[var(--color-sps-white)]"}`}
+      className={`w-full rounded-2xl border p-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground ${active ? "border-border bg-card" : "border-transparent hover:bg-card"}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -277,15 +262,15 @@ const ThreadRow = memo(function ThreadRow({
               {thread.title}
             </span>
           </div>
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--color-sps-muted)]">
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
             {thread.author ? `${thread.author}: ` : ""}
             {thread.excerpt}
           </p>
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-xs text-[var(--color-sps-muted)]">{thread.date}</p>
+          <p className="text-xs text-muted-foreground">{thread.date}</p>
           {thread.unread > 0 ? (
-            <span className="mt-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[var(--color-sps-green)] px-2 text-xs font-semibold text-[var(--color-sps-graphite)]">
+            <span className="mt-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary text-primary-foreground px-2 text-xs font-semibold">
               {thread.unread}
             </span>
           ) : null}

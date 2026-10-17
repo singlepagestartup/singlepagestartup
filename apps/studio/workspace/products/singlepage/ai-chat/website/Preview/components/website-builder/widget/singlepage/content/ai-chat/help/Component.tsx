@@ -50,16 +50,6 @@ function ServicePage({
         className="@container min-w-0 bg-[color:var(--workspace-brand-background)] text-[color:var(--workspace-brand-foreground)] font-[family-name:var(--workspace-brand-font-body)]"
       >
         <main className="mx-auto max-w-6xl px-5 py-7 @[640px]:px-8 @[640px]:py-10">
-          <a
-            href={copy.labels["back-href"].replace(
-              "/ai-chat/social/profiles/example",
-              projectHref,
-            )}
-            className={`mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-[color:var(--workspace-brand-muted)] hover:text-[color:var(--workspace-brand-foreground)] ${kit.focus}`}
-          >
-            <Icon name="arrow-left" />
-            {copy.labels["back-label"]}
-          </a>
           {showIntro ? <PageIntro section={copy.sections.hero} /> : null}
           {children}
         </main>

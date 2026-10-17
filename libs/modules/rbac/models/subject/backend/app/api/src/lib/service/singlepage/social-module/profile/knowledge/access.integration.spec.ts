@@ -3,10 +3,13 @@
  *
  * Given: the migrated RBAC repositories enforce their shared natural keys.
  * When: two repository-backed Knowledge grants are provisioned concurrently.
- * Then: both callers converge on one role, fourteen permissions, fourteen links, and one subject-role link.
+ * Then: both callers converge on one role, sixteen permissions, sixteen links, and one subject-role link.
  */
 
 import { randomUUID } from "node:crypto";
+import { sign } from "hono/jwt";
+import { RBAC_JWT_SECRET } from "@sps/shared-utils";
+import { Service as Authorization } from "../../../is-authorized";
 import {
   getPostgresClient,
   resetPostgresClient,
@@ -153,10 +156,46 @@ describe("Given: a clean subject and profile-specific Knowledge grant", () => {
       });
 
       expect(roles).toHaveLength(1);
-      expect(permissionGroups).toHaveLength(14);
+      expect(permissionGroups).toHaveLength(16);
       expect(permissionGroups.every((group) => group.length === 1)).toBe(true);
-      expect(rolePermissions).toHaveLength(14);
+      expect(rolePermissions).toHaveLength(16);
       expect(subjectRoles).toHaveLength(1);
+
+      const authorization = new Authorization(
+        services.permission,
+        services.rolesToPermissions,
+        services.subjectsToRoles,
+      );
+      const ownerToken = await sign(
+        {
+          subject: { id: subjectId },
+          exp: Math.floor(Date.now() / 1000) + 120,
+        },
+        RBAC_JWT_SECRET!,
+      );
+      const otherToken = await sign(
+        {
+          subject: { id: randomUUID() },
+          exp: Math.floor(Date.now() / 1000) + 120,
+        },
+        RBAC_JWT_SECRET!,
+      );
+      for (const method of ["GET", "POST"] as const) {
+        const path = `/api/rbac/subjects/${subjectId}/social-module/profiles/${randomUUID()}/chats/${randomUUID()}/profiles/${socialModuleProfileId}/knowledge/sources/${randomUUID()}/files`;
+        const permission = { type: "HTTP" as const, method, route: path };
+        await expect(
+          authorization.execute({
+            permission,
+            authorization: { value: ownerToken },
+          }),
+        ).resolves.toEqual({ ok: true });
+        await expect(
+          authorization.execute({
+            permission,
+            authorization: { value: otherToken },
+          }),
+        ).rejects.toThrow("Permission error");
+      }
 
       const third = await access.ensure(props);
 
@@ -172,7 +211,7 @@ describe("Given: a clean subject and profile-specific Knowledge grant", () => {
             },
           },
         }),
-      ).resolves.toHaveLength(14);
+      ).resolves.toHaveLength(16);
     } finally {
       const sql = getPostgresClient();
 

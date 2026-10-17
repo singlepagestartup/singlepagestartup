@@ -24,6 +24,10 @@ function makeConfig() {
 
   return withBundleAnalyzer({
     reactStrictMode: true,
+    distDir: process.env.SPS_HOST_DIST_DIR || ".next",
+    experimental: {
+      webpackMemoryOptimizations: true,
+    },
     // Preserve the public origin in locale redirects, including loopback hosts.
     skipMiddlewareUrlNormalize: true,
     deploymentId: process.env.NEXT_DEPLOYMENT_ID || undefined,
@@ -78,6 +82,7 @@ function makeConfig() {
     },
     trailingSlash: false,
     webpack(config) {
+      if (process.env.SPS_HOST_WEBPACK_CACHE === "false") config.cache = false;
       config.module.rules.push({
         test: /\.svg$/i,
         issuer: /\.[jt]sx?$/,

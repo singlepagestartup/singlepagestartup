@@ -1,8 +1,10 @@
+import { Component as Layout } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import { Component } from "./Component";
+
 const meta = {
-  title: "Modules/Host/Models/Layout/Singlepage/website",
-  component: Component,
+  id: "modules-host-models-layout-singlepage-website",
+  title: "Modules/Host/Layout/Singlepage/website",
+  component: Layout,
   parameters: { layout: "fullscreen" },
   args: {
     children: (
@@ -12,12 +14,15 @@ const meta = {
     ),
     footer: "compact",
     signedIn: false,
+    variant: "website",
   },
   argTypes: {
     signedIn: { control: "boolean" },
     footer: { control: "select", options: ["compact", "default"] },
   },
-} satisfies Meta<typeof Component>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Layout>, { variant: "website" }>
+>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};
 export const Authenticated: StoryObj<typeof meta> = {

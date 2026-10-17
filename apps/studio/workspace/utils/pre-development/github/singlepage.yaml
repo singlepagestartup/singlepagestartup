@@ -595,3 +595,24 @@ reconciliations:
     summary: Package changes expand Studio test discovery. They introduce no
       business, product, economics, visual or approval decision.
     affected_artifacts: []
+  - commit: a69107dd8ed4cf320b9b8c40a6499bb9a9c3f671
+    outcome: no-material-effect
+    summary:
+      The Social profile-to-Blog article relation adds scoped attribution,
+      CRUD, SDKs and admin bindings. Current product documents make no claim
+      about this relation; the selected audiences, offers, economics and
+      proof boundaries remain applicable. Repository content does not establish
+      customer outcomes or production integration.
+    affected_artifacts: []
+  - commit: 4688e19f2f4176b25435ba85d240c7ff24a767b5
+    outcome: material
+    summary: Living Focus styling, shared controls and local interaction changes
+      are already represented in the current Design and product previews. The
+      inspected Product economics references replace the retired shared-model
+      labels without changing commercial terms. Existing Design and material
+      reviews remain pending; local demonstrations establish no live payment,
+      publication or customer-outcome proof. No additional body correction is
+      required for this published snapshot.
+    affected_artifacts:
+      - singlepage.design
+      - singlepage.products

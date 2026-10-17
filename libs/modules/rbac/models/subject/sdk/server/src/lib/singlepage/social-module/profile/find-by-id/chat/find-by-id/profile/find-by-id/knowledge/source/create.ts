@@ -22,7 +22,7 @@ export interface IProps {
   };
 }
 
-export type IResult = IKnowledgeModuleSource;
+export type IResult = IKnowledgeModuleSource & { indexingError?: string };
 
 export async function action(props: IProps): Promise<IResult> {
   const {
@@ -53,9 +53,12 @@ export async function action(props: IProps): Promise<IResult> {
     `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}/profiles/${targetSocialModuleProfileId}/knowledge/sources`,
     requestOptions,
   );
-  const json = await responsePipe<{ data: IResult }>({
+  const json = await responsePipe<{ data: IResult; indexingError?: string }>({
     res,
   });
 
-  return transformResponseItem<IResult>(json);
+  return {
+    ...transformResponseItem<IResult>(json),
+    indexingError: json?.indexingError,
+  };
 }

@@ -1,0 +1,1 @@
+export const FILE_PREVIEW_TEXT_MAX_BYTES = 2 * 1024 * 1024;

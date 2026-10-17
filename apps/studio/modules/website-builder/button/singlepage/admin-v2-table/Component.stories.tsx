@@ -1,12 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as WebsiteBuilderModuleButton } from "../../index";
+import { Component as Button } from "../../index";
 
 const meta = {
-  title: "Modules/Website-Builder/Models/Button/Singlepage/admin-v2-table",
-  component: WebsiteBuilderModuleButton,
+  id: "modules-website-builder-models-button-singlepage-admin-v2-table",
+  title: "Modules/Website-Builder/Button/Singlepage/admin-v2-table",
+  component: Button,
   argTypes: { empty: { control: "boolean" } },
   args: { variant: "admin-v2-table", empty: false },
-} satisfies Meta<typeof WebsiteBuilderModuleButton>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Button>, { variant: "admin-v2-table" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

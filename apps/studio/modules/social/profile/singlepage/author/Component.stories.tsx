@@ -1,13 +1,20 @@
+import { Component as Profile } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ProfileAuthor, defaultProfileAuthorProps } from "./Component";
+import { defaultProfileAuthorProps } from "./Component";
 
 const meta = {
-  title: "Modules/Social/Models/Profile/Singlepage/author",
-  component: ProfileAuthor,
+  id: "modules-social-models-profile-singlepage-author",
+  title: "Modules/Social/Profile/Singlepage/author",
+  component: Profile,
   parameters: { layout: "fullscreen" },
-  args: defaultProfileAuthorProps,
-} satisfies Meta<typeof ProfileAuthor>;
+  args: {
+    ...defaultProfileAuthorProps,
+    variant: "author",
+  },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Profile>, { variant: "author" }>
+>;
 
 export default meta;
 

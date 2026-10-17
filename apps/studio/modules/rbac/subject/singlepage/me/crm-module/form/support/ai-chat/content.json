@@ -1,0 +1,15 @@
+{
+  "labels": {
+    "submit": "Send request",
+    "edit-request": "Edit request",
+    "return-label": "Return to workspace",
+    "return-href": "/ai-chat/social/profiles/example",
+    "topic-error": "Choose a topic.",
+    "details-error": "Describe what happened.",
+    "result-error": "Tell us what result you need.",
+    "success-message": "Support request submitted."
+  },
+  "successParagraphs": [
+    "We’ll respond within 24 hours. You can keep working in your workspace while you wait."
+  ]
+}

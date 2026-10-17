@@ -1,12 +1,22 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../feature/index";
+import type {
+  IComponentProps,
+  ButtonsArrayItem,
+  ButtonsArrayDefaultProps,
+  ModuleIcon,
+} from "./interface";
+export type {
+  ButtonsArrayItem,
+  ButtonsArrayDefaultProps,
+  ModuleIcon,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../feature/singlepage/icon/icons.json";
-import { Component as WebsiteBuilderModuleButton } from "../../../button/index";
-type ModuleIcon = ReturnType<typeof createIcon>;
-interface IModuleIconProps extends SVGProps<SVGSVGElement> {
-  size?: number;
-}
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
+import { Component as Button } from "../../../button/index";
+
 type IconName = keyof typeof IconGlyphs;
 function createIcon(name: IconName) {
   const Component = forwardRef<SVGSVGElement, IModuleIconProps>(
@@ -31,27 +41,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface ButtonsArrayItem {
-  label: string;
-  href: string;
-  variant: "link" | "primary" | "secondary";
-  icon?: ModuleIcon;
-  size?: "sm" | "xs";
-  tone?: "default" | "muted";
-  inverse?: boolean;
-  target?: "_self" | "_top";
-}
-export interface ButtonsArrayDefaultProps {
-  variant?: string;
-  ariaLabel?: string;
-  buttons: ButtonsArrayItem[];
-  orientation?: "horizontal" | "vertical";
-  title?: string;
-}
-export function ButtonsArrayDefault(props?: Partial<ButtonsArrayDefaultProps>) {
+export function ButtonsArrayDefault(props?: IComponentProps) {
   const { ariaLabel, buttons, orientation, title } = {
     ...defaultButtonsArrayProps,
     ...props,
@@ -72,14 +65,14 @@ export function ButtonsArrayDefault(props?: Partial<ButtonsArrayDefaultProps>) {
       data-variant={props?.variant ?? "default"}
     >
       {title ? (
-        <h3 className="mb-6 w-full text-base font-semibold leading-6 tracking-normal text-[var(--color-sps-graphite)]">
+        <h3 className="mb-6 w-full text-base font-semibold leading-6 tracking-normal text-foreground">
           {title}
         </h3>
       ) : null}
       {buttons.map((button) => {
         if (button.variant === "link") {
           return (
-            <WebsiteBuilderModuleButton
+            <Button
               variant="link"
               href={button.href}
               target={button.target}
@@ -91,7 +84,7 @@ export function ButtonsArrayDefault(props?: Partial<ButtonsArrayDefaultProps>) {
           );
         }
         return button.variant === "secondary" ? (
-          <WebsiteBuilderModuleButton
+          <Button
             variant="secondary"
             href={button.href}
             target={button.target}
@@ -101,7 +94,7 @@ export function ButtonsArrayDefault(props?: Partial<ButtonsArrayDefaultProps>) {
             label={button.label}
           />
         ) : (
-          <WebsiteBuilderModuleButton
+          <Button
             variant="primary"
             href={button.href}
             target={button.target}
@@ -132,3 +125,5 @@ export const defaultButtonsArrayProps: ButtonsArrayDefaultProps = {
     },
   ] satisfies ButtonsArrayItem[],
 };
+
+import type { IModuleIconProps } from "./interface";

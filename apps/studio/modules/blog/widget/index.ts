@@ -1,3 +1,7 @@
-export { Component, type IComponentProps } from "./Component";
+export { Component } from "./Component";
+export type { IComponentProps } from "./interface";
 
-export type { ArticleOverviewDefaultProps } from "./singlepage/article-overview-default/Component";
+export type { ArticleOverviewDefaultProps } from "./interface";
+
+export { Skeleton } from "./Skeleton";
+export type { ISkeletonProps } from "./interface";

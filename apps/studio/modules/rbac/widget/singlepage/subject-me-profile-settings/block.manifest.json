@@ -1,0 +1,50 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "rbac.widget.subject-me-profile-settings",
+  "title": "subject-me-profile-settings",
+  "description": "RBAC Widget composition of current Subject profile settings, sign-in methods, purchases and deletion.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-profile-settings"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "showTokens",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "initialSection",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "copy",
+      "type": "object",
+      "required": false
+    },
+    {
+      "name": "profileId",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "subject-me-profile-settings",
+    "nodeId": "981:142",
+    "variantNodeId": "981:135",
+    "syncStatus": "needs-update",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "widget", "subject-me-profile-settings"]
+}

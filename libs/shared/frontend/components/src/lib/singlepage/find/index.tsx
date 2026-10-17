@@ -22,6 +22,10 @@ export function Component<M, V>(
     serverApi: ReturnType<typeof serverFactory<M>>;
   },
 ) {
+  if (props.dataSource === "props") {
+    return props.children?.({ data: props.data });
+  }
+
   const Comp: any = props.isServer ? Server : Client;
   const api = props.isServer ? props.serverApi : props.clientApi;
   const Provider = props.Provider;

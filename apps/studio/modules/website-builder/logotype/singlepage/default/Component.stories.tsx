@@ -1,11 +1,15 @@
+import { Component as Logotype } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import { Component } from "./Component";
+
 const meta = {
-  title: "Modules/Website-Builder/Models/Logotype/Singlepage/default",
-  component: Component,
+  id: "modules-website-builder-models-logotype-singlepage-default",
+  title: "Modules/Website-Builder/Logotype/Singlepage/default",
+  component: Logotype,
   parameters: { layout: "fullscreen" },
-  args: { compact: false },
+  args: { compact: false, variant: "default" },
   argTypes: { compact: { control: "boolean" } },
-} satisfies Meta<typeof Component>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Logotype>, { variant: "default" }>
+>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};

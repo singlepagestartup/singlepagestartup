@@ -40,6 +40,17 @@ function seed(qc: QueryClient, key: unknown[], data: Item[]): void {
 // ---------------------------------------------------------------------------
 
 describe("appendToListQueries", () => {
+  it("appends to a paramless URL list and invalidates a filtered URL list", () => {
+    const qc = makeClient();
+    const plain = [`${ROUTE}?`];
+    const filtered = [`${ROUTE}?name=Alice`];
+    seed(qc, plain, []);
+    seed(qc, filtered, []);
+    appendToListQueries<Item>(qc, ROUTE, { id: "1", name: "Bob" });
+    expect(qc.getQueryData<Item[]>(plain)).toEqual([{ id: "1", name: "Bob" }]);
+    expect(qc.getQueryData<Item[]>(filtered)).toEqual([]);
+    expect(qc.getQueryState(filtered)?.isInvalidated).toBe(true);
+  });
   /**
    * BDD Scenario: Append into a param-less list query.
    *
@@ -317,6 +328,22 @@ describe("appendToListQueries", () => {
 // ---------------------------------------------------------------------------
 
 describe("patchInListQueries", () => {
+  it("patches URL-style filtered and unfiltered lists without touching detail or neighboring routes", () => {
+    const qc = makeClient();
+    const lists = [
+      [`${ROUTE}?`],
+      [`${ROUTE}?filters[name]=Alice`],
+      [ROUTE, "filter=Alice"],
+    ];
+    const unrelated = [[`${ROUTE}/1?`], [`${ROUTE}-other?`]];
+    for (const key of [...lists, ...unrelated])
+      seed(qc, key, [{ id: "1", name: "Alice" }]);
+    patchInListQueries<Item>(qc, ROUTE, "1", { name: "Updated" });
+    for (const key of lists)
+      expect(qc.getQueryData<Item[]>(key)?.[0].name).toBe("Updated");
+    for (const key of unrelated)
+      expect(qc.getQueryData<Item[]>(key)?.[0].name).toBe("Alice");
+  });
   /**
    * BDD Scenario: Patch an existing item.
    *
@@ -401,6 +428,16 @@ describe("patchInListQueries", () => {
 // ---------------------------------------------------------------------------
 
 describe("removeFromListQueries", () => {
+  it("removes the item from URL-style lists while preserving a detail query", () => {
+    const qc = makeClient();
+    const lists = [[`${ROUTE}?`], [`${ROUTE}?name=Alice`]];
+    const detail = [`${ROUTE}/1?`];
+    for (const key of [...lists, detail])
+      seed(qc, key, [{ id: "1", name: "Alice" }]);
+    removeFromListQueries(qc, ROUTE, "1");
+    for (const key of lists) expect(qc.getQueryData(key)).toEqual([]);
+    expect(qc.getQueryData(detail)).toEqual([{ id: "1", name: "Alice" }]);
+  });
   /**
    * BDD Scenario: Remove an existing item.
    *

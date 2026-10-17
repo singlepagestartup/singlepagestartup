@@ -1,11 +1,21 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../feature/index";
+import type {
+  IComponentProps,
+  ContentFeatureFindDefaultProps,
+  StatItem,
+  ModuleIcon,
+} from "./interface";
+export type {
+  ContentFeatureFindDefaultProps,
+  StatItem,
+  ModuleIcon,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../feature/singlepage/icon/icons.json";
-type ModuleIcon = ReturnType<typeof createIcon>;
-interface IModuleIconProps extends SVGProps<SVGSVGElement> {
-  size?: number;
-}
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
+
 type IconName = keyof typeof IconGlyphs;
 function createIcon(name: IconName) {
   const Component = forwardRef<SVGSVGElement, IModuleIconProps>(
@@ -30,26 +40,14 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-interface StatItem {
-  value: string;
-  label: string;
-  icon: ModuleIcon;
-  description?: string;
-}
-export interface ContentFeatureFindDefaultProps {
-  variant?: string;
-  stats: StatItem[];
-}
-export function ContentFeatureFindDefault(
-  props?: Partial<ContentFeatureFindDefaultProps>,
-) {
+export function ContentFeatureFindDefault(props?: IComponentProps) {
   const { stats } = { ...defaultContentFeatureFindDefaultProps, ...props };
   return (
     <div
-      className="w-full bg-[var(--color-sps-grey)] py-4 sm:py-6"
+      className="w-full bg-muted py-4 sm:py-6"
       data-ds-block="website-builder.widget.content-feature-find-default"
       data-ds-layer="singlepage"
       data-module="website-builder"
@@ -59,15 +57,15 @@ export function ContentFeatureFindDefault(
       <div className="mx-auto grid w-full max-w-7xl gap-4 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         {stats.map((stat) => (
           <div
-            className="min-w-0 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-6"
+            className="min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-6"
             key={stat.label}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <strong className="block break-words text-3xl font-semibold leading-tight tracking-normal text-[var(--color-sps-graphite)] sm:text-4xl">
+                <strong className="block break-words text-3xl font-semibold leading-tight tracking-normal text-foreground sm:text-4xl">
                   {stat.value}
                 </strong>
-                <span className="mt-2 block text-sm font-semibold leading-6 text-[var(--color-sps-graphite)]">
+                <span className="mt-2 block text-sm font-semibold leading-6 text-foreground">
                   {stat.label}
                 </span>
               </div>
@@ -76,7 +74,7 @@ export function ContentFeatureFindDefault(
               </span>
             </div>
             {stat.description ? (
-              <p className="mt-4 text-sm leading-6 text-[var(--color-sps-muted)]">
+              <p className="mt-4 text-sm leading-6 text-muted-foreground">
                 {stat.description}
               </p>
             ) : null}
@@ -91,7 +89,7 @@ const TrendingUp = createIcon("trend-up");
 const Layers = createIcon("stack");
 const Database = createIcon("database");
 const iconBoxClass =
-  "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-sps-grey)] text-[var(--color-sps-graphite)]";
+  "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground";
 export const defaultContentFeatureFindDefaultProps = {
   stats: [
     {
@@ -120,3 +118,5 @@ export const defaultContentFeatureFindDefaultProps = {
     },
   ] satisfies StatItem[],
 };
+
+import type { IModuleIconProps } from "./interface";

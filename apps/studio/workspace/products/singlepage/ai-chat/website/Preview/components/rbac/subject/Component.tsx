@@ -1,19 +1,21 @@
 import type { ComponentProps, ComponentType } from "react";
-import { Component as Variant0 } from "./singlepage/account/index";
-import { Component as Variant1 } from "./singlepage/message/create/ai-chat/index";
-import { Component as Variant2 } from "./singlepage/authentication/email-and-password/registration-form/ai-chat/index";
-import { Component as Variant3 } from "./singlepage/authentication/email-and-password/authentication-form/ai-chat/index";
-import { Component as Variant4 } from "./singlepage/me-profile-information/index";
-import { Component as Variant5 } from "./singlepage/me-identity-find-information/index";
-import { Component as Variant6 } from "./singlepage/account-data/index";
+import { Component as Account } from "./singlepage/account/index";
+import { Component as MessageCreateAiChat } from "./singlepage/message/create/ai-chat/index";
+import { Component as AuthenticationEmailAndPasswordRegistrationFormAiChat } from "./singlepage/authentication/email-and-password/registration-form/ai-chat/index";
+import { Component as AuthenticationEmailAndPasswordAuthenticationFormAiChat } from "./singlepage/authentication/email-and-password/authentication-form/ai-chat/index";
+import { Component as MeProfileInformation } from "./singlepage/me-profile-information/index";
+import { Component as MeIdentityFindInformation } from "./singlepage/me-identity-find-information/index";
+import { Component as AccountData } from "./singlepage/account-data/index";
 const variants = {
-  account: Variant0,
-  "message-create-ai-chat": Variant1,
-  "authentication-email-and-password-registration-form-ai-chat": Variant2,
-  "authentication-email-and-password-authentication-form-ai-chat": Variant3,
-  "me-profile-information": Variant4,
-  "me-identity-find-information": Variant5,
-  "account-data": Variant6,
+  account: Account,
+  "message-create-ai-chat": MessageCreateAiChat,
+  "authentication-email-and-password-registration-form-ai-chat":
+    AuthenticationEmailAndPasswordRegistrationFormAiChat,
+  "authentication-email-and-password-authentication-form-ai-chat":
+    AuthenticationEmailAndPasswordAuthenticationFormAiChat,
+  "me-profile-information": MeProfileInformation,
+  "me-identity-find-information": MeIdentityFindInformation,
+  "account-data": AccountData,
 };
 type Props = {
   [V in keyof typeof variants]: { variant: V } & ComponentProps<

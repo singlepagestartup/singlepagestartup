@@ -1,6 +1,8 @@
+import type { IComponentProps, IComponentVariantProps } from "./interface";
+export type { IComponentVariantProps } from "./interface";
 import { ReactNode as ReactNode } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import { Component as HostModuleLayout } from "../../../layout/index";
+import { Component as Layout } from "../../../layout/index";
 import { Component as BlogModuleWidget } from "../../../../blog/widget/index";
 import { Component as EcommerceModuleWidget } from "../../../../ecommerce/widget/index";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
@@ -22,13 +24,11 @@ function SectionStack({ children, className }: SectionStackProps) {
     </div>
   );
 }
-interface IComponentVariantProps {
-  variant?: string;
-}
-export function HomeDefault({ variant = "root" }: IComponentVariantProps = {}) {
+
+export function HomeDefault({ variant = "root" }: IComponentProps = {}) {
   return (
     <div data-module="host" data-model="page" data-variant={variant}>
-      <HostModuleLayout variant="website" footer="default">
+      <Layout variant="website" footer="default">
         <main className="min-w-0" data-ds-page="host.page.root">
           <SectionStack>
             <WebsiteBuilderModuleWidget variant="content-hero" />
@@ -43,12 +43,15 @@ export function HomeDefault({ variant = "root" }: IComponentVariantProps = {}) {
             <WebsiteBuilderModuleWidget
               variant="content-feature-find-row"
               contactForm={
-                <RbacModuleSubject variant="me-crm-form-deafult" embedded />
+                <RbacModuleSubject
+                  variant="me-crm-module-form-default"
+                  embedded
+                />
               }
             />
           </SectionStack>
         </main>
-      </HostModuleLayout>
+      </Layout>
     </div>
   );
 }

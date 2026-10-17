@@ -1,15 +1,17 @@
+import { Component as Page } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { AdminEntityDrawer } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-admin-entity-drawer",
-  title: "Modules/Host/Models/Page/Singlepage/admin-entity-drawer",
-  component: AdminEntityDrawer,
+  title: "Modules/Host/Page/Singlepage/admin-entity-drawer",
+  component: Page,
   parameters: {
     layout: "fullscreen",
   },
-} satisfies Meta<typeof AdminEntityDrawer>;
+  args: { variant: "admin-entity-drawer" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Page>, { variant: "admin-entity-drawer" }>
+>;
 
 export default meta;
 

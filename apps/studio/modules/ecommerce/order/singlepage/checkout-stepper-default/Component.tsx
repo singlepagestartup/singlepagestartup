@@ -1,7 +1,14 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  OrderCheckoutStepperDefaultProps,
+} from "./interface";
+export type { OrderCheckoutStepperDefaultProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import { checkoutSteps, type CheckoutStep } from "../../shared";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
@@ -30,17 +37,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface OrderCheckoutStepperDefaultProps {
-  variant?: string;
-  currentStep: CheckoutStep;
-  showBreadcrumb?: boolean;
-}
-export function OrderCheckoutStepperDefault(
-  props?: Partial<OrderCheckoutStepperDefaultProps>,
-) {
+export function OrderCheckoutStepperDefault(props?: IComponentProps) {
   const { currentStep, showBreadcrumb } = {
     ...defaultOrderCheckoutStepperDefaultProps,
     ...props,
@@ -61,17 +61,17 @@ export function OrderCheckoutStepperDefault(
         {showBreadcrumb ? (
           <nav
             aria-label="Breadcrumb"
-            className="mb-6 flex flex-wrap items-center gap-2 text-sm text-[var(--color-sps-muted)]"
+            className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
           >
             <a
-              className="rounded hover:text-[var(--color-sps-graphite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+              className="rounded hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
               href="/"
             >
               Home
             </a>
             <ChevronRight className="h-5 w-5" />
             <a
-              className="rounded hover:text-[var(--color-sps-graphite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+              className="rounded hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
               href="/ecommerce/products"
             >
               Services
@@ -80,11 +80,11 @@ export function OrderCheckoutStepperDefault(
             <span aria-current="page">Checkout</span>
           </nav>
         ) : null}
-        <h1 className="text-4xl font-semibold leading-tight text-[var(--color-sps-graphite)] sm:text-5xl">
+        <h1 className="text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
           Checkout
         </h1>
         <nav aria-label="Checkout progress" className="mt-8">
-          <ol className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-[var(--color-sps-line)]/50 p-2">
+          <ol className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-border/50 p-2">
             {checkoutSteps.map((step, index) => {
               const done = index < currentIndex;
               const active = step.key === currentStep;
@@ -92,15 +92,15 @@ export function OrderCheckoutStepperDefault(
                 <li
                   key={step.key}
                   aria-current={active ? "step" : undefined}
-                  className={`flex min-w-0 flex-col items-center gap-2 rounded-xl p-3 sm:flex-row sm:gap-3 ${active ? "bg-[var(--color-sps-white)]" : ""}`}
+                  className={`flex min-w-0 flex-col items-center gap-2 rounded-xl p-3 sm:flex-row sm:gap-3 ${active ? "bg-card" : ""}`}
                 >
                   <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${done ? "bg-[var(--color-sps-green)] text-[var(--color-sps-graphite)]" : active ? "bg-[var(--color-sps-graphite)] text-[var(--color-sps-white)]" : "bg-[var(--color-sps-white)] text-[var(--color-sps-muted)]"}`}
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${done ? "bg-primary text-primary-foreground" : active ? "bg-default text-default-foreground" : "bg-card text-muted-foreground"}`}
                   >
                     {done ? <Check className="h-5 w-5" /> : step.number}
                   </span>
                   <span
-                    className={`text-center text-xs sm:text-sm ${active ? "font-semibold text-[var(--color-sps-graphite)]" : "text-[var(--color-sps-muted)]"}`}
+                    className={`text-center text-xs sm:text-sm ${active ? "font-semibold text-foreground" : "text-muted-foreground"}`}
                   >
                     {step.label}
                   </span>

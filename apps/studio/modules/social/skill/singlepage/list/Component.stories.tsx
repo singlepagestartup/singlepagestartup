@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as SocialModuleSkill } from "../../index";
+import { Component as Skill } from "../../index";
 const meta = {
-  title: "Modules/Social/Models/Skill/Singlepage/list",
-  component: SocialModuleSkill,
+  id: "modules-social-models-skill-singlepage-list",
+  title: "Modules/Social/Skill/Singlepage/list",
+  component: Skill,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof SocialModuleSkill>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Skill>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

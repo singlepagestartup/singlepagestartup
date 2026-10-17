@@ -32,11 +32,15 @@ export function Component(props: IComponentPropsExtended) {
           return data?.map((entity, index) => {
             return (
               <Step
-                key={index}
+                key={entity.id}
                 isServer={props.isServer}
-                variant={entity.variant as any}
+                variant="default"
                 data={entity}
+                dataSource="props"
                 language={props.language}
+                form={props.form}
+                disabled={props.disabled}
+                path={props.path}
               />
             );
           });

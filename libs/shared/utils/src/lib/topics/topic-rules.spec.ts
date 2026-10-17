@@ -79,6 +79,58 @@ describe("resolveTopicsForPath — rules vs canonical", () => {
 });
 
 describe("defaultCompiledTopicRules — framework action endpoints", () => {
+  it("maps generic credential changes onto the Identity collection and detail readers", () => {
+    const id = "303302a0-4eb7-4cef-af04-74d7e8e72442";
+    const mutation = resolveTopicsForPath(
+      `/api/rbac/identities/${id}/change-password`,
+      defaultCompiledTopicRules,
+    );
+    expect(mutation).toEqual(["rbac.identities", `rbac.identities.${id}`]);
+    for (const path of [
+      `/api/rbac/identities/${id}`,
+      `/api/rbac/subjects/${id}/identities`,
+    ]) {
+      const reader = resolveTopicsForPath(path, defaultCompiledTopicRules);
+      expect(reader.some((topic) => mutation.includes(topic))).toBe(true);
+    }
+  });
+  it.each(["find-by-url", "url-segment-value", "urls"])(
+    "maps Host %s reads onto Page mutation topics",
+    (operation) => {
+      expect(
+        resolveTopicsForPath(
+          `/api/host/pages/${operation}?url=%2Fprojects%2Fnew`,
+          defaultCompiledTopicRules,
+        ),
+      ).toEqual(["host.pages"]);
+    },
+  );
+
+  it("maps order totals onto every collection that changes their calculated value", () => {
+    const topics = resolveTopicsForPath(
+      "/api/ecommerce/orders/303302a0-4eb7-4cef-af04-74d7e8e72442/total",
+      defaultCompiledTopicRules,
+    );
+    for (const collection of [
+      "ecommerce/orders",
+      "ecommerce/orders-to-products",
+      "ecommerce/products",
+      "ecommerce/products-to-attributes",
+      "ecommerce/attribute-keys",
+      "ecommerce/attribute-keys-to-attributes",
+      "ecommerce/attributes",
+      "ecommerce/attributes-to-billing-module-currencies",
+      "billing/currencies",
+    ]) {
+      const mutationTopics = resolveTopicsForPath(
+        `/api/${collection}/303302a0-4eb7-4cef-af04-74d7e8e72442`,
+        defaultCompiledTopicRules,
+      );
+      expect(topics.some((topic) => mutationTopics.includes(topic))).toBe(true);
+    }
+    expect(topics).not.toContain("ecommerce.total");
+  });
+
   /**
    * BDD Scenario: The ecommerce checkout RPC endpoint resolves to the orders
    * topics the cart reads subscribe to (not the literal `ecommerce.checkout`).
@@ -109,6 +161,14 @@ describe("defaultCompiledTopicRules — framework action endpoints", () => {
     expect(topics).toContain("social.chats.c-1.actions");
     expect(topics).toContain("social.profiles-to-knowledge-module-sources");
     expect(topics).toContain("knowledge.sources");
+    expect(topics).toEqual(
+      expect.arrayContaining([
+        "knowledge.chunks",
+        "knowledge.sources-to-chunks",
+        "knowledge.sources-to-file-storage-module-files",
+        "social.messages-to-knowledge-module-sources",
+      ]),
+    );
     expect(topics).toContain("rbac.subjects-to-billing-module-currencies");
     expect(topics).not.toContain("social.openrouter");
   });
@@ -129,7 +189,33 @@ describe("defaultCompiledTopicRules — framework action endpoints", () => {
       expect(resolveTopicsForPath(path, defaultCompiledTopicRules)).toEqual([
         "social.profiles-to-knowledge-module-sources",
         "knowledge.sources",
+        "knowledge.chunks",
+        "knowledge.sources-to-chunks",
+        "knowledge.sources-to-file-storage-module-files",
       ]);
     }
+  });
+
+  it("invalidates attachment and index readers from scoped Source attachment changes", () => {
+    const path =
+      "/api/rbac/subjects/sub-1/social-module/profiles/requester-1/chats/chat-1/profiles/assistant-1/knowledge/sources/source-1/files";
+    const topics = resolveTopicsForPath(path, defaultCompiledTopicRules);
+    for (const read of [
+      "/api/knowledge/chunks",
+      "/api/knowledge/sources-to-chunks",
+      "/api/knowledge/sources-to-file-storage-module-files",
+    ])
+      expect(
+        topics.some((topic) =>
+          resolveTopicsForPath(read, defaultCompiledTopicRules).includes(topic),
+        ),
+      ).toBe(true);
+    expect(topics).toEqual(
+      expect.arrayContaining([
+        "knowledge.sources-to-file-storage-module-files",
+        "knowledge.chunks",
+        "knowledge.sources-to-chunks",
+      ]),
+    );
   });
 });

@@ -1,15 +1,19 @@
+import { Component as Button } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ButtonLink, defaultButtonLinkProps } from "./Component";
+import { defaultButtonLinkProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Button/Singlepage/link",
-  component: ButtonLink,
+  id: "modules-website-builder-models-button-singlepage-link",
+  title: "Modules/Website-Builder/Button/Singlepage/link",
+  component: Button,
   parameters: {
     layout: "centered",
   },
-  args: defaultButtonLinkProps,
-} satisfies Meta<typeof ButtonLink>;
+  args: { ...defaultButtonLinkProps, variant: "link" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Button>, { variant: "link" }>
+>;
 
 export default meta;
 

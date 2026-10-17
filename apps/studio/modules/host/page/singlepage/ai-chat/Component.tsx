@@ -1,23 +1,21 @@
-import { Component as HostModuleLayout } from "../../../layout/index";
+import type { IComponentProps, IAIChatPageProps } from "./interface";
+export type { IAIChatPageProps } from "./interface";
+import { Component as Layout } from "../../../layout/index";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
 
 import { Component as SocialModuleChat } from "../../../../social/chat/index";
 import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 import type { IAIChatWebsiteContent } from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
 
-export interface IAIChatPageProps {
-  variant?: string;
-  content?: IAIChatWebsiteContent;
-}
 export function Component({
   variant = "ai-chat",
   content,
-}: IAIChatPageProps = {}) {
+}: IComponentProps = {}) {
   return (
     <div data-module="host" data-model="page" data-variant={variant}>
-      <HostModuleLayout
+      <Layout
         variant="ai-chat-landing"
-        subjectAccount={<RbacModuleSubject variant="account" showTokens />}
+        subjectAccount={<RbacModuleSubject variant="me-account" showTokens />}
         footerContent={content?.footer}
       >
         <main
@@ -39,10 +37,7 @@ export function Component({
               }
             }
           >
-            <SocialModuleChat
-              variant="overview-preview-ai-chat"
-              content={content}
-            />
+            <SocialModuleChat variant="id-preview-ai-chat" content={content} />
           </WebsiteBuilderModuleWidget>
           <WebsiteBuilderModuleWidget
             variant="content-ai-chat-continue"
@@ -55,7 +50,7 @@ export function Component({
             }
           />
         </main>
-      </HostModuleLayout>
+      </Layout>
     </div>
   );
 }

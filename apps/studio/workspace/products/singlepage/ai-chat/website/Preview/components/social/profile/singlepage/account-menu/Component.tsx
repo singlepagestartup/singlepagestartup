@@ -64,8 +64,8 @@ export function Component({
   const [avatarFailed, setAvatarFailed] = useState(false);
   useEffect(() => setAvatarFailed(false), [data.avatar]);
   const balanceLabel = balance
-    ? `${(balance.free + balance.purchased).toLocaleString("en-US")} tokens`
-    : "Balance unavailable";
+    ? `${(balance.free + balance.purchased).toLocaleString("en-US", { maximumFractionDigits: 6 })} tokens`
+    : "— tokens";
   return (
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger asChild>

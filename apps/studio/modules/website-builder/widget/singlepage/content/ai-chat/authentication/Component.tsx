@@ -1,26 +1,23 @@
+import type {
+  IComponentProps,
+  IAuthenticationContent,
+  IAuthenticationContentProps,
+} from "./interface";
+export type {
+  IAuthenticationContent,
+  IAuthenticationContentProps,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../../../shared/icon";
 import type { ReactNode } from "react";
 import Markdown from "markdown-to-jsx";
-import { Component as WebsiteBuilderModuleFeature } from "../../../../../feature";
-import type IconGlyphs from "../../../../../feature/singlepage/icon/icons.json";
-import defaultContent from "./content.json";
 
-export interface IAuthenticationContent {
-  backLink: { text: string; href: string };
-  intro: { title: string; paragraphs: string[] };
-  images: { src: string; alt: string; assetId: string }[];
-  aside: { title: string; paragraphs: string[] };
-}
-export interface IAuthenticationContentProps {
-  variant?: string;
-  content?: IAuthenticationContent;
-  children?: ReactNode;
-  media?: "cover" | "stack";
-  asideIcon?: keyof typeof IconGlyphs;
-}
+import type IconGlyphs from "../../../../../../shared/icon/singlepage/phosphor/icons.json";
+import defaultContent from "./content.json";
 
 function Paragraphs({ paragraphs }: { paragraphs: string[] }) {
   return (
-    <div className="space-y-3 text-sm leading-6 text-sps-muted [&_a]:font-medium [&_a]:text-sps-graphite [&_a]:underline [&_a]:underline-offset-4">
+    <div className="space-y-3 text-sm leading-6 text-muted-foreground [&_a]:font-medium [&_a]:text-foreground [&_a]:underline [&_a]:underline-offset-4">
       {paragraphs.map((paragraph, index) => (
         <div key={index}>
           <Markdown options={{ disableParsingRawHTML: true }}>
@@ -38,7 +35,7 @@ export function Component({
   children,
   media = "cover",
   asideIcon = "question",
-}: IAuthenticationContentProps = {}) {
+}: IComponentProps = {}) {
   return (
     <main
       data-module="website-builder"
@@ -46,19 +43,12 @@ export function Component({
       data-variant={variant}
       className="@container mx-auto w-full max-w-6xl px-5 py-7 @3xl:px-8 @3xl:py-10"
     >
-      <a
-        href={content.backLink.href}
-        className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-sps-muted hover:text-sps-graphite focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sps-graphite"
-      >
-        <WebsiteBuilderModuleFeature variant="icon" name="arrow-left" />
-        {content.backLink.text}
-      </a>
       <div
         className={`grid min-w-0 items-stretch gap-8 @[1000px]:gap-12 ${media === "stack" ? "@[760px]:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]" : "@[760px]:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]"}`}
       >
         <div className="min-w-0">
           <div className="mb-8 max-w-2xl">
-            <div className="mb-4 h-1 w-10 rounded-full bg-sps-green" />
+            <div className="mb-4 h-1 w-10 rounded-full bg-primary text-primary-foreground" />
             <h1 className="text-3xl font-semibold leading-tight tracking-tight @[640px]:text-4xl">
               {content.intro.title}
             </h1>
@@ -93,14 +83,11 @@ export function Component({
               />
               {index === content.images.length - 1 && (
                 <section
-                  className={`relative z-10 mx-4 rounded-2xl border border-sps-line bg-sps-white p-5 shadow-lg shadow-black/5 @[640px]:mx-5 @[640px]:p-6 ${media === "cover" ? "my-4 flex-1 @[640px]:my-5" : "-mt-16"}`}
+                  className={`relative z-10 mx-4 rounded-2xl border border-border bg-card p-5 shadow-lg shadow-black/5 @[640px]:mx-5 @[640px]:p-6 ${media === "cover" ? "my-4 flex-1 @[640px]:my-5" : "-mt-16"}`}
                 >
                   <h2 className="flex items-center gap-3 text-xl font-semibold">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sps-grey">
-                      <WebsiteBuilderModuleFeature
-                        variant="icon"
-                        name={asideIcon}
-                      />
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted">
+                      <SharedIcon variant="phosphor" name={asideIcon} />
                     </span>
                     {content.aside.title}
                   </h2>

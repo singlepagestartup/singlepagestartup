@@ -1,15 +1,19 @@
+import { Component as Profile } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ProfileByline, defaultProfileBylineProps } from "./Component";
+import { defaultProfileBylineProps } from "./Component";
 
 const meta = {
-  title: "Modules/Social/Models/Profile/Singlepage/byline",
-  component: ProfileByline,
+  id: "modules-social-models-profile-singlepage-byline",
+  title: "Modules/Social/Profile/Singlepage/byline",
+  component: Profile,
   parameters: {
     layout: "centered",
   },
-  args: defaultProfileBylineProps,
-} satisfies Meta<typeof ProfileByline>;
+  args: { ...defaultProfileBylineProps, variant: "byline" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Profile>, { variant: "byline" }>
+>;
 
 export default meta;
 

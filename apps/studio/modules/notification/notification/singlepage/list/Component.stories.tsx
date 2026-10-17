@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as NotificationModuleNotification } from "../../index";
+import { Component as Notification } from "../../index";
 const meta = {
-  title: "Modules/Notification/Models/Notification/Singlepage/list",
-  component: NotificationModuleNotification,
+  id: "modules-notification-models-notification-singlepage-list",
+  title: "Modules/Notification/Notification/Singlepage/list",
+  component: Notification,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof NotificationModuleNotification>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Notification>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

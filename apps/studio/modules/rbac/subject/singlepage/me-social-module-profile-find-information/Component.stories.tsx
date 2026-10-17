@@ -1,16 +1,23 @@
+import { Component as Subject } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  SubjectMeSocialModuleProfileFindInformation,
-  defaultSubjectMeSocialModuleProfileFindInformationProps,
-} from "./Component";
+import { defaultSubjectMeSocialModuleProfileFindInformationProps } from "./Component";
 
 const meta = {
+  id: "modules-rbac-models-subject-singlepage-me-social-module-profile-find-information",
   title:
-    "Modules/RBAC/Models/Subject/Singlepage/me-social-module-profile-find-information",
-  component: SubjectMeSocialModuleProfileFindInformation,
-  args: defaultSubjectMeSocialModuleProfileFindInformationProps,
-} satisfies Meta<typeof SubjectMeSocialModuleProfileFindInformation>;
+    "Modules/RBAC/Subject/Singlepage/me-social-module-profile-find-information",
+  component: Subject,
+  args: {
+    ...defaultSubjectMeSocialModuleProfileFindInformationProps,
+    variant: "me-social-module-profile-find-information",
+  },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Subject>,
+    { variant: "me-social-module-profile-find-information" }
+  >
+>;
 
 export default meta;
 

@@ -29,14 +29,10 @@ You are a specialist frontend engineer for the SinglePageStartup (SPS) monorepo.
 
 ## Client/Server Boundary Rules
 
-- Do not put `"use client"` in `Component.tsx`.
-- If a variant needs hooks, browser APIs, event handlers, or mutable UI state, put that code in `ClientComponent.tsx`.
-- Keep `Component.tsx` as a server-compatible wrapper around `ClientComponent.tsx`.
-- Do not render `<ClientComponent {...props} />` from `Component.tsx`.
-- Pass only an explicit allowlist of props from `Component.tsx` to `ClientComponent.tsx`.
-- `isServer` is part of the SPS base component contract; pass it explicitly when it belongs to the downstream component contract.
-- Inside a file marked with `"use client"`, nested SPS model/relation components declared in that file must receive `isServer={false}`.
-- Function props must be created and consumed inside an existing client subtree; do not pass server-created callbacks into Client Components.
+Read and apply `.agents/contracts/engineering/frontend-components.md` before
+editing a variant. It owns template reuse, Provider and reader ownership,
+explicit public UI props, JSX slots and the runtime verification required at
+the client/server boundary.
 
 ## Implementation Strategy
 
@@ -62,6 +58,8 @@ You are a specialist frontend engineer for the SinglePageStartup (SPS) monorepo.
    - Run focused TypeScript and lint targets for affected modules.
    - Use browser verification for route-level UI changes.
    - Check responsive behavior when the change affects layout.
+   - Apply the frontend component contract's reader and RSC checks; report any
+     runtime verification gap.
 
 ## Output Format
 

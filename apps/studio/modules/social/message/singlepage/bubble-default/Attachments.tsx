@@ -1,7 +1,8 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -29,7 +30,7 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
 export interface SocialMessageAttachment {
@@ -54,7 +55,7 @@ export function SocialMessageAttachments({
         );
         const content = (
           <>
-            <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-[var(--color-sps-grey)]">
+            <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted">
               {image ? (
                 <img
                   src={attachment.url}
@@ -66,14 +67,14 @@ export function SocialMessageAttachments({
               )}
             </span>
             <span className="min-w-0 flex-1 text-left">
-              <span className="block break-all font-medium text-[var(--color-sps-graphite)]">
+              <span className="block break-all font-medium text-foreground">
                 {attachment.name}
               </span>
               <span className={kit.muted}>{attachment.size}</span>
             </span>
           </>
         );
-        const classes = `flex min-w-0 items-center gap-3 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-3 text-sm ${kit.focus}`;
+        const classes = `flex min-w-0 items-center gap-3 rounded-xl border border-border bg-card p-3 text-sm ${kit.focus}`;
         return image && onPreview ? (
           <button
             type="button"
@@ -104,11 +105,11 @@ export function SocialMessageAttachments({
   );
 }
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  muted: "text-[var(--color-sps-muted)]",
+  muted: "text-muted-foreground",
   focus: focus,
 };
 const FileText = createIcon("file-text");

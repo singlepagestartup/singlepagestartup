@@ -22,14 +22,17 @@ export function Component(props: IComponentPropsExtended) {
       }}
     >
       {({ data }) => {
-        return data?.map((entity, index) => {
+        return data?.map((entity) => {
           return (
             <WebsiteBuilderModuleWidget
-              key={index}
+              key={entity.id}
               isServer={props.isServer}
               data={entity}
               variant={entity.variant as any}
               language={props.language}
+              {...(entity.variant === "navbar-ai-chat"
+                ? { helpSelected: props.url === "/ai-chat/help" }
+                : {})}
             >
               <Widget
                 {...props}

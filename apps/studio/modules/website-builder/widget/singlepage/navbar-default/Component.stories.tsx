@@ -1,15 +1,19 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { NavbarDefault, defaultNavbarDefaultProps } from "./Component";
+import { defaultNavbarDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Widget/Singlepage/navbar-default",
-  component: NavbarDefault,
+  id: "modules-website-builder-models-widget-singlepage-navbar-default",
+  title: "Modules/Website-Builder/Widget/Singlepage/navbar-default",
+  component: Widget,
   parameters: {
     layout: "fullscreen",
   },
-  args: defaultNavbarDefaultProps,
-} satisfies Meta<typeof NavbarDefault>;
+  args: { ...defaultNavbarDefaultProps, variant: "navbar-default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Widget>, { variant: "navbar-default" }>
+>;
 
 export default meta;
 

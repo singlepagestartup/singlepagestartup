@@ -17,6 +17,7 @@ export function Component(props: IComponentPropsExtended) {
           variant="find"
           apiProps={{
             params: {
+              orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
               filters: {
                 and: [
                   {
@@ -33,14 +34,15 @@ export function Component(props: IComponentPropsExtended) {
             return data?.map((entity, index) => {
               return (
                 <StepsToInputs
-                  key={index}
+                  key={entity.id}
                   isServer={false}
                   variant={entity.variant as any}
                   data={entity}
+                  dataSource="props"
                   form={props.form}
                   disabled={props.disabled}
                   language={props.language}
-                  path={`${props.path}inputs.[${index}].`}
+                  path={`${props.path}inputs.${entity.inputId}.`}
                 />
               );
             });

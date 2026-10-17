@@ -1,15 +1,19 @@
+import { Component as Product } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ProductGallery, defaultProductGalleryProps } from "./Component";
+import { defaultProductGalleryProps } from "./Component";
 
 const meta = {
-  title: "Modules/Ecommerce/Models/Product/Singlepage/gallery",
-  component: ProductGallery,
+  id: "modules-ecommerce-models-product-singlepage-gallery",
+  title: "Modules/Ecommerce/Product/Singlepage/gallery",
+  component: Product,
   parameters: {
     layout: "fullscreen",
   },
-  args: defaultProductGalleryProps,
-} satisfies Meta<typeof ProductGallery>;
+  args: { ...defaultProductGalleryProps, variant: "gallery" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Product>, { variant: "gallery" }>
+>;
 
 export default meta;
 

@@ -1,8 +1,16 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  TagFindButtonProps,
+  TagFindButtonItem,
+} from "./interface";
+export type { TagFindButtonProps, TagFindButtonItem } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
-import { Component as BlogModuleTag } from "../../../tag/index";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
+import { Component as Tag } from "../../../tag/index";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -30,19 +38,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-interface TagFindButtonItem {
-  label: string;
-  href?: string;
-}
-export interface TagFindButtonProps {
-  variant?: string;
-  title: string;
-  tags: TagFindButtonItem[];
-}
-export function TagFindButton(props?: Partial<TagFindButtonProps>) {
+export function TagFindButton(props?: IComponentProps) {
   const { title, tags } = { ...defaultTagFindButtonProps, ...props };
   return (
     <div
@@ -55,16 +54,16 @@ export function TagFindButton(props?: Partial<TagFindButtonProps>) {
       data-variant={props?.variant ?? "tag-find-button"}
     >
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-6">
+        <div className="rounded-2xl border border-border bg-card p-6">
           <div className="mb-3 flex items-center gap-2">
-            <Tag className="size-5 text-[var(--color-sps-muted)]" />
-            <span className="text-lg font-semibold text-[var(--color-sps-graphite)]">
+            <TagIcon className="size-5 text-muted-foreground" />
+            <span className="text-lg font-semibold text-foreground">
               {title}
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
-              <BlogModuleTag
+              <Tag
                 variant="button-default"
                 key={tag.label}
                 label={tag.label}
@@ -77,7 +76,7 @@ export function TagFindButton(props?: Partial<TagFindButtonProps>) {
     </div>
   );
 }
-const Tag = createIcon("tag");
+const TagIcon = createIcon("tag");
 export const defaultTagFindButtonProps: TagFindButtonProps = {
   title: "Popular tags",
   tags: [

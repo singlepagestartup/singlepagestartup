@@ -1,6 +1,6 @@
 {
   "id": "rbac.subject.admin-v2-table",
-  "title": "rbac subject / admin-v2-table",
+  "title": "admin-v2-table",
   "description": "Local records for Studio component design.",
   "layer": "singlepage",
   "state": "draft",

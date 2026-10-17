@@ -1,3 +1,24 @@
+import { Service as CrmFormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
+import { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
+import { Service as CrmStepService } from "@sps/crm/models/step/backend/app/api/src/lib/service";
+import { Repository as CrmStepRepository } from "@sps/crm/models/step/backend/app/api/src/lib/repository";
+import { Configuration as CrmStepConfiguration } from "@sps/crm/models/step/backend/app/api/src/lib/configuration";
+import { Service as CrmInputService } from "@sps/crm/models/input/backend/app/api/src/lib/service";
+import { Repository as CrmInputRepository } from "@sps/crm/models/input/backend/app/api/src/lib/repository";
+import { Configuration as CrmInputConfiguration } from "@sps/crm/models/input/backend/app/api/src/lib/configuration";
+import { Service as CrmOptionService } from "@sps/crm/models/option/backend/app/api/src/lib/service";
+import { Repository as CrmOptionRepository } from "@sps/crm/models/option/backend/app/api/src/lib/repository";
+import { Configuration as CrmOptionConfiguration } from "@sps/crm/models/option/backend/app/api/src/lib/configuration";
+import { Service as CrmFormsToRequestsService } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/service";
+import { Service as CrmFormsToStepsService } from "@sps/crm/relations/forms-to-steps/backend/app/api/src/lib/service";
+import { Repository as CrmFormsToStepsRepository } from "@sps/crm/relations/forms-to-steps/backend/app/api/src/lib/repository";
+import { Configuration as CrmFormsToStepsConfiguration } from "@sps/crm/relations/forms-to-steps/backend/app/api/src/lib/configuration";
+import { Service as CrmStepsToInputsService } from "@sps/crm/relations/steps-to-inputs/backend/app/api/src/lib/service";
+import { Repository as CrmStepsToInputsRepository } from "@sps/crm/relations/steps-to-inputs/backend/app/api/src/lib/repository";
+import { Configuration as CrmStepsToInputsConfiguration } from "@sps/crm/relations/steps-to-inputs/backend/app/api/src/lib/configuration";
+import { Service as CrmInputsToOptionsService } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/service";
+import { Repository as CrmInputsToOptionsRepository } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/repository";
+import { Configuration as CrmInputsToOptionsConfiguration } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/configuration";
 import { Container, ContainerModule, interfaces } from "inversify";
 import {
   CRUDService,
@@ -29,6 +50,10 @@ import { Repository as SubjectsToBillingModuleCurrenciesRepository } from "@sps/
 import { Configuration as SubjectsToBillingModuleCurrenciesConfiguration } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/configuration";
 import { Service as BillRouteService } from "./service/singlepage/billing/route";
 import { Service as EcommerceOrderProceedService } from "./service/singlepage/ecommerce/order/proceed";
+import type {
+  ICheckout as IEcommerceProductCheckout,
+  IExecuteProps as IEcommerceProductCheckoutProps,
+} from "./service/singlepage/ecommerce/product/checkout";
 import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
 import { Repository as IdentityRepository } from "@sps/rbac/models/identity/backend/app/api/src/lib/repository";
 import { Configuration as IdentityConfiguration } from "@sps/rbac/models/identity/backend/app/api/src/lib/configuration";
@@ -154,6 +179,7 @@ import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/
 import { Repository as NotificationTopicRepository } from "@sps/notification/models/topic/backend/app/api/src/lib/repository";
 import { Configuration as NotificationTopicConfiguration } from "@sps/notification/models/topic/backend/app/api/src/lib/configuration";
 import { Repository as NotificationNotificationRepository } from "@sps/notification/models/notification/backend/app/api/src/lib/repository";
+import { Service as NotificationNotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
 import { Configuration as NotificationNotificationConfiguration } from "@sps/notification/models/notification/backend/app/api/src/lib/configuration";
 import { Repository as NotificationTemplateRepository } from "@sps/notification/models/template/backend/app/api/src/lib/repository";
 import { Configuration as NotificationTemplateConfiguration } from "@sps/notification/models/template/backend/app/api/src/lib/configuration";
@@ -492,7 +518,7 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         topic: new CRUDService<any>(
           new NotificationTopicRepository(new NotificationTopicConfiguration()),
         ),
-        notification: new CRUDService<any>(
+        notification: new NotificationNotificationService(
           new NotificationNotificationRepository(
             new NotificationNotificationConfiguration(),
           ),
@@ -518,24 +544,48 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IFileStorageModule>(SubjectDI.IFileStorageModule)
     .toDynamicValue(() => {
       return {
-        file: new CRUDService<any>(
+        file: new FileStorageFileService(
           new FileStorageFileRepository(new FileStorageFileConfiguration()),
         ),
       };
     })
     .inSingletonScope();
   bind<ICrmModule>(SubjectDI.ICrmModule)
-    .toDynamicValue(() => {
+    .toDynamicValue((context) => {
+      const formsToRequests = new CrmFormsToRequestsService(
+        new CrmFormsToRequestsRepository(new CrmFormsToRequestsConfiguration()),
+      );
+      const request = new CrmRequestService(
+        new CrmRequestRepository(new CrmRequestConfiguration()),
+      );
+      request.configureSubmissions({ formsToRequests });
       return {
-        form: new CRUDService<any>(
+        request,
+        formsToRequests,
+        form: new CrmFormService(
           new CrmFormRepository(new CrmFormConfiguration()),
+          context.container.get<INotificationModule>(
+            SubjectDI.INotificationModule,
+          ),
         ),
-        request: new CRUDService<any>(
-          new CrmRequestRepository(new CrmRequestConfiguration()),
+        step: new CrmStepService(
+          new CrmStepRepository(new CrmStepConfiguration()),
         ),
-        formsToRequests: new CRUDService<any>(
-          new CrmFormsToRequestsRepository(
-            new CrmFormsToRequestsConfiguration(),
+        input: new CrmInputService(
+          new CrmInputRepository(new CrmInputConfiguration()),
+        ),
+        option: new CrmOptionService(
+          new CrmOptionRepository(new CrmOptionConfiguration()),
+        ),
+        formsToSteps: new CrmFormsToStepsService(
+          new CrmFormsToStepsRepository(new CrmFormsToStepsConfiguration()),
+        ),
+        stepsToInputs: new CrmStepsToInputsService(
+          new CrmStepsToInputsRepository(new CrmStepsToInputsConfiguration()),
+        ),
+        inputsToOptions: new CrmInputsToOptionsService(
+          new CrmInputsToOptionsRepository(
+            new CrmInputsToOptionsConfiguration(),
           ),
         ),
       };
@@ -661,6 +711,14 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<EcommerceOrderProceedService>(SubjectDI.IEcommerceOrderProceedService)
     .to(EcommerceOrderProceedService)
     .inSingletonScope();
+  bind<IEcommerceProductCheckout>(
+    SubjectDI.IEcommerceProductCheckout,
+  ).toFactory(
+    (context) => (props: IEcommerceProductCheckoutProps) =>
+      context.container
+        .get<Service>(DI.IService)
+        .ecommerceProductCheckout(props),
+  );
 });
 
 export async function bootstrap() {

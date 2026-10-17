@@ -1,19 +1,25 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  ContentFeatureFindCard,
-  defaultContentFeatureFindCardProps,
-} from "./Component";
+import { defaultContentFeatureFindCardProps } from "./Component";
 
 const meta = {
-  title:
-    "Modules/Website Builder/Models/Widget/Singlepage/content-feature-find-card",
-  component: ContentFeatureFindCard,
+  id: "modules-website-builder-models-widget-singlepage-content-feature-find-card",
+  title: "Modules/Website-Builder/Widget/Singlepage/content-feature-find-card",
+  component: Widget,
   parameters: {
     layout: "fullscreen",
   },
-  args: defaultContentFeatureFindCardProps,
-} satisfies Meta<typeof ContentFeatureFindCard>;
+  args: {
+    ...defaultContentFeatureFindCardProps,
+    variant: "content-feature-find-card",
+  },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Widget>,
+    { variant: "content-feature-find-card" }
+  >
+>;
 
 export default meta;
 

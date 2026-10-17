@@ -1,12 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as HostModuleLayout } from "../../index";
+import { Component as Layout } from "../../index";
 
 const meta = {
-  title: "Modules/Host/Models/Layout/Singlepage/admin-v2-table",
-  component: HostModuleLayout,
+  id: "modules-host-models-layout-singlepage-admin-v2-table",
+  title: "Modules/Host/Layout/Singlepage/admin-v2-table",
+  component: Layout,
   argTypes: { empty: { control: "boolean" } },
   args: { variant: "admin-v2-table", empty: false },
-} satisfies Meta<typeof HostModuleLayout>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Layout>, { variant: "admin-v2-table" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

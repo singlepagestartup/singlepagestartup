@@ -1,3 +1,4 @@
+import { Component as SharedIcon } from "../../../apps/studio/modules/shared/icon";
 import { expect, test } from "bun:test";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -153,7 +154,7 @@ test("every Studio variant identifies its own DOM roots, including empty states 
             if (ts.isJsxElement(node)) node.children.forEach(inspect);
           } else if (componentFunction(tree, tag)) {
             inspectFunction(file, tag);
-          } else if (!tag.startsWith("SocialModule")) {
+          } else {
             // Same-model render helpers forward the selected variant without an extra DOM wrapper.
             const imported = tree.statements.find(
               (statement) =>
@@ -172,6 +173,25 @@ test("every Studio variant identifies its own DOM roots, including empty states 
               path.dirname(file),
               imported.moduleSpecifier.text,
             );
+            const entry = target.replace(/\/index$/, "");
+            if (
+              /\/modules\/[^/]+\/[^/]+$/.test(entry) &&
+              existsSync(path.join(entry, "variants.ts"))
+            ) {
+              // Public model composition is a boundary; its registered renderers
+              // are inspected separately. The caller must select its variant.
+              if (
+                !opening.attributes.properties.some(
+                  (attribute) =>
+                    ts.isJsxAttribute(attribute) &&
+                    attribute.name.getText(tree) === "variant",
+                )
+              )
+                violations.push(
+                  `${key}: public model root needs an explicit variant <${tag}>`,
+                );
+              return;
+            }
             const helperFile = target.endsWith("/HostRecords/index")
               ? path.join(
                   path.dirname(target),
@@ -231,6 +251,16 @@ for (const entry of files(modules).filter((file) =>
       { variant: "list", count: 2 },
       { variant: "list", empty: true },
       { variant: "button-default" },
+      { variant: "phosphor", name: "user" },
+      { variant: "custom", name: "star-fill" },
+      ...(module === "shared" && model === "toast"
+        ? [
+            { variant: "default", type: "success" },
+            { variant: "default", type: "error" },
+            { variant: "default", type: "loading" },
+            { variant: "icons" },
+          ]
+        : []),
     ].filter((props) => props.variant in variants);
     expect(states.length).toBeGreaterThan(0);
     for (const props of states)
@@ -245,8 +275,8 @@ for (const entry of files(modules).filter((file) =>
 
 test("delegated Subject forms and startup overrides preserve the selected variant", () => {
   for (const variant of [
-    "authentication-select-method-ai-chat",
-    "authentication-select-method-default",
+    "me-authentication-select-method-ai-chat",
+    "me-authentication-select-method-default",
   ] as const)
     expectRoot(
       renderToStaticMarkup(<RbacModuleSubject variant={variant} />),
@@ -305,11 +335,11 @@ test("controls and glyphs identify the native element without a layout wrapper",
     </WebsiteBuilderModuleButton>,
   );
   const glyph = renderToStaticMarkup(
-    <WebsiteBuilderModuleFeature variant="icon" name="user" />,
+    <SharedIcon variant="phosphor" name="user" />,
   );
   expect(button).toStartWith("<button");
   expect(glyph).toStartWith("<svg");
   expectRoot(button, "website-builder", "button", "control");
-  expectRoot(glyph, "website-builder", "feature", "icon");
+  expectRoot(glyph, "shared", "icon", "phosphor");
   expect(button).not.toContain(' variant="');
 });

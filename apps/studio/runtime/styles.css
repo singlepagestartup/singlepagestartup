@@ -1,5 +1,7 @@
 @import "tailwindcss" source(none);
-@import "./sps.css";
+@import "./theme.css";
+
+@source "../../../libs/shared/ui/adapter/src/lib/toast/**/*.{ts,tsx}";
 
 @source "../modules/**/*.{js,ts,jsx,tsx,html}";
 @source "../workspace/**/*.{js,ts,jsx,tsx,html}";

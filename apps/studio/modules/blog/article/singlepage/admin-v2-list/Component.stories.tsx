@@ -1,15 +1,17 @@
+import { Component as Article } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { BlogArticleAdminV2List } from "./Component";
 
 const meta = {
   id: "modules-blog-models-article-singlepage-admin-v2-list",
-  title: "Modules/Blog/Models/Article/Singlepage/admin-v2-list",
-  component: BlogArticleAdminV2List,
+  title: "Modules/Blog/Article/Singlepage/admin-v2-list",
+  component: Article,
   parameters: {
     layout: "centered",
   },
-} satisfies Meta<typeof BlogArticleAdminV2List>;
+  args: { variant: "admin-v2-list" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Article>, { variant: "admin-v2-list" }>
+>;
 
 export default meta;
 

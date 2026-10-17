@@ -8,6 +8,7 @@ import { Handler as Find } from "./find";
 import { Handler as Available } from "./available";
 import { Handler as Link } from "./link";
 import { Handler as Unlink } from "./unlink";
+import { Handler as Update } from "./update";
 
 function context(
   props: {
@@ -86,6 +87,56 @@ describe("Profile skill management", () => {
     expect(c.json).toHaveBeenCalledWith({
       data: [{ id: "skill-2", title: "Beta" }],
     });
+  });
+
+  it("keeps private document professions out of the shared catalogue and rejects cross-profile links", async () => {
+    const api = service();
+    const skill = {
+      id: "private-skill",
+      title: "Private brief",
+      slug: "ai-chat-account-manager-ce2b37c1-3494-4f18-8de6-f51fbf7de384",
+    };
+    api.socialModule.skill.find.mockResolvedValue([skill]);
+    const available = context();
+    await new Available(api).execute(available);
+    expect(available.json).toHaveBeenCalledWith({ data: [] });
+    api.socialModule.skill.findById.mockResolvedValue(skill);
+    await expect(new Link(api).execute(context())).rejects.toThrow(
+      "belongs to another profile",
+    );
+    expect(api.socialModule.profilesToSkills.create).not.toHaveBeenCalled();
+  });
+
+  it("allows editing private instructions without renaming the profession command", async () => {
+    const api = service();
+    const skill = {
+      id: "skill-2",
+      slug: "ai-chat-account-manager-ce2b37c1-3494-4f18-8de6-f51fbf7de384",
+      title: "Brief",
+      description: "Initial instructions",
+    };
+    api.socialModule.skill.findById.mockResolvedValue(skill);
+    api.socialModule.skill.update = jest.fn(async ({ data }) => ({
+      ...skill,
+      ...data,
+    }));
+    const c = context();
+    c.req.header = () => "application/json";
+    c.req.json = async () => ({
+      data: { ...skill, description: "Owner's instructions" },
+    });
+    await new Update(api).execute(c, undefined);
+    expect(c.json).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        description: "Owner's instructions",
+        slug: skill.slug,
+      }),
+    });
+    c.req.json = async () => ({ data: { ...skill, slug: "shared-command" } });
+    await expect(new Update(api).execute(c, undefined)).rejects.toThrow(
+      "cannot be renamed",
+    );
+    expect(api.socialModule.skill.update).toHaveBeenCalledTimes(1);
   });
 
   /**

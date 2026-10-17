@@ -1,0 +1,9 @@
+{
+  "id": "d963e2ad-e1d0-4bb2-bf9e-894e2a97dc7e",
+  "createdAt": "2026-10-13T07:42:06.801Z",
+  "updatedAt": "2026-10-13T07:42:06.801Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "DELETE",
+  "path": "/api/rbac/subjects/973e0fde-4786-413e-bc8f-2eecf4488e9d/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/cd7d2753-b332-47e6-b2eb-1f7d2c14aace/knowledge/sources/[knowledge.sources.id]"
+}

@@ -11,13 +11,15 @@ import { Component as Server } from "./server";
 import { Component as Client } from "./client";
 import { Component as Skeleton } from "./Skeleton";
 
-export function Component<M extends { id: string }, V>(
-  props: IComponentProps<M, V> & {
+export function Component<
+  M extends { id: string },
+  V,
+  CP extends IComponentProps<M, V>,
+>(
+  props: CP & {
     Provider: typeof ParentProvider;
     Skeleton?: ReactNode;
-    Component: React.ComponentType<
-      IComponentPropsExtended<M, V, IComponentProps<M, V>>
-    >;
+    Component: React.ComponentType<IComponentPropsExtended<M, V, CP>>;
     clientApi: ReturnType<typeof clientFactory<M>>;
     serverApi: ReturnType<typeof serverFactory<M>>;
     children?: ReactNode;

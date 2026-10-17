@@ -1,10 +1,15 @@
+import { Component as SharedIcon } from "../../../../shared/icon";
+
+import type {
+  IComponentProps,
+  ButtonPrimaryProps,
+  ModuleIcon,
+} from "./interface";
+export type { ButtonPrimaryProps, ModuleIcon } from "./interface";
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import IconGlyphs from "../../../feature/singlepage/icon/icons.json";
-type ModuleIcon = ReturnType<typeof createIcon>;
-interface IModuleIconProps extends SVGProps<SVGSVGElement> {
-  size?: number;
-}
+import IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
+
 type IconName = keyof typeof IconGlyphs;
 function createIcon(name: IconName) {
   const Component = forwardRef<SVGSVGElement, IModuleIconProps>(
@@ -34,35 +39,18 @@ function Icon({
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  const geometry = IconGlyphs[name]
-    ?.replace(/^\s*<svg\b[^>]*>/, "")
-    .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
   return (
-    <svg
-      className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
-      width={size}
-      height={size}
-      viewBox="0 0 256 256"
-      fill="currentColor"
-      data-icon-family="phosphor"
-      data-icon-name={name}
-      data-icon-weight="regular"
-      aria-hidden="true"
-      focusable="false"
-      {...svgProps}
-      dangerouslySetInnerHTML={{ __html: geometry }}
+    <SharedIcon
+      variant="phosphor"
+      name={name}
+      size={size}
+      className={className}
+      svgProps={svgProps}
     />
   );
 }
-export interface ButtonPrimaryProps {
-  variant?: string;
-  label: string;
-  href: string;
-  icon?: ModuleIcon;
-  target?: "_self" | "_top";
-}
-export function ButtonPrimary(props?: Partial<ButtonPrimaryProps>) {
+
+export function ButtonPrimary(props?: IComponentProps) {
   const label = props?.label ?? defaultButtonPrimaryProps.label;
   const href = props?.href ?? defaultButtonPrimaryProps.href;
   const Icon = props?.icon ?? ArrowRight;
@@ -84,14 +72,16 @@ export function ButtonPrimary(props?: Partial<ButtonPrimaryProps>) {
 }
 const ArrowRight = createIcon("arrow-right");
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  button: `${buttonBase} bg-[var(--color-sps-green)] text-[var(--color-sps-graphite)] enabled:hover:brightness-95 ${focus}`,
+  button: `${buttonBase} bg-primary text-primary-foreground enabled:hover:brightness-95 ${focus}`,
 };
 export const defaultButtonPrimaryProps: ButtonPrimaryProps = {
   label: "Open admin panel",
   href: "/admin",
   icon: ArrowRight,
 };
+
+import type { IModuleIconProps } from "./interface";

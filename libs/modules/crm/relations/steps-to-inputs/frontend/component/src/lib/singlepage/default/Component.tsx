@@ -32,10 +32,11 @@ export function Component(props: IComponentPropsExtended) {
           return data?.map((entity, index) => {
             return (
               <Input
-                key={index}
+                key={entity.id}
                 isServer={props.isServer}
                 variant={entity.variant as any}
                 data={entity}
+                dataSource="props"
                 form={props.form}
                 disabled={props.disabled}
                 language={props.language}

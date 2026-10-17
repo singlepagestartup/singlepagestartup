@@ -1,15 +1,20 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { WebsiteBuilderAdminV2Navigation } from "./Component";
 
 const meta = {
   id: "modules-website-builder-models-widget-singlepage-admin-v2-navigation",
-  title: "Modules/Website Builder/Models/Widget/Singlepage/admin-v2-navigation",
-  component: WebsiteBuilderAdminV2Navigation,
+  title: "Modules/Website-Builder/Widget/Singlepage/admin-v2-navigation",
+  component: Widget,
   parameters: {
     layout: "centered",
   },
-} satisfies Meta<typeof WebsiteBuilderAdminV2Navigation>;
+  args: { variant: "admin-v2-navigation" },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Widget>,
+    { variant: "admin-v2-navigation" }
+  >
+>;
 
 export default meta;
 

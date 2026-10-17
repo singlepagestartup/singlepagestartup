@@ -1,15 +1,19 @@
+import { Component as Step } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { CrmStepDefault, defaultCrmStepDefaultProps } from "./Component";
+import { defaultCrmStepDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/CRM/Models/Step/Singlepage/default",
-  component: CrmStepDefault,
+  id: "modules-crm-models-step-singlepage-default",
+  title: "Modules/CRM/Step/Singlepage/default",
+  component: Step,
   parameters: {
     layout: "padded",
   },
-  args: defaultCrmStepDefaultProps,
-} satisfies Meta<typeof CrmStepDefault>;
+  args: { ...defaultCrmStepDefaultProps, variant: "default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Step>, { variant: "default" }>
+>;
 
 export default meta;
 

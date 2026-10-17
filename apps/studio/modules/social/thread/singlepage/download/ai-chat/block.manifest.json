@@ -1,0 +1,43 @@
+{
+  "id": "social.thread.download-ai-chat",
+  "title": "download-ai-chat",
+  "description": "Download the identified Thread document with its Knowledge Source sections.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "thread",
+    "variant": "download-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "threadId",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "fileName",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "sources",
+      "type": "object",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "social.thread",
+    "pageName": "social",
+    "variantName": "download-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

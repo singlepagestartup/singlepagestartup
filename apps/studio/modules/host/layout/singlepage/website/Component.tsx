@@ -1,4 +1,6 @@
 "use client";
+import type { IComponentProps, IWebsiteLayoutProps } from "./interface";
+export type { IWebsiteLayoutProps } from "./interface";
 
 import { useCallback, useState, type ReactNode } from "react";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
@@ -10,17 +12,6 @@ import {
   type CartItem,
 } from "../../../../ecommerce/cart/shared";
 
-export interface IWebsiteLayoutProps {
-  variant?: string;
-  children?: ReactNode;
-  activeHref?: string;
-  footer?: "default" | "compact";
-  signedIn?: boolean;
-  subjectAccount?: ReactNode;
-  cartButton?: ReactNode;
-  cartDrawer?: ReactNode;
-  cartCount?: number;
-}
 export function Component({
   variant = "website",
   children,
@@ -31,7 +22,7 @@ export function Component({
   cartButton,
   cartDrawer,
   cartCount,
-}: IWebsiteLayoutProps = {}) {
+}: IComponentProps = {}) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<CartItem[]>(() =>
     defaultCartItems.map((item) => ({ ...item })),
@@ -71,7 +62,7 @@ export function Component({
   return (
     <div
       data-ds-block="host.layout.website"
-      className="flex min-h-screen min-w-0 flex-col bg-[var(--color-sps-grey)] text-[var(--color-sps-graphite)] antialiased"
+      className="flex min-h-screen min-w-0 flex-col bg-muted text-foreground antialiased"
       data-module="host"
       data-model="layout"
       data-variant={variant}
@@ -81,7 +72,7 @@ export function Component({
         activeHref={activeHref}
         subjectAccount={
           subjectAccount === undefined ? (
-            <RbacModuleSubject variant="account" signedIn={signedIn} />
+            <RbacModuleSubject variant="me-account" signedIn={signedIn} />
           ) : (
             subjectAccount
           )

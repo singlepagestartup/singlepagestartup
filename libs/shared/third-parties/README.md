@@ -28,6 +28,27 @@ src/
 - Webhook setup
 - User interactions
 
+### OpenRouter
+
+`OpenRouter.generate` handles chat completions and function-tool calls. It sends
+the selected model directly without adding a routing plugin. Billing records
+the model returned by OpenRouter and its reported cost.
+
+`OpenRouter.decide` sends typed Choice, Noul, or Score questions to
+`https://openrouter.ai/api/alpha/decisions`, using `OPEN_ROUTER_API_KEY`. It
+validates answers against the supplied questions and normalizes Decisions
+`input_tokens` and `output_tokens` into the shared billing format. It returns
+structured answers or an error, retaining reported usage even when answer
+validation fails. Domain routing and profile permissions live in RBAC services.
+
+`new OpenRouter({ sessionId })` supplies a session for Decisions and chat
+completions. `generate({ sessionId })` can override it for one completion;
+retries preserve it. Decisions use `x-session-id`, and chat requests use
+`session_id`. Completion requests have a 120-second network deadline, with an
+optional `timeoutMs` override. RBAC summaries use 60 seconds and fall back to
+original history on failure. Sessions help provider routing and log grouping;
+actual cache usage comes from provider usage fields.
+
 ## Usage
 
 ```typescript

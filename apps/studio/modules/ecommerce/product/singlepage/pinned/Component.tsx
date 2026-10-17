@@ -1,7 +1,11 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type { IComponentProps, ProductPinnedProps } from "./interface";
+export type { ProductPinnedProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -29,20 +33,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface ProductPinnedProps {
-  variant?: string;
-  slug: string;
-  title: string;
-  shortDescription: string;
-  priceLabel: string;
-  category: string;
-  href?: string;
-  target?: "_blank" | "_parent" | "_self" | "_top";
-}
-export function ProductPinned(props?: Partial<ProductPinnedProps>) {
+export function ProductPinned(props?: IComponentProps) {
   const { slug, title, shortDescription, priceLabel, category, href, target } =
     {
       ...defaultProductPinnedProps,
@@ -54,7 +48,7 @@ export function ProductPinned(props?: Partial<ProductPinnedProps>) {
       href={productHref}
       target={target}
       rel={target === "_blank" ? "noreferrer" : undefined}
-      className="group flex min-w-0 flex-col rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 transition hover:border-[var(--color-sps-graphite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+      className="group flex min-w-0 flex-col rounded-2xl border border-border bg-card p-5 transition hover:border-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       data-ds-block="ecommerce.product.pinned"
       data-ds-layer="singlepage"
       data-module="ecommerce"
@@ -62,20 +56,20 @@ export function ProductPinned(props?: Partial<ProductPinnedProps>) {
       data-variant={props?.variant ?? "pinned"}
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-sps-grey)]">
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-muted">
           <Package className="h-5 w-5" />
         </span>
-        <span className="rounded-full bg-[var(--color-sps-grey)] px-3 py-1 text-xs text-[var(--color-sps-muted)]">
+        <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
           {category}
         </span>
       </div>
-      <h4 className="mt-5 text-lg font-semibold leading-6 text-[var(--color-sps-graphite)]">
+      <h4 className="mt-5 text-lg font-semibold leading-6 text-foreground">
         {title}
       </h4>
-      <p className="mt-2 text-sm leading-6 text-[var(--color-sps-muted)]">
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">
         {shortDescription}
       </p>
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-sps-line)] pt-4">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
         <span className="text-base font-semibold">{priceLabel}</span>
         <span className="inline-flex items-center gap-2 text-sm font-semibold">
           View service <ArrowUpRight className="h-5 w-5" />

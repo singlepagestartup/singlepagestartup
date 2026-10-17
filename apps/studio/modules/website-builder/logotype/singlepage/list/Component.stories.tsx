@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as WebsiteBuilderModuleLogotype } from "../../index";
+import { Component as Logotype } from "../../index";
 const meta = {
-  title: "Modules/Website-Builder/Models/Logotype/Singlepage/list",
-  component: WebsiteBuilderModuleLogotype,
+  id: "modules-website-builder-models-logotype-singlepage-list",
+  title: "Modules/Website-Builder/Logotype/Singlepage/list",
+  component: Logotype,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof WebsiteBuilderModuleLogotype>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Logotype>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

@@ -2,7 +2,8 @@
 
 `apps/telegram` is the Telegram transport adapter for SPS. It runs the grammY
 bot process, receives Telegram updates, extracts Telegram-specific transport
-data, and forwards authenticated facts into SPS backend modules.
+data, and forwards authenticated facts into SPS backend modules. It is an
+independent service; no `libs/modules/telegram` business module is required.
 
 This app must stay thin. Domain behavior belongs to modules such as `rbac`,
 `social`, `agent`, `billing`, and `notification`.

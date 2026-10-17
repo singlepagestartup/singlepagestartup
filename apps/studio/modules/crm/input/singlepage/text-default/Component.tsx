@@ -1,11 +1,6 @@
+import type { IComponentProps, CrmInputTextDefaultProps } from "./interface";
+export type { CrmInputTextDefaultProps } from "./interface";
 import { type CrmInputRecord, defaultCrmForm } from "../../../shared/demo-crm";
-
-export interface CrmInputTextDefaultProps {
-  variant?: string;
-  input: CrmInputRecord;
-  disabled?: boolean;
-  namePrefix?: string;
-}
 
 export const defaultCrmInputTextDefaultProps: CrmInputTextDefaultProps = {
   input: defaultCrmForm.steps[0].inputs[0],
@@ -13,7 +8,7 @@ export const defaultCrmInputTextDefaultProps: CrmInputTextDefaultProps = {
   namePrefix: "crm",
 };
 
-export function CrmInputTextDefault(props?: Partial<CrmInputTextDefaultProps>) {
+export function CrmInputTextDefault(props?: IComponentProps) {
   const { input, disabled, namePrefix } = {
     ...defaultCrmInputTextDefaultProps,
     ...props,
@@ -29,14 +24,14 @@ export function CrmInputTextDefault(props?: Partial<CrmInputTextDefaultProps>) {
       data-model="input"
       data-variant={props?.variant ?? "text-default"}
     >
-      <span className="mb-1 block text-sm font-medium text-[var(--color-sps-graphite)]">
+      <span className="mb-1 block text-sm font-medium text-foreground">
         {input.label}
         {input.required ? (
-          <span className="ml-1 text-[var(--color-sps-danger)]">*</span>
+          <span className="ml-1 text-destructive">*</span>
         ) : null}
       </span>
       <input
-        className="min-h-12 w-full min-w-0 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 text-base text-[var(--color-sps-graphite)] outline-none transition placeholder:text-[var(--color-sps-muted)] focus:border-[var(--color-sps-graphite)] focus:ring-2 focus:ring-[var(--color-sps-graphite)] disabled:bg-[var(--color-sps-grey)] focus-visible:border-[var(--color-sps-graphite)] focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)]"
+        className="min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 text-base text-foreground outline-none transition placeholder:text-muted-foreground focus:border-foreground focus:ring-2 focus:ring-foreground disabled:bg-muted focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground"
         disabled={disabled}
         id={inputId}
         name={inputId}

@@ -4,7 +4,11 @@
 
 Pages represent routable site pages and act as containers for layouts, widgets,
 and metadata. The default variant assembles layout structure and in-page widgets
-for the page.
+for the page. Page resolves the Layout's default and additional Widget links,
+composes their Host Widgets with the current route, and supplies ready nodes to
+the Layout. The Layout and its relation presenters receive no URL. External
+Widget adapters in Host resolve model IDs and presentation flags before rendering
+other modules.
 
 ## Fields
 
@@ -29,3 +33,15 @@ for the page.
 - `admin-table-row`: admin UI row for page listings.
 - `admin-form`: admin UI create/edit form.
 - `admin-table`: admin UI table for browsing pages.
+
+## URL lookup cache
+
+The client `findByUrl` query key includes the URL and query parameters, so
+different destinations have separate entries. Both URL lookup readers subscribe
+to Page changes through `host.pages`.
+
+HTTP response caching excludes `find-by-url`, `url-segment-value` and `urls`.
+These operations expand Page masks against other modules' records; a fixed
+Page-only cache topic cannot describe all changes to dynamic route values.
+The exclusions are defined in
+`libs/middlewares/src/lib/http-cache/routes/singlepage.ts`.

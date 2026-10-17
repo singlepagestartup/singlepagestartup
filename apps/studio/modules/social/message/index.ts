@@ -1,4 +1,8 @@
-export { Component, type IComponentProps } from "./Component";
-export type { IMessageListProps } from "./singlepage/list/ai-chat/index";
+export { Component } from "./Component";
+export type { IComponentProps } from "./interface";
+export type { IMessageListProps } from "./interface";
 
-export type { SocialMessageBubbleDefaultProps } from "./singlepage/bubble-default/Component";
+export type { SocialMessageBubbleDefaultProps } from "./interface";
+
+export { Skeleton } from "./Skeleton";
+export type { ISkeletonProps } from "./interface";

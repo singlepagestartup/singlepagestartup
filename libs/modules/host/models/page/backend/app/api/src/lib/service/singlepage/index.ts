@@ -6,6 +6,7 @@ import {
   API_SERVICE_URL,
   buildTreePaths,
   RBAC_SECRET_KEY,
+  responsePipe,
 } from "@sps/shared-utils";
 
 export type EntityWithUrls = typeof Table.$inferSelect & {
@@ -210,10 +211,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       {
         headers: {
           "X-RBAC-SECRET-KEY": props.secretKey,
+          "X-SPS-Consistency": "1",
+          "Cache-Control": "no-store",
         },
       },
     );
-    const payload = await response.json();
+    const payload = await responsePipe<{ data: any[] }>({ res: response });
 
     if (!Array.isArray(payload?.data)) {
       return [];
@@ -257,7 +260,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       if (urlParts.length === entityUrlParts.length - 1) {
         return "1";
       }
-      return undefined;
+      return null;
     }
 
     const urlParts = props.url.split("/").filter((part) => part !== "");
@@ -270,6 +273,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
     }
 
-    return segmentValue;
+    return segmentValue ?? null;
   }
 }

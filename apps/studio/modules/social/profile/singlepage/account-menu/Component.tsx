@@ -1,35 +1,23 @@
 "use client";
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type { IComponentProps, IAccountMenuProps } from "./interface";
+export type { IAccountMenuProps } from "./interface";
 
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import { Component as SharedIcon } from "../../../../shared/icon";
+
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useEffect, useState } from "react";
 import type { IAIChatUserProfile } from "../scope/ai-chat/project/models";
-import { aiChatAccount } from "../../../../rbac/subject/singlepage/account/fixture";
+import { aiChatAccount } from "../../../../rbac/subject/singlepage/me/account/fixture";
 function Icon(props: {
   name: keyof typeof IconGlyphs;
   size?: 20 | 24;
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface IAccountMenuProps {
-  variant?: string;
-  data?: IAIChatUserProfile;
-  email?: string;
-  balance?: {
-    free: number;
-    purchased: number;
-  } | null;
-  showTokens?: boolean;
-  page?: string;
-  settingsHref?: string;
-  settingsTarget?: "_top";
-  onNavigate?: () => void;
-  onSignOut?: () => void;
-}
 export function Component({
   variant = "account-menu",
   data = aiChatAccount.profile,
@@ -41,12 +29,12 @@ export function Component({
   settingsTarget,
   onNavigate,
   onSignOut,
-}: IAccountMenuProps = {}) {
+}: IComponentProps = {}) {
   const [avatarFailed, setAvatarFailed] = useState(false);
   useEffect(() => setAvatarFailed(false), [data.avatar]);
   const balanceLabel = balance
-    ? `${(balance.free + balance.purchased).toLocaleString("en-US")} tokens`
-    : "Balance unavailable";
+    ? `${(balance.free + balance.purchased).toLocaleString("en-US", { maximumFractionDigits: 6 })} tokens`
+    : "— tokens";
   return (
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger asChild>
@@ -60,12 +48,12 @@ export function Component({
           data-ds-block="social.profile.account-menu"
           data-profile-id={data.id}
           onClick={onNavigate}
-          className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl px-2 py-2 text-left hover:bg-sps-grey data-[state=open]:bg-sps-grey ${kit.focus} ${page === "settings" || page === "tokens" ? "bg-sps-grey" : ""}`}
+          className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl px-2 py-2 text-left hover:bg-muted data-[state=open]:bg-muted ${kit.focus} ${page === "settings" || page === "tokens" ? "bg-muted" : ""}`}
           data-module="social"
           data-model="profile"
           data-variant={variant}
         >
-          <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-sps-grey">
+          <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-muted">
             {data.avatar && !avatarFailed ? (
               <img
                 src={data.avatar}
@@ -82,14 +70,14 @@ export function Component({
               {data.title}
             </span>
             {showTokens && (
-              <span className="block text-xs text-sps-muted">
+              <span className="block text-xs text-muted-foreground">
                 {balanceLabel}
               </span>
             )}
           </span>
           <Icon
             name="caret-down"
-            className="hidden size-4 text-sps-muted sm:block"
+            className="hidden size-4 text-muted-foreground sm:block"
           />
         </button>
       </DropdownMenu.Trigger>
@@ -98,7 +86,7 @@ export function Component({
           align="end"
           sideOffset={8}
           collisionPadding={12}
-          className="z-[110] w-64 max-w-[calc(100vw-24px)] rounded-xl border border-sps-line bg-sps-white p-2 font-sps text-sps-graphite shadow-lg"
+          className="z-[110] w-64 max-w-[calc(100vw-24px)] rounded-xl border border-border bg-card p-2 font-default text-foreground shadow-lg"
           data-module="social"
           data-model="profile"
           data-variant={variant}
@@ -108,17 +96,17 @@ export function Component({
               {data.title}
             </span>
             {showTokens && (
-              <span className="mt-1 block text-xs text-sps-muted">
+              <span className="mt-1 block text-xs text-muted-foreground">
                 {balanceLabel}
               </span>
             )}
             {email && (
-              <span className="mt-1 block break-all text-xs text-sps-muted">
+              <span className="mt-1 block break-all text-xs text-muted-foreground">
                 {email}
               </span>
             )}
           </DropdownMenu.Label>
-          <DropdownMenu.Separator className="my-1 h-px bg-sps-line" />
+          <DropdownMenu.Separator className="my-1 h-px bg-border" />
           {showTokens && (
             <DropdownMenu.Item asChild>
               <a
@@ -142,17 +130,7 @@ export function Component({
               Settings
             </a>
           </DropdownMenu.Item>
-          <DropdownMenu.Item asChild>
-            <a
-              href="/?path=/story/modules-host-models-page-singlepage-admin-settings--default"
-              target="_top"
-              className={menuItemClassName}
-            >
-              <Icon name="shield" />
-              Admin Panel
-            </a>
-          </DropdownMenu.Item>
-          <DropdownMenu.Separator className="my-1 h-px bg-sps-line" />
+          <DropdownMenu.Separator className="my-1 h-px bg-border" />
           <DropdownMenu.Item asChild>
             <button
               type="button"
@@ -169,11 +147,11 @@ export function Component({
   );
 }
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sps-graphite";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
   focus: focus,
 };
 const menuItemClassName =
-  "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-sps-grey data-highlighted:text-sps-graphite";
+  "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-muted data-highlighted:text-foreground";

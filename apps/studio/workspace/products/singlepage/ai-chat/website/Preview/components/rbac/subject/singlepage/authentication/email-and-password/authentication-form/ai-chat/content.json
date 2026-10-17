@@ -110,7 +110,7 @@
         },
         {
           "title": "photo-src",
-          "text": "/module-assets/module-assets/module-assets/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png"
+          "text": "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png"
         },
         {
           "title": "photo-asset-id",
@@ -141,7 +141,7 @@
     "email-error": "Enter a valid email address.",
     "password-error": "Enter your password.",
     "success-message": "Welcome back.",
-    "photo-src": "/module-assets/module-assets/module-assets/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
+    "photo-src": "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
     "photo-asset-id": "singlepage-generated-living-focus-photography-work-in-motion-square",
     "photo-alt": "A smiling maker in a pottery studio."
   }

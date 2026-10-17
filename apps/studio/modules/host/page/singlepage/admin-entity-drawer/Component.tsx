@@ -1,14 +1,13 @@
+import type { IComponentProps, IComponentVariantProps } from "./interface";
+export type { IComponentVariantProps } from "./interface";
 import { Component as EcommerceModuleProduct } from "../../../../ecommerce/product/index";
 
 import { studioProducts } from "../../../../ecommerce/product/shared";
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
-interface IComponentVariantProps {
-  variant?: string;
-}
 export function AdminEntityDrawer({
   variant = "admin-entity-drawer",
-}: IComponentVariantProps = {}) {
+}: IComponentProps = {}) {
   return (
     <div
       data-ds-page="host.page.admin-entity-drawer"

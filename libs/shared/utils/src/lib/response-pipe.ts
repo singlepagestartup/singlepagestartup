@@ -1,4 +1,9 @@
 import { ContentfulStatusCode } from "hono/utils/http-status";
+import {
+  CONSISTENCY_HEADER,
+  CONSISTENCY_RESPONSE_EVENT,
+} from "./constants/consistency";
+import { publishConsistencyResponse } from "./consistency-response";
 
 const browserGlobals = globalThis as typeof globalThis & {
   window?: unknown;
@@ -206,7 +211,34 @@ async function util<T>(props: {
   }
 
   try {
-    return (await props.res.json()) as T;
+    const json = await props.res.json();
+    const metadata = props.res.headers?.get?.(CONSISTENCY_HEADER);
+    let decoded;
+    try {
+      if (metadata)
+        decoded = JSON.parse(
+          atob(metadata.replaceAll("-", "+").replaceAll("_", "/")),
+        );
+    } catch {}
+    if (props.res.url)
+      await publishConsistencyResponse({
+        url: props.res.url,
+        metadata: decoded?.protocol === 1 ? decoded : undefined,
+      });
+    if (
+      decoded?.protocol === 1 &&
+      decoded.audience !== "service" &&
+      browserGlobals.window &&
+      props.res.url
+    )
+      (
+        browserGlobals.window as { dispatchEvent: (event: Event) => void }
+      ).dispatchEvent(
+        new CustomEvent(CONSISTENCY_RESPONSE_EVENT, {
+          detail: { url: props.res.url, metadata: decoded },
+        }),
+      );
+    return json as T;
   } catch (error) {
     // Handle JSON parse errors or empty responses
     console.error("Failed to parse response JSON:", error);

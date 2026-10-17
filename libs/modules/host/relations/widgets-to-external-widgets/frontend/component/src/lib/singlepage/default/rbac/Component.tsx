@@ -1,7 +1,6 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as RbacModuleWidget } from "@sps/rbac/models/widget/frontend/component";
 import { Component as Widget } from "./widget";
-
 export function Component(props: IComponentPropsExtended) {
   return (
     <RbacModuleWidget
@@ -21,11 +20,26 @@ export function Component(props: IComponentPropsExtended) {
         },
       }}
     >
-      {({ data }) => {
-        return data?.map((entity, index) => {
+      {({ data }) =>
+        data?.map((entity) => {
+          if (
+            [
+              "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+              "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat",
+              "subject-me-social-module-profile-id-settings-ai-chat",
+            ].includes(entity.variant)
+          )
+            return (
+              <Widget
+                {...props}
+                key={entity.id}
+                data={entity}
+                variant={entity.variant as any}
+              />
+            );
           return (
             <RbacModuleWidget
-              key={index}
+              key={entity.id}
               isServer={props.isServer}
               data={entity}
               language={props.language}
@@ -34,8 +48,8 @@ export function Component(props: IComponentPropsExtended) {
               <Widget {...props} data={entity} variant={entity.variant} />
             </RbacModuleWidget>
           );
-        });
-      }}
+        })
+      }
     </RbacModuleWidget>
   );
 }

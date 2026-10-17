@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as RbacModuleRole } from "../../index";
+import { Component as Role } from "../../index";
 const meta = {
-  title: "Modules/RBAC/Models/Role/Singlepage/list",
-  component: RbacModuleRole,
+  id: "modules-rbac-models-role-singlepage-list",
+  title: "Modules/RBAC/Role/Singlepage/list",
+  component: Role,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof RbacModuleRole>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Role>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

@@ -1,19 +1,25 @@
+import { Component as Order } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  OrderCheckoutDetailsDefault,
-  defaultOrderCheckoutDetailsDefaultProps,
-} from "./Component";
+import { defaultOrderCheckoutDetailsDefaultProps } from "./Component";
 
 const meta = {
-  title:
-    "Modules/Ecommerce/Models/Order/Singlepage/order-checkout-details-default",
-  component: OrderCheckoutDetailsDefault,
+  id: "modules-ecommerce-models-order-singlepage-order-checkout-details-default",
+  title: "Modules/Ecommerce/Order/Singlepage/order-checkout-details-default",
+  component: Order,
   parameters: {
     layout: "padded",
   },
-  args: defaultOrderCheckoutDetailsDefaultProps,
-} satisfies Meta<typeof OrderCheckoutDetailsDefault>;
+  args: {
+    ...defaultOrderCheckoutDetailsDefaultProps,
+    variant: "checkout-details-default",
+  },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Order>,
+    { variant: "checkout-details-default" }
+  >
+>;
 
 export default meta;
 

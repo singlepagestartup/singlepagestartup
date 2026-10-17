@@ -1,3 +1,5 @@
+import type { IComponentProps, ILogotypeDefaultProps } from "./interface";
+export type { ILogotypeDefaultProps } from "./interface";
 interface BrandMarkProps {
   size?: "sm" | "md";
   inverse?: boolean;
@@ -12,23 +14,19 @@ function BrandMark({ size = "md", inverse = false }: BrandMarkProps) {
     />
   );
 }
-export interface ILogotypeDefaultProps {
-  variant?: string;
-  brand?: string;
-  compact?: boolean;
-}
+
 export function Component({
   variant = "default",
   brand = "SinglePageStartup",
   compact = false,
-}: ILogotypeDefaultProps = {}) {
+}: IComponentProps = {}) {
   return (
     <a
       data-ds-block="website-builder.logotype.default"
       href="/?path=/story/modules-host-models-page-singlepage-root--default"
       target="_top"
       aria-label={`${brand} home`}
-      className="inline-flex min-h-11 items-center gap-3 rounded-xl text-base font-semibold text-[var(--color-sps-graphite)] no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+      className="inline-flex min-h-11 items-center gap-3 rounded-xl text-base font-semibold text-foreground no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       data-module="website-builder"
       data-model="logotype"
       data-variant={variant}

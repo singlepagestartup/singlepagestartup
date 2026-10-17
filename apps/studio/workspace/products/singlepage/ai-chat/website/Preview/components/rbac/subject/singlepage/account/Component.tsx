@@ -1,6 +1,5 @@
 "use client";
 import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
-import { useEffect, useState } from "react";
 import { Component as SocialModuleProfile } from "../../../../social/profile/index";
 import { useStudioAccount } from "./Account";
 import type { RbacAccountUser } from "../../../shared";
@@ -57,13 +56,7 @@ export function Component({
   onNavigate,
 }: ISubjectAccountProps = {}) {
   const session = useStudioAccount();
-  const [signedOut, setSignedOut] = useState(false);
-  useEffect(() => setSignedOut(false), [signedIn, user?.email]);
-  useEffect(() => {
-    if (session.signedIn) setSignedOut(false);
-  }, [session.signedIn]);
-  const authenticated =
-    !signedOut && (signedIn ?? Boolean(user ?? session.account.profile));
+  const authenticated = signedIn ?? (user ? true : session.signedIn);
   const data = user
     ? {
         id: "current-user",
@@ -74,7 +67,7 @@ export function Component({
     : (session.account.profile ?? aiChatAccount.profile);
   const settingsHref = showTokens
     ? "/ai-chat/rbac/subjects/settings"
-    : "/?path=/story/modules-host-models-page-singlepage-rbac-subject-settings--default";
+    : "/?path=/story/modules-host-models-page-singlepage-rbac-module-subject-me-settings--default";
   if (!authenticated)
     return (
       <a
@@ -82,7 +75,7 @@ export function Component({
         href={
           showTokens
             ? "/ai-chat/rbac/subjects/authentication/select-method"
-            : "/?path=/story/modules-host-models-page-singlepage-rbac-subject-authentication-select-method--default"
+            : "/?path=/story/modules-host-models-page-singlepage-rbac-module-subject-me-authentication-select-method--default"
         }
         target={showTokens ? undefined : "_top"}
         onClick={onNavigate}
@@ -105,10 +98,7 @@ export function Component({
         settingsTarget={showTokens ? undefined : "_top"}
         page={page}
         onNavigate={onNavigate}
-        onSignOut={() => {
-          session.signOut();
-          setSignedOut(true);
-        }}
+        onSignOut={session.signOut}
       />
     </div>
   );

@@ -9,6 +9,7 @@ export interface IProjectFile {
   name: string;
   text: string;
   size: number;
+  lastModified?: number;
   mimeType?: string;
   fileUrl?: string;
 }

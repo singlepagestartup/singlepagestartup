@@ -37,6 +37,7 @@ export const Component = (props: IComponentProps) => {
       <FormControl>
         <Input
           placeholder={props.placeholder}
+          disabled={props.disabled}
           {...props.field}
           value={typeof props.field.value === "string" ? props.field.value : ""}
           type={props.type}
@@ -51,6 +52,7 @@ export const Component = (props: IComponentProps) => {
       <FormControl>
         <TipTap
           placeholder={props.placeholder}
+          disabled={props.disabled}
           {...props.field}
           form={props.form}
           className={props.className}
@@ -65,7 +67,9 @@ export const Component = (props: IComponentProps) => {
       <FormControl>
         <textarea
           {...props.field}
+          value={props.field.value ?? ""}
           placeholder={props.placeholder}
+          disabled={props.disabled}
           rows={props.rows}
           className={cn(
             "flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
@@ -82,6 +86,7 @@ export const Component = (props: IComponentProps) => {
         <FormControl>
           <MultipleFilesInput
             placeholder={props.placeholder}
+            disabled={props.disabled}
             {...props.field}
             form={props.form}
             multiple={true}
@@ -98,6 +103,7 @@ export const Component = (props: IComponentProps) => {
       <FormControl>
         <FileInputRoot
           placeholder={props.placeholder}
+          disabled={props.disabled}
           {...props.field}
           form={props.form}
           className={props.className}
@@ -114,6 +120,7 @@ export const Component = (props: IComponentProps) => {
       <FormControl>
         <Input
           placeholder={props.placeholder}
+          disabled={props.disabled}
           type="number"
           {...props.field}
           value={
@@ -165,7 +172,11 @@ export const Component = (props: IComponentProps) => {
     return (
       <Select
         onValueChange={props.field.onChange}
-        defaultValue={props.field.value}
+        value={
+          typeof props.field.value === "string"
+            ? props.field.value
+            : (props.field.value?.id ?? "")
+        }
         disabled={props.disabled}
       >
         <FormControl>
@@ -177,7 +188,11 @@ export const Component = (props: IComponentProps) => {
           {props.options.map((option, index) => {
             return (
               <SelectItem
-                key={index}
+                key={
+                  typeof option[0] === "string"
+                    ? option[0]
+                    : (option[0]?.id ?? index)
+                }
                 value={option[0]}
                 className={props.selectItemClassName}
               >

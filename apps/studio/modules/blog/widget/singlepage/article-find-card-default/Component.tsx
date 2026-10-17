@@ -1,4 +1,15 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  ArticleFindCardDefaultArticle,
+  ArticleFindCardDefaultProps,
+} from "./interface";
+export type {
+  ArticleFindCardDefaultArticle,
+  ArticleFindCardDefaultProps,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import {
   useId,
   forwardRef as forwardRefControl,
@@ -7,8 +18,8 @@ import {
   useState,
 } from "react";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
-import { Component as BlogModuleArticle } from "../../../article/index";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
+import { Component as Article } from "../../../article/index";
 import { type CategoryButtonDefaultProps } from "../../../category/index";
 interface ICollectionPaginationProps {
   page: number;
@@ -26,7 +37,7 @@ function CollectionPagination({
   return (
     <nav
       aria-label="Collection pages"
-      className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--color-sps-line)] pt-5"
+      className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5"
     >
       <p className={`text-sm ${kit.muted}`} aria-live="polite">
         {total
@@ -71,7 +82,7 @@ function CategoryChoice({
       type="button"
       aria-pressed={active}
       onClick={() => onSelect?.(slug)}
-      className={`${sectionChoiceClass} ${active ? "bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)]" : "text-[var(--color-sps-muted)] hover:text-[var(--color-sps-graphite)]"}`}
+      className={`${sectionChoiceClass} ${active ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground"}`}
     >
       <span>{label}</span>
       {count !== undefined && (
@@ -104,11 +115,11 @@ function CollectionToolbar({
 }: ICollectionToolbarProps) {
   const id = useId();
   return (
-    <div className="mb-6 grid gap-3 rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-3">
+    <div className="mb-6 grid gap-3 rounded-3xl border border-border bg-card p-3">
       <div
         role="group"
         aria-label="Filter by category"
-        className="flex flex-wrap gap-1 rounded-xl bg-[var(--color-sps-grey)] p-1"
+        className="flex flex-wrap gap-1 rounded-xl bg-muted p-1"
       >
         {categories.map((item) => (
           <CategoryChoice
@@ -143,33 +154,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-type BlogCategoryTab = Pick<
-  CategoryButtonDefaultProps,
-  "slug" | "label" | "count"
->;
-export interface ArticleFindCardDefaultArticle {
-  href?: string;
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  coverImage: string;
-  category: string;
-  date: string;
-  readTime: string;
-  commentCount: number;
-  authorName: string;
-  authorSlug: string;
-  authorAvatar: string;
-}
-export type ArticleFindCardDefaultProps =
-  typeof defaultArticleFindCardDefaultProps;
-export function ArticleFindCardDefault(
-  props?: Partial<ArticleFindCardDefaultProps> & { variant?: string },
-) {
+export function ArticleFindCardDefault(props?: IComponentProps) {
   const { categories, articles } = {
     ...defaultArticleFindCardDefaultProps,
     ...props,
@@ -229,7 +217,7 @@ export function ArticleFindCardDefault(
       {filtered.length > 0 ? (
         <div className="grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
           {visible.map((article) => (
-            <BlogModuleArticle
+            <Article
               variant="card"
               key={article.id}
               href={article.href ?? articleOverviewStoryHref}
@@ -249,9 +237,9 @@ export function ArticleFindCardDefault(
           ))}
         </div>
       ) : (
-        <div className="rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-8 text-center">
+        <div className="rounded-3xl border border-border bg-card p-8 text-center">
           <h3 className="text-2xl font-semibold">No matching articles</h3>
-          <p className="mt-3 text-sm text-[var(--color-sps-muted)]">
+          <p className="mt-3 text-sm text-muted-foreground">
             Try another search or choose a different category.
           </p>
           <Button
@@ -276,15 +264,15 @@ export function ArticleFindCardDefault(
   );
 }
 const sectionIndicatorClass =
-  "absolute bottom-1.5 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-[var(--color-sps-green)]";
+  "absolute bottom-1.5 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-primary text-primary-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const kit = {
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 py-2 text-base text-[var(--color-sps-graphite)] outline-none transition motion-reduce:transition-none placeholder:text-[var(--color-sps-muted)] focus-visible:border-[var(--color-sps-graphite)] focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-sps-white)] disabled:cursor-not-allowed disabled:bg-[var(--color-sps-grey)] disabled:text-[var(--color-sps-muted)] disabled:opacity-60 [&[readonly]]:bg-[var(--color-sps-grey)] aria-invalid:border-[var(--color-sps-danger)] aria-invalid:focus-visible:ring-[var(--color-sps-danger)]",
-  muted: "text-[var(--color-sps-muted)]",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
+  muted: "text-muted-foreground",
   focus: focus,
 };
 const sectionChoiceClass = `relative inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition ${kit.focus} disabled:cursor-not-allowed disabled:opacity-50`;
@@ -304,7 +292,7 @@ const Button = forwardRefControl<
   );
 });
 const articleOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
+  "/?path=/story/modules-host-models-page-singlepage-blog-module-article-slug--default";
 const sarahAvatar =
   "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHdvbWFuJTIwZGV2ZWxvcGVyJTIwaGVhZHNob3R8ZW58MXx8fHwxNzcxNzE1ODgyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 const jamesAvatar =
@@ -418,3 +406,5 @@ export const defaultArticleFindCardDefaultProps = {
     },
   ] as ArticleFindCardDefaultArticle[],
 };
+
+import type { BlogCategoryTab } from "./interface";

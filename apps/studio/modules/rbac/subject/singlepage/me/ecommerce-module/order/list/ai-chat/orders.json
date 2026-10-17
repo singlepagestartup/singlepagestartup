@@ -1,0 +1,23 @@
+[
+  {
+    "id": "SPS-2026-1042",
+    "date": "2026-10-08",
+    "tokens": 1000,
+    "total": "130 RUB",
+    "status": "Paid"
+  },
+  {
+    "id": "SPS-2026-0981",
+    "date": "2026-09-24",
+    "tokens": 2308,
+    "total": "300 RUB",
+    "status": "Paid"
+  },
+  {
+    "id": "SPS-2026-0916",
+    "date": "2026-09-03",
+    "tokens": 7692,
+    "total": "1,000 RUB",
+    "status": "Paid"
+  }
+]

@@ -1,18 +1,20 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { StartupWidgetDefault } from "./Component";
 
 const meta = {
   id: "modules-startup-models-widget-singlepage-default",
-  title: "Modules/Startup/Models/Widget/Singlepage/default",
-  component: StartupWidgetDefault,
+  title: "Modules/Startup/Widget/Singlepage/default",
+  component: Widget,
   parameters: { layout: "padded" },
   args: {
     title: "Startup widget",
     subtitle: "Content section",
     description: "Add your project's title, description, and layout here.",
+    variant: "default",
   },
-} satisfies Meta<typeof StartupWidgetDefault>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Widget>, { variant: "default" }>
+>;
 
 export default meta;
 

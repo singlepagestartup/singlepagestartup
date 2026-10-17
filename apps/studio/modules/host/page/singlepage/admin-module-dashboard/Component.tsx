@@ -1,14 +1,13 @@
+import type { IComponentProps, IComponentVariantProps } from "./interface";
+export type { IComponentVariantProps } from "./interface";
 import { Component as BlogModuleArticle } from "../../../../blog/article/index";
 import { Component as EcommerceModuleProduct } from "../../../../ecommerce/product/index";
 
 import { AdminV2PageShell } from "../shared/AdminV2PageShell";
 
-interface IComponentVariantProps {
-  variant?: string;
-}
 export function AdminModuleDashboard({
   variant = "admin-module-dashboard",
-}: IComponentVariantProps = {}) {
+}: IComponentProps = {}) {
   return (
     <div
       data-ds-page="host.page.admin-module-dashboard"

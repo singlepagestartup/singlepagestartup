@@ -1,7 +1,7 @@
 {
   "$schema": "../../../../../block.schema.json",
   "id": "social.profile.author-find-by-id-overview-default",
-  "title": "Social Profile / Author Find By Id Overview Default",
+  "title": "author-find-by-id-overview-default",
   "description": "Singlepage draft profile overview for an author route: profile header, author stats, authored article rows, biography, skills, category breakdown, and related authors.",
   "layer": "singlepage",
   "state": "draft",
@@ -9,7 +9,7 @@
     "module": "social",
     "entityType": "model",
     "entity": "profile",
-    "variant": "overview-default"
+    "variant": "author-find-by-id-overview-default"
   },
   "files": {
     "component": "Component.tsx",

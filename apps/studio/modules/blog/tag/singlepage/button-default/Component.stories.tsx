@@ -1,13 +1,17 @@
+import { Component as Tag } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { TagButtonDefault, defaultTagButtonDefaultProps } from "./Component";
+import { defaultTagButtonDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/Blog/Models/Tag/Singlepage/button-default",
-  component: TagButtonDefault,
+  id: "modules-blog-models-tag-singlepage-button-default",
+  title: "Modules/Blog/Tag/Singlepage/button-default",
+  component: Tag,
   parameters: { layout: "centered" },
-  args: defaultTagButtonDefaultProps,
-} satisfies Meta<typeof TagButtonDefault>;
+  args: { ...defaultTagButtonDefaultProps, variant: "button-default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Tag>, { variant: "button-default" }>
+>;
 
 export default meta;
 

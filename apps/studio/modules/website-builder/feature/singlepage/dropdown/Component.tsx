@@ -1,7 +1,9 @@
-import { Component as Glyph } from "../icon/index";
+import type { IComponentProps, FeatureDropdownProps } from "./interface";
+export type { FeatureDropdownProps } from "./interface";
+import { Component as SharedIcon } from "../../../../shared/icon";
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -29,20 +31,17 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <Glyph {...props} />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export type FeatureDropdownProps = typeof defaultFeatureDropdownProps;
-export function FeatureDropdown(
-  props?: Partial<FeatureDropdownProps> & { variant?: string },
-) {
+export function FeatureDropdown(props?: IComponentProps) {
   const { question, answer, open } = {
     ...defaultFeatureDropdownProps,
     ...props,
   };
   return (
     <details
-      className="group min-w-0 border-b border-[var(--color-sps-line)] last:border-0"
+      className="group min-w-0 border-b border-border last:border-0"
       open={open}
       data-ds-block="website-builder.feature.dropdown"
       data-ds-layer="singlepage"
@@ -50,11 +49,11 @@ export function FeatureDropdown(
       data-model="feature"
       data-variant={props?.variant ?? "dropdown"}
     >
-      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-5 py-5 text-base font-semibold leading-6 text-[var(--color-sps-graphite)] transition hover:bg-[var(--color-sps-grey)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)] [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-5 py-5 text-base font-semibold leading-6 text-foreground transition hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground [&::-webkit-details-marker]:hidden">
         <span>{question}</span>
-        <ChevronDown className="h-5 w-5 shrink-0 text-[var(--color-sps-muted)] transition-transform duration-200 motion-reduce:transition-none group-open:rotate-180" />
+        <ChevronDown className="h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200 motion-reduce:transition-none group-open:rotate-180" />
       </summary>
-      <p className="px-5 pb-6 pr-12 text-base leading-7 text-[var(--color-sps-muted)]">
+      <p className="px-5 pb-6 pr-12 text-base leading-7 text-muted-foreground">
         {answer}
       </p>
     </details>

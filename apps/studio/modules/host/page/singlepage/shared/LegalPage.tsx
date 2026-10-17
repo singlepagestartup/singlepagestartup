@@ -1,7 +1,8 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 type ModuleIcon = ReturnType<typeof createIcon>;
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
@@ -30,7 +31,7 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
 type LegalTable = {
@@ -74,20 +75,14 @@ export interface LegalPageProps {
 function renderLegalBlock(block: LegalBlock, index: number) {
   if (block.type === "paragraph") {
     return (
-      <p
-        className="text-base leading-7 text-[var(--color-sps-graphite)]"
-        key={index}
-      >
+      <p className="text-base leading-7 text-foreground" key={index}>
         {block.text}
       </p>
     );
   }
   if (block.type === "subheading") {
     return (
-      <h3
-        className="pt-2 text-lg font-semibold text-[var(--color-sps-graphite)]"
-        key={index}
-      >
+      <h3 className="pt-2 text-lg font-semibold text-foreground" key={index}>
         {block.text}
       </h3>
     );
@@ -96,7 +91,7 @@ function renderLegalBlock(block: LegalBlock, index: number) {
     const List = block.ordered ? "ol" : "ul";
     return (
       <List
-        className={`ml-5 space-y-1 text-base leading-7 text-[var(--color-sps-graphite)] ${block.ordered ? "list-decimal" : "list-disc"}`}
+        className={`ml-5 space-y-1 text-base leading-7 text-foreground ${block.ordered ? "list-decimal" : "list-disc"}`}
         key={index}
       >
         {block.items.map((item) => (
@@ -108,11 +103,11 @@ function renderLegalBlock(block: LegalBlock, index: number) {
   if (block.type === "table") {
     return (
       <div
-        className="overflow-hidden rounded-xl border border-[var(--color-sps-line)]"
+        className="overflow-hidden rounded-xl border border-border"
         key={index}
       >
-        <table className="w-full text-left text-sm text-[var(--color-sps-graphite)]">
-          <thead className="bg-[var(--color-sps-grey)] text-[var(--color-sps-muted)]">
+        <table className="w-full text-left text-sm text-foreground">
+          <thead className="bg-muted text-muted-foreground">
             <tr>
               {block.table.headers.map((header) => (
                 <th className="px-3 py-2 font-semibold" key={header}>
@@ -123,10 +118,7 @@ function renderLegalBlock(block: LegalBlock, index: number) {
           </thead>
           <tbody>
             {block.table.rows.map((row) => (
-              <tr
-                className="border-t border-[var(--color-sps-line)]"
-                key={row.join(":")}
-              >
+              <tr className="border-t border-border" key={row.join(":")}>
                 {row.map((cell) => (
                   <td className="px-3 py-2 align-top" key={cell}>
                     {cell}
@@ -141,7 +133,7 @@ function renderLegalBlock(block: LegalBlock, index: number) {
   }
   return (
     <div
-      className="flex gap-3 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] px-4 py-3 text-xs leading-5 text-[var(--color-sps-graphite)]"
+      className="flex gap-3 rounded-xl border border-border bg-muted px-4 py-3 text-xs leading-5 text-foreground"
       key={index}
     >
       <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
@@ -152,39 +144,34 @@ function renderLegalBlock(block: LegalBlock, index: number) {
 export function LegalPage(props: LegalPageProps) {
   const Icon = props.icon;
   return (
-    <section className="w-full bg-[var(--color-sps-grey)] py-6 sm:py-8">
+    <section className="w-full bg-muted py-6 sm:py-8">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <nav
           aria-label="Breadcrumb"
-          className="mb-4 flex items-center gap-1.5 text-xs text-[var(--color-sps-muted)]"
+          className="mb-4 flex items-center gap-1.5 text-xs text-muted-foreground"
         >
-          <a
-            className="transition hover:text-[var(--color-sps-muted)]"
-            href="/"
-          >
+          <a className="transition hover:text-muted-foreground" href="/">
             Home
           </a>
           <ChevronRight className="h-5 w-5" />
-          <span className="text-[var(--color-sps-muted)]">
-            {props.breadcrumbLabel}
-          </span>
+          <span className="text-muted-foreground">{props.breadcrumbLabel}</span>
         </nav>
 
-        <article className="rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-6  sm:p-8 lg:p-10">
-          <header className="mx-auto mb-6 max-w-3xl border-b border-[var(--color-sps-line)] pb-6">
+        <article className="rounded-3xl border border-border bg-card p-6  sm:p-8 lg:p-10">
+          <header className="mx-auto mb-6 max-w-3xl border-b border-border pb-6">
             <div className="mb-4 flex flex-wrap items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--color-sps-graphite)] text-white">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-default text-default-foreground">
                 <Icon className="h-4 w-4" />
               </span>
-              <p className="text-sm text-[var(--color-sps-muted)]">
+              <p className="text-sm text-muted-foreground">
                 Last updated: {props.updatedAt}
               </p>
             </div>
             <div className="min-w-0">
-              <h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-5xl text-[var(--color-sps-graphite)]">
+              <h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-5xl text-foreground">
                 {props.title}
               </h1>
-              <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-sps-muted)]">
+              <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
                 {props.description}
               </p>
             </div>
@@ -193,7 +180,7 @@ export function LegalPage(props: LegalPageProps) {
           <div className="mx-auto max-w-3xl space-y-10">
             {props.sections.map((section) => (
               <section className="space-y-3" key={section.title}>
-                <h2 className="text-xl font-semibold text-[var(--color-sps-graphite)]">
+                <h2 className="text-xl font-semibold text-foreground">
                   {section.title}
                 </h2>
                 <div className="space-y-3">

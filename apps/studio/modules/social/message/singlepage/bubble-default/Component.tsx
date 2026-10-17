@@ -1,7 +1,14 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  SocialMessageBubbleDefaultProps,
+} from "./interface";
+export type { SocialMessageBubbleDefaultProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps, useState } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import {
   SocialMessageAttachments,
   type SocialMessageAttachment,
@@ -33,7 +40,7 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
 interface SocialMessageReaction {
@@ -56,22 +63,8 @@ function normalizeReaction(reaction: string): SocialMessageReaction {
 function normalizeReactionOptions(options: string[]) {
   return options.map((option) => normalizeReaction(option).emoji);
 }
-export interface SocialMessageBubbleDefaultProps {
-  variant?: string;
-  author: string;
-  role: string;
-  body: string;
-  time: string;
-  side: "incoming" | "outgoing";
-  display?: "bubble" | "timeline";
-  attachments?: SocialMessageAttachment[];
-  onPreviewAttachment?: (attachment: SocialMessageAttachment) => void;
-  reactions?: string[];
-  reactionOptions?: string[];
-}
-export function SocialMessageBubbleDefault(
-  props?: Partial<SocialMessageBubbleDefaultProps>,
-) {
+
+export function SocialMessageBubbleDefault(props?: IComponentProps) {
   const mergedProps = {
     ...defaultSocialMessageBubbleDefaultProps,
     ...props,
@@ -126,7 +119,7 @@ export function SocialMessageBubbleDefault(
       data-variant={props?.variant ?? "bubble-default"}
     >
       {!isOutgoing ? (
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-sps-line)] text-sm font-semibold text-[var(--color-sps-graphite)]">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-border text-sm font-semibold text-foreground">
           {author
             .split(" ")
             .map((part) => part[0])
@@ -140,13 +133,13 @@ export function SocialMessageBubbleDefault(
         <div
           className={`mb-2 flex flex-wrap items-center gap-2 text-xs ${
             isOutgoing
-              ? "justify-end text-[var(--color-sps-muted)]"
-              : "text-[var(--color-sps-muted)]"
+              ? "justify-end text-muted-foreground"
+              : "text-muted-foreground"
           }`}
         >
           {!isOutgoing ? (
             <>
-              <span className="min-w-0 break-all font-medium text-[var(--color-sps-graphite)]">
+              <span className="min-w-0 break-all font-medium text-foreground">
                 {author}
               </span>
               <span>{role}</span>
@@ -155,15 +148,15 @@ export function SocialMessageBubbleDefault(
           <span>{time}</span>
         </div>
         {isTimeline && !isOutgoing ? (
-          <p className="whitespace-pre-line text-base leading-7 text-[var(--color-sps-graphite)]">
+          <p className="whitespace-pre-line text-base leading-7 text-foreground">
             {body}
           </p>
         ) : (
           <div
             className={`rounded-2xl border px-5 py-4 text-base leading-7 ${
               isOutgoing
-                ? "border-[var(--color-sps-graphite)] bg-[var(--color-sps-graphite)] text-white"
-                : "border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)]"
+                ? "border-foreground bg-default text-default-foreground"
+                : "border-border bg-card text-foreground"
             }`}
           >
             <p className="whitespace-pre-line">{body}</p>
@@ -183,12 +176,12 @@ export function SocialMessageBubbleDefault(
           >
             {isReactionPickerOpen ? (
               <div
-                className={`absolute bottom-12 z-10 grid w-[min(16rem,calc(100vw-6rem))] grid-cols-4 gap-1 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 py-3 text-lg shadow-lg ${isOutgoing ? "right-0" : "left-0"}`}
+                className={`absolute bottom-12 z-10 grid w-[min(16rem,calc(100vw-6rem))] grid-cols-4 gap-1 rounded-2xl border border-border bg-card px-4 py-3 text-lg shadow-lg ${isOutgoing ? "right-0" : "left-0"}`}
               >
                 {normalizedReactionOptions.map((emoji) => (
                   <button
                     aria-label={`React with ${emoji}`}
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-xl transition hover:bg-[var(--color-sps-grey)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)] min-h-11"
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-xl transition hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground min-h-11"
                     key={emoji}
                     onClick={() => handleReactionSelect(emoji)}
                     type="button"
@@ -201,7 +194,7 @@ export function SocialMessageBubbleDefault(
             <button
               aria-expanded={isReactionPickerOpen}
               aria-label="Choose reaction"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-muted)] shadow-sm transition hover:border-[var(--color-sps-line)] hover:bg-[var(--color-sps-grey)] hover:text-[var(--color-sps-graphite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)] min-h-11"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground min-h-11"
               onClick={() =>
                 setIsReactionPickerOpen(
                   (currentIsReactionPickerOpen) => !currentIsReactionPickerOpen,
@@ -214,7 +207,7 @@ export function SocialMessageBubbleDefault(
             {messageReactions.map((reaction) => (
               <button
                 aria-label={`${reaction.label} reaction${reaction.count ? `, ${reaction.count}` : ""}`}
-                className="inline-flex min-h-11 items-center gap-1 rounded-full border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-2 text-xs text-[var(--color-sps-muted)] transition hover:border-[var(--color-sps-line)] hover:bg-[var(--color-sps-grey)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+                className="inline-flex min-h-11 items-center gap-1 rounded-full border border-border bg-card px-2 text-xs text-muted-foreground transition hover:border-border hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
                 key={`${reaction.emoji}-${reaction.label}`}
                 type="button"
               >

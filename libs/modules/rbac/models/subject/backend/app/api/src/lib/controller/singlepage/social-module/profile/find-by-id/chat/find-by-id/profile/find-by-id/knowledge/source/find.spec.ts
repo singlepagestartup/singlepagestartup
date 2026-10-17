@@ -13,6 +13,46 @@ jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => ({
 import { Handler } from "./find";
 
 describe("Knowledge Source find", () => {
+  it("does not create an owner grant from shared Chat membership", async () => {
+    const service = {
+      subjectsToSocialModuleProfiles: { find: jest.fn().mockResolvedValue([]) },
+      socialModuleProfileKnowledgeAccessEnsure: jest.fn(),
+      socialModule: {
+        profilesToKnowledgeModuleSources: {
+          find: jest.fn().mockResolvedValue([]),
+        },
+      },
+    } as any;
+    const c = {
+      req: {
+        param: (name: string) =>
+          name === "id" ? "viewer" : "shared-assistant",
+        query: () => undefined,
+      },
+      json: jest.fn((value) => value),
+    } as any;
+    await new Handler(service).execute(c, undefined);
+    expect(
+      service.socialModuleProfileKnowledgeAccessEnsure,
+    ).not.toHaveBeenCalled();
+    expect(service.subjectsToSocialModuleProfiles.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: {
+          filters: {
+            and: [
+              { column: "subjectId", method: "eq", value: "viewer" },
+              {
+                column: "socialModuleProfileId",
+                method: "eq",
+                value: "shared-assistant",
+              },
+              { column: "variant", method: "eq", value: "assistant" },
+            ],
+          },
+        },
+      }),
+    );
+  });
   /**
    * BDD Scenario
    * Given: a requested middle page.
@@ -24,6 +64,10 @@ describe("Knowledge Source find", () => {
       .fn()
       .mockResolvedValue([{ knowledgeModuleSourceId: "source-2" }]);
     const service = {
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn().mockResolvedValue([{ variant: "assistant" }]),
+      },
+      socialModuleProfileKnowledgeAccessEnsure: jest.fn(),
       socialModule: {
         profilesToKnowledgeModuleSources: { find: relationsFind },
       },
@@ -44,5 +88,11 @@ describe("Knowledge Source find", () => {
       }),
     );
     expect(c.json).toHaveBeenCalledWith({ data: [{ id: "source-2" }] });
+    expect(
+      service.socialModuleProfileKnowledgeAccessEnsure,
+    ).toHaveBeenCalledWith({
+      ownerRbacSubjectId: "profile-1",
+      socialModuleProfileId: "profile-1",
+    });
   });
 });

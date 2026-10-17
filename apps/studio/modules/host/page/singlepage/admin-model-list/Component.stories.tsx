@@ -1,15 +1,17 @@
+import { Component as Page } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { AdminModelList } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-admin-model-list",
-  title: "Modules/Host/Models/Page/Singlepage/admin-model-list",
-  component: AdminModelList,
+  title: "Modules/Host/Page/Singlepage/admin-model-list",
+  component: Page,
   parameters: {
     layout: "fullscreen",
   },
-} satisfies Meta<typeof AdminModelList>;
+  args: { variant: "admin-model-list" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Page>, { variant: "admin-model-list" }>
+>;
 
 export default meta;
 

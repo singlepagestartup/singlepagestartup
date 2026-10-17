@@ -1,123 +1,91 @@
 "use client";
-
-import { useEffect } from "react";
-import { IComponentPropsExtended } from "./interface";
-import { z } from "zod";
-import { api } from "@sps/rbac/models/subject/sdk/client";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { api } from "@sps/rbac/models/subject/sdk/client";
+import { Component as CrmModuleForm } from "@sps/crm/models/form/frontend/component";
+import {
+  toRequestSubmission,
+  type IRequestFields,
+} from "@sps/crm/models/request/sdk/model";
 import { Form, Button } from "@sps/shared-ui-shadcn";
-import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as CrmModuleFormsToSteps } from "@sps/crm/relations/forms-to-steps/frontend/component";
-import { Component as CrmModuleStep } from "@sps/crm/models/step/frontend/component";
-import { toast } from "sonner";
-
-const formSchema = z.any();
-
+import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
-  const crmModuleFromRequestCreate = api.crmModuleFromRequestCreate({});
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      steps: [],
-    },
-  });
-
-  async function onSubmit(data: z.infer<typeof formSchema>) {
-    crmModuleFromRequestCreate.mutate({
-      id: props.data.id,
-      crmModuleFormId: props.crmModuleForm.id,
-      data: {
-        ...data,
-      },
-    });
-  }
-
-  useEffect(() => {
-    if (crmModuleFromRequestCreate.isSuccess) {
-      toast.success("Form submitted successfully");
+  const form = useForm<IRequestFields>({ defaultValues: { steps: {} } });
+  const submissionId = useRef<string | null>(null);
+  const submitting = useRef(false);
+  const [failure, setFailure] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<
+    "queued" | "sent" | "failed"
+  >("queued");
+  const request = api.crmModuleFromRequestCreate({});
+  async function submit(values: IRequestFields) {
+    if (submitting.current || submitted) return;
+    submitting.current = true;
+    setFailure("");
+    try {
+      submissionId.current ??= crypto.randomUUID();
+      const result = await request.mutateAsync({
+        id: props.data.id,
+        crmModuleFormId: props.crmModuleForm.id,
+        data: toRequestSubmission(values, submissionId.current),
+      });
+      setNotificationStatus(
+        result?.submissionResult?.notificationStatus ?? "queued",
+      );
+      setSubmitted(true);
+    } catch (error) {
+      setFailure(
+        error instanceof Error
+          ? error.message
+          : "Request could not be submitted.",
+      );
+    } finally {
+      submitting.current = false;
     }
-  }, [crmModuleFromRequestCreate]);
-
+  }
   return (
-    <div
-      data-module="crm"
-      data-model="form"
-      data-variant={props.variant}
-      className={cn("flex w-full flex-col gap-6", props.className)}
-    >
-      <Form {...form}>
-        <div className="w-full grid gap-4">
-          <CrmModuleFormsToSteps
-            isServer={false}
-            variant="find"
-            apiProps={{
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "formId",
-                      method: "eq",
-                      value: props.crmModuleForm.id,
-                    },
-                  ],
-                },
-              },
-            }}
-          >
-            {({ data }) => {
-              return data?.map((entity, index) => {
-                return (
-                  <CrmModuleStep
-                    key={index}
-                    isServer={false}
-                    variant="find"
-                    apiProps={{
-                      params: {
-                        filters: {
-                          and: [
-                            {
-                              column: "id",
-                              method: "eq",
-                              value: entity.stepId,
-                            },
-                          ],
-                        },
-                      },
-                    }}
-                  >
-                    {({ data }) => {
-                      return data?.map((entity, index) => {
-                        return (
-                          <CrmModuleStep
-                            key={index}
-                            isServer={false}
-                            variant={entity.variant as any}
-                            data={entity}
-                            form={form}
-                            disabled={crmModuleFromRequestCreate.isPending}
-                            language={props.language}
-                            path={`steps.[${index}].`}
-                          />
-                        );
-                      });
-                    }}
-                  </CrmModuleStep>
-                );
-              });
-            }}
-          </CrmModuleFormsToSteps>
-
-          <Button
-            variant="primary"
-            onClick={form.handleSubmit(onSubmit)}
-            disabled={crmModuleFromRequestCreate.isPending}
-          >
-            {props.language === "ru" ? "Отправить" : "Submit"}
-          </Button>
-        </div>
-      </Form>
-    </div>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(submit)}
+        className="grid w-full gap-5"
+        noValidate
+      >
+        <CrmModuleForm
+          isServer={false}
+          variant="support-ai-chat"
+          data={props.crmModuleForm}
+          dataSource="props"
+          language={props.language}
+          form={form}
+          pending={request.isPending}
+          submitted={submitted}
+        >
+          {failure && (
+            <p role="alert" className="text-sm text-destructive">
+              {failure}
+            </p>
+          )}
+          {submitted ? (
+            <p role="status">
+              {props.language === "ru" ? "Заявка сохранена" : "Request saved"}
+              {notificationStatus !== "sent"
+                ? props.language === "ru"
+                  ? ". Доставка уведомления пока не подтверждена."
+                  : ". Notification delivery is not confirmed yet."
+                : ""}
+            </p>
+          ) : (
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={request.isPending}
+            >
+              {props.language === "ru" ? "Отправить" : "Submit"}
+            </Button>
+          )}
+        </CrmModuleForm>
+      </form>
+    </Form>
   );
 }

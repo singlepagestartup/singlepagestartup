@@ -8,6 +8,10 @@ import {
   type TOpenRouterReasoningEffort,
 } from "@sps/shared-third-parties";
 import { Service } from "../../../../../../../../service";
+import {
+  OPEN_ROUTER_ASSISTANT_MODEL,
+  OPEN_ROUTER_MODEL_ROUTER_CONFIG,
+} from "@sps/shared-utils";
 
 type TOpenRouterModelGroup = "text" | "vision_file" | "image" | "audio";
 
@@ -44,15 +48,23 @@ export class Handler {
     try {
       const openRouter = new OpenRouter();
       const models = await openRouter.getModels();
+      const allowedIds = new Set<string>(
+        Object.values(OPEN_ROUTER_MODEL_ROUTER_CONFIG.classes)
+          .flat()
+          .filter((model) => model.enabled)
+          .map((model) => model.id),
+      );
 
       return c.json({
         data: {
           auto: {
             id: "auto",
             name: "Auto",
-            description: "Automatically select the best OpenRouter model.",
+            description: "Select from the locally allowed model catalogue.",
           },
-          groups: this.groupModels(models),
+          groups: this.groupModels(
+            models.filter((model) => allowedIds.has(model.id)),
+          ),
         },
       });
     } catch (error: unknown) {
@@ -187,7 +199,8 @@ export class Handler {
           (effort): effort is TOpenRouterReasoningEffort => {
             return (
               openRouterReasoningEffortValues.includes(effort) &&
-              !(reasoning.mandatory === true && effort === "none")
+              !(reasoning.mandatory === true && effort === "none") &&
+              effort === OPEN_ROUTER_ASSISTANT_MODEL.reasoning.effort
             );
           },
         ),
@@ -198,11 +211,7 @@ export class Handler {
       return null;
     }
 
-    const defaultEffort = supportedEfforts.includes(
-      reasoning.default_effort as TOpenRouterReasoningEffort,
-    )
-      ? (reasoning.default_effort as TOpenRouterReasoningEffort)
-      : null;
+    const defaultEffort = OPEN_ROUTER_ASSISTANT_MODEL.reasoning.effort;
 
     return {
       defaultEffort,

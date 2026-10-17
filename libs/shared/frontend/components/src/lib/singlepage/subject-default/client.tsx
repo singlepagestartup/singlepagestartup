@@ -35,7 +35,11 @@ export function Component<
   delete passProps.Skeleton;
   delete passProps.api;
 
-  const [jwtCookies] = useCookies(["rbac.subject.jwt"]);
+  const [jwtCookies, , , updateCookies] = useCookies(["rbac.subject.jwt"]);
+
+  useEffect(() => {
+    updateCookies();
+  }, [props.data.id, updateCookies]);
 
   const token = useJwt<{
     exp: number;

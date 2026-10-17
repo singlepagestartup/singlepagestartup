@@ -1,21 +1,20 @@
-import { Component as SocialModuleThread } from "../../../index";
+import { Component as Thread } from "../../../index";
 
 import type { Meta, StoryObj } from "@storybook/react";
 
-function Example() {
+function Component() {
   return (
-    <SocialModuleThread
-      variant="create-ai-chat"
-      cancelHref="/ai-chat/social/profiles/pottery"
-    />
+    <Thread variant="create-ai-chat">
+      <p className="p-6">Subject thread creation form slot</p>
+    </Thread>
   );
 }
 
 const meta = {
   id: "modules-social-models-thread-singlepage-create-ai-chat",
-  title: "Modules/Social/Models/Thread/Singlepage/create/ai-chat",
-  component: Example,
+  title: "Modules/Social/Thread/Singlepage/create/ai-chat",
+  component: Component,
   parameters: { layout: "fullscreen" },
-} satisfies Meta<typeof Example>;
+} satisfies Meta<typeof Component>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};

@@ -1,0 +1,323 @@
+{
+  "layout": {
+    "id": "815c3653-933e-4938-b768-1124be773268",
+    "createdAt": "2026-10-11T01:59:08.637Z",
+    "updatedAt": "2026-10-11T01:59:08.637Z",
+    "variant": "default",
+    "title": "AI Chat layout",
+    "className": "",
+    "adminTitle": "AI Chat layout",
+    "slug": "ai-chat-layout"
+  },
+  "layoutWidgets": [],
+  "pages": [
+    {
+      "key": "landing",
+      "widgets": [
+        {
+          "id": "746283d5-1803-414a-a904-9d5610a8bd70",
+          "createdAt": "2026-10-11T02:00:18.725Z",
+          "updatedAt": "2026-10-11T02:00:18.725Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "pageId": "c9d1562a-ff09-4381-a46d-23d67fa62643",
+          "widgetId": "5600ca7a-e9fd-4e88-ba5b-91e07505dc4b"
+        }
+      ],
+      "external": [
+        {
+          "id": "3b13be5c-8219-4020-afac-d407bf72e6f3",
+          "createdAt": "2026-10-11T01:56:09.030Z",
+          "updatedAt": "2026-10-11T01:56:09.030Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "widgetId": "5600ca7a-e9fd-4e88-ba5b-91e07505dc4b",
+          "externalModule": "rbac",
+          "externalWidgetId": "b5d92b29-7cc6-464a-95c3-9f46fbc8f486"
+        }
+      ]
+    },
+    {
+      "key": "projects",
+      "widgets": [
+        {
+          "id": "6d1c7424-7827-4d92-8ac1-48014290c5d5",
+          "createdAt": "2026-10-11T02:00:24.369Z",
+          "updatedAt": "2026-10-11T02:00:24.369Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "pageId": "89ffc350-ca96-467e-acb1-1b02604d98ce",
+          "widgetId": "e09d0410-5c69-4111-ac68-18032e12b0ce"
+        }
+      ],
+      "external": [
+        {
+          "id": "7ec72bac-1b0a-423a-95fb-a9b218adc4bb",
+          "createdAt": "2026-10-11T01:57:01.755Z",
+          "updatedAt": "2026-10-11T01:57:01.755Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "widgetId": "e09d0410-5c69-4111-ac68-18032e12b0ce",
+          "externalModule": "rbac",
+          "externalWidgetId": "eff12691-8a05-4f49-80b4-ef3dcfa79077"
+        }
+      ]
+    },
+    {
+      "key": "workspace",
+      "widgets": [
+        {
+          "id": "1a4a886f-f042-49dc-840b-d7c1168bf4b3",
+          "createdAt": "2026-10-11T02:00:30.049Z",
+          "updatedAt": "2026-10-11T02:00:30.049Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "pageId": "b8ce23e9-63c3-406d-b44a-ba382b4cccc8",
+          "widgetId": "d32f1387-5991-4983-a52c-b78866a176ec"
+        }
+      ],
+      "external": [
+        {
+          "id": "a2560d8f-b9ce-42cb-8d9a-64f79c953a2e",
+          "createdAt": "2026-10-11T01:57:06.305Z",
+          "updatedAt": "2026-10-11T01:57:06.305Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "widgetId": "d32f1387-5991-4983-a52c-b78866a176ec",
+          "externalModule": "rbac",
+          "externalWidgetId": "86d0e4be-f0b5-4277-bbc7-17f0c34a2c7d"
+        }
+      ]
+    },
+    {
+      "key": "project-settings",
+      "widgets": [
+        {
+          "id": "6c84d9c2-76ad-43f4-aa25-326b8a28e300",
+          "createdAt": "2026-10-11T02:00:36.069Z",
+          "updatedAt": "2026-10-11T02:00:36.069Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "pageId": "9e761df6-d548-4adf-a8dc-6f6571d0b6ae",
+          "widgetId": "6bb3df80-b72a-4766-b878-7276de8cc640"
+        }
+      ],
+      "external": [
+        {
+          "id": "523cf563-132d-4c31-99d2-f7b8fce87a22",
+          "createdAt": "2026-10-11T01:57:10.899Z",
+          "updatedAt": "2026-10-11T01:57:10.899Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "widgetId": "6bb3df80-b72a-4766-b878-7276de8cc640",
+          "externalModule": "rbac",
+          "externalWidgetId": "f31b4dcd-da9d-462e-b24e-f6fb93bf18ed"
+        }
+      ]
+    },
+    {
+      "key": "new-thread",
+      "widgets": [
+        {
+          "id": "728eeda5-0366-461b-96a6-5370c35a4470",
+          "createdAt": "2026-10-11T02:04:00.490Z",
+          "updatedAt": "2026-10-11T02:04:00.490Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "pageId": "a9b2427c-ebd4-4072-b707-ac108bfebb48",
+          "widgetId": "e9fe3cd2-0515-4c11-94f7-229b90c2cd69"
+        }
+      ],
+      "external": [
+        {
+          "id": "c42b0348-955f-482f-aa35-d5bb09695109",
+          "createdAt": "2026-10-11T01:57:54.274Z",
+          "updatedAt": "2026-10-11T01:57:54.274Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "widgetId": "e9fe3cd2-0515-4c11-94f7-229b90c2cd69",
+          "externalModule": "rbac",
+          "externalWidgetId": "74680c2d-bc2d-4864-8d2d-2079aa24f574"
+        }
+      ]
+    },
+    {
+      "key": "settings",
+      "widgets": [
+        {
+          "id": "63eb8b35-a776-497b-96f9-b1b96a070d98",
+          "createdAt": "2026-10-11T02:04:06.271Z",
+          "updatedAt": "2026-10-11T02:04:06.271Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "pageId": "a22958f9-92e8-4231-b992-81672bd57dfc",
+          "widgetId": "48fdb9cc-4eb4-4597-8ec7-2da82e1f05fc"
+        }
+      ],
+      "external": [
+        {
+          "id": "4141d0d1-56b2-4026-a09c-2c342d206f50",
+          "createdAt": "2026-10-11T01:57:58.836Z",
+          "updatedAt": "2026-10-11T01:57:58.836Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "widgetId": "48fdb9cc-4eb4-4597-8ec7-2da82e1f05fc",
+          "externalModule": "rbac",
+          "externalWidgetId": "5ba75ff3-1e83-4a3a-a5f3-c17825f8411f"
+        }
+      ]
+    },
+    {
+      "key": "sign-in",
+      "widgets": [
+        {
+          "id": "4ae3753f-7449-4ecf-a712-40eca9c9f264",
+          "createdAt": "2026-10-11T02:04:12.155Z",
+          "updatedAt": "2026-10-11T02:04:12.155Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "pageId": "7068a7fc-c85c-49f9-9f4d-37ece256a38c",
+          "widgetId": "c8bd3e55-d091-40f3-b00b-ba6a2e72e9c3"
+        }
+      ],
+      "external": [
+        {
+          "id": "179f31bd-185b-48a7-baf3-e5642c8db0f5",
+          "createdAt": "2026-10-11T01:58:03.499Z",
+          "updatedAt": "2026-10-11T01:58:03.499Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "widgetId": "c8bd3e55-d091-40f3-b00b-ba6a2e72e9c3",
+          "externalModule": "rbac",
+          "externalWidgetId": "699ab73b-dc60-4361-b446-639ea2733ef8"
+        }
+      ]
+    },
+    {
+      "key": "create-account",
+      "widgets": [
+        {
+          "id": "d4547fb8-f7fb-4f10-8775-0b17682a4c34",
+          "createdAt": "2026-10-11T02:04:33.521Z",
+          "updatedAt": "2026-10-11T02:04:33.521Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "pageId": "f3f4a647-dae0-4fa9-b0b3-deb25fbd4eb5",
+          "widgetId": "059fc6a7-e258-443e-a886-de34a8513758"
+        }
+      ],
+      "external": [
+        {
+          "id": "617c277e-c78c-408b-80b1-713feca0d92b",
+          "createdAt": "2026-10-11T01:58:07.879Z",
+          "updatedAt": "2026-10-11T01:58:07.879Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "widgetId": "059fc6a7-e258-443e-a886-de34a8513758",
+          "externalModule": "rbac",
+          "externalWidgetId": "9aa9a2dd-adca-4b3f-8138-b6b1cbd080ba"
+        }
+      ]
+    },
+    {
+      "key": "forgot-password",
+      "widgets": [
+        {
+          "id": "1a376b81-e86b-49ed-9fc4-3058644c5198",
+          "createdAt": "2026-10-11T02:04:39.483Z",
+          "updatedAt": "2026-10-11T02:04:39.483Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "pageId": "66f99ba7-2cc2-407b-bfa9-7ef3e55a7cf4",
+          "widgetId": "6921d9a3-3508-4994-94f3-c88b0828d106"
+        }
+      ],
+      "external": [
+        {
+          "id": "94c91bef-3f9d-4b30-a908-cdb29af6b77e",
+          "createdAt": "2026-10-11T01:58:12.360Z",
+          "updatedAt": "2026-10-11T01:58:12.360Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "widgetId": "6921d9a3-3508-4994-94f3-c88b0828d106",
+          "externalModule": "rbac",
+          "externalWidgetId": "219564c8-5ea5-4a75-a844-143ebc42d626"
+        }
+      ]
+    },
+    {
+      "key": "reset-password",
+      "widgets": [
+        {
+          "id": "9fa6e070-1699-4af4-92b6-a7c89c5137c5",
+          "createdAt": "2026-10-11T02:04:45.625Z",
+          "updatedAt": "2026-10-11T02:04:45.625Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "pageId": "cdd585f7-62a8-4344-96c6-f9b593d37f1c",
+          "widgetId": "06c6b2be-5e47-4e51-af48-1bdf6ee09098"
+        }
+      ],
+      "external": [
+        {
+          "id": "04d06a00-661a-4083-9af8-31fd4f432e3c",
+          "createdAt": "2026-10-11T01:58:17.042Z",
+          "updatedAt": "2026-10-11T01:58:17.042Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": "",
+          "widgetId": "06c6b2be-5e47-4e51-af48-1bdf6ee09098",
+          "externalModule": "rbac",
+          "externalWidgetId": "3d36832c-cec5-4e31-bc36-778cb5dd37af"
+        }
+      ]
+    },
+    {
+      "key": "help",
+      "widgets": [
+        {
+          "id": "df42a8e0-2e5b-4cf4-aa48-f34b2e89a57a",
+          "createdAt": "2026-10-11T20:42:47.357Z",
+          "updatedAt": "2026-10-11T20:42:47.357Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": null,
+          "pageId": "01f39ad8-5b96-4121-adc1-2a79951c0e2a",
+          "widgetId": "02895855-e6ed-4044-a002-7e4026a6f706"
+        }
+      ],
+      "external": [
+        {
+          "id": "62e6ca8b-f720-463b-8623-1c4d231886d7",
+          "createdAt": "2026-10-11T20:42:47.295Z",
+          "updatedAt": "2026-10-11T20:42:47.295Z",
+          "variant": "default",
+          "orderIndex": 0,
+          "className": null,
+          "widgetId": "02895855-e6ed-4044-a002-7e4026a6f706",
+          "externalModule": "rbac",
+          "externalWidgetId": "05990ce8-0b96-498f-bad2-2dbed3fa628b"
+        }
+      ]
+    }
+  ]
+}

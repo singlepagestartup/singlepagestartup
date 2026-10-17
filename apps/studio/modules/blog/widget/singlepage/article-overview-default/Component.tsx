@@ -1,6 +1,7 @@
+import type { IComponentProps } from "./interface";
 import { ArticleFindByIdTagFind } from "../article-find-by-id-tag-find-default/Component";
 import {
-  Component as BlogModuleArticle,
+  Component as Article,
   type ArticleOverviewDefaultProps,
   defaultArticleOverviewDefaultProps,
 } from "../../../article/index";
@@ -8,9 +9,7 @@ import {
 export { defaultArticleOverviewDefaultProps };
 export type { ArticleOverviewDefaultProps };
 
-export function ArticleOverviewDefaultWidget(
-  props?: Partial<ArticleOverviewDefaultProps> & { variant?: string },
-) {
+export function ArticleOverviewDefaultWidget(props?: IComponentProps) {
   return (
     <div
       data-ds-block="blog.widget.article-overview-default"
@@ -21,7 +20,7 @@ export function ArticleOverviewDefaultWidget(
       data-model="widget"
       data-variant={props?.variant ?? "article-overview-default"}
     >
-      <BlogModuleArticle
+      <Article
         {...props}
         variant="overview-default"
         tagsCard={

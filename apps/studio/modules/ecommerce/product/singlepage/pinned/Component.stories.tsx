@@ -1,15 +1,19 @@
+import { Component as Product } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ProductPinned, defaultProductPinnedProps } from "./Component";
+import { defaultProductPinnedProps } from "./Component";
 
 const meta = {
-  title: "Modules/Ecommerce/Models/Product/Singlepage/pinned",
-  component: ProductPinned,
+  id: "modules-ecommerce-models-product-singlepage-pinned",
+  title: "Modules/Ecommerce/Product/Singlepage/pinned",
+  component: Product,
   parameters: {
     layout: "padded",
   },
-  args: defaultProductPinnedProps,
-} satisfies Meta<typeof ProductPinned>;
+  args: { ...defaultProductPinnedProps, variant: "pinned" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Product>, { variant: "pinned" }>
+>;
 
 export default meta;
 

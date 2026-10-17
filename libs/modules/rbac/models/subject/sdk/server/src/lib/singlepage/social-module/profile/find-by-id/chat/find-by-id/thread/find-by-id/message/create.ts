@@ -6,7 +6,10 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
-import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import {
+  IModel as ISocialModuleMessage,
+  IChatMessage,
+} from "@sps/social/models/message/sdk/model";
 
 export interface IProps {
   id: string;
@@ -25,7 +28,7 @@ export interface IProps {
   };
 }
 
-export type IResult = ISocialModuleMessage;
+export type IResult = IChatMessage;
 
 export async function action(props: IProps): Promise<IResult> {
   const {

@@ -177,12 +177,10 @@ describe("AI Chat project ownership", () => {
       "select/ai-chat/project",
       "select/item/ai-chat/project",
       "sidebar/ai-chat/project",
-      "create/ai-chat/project",
       "settings/ai-chat/project",
       "scope/ai-chat/project",
-      "overview/ai-chat/project",
+      "id/ai-chat/project",
       "overview/default",
-      "processing/ai-chat/project",
       "account-menu",
     ])
       expect(
@@ -190,18 +188,26 @@ describe("AI Chat project ownership", () => {
           file.includes(`/singlepage/${folder}/`),
         ),
       ).toBe(true);
+    const subjectCreate = actual.modules
+      .find((record) => record.name === "rbac")!
+      .entities.find((record) => record.entity === "subject")!;
+    expect(
+      subjectCreate.storyFiles?.some((file) =>
+        file.includes("/singlepage/me/social-module/profile/create/ai-chat/"),
+      ),
+    ).toBe(true);
     for (const [entity, folders] of [
-      ["chat", ["overview/ai-chat"]],
+      ["chat", ["id/ai-chat"]],
       [
         "thread",
         [
-          "overview/ai-chat",
+          "id/ai-chat",
           "create/ai-chat",
-          "overview/ai-chat/settings",
+          "id/ai-chat-settings",
           "message/list/ai-chat",
         ],
       ],
-      ["message", ["overview/ai-chat", "list/ai-chat"]],
+      ["message", ["id/ai-chat", "list-ai-chat"]],
     ] as const) {
       const record = social.entities.find(
         (item) => item.entityType === "model" && item.entity === entity,
@@ -249,7 +255,7 @@ describe("AI Chat Source ownership", () => {
     )!;
     expect(
       source.storyFiles?.some((file) =>
-        file.includes("/singlepage/overview/ai-chat/"),
+        file.includes("/singlepage/id/ai-chat/"),
       ),
     ).toBe(true);
     expect(
@@ -260,7 +266,7 @@ describe("AI Chat Source ownership", () => {
       .entities.find((entity) => entity.entity === "file")!;
     expect(
       file.storyFiles?.some((story) =>
-        story.includes("/singlepage/list/attachments/ai-chat/"),
+        story.includes("/singlepage/list-attachments-ai-chat/"),
       ),
     ).toBe(true);
   });

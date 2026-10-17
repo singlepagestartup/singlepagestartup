@@ -1,15 +1,19 @@
+import { Component as Form } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { CrmFormDefault, defaultCrmFormDefaultProps } from "./Component";
+import { defaultCrmFormDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/CRM/Models/Form/Singlepage/default",
-  component: CrmFormDefault,
+  id: "modules-crm-models-form-singlepage-default",
+  title: "Modules/CRM/Form/Singlepage/default",
+  component: Form,
   parameters: {
     layout: "padded",
   },
-  args: defaultCrmFormDefaultProps,
-} satisfies Meta<typeof CrmFormDefault>;
+  args: { ...defaultCrmFormDefaultProps, variant: "default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Form>, { variant: "default" }>
+>;
 
 export default meta;
 

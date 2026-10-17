@@ -1,4 +1,19 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  BlogCommentData,
+  RelatedArticle,
+  PinnedProduct,
+  ArticleDetailProps,
+} from "./interface";
+export type {
+  BlogCommentData,
+  RelatedArticle,
+  PinnedProduct,
+  ArticleDetailProps,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import {
   forwardRef,
   type SVGProps,
@@ -9,12 +24,12 @@ import {
 } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import { Component as SocialModuleProfile } from "../../../../social/profile/index";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
 import { Component as SocialModuleWidget } from "../../../../social/widget/index";
 import { Component as EcommerceModuleProduct } from "../../../../ecommerce/product/index";
-import { Component as BlogModuleTag } from "../../../tag/index";
+import { Component as Tag } from "../../../tag/index";
 import { ArticleRelatedDefault } from "../related-default/Component";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
@@ -43,42 +58,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface BlogCommentData {
-  id: string;
-  author: string;
-  avatar: string;
-  date: string;
-  text: string;
-  likes: number;
-  replies?: BlogCommentData[];
-}
-export interface RelatedArticle {
-  id: string;
-  slug: string;
-  title: string;
-  category: string;
-  date: string;
-  readTime: string;
-}
-export interface PinnedProduct {
-  id: string;
-  slug: string;
-  title: string;
-  shortDescription: string;
-  price: string;
-  priceLabel: string;
-  category: string;
-}
-export type ArticleDetailProps = typeof defaultArticleDetailProps & {
-  cover?: ReactNode;
-  tagsCard?: ReactNode;
-};
-export function ArticleDetail(
-  props?: Partial<ArticleDetailProps> & { variant?: string },
-) {
+export function ArticleDetail(props?: IComponentProps) {
   const {
     slug,
     category,
@@ -122,12 +105,12 @@ export function ArticleDetail(
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <nav
           aria-label="Article breadcrumb"
-          className="mb-6 flex flex-wrap items-center gap-2 text-sm text-[var(--color-sps-muted)]"
+          className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
         >
           <a
             href={blogIndexStoryHref}
             target="_top"
-            className={`inline-flex min-h-11 items-center gap-2 rounded-xl hover:text-[var(--color-sps-graphite)] ${kit.focus}`}
+            className={`inline-flex min-h-11 items-center gap-2 rounded-xl hover:text-foreground ${kit.focus}`}
           >
             <ArrowLeft className="size-5" />
             All articles
@@ -138,16 +121,16 @@ export function ArticleDetail(
         <header
           className={`grid min-w-0 gap-4 ${cover ? "lg:grid-cols-2" : ""}`}
         >
-          <div className="flex min-w-0 flex-col justify-between gap-8 rounded-3xl bg-[var(--color-sps-graphite)] p-6 text-[var(--color-sps-white)] sm:p-8 lg:p-10">
+          <div className="flex min-w-0 flex-col justify-between gap-8 rounded-3xl bg-default p-6 text-default-foreground sm:p-8 lg:p-10">
             <div>
-              <span className="inline-flex rounded-full bg-[var(--color-sps-green)] px-3 py-1.5 text-xs font-medium text-[var(--color-sps-graphite)]">
+              <span className="inline-flex rounded-full bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium">
                 {category}
               </span>
               <h1 className="mt-6 break-words text-4xl font-semibold leading-[1.08] tracking-tight md:text-5xl">
                 {title}
               </h1>
             </div>
-            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-white/20 pt-5">
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-default-foreground/20 pt-5">
               <SocialModuleProfile
                 variant="compact"
                 inverse
@@ -157,7 +140,7 @@ export function ArticleDetail(
                 href={authorOverviewStoryHref}
                 target="_top"
               />
-              <div className="text-right text-xs leading-5 text-[var(--color-sps-muted-inverse)]">
+              <div className="text-right text-xs leading-5 text-default-muted-foreground">
                 <p>{date}</p>
                 <p>{readTime}</p>
               </div>
@@ -167,10 +150,10 @@ export function ArticleDetail(
         </header>
         <div className="grid min-w-0 items-start gap-6 pt-6 sm:pt-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8">
           <div className="min-w-0 space-y-8">
-            <div className="rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-8 lg:p-10">
+            <div className="rounded-3xl border border-border bg-card p-5 sm:p-8 lg:p-10">
               <div className="mb-8 flex flex-wrap gap-2">
                 {tags.map((tag) => (
-                  <BlogModuleTag
+                  <Tag
                     variant="button-default"
                     key={tag}
                     label={tag}
@@ -182,7 +165,7 @@ export function ArticleDetail(
                 variant="content-rich"
                 content={content}
               />
-              <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-sps-line)] pt-6">
+              <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
                 <Button variant="secondary" onClick={copyLink}>
                   <Share2 className="size-5" />
                   Copy link
@@ -198,7 +181,7 @@ export function ArticleDetail(
               </div>
               <p
                 aria-live="polite"
-                className="mt-3 text-xs text-[var(--color-sps-muted)]"
+                className="mt-3 text-xs text-muted-foreground"
               >
                 {copyStatus ||
                   (saved ? "Saved locally for this preview session." : "")}
@@ -206,12 +189,12 @@ export function ArticleDetail(
             </div>
             <section
               aria-label="Article comments"
-              className="rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-8"
+              className="rounded-3xl border border-border bg-card p-5 sm:p-8"
             >
               <h2 className="mb-6 flex items-center gap-3 text-2xl font-semibold tracking-tight">
                 <MessageSquare className="size-6" />
                 Comments{" "}
-                <span className="text-base font-normal text-[var(--color-sps-muted)]">
+                <span className="text-base font-normal text-muted-foreground">
                   {totalComments}
                 </span>
               </h2>
@@ -234,7 +217,7 @@ export function ArticleDetail(
               target="_top"
             />
             {pinnedProducts.length > 0 && (
-              <section className="rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5">
+              <section className="rounded-2xl border border-border bg-card p-5">
                 <h2 className="mb-4 text-lg font-semibold">Related products</h2>
                 <div className="space-y-4">
                   {pinnedProducts.map((product) => (
@@ -255,7 +238,7 @@ export function ArticleDetail(
             )}
             {tagsCard}
             {relatedArticles.length > 0 && (
-              <section className="rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5">
+              <section className="rounded-2xl border border-border bg-card p-5">
                 <h2 className="mb-4 text-lg font-semibold">Keep reading</h2>
                 <div className="space-y-3">
                   {relatedArticles.map((rel) => (
@@ -293,11 +276,11 @@ const ChevronRight = createIcon("caret-right");
 const Bookmark = createIcon("bookmark-simple");
 const ArrowLeft = createIcon("arrow-left");
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  secondary: `${buttonBase} border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)] enabled:hover:bg-[var(--color-sps-grey)] ${focus}`,
+  secondary: `${buttonBase} border border-border bg-card text-foreground enabled:hover:bg-muted ${focus}`,
   focus: focus,
 };
 const Button = forwardRefControl<
@@ -316,13 +299,13 @@ const Button = forwardRefControl<
   );
 });
 const articleOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
+  "/?path=/story/modules-host-models-page-singlepage-blog-module-article-slug--default";
 const authorOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-blog-authors-social-profiles-slug--default";
+  "/?path=/story/modules-host-models-page-singlepage-social-module-profile-slug-author--default";
 const productOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-ecommerce-products-ecommerce-products-slug--default";
+  "/?path=/story/modules-host-models-page-singlepage-ecommerce-module-product-slug--default";
 const blogIndexStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-blog--default";
+  "/?path=/story/modules-host-models-page-singlepage-blog-module-article-find--default";
 const sarahAvatar =
   "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHdvbWFuJTIwZGV2ZWxvcGVyJTIwaGVhZHNob3R8ZW58MXx8fHwxNzcxNzE1ODgyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 export const defaultArticleDetailProps = {

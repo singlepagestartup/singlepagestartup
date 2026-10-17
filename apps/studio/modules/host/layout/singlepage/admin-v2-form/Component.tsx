@@ -1,3 +1,5 @@
+import type { IComponentProps, IHostLayoutAdminV2FormProps } from "./interface";
+export type { IHostLayoutAdminV2FormProps } from "./interface";
 import {
   HostModelForm,
   HostStudioProvider,
@@ -5,20 +7,14 @@ import {
 } from "../../../page/singlepage/composition/HostRecords/index";
 import type { IModel } from "../../interface";
 import { createHostStudioState } from "../../../page/singlepage/composition/HostRecords/state/index";
-export interface IHostLayoutAdminV2FormProps
-  extends Omit<IHostStudioProviderProps, "children"> {
-  variant?: string;
-  record?: IModel;
-  onSave?: (record: IModel) => void;
-  embedded?: boolean;
-}
+
 export function HostLayoutAdminV2Form({
   variant = "admin-v2-form",
   record,
   onSave,
   embedded,
   ...provider
-}: IHostLayoutAdminV2FormProps = {}) {
+}: IComponentProps = {}) {
   return (
     <HostStudioProvider {...provider}>
       <HostModelForm

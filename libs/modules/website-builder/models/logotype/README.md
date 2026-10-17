@@ -18,6 +18,8 @@ Logotype represents a brand mark, typically linked to a URL.
 
 ## Variants
 
+- `brand-ai-chat`: AI Chat home link with the Studio logo, hover animation and keyboard focus states.
+
 - `default`: renders linked logotype media and wraps it with a link.
 - `find`: data-fetch wrapper for querying logotypes.
 - `admin-select-input`: admin UI select input for linking logotypes.

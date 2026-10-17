@@ -1,4 +1,7 @@
-import { getHttpErrorType } from "@sps/backend-utils";
+import {
+  getHttpErrorType,
+  getPrivateAIChatSkillProfileId,
+} from "@sps/backend-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../../service";
@@ -32,7 +35,10 @@ export class Handler {
         },
       });
       const available = (skills || []).filter((skill) => {
-        if (linkedIds.has(skill.id)) {
+        if (
+          linkedIds.has(skill.id) ||
+          getPrivateAIChatSkillProfileId(skill.slug)
+        ) {
           return false;
         }
 

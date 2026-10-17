@@ -12,7 +12,7 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export type IResult = IModel | undefined;
+export type IResult = (IModel & { authenticated: boolean }) | undefined;
 
 export async function action(props: IProps): Promise<IResult> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;

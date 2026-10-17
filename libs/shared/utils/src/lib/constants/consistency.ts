@@ -1,0 +1,8 @@
+export const CONSISTENCY_PROTOCOL = 1 as const;
+export const CONSISTENCY_HEADER = "x-sps-consistency";
+export const CONSISTENCY_RESPONSE_EVENT = "sps:consistency-response";
+export const CONSISTENCY_LEASE_MS = 5 * 60 * 1000;
+export const CONSISTENCY_MAX_DEPENDENCIES = 256;
+export const CONSISTENCY_COLLECTION_SHARDS = 16;
+export const CONSISTENCY_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+export const CONSISTENCY_REVALIDATION_BATCH_SIZE = 128;

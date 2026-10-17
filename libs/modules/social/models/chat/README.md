@@ -23,6 +23,7 @@ Telegram chat.
 
 ## Variants
 
+- `id-ai-chat`: server container for the selected Chat, with a Thread content slot.
 - `default`: placeholder chat view.
 - `find`: data-fetch wrapper for querying chats.
 - `admin-form`: admin create/edit form for chat fields.

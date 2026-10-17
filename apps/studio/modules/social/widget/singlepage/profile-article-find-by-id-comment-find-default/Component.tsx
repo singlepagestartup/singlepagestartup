@@ -1,7 +1,18 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  ArticleComment,
+  ProfileArticleFindByIdCommentFindDefaultProps,
+} from "./interface";
+export type {
+  ArticleComment,
+  ProfileArticleFindByIdCommentFindDefaultProps,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -29,18 +40,9 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface ArticleComment {
-  id: string;
-  author: string;
-  avatar: string;
-  date: string;
-  text: string;
-  likes: number;
-  replies?: ArticleComment[];
-}
 function CommentItem({
   comment,
   depth = 0,
@@ -57,8 +59,8 @@ function CommentItem({
     <div
       className={
         depth > 0
-          ? "ml-2 border-l-2 border-[var(--color-sps-line)] pl-3 sm:ml-6 sm:pl-5"
-          : "rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-6"
+          ? "ml-2 border-l-2 border-border pl-3 sm:ml-6 sm:pl-5"
+          : "rounded-2xl border border-border bg-card p-5 sm:p-6"
       }
     >
       <div className="flex gap-3">
@@ -66,36 +68,36 @@ function CommentItem({
           <img
             src={comment.avatar}
             alt={comment.author}
-            className="h-9 w-9 shrink-0 rounded-full border border-[var(--color-sps-line)] object-cover"
+            className="h-9 w-9 shrink-0 rounded-full border border-border object-cover"
           />
         ) : (
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] text-xs text-[var(--color-sps-muted)]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xs text-muted-foreground">
             {initials}
           </div>
         )}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold text-[var(--color-sps-graphite)]">
+            <span className="text-sm font-semibold text-foreground">
               {comment.author}
             </span>
-            <span className="text-xs text-[var(--color-sps-muted)]">
+            <span className="text-xs text-muted-foreground">
               {comment.date}
             </span>
           </div>
-          <p className="mt-3 text-base leading-7 text-[var(--color-sps-graphite)]">
+          <p className="mt-3 text-base leading-7 text-foreground">
             {comment.text}
           </p>
           <div className="mt-2 flex items-center gap-3">
             <button
               type="button"
-              className="inline-flex items-center gap-1 rounded-xl px-2 py-1 text-xs text-[var(--color-sps-muted)] hover:bg-[var(--color-sps-grey)] hover:text-[var(--color-sps-muted)] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)] min-h-11"
+              className="inline-flex items-center gap-1 rounded-xl px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-muted-foreground transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground min-h-11"
             >
               <ThumbsUp className="h-5 w-5" />
               {comment.likes}
             </button>
             <button
               type="button"
-              className="text-xs text-[var(--color-sps-muted)] transition hover:text-[var(--color-sps-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)] min-h-11"
+              className="text-xs text-muted-foreground transition hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground min-h-11"
             >
               Reply
             </button>
@@ -113,12 +115,9 @@ function CommentItem({
     </div>
   );
 }
-export type ProfileArticleFindByIdCommentFindDefaultProps =
-  typeof defaultProfileArticleFindByIdCommentFindDefaultProps;
+
 export function ProfileArticleFindByIdCommentFindDefault(
-  props?: Partial<ProfileArticleFindByIdCommentFindDefaultProps> & {
-    variant?: string;
-  },
+  props?: IComponentProps,
 ) {
   const { comments } = {
     ...defaultProfileArticleFindByIdCommentFindDefaultProps,

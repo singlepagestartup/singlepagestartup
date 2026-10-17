@@ -1,18 +1,54 @@
 "use client";
-import { forwardRef as forwardRef } from "react";
-import * as SelectPrimitive from "@radix-ui/react-select";
-import { twMerge as twMerge } from "tailwind-merge";
-import { type ReactNode as ReactNode } from "react";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
+import Glyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
+function WebsiteBuilderModuleFeature({
+  name,
+  size = 20,
+  className = "",
+  svgProps,
+}: {
+  variant?: string;
+  name: keyof typeof Glyphs;
+  size?: 20 | 24;
+  className?: string;
+  svgProps?: React.SVGProps<SVGSVGElement>;
+}) {
+  const geometry = Glyphs[name]
+    ?.replace(/^\s*<svg\b[^>]*>/, "")
+    .replace(/<\/svg>\s*$/, "");
+  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 256 256"
+      fill="currentColor"
+      aria-hidden="true"
+      className={`shrink-0 ${className}`}
+      {...svgProps}
+      dangerouslySetInnerHTML={{ __html: geometry }}
+    />
+  );
+}
+
 import {
+  forwardRef,
+  type ReactNode,
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
+  memo,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
 } from "react";
-import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { memo, useEffect, useId, useRef, useState } from "react";
-import { Component as ProjectFilePreview } from "../../../overview/ai-chat/index";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import { twMerge as twMerge } from "tailwind-merge";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
+import type IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
+import { Component as AttachmentFile } from "../../../attachment/ai-chat";
 import { useFiles } from "./Files";
-import { readProjectFiles } from "./utils";
+import { readProjectFiles, AI_CHAT_ATTACHMENT_ACCEPT } from "./utils";
 interface IFeedbackProps {
   children: ReactNode;
   kind?: "success" | "error" | "info";
@@ -21,7 +57,7 @@ function Feedback({ children, kind = "success" }: IFeedbackProps) {
   return (
     <div
       role={kind === "error" ? "alert" : "status"}
-      className={`flex items-start gap-3 rounded-xl border p-4 text-sm leading-relaxed ${kind === "error" ? "border-[color:var(--workspace-brand-danger-line)] bg-[color:var(--workspace-brand-danger-surface)] text-[color:var(--workspace-brand-danger)]" : "border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-background)]"}`}
+      className={`flex items-start gap-3 rounded-xl border p-4 text-sm leading-relaxed ${kind === "error" ? "border-destructive-border bg-destructive-surface text-destructive" : "border-border bg-muted"}`}
     >
       <Icon
         name={
@@ -31,11 +67,7 @@ function Feedback({ children, kind = "success" }: IFeedbackProps) {
               ? "question"
               : "check-circle"
         }
-        className={
-          kind === "success"
-            ? "text-[color:var(--workspace-brand-foreground)]"
-            : ""
-        }
+        className={kind === "success" ? "text-foreground" : ""}
       />
       <div className="min-w-0">{children}</div>
     </div>
@@ -55,59 +87,50 @@ interface ISelectProps extends SelectPrimitive.SelectProps {
   "aria-describedby"?: string;
   options: ISelectOption[];
 }
-function Icon({
-  name,
-  size = 20,
-  className = "",
-  svgProps,
-}: {
+function Icon(props: {
   name: keyof typeof IconGlyphs;
   size?: 20 | 24;
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  const geometry = IconGlyphs[name]
-    ?.replace(/^\s*<svg\b[^>]*>/, "")
-    .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
-  return (
-    <svg
-      className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
-      width={size}
-      height={size}
-      viewBox="0 0 256 256"
-      fill="currentColor"
-      data-icon-family="phosphor"
-      data-icon-name={name}
-      data-icon-weight="regular"
-      aria-hidden="true"
-      focusable="false"
-      {...svgProps}
-      dangerouslySetInnerHTML={{ __html: geometry }}
-    />
-  );
+  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
 }
+
 export interface ISectionAssetsProps {
+  variant?: string;
   section: string;
   fileIds: string[];
   onAttach: (ids: string[]) => void;
-  onRemove: (fileId: string) => void;
+  onRemove: (fileId: string) => void | Promise<void>;
+  initialExpanded?: boolean;
+  pendingFileId?: string | null;
+  errorMessage?: string;
+  statusMessage?: string;
 }
 interface IFileAttachmentProps {
   id: string;
   onRemove: (id: string) => void;
+  pending: boolean;
 }
 export function Component({
+  variant = "list-attachments-ai-chat",
   section,
   fileIds,
   onAttach,
   onRemove,
+  initialExpanded = false,
+  pendingFileId = null,
+  errorMessage = "",
+  statusMessage = "",
 }: ISectionAssetsProps) {
   const { files: sources, register } = useFiles();
   const linked = fileIds.filter((id) => sources.some((file) => file.id === id));
   const id = useId();
   const input = useRef<HTMLInputElement>(null);
   const [selected, setSelected] = useState("");
+  const [expanded, setExpanded] = useState(initialExpanded);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const removal = useRef(false);
   const [reading, setReading] = useState(false);
   const [error, setError] = useState("");
   const available = sources.filter((source) => !linked.includes(source.id));
@@ -118,6 +141,28 @@ export function Component({
       mounted.current = false;
     };
   }, []);
+  const remove = useCallback(
+    async (fileId: string) => {
+      if (removal.current || pendingFileId) {
+        setError("Wait for the current file operation to finish.");
+        return;
+      }
+      removal.current = true;
+      setRemovingId(fileId);
+      setError("");
+      try {
+        await onRemove(fileId);
+      } catch (cause) {
+        setError(
+          cause instanceof Error ? cause.message : "File could not be removed.",
+        );
+      } finally {
+        removal.current = false;
+        if (mounted.current) setRemovingId(null);
+      }
+    },
+    [onRemove, pendingFileId],
+  );
   async function upload(files: FileList | null) {
     if (!files?.length) return;
     setReading(true);
@@ -143,12 +188,45 @@ export function Component({
   return (
     <section
       aria-label={`${section} files`}
-      className="mt-3 space-y-3 border-t border-[color:var(--workspace-brand-line)] pt-3"
+      className="mt-3 space-y-3 border-t border-border pt-3"
+      data-module="file-storage"
+      data-model="file"
+      data-variant={variant}
     >
       <p className={`text-xs ${kit.muted}`}>Files · {linked.length}</p>
-      {linked.map((id) => (
-        <FileAttachment key={id} id={id} onRemove={onRemove} />
-      ))}
+      {errorMessage && (
+        <p role="alert" className="text-xs text-destructive">
+          {errorMessage}
+        </p>
+      )}
+      {statusMessage && (
+        <p role="status" className="text-xs text-muted-foreground">
+          {statusMessage}
+        </p>
+      )}
+      <ul
+        aria-label="Knowledge attachments"
+        className="grid min-w-0 grid-cols-2 gap-2"
+      >
+        {(expanded ? linked : linked.slice(0, 2)).map((id) => (
+          <FileAttachment
+            key={id}
+            id={id}
+            pending={id === (pendingFileId ?? removingId)}
+            onRemove={remove}
+          />
+        ))}
+      </ul>
+      {linked.length > 2 && (
+        <button
+          type="button"
+          aria-expanded={expanded}
+          className="min-h-9 w-full rounded-lg border border-border px-3 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground"
+          onClick={() => setExpanded((value) => !value)}
+        >
+          {expanded ? "Show less" : "Show more"}
+        </button>
+      )}
       <div className="flex flex-wrap gap-2">
         <Button
           variant="plain"
@@ -164,6 +242,7 @@ export function Component({
           aria-label={`Upload files for ${section}`}
           className="sr-only"
           type="file"
+          accept={AI_CHAT_ATTACHMENT_ACCEPT}
           multiple
           disabled={reading}
           onChange={(event) => {
@@ -212,29 +291,21 @@ export function Component({
   );
 }
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--workspace-brand-foreground)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  button: `${buttonBase} bg-[color:var(--workspace-brand-accent)] text-[color:var(--workspace-brand-foreground)] enabled:hover:brightness-95 ${focus}`,
-  secondary: `${buttonBase} border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] text-[color:var(--workspace-brand-foreground)] enabled:hover:bg-[color:var(--workspace-brand-background)] ${focus}`,
-  plain: `${buttonBase} text-[color:var(--workspace-brand-muted)] enabled:hover:text-[color:var(--workspace-brand-foreground)] ${focus}`,
-  danger: `${buttonBase} border border-[color:var(--workspace-brand-danger-line)] bg-[color:var(--workspace-brand-danger-surface)] text-[color:var(--workspace-brand-danger)] enabled:hover:brightness-95 ${focus}`,
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] px-4 py-2 text-base text-[color:var(--workspace-brand-foreground)] outline-none transition motion-reduce:transition-none placeholder:text-[color:var(--workspace-brand-muted)] focus-visible:border-[color:var(--workspace-brand-foreground)] focus-visible:ring-2 focus-visible:ring-[color:var(--workspace-brand-foreground)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--workspace-brand-surface)] disabled:cursor-not-allowed disabled:bg-[color:var(--workspace-brand-background)] disabled:text-[color:var(--workspace-brand-muted)] disabled:opacity-60 [&[readonly]]:bg-[color:var(--workspace-brand-background)] aria-invalid:border-[color:var(--workspace-brand-danger)] aria-invalid:focus-visible:ring-[color:var(--workspace-brand-danger)]",
-  checkbox:
-    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] text-[color:var(--workspace-brand-foreground)] checked:border-transparent checked:bg-[color:var(--workspace-brand-accent)] indeterminate:border-transparent indeterminate:bg-[color:var(--workspace-brand-accent)] disabled:cursor-not-allowed",
-  card: "min-w-0 rounded-2xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] p-5",
-  muted: "text-[color:var(--workspace-brand-muted)]",
-  label: "text-sm font-semibold text-[color:var(--workspace-brand-foreground)]",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
+  muted: "text-muted-foreground",
   focus: focus,
 };
 const picker = {
-  trigger: `${kit.field} flex h-12 items-center justify-between gap-3 rounded-lg text-left text-sm font-normal shadow-sm focus-visible:ring-[3px] focus-visible:ring-[color:var(--workspace-brand-foreground)]/20 focus-visible:ring-offset-0 [&>span]:truncate`,
-  icon: "pointer-events-none text-[color:var(--workspace-brand-muted)]",
+  trigger: `${kit.field} flex h-12 items-center justify-between gap-3 rounded-lg text-left text-sm font-normal shadow-sm focus-visible:ring-[3px] focus-visible:ring-foreground/20 focus-visible:ring-offset-0 [&>span]:truncate`,
+  icon: "pointer-events-none text-muted-foreground",
   content:
-    "z-50 max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] font-[family-name:var(--workspace-brand-font-body)] text-[color:var(--workspace-brand-foreground)] shadow-md",
-  item: "relative flex min-h-9 w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-3 text-sm outline-none data-[highlighted]:bg-[color:var(--workspace-brand-background)] data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+    "z-50 max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-border bg-card font-default text-foreground shadow-md",
+  item: "relative flex min-h-9 w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-3 text-sm outline-none data-[highlighted]:bg-muted data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
 };
 // shadcn Select composition, themed with module tokens and Phosphor icons.
 // https://ui.shadcn.com/docs/components/radix/select
@@ -271,7 +342,7 @@ export const Select = forwardRef<HTMLButtonElement, ISelectProps>(
           {/* Keep fixed positioning outside CSS containers while retaining the project theme. */}
           <SelectPrimitive.Portal>
             <SelectPrimitive.Content
-              data-workspace-projection="singlepage"
+              data-sps-theme="singlepage"
               position="popper"
               align="start"
               sideOffset={6}
@@ -328,21 +399,29 @@ const Button = forwardRefControl<
 const FileAttachment = memo(function FileAttachment({
   id,
   onRemove,
+  pending,
 }: IFileAttachmentProps) {
   const { files } = useFiles();
   const file = files.find((record) => record.id === id);
+  const remove = useCallback(() => onRemove(id), [onRemove, id]);
   if (!file) return null;
   return (
-    <article className="space-y-2" aria-label={`${file.name} attachment`}>
-      <ProjectFilePreview file={file} />
-      <Button
-        variant="plain"
-        className="min-h-9 px-2 text-xs"
-        onClick={() => onRemove(id)}
-        aria-label={`Detach ${file.name}`}
+    <li className="relative min-w-0" aria-label={`${file.name} attachment`}>
+      <AttachmentFile variant="attachment-ai-chat" file={file} />
+      <button
+        type="button"
+        onClick={remove}
+        disabled={pending}
+        aria-label={`Remove ${file.name} from knowledge`}
+        className="absolute right-1 top-1 z-10 grid size-7 place-items-center rounded-full bg-foreground text-background hover:opacity-80 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       >
-        Detach
-      </Button>
-    </article>
+        <Icon name="x" className="size-4" />
+      </button>
+      {pending && (
+        <p className="mt-1 text-xs text-muted-foreground" role="status">
+          Removing…
+        </p>
+      )}
+    </li>
   );
 });

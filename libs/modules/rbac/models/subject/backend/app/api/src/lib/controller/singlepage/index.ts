@@ -1,3 +1,11 @@
+import { Handler as SubjectProfileAvatarUpdate } from "./social-module/profile/find-by-id/avatar/update";
+import { Handler as SubjectBalance } from "./billing-module/balance";
+import { Handler as SubjectProfileAvatarFind } from "./social-module/profile/find-by-id/avatar/find";
+import { Handler as SubjectProfileUpdate } from "./social-module/profile/find-by-id/update";
+import { Handler as SocialModuleProfileCreate } from "./social-module/profile/create";
+import { Handler as SocialModuleProfileFind } from "./social-module/profile/find";
+import { Handler as SocialModuleProfileProjects } from "./social-module/profile/projects";
+import { Handler as IdentityChangeEmail } from "./identity/change-email";
 import { Handler as KnowledgeSourceFiles } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
@@ -11,6 +19,7 @@ import {
   RequestSubjectCanManageChatAgentProfile,
   RequestSubjectIdOwner,
   RequestSubjectOwnsSocialModuleChat,
+  RequestSubjectOwnsIdentity,
 } from "../../../../../middlewares";
 
 import { Handler as AuthenticationMe } from "./authentication/me";
@@ -109,6 +118,66 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     this.service = service;
     this.bindHttpRoutes([
       {
+        method: "POST",
+        path: "/:id/identities/:identityId/email-change/code",
+        handler: (c) =>
+          new IdentityChangeEmail(this.service).execute(c, "request"),
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
+        method: "POST",
+        path: "/:id/identities/:identityId/email-change/verify",
+        handler: (c) =>
+          new IdentityChangeEmail(this.service).execute(c, "verify"),
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/projects",
+        handler: (c) =>
+          new SocialModuleProfileProjects(this.service).execute(c),
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
+        method: "GET",
+        path: "/:id/billing-module/balance",
+        handler: (c) => new SubjectBalance(this.service).execute(c),
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles",
+        handler: (c, next) =>
+          new SocialModuleProfileFind(this.service).execute(c),
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles",
+        handler: (c, next) =>
+          new SocialModuleProfileCreate(this.service).execute(c),
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/avatar",
+        handler: (c, next) =>
+          new SubjectProfileAvatarUpdate(this.service).execute(c, next),
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/avatar",
+        handler: (c) => new SubjectProfileAvatarFind(this.service).execute(c),
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
+        method: "PATCH",
+        path: "/:id/social-module/profiles/:socialModuleProfileId",
+        handler: (c, next) => new SubjectProfileUpdate().execute(c),
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
         method: "GET",
         path: "/",
         handler: this.find,
@@ -187,6 +256,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/:uuid/identities",
         handler: this.identitiesList,
+        middlewares: [new RequestSubjectIdOwner().init()],
       },
       {
         method: "POST",
@@ -351,6 +421,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "PATCH",
         path: "/:uuid/identities/:identityUuid",
         handler: this.identitiesUpdate,
+        middlewares: [new RequestSubjectOwnsIdentity(this.service).init()],
       },
       {
         method: "POST",
@@ -361,6 +432,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/:id/crm-module/form/:crmModuleFormId/request",
         handler: this.crmModuleFormRequestCreate,
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
       },
       {
         method: "DELETE",

@@ -1,16 +1,20 @@
+import { Component as Feature } from "../..";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import {
-  FeatureListItemDefault,
-  defaultFeatureListItemDefaultProps,
-} from "./Component";
+import { defaultFeatureListItemDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Feature/Singlepage/list-item-default",
-  component: FeatureListItemDefault,
+  id: "modules-website-builder-models-feature-singlepage-list-item-default",
+  title: "Modules/Website-Builder/Feature/Singlepage/list-item-default",
+  component: Feature,
   parameters: { layout: "centered" },
-  args: defaultFeatureListItemDefaultProps,
-} satisfies Meta<typeof FeatureListItemDefault>;
+  args: { ...defaultFeatureListItemDefaultProps, variant: "list-item-default" },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Feature>,
+    { variant: "list-item-default" }
+  >
+>;
 
 export default meta;
 

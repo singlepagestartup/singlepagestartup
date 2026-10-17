@@ -1,19 +1,17 @@
 "use client";
+import type { IComponentProps, IProjectScopeProps } from "./interface";
+export type { IProjectScopeProps } from "./interface";
 
 import type { ReactNode } from "react";
 
 import { ProjectProvider } from "./Profile";
 import { useProfiles } from "./Profiles";
-export interface IProjectScopeProps {
-  variant?: string;
-  profileId: string;
-  children: ReactNode;
-}
+
 export function Component({
   variant = "scope-ai-chat-project",
   profileId,
   children,
-}: IProjectScopeProps) {
+}: IComponentProps) {
   const { projects } = useProfiles();
   if (!projects.some((profile) => profile.id === profileId))
     return (

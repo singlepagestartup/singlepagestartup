@@ -7,7 +7,12 @@ import {
   query,
   options,
 } from "@sps/host/models/page/sdk/model";
-import { factory, queryClient } from "@sps/shared-frontend-client-api";
+import {
+  factory,
+  queryClient,
+  subscription,
+} from "@sps/shared-frontend-client-api";
+import { useEffect } from "react";
 import {
   NextRequestOptions,
   responsePipe,
@@ -45,7 +50,7 @@ export type IProps = {
 };
 
 export type IResult = {
-  IUrlSegmentValueProps: string;
+  IUrlSegmentValueProps: string | null;
   IFindByUrlProps: IModel;
 };
 
@@ -58,19 +63,17 @@ export const api = {
     options,
   }),
   findByUrl: (props: IFindByUrlProps) => {
+    const stringifiedQuery = QueryString.stringify(
+      { ...props.params, url: props.url },
+      { encodeValuesOnly: true },
+    );
+    const queryKey = `${route}/find-by-url?${stringifiedQuery}`;
+    useEffect(() => subscription(queryKey, queryClient), [queryKey]);
     return useQuery<IModel>({
-      queryKey: [`${route}/find-by-url`],
+      queryKey: [queryKey],
+      meta: { topics: ["host.pages"] },
       queryFn: async () => {
         try {
-          const { url } = props;
-
-          const stringifiedQuery = QueryString.stringify(
-            { ...props?.params, url },
-            {
-              encodeValuesOnly: true,
-            },
-          );
-
           const noCache = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
           const cacheControlOptions: NextRequestOptions["headers"] = noCache
             ? { "Cache-Control": "no-store" }
@@ -130,9 +133,11 @@ export const api = {
         encodeValuesOnly: true,
       },
     );
-
-    return useQuery<string>({
-      queryKey: [`${route}/url-segment-value?${stringifiedQuery}`],
+    const queryKey = `${route}/url-segment-value?${stringifiedQuery}`;
+    useEffect(() => subscription(queryKey, queryClient), [queryKey]);
+    return useQuery<string | null>({
+      queryKey: [queryKey],
+      meta: { topics: ["host.pages"] },
       queryFn: async () => {
         try {
           const noCache = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
@@ -156,13 +161,13 @@ export const api = {
             requestOptions,
           );
 
-          const json = await responsePipe<{ data: string }>({
+          const json = await responsePipe<{ data: string | null }>({
             res,
           });
 
-          const transformedData = transformResponseItem<string>(json);
+          const transformedData = transformResponseItem<string | null>(json);
 
-          return transformedData;
+          return transformedData ?? null;
         } catch (error: any) {
           toast.error(error.message);
 

@@ -142,6 +142,9 @@
           },
           {
             "command": "nx run @sps/social:relations:skills-to-knowledge-module-sources:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:threads-to-ecommerce-module-products:repository-generate"
           }
         ]
       }
@@ -244,6 +247,9 @@
           },
           {
             "command": "nx run @sps/social:relations:skills-to-knowledge-module-sources:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:threads-to-ecommerce-module-products:repository-migrate"
           }
         ]
       }
@@ -1053,6 +1059,35 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/social/relations/skills-to-knowledge-module-sources/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:threads-to-ecommerce-module-products:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/threads-to-ecommerce-module-products/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:threads-to-ecommerce-module-products:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/threads-to-ecommerce-module-products/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

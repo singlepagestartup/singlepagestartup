@@ -38,6 +38,7 @@ import { deriveTopicsFromPath, STALE_TIME } from "@sps/shared-utils";
 import { createId } from "@paralleldrive/cuid2";
 import QueryString from "qs";
 import { useEffect } from "react";
+import { queryConsistency, consistencyQueryKey } from "../consistency";
 import {
   appendToListQueries,
   patchInListQueries,
@@ -129,6 +130,7 @@ const invalidateByTopics = (topics: string[], queryClient: QueryClient) => {
 
   queryClient.invalidateQueries({
     predicate: (query) => {
+      if (queryConsistency(queryClient).covered(query)) return false;
       const meta = query.meta as { topics?: string[] } | undefined;
       const metaTopics = Array.isArray(meta?.topics) ? meta.topics : [];
 
@@ -277,6 +279,8 @@ export function subscription(route: string, queryClient: QueryClient) {
               setTimeout(() => {
                 queryClient.invalidateQueries({
                   queryKey: [route],
+                  predicate: (query) =>
+                    !queryConsistency(queryClient).covered(query),
                 });
               }, getInvalidationJitterMs());
             }
@@ -333,20 +337,7 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
         props?.reactQueryOptions ?? {};
 
       return useQuery<T | undefined>({
-        queryKey: props.id
-          ? [
-              route,
-              props?.params
-                ? QueryString.stringify(props.params, {
-                    encodeValuesOnly: true,
-                  })
-                : undefined,
-            ]
-          : [],
-        // Canonical realtime subscription (issue #195): derived from the same
-        // algorithm the backend emitter and http-cache use, so every factory
-        // detail query is topic-invalidated when its entity changes. Topics
-        // survive even when a project passes reactQueryOptions.meta.
+        queryKey: consistencyQueryKey(route, props.params, factoryProps.host),
         meta: props.id
           ? { topics: deriveTopicsFromPath(route), ...(userMeta ?? {}) }
           : undefined,
@@ -392,14 +383,11 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
         props?.reactQueryOptions ?? {};
 
       return useQuery<T[] | undefined>({
-        queryKey: [
-          `${factoryProps.route}`,
-          props?.params
-            ? QueryString.stringify(props.params, {
-                encodeValuesOnly: true,
-              })
-            : undefined,
-        ],
+        queryKey: consistencyQueryKey(
+          factoryProps.route,
+          props?.params,
+          factoryProps.host,
+        ),
         // Canonical realtime subscription (issue #195): every factory list
         // query is topic-invalidated when its collection changes anywhere.
         // Topics survive even when a project passes reactQueryOptions.meta.
@@ -445,14 +433,7 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
         props?.reactQueryOptions ?? {};
 
       return useQuery<number | undefined>({
-        queryKey: [
-          route,
-          props?.params
-            ? QueryString.stringify(props.params, {
-                encodeValuesOnly: true,
-              })
-            : undefined,
-        ],
+        queryKey: consistencyQueryKey(route, props?.params, factoryProps.host),
         // /count is stripped by the deriver -> collection topic subscription.
         // Topics survive even when a project passes reactQueryOptions.meta.
         meta: { topics: deriveTopicsFromPath(route), ...(userMeta ?? {}) },

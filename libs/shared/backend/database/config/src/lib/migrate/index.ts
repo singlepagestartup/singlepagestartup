@@ -2,7 +2,8 @@ import { DATABASE_OPTIONS } from "@sps/shared-utils";
 import { Config as DrizzleConfig, defineConfig } from "drizzle-kit";
 import { getDrizzle } from "../postgres";
 import { migrate as drizzleMigrator } from "drizzle-orm/postgres-js/migrator";
-import { sql } from "drizzle-orm";
+import { sql, getTableColumns } from "drizzle-orm";
+import { getTableConfig } from "drizzle-orm/pg-core";
 import { logger } from "@sps/backend-utils";
 
 export class Config {
@@ -71,6 +72,25 @@ export class Config {
         migrationsFolder: this.migrationsFolder,
         migrationsTable: this.migrationsTable,
       });
+
+      // The infrastructure migration runs first. Reinstall after table changes,
+      // including new/startup Tables; no cache-specific relation map is needed.
+      const [installed] = await db.execute(
+        sql`SELECT to_regprocedure('sps_consistency.install_capture(text,text,jsonb)') IS NOT NULL AS ready`,
+      );
+      if (installed?.ready && this.schema.Table) {
+        const table = this.schema.Table;
+        const config = getTableConfig(table);
+        const resource = `${config.schema || "public"}.${config.name}`;
+        const columns = Object.fromEntries(
+          Object.entries(
+            getTableColumns(table) as Record<string, { name: string }>,
+          ).map(([key, column]) => [key, column.name]),
+        );
+        await db.execute(
+          sql`SELECT sps_consistency.install_capture(${resource},coalesce((SELECT topic FROM sps_consistency.resource WHERE resource=${resource}),${resource}),${JSON.stringify(columns)}::jsonb)`,
+        );
+      }
 
       const afterMigrations = await db.execute(
         sql`SELECT * FROM drizzle.${sql.raw(this.migrationsTable)}`,

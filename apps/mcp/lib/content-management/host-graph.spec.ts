@@ -280,3 +280,75 @@ describe("MCP content-management host graph resolver", () => {
     expect(matches).toHaveLength(2);
   });
 });
+
+it("traverses only the exact RBAC widget's persisted Website Builder links, forwarding caller auth", async () => {
+  const { registry } = createCanonicalRegistry();
+  const external = registry.find(
+    (item) => item.key === "host.widgets-to-external-widgets",
+  )!;
+  external.api.find = jest.fn(async () => [
+    {
+      id: "host-link",
+      widgetId: "host-widget-1",
+      externalModule: "rbac",
+      externalWidgetId: "rbac-a",
+    },
+  ]);
+  const linkRead = jest.fn(async () => [
+    {
+      id: "content-link-a",
+      widgetId: "rbac-a",
+      websiteBuilderModuleWidgetId: "website-a",
+      orderIndex: 0,
+    },
+  ]);
+  const contentRead = jest.fn(async ({ id }) => ({
+    id,
+    variant: "content-ai-chat-profile-create",
+    title: { en: "Card A" },
+  }));
+  registry.push(
+    createDescriptor({
+      key: "rbac.widget",
+      findById: jest.fn(async () => ({
+        id: "rbac-a",
+        variant: "subject-me-social-module-profile-create-ai-chat",
+      })),
+    }),
+    createDescriptor({
+      key: "rbac.widgets-to-website-builder-module-widgets",
+      kind: "relation",
+      find: linkRead,
+    }),
+    createDescriptor({ key: "website-builder.widget", findById: contentRead }),
+  );
+  const result = await resolveHostGraph(
+    { url: "/about", language: "en", widgetId: "website-a" },
+    { registry, authHeaders },
+  );
+  expect(result.matchStatus).toBe("single");
+  expect(result.candidates[0].externalSelector).toEqual({
+    module: "website-builder",
+    model: "widget",
+  });
+  expect(result.candidates[0].composition?.[0]).toEqual(
+    expect.objectContaining({
+      ownerWidget: expect.objectContaining({ id: "rbac-a" }),
+      relation: expect.objectContaining({ id: "content-link-a" }),
+    }),
+  );
+  expect(linkRead).toHaveBeenCalledWith(
+    expect.objectContaining({
+      params: expect.objectContaining({
+        filters: {
+          and: [{ column: "widgetId", method: "eq", value: "rbac-a" }],
+        },
+      }),
+      options: { headers: authHeaders },
+    }),
+  );
+  expect(contentRead).toHaveBeenCalledWith({
+    id: "website-a",
+    options: { headers: authHeaders },
+  });
+});

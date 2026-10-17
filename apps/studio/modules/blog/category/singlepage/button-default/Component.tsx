@@ -1,3 +1,5 @@
+import type { IComponentProps, CategoryButtonDefaultProps } from "./interface";
+export type { CategoryButtonDefaultProps } from "./interface";
 interface ICollectionCategory {
   slug: string;
   label: string;
@@ -19,7 +21,7 @@ function CategoryChoice({
       type="button"
       aria-pressed={active}
       onClick={() => onSelect?.(slug)}
-      className={`${sectionChoiceClass} ${active ? "bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)]" : "text-[var(--color-sps-muted)] hover:text-[var(--color-sps-graphite)]"}`}
+      className={`${sectionChoiceClass} ${active ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground"}`}
     >
       <span>{label}</span>
       {count !== undefined && (
@@ -29,13 +31,8 @@ function CategoryChoice({
     </button>
   );
 }
-export type CategoryButtonDefaultProps =
-  typeof defaultCategoryButtonDefaultProps & {
-    onSelect?: (slug: string) => void;
-  };
-export function CategoryButtonDefault(
-  props?: Partial<CategoryButtonDefaultProps> & { variant?: string },
-) {
+
+export function CategoryButtonDefault(props?: IComponentProps) {
   const { slug, label, count, isActive, onSelect } = {
     ...defaultCategoryButtonDefaultProps,
     ...props,
@@ -59,13 +56,13 @@ export function CategoryButtonDefault(
   );
 }
 const sectionIndicatorClass =
-  "absolute bottom-1.5 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-[var(--color-sps-green)]";
+  "absolute bottom-1.5 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-primary text-primary-foreground";
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  muted: "text-[var(--color-sps-muted)]",
+  muted: "text-muted-foreground",
   focus: focus,
 };
 const sectionChoiceClass = `relative inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition ${kit.focus} disabled:cursor-not-allowed disabled:opacity-50`;

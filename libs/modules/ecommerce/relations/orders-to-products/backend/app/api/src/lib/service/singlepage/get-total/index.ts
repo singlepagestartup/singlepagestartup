@@ -1,6 +1,5 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
-import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { IModel as IOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
 import { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
@@ -16,6 +15,7 @@ export type IExecuteProps = {
 type IConstructorProps = {
   findById: (props: { id: string }) => Promise<IOrderToProduct | null>;
   product: ProductService;
+  billingModule: ProductService["billingModule"];
   attribute: AttributeService;
   attributeKey: AttributeKeyService;
   productsToAttributes: ProductsToAttributesService;
@@ -26,6 +26,7 @@ type IConstructorProps = {
 export class Service {
   findById: IConstructorProps["findById"];
   product: ProductService;
+  billingModule: ProductService["billingModule"];
   attribute: AttributeService;
   attributeKey: AttributeKeyService;
   productsToAttributes: ProductsToAttributesService;
@@ -35,6 +36,7 @@ export class Service {
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
     this.product = props.product;
+    this.billingModule = props.billingModule;
     this.attribute = props.attribute;
     this.attributeKey = props.attributeKey;
     this.productsToAttributes = props.productsToAttributes;
@@ -161,13 +163,8 @@ export class Service {
         throw new Error("Product does not have any target price attributes");
       }
 
-      const billingModuleCurrency = await billingModuleCurrencyApi.findById({
+      const billingModuleCurrency = await this.billingModule.currency.findById({
         id: attributesToBillingModuleCurrencies[0].billingModuleCurrencyId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
       if (!billingModuleCurrency) {

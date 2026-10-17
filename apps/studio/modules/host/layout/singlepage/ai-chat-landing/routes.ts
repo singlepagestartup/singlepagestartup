@@ -6,6 +6,7 @@ export interface IAIChatRoute {
     | "account-settings"
     | "help"
     | "tokens"
+    | "profile-list"
     | "profile-create"
     | "profile-overview"
     | "profile-settings"
@@ -15,12 +16,13 @@ export interface IAIChatRoute {
 }
 
 export const aiChatServiceHrefs = {
-  landing: "/ai-chat/",
+  landing: "/",
   register: "/ai-chat/rbac/subjects/authentication/registration",
   login: "/ai-chat/rbac/subjects/authentication/select-method",
   "account-settings": "/ai-chat/rbac/subjects/settings",
   help: "/ai-chat/help",
   tokens: "/ai-chat/rbac/subjects/tokens",
+  "profile-list": "/ai-chat/projects",
   "profile-create": "/ai-chat/social/profiles/create",
 } as const;
 

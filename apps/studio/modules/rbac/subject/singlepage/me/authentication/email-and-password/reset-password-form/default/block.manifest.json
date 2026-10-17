@@ -1,0 +1,44 @@
+{
+  "$schema": "../../../../../../../../block.schema.json",
+  "id": "rbac.subject.me-authentication-email-and-password-reset-password-form-default",
+  "title": "me-authentication-email-and-password-reset-password-form-default",
+  "description": "Singlepage Subject password reset completion form with new password and confirmation fields.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-authentication-email-and-password-reset-password-form-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "passwordLabel",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "confirmPasswordLabel",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-authentication-email-and-password-reset-password-form-default",
+    "nodeId": "981:86",
+    "variantNodeId": "981:80",
+    "syncStatus": "needs-update",
+    "metadataFile": "figma.json"
+  }
+}

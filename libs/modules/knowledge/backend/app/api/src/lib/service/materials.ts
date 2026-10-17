@@ -1,30 +1,34 @@
-import { KnowledgeRepository } from "../repository";
+import type { Service as SourceService } from "@sps/knowledge/models/source/backend/app/api/src/lib/service";
 import { MediaService } from "./media";
 import { assembleContent, readUserContext } from "./utils";
 
 export interface MaterialServiceProps {
-  repository: KnowledgeRepository;
+  source: SourceService;
   media?: MediaService;
 }
 
 export class MaterialService {
   private media: MediaService;
   constructor(private props: MaterialServiceProps) {
-    this.media = props.media || new MediaService();
+    this.media =
+      props.media ||
+      new MediaService({
+        readFile: (file) => props.source.readFileBytes(file),
+      });
   }
 
   async rebuild(sourceId: string) {
     for (let attempt = 0; attempt < 5; attempt++) {
-      const source = await this.props.repository.findSourceById(sourceId);
+      const source = await this.props.source.findSourceById(sourceId);
       if (!source) return;
       const userContext = readUserContext(source.content);
-      const reset = await this.props.repository.invalidateFileContent(
+      const reset = await this.props.source.invalidateFileContent(
         sourceId,
         userContext,
         source.contentHash,
       );
       if (!reset) continue;
-      const files = await this.props.repository.sourceFiles(sourceId);
+      const files = await this.props.source.sourceFiles(sourceId);
       const snapshot = this.fileSnapshot(files);
       const parts: string[] = [];
       for (const { file } of files) {
@@ -42,7 +46,7 @@ export class MaterialService {
       const overview = materials
         ? await this.media.synthesize(materials, userContext)
         : "";
-      const saved = await this.props.repository.saveAnalyzedContent({
+      const saved = await this.props.source.saveAnalyzedContent({
         sourceId,
         expectedContentHash: reset.contentHash,
         fileSnapshot: snapshot,
@@ -57,7 +61,7 @@ export class MaterialService {
   }
 
   private fileSnapshot(
-    files: Awaited<ReturnType<KnowledgeRepository["sourceFiles"]>>,
+    files: Awaited<ReturnType<SourceService["sourceFiles"]>>,
   ) {
     return JSON.stringify(
       files.map(({ relation, file }) => [

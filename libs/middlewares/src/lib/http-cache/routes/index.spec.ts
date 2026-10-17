@@ -68,10 +68,23 @@ describe("http-cache excluded routes", () => {
    */
   it("does not exclude ordinary model reads", () => {
     expect(matcher.matches("/api/ecommerce/orders")).toBe(false);
-    expect(
-      matcher.matches(`/api/rbac/subjects/${SID}/ecommerce-module/orders`),
-    ).toBe(false);
     expect(matcher.matches("/api/social/messages")).toBe(false);
+  });
+
+  it("excludes every subject-owned read while preserving public route caching", () => {
+    for (const suffix of [
+      "social-module/profiles",
+      "social-module/profiles/projects",
+      `social-module/profiles/${PID}/avatar`,
+      "identities",
+      "billing-module/balance",
+      "ecommerce-module/orders",
+    ])
+      expect(matcher.matches(`/api/rbac/subjects/${SID}/${suffix}`)).toBe(true);
+    expect(
+      matcher.matches("/api/rbac/subjects/authentication/can-register"),
+    ).toBe(false);
+    expect(matcher.matches("/api/social/profiles")).toBe(false);
   });
 
   /**

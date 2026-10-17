@@ -1,15 +1,19 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { FooterDefault, defaultFooterDefaultProps } from "./Component";
+import { defaultFooterDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Widget/Singlepage/footer-default",
-  component: FooterDefault,
+  id: "modules-website-builder-models-widget-singlepage-footer-default",
+  title: "Modules/Website-Builder/Widget/Singlepage/footer-default",
+  component: Widget,
   parameters: {
     layout: "fullscreen",
   },
-  args: defaultFooterDefaultProps,
-} satisfies Meta<typeof FooterDefault>;
+  args: { ...defaultFooterDefaultProps, variant: "footer-default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Widget>, { variant: "footer-default" }>
+>;
 
 export default meta;
 

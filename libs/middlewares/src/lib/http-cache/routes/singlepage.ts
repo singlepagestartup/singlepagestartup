@@ -26,6 +26,11 @@ export const excludedRoutes: IRouteRule[] = [
   },
 
   // --- Reads not describable by a mutation path/topic ---
+  // URL resolution expands Page masks against arbitrary module collections.
+  // Page-only topics cannot cover changes to those dynamic route values.
+  {
+    regexPath: /^\/api\/host\/pages\/(find-by-url|url-segment-value|urls)$/i,
+  },
   // Issue-152: subject cart aggregate counters — exact-path cache
   // invalidation may leave stale quantity/total after cart mutations.
   {
@@ -54,7 +59,7 @@ export const excludedRoutes: IRouteRule[] = [
   // (`.../models/permission/.../service/singlepage/sensitive-routes.ts`);
   // excluding them removes the interaction without reordering the stack.
   { regexPath: /^\/api\/rbac\/identities(\/.*)?$/i },
-  { regexPath: /^\/api\/rbac\/subjects(\/[0-9a-f-]+)?$/i },
+  { regexPath: /^\/api\/rbac\/subjects(?:\/[0-9a-f-]+(?:\/.*)?)?$/i },
   { regexPath: /^\/api\/rbac\/subjects-to-identities(\/.*)?$/i },
   { regexPath: /^\/api\/rbac\/roles(\/.*)?$/i },
 ];

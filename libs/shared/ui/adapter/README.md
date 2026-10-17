@@ -9,7 +9,11 @@ src/
 └── lib/
     ├── button/           # Button adapter component
     ├── form-field/       # Form field adapter component
+    ├── file-preview/     # Attachment preview dialog
     ├── input/            # Input adapter component
+    ├── toast/            # Shared Sonner notification renderer and status icons
+    ├── icons/            # Shared React SVG icons
+    ├── select/           # Select adapter component
     ├── interfaces/       # Common interfaces and types
     └── wrappers/         # Component wrappers and HOCs
 ```
@@ -42,6 +46,78 @@ The adapter components serve several key purposes:
 - Provides consistent input handling
 - Manages input states and validation
 - Handles different input types
+
+### Select Adapter
+
+`Select` with `ui="shadcn"` renders the SPS-styled Radix Select used by Studio forms. Pass `options` with `value`, `label` and optional `disabled` fields. Use `value` and `onValueChange` for controlled selection. The adapter supports placeholders, required and disabled states, validation attributes and keyboard navigation.
+
+### Icons
+
+Import `Icon` and its `IconName` type from `@sps/ui-adapter`. The Phosphor Regular
+glyphs are React SVG elements in `src/lib/icons`, usable in server and client
+components. Color follows `currentColor`; `size` accepts 20 or 24 pixels, and
+Tailwind classes can override the dimensions. Icons are decorative by default;
+use SVG properties for an accessible label when the icon conveys meaning.
+
+Static image files belong in `apps/host/public/images` or File Storage. Icons
+use shared UI components directly rather than a Website Builder Feature variant.
+
+### File preview
+
+`FilePreview` from `@sps/ui-adapter` renders a keyboard-accessible thumbnail
+button and a centered dialog. Pass a local `File` through `localFile` to preview
+an unsent attachment, or pass `src`, `mimeType`, `extension` and `name` for a
+stored file. Its props live in `src/lib/file-preview/interface.ts`.
+
+Images support zoom. PDF.js loads on demand and renders one PDF page at a time
+with page and zoom controls; its worker is bundled with the app. Markdown has
+Preview and Source modes, while TXT, CSV, JSON, LOG and YAML use plain text.
+Markdown raw HTML is disabled, unsafe links are omitted and inline image
+references remain text. Other formats show an original/download fallback.
+Document thumbnails use foreground-colored Lucide glyphs and a format label
+on the muted background.
+
+The adapter imports no business SDK. A stored-file owner supplies a lazy
+`textContent` JSX reader and an `onDownload(signal?)` callback for original
+bytes. The callback also supplies PDF bytes and can abort when the dialog
+closes. Local files use browser object URLs and are never uploaded by preview.
+The adapter revokes these URLs on cleanup. Text preview is limited to 2 MiB;
+opening or downloading the original remains available when preview fails.
+
+### Toast notifications
+
+Host mounts `Toaster` from `@sps/ui-adapter/toast` once in its root layout.
+The same public UI-only entry is used by the Studio Toast catalog and module
+previews. It imports no SDK, Provider, entity cache or application code.
+
+The renderer owns the card, typography, border, shadow, close/action controls
+and status icons. `Component.tsx` is the style entry and `icons.tsx` maps states
+to Phosphor Regular glyphs from the existing static Icon library. Success uses
+the primary accent, error uses destructive, and the remaining states use muted
+surfaces. Cards use semantic theme colors. The spinner respects reduced motion.
+
+Default placement is bottom-right, duration 4.5 seconds, with a close button.
+Sonner keeps its existing store and transport API, so current SDK
+`toast.error(...)` calls use the same mounted renderer. Producers pass content,
+actions and IDs without defining visual options such as `richColors` or custom
+classes. The profile save action follows this contract. The legacy shadcn
+Toaster remains available for compatibility; Host uses the adapter entry.
+
+```tsx
+import { Toaster, toast } from "@sps/ui-adapter/toast";
+
+// App shell, once:
+<Toaster />;
+// After a successful operation:
+toast.success("Profile saved", { description: "Your changes have been saved." });
+```
+
+Storybook exposes all notification states, action/dismiss/loading interactions,
+long text, stacked notifications, auto-dismiss and a persistent editing mode.
+The Toast Icons story shows its seven glyphs; the general Shared Icon collection
+also contains info, x-circle and spinner-gap. SVG sources are from the official
+[Phosphor Regular collection](https://github.com/phosphor-icons/core/tree/main/assets/regular),
+covered by the MIT license retained beside the runtime glyphs in `icons/LICENSE`.
 
 ## Usage
 

@@ -1,4 +1,8 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type { IComponentProps, SocialChatSettingsProps } from "./interface";
+export type { SocialChatSettingsProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import * as Tabs from "@radix-ui/react-tabs";
 import {
   forwardRef,
@@ -9,7 +13,7 @@ import {
   useState,
 } from "react";
 import { twMerge, twMerge as twMergePresentation } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   ChatImagePicker,
@@ -47,28 +51,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface SocialChatSettingsProps {
-  variant?: string;
-  open: boolean;
-  onCloseAutoFocus?: Dialog.DialogContentProps["onCloseAutoFocus"];
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  description: string;
-  threads: SocialThreadListDefaultProps["threads"];
-  memberIds: string[];
-  profiles: SocialPreviewProfile[];
-  image?: SocialPreviewAttachment;
-  onImageChange?: (file: File | null) => void;
-  initialTab?: "general" | "threads" | "members";
-  initialThreadId?: string;
-  onChatChange?: (title: string, description: string) => void;
-  onThreadsChange: (threads: SocialThreadListDefaultProps["threads"]) => void;
-  onMembersChange?: (ids: string[]) => void;
-}
-export function Component(props: SocialChatSettingsProps) {
+export function Component(props: IComponentProps) {
   const [portal, setPortal] = useState<HTMLDivElement | null>(null);
   const [tab, setTab] = useState(props.initialTab ?? "general");
   const [name, setName] = useState(props.title);
@@ -129,7 +115,7 @@ export function Component(props: SocialChatSettingsProps) {
             <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
             <Dialog.Content
               onCloseAutoFocus={props.onCloseAutoFocus}
-              className="fixed left-1/2 top-1/2 z-[60] max-h-[90vh] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 text-[var(--color-sps-graphite)] shadow-xl sm:p-8"
+              className="fixed left-1/2 top-1/2 z-[60] max-h-[90vh] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl border border-border bg-card p-5 text-foreground shadow-xl sm:p-8"
             >
               <div className="flex items-center justify-between gap-3">
                 <Dialog.Title className="text-2xl font-semibold">
@@ -256,7 +242,7 @@ export function Component(props: SocialChatSettingsProps) {
                       {props.threads.map((thread) => (
                         <li
                           key={thread.id}
-                          className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-xl bg-[var(--color-sps-grey)] p-3"
+                          className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-xl bg-muted p-3"
                         >
                           <span className="min-w-0 break-words text-sm font-semibold">
                             {thread.title}
@@ -315,19 +301,19 @@ export function Component(props: SocialChatSettingsProps) {
 const X = createIcon("x");
 const SectionTabsContent = Tabs.Content;
 const sectionIndicatorClass =
-  "absolute bottom-1.5 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-[var(--color-sps-green)]";
+  "absolute bottom-1.5 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-primary text-primary-foreground";
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  button: `${buttonBase} bg-[var(--color-sps-green)] text-[var(--color-sps-graphite)] enabled:hover:brightness-95 ${focus}`,
-  secondary: `${buttonBase} border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)] enabled:hover:bg-[var(--color-sps-grey)] ${focus}`,
-  plain: `${buttonBase} text-[var(--color-sps-muted)] enabled:hover:text-[var(--color-sps-graphite)] ${focus}`,
+  button: `${buttonBase} bg-primary text-primary-foreground enabled:hover:brightness-95 ${focus}`,
+  secondary: `${buttonBase} border border-border bg-card text-foreground enabled:hover:bg-muted ${focus}`,
+  plain: `${buttonBase} text-muted-foreground enabled:hover:text-foreground ${focus}`,
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 py-2 text-base text-[var(--color-sps-graphite)] outline-none transition motion-reduce:transition-none placeholder:text-[var(--color-sps-muted)] focus-visible:border-[var(--color-sps-graphite)] focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-sps-white)] disabled:cursor-not-allowed disabled:bg-[var(--color-sps-grey)] disabled:text-[var(--color-sps-muted)] disabled:opacity-60 [&[readonly]]:bg-[var(--color-sps-grey)] aria-invalid:border-[var(--color-sps-danger)] aria-invalid:focus-visible:ring-[var(--color-sps-danger)]",
-  muted: "text-[var(--color-sps-muted)]",
-  label: "text-sm font-semibold text-[var(--color-sps-graphite)]",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
+  muted: "text-muted-foreground",
+  label: "text-sm font-semibold text-foreground",
   focus: focus,
 };
 const sectionChoiceClass = `relative inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition ${kit.focus} disabled:cursor-not-allowed disabled:opacity-50`;
@@ -340,7 +326,7 @@ const SectionTabsTrigger = forwardRef<
       ref={ref}
       className={twMerge(
         sectionChoiceClass,
-        "group text-[var(--color-sps-muted)] hover:text-[var(--color-sps-graphite)] data-[state=active]:bg-[var(--color-sps-white)] data-[state=active]:text-[var(--color-sps-graphite)]",
+        "group text-muted-foreground hover:text-foreground data-[state=active]:bg-card data-[state=active]:text-foreground",
         className,
       )}
       {...props}
@@ -361,7 +347,7 @@ const SectionTabsList = forwardRef<
     <Tabs.List
       ref={ref}
       className={twMerge(
-        "flex flex-wrap gap-1 rounded-xl bg-[var(--color-sps-grey)] p-1",
+        "flex flex-wrap gap-1 rounded-xl bg-muted p-1",
         className,
       )}
       {...props}

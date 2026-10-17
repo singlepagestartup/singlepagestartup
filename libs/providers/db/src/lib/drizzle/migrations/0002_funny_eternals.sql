@@ -1,0 +1,1 @@
+ALTER TABLE "sps_consistency"."query" ADD COLUMN "retain_until" timestamp with time zone DEFAULT now() + interval '12 hours 7 minutes' NOT NULL;

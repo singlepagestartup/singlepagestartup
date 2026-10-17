@@ -76,6 +76,9 @@ results
 node_modules
 .node_history
 
+# Next.js generated output, including temporary test builds
+.next*/
+
 ############################
 # NX
 ############################
@@ -131,3 +134,7 @@ apps/studio/.storybook/.generated/
 
 # Claude Code worktrees
 .claude/worktrees/
+
+# Static Studio icon components share a name with the macOS Finder artifact.
+!apps/studio/modules/shared/icon/
+!apps/studio/modules/shared/icon/**

@@ -1,14 +1,9 @@
-import { Component as BlogModuleArticle } from "../../../article/index";
+import type { IComponentProps, ArticleFindFeaturedProps } from "./interface";
+export type { ArticleFindFeaturedProps } from "./interface";
+import { Component as Article } from "../../../article/index";
 
 const articleOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
-
-export interface ArticleFindFeaturedProps {
-  variant?: string;
-  count: number;
-  /** Removes introduction spacing when composed immediately after a header. */
-  compact?: boolean;
-}
+  "/?path=/story/modules-host-models-page-singlepage-blog-module-article-slug--default";
 
 export const defaultArticleFindFeaturedProps: ArticleFindFeaturedProps = {
   count: 1,
@@ -18,7 +13,7 @@ export function ArticleFindFeatured({
   variant = "article-find-featured",
   count = 1,
   compact = false,
-}: Partial<ArticleFindFeaturedProps> = {}) {
+}: IComponentProps = {}) {
   return (
     <section
       className={`w-full ${compact ? "" : "pt-8"}`}
@@ -32,7 +27,7 @@ export function ArticleFindFeatured({
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-6">
           {Array.from({ length: count }, (_, index) => (
-            <BlogModuleArticle
+            <Article
               key={`featured-${index}`}
               variant="featured"
               href={articleOverviewStoryHref}

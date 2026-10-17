@@ -1,16 +1,17 @@
+import { Component as Feature } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  FeatureStatusDefault,
-  defaultFeatureStatusDefaultProps,
-} from "./Component";
+import { defaultFeatureStatusDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Feature/Singlepage/status-default",
-  component: FeatureStatusDefault,
+  id: "modules-website-builder-models-feature-singlepage-status-default",
+  title: "Modules/Website-Builder/Feature/Singlepage/status-default",
+  component: Feature,
   parameters: { layout: "centered" },
-  args: defaultFeatureStatusDefaultProps,
-} satisfies Meta<typeof FeatureStatusDefault>;
+  args: { ...defaultFeatureStatusDefaultProps, variant: "status-default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Feature>, { variant: "status-default" }>
+>;
 
 export default meta;
 

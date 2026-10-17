@@ -1,0 +1,64 @@
+{
+  "logo": {
+    "hover": true,
+    "rotate": "-6deg",
+    "scale": "1.1",
+    "starOpacity": "1"
+  },
+  "settings": {
+    "background": "oklab(0.999994 0.0000455678 0.0000200868 / 0.1)",
+    "borderRadius": "8px",
+    "current": "page",
+    "hover": true,
+    "padding": "8px 12px"
+  },
+  "newThread": {
+    "background": "oklab(0.999994 0.0000455678 0.0000200868 / 0.1)",
+    "borderRadius": "12px",
+    "current": null,
+    "hover": true,
+    "padding": "8px 12px",
+    "url": "http://localhost:3000/en/ai-chat/social/profiles/9a48b93b-625a-4e45-84aa-39500e5ac4d7/chats/eac14dca-04ba-4b7b-b20f-be43cc755b8e/threads/create",
+    "title": "New thread"
+  },
+  "creation": {
+    "extraProjectGrid": false,
+    "materialsVariant": "content-ai-chat-materials-processing",
+    "scrollWidth": 1600,
+    "title": "Start with a name.",
+    "width": 1600
+  },
+  "help": {
+    "url": "http://localhost:3000/en/ai-chat/help",
+    "title": "What stopped you?",
+    "validation": {
+      "errors": [
+        "Choose a topic.",
+        "Describe what happened.",
+        "Tell us what result you need."
+      ],
+      "focusId": "_r_6_-topic",
+      "focusRole": "combobox",
+      "submitted": null
+    }
+  },
+  "mobileCreation": {
+    "extraProjectGrid": false,
+    "scrollWidth": 375,
+    "width": 375
+  },
+  "mobileHelp": {
+    "formTitle": "Support request",
+    "scrollWidth": 375,
+    "width": 375
+  },
+  "verifiedAt": "2026-10-11T21:04:07.822Z",
+  "checks": {
+    "hostTypeScript": "passed",
+    "localizedNavigationTests": 3,
+    "codePlacement": "passed",
+    "gitWhitespace": "passed",
+    "supportRequestSubmitted": false,
+    "viewportReset": true
+  }
+}

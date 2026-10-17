@@ -2,15 +2,16 @@
 import "server-only";
 
 import { IComponentProps } from "./interface";
-import { api } from "@sps/rbac/models/subject/sdk/server";
-import { Component } from "./Component";
+import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { Component as ChildComponent } from "./Component";
 import { Component as SelectMethod } from "../select-method-default";
 import { cn } from "@sps/shared-frontend-client-utils";
 
 export default async function Server(props: IComponentProps) {
-  const data = await api.authenticationIsAuthorized(props.apiProps);
+  const data = await subjectApi.authenticationIsAuthorized(props.apiProps);
 
-  if (!data) {
+  if (!data?.ok) {
+    if (props.fallback !== undefined) return props.fallback;
     return (
       <div className={cn("w-full flex flex-col", props.className)}>
         <SelectMethod
@@ -21,5 +22,5 @@ export default async function Server(props: IComponentProps) {
     );
   }
 
-  return <Component {...props} />;
+  return <ChildComponent {...props} />;
 }

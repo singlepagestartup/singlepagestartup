@@ -1,15 +1,10 @@
-import { Component as CrmModuleForm } from "../../../form/index";
+import type {
+  IComponentProps,
+  CrmWidgetFormListDefaultProps,
+} from "./interface";
+export type { CrmWidgetFormListDefaultProps } from "./interface";
+import { Component as Form } from "../../../form/index";
 import { defaultCrmForm, type CrmFormRecord } from "../../../shared/demo-crm";
-
-export interface CrmWidgetFormListDefaultProps {
-  variant?: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-  form: CrmFormRecord;
-  subjectName?: string;
-  embedded?: boolean;
-}
 
 export const defaultCrmWidgetFormListDefaultProps: CrmWidgetFormListDefaultProps =
   {
@@ -20,9 +15,7 @@ export const defaultCrmWidgetFormListDefaultProps: CrmWidgetFormListDefaultProps
     subjectName: "Your account",
   };
 
-export function CrmWidgetFormListDefault(
-  props?: Partial<CrmWidgetFormListDefaultProps>,
-) {
+export function CrmWidgetFormListDefault(props?: IComponentProps) {
   const { form, subjectName, embedded } = {
     ...defaultCrmWidgetFormListDefaultProps,
     ...props,
@@ -37,7 +30,7 @@ export function CrmWidgetFormListDefault(
       data-model="widget"
       data-variant={props?.variant ?? "form-list-default"}
     >
-      <CrmModuleForm
+      <Form
         variant="default"
         form={{
           ...form,

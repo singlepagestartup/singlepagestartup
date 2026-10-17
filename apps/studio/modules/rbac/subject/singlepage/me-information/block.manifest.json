@@ -1,7 +1,7 @@
 {
   "$schema": "../../../../../block.schema.json",
   "id": "rbac.subject.me-information",
-  "title": "RBAC Subject / me-information",
+  "title": "me-information",
   "description": "Current-subject account metadata card.",
   "layer": "singlepage",
   "state": "draft",

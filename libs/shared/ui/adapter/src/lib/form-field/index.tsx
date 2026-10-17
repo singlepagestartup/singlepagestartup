@@ -15,6 +15,16 @@ export function Component(props: IComponentProps) {
     <FormField
       control={props.form.control}
       name={props.name}
+      rules={
+        props.required
+          ? {
+              required:
+                props.required === true
+                  ? "This field is required."
+                  : props.required,
+            }
+          : undefined
+      }
       render={({ field }) => {
         return (
           <FormItem className={cn("w-full flex flex-col", props.className)}>

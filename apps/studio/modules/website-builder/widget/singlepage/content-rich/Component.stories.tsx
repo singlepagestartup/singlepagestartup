@@ -1,13 +1,17 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ContentRich, defaultContentRichProps } from "./Component";
+import { defaultContentRichProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Widget/Singlepage/content-rich",
-  component: ContentRich,
+  id: "modules-website-builder-models-widget-singlepage-content-rich",
+  title: "Modules/Website-Builder/Widget/Singlepage/content-rich",
+  component: Widget,
   parameters: { layout: "padded" },
-  args: defaultContentRichProps,
-} satisfies Meta<typeof ContentRich>;
+  args: { ...defaultContentRichProps, variant: "content-rich" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Widget>, { variant: "content-rich" }>
+>;
 
 export default meta;
 

@@ -1,12 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as RbacModuleIdentity } from "../../index";
+import { Component as Identity } from "../../index";
 
 const meta = {
-  title: "Modules/RBAC/Models/Identity/Singlepage/admin-v2-table",
-  component: RbacModuleIdentity,
+  id: "modules-rbac-models-identity-singlepage-admin-v2-table",
+  title: "Modules/RBAC/Identity/Singlepage/admin-v2-table",
+  component: Identity,
   argTypes: { empty: { control: "boolean" } },
   args: { variant: "admin-v2-table", empty: false },
-} satisfies Meta<typeof RbacModuleIdentity>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Identity>, { variant: "admin-v2-table" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

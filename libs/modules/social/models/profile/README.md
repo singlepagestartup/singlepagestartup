@@ -32,10 +32,20 @@ connection parameters for additional servers.
 
 ## Variants
 
+- `sidebar-ai-chat-project`: shared project navigation with Settings and New thread links, current-page states, and slots for Documents and Thread rows.
+- `id-ai-chat-project`: server project frame with navigation and content slots.
+- `id-settings-ai-chat`: personal Profile editor receiving an avatar slot and save callback from RBAC Subject.
+
 - `default`: profile card with title.
 - `overview-default`: profile hero section with description and widgets.
 - `articles-default`: responsive grid of linked Blog article cards, ordered by the relation's `orderIndex` ascending.
 - `button-default`: compact button for profile.
+- `select-ai-chat-project`: project navigation menu with the active Profile, project rows and a create link.
+- `select-item-ai-chat-project`: Profile menu row with a destination URL and selected indicator.
+- `thread-list-sidebar-ai-chat`: collapsible Documents navigation with Thread links, a document count and the selected item. It starts expanded and supports pointer and keyboard toggling.
+
+Documents and topic rows use Social Thread `list-item-sidebar-ai-chat`.
+
 - `find`: data-fetch wrapper for querying profiles.
 - `admin-form`: admin create/edit form for localized fields and metadata.
 - `admin-select-input`: admin select input for choosing a profile.

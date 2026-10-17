@@ -1,3 +1,4 @@
+import { assertKnowledgeAttachmentBytes } from "@sps/backend-utils";
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -27,7 +28,9 @@ export async function readKnowledgeSourceFile(props: {
   rootPath: string;
   filePath: string;
 }): Promise<KnowledgeSourceInput> {
-  const content = await fs.readFile(props.filePath, "utf-8");
+  const bytes = await fs.readFile(props.filePath);
+  assertKnowledgeAttachmentBytes({ bytes, name: props.filePath });
+  const content = bytes.toString("utf8");
   return parseKnowledgeSourceFile({
     rootPath: props.rootPath,
     filePath: props.filePath,

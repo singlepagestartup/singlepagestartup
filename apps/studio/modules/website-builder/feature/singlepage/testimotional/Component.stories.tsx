@@ -1,18 +1,19 @@
+import { Component as Feature } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  FeatureTestimotional,
-  defaultFeatureTestimotionalProps,
-} from "./Component";
+import { defaultFeatureTestimotionalProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Feature/Singlepage/testimotional",
-  component: FeatureTestimotional,
+  id: "modules-website-builder-models-feature-singlepage-testimotional",
+  title: "Modules/Website-Builder/Feature/Singlepage/testimotional",
+  component: Feature,
   parameters: {
     layout: "centered",
   },
-  args: defaultFeatureTestimotionalProps,
-} satisfies Meta<typeof FeatureTestimotional>;
+  args: { ...defaultFeatureTestimotionalProps, variant: "testimotional" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Feature>, { variant: "testimotional" }>
+>;
 
 export default meta;
 

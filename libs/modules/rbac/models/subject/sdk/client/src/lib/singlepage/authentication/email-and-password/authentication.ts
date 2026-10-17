@@ -4,6 +4,7 @@ import { route, clientHost } from "@sps/rbac/models/subject/sdk/model";
 import {
   DefaultError,
   useMutation,
+  useQueryClient,
   UseMutationOptions,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -25,6 +26,8 @@ export type IResult =
   IParentResult["IAuthenticationEmailAndPasswordAuthenticationResult"];
 
 export function action(props: IProps) {
+  const queryClient = useQueryClient();
+
   return useMutation<
     IResult,
     DefaultError,
@@ -45,6 +48,7 @@ export function action(props: IProps) {
         });
 
         persistAuthenticationTokens(result);
+        await queryClient.resetQueries();
 
         return result;
       } catch (error: any) {

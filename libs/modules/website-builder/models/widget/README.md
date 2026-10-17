@@ -20,6 +20,14 @@ Widgets store reusable content blocks (text, media, structured sections) for bui
 
 ## Variants
 
+- `content-ai-chat-profile-create`: project creation card with a form slot and project-start image.
+- `content-ai-chat-materials-processing`: expandable materials-processing disclosure.
+- `content-ai-chat-help`: support-page heading, support card with its own title and icon, form slot and response information. The Widget receives its persisted data through the owning RBAC Widget relation and renders the Subject/CRM form supplied as children.
+- `content-ai-chat-authentication`: authentication introduction, imagery and aside with a Subject form slot. Registration uses two images.
+- `navbar-ai-chat`: server navigation presentation with children for project and account controls composed by Host. Host supplies `language` and `helpSelected`; the Widget does not receive or parse the current Page URL.
+- `footer-ai-chat`: server footer presentation with locale-aware destinations.
+- `landing-ai-chat`: landing presentation with its own local interactive demonstration. The walkthrough uses prepared copy and local state without a Social Chat record, API writes or AI calls. It imports no Social or RBAC components.
+
 - `default`: sample component, for debugging.
 - `content-default`: rich content sections (article-like text blocks).
 - `footer-default`: site footer layout (links, navigation, legal).

@@ -1,7 +1,11 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type { IComponentProps, ArticleFindDefaultProps } from "./interface";
+export type { ArticleFindDefaultProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -29,7 +33,7 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
 interface BlogPostItem {
@@ -40,16 +44,14 @@ interface BlogPostItem {
   date: string;
   readTime: string;
 }
-export type ArticleFindDefaultProps = typeof defaultArticleFindDefaultProps;
-export function ArticleFindDefault(
-  props?: Partial<ArticleFindDefaultProps> & { variant?: string },
-) {
+
+export function ArticleFindDefault(props?: IComponentProps) {
   const { eyebrow, title, viewAllAction, posts } = {
     ...defaultArticleFindDefaultProps,
     ...props,
   };
   const articleHref =
-    "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
+    "/?path=/story/modules-host-models-page-singlepage-blog-module-article-slug--default";
   return (
     <section
       id="blog"
@@ -63,7 +65,7 @@ export function ArticleFindDefault(
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="mb-3 text-sm font-medium text-[var(--color-sps-muted)]">
+            <p className="mb-3 text-sm font-medium text-muted-foreground">
               {eyebrow}
             </p>
             <h2 className="text-4xl font-semibold tracking-tight md:text-5xl">
@@ -80,7 +82,7 @@ export function ArticleFindDefault(
             <a
               href={articleHref}
               target="_top"
-              className={`group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] transition hover:border-[var(--color-sps-graphite)] motion-reduce:transition-none ${kit.focus}`}
+              className={`group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground motion-reduce:transition-none ${kit.focus}`}
               key={post.title}
             >
               <div className="aspect-square overflow-hidden">
@@ -91,8 +93,8 @@ export function ArticleFindDefault(
                 />
               </div>
               <div className="flex flex-1 flex-col p-5 sm:p-6">
-                <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-sps-muted)]">
-                  <span className="rounded-full bg-[var(--color-sps-grey)] px-3 py-1.5">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+                  <span className="rounded-full bg-muted px-3 py-1.5">
                     {post.tag}
                   </span>
                   <span>{post.date}</span>
@@ -100,13 +102,11 @@ export function ArticleFindDefault(
                 <h3 className="text-2xl font-semibold leading-7 tracking-tight">
                   {post.title}
                 </h3>
-                <p className="mt-3 line-clamp-2 flex-1 text-sm leading-[22px] text-[var(--color-sps-muted)]">
+                <p className="mt-3 line-clamp-2 flex-1 text-sm leading-[22px] text-muted-foreground">
                   {post.excerpt}
                 </p>
-                <div className="mt-6 flex items-center justify-between border-t border-[var(--color-sps-line)] pt-4 text-sm">
-                  <span className="text-[var(--color-sps-muted)]">
-                    {post.readTime}
-                  </span>
+                <div className="mt-6 flex items-center justify-between border-t border-border pt-4 text-sm">
+                  <span className="text-muted-foreground">{post.readTime}</span>
                   <span className="inline-flex items-center gap-2 font-medium">
                     Read article
                     <ArrowUpRight className="size-5" />
@@ -123,11 +123,11 @@ export function ArticleFindDefault(
 const ChevronRight = createIcon("caret-right");
 const ArrowUpRight = createIcon("arrow-up-right");
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  secondary: `${buttonBase} border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)] enabled:hover:bg-[var(--color-sps-grey)] ${focus}`,
+  secondary: `${buttonBase} border border-border bg-card text-foreground enabled:hover:bg-muted ${focus}`,
   focus: focus,
 };
 export const defaultArticleFindDefaultProps = {

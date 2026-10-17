@@ -21,6 +21,9 @@ If no plan path provided, ask for one.
 
 ## Implementation Philosophy
 
+For frontend changes, read and apply
+`.agents/contracts/engineering/frontend-components.md` before editing variants.
+
 Plans are carefully designed, but reality can be messy. Your job is to:
 
 - Follow the plan's intent while adapting to what you find

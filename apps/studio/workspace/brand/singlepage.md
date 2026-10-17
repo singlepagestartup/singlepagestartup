@@ -7,7 +7,7 @@ confirmation:
   content_sha256: 8dbe5a27b000710a03ca504b7a56040516cfdb9b54be0a95d910ee4506361590
 review:
   dependencies:
-    strategy: d68e88a81632b3ddf4f57431d6963c9d74c28bf2ba0a3d9578fb2d925fe3bf82
+    strategy: 52e2689631863b62a99a9bc849739ff248247183179044a87fc6fdff2e2a6cbc
 sources:
   brand_identity:
     classification: constraint
@@ -27,24 +27,32 @@ sources:
   intended_perception:
     classification: promise
     resolution: professional-choice
-    source: Operator clarifications in chat, 2026-09-16 and 2026-09-17
+    source: apps/studio/workspace/brief/singlepage.md
+    source_keys:
+      - intake.product_direction
+    date: 2026-10-06
     crosscheck: apps/studio/workspace/strategy/singlepage.md
     sections:
       - Strategic direction
       - Audiences and product roles
-    supports: AI Chat accepts files, images, existing project material or guided
-      answers, turns them into an editable business and marketing model and
-      stays available for later idea development and criticism; an exportable
-      document and first landing page are results of that work.
+    supports: AI Chat accepts supplied material or guided answers and drafts a
+      shortened Workspace description with a project brief, Strategy, Brand,
+      written Design and separately structured Products. Users correct the
+      shortcomings the agent identifies, accept and export their documents,
+      and use the saved context for later discussion and criticism.
     limitation: Proposed audience meaning, not observed perception or customer outcomes.
   one_page_meaning:
     classification: client-claim
-    source: Operator clarifications in chat, 2026-09-16 and 2026-09-17
-    supports: The project can be read on one concise page and turned into a
-      landing-page sandbox; when the page is ready, the product guides
-      repository creation and deployment to the user's server through Code
-      Framework. “Start with one page” is not the value proposition or a literal
-      translation of the brand name.
+    source: apps/studio/workspace/brief/singlepage.md
+    source_keys:
+      - intake.product_direction
+    date: 2026-10-06
+    supports: The connected project description is the first-stage result.
+      Subsequent development can turn accepted documents into a landing page
+      intended to collect initial enquiries and test a hypothesis, with paid
+      server deployment following evaluation and improvement of project
+      description. “Start with one page” is not the value proposition or a
+      literal translation of the brand name.
     limitation: Intended product structure and naming meaning; implementation
       details, separate-site setup time and customer preference remain
       unverified.
@@ -60,17 +68,21 @@ sources:
       success or quantified savings.
   action_path:
     classification: constraint
-    source: Operator clarification in chat, 2026-09-16
+    source: apps/studio/workspace/brief/singlepage.md
+    source_keys:
+      - intake.product_direction
+    date: 2026-10-06
     crosschecks:
       - apps/studio/workspace/strategy/singlepage.md
       - apps/studio/workspace/products/singlepage/ai-chat/sales.yaml
       - apps/studio/workspace/products/singlepage/singlepagestartup/sales.yaml
-    supports: Begin with supplied material or guided answers, review and approve the
-      proposed project structure, continue through project-aware discussion,
-      assemble a landing-page sandbox, and guide the user through GitHub
-      repository creation and server deployment when the page is ready.
-    limitation: Intended journey; exact provider support, permissions, credential
-      handling and deployment recovery remain implementation decisions.
+    supports: Begin with supplied material or guided answers, review the draft
+      project and product documents, correct shortcomings, accept or export the
+      result and continue through project-aware discussion. Landing assembly,
+      editing and server publication belong to subsequent development.
+    limitation: Intended first-stage journey, not verified service readiness or
+      customer results. Future deployment prices and commercial terms remain
+      unselected.
   concerns_and_proof:
     classification: assumption
     resolution: professional-choice
@@ -86,9 +98,10 @@ sources:
       - CF-SPS-02
       - CF-SPS-05
       - CF-SPS-07
-    supports: Address whether a person can supply unsorted material, correct the
-      proposed structure and receive useful criticism; show attribution and
-      approval before a landing-page sandbox or relevant product adaptation.
+    supports: Address whether a person can supply unsorted material, review the
+      written project and separate product sections, correct the proposed
+      descriptions and receive useful criticism. Show supplied facts, open
+      questions and user approval in a worked example.
     limitation: These are proposed communication concerns and evidence rules, not
       interview quotations. No observed customer results or comparative
       performance is supplied.
@@ -112,6 +125,7 @@ sources:
     resolution: professional-choice
     source: apps/studio/workspace/brief/singlepage.md
     source_keys:
+      - intake.product_direction
       - sources.funding
       - sources.current_business
       - sources.license
@@ -130,55 +144,56 @@ sources:
 
 ## Brand identity
 
-Use **SinglePageStartup** with this exact spelling. The name connects one working business document with the first landing page prepared from it. Do not turn the name into the literal promise “start with one page”; the customer value begins with organizing the material the person already has and making it useful in later work.
+Use **SinglePageStartup** with this exact spelling. The name connects a working description of the business with the products and customer-facing materials developed from it. Customer value begins with organizing the material the person already has and making it useful in later work. Do not use “start with one page” as a literal promise or a translation of the name.
 
-SinglePageStartup brings together **AI Chat**, the guided workspace for defining and developing the project, and **Code Framework**, the free software foundation for publishing and expanding it. Introduce them as “SinglePageStartup AI Chat” and “SinglePageStartup Code Framework”; use the shorter product names once the relationship is clear. Use the full brand name in public introductions before any abbreviation.
+SinglePageStartup brings together **AI Chat**, the guided workspace for describing and developing the project, and **Code Framework**, the free software foundation for building its digital products. Introduce them as “SinglePageStartup AI Chat” and “SinglePageStartup Code Framework”; use the shorter product names once the relationship is clear. Use the full brand name in public introductions before any abbreviation.
 
 A permanent slogan is unnecessary. Use the audience messages below where they explain the offer.
 
 ## Intended perception
 
-SinglePageStartup should feel like a practical way to turn an idea, notes and partial decisions into a coherent project and then move toward a visible test. The person can provide material in its current form or answer guided questions; AI Chat organizes it and returns the result for review.
+SinglePageStartup should be understood as a way to write a project description from an idea, notes and partial decisions. The person supplies material in its current form or answers guided questions. AI Chat drafts the sections, points out missing or contradictory decisions and returns the documents for review.
 
-The business user should remember, “I can give it what I already have, correct the resulting structure and keep thinking from the same project context.” The founder should remember, “I have a project-aware counterpart that can help develop an idea, question it and turn accepted decisions into useful materials.” When the work reaches a site, chatbot or another digital product, Code Framework provides a relevant starting point instead of sending the person back to zero.
+The business user should remember, “I can give it what I already have, correct the resulting description and keep working with the same project context.” The founder should remember, “I can check my project with an agent that knows its decisions and points out what needs work.” When a site, chatbot or another digital product is needed, Code Framework offers relevant common functions for adaptation.
 
 The character is practical, calm and direct. Make the next useful step clear. Let the interface and the result show that the system understands the project; do not make the person learn how the underlying context or retrieval works.
 
 ## Meaning and message hierarchy
 
 1. **Bring what already exists.** The person can supply notes, documents and partial decisions or use guided sections. They do not need to know in advance where every fact belongs.
-2. **Work with the business model.** AI Chat places information into the relevant business, marketing and product areas, marks gaps and assumptions, and returns one editable result for correction, chat and export.
-3. **Keep thinking with the project.** The accepted foundation remains available for ordinary questions, idea development, comparisons and constructive criticism. The system uses what is already known, challenges weak reasoning when useful and asks only for information missing from the current decision.
-4. **Turn accepted decisions into a public page.** Prepare the offer, copy and first landing page from the reviewed project. Edit it in the sandbox and inspect the result immediately. When it is ready, connect GitHub, create the project repository, connect the user's server and publish through the configured deployment.
-5. **Offer the framework at the moment it becomes useful.** When the person needs a site, chatbot or another digital product, recommend Code Framework in that context. Explain which relevant functions are already integrated and what still needs to be adapted. The point is practical: start from a working foundation and spend effort on the product's own rules.
+2. **Describe the project and each product.** AI Chat drafts a project brief, Strategy, Brand, a written Design description and separate Products in a shortened Workspace structure. Each product has its own sections for customers, offer, Operations & Economics, Sales, Promotion, Analytics and research where needed. Promotion describes how the product will be presented publicly, including Website, Creative and Presentation where relevant. The result is text the user can inspect, edit and export.
+3. **Correct the shortcomings the agent identifies.** Review the proposed descriptions, check missing or contradictory decisions and correct the sections. Facts supplied by the user, assumptions and unanswered questions remain distinguishable. Acceptance records what the user is ready to use; it does not prove demand or guarantee a successful business.
+4. **Keep working with the project.** Accepted documents remain context for later questions, idea assessment, comparisons and criticism. The agent uses settled information and asks for what the current decision still needs. Users can freely export their results and use them outside the service.
+5. **Connect later work to the accepted documents.** Subsequent development includes agent-built landing pages intended to collect first enquiries and test a hypothesis. The owner evaluates and improves project description before selling server deployments. Code Framework is available when a person has a concrete software need; name the relevant common functions and what must be adapted.
 
-| Audience concern                                           | Response and proof to show                                                                                                                                                             |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| “Do I need to sort all my information before I can start?” | Show mixed notes and guided answers becoming attributed project sections, followed by correction and approval.                                                                         |
-| “Will the chat only agree with my ideas?”                  | Show an idea discussion that exposes an assumption, offers a reasoned objection and keeps the accepted project context visible.                                                        |
-| “Can one page become a real test?”                         | Show the same project decisions becoming a landing-page sandbox, then a repository and a deployed site on the user's server. Keep deployment and observed customer response separate.  |
-| “What happens when I need a site, chatbot or system?”      | Show Code Framework only when it fits the request. Name the relevant functions already available, deploy to the person's server and demonstrate one adaptation to the project's rules. |
+| Audience concern                                           | Response and proof to show                                                                                                                                                          |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| “Do I need to sort all my information before I can start?” | Show mixed notes and guided answers becoming attributed project and product sections, followed by correction and acceptance.                                                        |
+| “Will the chat only agree with my ideas?”                  | Show an idea discussion that exposes an assumption, offers a reasoned objection and keeps the accepted project context visible.                                                     |
+| “Can I use the result outside the chat?”                   | Show editable project documents and a separate description for each product, with export for use outside the service.                                                               |
+| “What happens when I need a site, chatbot or system?”      | Present Code Framework when it fits a concrete software need. Label hosted landing-page assembly and deployment as subsequent development and demonstrate only available functions. |
 
-The primary action is **Organize my materials**. It leads to registration and upload rather than implying that the person has not started the project. The next actions are **Work with the business model**, **Create the landing page** and **Publish on my server**. Publication explains what will be created in GitHub, which server credential is required and how later approved changes reach the site. A token purchase is not required for this path.
+The primary action is **Organize my materials**. It leads to registration and upload. The next actions are **Review my project**, **Correct a section**, **Export my documents** and **Continue with my project**. Public first-stage copy sells the work of describing the project and its products. Landing-page editing, GitHub connection and server publication are future capabilities, not active CTAs for this offer.
 
 ## Voice and language
 
-Speak directly to the person as “you.” Use short sentences and concrete verbs: upload, explain, choose, preview, check, change. Explain one useful action at a time. Speak as a system that already understands the completed business documents. Ask a plain question when information is missing. Do not explain vectors, retrieval or database storage in the ordinary product flow.
+Speak directly to the person as “you.” Use short sentences and concrete verbs: upload, explain, review, correct, compare, export. Explain one useful action at a time. Use the accepted project documents in responses and ask a plain question when information is missing. “Assess an idea” means checking it against project decisions and identifying what needs evidence or correction. Avoid vague instructions to “break down an idea.” Do not explain vectors, retrieval or database storage in the ordinary product flow.
 
 Introduce a “coding agent,” such as Claude Code or Codex Desktop, only when the person moves from describing the project to changing software. Explain it as the tool that changes the code while the person directs the work and checks the result.
 
-| Use                                                                                              | Avoid                                                                       |
-| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| “Add the notes and decisions you already have. Review how we organize them.”                     | “Start with one connected page.”                                            |
-| “Let’s test this idea against the project and find what does not hold up.”                       | “Your idea is great!” without reasons, limits or criticism.                 |
-| “Check the page in the sandbox. When it is ready, connect GitHub and publish it on your server.” | “Add documents to a vector knowledge base so retrieval can supply context.” |
-| “You need a chatbot. Start with the framework and adapt the parts that are specific to you.”     | “Build anything automatically with a universal AI platform.”                |
-| “Deploy the project to your server, then check the result.”                                      | “Thousands of founders save 90% of development time.”                       |
+| Use                                                                                             | Avoid                                                                       |
+| ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| “Add the notes and decisions you already have. Review how we organize them.”                    | “Start with one connected page.”                                            |
+| “Let’s test this idea against the project and find what does not hold up.”                      | “Your idea is great!” without reasons, limits or criticism.                 |
+| “Review the description of each product. Correct what is missing before you accept it.”         | “Add documents to a vector knowledge base so retrieval can supply context.” |
+| “You need a chatbot. Start with the framework and adapt the parts that are specific to you.”    | “Build anything automatically with a universal AI platform.”                |
+| “The framework includes registration and payments. Check what your product needs you to adapt.” | “Thousands of founders save 90% of development time.”                       |
 
 ## Consistency rules
 
-- Use “one page” for the connected working document and the landing page prepared from it. The sandbox is the review version; publication creates a repository and deploys to the user's server. Do not use “start with one page” as the value proposition or as a literal translation of the brand name.
-- Lead with files, images and other material the person already has, the business model produced from them and the landing page that follows.
+- Use a concise project overview to connect the documents. Each product retains its own structure and sections. Do not promise that all project and product work fits on one literal page or use “start with one page” as the value proposition.
+- Lead with the person's existing material and the written project and product descriptions produced from it. A written Design description is part of this result; generated design assets and a rendered landing page are not first-stage deliverables.
+- Label landing-page assembly, editing and server publication as subsequent development. First enquiries and a hypothesis test describe the purpose of a future page, not guaranteed outcomes. Future deployment prices and commercial terms remain unselected.
 - Treat the accepted project as the context for later discussion, comparison and criticism. Do not make the assistant uniformly agreeable or require the person to repeat settled information.
 - Let relevant responses demonstrate that the system understands the project. Do not sell relevance as a separate feature or require the person to instruct the chat to use information they have already provided.
 - Recommend Code Framework in response to a concrete product need. Name only the functions relevant to that need, distinguish what is already available from what must be built and use the person's server as the deployment destination.

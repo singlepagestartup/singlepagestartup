@@ -22,3 +22,7 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface IClientComponentProps extends IComponentPropsExtended {
+  options: [string, string, import("react").ReactNode][];
+}

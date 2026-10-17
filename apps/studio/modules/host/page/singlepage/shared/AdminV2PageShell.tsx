@@ -17,7 +17,7 @@ export function AdminV2PageShell({
   children,
 }: AdminV2PageShellProps) {
   return (
-    <main className="min-h-screen bg-[var(--color-sps-grey)] text-[var(--color-sps-graphite)] antialiased">
+    <main className="min-h-screen bg-muted text-foreground antialiased">
       <div className="grid min-h-screen grid-rows-[auto_1fr] lg:grid-cols-[280px_1fr] lg:grid-rows-1">
         <WebsiteBuilderModuleWidget
           variant="admin-v2-navigation"
@@ -26,17 +26,17 @@ export function AdminV2PageShell({
         <section className="min-w-0 p-4 sm:p-6 lg:p-8">
           <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-medium tracking-normal text-[var(--color-sps-muted)]">
+              <p className="text-sm font-medium tracking-normal text-muted-foreground">
                 {eyebrow}
               </p>
-              <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl text-[var(--color-sps-graphite)]">
+              <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl text-foreground">
                 {title}
               </h1>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--color-sps-muted)]">
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
                 {description}
               </p>
             </div>
-            <div className="rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-3 py-2 text-sm text-[var(--color-sps-muted)] ">
+            <div className="rounded-xl border border-border bg-card px-3 py-2 text-sm text-muted-foreground ">
               Local preview
             </div>
           </header>

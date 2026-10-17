@@ -1,26 +1,17 @@
-import { Component as WebsiteBuilderModuleWidget } from "../../../../index";
-
+import { Component as Widget } from "../../../../index";
 import type { Meta, StoryObj } from "@storybook/react";
-import { AccountProvider } from "../../../../../../rbac/subject/singlepage/account/Account";
-import { aiChatAccount } from "../../../../../../rbac/subject/singlepage/account/fixture";
-
-function Example() {
-  return <WebsiteBuilderModuleWidget variant="content-ai-chat-help" />;
+function Component() {
+  return (
+    <Widget variant="content-ai-chat-help">
+      <div className="text-sm text-muted-foreground">Support form slot</div>
+    </Widget>
+  );
 }
-
 const meta = {
   id: "modules-website-builder-models-widget-singlepage-content-ai-chat-help",
-  title:
-    "Modules/Website-Builder/Models/Widget/Singlepage/content/ai-chat/help",
-  component: Example,
+  title: "Modules/Website-Builder/Widget/Singlepage/content/ai-chat/help",
+  component: Component,
   parameters: { layout: "fullscreen" },
-  decorators: [
-    (Story) => (
-      <AccountProvider account={aiChatAccount}>
-        <Story />
-      </AccountProvider>
-    ),
-  ],
-} satisfies Meta<typeof Example>;
+} satisfies Meta<typeof Component>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};

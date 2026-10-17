@@ -1,0 +1,55 @@
+{
+  "storybook": {
+    "deleteHierarchy": "Modules/RBAC/Subject/Singlepage/me/delete/default",
+    "projectStates": [
+      "Default",
+      "Loading",
+      "Empty",
+      "Error"
+    ],
+    "passwordExpandedHasRequiredRepeat": true,
+    "emailStates": [
+      "Expanded",
+      "VerificationCode",
+      "NewEmail",
+      "NewEmailVerification"
+    ],
+    "runtimeErrorsObserved": 0
+  },
+  "runtime": {
+    "createdProject": "Testing",
+    "createdProjectOpens": true,
+    "documents": [
+      "Brief.md",
+      "Strategy.md",
+      "Brand.md",
+      "Design.md",
+      "Products.md"
+    ],
+    "projectReadsUseSubjectOwnershipRoute": true,
+    "chatAndThreadReadersUseSubjectScopedSDK": true,
+    "currentEmailCodeAcceptedByRealMailer": true,
+    "emailChangesRequireBothVerifications": true,
+    "passwordConfirmationRequired": true,
+    "loginEmailOrPasswordChangedDuringBrowserValidation": false
+  },
+  "checks": {
+    "testsPassed": 32,
+    "hostTypes": "passed",
+    "studioTypes": "passed",
+    "apiTypes": {
+      "preexistingErrors": 25,
+      "errorsInChangedCode": 0
+    },
+    "diffCheck": "passed"
+  },
+  "artifacts": [
+    "created-project-restored.jpg",
+    "projects-error-storybook.jpg",
+    "project-keyboard-focus-storybook.jpg",
+    "password-direct-host.jpg",
+    "password-direct-storybook.jpg",
+    "email-verification-host.jpg",
+    "email-steps-storybook.jpg"
+  ]
+}

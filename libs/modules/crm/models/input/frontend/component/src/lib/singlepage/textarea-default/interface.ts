@@ -13,6 +13,7 @@ export interface IComponentProps
   language: string;
   form: UseFormReturn<any>;
   disabled?: boolean;
+  path: string;
 }
 
 export interface IComponentPropsExtended

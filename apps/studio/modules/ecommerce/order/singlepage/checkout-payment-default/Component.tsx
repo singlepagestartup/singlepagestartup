@@ -1,4 +1,11 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  OrderCheckoutPaymentDefaultProps,
+} from "./interface";
+export type { OrderCheckoutPaymentDefaultProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import {
   forwardRef,
   type InputHTMLAttributes,
@@ -7,7 +14,7 @@ import {
   useState,
 } from "react";
 import { twMerge, twMerge as twMergePresentation } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import {
   paymentMethods,
   type PaymentMethod,
@@ -42,16 +49,9 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface OrderCheckoutPaymentDefaultProps {
-  variant?: string;
-  initialMethod: PaymentMethod;
-  agreementLabel: string;
-  actionLabel: string;
-  backLabel: string;
-}
 function PaymentMethodButton({
   method,
   isActive,
@@ -64,10 +64,10 @@ function PaymentMethodButton({
   const Icon = method.icon;
   return (
     <button
-      className={`flex min-h-24 flex-col items-center justify-center gap-3 rounded-xl border p-4 text-center font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)] ${
+      className={`flex min-h-24 flex-col items-center justify-center gap-3 rounded-xl border p-4 text-center font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground ${
         isActive
-          ? "border-[var(--color-sps-graphite)] bg-[var(--color-sps-grey)] text-[var(--color-sps-graphite)]"
-          : "border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-muted)] hover:border-[var(--color-sps-line)] hover:text-[var(--color-sps-graphite)]"
+          ? "border-foreground bg-muted text-foreground"
+          : "border-border bg-card text-muted-foreground hover:border-border hover:text-foreground"
       }`}
       aria-pressed={isActive}
       onClick={onClick}
@@ -80,8 +80,8 @@ function PaymentMethodButton({
 }
 function CardDetails() {
   return (
-    <section className="rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-8">
-      <h2 className="mb-8 text-2xl font-semibold text-[var(--color-sps-graphite)]">
+    <section className="rounded-3xl border border-border bg-card p-5 sm:p-8">
+      <h2 className="mb-8 text-2xl font-semibold text-foreground">
         Card details
       </h2>
       <div className="grid gap-6 md:grid-cols-2">
@@ -98,12 +98,12 @@ function CardDetails() {
             key={id as string}
           >
             <label
-              className="mb-2 block text-sm font-semibold text-[var(--color-sps-graphite)]"
+              className="mb-2 block text-sm font-semibold text-foreground"
               htmlFor={id as string}
             >
               {label}
               {required ? (
-                <span className="ml-1 text-[var(--color-sps-danger)]">*</span>
+                <span className="ml-1 text-destructive">*</span>
               ) : null}
             </label>
             <input
@@ -122,10 +122,10 @@ function CardDetails() {
 function WalletNotice({ method }: { method: PaymentMethod }) {
   if (method === "paypal") {
     return (
-      <section className="rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-8">
+      <section className="rounded-3xl border border-border bg-card p-5 sm:p-8">
         <div className="flex min-h-56 flex-col items-center justify-center gap-6 text-center">
-          <Wallet className="h-5 w-5 text-[var(--color-sps-muted)]" />
-          <p className="max-w-2xl text-base leading-7 text-[var(--color-sps-muted)]">
+          <Wallet className="h-5 w-5 text-muted-foreground" />
+          <p className="max-w-2xl text-base leading-7 text-muted-foreground">
             You will be redirected to PayPal to complete payment.
           </p>
         </div>
@@ -134,11 +134,11 @@ function WalletNotice({ method }: { method: PaymentMethod }) {
   }
   if (method === "bank") {
     return (
-      <section className="rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-8">
-        <h2 className="mb-6 text-2xl font-semibold text-[var(--color-sps-graphite)]">
+      <section className="rounded-3xl border border-border bg-card p-5 sm:p-8">
+        <h2 className="mb-6 text-2xl font-semibold text-foreground">
           Wire transfer details
         </h2>
-        <div className="space-y-4 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] p-6 text-base leading-7 text-[var(--color-sps-muted)]">
+        <div className="space-y-4 rounded-xl border border-border bg-muted p-6 text-base leading-7 text-muted-foreground">
           {[
             ["Bank", "Silicon Valley Bank"],
             ["Account", "****-****-4821"],
@@ -146,14 +146,12 @@ function WalletNotice({ method }: { method: PaymentMethod }) {
             ["SWIFT", "SVBKUS6S"],
           ].map(([label, value]) => (
             <div className="flex justify-between gap-6" key={label}>
-              <span className="text-[var(--color-sps-muted)]">{label}</span>
-              <span className="text-right font-[family-name:var(--font-sps)]">
-                {value}
-              </span>
+              <span className="text-muted-foreground">{label}</span>
+              <span className="text-right font-default">{value}</span>
             </div>
           ))}
         </div>
-        <p className="mt-5 text-base text-[var(--color-sps-muted)]">
+        <p className="mt-5 text-base text-muted-foreground">
           Please include your order number as reference. Payment confirmation
           may take 1-3 business days.
         </p>
@@ -161,17 +159,17 @@ function WalletNotice({ method }: { method: PaymentMethod }) {
     );
   }
   return (
-    <section className="rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-8">
+    <section className="rounded-3xl border border-border bg-card p-5 sm:p-8">
       <div className="flex min-h-56 flex-col items-center justify-center gap-6 text-center">
-        <CircleDollarSign className="h-5 w-5 text-[var(--color-sps-muted)]" />
-        <p className="max-w-3xl text-base leading-7 text-[var(--color-sps-muted)]">
+        <CircleDollarSign className="h-5 w-5 text-muted-foreground" />
+        <p className="max-w-3xl text-base leading-7 text-muted-foreground">
           After placing the order you'll receive a wallet address and payment
           instructions via email.
         </p>
-        <div className="flex flex-wrap justify-center gap-3 text-base text-[var(--color-sps-muted)]">
+        <div className="flex flex-wrap justify-center gap-3 text-base text-muted-foreground">
           {["BTC", "ETH", "USDT", "USDC"].map((currency) => (
             <span
-              className="rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] px-4 py-1"
+              className="rounded-xl border border-border bg-muted px-4 py-1"
               key={currency}
             >
               {currency}
@@ -182,9 +180,7 @@ function WalletNotice({ method }: { method: PaymentMethod }) {
     </section>
   );
 }
-export function OrderCheckoutPaymentDefault(
-  props?: Partial<OrderCheckoutPaymentDefaultProps>,
-) {
+export function OrderCheckoutPaymentDefault(props?: IComponentProps) {
   const { initialMethod, agreementLabel, actionLabel, backLabel } = {
     ...defaultOrderCheckoutPaymentDefaultProps,
     ...props,
@@ -199,8 +195,8 @@ export function OrderCheckoutPaymentDefault(
       data-model="order"
       data-variant={props?.variant ?? "checkout-payment-default"}
     >
-      <section className="rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-8">
-        <h2 className="mb-7 text-2xl font-semibold text-[var(--color-sps-graphite)]">
+      <section className="rounded-3xl border border-border bg-card p-5 sm:p-8">
+        <h2 className="mb-7 text-2xl font-semibold text-foreground">
           Payment method
         </h2>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -217,10 +213,10 @@ export function OrderCheckoutPaymentDefault(
 
       {method === "card" ? <CardDetails /> : <WalletNotice method={method} />}
 
-      <section className="rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-8">
+      <section className="rounded-3xl border border-border bg-card p-5 sm:p-8">
         <label className="flex items-start gap-4">
           <Checkbox className="" defaultChecked readOnly />
-          <span className="text-sm leading-6 text-[var(--color-sps-muted)]">
+          <span className="text-sm leading-6 text-muted-foreground">
             {agreementLabel}
           </span>
         </label>
@@ -229,13 +225,13 @@ export function OrderCheckoutPaymentDefault(
       <div className="flex gap-5">
         <button
           aria-label={backLabel}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)] transition hover:bg-[var(--color-sps-grey)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground transition hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
           type="button"
         >
           <ArrowLeft className="h-6 w-6" />
         </button>
         <button
-          className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-sps-green)] px-5 py-2 text-sm font-semibold text-[var(--color-sps-graphite)] transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]"
+          className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 py-2 text-sm font-semibold transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
           type="button"
         >
           <Lock className="h-6 w-6" />
@@ -250,14 +246,14 @@ const Lock = createIcon("lock-key");
 const CircleDollarSign = createIcon("currency-circle-dollar");
 const ArrowLeft = createIcon("arrow-left");
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 py-2 text-base text-[var(--color-sps-graphite)] outline-none transition motion-reduce:transition-none placeholder:text-[var(--color-sps-muted)] focus-visible:border-[var(--color-sps-graphite)] focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-sps-white)] disabled:cursor-not-allowed disabled:bg-[var(--color-sps-grey)] disabled:text-[var(--color-sps-muted)] disabled:opacity-60 [&[readonly]]:bg-[var(--color-sps-grey)] aria-invalid:border-[var(--color-sps-danger)] aria-invalid:focus-visible:ring-[var(--color-sps-danger)]",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
   checkbox:
-    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)] checked:border-transparent checked:bg-[var(--color-sps-green)] indeterminate:border-transparent indeterminate:bg-[var(--color-sps-green)] disabled:cursor-not-allowed",
+    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-border bg-card text-foreground checked:border-transparent checked:bg-primary indeterminate:border-transparent indeterminate:bg-primary disabled:cursor-not-allowed",
   focus: focus,
 };
 const Checkbox = forwardRef<HTMLInputElement, ICheckboxProps>(function Checkbox(
@@ -274,11 +270,11 @@ const Checkbox = forwardRef<HTMLInputElement, ICheckboxProps>(function Checkbox(
       />
       <Icon
         name="check"
-        className="pointer-events-none absolute h-3.5 w-3.5 text-[var(--color-sps-graphite)] opacity-0 peer-checked:opacity-100 peer-indeterminate:hidden"
+        className="pointer-events-none absolute h-3.5 w-3.5 text-foreground opacity-0 peer-checked:opacity-100 peer-indeterminate:hidden"
       />
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute hidden h-0.5 w-2.5 rounded-full bg-[var(--color-sps-graphite)] peer-indeterminate:block"
+        className="pointer-events-none absolute hidden h-0.5 w-2.5 rounded-full bg-default peer-indeterminate:block"
       />
     </span>
   );

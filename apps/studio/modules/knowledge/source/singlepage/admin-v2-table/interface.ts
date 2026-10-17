@@ -21,3 +21,18 @@ export interface IRecord {
   indexedContentHash: string | null;
   lastIndexedAt: string | null;
 }
+
+export const variant = "admin-v2-table";
+
+export interface IProps {
+  variant?: "admin-v2-table";
+  empty?: boolean;
+}
+
+type IVariantInputs = NonNullable<IProps>;
+
+export interface IComponentProps extends Omit<IVariantInputs, "variant"> {
+  variant?: "admin-v2-table";
+}
+
+export interface IComponentPropsExtended extends IComponentProps {}

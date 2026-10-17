@@ -1,6 +1,10 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../../feature/index";
-import type IconGlyphs from "../../../../../feature/singlepage/icon/icons.json";
-import { Component as WebsiteBuilderModuleButtonsArray } from "../../../../../buttons-array/index";
+import type { IComponentProps, IAIChatContinueProps } from "./interface";
+export type { IAIChatContinueProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../../../shared/icon";
+
+import type IconGlyphs from "../../../../../../shared/icon/singlepage/phosphor/icons.json";
+import { Component as ButtonsArray } from "../../../../../buttons-array/index";
 import type { IWebsiteSection } from "../content";
 import defaultContent from "./content.json";
 function Icon(props: {
@@ -9,24 +13,13 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface IAIChatContinueProps {
-  variant?: string;
-  content?: {
-    continue: IWebsiteSection;
-    terms: IWebsiteSection;
-    startLink: {
-      text: string;
-      href: string;
-    };
-  };
-}
 export function Component({
   variant = "content-ai-chat-continue",
   content = defaultContent,
-}: IAIChatContinueProps = {}) {
+}: IComponentProps = {}) {
   const mainLink = content.startLink;
   return (
     <section
@@ -36,21 +29,21 @@ export function Component({
       data-model="widget"
       data-variant={variant}
     >
-      <div className="flex flex-wrap items-center justify-between gap-6 border-t border-sps-line py-8">
+      <div className="flex flex-wrap items-center justify-between gap-6 border-t border-border py-8">
         <div className="max-w-xl">
           <h2 className={`text-2xl ${display}`}>{content.continue.title}</h2>
           <p className={`mt-3 text-base leading-7 ${muted}`}>
             {content.continue.paragraphs[0]}
           </p>
         </div>
-        <WebsiteBuilderModuleButtonsArray
+        <ButtonsArray
           variant="default"
           buttons={[
             { label: mainLink.text, href: mainLink.href, variant: "primary" },
           ]}
         />
       </div>
-      <details className="group border-t border-sps-line">
+      <details className="group border-t border-border">
         <summary
           className={`flex min-h-16 cursor-pointer list-none items-center justify-between gap-5 py-5 text-sm font-semibold [&::-webkit-details-marker]:hidden ${focus}`}
         >
@@ -75,7 +68,7 @@ export function Component({
             ))}
           </dl>
           <div className="mt-5">
-            <WebsiteBuilderModuleButtonsArray
+            <ButtonsArray
               variant="default"
               buttons={content.terms.links.map((link) => ({
                 label: link.text,
@@ -89,8 +82,8 @@ export function Component({
     </section>
   );
 }
-const display = "font-sps font-semibold tracking-normal";
-const muted = "text-sps-muted";
+const display = "font-default font-semibold tracking-normal";
+const muted = "text-muted-foreground";
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sps-green";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary";
 const section = "mx-auto max-w-6xl px-5 @3xl:px-8";

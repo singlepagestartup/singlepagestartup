@@ -37,8 +37,8 @@ maps both foreign keys to the corresponding profile and article seed records.
 - `admin-form`, `admin-select-input`, `admin-table`, `admin-table-row`.
 - `admin-v2-form`, `admin-v2-select-input`, `admin-v2-table`, `admin-v2-table-row`.
 
-Both admin generations expose the relation from profile and article forms.
-Tables filter by the current parent. Forms and tables accept optional
+Both admin generations expose the relation from Social profile forms.
+Tables filter by the current profile. Blog article forms do not depend on Social. Forms and tables accept optional
 `defaultProfileId` and `defaultBlogModuleArticleId` for create mode; persisted
 relation values take precedence when editing. Admin-v2 rows also open editors
 for the linked profile and article.

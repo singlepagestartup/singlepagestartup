@@ -113,7 +113,7 @@
         },
         {
           "title": "photo-src",
-          "text": "/module-assets/module-assets/module-assets/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1-square.png"
+          "text": "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1-square.png"
         },
         {
           "title": "photo-asset-id",
@@ -125,7 +125,7 @@
         },
         {
           "title": "secondary-photo-src",
-          "text": "/module-assets/module-assets/module-assets/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-progress-v1-square.png"
+          "text": "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-progress-v1-square.png"
         },
         {
           "title": "secondary-photo-asset-id",
@@ -158,10 +158,10 @@
     "password-error": "Enter a password.",
     "repeat-password-error": "Enter the same password in both fields.",
     "success-message": "Your account is ready.",
-    "photo-src": "/module-assets/module-assets/module-assets/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1-square.png",
+    "photo-src": "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1-square.png",
     "photo-asset-id": "singlepage-generated-living-focus-photography-project-start-v1-square",
     "photo-alt": "A woman working on her project with a laptop and notebook.",
-    "secondary-photo-src": "/module-assets/module-assets/module-assets/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-progress-v1-square.png",
+    "secondary-photo-src": "/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-progress-v1-square.png",
     "secondary-photo-asset-id": "singlepage-generated-living-focus-photography-project-progress-v1-square",
     "secondary-photo-alt": "A man reviewing a project sketch beside his laptop."
   }

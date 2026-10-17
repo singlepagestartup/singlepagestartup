@@ -1,4 +1,11 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  SocialWidgetChatListDefaultProps,
+} from "./interface";
+export type { SocialWidgetChatListDefaultProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import {
   forwardRef,
   type SVGProps,
@@ -9,7 +16,7 @@ import {
   useState,
 } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import {
   ChatImagePicker,
   ChatParticipantPicker,
@@ -47,31 +54,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface SocialWidgetChatListDefaultProps {
-  variant?: string;
-  selectedId?: string;
-  chatImages?: Record<string, SocialPreviewAttachment>;
-  onSelectChat?: (id: string) => void;
-  onCreateChat?: (
-    chat: SocialWidgetChatListDefaultProps["chats"][number],
-    imageFile?: File | null,
-  ) => void;
-  chats: Array<{
-    id: string;
-    name: string;
-    description: string;
-    unread: number;
-    active?: boolean;
-    memberIds?: string[];
-    icon: "general" | "engineering" | "design" | "marketing" | "random";
-  }>;
-}
-export function SocialWidgetChatListDefault(
-  props?: Partial<SocialWidgetChatListDefaultProps>,
-) {
+export function SocialWidgetChatListDefault(props?: IComponentProps) {
   const { chats, onSelectChat, onCreateChat } = {
     ...defaultSocialWidgetChatListDefaultProps,
     ...props,
@@ -130,19 +116,17 @@ export function SocialWidgetChatListDefault(
   }
   return (
     <aside
-      className="flex h-full min-h-[360px] w-full flex-col border-r border-[var(--color-sps-line)] bg-[var(--color-sps-grey)]"
+      className="flex h-full min-h-[360px] w-full flex-col border-r border-border bg-muted"
       data-ds-block="social.widget.chat-list-default"
       data-ds-layer="singlepage"
       data-module="social"
       data-model="widget"
       data-variant={props?.variant ?? "chat-list-default"}
     >
-      <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-sps-line)] px-4 py-3">
-        <h2 className="text-sm font-semibold text-[var(--color-sps-graphite)]">
-          Chats
-        </h2>
+      <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+        <h2 className="text-sm font-semibold text-foreground">Chats</h2>
         <button
-          className="flex h-11 w-11 items-center justify-center rounded-xl text-[var(--color-sps-muted)] transition hover:bg-[var(--color-sps-line)] hover:text-[var(--color-sps-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)] min-h-11"
+          className="flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-border hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground min-h-11"
           type="button"
           onClick={() => setOpen(true)}
           ref={newChatTrigger}
@@ -178,7 +162,7 @@ export function SocialWidgetChatListDefault(
                 event.preventDefault();
                 newChatTrigger.current?.focus();
               }}
-              className="fixed left-1/2 top-1/2 z-[60] max-h-[90vh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl bg-[var(--color-sps-white)] p-5 text-[var(--color-sps-graphite)] shadow-xl sm:p-8"
+              className="fixed left-1/2 top-1/2 z-[60] max-h-[90vh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl bg-card p-5 text-foreground shadow-xl sm:p-8"
             >
               <div className="flex items-center justify-between gap-3">
                 <Dialog.Title className="text-2xl font-semibold">
@@ -241,16 +225,16 @@ const MessageCircle = createIcon("chat-circle");
 const Megaphone = createIcon("megaphone");
 const Hash = createIcon("hash");
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  button: `${buttonBase} bg-[var(--color-sps-green)] text-[var(--color-sps-graphite)] enabled:hover:brightness-95 ${focus}`,
-  plain: `${buttonBase} text-[var(--color-sps-muted)] enabled:hover:text-[var(--color-sps-graphite)] ${focus}`,
+  button: `${buttonBase} bg-primary text-primary-foreground enabled:hover:brightness-95 ${focus}`,
+  plain: `${buttonBase} text-muted-foreground enabled:hover:text-foreground ${focus}`,
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 py-2 text-base text-[var(--color-sps-graphite)] outline-none transition motion-reduce:transition-none placeholder:text-[var(--color-sps-muted)] focus-visible:border-[var(--color-sps-graphite)] focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-sps-white)] disabled:cursor-not-allowed disabled:bg-[var(--color-sps-grey)] disabled:text-[var(--color-sps-muted)] disabled:opacity-60 [&[readonly]]:bg-[var(--color-sps-grey)] aria-invalid:border-[var(--color-sps-danger)] aria-invalid:focus-visible:ring-[var(--color-sps-danger)]",
-  muted: "text-[var(--color-sps-muted)]",
-  label: "text-sm font-semibold text-[var(--color-sps-graphite)]",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
+  muted: "text-muted-foreground",
+  label: "text-sm font-semibold text-foreground",
   focus: focus,
 };
 export const defaultSocialWidgetChatListDefaultProps: SocialWidgetChatListDefaultProps =
@@ -317,11 +301,11 @@ const ChatRow = memo(function ChatRow({
     <button
       aria-pressed={active}
       onClick={() => onSelect(chat.id)}
-      className={`mb-2 flex w-full items-center gap-3 rounded-2xl px-4 py-4 text-left transition ${kit.focus} ${active ? "bg-[var(--color-sps-graphite)] text-white" : "text-[var(--color-sps-graphite)] hover:bg-[var(--color-sps-white)]"}`}
+      className={`mb-2 flex w-full items-center gap-3 rounded-2xl px-4 py-4 text-left transition ${kit.focus} ${active ? "bg-default text-default-foreground" : "text-foreground hover:bg-card"}`}
       type="button"
     >
       <span
-        className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${active ? "bg-white/10" : "bg-[var(--color-sps-line)]/70"}`}
+        className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${active ? "bg-card/10" : "bg-border/70"}`}
       >
         {image ? (
           <img
@@ -337,13 +321,13 @@ const ChatRow = memo(function ChatRow({
         <span className="flex items-center justify-between gap-3">
           <span className="truncate text-lg font-semibold">{chat.name}</span>
           {chat.unread > 0 && (
-            <span className="grid h-6 min-w-6 place-items-center rounded-full bg-[var(--color-sps-green)] px-1.5 text-xs font-semibold text-[var(--color-sps-graphite)]">
+            <span className="grid h-6 min-w-6 place-items-center rounded-full bg-primary text-primary-foreground px-1.5 text-xs font-semibold">
               {chat.unread}
             </span>
           )}
         </span>
         <span
-          className={`mt-1 block truncate text-xs ${active ? "text-[var(--color-sps-muted-inverse)]" : kit.muted}`}
+          className={`mt-1 block truncate text-xs ${active ? "text-default-muted-foreground" : kit.muted}`}
         >
           {chat.description}
         </span>

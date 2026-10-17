@@ -1,12 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as HostModuleMetadata } from "../../index";
+import { Component as Metadata } from "../../index";
 
 const meta = {
-  title: "Modules/Host/Models/Metadata/Singlepage/admin-v2-table",
-  component: HostModuleMetadata,
+  id: "modules-host-models-metadata-singlepage-admin-v2-table",
+  title: "Modules/Host/Metadata/Singlepage/admin-v2-table",
+  component: Metadata,
   argTypes: { empty: { control: "boolean" } },
   args: { variant: "admin-v2-table", empty: false },
-} satisfies Meta<typeof HostModuleMetadata>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Metadata>, { variant: "admin-v2-table" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

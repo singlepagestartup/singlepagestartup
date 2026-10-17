@@ -6,6 +6,8 @@ export interface IComponentProps<M extends { id: string }, V>
   extends ISpsComponentBase {
   variant: V;
   data: M;
+  /** The owning parent SDK reader supplies live data; this view performs no read. */
+  dataSource?: "api" | "props";
   apiProps?: {
     params?: IFindByIdProps["params"];
     options?: IFindByIdProps["options"];

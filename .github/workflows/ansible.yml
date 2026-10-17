@@ -16,8 +16,6 @@ jobs:
     defaults:
       run:
         working-directory: ./tools/deployer
-    env:
-      MCP_CLIENT_CONFIG_OUTPUT_DIR: ${{ runner.temp }}/mcp-client-configs
     steps:
       - name: Check out repository code
         uses: actions/checkout@v5
@@ -280,6 +278,8 @@ jobs:
           chmod +x \
             ./$(echo ${{ github.ref_name }} | cut -d'-' -f2).sh
       - name: Run service script
+        env:
+          MCP_CLIENT_CONFIG_OUTPUT_DIR: ${{ runner.temp }}/mcp-client-configs
         run: |
           ./$(echo ${{ steps.set-script-file-name.outputs.SCRIPT_FILE_NAME }}).sh
       - name: Upload generated MCP client configs

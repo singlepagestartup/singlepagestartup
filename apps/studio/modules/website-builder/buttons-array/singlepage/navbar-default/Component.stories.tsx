@@ -1,11 +1,16 @@
+import { Component as ButtonsArray } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import { Component } from "./Component";
+
 const meta = {
-  title:
-    "Modules/Website-Builder/Models/Buttons-Array/Singlepage/navbar-default",
-  component: Component,
+  id: "modules-website-builder-models-buttons-array-singlepage-navbar-default",
+  title: "Modules/Website-Builder/Buttons-Array/Singlepage/navbar-default",
+  component: ButtonsArray,
   parameters: { layout: "fullscreen" },
-  args: { activeHref: "/", orientation: "horizontal" },
+  args: {
+    activeHref: "/",
+    orientation: "horizontal",
+    variant: "navbar-default",
+  },
   argTypes: {
     activeHref: {
       control: "select",
@@ -13,6 +18,11 @@ const meta = {
     },
     orientation: { control: "select", options: ["horizontal", "vertical"] },
   },
-} satisfies Meta<typeof Component>;
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof ButtonsArray>,
+    { variant: "navbar-default" }
+  >
+>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};

@@ -1,3 +1,10 @@
+import type { IComponentProps as IContentAiChatAuthentication } from "./content-ai-chat-authentication/interface";
+import type { IComponentProps as IContentAiChatHelp } from "./content-ai-chat-help/interface";
+import type { IComponentProps as IContentAiChatMaterialsProcessing } from "./content-ai-chat-materials-processing/interface";
+import type { IComponentProps as IContentAiChatProfileCreate } from "./content-ai-chat-profile-create/interface";
+import type { IComponentProps as ILandingAiChat } from "./landing-ai-chat/interface";
+import type { IComponentProps as IFooterAiChat } from "./footer-ai-chat/interface";
+import type { IComponentProps as INavbarAiChat } from "./navbar-ai-chat/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/interface";
 import { IComponentProps as IAdminV2FormComponentProps } from "./admin-v2/form/interface";
@@ -14,6 +21,13 @@ import { IComponentProps as IContentDefaultComponentProps } from "./content-defa
 import { IComponentProps as IFooterDefaultComponentProps } from "./footer-default/interface";
 import { IComponentProps as INavbarDefaultComponentProps } from "./navbar-default/interface";
 export type IComponentProps =
+  | IContentAiChatAuthentication
+  | IContentAiChatHelp
+  | IContentAiChatMaterialsProcessing
+  | IContentAiChatProfileCreate
+  | ILandingAiChat
+  | IFooterAiChat
+  | INavbarAiChat
   | IFindComponentProps
   | IAdminSelectInputComponentProps
   | IAdminTableRowComponentProps

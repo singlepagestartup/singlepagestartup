@@ -1,4 +1,17 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type {
+  IComponentProps,
+  ProductFindCategory,
+  ProductFindProduct,
+  ProductFindCardProps,
+} from "./interface";
+export type {
+  ProductFindCategory,
+  ProductFindProduct,
+  ProductFindCardProps,
+} from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import {
   useId,
   forwardRef as forwardRefControl,
@@ -8,8 +21,8 @@ import {
   useState,
 } from "react";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
-import { Component as EcommerceModuleProduct } from "../../../product/index";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
+import { Component as Product } from "../../../product/index";
 interface ICollectionPaginationProps {
   page: number;
   pageSize: number;
@@ -26,7 +39,7 @@ function CollectionPagination({
   return (
     <nav
       aria-label="Collection pages"
-      className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--color-sps-line)] pt-5"
+      className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5"
     >
       <p className={`text-sm ${kit.muted}`} aria-live="polite">
         {total
@@ -71,7 +84,7 @@ function CategoryChoice({
       type="button"
       aria-pressed={active}
       onClick={() => onSelect?.(slug)}
-      className={`${sectionChoiceClass} ${active ? "bg-[var(--color-sps-white)] text-[var(--color-sps-graphite)]" : "text-[var(--color-sps-muted)] hover:text-[var(--color-sps-graphite)]"}`}
+      className={`${sectionChoiceClass} ${active ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground"}`}
     >
       <span>{label}</span>
       {count !== undefined && (
@@ -104,11 +117,11 @@ function CollectionToolbar({
 }: ICollectionToolbarProps) {
   const id = useId();
   return (
-    <div className="mb-6 grid gap-3 rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-3">
+    <div className="mb-6 grid gap-3 rounded-3xl border border-border bg-card p-3">
       <div
         role="group"
         aria-label="Filter by category"
-        className="flex flex-wrap gap-1 rounded-xl bg-[var(--color-sps-grey)] p-1"
+        className="flex flex-wrap gap-1 rounded-xl bg-muted p-1"
       >
         {categories.map((item) => (
           <CategoryChoice
@@ -143,30 +156,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface ProductFindCategory {
-  slug: string;
-  label: string;
-}
-export interface ProductFindProduct {
-  id: string;
-  slug: string;
-  href?: string;
-  title: string;
-  subtitle: string;
-  category: string;
-  priceLabel: string;
-  badge?: string;
-  image: string;
-  shortDescription: string;
-  techStack: string[];
-}
-export type ProductFindCardProps = typeof defaultProductFindCardProps;
-export function ProductFindCard(
-  props?: Partial<ProductFindCardProps> & { variant?: string },
-) {
+export function ProductFindCard(props?: IComponentProps) {
   const { categories, products } = {
     ...defaultProductFindCardProps,
     ...props,
@@ -220,14 +213,14 @@ export function ProductFindCard(
         onQueryChange={search}
         searchLabel="Search services"
       />
-      <p role="status" className="mb-6 text-sm text-[var(--color-sps-muted)]">
+      <p role="status" className="mb-6 text-sm text-muted-foreground">
         {visibleProducts.length}{" "}
         {visibleProducts.length === 1 ? "service" : "services"}
       </p>
       {visibleProducts.length ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {pageProducts.map((product) => (
-            <EcommerceModuleProduct
+            <Product
               variant="card"
               key={product.id}
               slug={product.slug}
@@ -245,9 +238,9 @@ export function ProductFindCard(
           ))}
         </div>
       ) : (
-        <div className="rounded-3xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-8 text-center">
+        <div className="rounded-3xl border border-border bg-card p-8 text-center">
           <h2 className="text-2xl font-semibold">No services found</h2>
-          <p className="mt-3 text-base text-[var(--color-sps-muted)]">
+          <p className="mt-3 text-base text-muted-foreground">
             Try another search or category.
           </p>
           <Button
@@ -272,15 +265,15 @@ export function ProductFindCard(
   );
 }
 const sectionIndicatorClass =
-  "absolute bottom-1.5 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-[var(--color-sps-green)]";
+  "absolute bottom-1.5 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-primary text-primary-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const kit = {
   field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] px-4 py-2 text-base text-[var(--color-sps-graphite)] outline-none transition motion-reduce:transition-none placeholder:text-[var(--color-sps-muted)] focus-visible:border-[var(--color-sps-graphite)] focus-visible:ring-2 focus-visible:ring-[var(--color-sps-graphite)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-sps-white)] disabled:cursor-not-allowed disabled:bg-[var(--color-sps-grey)] disabled:text-[var(--color-sps-muted)] disabled:opacity-60 [&[readonly]]:bg-[var(--color-sps-grey)] aria-invalid:border-[var(--color-sps-danger)] aria-invalid:focus-visible:ring-[var(--color-sps-danger)]",
-  muted: "text-[var(--color-sps-muted)]",
+    "min-h-12 w-full min-w-0 rounded-xl border border-border bg-card px-4 py-2 text-base text-foreground outline-none transition motion-reduce:transition-none placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 [&[readonly]]:bg-muted aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
+  muted: "text-muted-foreground",
   focus: focus,
 };
 const sectionChoiceClass = `relative inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition ${kit.focus} disabled:cursor-not-allowed disabled:opacity-50`;
@@ -317,7 +310,7 @@ const IMG = {
     "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
 };
 const productOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-ecommerce-products-ecommerce-products-slug--default";
+  "/?path=/story/modules-host-models-page-singlepage-ecommerce-module-product-slug--default";
 export const defaultProductFindCardProps = {
   categories: [
     { slug: "all", label: "All services" },

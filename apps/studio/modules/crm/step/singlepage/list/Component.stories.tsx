@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as CrmModuleStep } from "../../index";
+import { Component as Step } from "../../index";
 const meta = {
-  title: "Modules/CRM/Models/Step/Singlepage/list",
-  component: CrmModuleStep,
+  id: "modules-crm-models-step-singlepage-list",
+  title: "Modules/CRM/Step/Singlepage/list",
+  component: Step,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof CrmModuleStep>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Step>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

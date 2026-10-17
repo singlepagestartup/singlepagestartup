@@ -1,8 +1,10 @@
-import { Component as Glyph } from "../icon/index";
+import type { IComponentProps, FeatureStatusDefaultProps } from "./interface";
+export type { FeatureStatusDefaultProps } from "./interface";
+import { Component as SharedIcon } from "../../../../shared/icon";
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMergePresentation, twMerge } from "tailwind-merge";
-import type IconGlyphs from "../icon/icons.json";
-type ModuleIcon = ReturnType<typeof createIcon>;
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
+
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
 }
@@ -30,13 +32,10 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <Glyph {...props} />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export type FeatureStatusDefaultProps = typeof defaultFeatureStatusDefaultProps;
-export function FeatureStatusDefault(
-  props?: Partial<FeatureStatusDefaultProps> & { variant?: string },
-) {
+export function FeatureStatusDefault(props?: IComponentProps) {
   const {
     icon: Icon,
     label,
@@ -47,7 +46,7 @@ export function FeatureStatusDefault(
     ...props,
   };
   const rootClassName = twMerge(
-    "min-w-0 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5",
+    "min-w-0 rounded-2xl border border-border bg-card p-5",
     className,
   );
   return (
@@ -60,14 +59,12 @@ export function FeatureStatusDefault(
       data-variant={props?.variant ?? "status-default"}
     >
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-sps-green)] text-[var(--color-sps-graphite)]">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
           <Icon className="h-5 w-5" />
         </span>
         <span className="min-w-0">
-          <small className="block text-xs text-[var(--color-sps-muted)]">
-            {label}
-          </small>
-          <strong className="block text-sm font-semibold leading-6 text-[var(--color-sps-graphite)]">
+          <small className="block text-xs text-muted-foreground">{label}</small>
+          <strong className="block text-sm font-semibold leading-6 text-foreground">
             {value}
           </strong>
         </span>
@@ -82,3 +79,5 @@ export const defaultFeatureStatusDefaultProps = {
   value: "All systems operational",
   className: "",
 };
+
+import type { ModuleIcon } from "./interface";

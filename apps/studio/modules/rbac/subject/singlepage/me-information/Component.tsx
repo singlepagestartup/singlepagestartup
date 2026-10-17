@@ -1,7 +1,11 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type { IComponentProps, SubjectMeInformationProps } from "./interface";
+export type { SubjectMeInformationProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import {
   defaultRbacSubject,
   formatRbacDateTime,
@@ -34,15 +38,9 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface SubjectMeInformationProps {
-  variant?: string;
-  subject: RbacSubject;
-  title: string;
-  description: string;
-}
 function MetadataValue({
   label,
   value,
@@ -54,31 +52,25 @@ function MetadataValue({
 }) {
   return (
     <div className="min-w-0">
-      <span className="block text-xs text-[var(--color-sps-muted)]">
-        {label}
-      </span>
+      <span className="block text-xs text-muted-foreground">{label}</span>
       {mono ? (
-        <code className="mt-1 block break-all rounded-lg border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] px-3 py-2 font-[family-name:var(--font-sps)] text-xs text-[var(--color-sps-graphite)]">
+        <code className="mt-1 block break-all rounded-lg border border-border bg-muted px-3 py-2 font-default text-xs text-foreground">
           {value}
         </code>
       ) : (
-        <p className="mt-1 break-words text-sm text-[var(--color-sps-graphite)]">
-          {value}
-        </p>
+        <p className="mt-1 break-words text-sm text-foreground">{value}</p>
       )}
     </div>
   );
 }
-export function SubjectMeInformation(
-  props?: Partial<SubjectMeInformationProps>,
-) {
+export function SubjectMeInformation(props?: IComponentProps) {
   const { subject, title, description } = {
     ...defaultSubjectMeInformationProps,
     ...props,
   };
   return (
     <article
-      className="min-w-0 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 sm:p-6"
+      className="min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-6"
       data-ds-block="rbac.subject.me-information"
       data-ds-layer="singlepage"
       data-module="rbac"
@@ -87,19 +79,19 @@ export function SubjectMeInformation(
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-sps-line)] bg-[var(--color-sps-grey)] text-[var(--color-sps-muted)]">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground">
             <Shield className="h-5 w-5" />
           </div>
-          <h2 className="mt-3 text-xl font-semibold text-[var(--color-sps-graphite)]">
+          <h2 className="mt-3 text-xl font-semibold text-foreground">
             {title}
           </h2>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-[var(--color-sps-muted)]">
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
             {description}
           </p>
         </div>
       </div>
 
-      <div className="mt-6 grid min-w-0 gap-5 border-t border-[var(--color-sps-line)] pt-6 sm:grid-cols-2">
+      <div className="mt-6 grid min-w-0 gap-5 border-t border-border pt-6 sm:grid-cols-2">
         <MetadataValue label="Subject ID" mono value={subject.id} />
         <MetadataValue label="Slug" value={subject.slug} />
         <MetadataValue label="Variant" value={subject.variant} />

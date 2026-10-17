@@ -1,7 +1,11 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type { IComponentProps, ProfileAuthorProps } from "./interface";
+export type { ProfileAuthorProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
 import {
   Component as ProfileOverview,
   type IProfileOverviewProps as ProfileOverviewProps,
@@ -34,19 +38,14 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export type ProfileAuthorProps = ProfileOverviewProps & {
-  slug: string;
-};
-export function ProfileAuthor(
-  props?: Partial<ProfileAuthorProps> & { variant?: string },
-) {
+export function ProfileAuthor(props?: IComponentProps) {
   const profile = { ...defaultProfileAuthorProps, ...props };
   return (
     <section
-      className="bg-[var(--color-sps-grey)]"
+      className="bg-muted"
       data-ds-block="social.profile.author"
       data-ds-layer="singlepage"
       data-module="social"
@@ -54,22 +53,16 @@ export function ProfileAuthor(
       data-variant={props?.variant ?? "author"}
     >
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-        <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-[var(--color-sps-muted)]">
-          <a
-            href="/"
-            className="transition hover:text-[var(--color-sps-muted)]"
-          >
+        <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <a href="/" className="transition hover:text-muted-foreground">
             Home
           </a>
           <ChevronRight className="h-5 w-5" />
-          <a
-            href="/blog"
-            className="transition hover:text-[var(--color-sps-muted)]"
-          >
+          <a href="/blog" className="transition hover:text-muted-foreground">
             Blog
           </a>
           <ChevronRight className="h-5 w-5" />
-          <span className="text-[var(--color-sps-muted)]">{profile.name}</span>
+          <span className="text-muted-foreground">{profile.name}</span>
         </nav>
 
         <ProfileOverview

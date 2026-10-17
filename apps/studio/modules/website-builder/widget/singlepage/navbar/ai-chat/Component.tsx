@@ -1,9 +1,16 @@
 "use client";
-import { Component as WebsiteBuilderModuleFeature } from "../../../../feature/index";
+import type {
+  IComponentProps,
+  INavbarNavigationProps,
+  INavbarAiChatProps,
+} from "./interface";
+export type { INavbarNavigationProps, INavbarAiChatProps } from "./interface";
 
-import type IconGlyphs from "../../../../feature/singlepage/icon/icons.json";
-import { Component as WebsiteBuilderModuleLogotype } from "../../../../logotype/index";
-import { Component as WebsiteBuilderModuleButtonsArray } from "../../../../buttons-array/index";
+import { Component as SharedIcon } from "../../../../../shared/icon";
+
+import type IconGlyphs from "../../../../../shared/icon/singlepage/phosphor/icons.json";
+import { Component as Logotype } from "../../../../logotype/index";
+import { Component as ButtonsArray } from "../../../../buttons-array/index";
 import { useCallback, useId, useRef, useState, type ReactNode } from "react";
 function Icon(props: {
   name: keyof typeof IconGlyphs;
@@ -11,22 +18,9 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface INavbarNavigationProps {
-  onNavigate: () => void;
-  onCloseAutoFocus: (event: Event) => void;
-}
-export interface INavbarAiChatProps {
-  variant?: string;
-  buttonsArrayId: string;
-  activeHref?: string;
-  navigationLayout?: "inline" | "collapsible";
-  navigationLabel?: string;
-  profileSelect?: (props: INavbarNavigationProps) => ReactNode;
-  subjectAccount?: (props: INavbarNavigationProps) => ReactNode;
-}
 export function Component({
   variant = "navbar-ai-chat",
   buttonsArrayId,
@@ -35,7 +29,7 @@ export function Component({
   navigationLabel = "Navigation",
   profileSelect,
   subjectAccount,
-}: INavbarAiChatProps) {
+}: IComponentProps) {
   const widgetId = "navbar-ai-chat";
   const navigationId = useId();
   const navigationTrigger = useRef<HTMLButtonElement>(null);
@@ -59,7 +53,7 @@ export function Component({
     <header
       data-ds-block="website-builder.widget.navbar-ai-chat"
       data-id={widgetId}
-      className={`sticky top-0 z-40 border-b border-sps-line bg-sps-white px-4 py-3 @[800px]:px-8 @[800px]:py-5 ${collapsible ? "h-18 @[800px]:h-24" : ""}`}
+      className={`sticky top-0 z-40 border-b border-border bg-card px-4 py-3 @[800px]:px-8 @[800px]:py-5 ${collapsible ? "h-18 @[800px]:h-24" : ""}`}
       data-module="website-builder"
       data-model="widget"
       data-variant={variant}
@@ -67,7 +61,7 @@ export function Component({
       <div
         className={`mx-auto flex max-w-6xl items-center justify-between gap-2 @[800px]:gap-5 ${collapsible ? "h-full" : "flex-wrap"}`}
       >
-        <WebsiteBuilderModuleLogotype variant="brand-ai-chat" />
+        <Logotype variant="brand-ai-chat" />
         <nav
           aria-label={navigationLabel}
           className="flex shrink-0 items-center justify-end gap-1"
@@ -82,11 +76,11 @@ export function Component({
             id={navigationId}
             className={
               collapsible
-                ? `${navigationOpen ? "flex" : "hidden"} absolute inset-x-0 top-full flex-col items-start gap-1 border-b border-sps-line bg-sps-white px-4 py-3 shadow-lg @[800px]:static @[800px]:flex @[800px]:flex-row @[800px]:items-center @[800px]:border-0 @[800px]:p-0 @[800px]:shadow-none`
+                ? `${navigationOpen ? "flex" : "hidden"} absolute inset-x-0 top-full flex-col items-start gap-1 border-b border-border bg-card px-4 py-3 shadow-lg @[800px]:static @[800px]:flex @[800px]:flex-row @[800px]:items-center @[800px]:border-0 @[800px]:p-0 @[800px]:shadow-none`
                 : "flex items-center gap-1"
             }
           >
-            <WebsiteBuilderModuleButtonsArray
+            <ButtonsArray
               variant="navbar-ai-chat"
               id={buttonsArrayId}
               activeHref={activeHref}
@@ -107,7 +101,7 @@ export function Component({
               aria-expanded={navigationOpen}
               aria-controls={navigationId}
               onClick={() => setNavigationOpen((open) => !open)}
-              className={`inline-flex size-11 items-center justify-center rounded-xl text-sps-muted hover:bg-sps-grey @[800px]:hidden ${kit.focus}`}
+              className={`inline-flex size-11 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted @[800px]:hidden ${kit.focus}`}
             >
               <Icon name={navigationOpen ? "x" : "list"} />
             </button>
@@ -118,7 +112,7 @@ export function Component({
   );
 }
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sps-graphite";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {

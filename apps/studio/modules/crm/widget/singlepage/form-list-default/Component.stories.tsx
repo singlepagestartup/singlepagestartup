@@ -1,18 +1,22 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  CrmWidgetFormListDefault,
-  defaultCrmWidgetFormListDefaultProps,
-} from "./Component";
+import { defaultCrmWidgetFormListDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/CRM/Models/Widget/Singlepage/form-list-default",
-  component: CrmWidgetFormListDefault,
+  id: "modules-crm-models-widget-singlepage-form-list-default",
+  title: "Modules/CRM/Widget/Singlepage/form-list-default",
+  component: Widget,
   parameters: {
     layout: "padded",
   },
-  args: defaultCrmWidgetFormListDefaultProps,
-} satisfies Meta<typeof CrmWidgetFormListDefault>;
+  args: {
+    ...defaultCrmWidgetFormListDefaultProps,
+    variant: "form-list-default",
+  },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Widget>, { variant: "form-list-default" }>
+>;
 
 export default meta;
 

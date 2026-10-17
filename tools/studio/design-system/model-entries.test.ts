@@ -131,7 +131,13 @@ test("cross-model Component imports use entity entries and native names", () => 
         return name === "Component" || (variantView && /^[A-Z]/.test(name));
       });
       if (!imported) continue;
-      const alias = pascal(module) + "Module" + pascal(entity);
+      const ownerModule = path.relative(modules, file).split(path.sep)[0];
+      const alias =
+        module === "shared" && entity === "icon"
+          ? "SharedIcon"
+          : module === ownerModule
+            ? pascal(entity)
+            : pascal(module) + "Module" + pascal(entity);
       if (suffix !== "index.ts" || imported.name.text !== alias)
         violations.push(
           `${path.relative(studio, file)} → ${node.moduleSpecifier.text} as ${imported.name.text}`,

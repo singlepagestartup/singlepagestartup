@@ -1,5 +1,36 @@
 "use client";
-import IconGlyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
+import Glyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
+function WebsiteBuilderModuleFeature({
+  name,
+  size = 20,
+  className = "",
+  svgProps,
+}: {
+  variant?: string;
+  name: keyof typeof Glyphs;
+  size?: 20 | 24;
+  className?: string;
+  svgProps?: React.SVGProps<SVGSVGElement>;
+}) {
+  const geometry = Glyphs[name]
+    ?.replace(/^\s*<svg\b[^>]*>/, "")
+    .replace(/<\/svg>\s*$/, "");
+  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 256 256"
+      fill="currentColor"
+      aria-hidden="true"
+      className={`shrink-0 ${className}`}
+      {...svgProps}
+      dangerouslySetInnerHTML={{ __html: geometry }}
+    />
+  );
+}
+
+import type IconGlyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
 import { memo } from "react";
 import {
   type IProjectMessage,
@@ -8,39 +39,17 @@ import {
 import { Component as FileStorageModuleFile } from "../../../../../file-storage/file/index";
 import { type IProjectAgent } from "../../../../profile/singlepage/agent/overview/ai-chat/resolver";
 import { Component as SocialModuleProfile } from "../../../../profile/index";
-function Icon({
-  name,
-  size = 20,
-  className = "",
-  svgProps,
-}: {
+function Icon(props: {
   name: keyof typeof IconGlyphs;
   size?: 20 | 24;
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  const geometry = IconGlyphs[name]
-    ?.replace(/^\s*<svg\b[^>]*>/, "")
-    .replace(/<\/svg>\s*$/, "");
-  if (!geometry) throw new Error("Missing Phosphor icon: " + name);
-  return (
-    <svg
-      className={`shrink-0 ${size === 24 ? "size-6" : "size-5"} ${className}`}
-      width={size}
-      height={size}
-      viewBox="0 0 256 256"
-      fill="currentColor"
-      data-icon-family="phosphor"
-      data-icon-name={name}
-      data-icon-weight="regular"
-      aria-hidden="true"
-      focusable="false"
-      {...svgProps}
-      dangerouslySetInnerHTML={{ __html: geometry }}
-    />
-  );
+  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
 }
+
 export interface IMessageOverviewProps {
+  variant?: string;
   message: IProjectMessage;
   agent: IProjectAgent | null;
   onSelect: (agent: IProjectAgent) => void;
@@ -60,10 +69,10 @@ function MessageContext({ documents, label }: IMessageContextProps) {
         {documents.map((document) => (
           <details
             key={document.name}
-            className="rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] p-3"
+            className="rounded-xl border border-border bg-card p-3"
           >
             <summary className={`cursor-pointer leading-5 ${kit.focus}`}>
-              <span className="font-semibold text-[color:var(--workspace-brand-foreground)]">
+              <span className="font-semibold text-foreground">
                 {document.name}
               </span>
               <span className="ml-2">
@@ -93,24 +102,15 @@ function MessageContext({ documents, label }: IMessageContextProps) {
   );
 }
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--workspace-brand-foreground)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
-  button: `${buttonBase} bg-[color:var(--workspace-brand-accent)] text-[color:var(--workspace-brand-foreground)] enabled:hover:brightness-95 ${focus}`,
-  secondary: `${buttonBase} border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] text-[color:var(--workspace-brand-foreground)] enabled:hover:bg-[color:var(--workspace-brand-background)] ${focus}`,
-  plain: `${buttonBase} text-[color:var(--workspace-brand-muted)] enabled:hover:text-[color:var(--workspace-brand-foreground)] ${focus}`,
-  danger: `${buttonBase} border border-[color:var(--workspace-brand-danger-line)] bg-[color:var(--workspace-brand-danger-surface)] text-[color:var(--workspace-brand-danger)] enabled:hover:brightness-95 ${focus}`,
-  field:
-    "min-h-12 w-full min-w-0 rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] px-4 py-2 text-base text-[color:var(--workspace-brand-foreground)] outline-none transition motion-reduce:transition-none placeholder:text-[color:var(--workspace-brand-muted)] focus-visible:border-[color:var(--workspace-brand-foreground)] focus-visible:ring-2 focus-visible:ring-[color:var(--workspace-brand-foreground)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--workspace-brand-surface)] disabled:cursor-not-allowed disabled:bg-[color:var(--workspace-brand-background)] disabled:text-[color:var(--workspace-brand-muted)] disabled:opacity-60 [&[readonly]]:bg-[color:var(--workspace-brand-background)] aria-invalid:border-[color:var(--workspace-brand-danger)] aria-invalid:focus-visible:ring-[color:var(--workspace-brand-danger)]",
-  checkbox:
-    "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] text-[color:var(--workspace-brand-foreground)] checked:border-transparent checked:bg-[color:var(--workspace-brand-accent)] indeterminate:border-transparent indeterminate:bg-[color:var(--workspace-brand-accent)] disabled:cursor-not-allowed",
-  card: "min-w-0 rounded-2xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] p-5",
-  muted: "text-[color:var(--workspace-brand-muted)]",
-  label: "text-sm font-semibold text-[color:var(--workspace-brand-foreground)]",
+  muted: "text-muted-foreground",
   focus: focus,
 };
 export const Component = memo(function Component({
+  variant = "overview-ai-chat",
   message,
   agent: replyingAgent,
   onSelect,
@@ -118,12 +118,12 @@ export const Component = memo(function Component({
 }: IMessageOverviewProps) {
   return (
     <article
-      data-ds-block="social.message.overview-ai-chat"
+      data-ds-block="social.message.id-ai-chat"
+      data-id={message.id}
+      className={`flex min-w-0 gap-3 ${message.role === "user" ? "ml-6" : ""}`}
       data-module="social"
       data-model="message"
-      data-id={message.id}
-      data-variant="overview-ai-chat"
-      className={`flex min-w-0 gap-3 ${message.role === "user" ? "ml-6" : ""}`}
+      data-variant={variant}
     >
       {message.role === "assistant" &&
         (replyingAgent ? (
@@ -135,13 +135,13 @@ export const Component = memo(function Component({
         ) : (
           <span
             aria-hidden="true"
-            className="grid size-8 shrink-0 place-items-center rounded-lg bg-[color:var(--workspace-brand-background)] text-[color:var(--workspace-brand-foreground)]"
+            className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-foreground"
           >
             <Icon name="robot" className="size-4" />
           </span>
         ))}
       <div
-        className={`min-w-0 flex-1 ${message.role === "user" ? "rounded-2xl bg-[color:var(--workspace-brand-background)] p-4" : ""}`}
+        className={`min-w-0 flex-1 ${message.role === "user" ? "rounded-2xl bg-muted p-4" : ""}`}
       >
         <p className={`text-xs font-semibold ${kit.muted}`}>
           {message.role === "user"
@@ -149,7 +149,7 @@ export const Component = memo(function Component({
             : (replyingAgent?.name ?? "AI assistant")}
         </p>
         {message.workingOn && (
-          <p className="mt-2 text-xs leading-5 text-[color:var(--workspace-brand-muted)]">
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">
             Working on {message.workingOn.documentName} ·{" "}
             {message.workingOn.sections.length
               ? message.workingOn.sections.join(" · ")
@@ -162,18 +162,25 @@ export const Component = memo(function Component({
           </p>
         )}
         {Boolean(message.files?.length) && (
-          <div
-            aria-label="Message attachments"
-            className="mt-3 grid gap-2 @[640px]:grid-cols-2"
-          >
-            {message.files!.map((file) => (
-              <FileStorageModuleFile
-                variant="overview-ai-chat"
-                key={file.id}
-                file={file}
-                compact
-              />
-            ))}
+          <div className="mt-3 min-w-0">
+            <p className="mb-2 text-xs text-muted-foreground">
+              {message.files!.length}{" "}
+              {message.files!.length === 1 ? "attachment" : "attachments"}
+            </p>
+            <ul
+              aria-label="Message attachments"
+              tabIndex={0}
+              className="flex gap-2 overflow-x-auto pb-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground"
+            >
+              {message.files!.map((file) => (
+                <li key={file.id} className="w-36 shrink-0 sm:w-40">
+                  <FileStorageModuleFile
+                    variant="attachment-ai-chat"
+                    file={file}
+                  />
+                </li>
+              ))}
+            </ul>
           </div>
         )}
         {Boolean(message.filesUsed?.length) && (

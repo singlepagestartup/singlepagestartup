@@ -15,7 +15,7 @@ export default async function Server(props: IComponentProps) {
   }
 
   if (props.children) {
-    return props.children({ data });
+    return props.children({ data: data ?? undefined });
   }
 
   return <></>;

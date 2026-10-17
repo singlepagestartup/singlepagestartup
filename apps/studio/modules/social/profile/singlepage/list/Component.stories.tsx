@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as SocialModuleProfile } from "../../index";
+import { Component as Profile } from "../../index";
 const meta = {
-  title: "Modules/Social/Models/Profile/Singlepage/list",
-  component: SocialModuleProfile,
+  id: "modules-social-models-profile-singlepage-list",
+  title: "Modules/Social/Profile/Singlepage/list",
+  component: Profile,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof SocialModuleProfile>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Profile>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

@@ -1,3 +1,4 @@
+import type { IComponentProps } from "./interface";
 import {
   ContentDefault,
   type ContentDefaultProps,
@@ -20,9 +21,7 @@ export const startupContentProps: ContentDefaultProps = {
   mediaLabel: "Startup-specific landing preview",
 };
 
-export function ContentDefaultStartup(
-  props: Partial<ContentDefaultProps> & { variant?: string },
-) {
+export function ContentDefaultStartup(props: IComponentProps) {
   return (
     <ContentDefault
       {...startupContentProps}

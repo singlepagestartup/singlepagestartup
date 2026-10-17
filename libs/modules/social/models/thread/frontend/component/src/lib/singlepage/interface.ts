@@ -1,3 +1,6 @@
+import type { IComponentProps as IListItemSidebarAiChat } from "./list-item-sidebar-ai-chat/interface";
+import type { IComponentProps as IDownloadAiChat } from "./download-ai-chat/interface";
+import type { IComponentProps as IIdAiChat } from "./id-ai-chat/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/interface";
 import { IComponentProps as IAdminV2FormComponentProps } from "./admin-v2/form/interface";
@@ -12,6 +15,9 @@ import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
+  | IListItemSidebarAiChat
+  | IDownloadAiChat
+  | IIdAiChat
   | IAdminSelectInputComponentProps
   | IAdminTableComponentProps
   | IAdminFormComponentProps

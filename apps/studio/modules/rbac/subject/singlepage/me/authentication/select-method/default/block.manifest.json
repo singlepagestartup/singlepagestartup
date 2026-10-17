@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-authentication-select-method-default",
+  "title": "me-authentication-select-method-default",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Subject authentication method selection.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-authentication-select-method-default"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-authentication-select-method-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

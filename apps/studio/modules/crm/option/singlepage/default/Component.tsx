@@ -1,18 +1,15 @@
+import type { IComponentProps, CrmOptionDefaultProps } from "./interface";
+export type { CrmOptionDefaultProps } from "./interface";
 import {
   type CrmOptionRecord,
   defaultCrmOptions,
 } from "../../../shared/demo-crm";
 
-export interface CrmOptionDefaultProps {
-  variant?: string;
-  option: CrmOptionRecord;
-}
-
 export const defaultCrmOptionDefaultProps: CrmOptionDefaultProps = {
   option: defaultCrmOptions[0],
 };
 
-export function CrmOptionDefault(props?: Partial<CrmOptionDefaultProps>) {
+export function CrmOptionDefault(props?: IComponentProps) {
   const { option } = {
     ...defaultCrmOptionDefaultProps,
     ...props,
@@ -20,18 +17,18 @@ export function CrmOptionDefault(props?: Partial<CrmOptionDefaultProps>) {
 
   return (
     <div
-      className="flex w-full flex-col gap-2 rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] p-5 text-left"
+      className="flex w-full flex-col gap-2 rounded-2xl border border-border bg-card p-5 text-left"
       data-ds-block="crm.option.default"
       data-ds-layer="singlepage"
       data-module="crm"
       data-model="option"
       data-variant={props?.variant ?? "default"}
     >
-      <span className="text-sm font-medium text-[var(--color-sps-graphite)]">
+      <span className="text-sm font-medium text-foreground">
         {option.title}
       </span>
       {option.description ? (
-        <span className="text-xs leading-5 text-[var(--color-sps-muted)]">
+        <span className="text-xs leading-5 text-muted-foreground">
           {option.description}
         </span>
       ) : null}

@@ -1,3 +1,13 @@
+import { Component as SubjectMeCrmModuleFormSupportAiChat } from "./subject-me-crm-module-form-support-ai-chat";
+import { Component as SubjectMeAuthenticationResetPasswordAiChat } from "./subject-me-authentication-reset-password-ai-chat";
+import { Component as SubjectMeAuthenticationForgotPasswordAiChat } from "./subject-me-authentication-forgot-password-ai-chat";
+import { Component as SubjectMeAuthenticationRegistrationAiChat } from "./subject-me-authentication-registration-ai-chat";
+import { Component as SubjectMeAuthenticationSelectMethodAiChat } from "./subject-me-authentication-select-method-ai-chat";
+import { Component as SubjectMeProfileSettings } from "./subject-me-profile-settings";
+import { Component as SubjectMeSocialModuleProfileIdChatIdThreadCreateAiChat } from "./subject-me-social-module-profile-id-chat-id-thread-create-ai-chat";
+import { Component as SubjectMeSocialModuleProfileIdSettingsAiChat } from "./subject-me-social-module-profile-id-settings-ai-chat";
+import { Component as SubjectMeSocialModuleProfileIdChatIdThreadIdAiChat } from "./subject-me-social-module-profile-id-chat-id-thread-id-ai-chat";
+import { Component as SubjectMeSocialModuleProfileCreateAiChat } from "./subject-me-social-module-profile-create-ai-chat";
 import { Component as SubjectListSocialModuleProfileDefault } from "./subject/list/social-module/profile/default";
 import { Component as SubjectOverviewSocialModuleProfileOverviewDefault } from "./subject/overview/social-module/profile/overview/default";
 import { Component as SubjectOverviewEcommerceModuleProductListDefault } from "./subject/overview/ecommerce-module/product/list/default";
@@ -23,6 +33,25 @@ import { Component as SubjectOverviewDefault } from "./subject/overview/default"
 import { Component as SubjectListDefault } from "./subject/list/default";
 
 export const variants = {
+  "subject-me-crm-module-form-support-ai-chat":
+    SubjectMeCrmModuleFormSupportAiChat,
+  "subject-me-authentication-reset-password-ai-chat":
+    SubjectMeAuthenticationResetPasswordAiChat,
+  "subject-me-authentication-forgot-password-ai-chat":
+    SubjectMeAuthenticationForgotPasswordAiChat,
+  "subject-me-authentication-registration-ai-chat":
+    SubjectMeAuthenticationRegistrationAiChat,
+  "subject-me-authentication-select-method-ai-chat":
+    SubjectMeAuthenticationSelectMethodAiChat,
+  "subject-me-profile-settings": SubjectMeProfileSettings,
+  "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat":
+    SubjectMeSocialModuleProfileIdChatIdThreadCreateAiChat,
+  "subject-me-social-module-profile-id-settings-ai-chat":
+    SubjectMeSocialModuleProfileIdSettingsAiChat,
+  "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat":
+    SubjectMeSocialModuleProfileIdChatIdThreadIdAiChat,
+  "subject-me-social-module-profile-create-ai-chat":
+    SubjectMeSocialModuleProfileCreateAiChat,
   "subject-list-social-module-profile-default":
     SubjectListSocialModuleProfileDefault,
   "subject-overview-social-module-profile-overview-default":

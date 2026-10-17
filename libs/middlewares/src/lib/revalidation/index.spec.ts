@@ -24,6 +24,41 @@ const CID = "e3d65d9b-60fa-4e6b-8e4d-7a93960bc249";
 const TID = "38529ce7-f88d-45d3-9f34-f40b6a3bf82c";
 const MID = "e9fb51ab-dd98-4d5c-b3f8-7466ce7e440e";
 
+describe("Next tag batching", () => {
+  afterEach(() => jest.restoreAllMocks());
+  it("sends 279 distinct tags in three bounded requests and deduplicates repeats", async () => {
+    const fetch = jest
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const tags = Array.from({ length: 279 }, (_, index) => `tag-${index}`);
+    await new Middleware().revalidateTags([...tags, tags[0]], true);
+    expect(fetch).toHaveBeenCalledTimes(3);
+    const batches = fetch.mock.calls.map(
+      ([, options]) => JSON.parse(options!.body as string).tags,
+    );
+    expect(batches.map((batch) => batch.length)).toEqual([128, 128, 23]);
+    expect(batches.flat()).toEqual(tags);
+  });
+  it("keeps failed required invalidation retryable", async () => {
+    jest
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("error", { status: 500 }));
+    await expect(
+      new Middleware().revalidateTags(["tag"], true),
+    ).rejects.toThrow("Next invalidation failed (500)");
+  });
+  it("supports older Hosts through serial GET invalidation when POST is unavailable", async () => {
+    const fetch = jest
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response("", { status: 405 }))
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    await new Middleware().revalidateTags(["a", "b"], true);
+    expect(
+      fetch.mock.calls.map(([, options]) => options?.method ?? "GET"),
+    ).toEqual(["POST", "GET", "GET"]);
+  });
+});
+
 function intersects(a: string[], b: string[]): boolean {
   return a.some((topic) => b.includes(topic));
 }

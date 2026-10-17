@@ -1,3 +1,4 @@
+import type { IComponentProps } from "./interface";
 import { memo } from "react";
 import fixture from "../admin-v2-table/data.json";
 import type { IRecord } from "../admin-v2-table/interface";
@@ -27,12 +28,7 @@ function valueLabel(value: unknown): string {
       ? JSON.stringify(value)
       : String(value);
 }
-export interface IComponentProps {
-  variant?: string;
-  id?: string;
-  data?: IRecord;
-  className?: string;
-}
+
 function Card({
   variant = "admin-v2-card",
   id,
@@ -50,19 +46,19 @@ function Card({
     );
   return (
     <article
-      className={`min-w-0 rounded-2xl border border-sps-line bg-sps-white p-5 sm:p-6 ${className ?? ""}`}
+      className={`min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-6 ${className ?? ""}`}
       data-module="analytic"
       data-model="metric"
       data-variant={variant}
     >
-      <p className="text-xs text-sps-muted">
+      <p className="text-xs text-muted-foreground">
         {fixture.schema.module} / {fixture.schema.entityType}
       </p>
       <h2 className="mt-2 text-xl font-semibold">{fixture.schema.entity}</h2>
       <dl className="mt-5 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
         {fields.map((field) => (
           <div key={field.key} className="min-w-0">
-            <dt className="text-xs text-sps-muted">{field.label}</dt>
+            <dt className="text-xs text-muted-foreground">{field.label}</dt>
             <dd className="mt-1 whitespace-pre-wrap text-sm [overflow-wrap:anywhere]">
               <FieldValue
                 field={field}

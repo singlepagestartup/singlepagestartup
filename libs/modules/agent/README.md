@@ -50,7 +50,8 @@ See the linked model READMEs above for full fields and variant details.
 
 ## 5. Telegram Bot Command Ownership
 
-Telegram transport code in `apps/telegram` is an adapter. It may bootstrap a
+Telegram transport code in `apps/telegram` is an adapter. There is no separate
+Telegram business module under `libs/modules`. It may bootstrap a
 Telegram user/profile/chat/thread and ingest incoming messages/actions, but it
 must not contain business logic for managing SPS domain entities.
 

@@ -43,3 +43,18 @@ export const ADDRESS_VERIFYING_PROVIDERS = Object.freeze([
 export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
 
 export * from "./knowledge";
+export * from "./open-router";
+
+export {
+  AI_CHAT_WEBSITE_CONTENT,
+  type IAIChatWebsiteContent,
+} from "./ai-chat-website";
+
+export * from "./ai-chat-service";
+export * from "./ai-chat-documents";
+export * from "./ai-chat-skill-templates";
+
+export * from "./open-router-models";
+export * from "./ai-chat-attachments";
+export * from "./file-preview";
+export * from "./ai-context";

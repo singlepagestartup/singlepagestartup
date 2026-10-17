@@ -4,9 +4,7 @@ interface INavigationProviderProps {
   navigate: (href: string) => void;
   children: ReactNode;
 }
-const NavigationContext = createContext<(href: string) => void>((href) =>
-  window.location.assign(href),
-);
+const NavigationContext = createContext<(href: string) => void>(() => {});
 export function NavigationProvider({
   navigate,
   children,

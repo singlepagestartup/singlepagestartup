@@ -20,7 +20,11 @@ describe("Given: the Subject service owns a chat thread", () => {
     const assertThreadBelongsToChat = jest.fn().mockResolvedValue(undefined);
     const update = jest.fn().mockImplementation(async ({ data }) => ({
       id: "thread-1",
-      ...data,
+      metadata: {
+        anotherFeature: { enabled: true },
+        [data.metadataNamespaceUpdate.namespace]:
+          data.metadataNamespaceUpdate.value,
+      },
     }));
     const service = Object.assign(Object.create(Service.prototype), {
       socialModuleChatLifecycleAssertSubjectOwnsChat: assertSubjectOwnsChat,
@@ -71,14 +75,10 @@ describe("Given: the Subject service owns a chat thread", () => {
     expect(update).toHaveBeenCalledWith({
       id: "thread-1",
       data: {
-        metadata: {
-          anotherFeature: {
-            enabled: true,
-          },
-          rbacAiThreadPreferences: {
-            version: 1,
-            modelId: "minimax/minimax-m2.5",
-          },
+        metadataNamespaceUpdate: {
+          namespace: "rbacAiThreadPreferences",
+          expectedValue: null,
+          value: { version: 1, modelId: "minimax/minimax-m2.5" },
         },
       },
     });

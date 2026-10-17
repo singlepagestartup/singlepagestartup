@@ -1,19 +1,19 @@
 import type { ComponentProps, ComponentType } from "react";
-import { Component as Variant0 } from "./singlepage/content/ai-chat/help/index";
-import { Component as Variant1 } from "./singlepage/content/ai-chat/hero/index";
-import { Component as Variant2 } from "./singlepage/content/ai-chat/try/index";
-import { Component as Variant3 } from "./singlepage/content/ai-chat/continue/index";
-import { Component as Variant4 } from "./singlepage/navbar/ai-chat/index";
-import { Component as Variant5 } from "./singlepage/footer/ai-chat/index";
-import { Component as Variant6 } from "./singlepage/navbar/ai-chat-landing/index";
+import { Component as ContentAiChatHelp } from "./singlepage/content/ai-chat/help/index";
+import { Component as ContentAiChatHero } from "./singlepage/content/ai-chat/hero/index";
+import { Component as ContentAiChatTry } from "./singlepage/content/ai-chat/try/index";
+import { Component as ContentAiChatContinue } from "./singlepage/content/ai-chat/continue/index";
+import { Component as NavbarAiChat } from "./singlepage/navbar/ai-chat/index";
+import { Component as FooterAiChat } from "./singlepage/footer/ai-chat/index";
+import { Component as NavbarAiChatLanding } from "./singlepage/navbar/ai-chat-landing/index";
 const variants = {
-  "content-ai-chat-help": Variant0,
-  "content-ai-chat-hero": Variant1,
-  "content-ai-chat-try": Variant2,
-  "content-ai-chat-continue": Variant3,
-  "navbar-ai-chat": Variant4,
-  "footer-ai-chat": Variant5,
-  "navbar-ai-chat-landing": Variant6,
+  "content-ai-chat-help": ContentAiChatHelp,
+  "content-ai-chat-hero": ContentAiChatHero,
+  "content-ai-chat-try": ContentAiChatTry,
+  "content-ai-chat-continue": ContentAiChatContinue,
+  "navbar-ai-chat": NavbarAiChat,
+  "footer-ai-chat": FooterAiChat,
+  "navbar-ai-chat-landing": NavbarAiChatLanding,
 };
 type Props = {
   [V in keyof typeof variants]: { variant: V } & ComponentProps<

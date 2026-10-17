@@ -1,0 +1,68 @@
+:root {
+  --background: 0 0% 100%;
+  --foreground: 203.333333 27.272727% 12.941176%;
+  --muted: 210 22.222222% 96.470588%;
+  --muted-foreground: 202.857143 10.344828% 39.803922%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 203.333333 27.272727% 12.941176%;
+  --border: 204 16.666667% 88.235294%;
+  --input: 204 16.666667% 88.235294%;
+  --card: 0 0% 100%;
+  --card-foreground: 203.333333 27.272727% 12.941176%;
+  --primary: 80.28169 81.609195% 65.882353%;
+  --primary-foreground: 203.333333 27.272727% 12.941176%;
+  --secondary: 210 22.222222% 96.470588%;
+  --secondary-foreground: 203.333333 27.272727% 12.941176%;
+  --accent: 210 22.222222% 96.470588%;
+  --accent-foreground: 203.333333 27.272727% 12.941176%;
+  --destructive: 351.310345 67.44186% 42.156863%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 203.333333 27.272727% 12.941176%;
+  --default: 203.333333 27.272727% 12.941176%;
+  --default-foreground: 0 0% 100%;
+  --default-muted-foreground: 204 14.563107% 79.803922%;
+  --destructive-surface: 351.428571 100% 97.254902%;
+  --destructive-border: 349.811321 54.639175% 80.980392%;
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-ring: hsl(var(--ring));
+  --color-default: hsl(var(--default));
+  --color-default-foreground: hsl(var(--default-foreground));
+  --color-default-muted-foreground: hsl(var(--default-muted-foreground));
+  --color-destructive-surface: hsl(var(--destructive-surface));
+  --color-destructive-border: hsl(var(--destructive-border));
+}
+
+@theme {
+  --font-default: "Default", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-default);
+  --font-primary: var(--font-default);
+}
+
+@font-face {
+  font-family: "Default";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./assets/fonts/Onest-wght.ttf") format("truetype");
+}

@@ -1,5 +1,45 @@
 "use client";
 import {
+  action as socialModuleProfileProjects,
+  type IProps as ISocialModuleProfileProjectsProps,
+  type IResult as ISocialModuleProfileProjectsResult,
+} from "./social-module/profile/projects";
+import {
+  request as identityChangeEmailRequest,
+  verify as identityChangeEmailVerify,
+} from "./identity/change-email";
+import {
+  action as socialModuleProfileFindByIdAvatarFind,
+  type IProps as ISocialModuleProfileFindByIdAvatarFindProps,
+  type IResult as ISocialModuleProfileFindByIdAvatarFindResult,
+} from "./social-module/profile/find-by-id/avatar/find";
+import {
+  action as socialModuleProfileFindByIdAvatarUpdate,
+  type IProps as ISocialModuleProfileFindByIdAvatarUpdateProps,
+  type IResult as ISocialModuleProfileFindByIdAvatarUpdateResult,
+} from "./social-module/profile/find-by-id/avatar/update";
+
+import {
+  action as socialModuleProfileFindByIdUpdate,
+  type IProps as ISocialModuleProfileFindByIdUpdateProps,
+  type IResult as ISocialModuleProfileFindByIdUpdateResult,
+} from "./social-module/profile/find-by-id/update";
+import {
+  action as socialModuleProfileCreate,
+  type IProps as ISocialModuleProfileCreateProps,
+  type IResult as ISocialModuleProfileCreateResult,
+} from "./social-module/profile/create";
+import {
+  action as billingModuleBalance,
+  type IProps as IBillingModuleBalanceProps,
+  type IResult as IBillingModuleBalanceResult,
+} from "./billing-module/balance";
+import {
+  action as socialModuleProfileFind,
+  type IProps as ISocialModuleProfileFindProps,
+  type IResult as ISocialModuleProfileFindResult,
+} from "./social-module/profile/find";
+import {
   action as socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate,
   type IProps as ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateProps,
   type IResult as ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateResult,
@@ -137,6 +177,11 @@ import {
   type IProps as IIdentityUpdateProps,
   type IResult as IIdentityUpdateResult,
 } from "./identity/update";
+import {
+  action as identityFind,
+  type IProps as IIdentityFindProps,
+  type IResult as IIdentityFindResult,
+} from "./identity/find";
 import {
   action as identityDelete,
   type IProps as IIdentityDeleteProps,
@@ -379,6 +424,13 @@ import {
 } from "./social-module/chat/find-by-id/profile/delete";
 
 export type IProps = {
+  IBillingModuleBalanceProps: IBillingModuleBalanceProps;
+  ISocialModuleProfileFindByIdAvatarFindProps: ISocialModuleProfileFindByIdAvatarFindProps;
+  ISocialModuleProfileFindByIdAvatarUpdateProps: ISocialModuleProfileFindByIdAvatarUpdateProps;
+  ISocialModuleProfileFindByIdUpdateProps: ISocialModuleProfileFindByIdUpdateProps;
+  ISocialModuleProfileCreateProps: ISocialModuleProfileCreateProps;
+  ISocialModuleProfileFindProps: ISocialModuleProfileFindProps;
+  ISocialModuleProfileProjectsProps: ISocialModuleProfileProjectsProps;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateProps: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateProps;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindProps: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindProps;
   IAuthenticationInitProps: IAuthenticationInitProps;
@@ -396,6 +448,7 @@ export type IProps = {
   IAuthenticationOAuthExchangeProps: IAuthenticationOAuthExchangeProps;
 
   IIdentityUpdateProps: IIdentityUpdateProps;
+  IIdentityFindProps: IIdentityFindProps;
   IIdentityDeleteProps: IIdentityDeleteProps;
   IIdentityCreateProps: IIdentityCreateProps;
 
@@ -458,6 +511,13 @@ export type IProps = {
 };
 
 export type IResult = {
+  IBillingModuleBalanceResult: IBillingModuleBalanceResult;
+  ISocialModuleProfileFindByIdAvatarFindResult: ISocialModuleProfileFindByIdAvatarFindResult;
+  ISocialModuleProfileFindByIdAvatarUpdateResult: ISocialModuleProfileFindByIdAvatarUpdateResult;
+  ISocialModuleProfileFindByIdUpdateResult: ISocialModuleProfileFindByIdUpdateResult;
+  ISocialModuleProfileCreateResult: ISocialModuleProfileCreateResult;
+  ISocialModuleProfileFindResult: ISocialModuleProfileFindResult;
+  ISocialModuleProfileProjectsResult: ISocialModuleProfileProjectsResult;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateResult: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateResult;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindResult: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindResult;
   IAuthenticationInitResult: IAuthenticationInitResult;
@@ -475,6 +535,7 @@ export type IResult = {
   IAuthenticationOAuthExchangeResult: IAuthenticationOAuthExchangeResult;
 
   IIdentityUpdateResult: IIdentityUpdateResult;
+  IIdentityFindResult: IIdentityFindResult;
   IIdentityDeleteResult: IIdentityDeleteResult;
   IIdentityCreateResult: IIdentityCreateResult;
 
@@ -561,6 +622,9 @@ export const api = {
   authenticationOAuthExchange,
 
   identityUpdate,
+  identityChangeEmailRequest,
+  identityChangeEmailVerify,
+  identityFind,
   identityDelete,
   identityCreate,
 
@@ -610,6 +674,13 @@ export const api = {
   socialModuleProfileFindByIdChatFindByIdDelete,
   socialModuleProfileFindByIdChatFindByIdActionCreate,
   socialModuleProfileFindByIdChatFindByIdActionFind,
+  billingModuleBalance,
+  socialModuleProfileFind,
+  socialModuleProfileProjects,
+  socialModuleProfileCreate,
+  socialModuleProfileFindByIdUpdate,
+  socialModuleProfileFindByIdAvatarFind,
+  socialModuleProfileFindByIdAvatarUpdate,
   socialModuleChatCreate,
   socialModuleChatFindByIdUpdate,
   socialModuleChatFindByIdThreadFind,

@@ -6,12 +6,12 @@ import { IComponentProps } from "./interface";
 import { api } from "@sps/host/models/page/sdk/client";
 
 export default function Client(props: IComponentProps) {
-  const { data, isFetching, isLoading } = api.urlSegmentValue({
+  const { data, isLoading } = api.urlSegmentValue({
     segment: props.segment,
     url: props.url,
   });
 
-  if (isFetching || isLoading) {
+  if (isLoading) {
     return <Skeleton />;
   }
 
@@ -19,5 +19,5 @@ export default function Client(props: IComponentProps) {
     return <></>;
   }
 
-  return props.children({ data });
+  return props.children({ data: data ?? undefined });
 }

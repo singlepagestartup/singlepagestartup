@@ -1,7 +1,10 @@
 "use client";
-import { Component as WebsiteBuilderModuleFeature } from "../../../../../../../website-builder/feature/index";
+import type { IComponentProps, IProjectSelectItemProps } from "./interface";
+export type { IProjectSelectItemProps } from "./interface";
 
-import type IconGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
+import { Component as SharedIcon } from "../../../../../../../shared/icon";
+
+import type IconGlyphs from "../../../../../../../shared/icon/singlepage/phosphor/icons.json";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { memo } from "react";
 import type { IProjectIdentity } from "../../../../scope/ai-chat/project/Profiles";
@@ -11,23 +14,17 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-export interface IProjectSelectItemProps {
-  variant?: string;
-  data: IProjectIdentity;
-  selected: boolean;
-  onNavigate?: () => void;
-}
 const itemClass =
-  "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-sps-grey";
+  "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-muted";
 export const Component = memo(function Component({
   variant = "select-item-ai-chat-project",
   data,
   selected,
   onNavigate,
-}: IProjectSelectItemProps) {
+}: IComponentProps) {
   return (
     <DropdownMenu.Item asChild>
       <a

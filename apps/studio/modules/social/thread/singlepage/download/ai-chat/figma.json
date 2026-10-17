@@ -1,0 +1,23 @@
+{
+  "componentName": "social.thread",
+  "pageName": "social",
+  "variantName": "download-ai-chat",
+  "nodeId": null,
+  "variantNodeId": null,
+  "syncStatus": "not-created",
+  "metadataFile": "figma.json",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "social.thread.download-ai-chat",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "social/thread/singlepage/download/ai-chat",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "thread",
+    "sps.source.variant": "download-ai-chat",
+    "sps.code.component": "apps/studio/modules/social/thread/singlepage/download/ai-chat/Component.tsx",
+    "sps.code.story": "apps/studio/modules/social/thread/singlepage/download/ai-chat/Component.stories.tsx",
+    "sps.figma.component": "social.thread",
+    "sps.figma.variant": "download-ai-chat",
+    "sps.contractVersion": "0.1.0"
+  }
+}

@@ -1,5 +1,8 @@
+export { Component } from "./Component";
 export {
-  Component,
   type INavbarNavigationProps,
   type INavbarAiChatProps,
-} from "./Component";
+} from "./interface";
+
+export type { IComponentProps, IComponentPropsExtended } from "./interface";
+export { variant } from "./interface";

@@ -1,3 +1,7 @@
+export interface IOpenRouterSessionOptions {
+  sessionId?: string;
+}
+
 export interface IOpenRouterUsage {
   prompt_tokens: number;
   completion_tokens: number;
@@ -102,6 +106,45 @@ export interface IOpenRouterGenerationError {
   error: any;
   billing: IOpenRouterBilling | null;
 }
+
+export type IOpenRouterDecisionQuestion =
+  | {
+      type: "noul";
+      instructions: string;
+      criteria: { true: string; false: string };
+    }
+  | { type: "choice"; instructions: string; criteria: Record<string, string> }
+  | { type: "score"; instructions: string; criteria: string[] };
+
+export type IOpenRouterDecisionAnswer =
+  | { type: "noul"; noul: number }
+  | {
+      type: "choice";
+      choice: string;
+      confidence: number;
+      probabilities: Record<string, number>;
+    }
+  | {
+      type: "score";
+      score: number;
+      confidence: number;
+      probabilities: Record<string, number>;
+    };
+
+export interface IOpenRouterDecisionsProps {
+  model?: string;
+  state: Record<string, unknown>;
+  questions: Record<string, IOpenRouterDecisionQuestion>;
+}
+
+export interface IOpenRouterDecisionsSuccess {
+  answers: Record<string, IOpenRouterDecisionAnswer>;
+  billing: IOpenRouterBilling;
+}
+
+export type IOpenRouterDecisionsResult =
+  | IOpenRouterDecisionsSuccess
+  | IOpenRouterGenerationError;
 
 export type IOpenRouterGenerateResult =
   | IOpenRouterGenerationSuccess

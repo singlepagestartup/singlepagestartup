@@ -2,7 +2,8 @@ import {
   createKnowledgeEmbeddingClient,
   IKnowledgeEmbeddingClient,
 } from "../embedding";
-import { KnowledgeRepository } from "../repository";
+import type { Service as SourceService } from "@sps/knowledge/models/source/backend/app/api/src/lib/service";
+import { createKnowledgeServices } from "../composition";
 import { KnowledgeIndexResult } from "../types";
 import {
   discoverContentFiles,
@@ -12,16 +13,16 @@ import { chunkText } from "./chunker";
 export { hashContent } from "../service/utils";
 
 export interface KnowledgeIndexerProps {
-  repository?: KnowledgeRepository;
+  source?: SourceService;
   embeddingClient?: IKnowledgeEmbeddingClient;
 }
 
 export class KnowledgeIndexer {
-  private repository: KnowledgeRepository;
+  private source: SourceService;
   private embeddingClient: IKnowledgeEmbeddingClient;
 
   constructor(props?: KnowledgeIndexerProps) {
-    this.repository = props?.repository || new KnowledgeRepository();
+    this.source = props?.source || createKnowledgeServices().source;
     this.embeddingClient =
       props?.embeddingClient || createKnowledgeEmbeddingClient();
   }
@@ -40,7 +41,10 @@ export class KnowledgeIndexer {
       dryRun: Boolean(props?.dryRun),
       sources: [],
     };
-    if (props?.clear && !props.dryRun) await this.repository.clearDerivedData();
+    const imports: {
+      filePath: string;
+      input: Awaited<ReturnType<typeof readKnowledgeSourceFile>>;
+    }[] = [];
     if (props?.rootPath && !props.sourceId) {
       for (const filePath of await discoverContentFiles({
         rootPath: props.rootPath,
@@ -50,24 +54,29 @@ export class KnowledgeIndexer {
           rootPath: props.rootPath,
           filePath,
         });
-        if (props.dryRun) {
-          result.sources.push({
-            sourceId: "",
-            title: input.title,
-            chunks: chunkText({ text: input.content }).length,
-            status: "dry_run",
-          });
-        } else {
-          const source = await this.repository.upsertSourceBySlug(input);
-          if (source)
-            await this.repository.ensureFileForSource({
-              sourceId: source.id,
-              filePath,
-            });
-        }
+        imports.push({ filePath, input });
       }
     }
-    for (const source of await this.repository.listSourcesForIndex({
+    // Validate every import before clearing an index or saving the first Source.
+    if (props?.clear && !props.dryRun) await this.source.clearDerivedData();
+    for (const { filePath, input } of imports) {
+      if (props?.dryRun) {
+        result.sources.push({
+          sourceId: "",
+          title: input.title,
+          chunks: chunkText({ text: input.content }).length,
+          status: "dry_run",
+        });
+      } else {
+        const source = await this.source.upsertSourceBySlug(input);
+        if (source)
+          await this.source.ensureFileForSource({
+            sourceId: source.id,
+            filePath,
+          });
+      }
+    }
+    for (const source of await this.source.listSourcesForIndex({
       sourceId: props?.sourceId,
       limit: props?.limit,
     })) {
@@ -98,7 +107,7 @@ export class KnowledgeIndexer {
       embeddings.forEach((vector, index) =>
         this.embeddingClient.validateEmbedding(vector, index),
       );
-      const published = await this.repository.publishChunks(
+      const published = await this.source.publishChunks(
         source.id,
         source.contentHash,
         chunks.map((chunk, index) => ({

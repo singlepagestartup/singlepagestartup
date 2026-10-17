@@ -1,18 +1,19 @@
+import { Component as Product } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  ProductCartDefault,
-  defaultProductCartDefaultProps,
-} from "./Component";
+import { defaultProductCartDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/Ecommerce/Models/Product/Singlepage/cart-default",
-  component: ProductCartDefault,
+  id: "modules-ecommerce-models-product-singlepage-cart-default",
+  title: "Modules/Ecommerce/Product/Singlepage/cart-default",
+  component: Product,
   parameters: {
     layout: "padded",
   },
-  args: defaultProductCartDefaultProps,
-} satisfies Meta<typeof ProductCartDefault>;
+  args: { ...defaultProductCartDefaultProps, variant: "cart-default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Product>, { variant: "cart-default" }>
+>;
 
 export default meta;
 

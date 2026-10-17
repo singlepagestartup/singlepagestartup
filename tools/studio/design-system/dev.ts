@@ -1,10 +1,12 @@
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import * as path from "node:path";
+import postcss from "postcss";
+import tailwindcss from "@tailwindcss/postcss";
 
 const ROOT = process.cwd();
 const DESIGN_SYSTEM_ROOT = path.join(ROOT, "apps", "studio");
-const DEFAULT_REF = "modules/host/page/singlepage/landing-page-basic";
+const DEFAULT_REF = "modules/website-builder/widget/singlepage/content-default";
 const MIME_TYPES: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
   ".gif": "image/gif",
@@ -36,8 +38,7 @@ Usage: bun tools/studio/design-system/dev.ts [blocks-or-pages-ref] [options]
 
 Examples:
   bun tools/studio/design-system/dev.ts
-  bun tools/studio/design-system/dev.ts modules/host/page/singlepage/landing-page-basic
-  bun tools/studio/design-system/dev.ts modules/website-builder/widget/singlepage/hero-default
+  bun tools/studio/design-system/dev.ts modules/website-builder/widget/singlepage/content-default
 
 Options:
   --host <hostname>  Hostname, default 127.0.0.1
@@ -164,29 +165,16 @@ async function readStaticFile(
   }
 }
 
-async function main(): Promise<void> {
-  const options = parseArgs(process.argv.slice(2));
-
-  if (options.help) {
-    printHelp();
-    return;
-  }
-
-  const defaultAbsolute = resolveInsideDesignSystem(options.ref);
+export async function createDesignSystemServer(ref = DEFAULT_REF) {
+  const defaultAbsolute = resolveInsideDesignSystem(ref);
   if (!defaultAbsolute || !(await readStaticFile(defaultAbsolute))) {
-    throw new Error(
-      `Studio-system ref was not found: apps/studio/${options.ref}`,
-    );
+    throw new Error(`Studio-system ref was not found: apps/studio/${ref}`);
   }
 
-  const server = createServer(async (request, response) => {
-    const url = new URL(
-      request.url ?? "/",
-      `http://${options.host}:${options.port}`,
-    );
+  return createServer(async (request, response) => {
+    const url = new URL(request.url ?? "/", "http://localhost");
     const pathname = decodeURIComponent(url.pathname);
-    const requestedPath =
-      pathname === "/" ? options.ref : pathname.replace(/^\/+/, "");
+    const requestedPath = pathname === "/" ? ref : pathname.replace(/^\/+/, "");
     const absolutePath = resolveInsideDesignSystem(requestedPath);
 
     if (!absolutePath) {
@@ -202,12 +190,54 @@ async function main(): Promise<void> {
       return;
     }
 
+    // A canonical file URL keeps relative styles, scripts and images anchored
+    // to the preview folder when opened from / or a directory URL.
+    if (pathname === "/" || result.filePath !== absolutePath) {
+      const location = path
+        .relative(DESIGN_SYSTEM_ROOT, result.filePath)
+        .split(path.sep)
+        .map(encodeURIComponent)
+        .join("/");
+      response.writeHead(307, { location: `/${location}${url.search}` });
+      response.end();
+      return;
+    }
+
     const extension = path.extname(result.filePath).toLowerCase();
+    let content = result.content;
+    if (
+      result.filePath === path.join(DESIGN_SYSTEM_ROOT, "runtime/styles.css")
+    ) {
+      try {
+        const styles = await postcss([tailwindcss()]).process(
+          content.toString("utf8"),
+          { from: result.filePath },
+        );
+        content = Buffer.from(styles.css);
+      } catch (error) {
+        response.writeHead(500, {
+          "content-type": "text/plain; charset=utf-8",
+        });
+        response.end(String(error));
+        return;
+      }
+    }
     response.writeHead(200, {
       "content-type": MIME_TYPES[extension] ?? "application/octet-stream",
     });
-    response.end(result.content);
+    response.end(content);
   });
+}
+
+async function main(): Promise<void> {
+  const options = parseArgs(process.argv.slice(2));
+
+  if (options.help) {
+    printHelp();
+    return;
+  }
+
+  const server = await createDesignSystemServer(options.ref);
 
   await new Promise<void>((resolvePromise, rejectPromise) => {
     server.once("error", rejectPromise);
@@ -227,7 +257,8 @@ async function main(): Promise<void> {
   process.on("SIGTERM", closeServer);
 }
 
-main().catch((error: unknown) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+if (import.meta.main)
+  main().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });

@@ -78,14 +78,15 @@ export class Middleware {
           ...(secretKey ? { "X-RBAC-SECRET-KEY": secretKey } : {}),
           ...(authorization ? { Authorization: authorization } : {}),
           "Cache-Control": "no-store",
+          "X-SPS-Consistency": "1",
         };
 
         const cacheKey = `${reqMethod}:${reqPath}:${authorization || ""}:${secretKey || ""}`;
-        if (cache.get<boolean>(cacheKey)) {
+        if (await cache.getAsync<boolean>(cacheKey)) {
           return next();
         }
 
-        const existing = inFlight.get(cacheKey);
+        const existing = undefined;
         if (existing) {
           await existing;
           cache.set(cacheKey, true);

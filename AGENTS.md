@@ -29,6 +29,7 @@ Each module contains:
 - TailwindCSS only, no ad-hoc CSS.
 - Design includes a dedicated Icons block naming its library or custom drawing method and showing the glyphs. Generate photographic and illustrative masters with unconstrained aspect ratios, then prepare square delivery images by expanding the canvas with an image-editing tool; preserve the originals. Follow `.agents/templates/design.md` and `.agents/roles/brand-designer.md`.
 - Always use SDK providers for data access from `libs/modules/<module>/models/<model|relation>/sdk/<client|server>`.
+- Before implementing or reviewing frontend variants, read `.agents/contracts/engineering/frontend-components.md` for required file roles, layer registration, shared or specialized client/server readers, explicit UI props and JSX slots, and query-cache/store/realtime ownership.
 - Use relation components with `variant="find"` and filter via `apiProps.params.filters.and`.
 - Backend only hosted in `apps/api/app.ts`.
 - Backend route middleware must live in the module's `backend/app/middlewares/src/lib/*` folder and be exported from that middleware package; controllers should only compose route definitions, middleware instances, and handlers.
@@ -118,14 +119,27 @@ checks automatically and do not depend on an adaptation checkpoint or agent
 availability. There are no migration hooks on merge/rewrite. Keep Git sync and
 adaptation outcomes separate; a pending adaptation does not make a merge fail.
 
+## Code Review Rules
+
+For pull request and local diff reviews, read and apply
+`.agents/workflows/engineering/review_pr.md` before reporting findings. This is
+the shared guidance for the `review-pr` skill and built-in Code Review: module
+dependency direction, API and cache consistency across affected readers, and
+evidence-based findings with the architecture decision left to the developer.
+Read `.agents/contracts/engineering/module-dependencies.md` for the confirmed
+module order. A lower module must not import a higher module, including through
+types, SDKs, schemas, frontend composition or reexports. Review changed modules
+against that order; changes to the order or exceptions require operator confirmation.
+
 ## Code Review Checklist
 
 - Enforce TypeScript interface-first style, PascalCase components, and consistent export order.
-- Confirm frontend changes obey the Tailwind/shadcn preset rules, variant structure, and SDK-based data fetching.
+- Confirm frontend changes obey the Tailwind/shadcn preset rules, required variant file roles, matching registration and props union in the owning layer, and SDK-based data fetching. Specialized local `client.tsx`/`server.tsx` readers follow the same component contract.
 - Confirm backend changes preserve the layered architecture (repository/service/controller) and never bypass shared utilities (logging, caching, RBAC, revalidation).
 - Confirm every new file sits with its own kind: constants with constants, pure helpers in a utils package, services beside services; and that no new layer, top-level directory, or shared package was introduced to fit the change.
 - Ensure schema changes were followed by the Drizzle generation command; do not manually create migration SQL, snapshots, or `_journal.json` entries.
 - List rows are memoized (`React.memo`) with stable id-based keys; handlers passed to rows are wrapped in `useCallback`.
 - Pending state is scoped per item (`<action>ingId: string | null`), never a shared boolean broadcast to every row.
 - Form `watch` subscriptions live in the lowest component that needs them; child components must use `useWatch({ control })` — `form.watch(name)` rerenders the `useForm` host component.
+- Keep API results in the shared React Query cache and realtime events in `globalActionsStore`. Its `sessionStorage` snapshot is for debugging and is not restored as entity data or persistent UI state.
 - Mutations patch the React Query cache via the shared helpers (`@sps/shared-frontend-client-api` — factory mutations do this automatically; hand-written SDKs follow the documented contract in `libs/shared/frontend/client/api/README.md`) and never replace WebSocket invalidation as the consistency fallback.

@@ -1,15 +1,19 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ContentCta, defaultContentCtaProps } from "./Component";
+import { defaultContentCtaProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Widget/Singlepage/content-cta",
-  component: ContentCta,
+  id: "modules-website-builder-models-widget-singlepage-content-cta",
+  title: "Modules/Website-Builder/Widget/Singlepage/content-cta",
+  component: Widget,
   parameters: {
     layout: "fullscreen",
   },
-  args: defaultContentCtaProps,
-} satisfies Meta<typeof ContentCta>;
+  args: { ...defaultContentCtaProps, variant: "content-cta" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Widget>, { variant: "content-cta" }>
+>;
 
 export default meta;
 

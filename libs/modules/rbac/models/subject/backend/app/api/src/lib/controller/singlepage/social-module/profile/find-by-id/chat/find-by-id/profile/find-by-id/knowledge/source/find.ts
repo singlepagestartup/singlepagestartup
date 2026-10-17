@@ -27,6 +27,29 @@ export class Handler {
         );
       }
 
+      // Repair grants from versions that predate the scoped attachment routes.
+      const ownerId = c.req.param("id")!;
+      const ownership = await this.service.subjectsToSocialModuleProfiles.find({
+        params: {
+          filters: {
+            and: [
+              { column: "subjectId", method: "eq", value: ownerId },
+              {
+                column: "socialModuleProfileId",
+                method: "eq",
+                value: targetSocialModuleProfileId,
+              },
+              { column: "variant", method: "eq", value: "assistant" },
+            ],
+          },
+        },
+      });
+      if (ownership.length)
+        await this.service.socialModuleProfileKnowledgeAccessEnsure({
+          ownerRbacSubjectId: ownerId,
+          socialModuleProfileId: targetSocialModuleProfileId,
+        });
+
       const sourceIds = await findProfileKnowledgeSourceIds({
         service: this.service,
         targetSocialModuleProfileId,

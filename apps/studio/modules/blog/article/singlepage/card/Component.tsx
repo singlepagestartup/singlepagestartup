@@ -1,17 +1,13 @@
+import type { IComponentProps, ArticleCardProps } from "./interface";
+export type { ArticleCardProps } from "./interface";
 import { Component as SocialModuleProfile } from "../../../../social/profile/index";
 /**
  * Model-owned article link. Balanced, editorial and compact are presentation
  * choices over the same article props; widgets compose this component.
  * The footer separates the Social profile byline from reading metadata.
  */
-type ArticleCardTarget = "_blank" | "_parent" | "_self" | "_top";
-export type ArticleCardProps = typeof defaultArticleCardProps & {
-  /** Presentation choice only; the article record contract stays unchanged. */
-  layout?: "balanced" | "editorial" | "compact";
-};
-export function ArticleCard(
-  props?: Partial<ArticleCardProps> & { variant?: string },
-) {
+
+export function ArticleCard(props?: IComponentProps) {
   const {
     href,
     slug,
@@ -29,7 +25,7 @@ export function ArticleCard(
   const compact = layout === "compact";
   const editorial = layout === "editorial";
   const metadata = (
-    <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-[var(--color-sps-line)] pt-4">
+    <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
       <div className="min-w-0">
         <SocialModuleProfile
           variant="byline"
@@ -39,7 +35,7 @@ export function ArticleCard(
           size="xs"
         />
       </div>
-      <div className="ml-auto shrink-0 text-right text-xs leading-5 text-[var(--color-sps-muted)]">
+      <div className="ml-auto shrink-0 text-right text-xs leading-5 text-muted-foreground">
         <p>{readTime}</p>
       </div>
     </div>
@@ -49,7 +45,7 @@ export function ArticleCard(
       href={href ?? `/blog/articles/${slug}`}
       target={target}
       rel={target === "_blank" ? "noreferrer" : undefined}
-      className={`group grid h-full min-w-0 overflow-hidden rounded-2xl border border-[var(--color-sps-line)] bg-[var(--color-sps-white)] transition hover:border-[var(--color-sps-graphite)] motion-reduce:transition-none ${compact ? "grid-cols-[96px_minmax(0,1fr)] items-start gap-4 p-4" : "grid-rows-[auto_1fr]"} ${kit.focus}`}
+      className={`group grid h-full min-w-0 overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground motion-reduce:transition-none ${compact ? "grid-cols-[96px_minmax(0,1fr)] items-start gap-4 p-4" : "grid-rows-[auto_1fr]"} ${kit.focus}`}
       data-ds-block="blog.article.card"
       data-ds-imports="social.profile.byline"
       data-ds-layer="singlepage"
@@ -60,7 +56,7 @@ export function ArticleCard(
     >
       {editorial && (
         <div className="px-5 pb-5 pt-6 sm:px-6">
-          <div className="mb-3 flex items-center justify-between gap-3 text-xs text-[var(--color-sps-muted)]">
+          <div className="mb-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
             <span>{category}</span>
             <span>{date}</span>
           </div>
@@ -77,19 +73,19 @@ export function ArticleCard(
       <div className={`flex min-w-0 flex-col ${compact ? "" : "p-5 sm:p-6"}`}>
         {!editorial && (
           <>
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-sps-muted)]">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
               <span className="font-medium">{category}</span>
               <span>{date}</span>
             </div>
             <h3
-              className={`${compact ? "text-lg leading-6" : "text-2xl leading-7"} font-semibold tracking-tight text-[var(--color-sps-graphite)]`}
+              className={`${compact ? "text-lg leading-6" : "text-2xl leading-7"} font-semibold tracking-tight text-foreground`}
             >
               {title}
             </h3>
           </>
         )}
         {!compact && (
-          <p className="mb-5 mt-3 line-clamp-2 text-sm leading-[22px] text-[var(--color-sps-muted)]">
+          <p className="mb-5 mt-3 line-clamp-2 text-sm leading-[22px] text-muted-foreground">
             {excerpt}
           </p>
         )}
@@ -100,7 +96,7 @@ export function ArticleCard(
   );
 }
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-sps-graphite)]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =
   "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 const kit = {
@@ -125,3 +121,5 @@ export const defaultArticleCardProps = {
   readTime: "7 min read",
   target: undefined as ArticleCardTarget | undefined,
 };
+
+import type { ArticleCardTarget } from "./interface";

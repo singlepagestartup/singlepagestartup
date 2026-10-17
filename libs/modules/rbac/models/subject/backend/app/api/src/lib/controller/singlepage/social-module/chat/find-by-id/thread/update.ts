@@ -114,19 +114,27 @@ export class Handler {
           });
       }
 
-      if (!title && preferenceUpdatedThread) {
+      const document =
+        data.document === undefined
+          ? undefined
+          : await this.service.socialModuleChatLifecycleValidateDocument({
+              socialModuleChatId,
+              document: data.document,
+            });
+
+      if (!title && preferenceUpdatedThread && document === undefined) {
         return c.json({
           data: preferenceUpdatedThread,
         });
       }
 
-      if (!title) {
+      if (!title && document === undefined) {
         throw new Error("Validation error. Thread title is required");
       }
 
       let sourceSystemId = existingSocialModuleThread.sourceSystemId;
 
-      if (canMirrorTelegramTopic({ socialModuleChat })) {
+      if (title && canMirrorTelegramTopic({ socialModuleChat })) {
         if (sourceSystemId) {
           await editTelegramForumTopic({
             socialModuleChat,
@@ -142,20 +150,42 @@ export class Handler {
         }
       }
 
-      const socialModuleThread = await socialModuleThreadApi.update({
-        id: socialModuleThreadId,
-        data: {
-          title,
-          ...(sourceSystemId !== existingSocialModuleThread.sourceSystemId
-            ? { sourceSystemId }
-            : {}),
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      let socialModuleThread =
+        preferenceUpdatedThread || existingSocialModuleThread;
+      if (document !== undefined) {
+        const updated = await socialModuleThreadApi.updateMetadataNamespace({
+          id: socialModuleThreadId,
+          namespace: "aiChatDocument",
+          expectedValue: socialModuleThread.metadata?.aiChatDocument ?? null,
+          value: document,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
           },
-        },
-      });
+        });
+        if (!updated)
+          throw new Error(
+            "Thread document changed concurrently. Retry with the current thread.",
+          );
+        socialModuleThread = updated;
+      }
+      if (title || sourceSystemId !== existingSocialModuleThread.sourceSystemId)
+        socialModuleThread = await socialModuleThreadApi.update({
+          id: socialModuleThreadId,
+          data: {
+            ...(title ? { title } : {}),
+            ...(sourceSystemId !== existingSocialModuleThread.sourceSystemId
+              ? { sourceSystemId }
+              : {}),
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
 
       return c.json({
         data: socialModuleThread,

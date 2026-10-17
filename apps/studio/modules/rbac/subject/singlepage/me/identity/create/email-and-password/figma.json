@@ -1,0 +1,23 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "variantName": "me-identity-create-email-and-password",
+  "nodeId": null,
+  "variantNodeId": null,
+  "syncStatus": "not-created",
+  "metadataFile": "figma.json",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.subject.me-identity-create-email-and-password",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/subject/singlepage/me/identity/create/email-and-password",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "me-identity-create-email-and-password",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "me-identity-create-email-and-password",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/subject/singlepage/me/identity/create/email-and-password/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/subject/singlepage/me/identity/create/email-and-password/Component.stories.tsx"
+  }
+}

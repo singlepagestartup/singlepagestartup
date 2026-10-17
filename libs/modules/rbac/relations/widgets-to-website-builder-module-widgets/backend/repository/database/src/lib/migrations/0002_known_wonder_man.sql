@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "rbac_widget_ai_chat_content_slot" ON "rc_ws_to_we_br_me_ws_em4" USING btree ("wt_id") WHERE "rc_ws_to_we_br_me_ws_em4"."variant" = 'ai-chat-content';

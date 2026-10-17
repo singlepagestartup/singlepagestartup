@@ -1,18 +1,22 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  ArticleFindDefault,
-  defaultArticleFindDefaultProps,
-} from "./Component";
+import { defaultArticleFindDefaultProps } from "./Component";
 
 const meta = {
-  title: "Modules/Blog/Models/Widget/Singlepage/article-find-default",
-  component: ArticleFindDefault,
+  id: "modules-blog-models-widget-singlepage-article-find-default",
+  title: "Modules/Blog/Widget/Singlepage/article-find-default",
+  component: Widget,
   parameters: {
     layout: "fullscreen",
   },
-  args: defaultArticleFindDefaultProps,
-} satisfies Meta<typeof ArticleFindDefault>;
+  args: { ...defaultArticleFindDefaultProps, variant: "article-find-default" },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Widget>,
+    { variant: "article-find-default" }
+  >
+>;
 
 export default meta;
 

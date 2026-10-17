@@ -1,23 +1,29 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
-import {
-  ContentFeatureFindRow,
-  defaultContentFeatureFindRowProps,
-} from "./Component";
+import { defaultContentFeatureFindRowProps } from "./Component";
 
 const meta = {
-  title:
-    "Modules/Website Builder/Models/Widget/Singlepage/content-feature-find-row",
-  component: ContentFeatureFindRow,
+  id: "modules-website-builder-models-widget-singlepage-content-feature-find-row",
+  title: "Modules/Website-Builder/Widget/Singlepage/content-feature-find-row",
+  component: Widget,
   parameters: {
     layout: "fullscreen",
   },
   args: {
     ...defaultContentFeatureFindRowProps,
-    contactForm: <RbacModuleSubject variant="me-crm-form-deafult" embedded />,
+    contactForm: (
+      <RbacModuleSubject variant="me-crm-module-form-default" embedded />
+    ),
+    variant: "content-feature-find-row",
   },
-} satisfies Meta<typeof ContentFeatureFindRow>;
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Widget>,
+    { variant: "content-feature-find-row" }
+  >
+>;
 
 export default meta;
 

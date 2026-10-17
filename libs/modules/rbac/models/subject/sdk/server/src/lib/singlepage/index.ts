@@ -1,4 +1,47 @@
 import {
+  action as socialModuleProfileFindByIdAvatarFind,
+  type IProps as ISocialModuleProfileFindByIdAvatarFindProps,
+  type IResult as ISocialModuleProfileFindByIdAvatarFindResult,
+} from "./social-module/profile/find-by-id/avatar/find";
+import {
+  request as identityChangeEmailRequest,
+  verify as identityChangeEmailVerify,
+  type IRequestProps as IIdentityChangeEmailRequestProps,
+  type IVerifyProps as IIdentityChangeEmailVerifyProps,
+  type IRequestResult as IIdentityChangeEmailRequestResult,
+  type IVerifyResult as IIdentityChangeEmailVerifyResult,
+} from "./identity/change-email";
+import {
+  action as socialModuleProfileFindByIdAvatarUpdate,
+  type IProps as ISocialModuleProfileFindByIdAvatarUpdateProps,
+  type IResult as ISocialModuleProfileFindByIdAvatarUpdateResult,
+} from "./social-module/profile/find-by-id/avatar/update";
+import {
+  action as socialModuleProfileFindByIdUpdate,
+  type IProps as ISocialModuleProfileFindByIdUpdateProps,
+  type IResult as ISocialModuleProfileFindByIdUpdateResult,
+} from "./social-module/profile/find-by-id/update";
+import {
+  action as socialModuleProfileCreate,
+  type IProps as ISocialModuleProfileCreateProps,
+  type IResult as ISocialModuleProfileCreateResult,
+} from "./social-module/profile/create";
+import {
+  action as billingModuleBalance,
+  type IProps as IBillingModuleBalanceProps,
+  type IResult as IBillingModuleBalanceResult,
+} from "./billing-module/balance";
+import {
+  action as socialModuleProfileFind,
+  type IProps as ISocialModuleProfileFindProps,
+  type IResult as ISocialModuleProfileFindResult,
+} from "./social-module/profile/find";
+import {
+  action as socialModuleProfileProjects,
+  type IProps as ISocialModuleProfileProjectsProps,
+  type IResult as ISocialModuleProfileProjectsResult,
+} from "./social-module/profile/projects";
+import {
   action as socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate,
   type IProps as ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateProps,
   type IResult as ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateResult,
@@ -422,6 +465,15 @@ import {
 } from "./social-module/chat/find-by-id/profile/delete";
 
 export type IProps = {
+  IBillingModuleBalanceProps: IBillingModuleBalanceProps;
+  IIdentityChangeEmailRequestProps: IIdentityChangeEmailRequestProps;
+  IIdentityChangeEmailVerifyProps: IIdentityChangeEmailVerifyProps;
+  ISocialModuleProfileFindByIdAvatarFindProps: ISocialModuleProfileFindByIdAvatarFindProps;
+  ISocialModuleProfileFindByIdAvatarUpdateProps: ISocialModuleProfileFindByIdAvatarUpdateProps;
+  ISocialModuleProfileFindByIdUpdateProps: ISocialModuleProfileFindByIdUpdateProps;
+  ISocialModuleProfileCreateProps: ISocialModuleProfileCreateProps;
+  ISocialModuleProfileFindProps: ISocialModuleProfileFindProps;
+  ISocialModuleProfileProjectsProps: ISocialModuleProfileProjectsProps;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateProps: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateProps;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindProps: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindProps;
   INotifyProps: INotifyProps;
@@ -512,6 +564,15 @@ export type IProps = {
 };
 
 export type IResult = {
+  IBillingModuleBalanceResult: IBillingModuleBalanceResult;
+  IIdentityChangeEmailRequestResult: IIdentityChangeEmailRequestResult;
+  IIdentityChangeEmailVerifyResult: IIdentityChangeEmailVerifyResult;
+  ISocialModuleProfileFindByIdAvatarFindResult: ISocialModuleProfileFindByIdAvatarFindResult;
+  ISocialModuleProfileFindByIdAvatarUpdateResult: ISocialModuleProfileFindByIdAvatarUpdateResult;
+  ISocialModuleProfileFindByIdUpdateResult: ISocialModuleProfileFindByIdUpdateResult;
+  ISocialModuleProfileCreateResult: ISocialModuleProfileCreateResult;
+  ISocialModuleProfileFindResult: ISocialModuleProfileFindResult;
+  ISocialModuleProfileProjectsResult: ISocialModuleProfileProjectsResult;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateResult: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateResult;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindResult: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindResult;
   INotifyResult: INotifyResult;
@@ -686,6 +747,15 @@ export const api = {
   socialModuleProfileFindByIdChatFindByIdDelete,
   socialModuleProfileFindByIdChatFindByIdActionCreate,
   socialModuleProfileFindByIdChatFindByIdActionFind,
+  billingModuleBalance,
+  socialModuleProfileFind,
+  identityChangeEmailRequest,
+  identityChangeEmailVerify,
+  socialModuleProfileProjects,
+  socialModuleProfileCreate,
+  socialModuleProfileFindByIdUpdate,
+  socialModuleProfileFindByIdAvatarFind,
+  socialModuleProfileFindByIdAvatarUpdate,
   socialModuleChatCreate,
   socialModuleChatFindByIdUpdate,
   socialModuleChatFindByIdThreadFind,

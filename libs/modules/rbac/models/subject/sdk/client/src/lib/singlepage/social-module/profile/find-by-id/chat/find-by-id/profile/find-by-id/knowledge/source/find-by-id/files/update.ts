@@ -1,6 +1,6 @@
 "use client";
 import { useMutation } from "@tanstack/react-query";
-import { clientHost } from "@sps/rbac/models/subject/sdk/model";
+import { clientHost, route } from "@sps/rbac/models/subject/sdk/model";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import {
   queryClient,
@@ -26,13 +26,39 @@ export function action(props: { onSuccess?: (result: IResult) => void }) {
         },
       }),
     onSuccess(result, input) {
-      if (result.source)
+      const collectionRoute = `${route}/${input.id}/social-module/profiles/${input.socialModuleProfileId}/chats/${input.socialModuleChatId}/profiles/${input.targetSocialModuleProfileId}/knowledge/sources`;
+      queryClient.setQueryData(
+        [`${collectionRoute}/${input.knowledgeModuleSourceId}/files`],
+        result.files,
+      );
+      if (result.source) {
         patchInListQueries(
           queryClient,
           "/api/knowledge/sources",
           result.source.id,
           result.source,
         );
+        queryClient.setQueriesData(
+          { queryKey: [`/api/knowledge/sources/${result.source.id}`] },
+          result.source,
+        );
+        for (const query of queryClient.getQueryCache().findAll({
+          predicate: (query) => {
+            const key = query.queryKey[0];
+            return (
+              typeof key === "string" &&
+              (key === collectionRoute || key.startsWith(collectionRoute + "?"))
+            );
+          },
+        })) {
+          patchInListQueries(
+            queryClient,
+            String(query.queryKey[0]),
+            result.source.id,
+            result.source,
+          );
+        }
+      }
       globalActionsStore.getState().addAction({
         type: "mutation",
         name: "/api/knowledge/sources-to-file-storage-module-files",

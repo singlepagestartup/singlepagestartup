@@ -88,9 +88,9 @@ Text is marked **accepted**, **proposal**, **unknown** or **conflict**. Acceptan
 
 ## Create a project thread
 
-Choose **New thread**, give it a name and select the saved, reviewed documents to attach. **Create thread** opens a separate conversation with those attachments visible. Return to a thread to continue its discussion, or create another thread with different documents. Changes to a document are reviewed in that file's working thread.
+Choose **New thread** and give it a name. **Create thread** opens a separate conversation with the project's current assistant profile. All Knowledge connected to that profile is available for its replies. Changes to a document are reviewed in that file's working thread.
 
-On the thread creation screen, choose a preset agent, create your own role, or select **No agent**. No agent uses the selected model with the attached documents and conversation, without preset or custom role instructions. The open thread shows its attached documents, conversation and composer. An agent’s avatar beside a reply opens its role description. Replies retain the role and document context used at the time.
+New threads have no automatically selected skill. To use a connected skill for a request, include `/skill-slug` in the message. The open thread shows its conversation and composer.
 
 Attached document names appear on the right side of the thread header, beside its settings button. Thread settings lets you rename the thread, add or remove reviewed documents for future replies, or delete the thread and its messages after confirmation. Changing context documents preserves earlier messages and their recorded context. Removing every document leaves future replies with the conversation and its sent attachments. Closing settings without saving leaves the thread unchanged.
 

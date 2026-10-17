@@ -1,15 +1,19 @@
+import { Component as Widget } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ContentHero, defaultContentHeroProps } from "./Component";
+import { defaultContentHeroProps } from "./Component";
 
 const meta = {
-  title: "Modules/Website Builder/Models/Widget/Singlepage/content-hero",
-  component: ContentHero,
+  id: "modules-website-builder-models-widget-singlepage-content-hero",
+  title: "Modules/Website-Builder/Widget/Singlepage/content-hero",
+  component: Widget,
   parameters: {
     layout: "fullscreen",
   },
-  args: defaultContentHeroProps,
-} satisfies Meta<typeof ContentHero>;
+  args: { ...defaultContentHeroProps, variant: "content-hero" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Widget>, { variant: "content-hero" }>
+>;
 
 export default meta;
 

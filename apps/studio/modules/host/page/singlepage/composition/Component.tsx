@@ -1,16 +1,15 @@
+import type { IComponentProps, IHostPageCompositionProps } from "./interface";
+export type { IHostPageCompositionProps } from "./interface";
 import {
   HostWorkbench,
   HostStudioProvider,
   type IHostStudioProviderProps,
 } from "./HostRecords/index";
-export interface IHostPageCompositionProps
-  extends Omit<IHostStudioProviderProps, "children"> {
-  variant?: string;
-}
+
 export function HostPageComposition({
   variant = "composition",
   ...props
-}: IHostPageCompositionProps = {}) {
+}: IComponentProps = {}) {
   return (
     <HostStudioProvider {...props}>
       <HostWorkbench variant={variant} />

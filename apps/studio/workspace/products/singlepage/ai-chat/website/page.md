@@ -165,7 +165,7 @@ Registration shows the current free token allowance. Paid AI work uses the token
 
 ## SinglePageStartup
 
-[Start with my files](/ai-chat/rbac/subjects/authentication/registration) · [Sign in](/ai-chat/rbac/subjects/authentication/select-method) · [Code Framework](https://github.com/singlepagestartup/singlepagestartup)
+[Start with my files](/ai-chat/rbac/subjects/authentication/registration) · [Sign in](/ai-chat/rbac/subjects/authentication/select-method) · [Code Framework](/framework)
 
 <!-- section: controls -->
 

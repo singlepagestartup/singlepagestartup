@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as WebsiteBuilderModuleFeature } from "../../index";
+import { Component as Feature } from "../../index";
 const meta = {
-  title: "Modules/Website-Builder/Models/Feature/Singlepage/list",
-  component: WebsiteBuilderModuleFeature,
+  id: "modules-website-builder-models-feature-singlepage-list",
+  title: "Modules/Website-Builder/Feature/Singlepage/list",
+  component: Feature,
   args: { variant: "list", count: 3, empty: false },
   argTypes: {
     count: { control: { type: "number", min: 0, max: 50 } },
     empty: { control: "boolean" },
   },
-} satisfies Meta<typeof WebsiteBuilderModuleFeature>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Feature>, { variant: "list" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

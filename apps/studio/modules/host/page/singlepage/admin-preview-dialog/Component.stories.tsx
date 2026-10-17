@@ -1,15 +1,20 @@
+import { Component as Page } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { AdminPreviewDialog } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-admin-preview-dialog",
-  title: "Modules/Host/Models/Page/Singlepage/admin-preview-dialog",
-  component: AdminPreviewDialog,
+  title: "Modules/Host/Page/Singlepage/admin-preview-dialog",
+  component: Page,
   parameters: {
     layout: "fullscreen",
   },
-} satisfies Meta<typeof AdminPreviewDialog>;
+  args: { variant: "admin-preview-dialog" },
+} satisfies Meta<
+  Extract<
+    React.ComponentProps<typeof Page>,
+    { variant: "admin-preview-dialog" }
+  >
+>;
 
 export default meta;
 

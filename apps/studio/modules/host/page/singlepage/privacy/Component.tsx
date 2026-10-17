@@ -1,8 +1,12 @@
-import { Component as WebsiteBuilderModuleFeature } from "../../../../website-builder/feature/index";
+import type { IComponentProps, IComponentVariantProps } from "./interface";
+export type { IComponentVariantProps } from "./interface";
+
+import { Component as SharedIcon } from "../../../../shared/icon";
+
 import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
-import { Component as HostModuleLayout } from "../../../layout/index";
+import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
+import { Component as Layout } from "../../../layout/index";
 import { LegalPage, type LegalSection } from "../shared/LegalPage";
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {
   size?: number;
@@ -31,18 +35,13 @@ function Icon(props: {
   className?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 }) {
-  return <WebsiteBuilderModuleFeature {...props} variant="icon" />;
+  return <SharedIcon {...props} variant="phosphor" />;
 }
 
-interface IComponentVariantProps {
-  variant?: string;
-}
-export function PrivacyPage({
-  variant = "privacy",
-}: IComponentVariantProps = {}) {
+export function PrivacyPage({ variant = "privacy" }: IComponentProps = {}) {
   return (
     <div data-module="host" data-model="page" data-variant={variant}>
-      <HostModuleLayout variant="website" footer="compact">
+      <Layout variant="website" footer="compact">
         <main className="min-w-0" data-ds-page="host.page.privacy">
           <LegalPage
             breadcrumbLabel="Privacy Policy"
@@ -53,7 +52,7 @@ export function PrivacyPage({
             updatedAt={LAST_UPDATED}
           />
         </main>
-      </HostModuleLayout>
+      </Layout>
     </div>
   );
 }

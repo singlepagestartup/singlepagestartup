@@ -11,18 +11,44 @@ import { Component as Server } from "./server";
 import { Component as Client } from "./client";
 import { Component as Skeleton } from "./Skeleton";
 
-export function Component<M extends { id: string }, V>(
-  props: IComponentProps<M, V> & {
+export function Component<
+  M extends { id: string },
+  V,
+  CP extends IComponentProps<M, V>,
+>(
+  props: CP & {
     Provider: typeof ParentProvider;
     Skeleton?: ReactNode;
     Component: React.ComponentType<
-      IComponentPropsExtended<M, V, IComponentProps<M, V>>
+      Omit<
+        IComponentPropsExtended<M, V, CP>,
+        | "Component"
+        | "Provider"
+        | "clientApi"
+        | "serverApi"
+        | "api"
+        | "Skeleton"
+      >
     >;
     clientApi: ReturnType<typeof clientFactory<M>>;
     serverApi: ReturnType<typeof serverFactory<M>>;
+    api?: unknown;
     children?: ReactNode;
   },
 ) {
+  if (props.dataSource === "props") {
+    const {
+      Component: ChildComponent,
+      Provider: _Provider,
+      clientApi: _clientApi,
+      serverApi: _serverApi,
+      api: _api,
+      Skeleton: _Skeleton,
+      ...viewProps
+    } = props;
+    return <ChildComponent {...viewProps} data={props.data} />;
+  }
+
   const Comp: any = props.isServer ? Server : Client;
   const api = props.isServer ? props.serverApi : props.clientApi;
   const Provider = props.Provider;

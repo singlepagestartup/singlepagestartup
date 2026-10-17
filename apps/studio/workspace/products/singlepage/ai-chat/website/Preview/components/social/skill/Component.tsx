@@ -1,6 +1,6 @@
 import type { ComponentProps, ComponentType } from "react";
-import { Component as Variant0 } from "./singlepage/overview/ai-chat/index";
-const variants = { "overview-ai-chat": Variant0 };
+import { Component as OverviewAiChat } from "./singlepage/overview/ai-chat/index";
+const variants = { "overview-ai-chat": OverviewAiChat };
 type Props = {
   [V in keyof typeof variants]: { variant: V } & ComponentProps<
     (typeof variants)[V]

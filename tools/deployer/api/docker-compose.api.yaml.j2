@@ -10,6 +10,12 @@ services:
     env_file:
       - ./{{ SERVICE_NAME }}.env
     command: "sh -c './start.sh api'"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "--output", "/dev/null", "--max-time", "3", "http://127.0.0.1:4000/api/rbac/subjects/authentication/me"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30m
+      retries: 6
     logging:
       driver: "json-file"
       options:

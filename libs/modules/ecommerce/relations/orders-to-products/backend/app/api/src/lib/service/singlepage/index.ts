@@ -51,6 +51,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new GetTotalService({
       findById: ({ id }) => this.findById({ id }),
       product: this.product,
+      billingModule: this.product.billingModule,
       attribute: this.attribute,
       attributeKey: this.attributeKey,
       productsToAttributes: this.productsToAttributes,

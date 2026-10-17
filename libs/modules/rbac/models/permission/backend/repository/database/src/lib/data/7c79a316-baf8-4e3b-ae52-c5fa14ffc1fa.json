@@ -1,0 +1,9 @@
+{
+  "id": "7c79a316-baf8-4e3b-ae52-c5fa14ffc1fa",
+  "createdAt": "2026-10-12T12:38:40.218Z",
+  "updatedAt": "2026-10-12T12:38:40.218Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "PATCH",
+  "path": "/api/rbac/subjects/74be9aa6-d585-4817-acca-483b4698b33a/social-module/profiles/b6df7ad4-b166-4034-bbb4-57bad3094a03"
+}

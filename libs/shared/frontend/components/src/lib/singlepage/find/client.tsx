@@ -19,7 +19,10 @@ export function Component<
     }
   }, [data, props]);
 
-  if (isFetching || isLoading) {
+  if (
+    isLoading ||
+    (isFetching && (props.keepDataWhileFetching === false || !data))
+  ) {
     return <></>;
   }
 

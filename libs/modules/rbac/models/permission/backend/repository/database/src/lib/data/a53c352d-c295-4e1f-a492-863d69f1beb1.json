@@ -1,0 +1,9 @@
+{
+  "id": "a53c352d-c295-4e1f-a492-863d69f1beb1",
+  "createdAt": "2026-10-12T23:48:51.601Z",
+  "updatedAt": "2026-10-12T23:48:51.601Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects/07d628d7-30c4-4367-851b-3faf5de4a9c4/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles"
+}

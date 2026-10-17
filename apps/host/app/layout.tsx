@@ -7,7 +7,7 @@ import "../styles/tailwind.css";
 
 import { fonts } from "./fonts";
 import React, { Suspense } from "react";
-import { Toaster } from "@sps/shared-ui-shadcn";
+import { Toaster } from "@sps/ui-adapter/toast";
 import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
 import Loading from "./loading";
 import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google";

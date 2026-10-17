@@ -1,7 +1,7 @@
 {
   "$schema": "../../../../../block.schema.json",
   "id": "social.profile.find-row",
-  "title": "Social Profile / Find Row",
+  "title": "find-row",
   "description": "Other authors sidebar row: avatar, name, role, meta text, and trailing ArrowUpRight icon.",
   "layer": "singlepage",
   "state": "draft",

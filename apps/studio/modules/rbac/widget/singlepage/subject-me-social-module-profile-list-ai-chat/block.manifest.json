@@ -1,0 +1,28 @@
+{
+  "id": "rbac.widget.subject-me-social-module-profile-list-ai-chat",
+  "title": "subject-me-social-module-profile-list-ai-chat",
+  "description": "Project chooser with explicit populated, empty, loading, error and creation states.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-social-module-profile-list-ai-chat"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "subject-me-social-module-profile-list-ai-chat",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "widget", "subject-me-social-module-profile-list-ai-chat"]
+}

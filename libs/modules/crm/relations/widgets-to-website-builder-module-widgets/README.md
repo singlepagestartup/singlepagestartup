@@ -1,8 +1,8 @@
-# CRM Widgets to Forms Relation
+# CRM Widgets to Website Builder Widgets Relation
 
 ## Purpose
 
-Links CRM widgets to forms for embedding form flows in widgets.
+Links an exact CRM Widget to an exact Website Builder Widget for reusable presentation. The CRM owner reads links by widgetId and loads the target by websiteBuilderModuleWidgetId; variant selects its renderer.
 
 ## Fields
 
@@ -13,11 +13,11 @@ Links CRM widgets to forms for embedding form flows in widgets.
 - `variant`: display variant.
 - `className`: optional CSS class name.
 - `widgetId`: linked widget ID.
-- `formId`: linked form ID.
+- `websiteBuilderModuleWidgetId`: linked Website Builder Widget ID.
 
 ## Variants
 
-- `default`: renders the related form using its frontend variant.
+- `default`: renders the linked Website Builder Widget using its saved frontend variant.
 - `find`: data-fetch wrapper for querying relations.
 - `admin-form`: admin create/edit form for relation fields and IDs.
 - `admin-select-input`: admin select input for choosing a relation.

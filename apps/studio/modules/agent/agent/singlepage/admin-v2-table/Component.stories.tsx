@@ -1,12 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Component as AgentModuleAgent } from "../../index";
+import { Component as Agent } from "../../index";
 
 const meta = {
-  title: "Modules/Agent/Models/Agent/Singlepage/admin-v2-table",
-  component: AgentModuleAgent,
+  id: "modules-agent-models-agent-singlepage-admin-v2-table",
+  title: "Modules/Agent/Agent/Singlepage/admin-v2-table",
+  component: Agent,
   argTypes: { empty: { control: "boolean" } },
   args: { variant: "admin-v2-table", empty: false },
-} satisfies Meta<typeof AgentModuleAgent>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Agent>, { variant: "admin-v2-table" }>
+>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

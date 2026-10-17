@@ -1,23 +1,20 @@
-import { Component as SocialModuleProfile } from "../../../../index";
+import { Component as Profile } from "../../../../index";
 
 import type { Meta, StoryObj } from "@storybook/react";
-import { AccountProvider } from "../../../../../../rbac/subject/singlepage/account/Account";
+import { AccountProvider } from "../../../../../../rbac/subject/singlepage/me/account/Account";
 import { ProfilesProvider } from "./Profiles";
 import { ProjectProvider } from "./Profile";
-import { aiChatAccount } from "../../../../../../rbac/subject/singlepage/account/fixture";
+import { aiChatAccount } from "../../../../../../rbac/subject/singlepage/me/account/fixture";
 import { aiChatWorkspaceFixture } from "./fixtures";
 
-function Example() {
+function Component() {
   return (
     <AccountProvider account={aiChatAccount}>
       <ProfilesProvider {...aiChatWorkspaceFixture()}>
         <ProjectProvider profileId="pottery">
-          <SocialModuleProfile
-            variant="scope-ai-chat-project"
-            profileId="pottery"
-          >
+          <Profile variant="scope-ai-chat-project" profileId="pottery">
             <p className="p-4">Project profile content slot</p>
-          </SocialModuleProfile>
+          </Profile>
         </ProjectProvider>
       </ProfilesProvider>
     </AccountProvider>
@@ -25,9 +22,9 @@ function Example() {
 }
 const meta = {
   id: "modules-social-models-profile-singlepage-scope-ai-chat-project",
-  title: "Modules/Social/Models/Profile/Singlepage/scope/ai-chat/project",
-  component: Example,
+  title: "Modules/Social/Profile/Singlepage/scope/ai-chat/project",
+  component: Component,
   parameters: { layout: "fullscreen" },
-} satisfies Meta<typeof Example>;
+} satisfies Meta<typeof Component>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};

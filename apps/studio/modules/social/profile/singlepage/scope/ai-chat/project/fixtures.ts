@@ -66,7 +66,7 @@ export function aiChatSourceFixture() {
   const source = {
     id: "pottery:products:products",
     slug: "pottery:products:products",
-    variant: "overview-ai-chat",
+    variant: "id-ai-chat",
     title: "Products",
     content: "Weekend pottery workshops for first-time potters.",
     description:
@@ -93,5 +93,59 @@ export function aiChatSourceFixture() {
     source,
     files,
     fileIds: files.map((file) => file.id),
+  };
+}
+
+/** Fictional files use Studio-owned images and never fetch a user's project. */
+export function aiChatAttachmentFixture(count = 13) {
+  const names = [
+    "Workshop reference.jpg",
+    "Workshop sketch.jpg",
+    "Project reference.jpg",
+    "Audience notes.md",
+  ];
+  const images = [
+    "singlepagestartup-photography-project-start-v1-square.png",
+    "singlepagestartup-photography-project-progress-v1-square.png",
+    "singlepagestartup-photography-solo-founder-v1-square.png",
+  ];
+  return Array.from({ length: count }, (_, index) => ({
+    id: `example-file-${index + 1}`,
+    name:
+      index < names.length
+        ? names[index]
+        : `Workshop reference ${index + 1}.jpg`,
+    text: index === 3 ? "Six places per workshop. Materials are included." : "",
+    size: (index === 3 ? 1 : 342 - index * 21) * 1024,
+    mimeType: index === 3 ? "text/markdown" : "image/jpeg",
+    fileUrl:
+      index === 3
+        ? "data:text/markdown,Six%20places%20per%20workshop."
+        : `/module-assets/images/singlepage/generated/living-focus/${images[index % images.length]}`,
+  }));
+}
+
+export function aiChatAttachmentWorkspaceFixture() {
+  const sourceFiles = aiChatAttachmentFixture(13);
+  const draftFiles = aiChatAttachmentFixture(4).map((file) => ({
+    ...file,
+    id: `draft-${file.id}`,
+  }));
+  return {
+    source: {
+      ...aiChatSourceFixture().source,
+      content:
+        "# Pottery workshops\n\nWeekend workshops for adults trying pottery for the first time. Six places per class. Materials are included.",
+    },
+    files: [...sourceFiles, ...draftFiles],
+    sourceFileIds: sourceFiles.map((file) => file.id),
+    draftFileIds: draftFiles.map((file) => file.id),
+    messages: [
+      {
+        id: "review-request",
+        role: "user" as const,
+        text: "Check the current workshop description and the supplied references.",
+      },
+    ],
   };
 }

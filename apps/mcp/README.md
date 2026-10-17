@@ -17,6 +17,21 @@ Generated per-model/per-relation CRUD tools are not part of `apps/mcp`. Select r
 
 For the required read, impact-check, dry-run, commit, and verification procedure, see [`USAGE.md`](./USAGE.md).
 
+## Page preview scope
+
+`page-preview` finds content records by URL through Host Page → Pages-to-Widgets
+→ Host Widget → Widgets-to-External-Widgets → the linked module's Widget.
+It forwards caller authorization through the SDKs and returns candidates with
+their record and relation IDs. It performs no writes. Target text or an explicit
+Widget ID filters the candidates; several matches remain ambiguous.
+
+For a module Widget with `widgets-to-website-builder-module-widgets`, the preview
+also includes its linked Website Builder content Widgets, in relation order.
+This is one additional composition edge. The preview does not recursively
+enumerate every relation in every module. Other registered associations,
+including CRM and Social relations, use `relation-schema` and
+`relation-record-*` with explicit module/relation selectors.
+
 ## AI Guidance Delivery
 
 The MCP server delivers project knowledge without requiring the client to read

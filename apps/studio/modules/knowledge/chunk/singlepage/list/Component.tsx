@@ -1,13 +1,8 @@
+import type { IComponentProps } from "./interface";
 import { Component as Card } from "../admin-v2-card/index";
 import fixture from "../admin-v2-table/data.json";
 import type { IRecord } from "../admin-v2-table/interface";
-export interface IComponentProps {
-  variant?: string;
-  data?: IRecord[];
-  count?: number;
-  empty?: boolean;
-  className?: string;
-}
+
 export function Component({
   variant = "list",
   data = fixture.records,

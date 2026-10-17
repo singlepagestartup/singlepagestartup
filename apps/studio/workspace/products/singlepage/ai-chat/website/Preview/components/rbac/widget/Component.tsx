@@ -1,6 +1,6 @@
 import type { ComponentProps, ComponentType } from "react";
-import { Component as Variant0 } from "./singlepage/subject-me-account-settings/index";
-const variants = { "subject-me-account-settings": Variant0 };
+import { Component as SubjectMeAccountSettings } from "./singlepage/subject-me-account-settings/index";
+const variants = { "subject-me-account-settings": SubjectMeAccountSettings };
 type Props = {
   [V in keyof typeof variants]: { variant: V } & ComponentProps<
     (typeof variants)[V]

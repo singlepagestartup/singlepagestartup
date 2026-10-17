@@ -1,11 +1,13 @@
+import { Component as Article } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
-import { ArticleCard, defaultArticleCardProps } from "./Component";
+import { defaultArticleCardProps } from "./Component";
 
 const meta = {
-  title: "Modules/Blog/Models/Article/Singlepage/card",
-  component: ArticleCard,
+  id: "modules-blog-models-article-singlepage-card",
+  title: "Modules/Blog/Article/Singlepage/card",
+  component: Article,
   parameters: { layout: "padded" },
-  args: defaultArticleCardProps,
+  args: { ...defaultArticleCardProps, variant: "card" },
   argTypes: {
     layout: {
       control: "select",
@@ -14,10 +16,12 @@ const meta = {
   },
   render: (args) => (
     <div className="max-w-sm">
-      <ArticleCard {...args} />
+      <Article {...args} variant="card" />
     </div>
   ),
-} satisfies Meta<typeof ArticleCard>;
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof Article>, { variant: "card" }>
+>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -34,14 +38,14 @@ export const Comparison: Story = {
     <div className="mx-auto grid max-w-7xl items-start gap-6 lg:grid-cols-3">
       {(["balanced", "editorial", "compact"] as const).map((layout) => (
         <section className="min-w-0" key={layout}>
-          <h2 className="mb-3 text-sm font-semibold text-[var(--color-sps-graphite)]">
+          <h2 className="mb-3 text-sm font-semibold text-foreground">
             {layout === "balanced"
               ? "Balanced · default"
               : layout === "editorial"
                 ? "Editorial"
                 : "Compact"}
           </h2>
-          <ArticleCard {...args} layout={layout} />
+          <Article {...args} layout={layout} variant="card" />
         </section>
       ))}
     </div>

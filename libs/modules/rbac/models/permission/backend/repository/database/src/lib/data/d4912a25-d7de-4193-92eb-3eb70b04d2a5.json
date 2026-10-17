@@ -1,0 +1,9 @@
+{
+  "id": "d4912a25-d7de-4193-92eb-3eb70b04d2a5",
+  "createdAt": "2026-10-12T12:47:48.050Z",
+  "updatedAt": "2026-10-12T12:47:48.050Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/eae83f65-0e90-4453-9575-7a54b9b2917e/social-module/profiles/d9fea705-7ecc-4694-bb55-2c544f571762/avatar"
+}

@@ -1,16 +1,20 @@
+import { Component as ButtonsArray } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { ButtonsArrayDefault, defaultButtonsArrayProps } from "./Component";
+import { defaultButtonsArrayProps } from "./Component";
 
 const meta = {
+  id: "modules-website-builder-models-buttons-array-singlepage-buttons-array-default",
   title:
-    "Modules/Website Builder/Models/Buttons Array/Singlepage/buttons-array-default",
-  component: ButtonsArrayDefault,
+    "Modules/Website-Builder/Buttons Array/Singlepage/buttons-array-default",
+  component: ButtonsArray,
   parameters: {
     layout: "centered",
   },
-  args: defaultButtonsArrayProps,
-} satisfies Meta<typeof ButtonsArrayDefault>;
+  args: { ...defaultButtonsArrayProps, variant: "default" },
+} satisfies Meta<
+  Extract<React.ComponentProps<typeof ButtonsArray>, { variant: "default" }>
+>;
 
 export default meta;
 

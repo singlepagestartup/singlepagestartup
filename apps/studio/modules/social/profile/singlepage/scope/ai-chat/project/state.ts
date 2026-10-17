@@ -3,12 +3,13 @@ import {
   resolveThreadAgent,
   snapshotAgent,
   type IProjectAgent,
-} from "../../../agent/overview/ai-chat/resolver";
+} from "../../../agent/id/ai-chat/resolver";
 export interface IProjectFile {
   id: string;
   name: string;
   text: string;
   size: number;
+  lastModified?: number;
   mimeType?: string;
   fileUrl?: string;
 }

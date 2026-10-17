@@ -124,7 +124,6 @@ libs/
 │   ├── rbac/         # Role-Based Access Control
 │   ├── social/       # Social network module
 │   ├── startup/      # Startup-specific features
-│   ├── telegram/     # Telegram integration
 │   └── website-builder/ # Website building tools
 ├── shared/      # Shared utilities, base types, configuration
 ├── providers/   # Service providers and dependency injection
@@ -298,10 +297,13 @@ Strict layered architecture: Repository → Service → Controller → App.
 #### Component Structure
 
 - Each variant consists of:
-  - `interface.ts` — props description (`IComponentProps`, `IComponentPropsExtended`)
-  - `index.tsx` — wrapper with `ParentComponent`
+  - `interface.ts` — literal variant name, public props, SDK request parameters and loaded result types (`IComponentProps`, `IComponentPropsExtended`)
+  - `index.tsx` — template wiring and reader composition
   - `Component.tsx` — UI implementation
   - Optional `ClientComponent.tsx` for client-side logic
+- Shared readers own ordinary data loading. When additional or specialized SDK requests cannot be expressed through that reader, the variant may add local `client.tsx` and `server.tsx` in the same folder. Keep the typed interface, view files and one owner for Provider/loading; implement the supported runtime paths.
+- Register the variant under its exact name in the owning layer's `variants.ts` and include its props in that layer's `interface.ts` union. The public entrypoint uses the effective registry with `startup` overrides applied after `singlepage`.
+- The complete implementation and review rules are in [the frontend component contract](.agents/contracts/engineering/frontend-components.md).
 - If a variant requires `"use client"`, put the directive and client-only logic in `ClientComponent.tsx`; keep `Component.tsx` as a server-compatible wrapper that renders `ClientComponent`.
 - When `Component.tsx` renders `ClientComponent.tsx`, pass an explicit allowlist of props. Do not forward `{...props}` across the Server → Client boundary; Next.js requires props passed to Client Components to be serializable, and a spread can accidentally leak unsupported values.
 - `isServer` is part of the SPS base component contract. If the client component needs the SPS runtime context or renders lower-level SPS components, pass `isServer` explicitly from `Component.tsx` to `ClientComponent.tsx`.
@@ -343,6 +345,11 @@ Strict layered architecture: Repository → Service → Controller → App.
 
 ### Cross-Module Layering Boundary
 
+The confirmed top-to-bottom module order and import direction are defined in
+[the module dependency contract](.agents/contracts/engineering/module-dependencies.md).
+Lower modules must not import higher modules, including through types, SDKs,
+frontend composition or reexports.
+
 - Cart/product behavior for authenticated users must be orchestrated through RBAC subject surfaces (`rbac > ecommerce`).
 - `ecommerce` provides domain models/relations and generic UI primitives, but must not import or depend on RBAC subject implementation.
 - Host/cart composition should route actions to RBAC wrappers (for example `me-ecommerce-module-*`) instead of wiring direct ecommerce mutations.
@@ -359,10 +366,17 @@ If you need to understand why data updates/refetches happen in UI (chat, cart, c
 ### Minimal runtime flow
 
 1. Write request succeeds (`POST`/`PUT`/`PATCH`/`DELETE`).
-2. Revalidation middleware broadcasts websocket message with `payload` and optional `topics`.
-3. Frontend `subscription(...)` consumes message from `global-actions-store`.
-4. If matching `meta.topics` queries exist, invalidate by topics.
-5. Otherwise fallback to route-based invalidation.
+2. Revalidation middleware broadcasts a WebSocket message with `payload` and optional `topics` after HTTP-cache generation bumps finish.
+3. Host's revalidation component adds the message to `globalActionsStore`.
+4. SDK `subscription(...)` invalidates React Query entries with matching `meta.topics`; active queries refetch.
+5. Routes without a query covered by those topics retain route-based invalidation.
+
+React Query holds API results in memory under the standard API Provider.
+`globalActionsStore` holds runtime events and writes a compact debug snapshot
+to `sessionStorage`. It does not read that snapshot back or restore entity data
+after a reload. Revalidation uses incoming in-memory events. Local mutations
+also patch the acting client's query cache through the shared helpers; the
+WebSocket path reconciles other subscribed clients and derived changes.
 
 ### Why this design exists
 
@@ -389,6 +403,7 @@ If you need to understand why data updates/refetches happen in UI (chat, cart, c
   - `index.tsx`
   - `Component.tsx`
   - Optional `ClientComponent.tsx`
+  - Optional `client.tsx` and `server.tsx` for specialized SDK reads, following the [frontend component contract](.agents/contracts/engineering/frontend-components.md)
 - Do not put `"use client"` in `Component.tsx`; create `ClientComponent.tsx` and render it from `Component.tsx`.
 - Do not render `<ClientComponent {...props} />` from `Component.tsx`. Destructure or reference only the props the client file actually needs, including `isServer` when it is part of the downstream SPS contract.
 - In `ClientComponent.tsx`, nested SPS components created inside that client boundary must receive `isServer={false}`.

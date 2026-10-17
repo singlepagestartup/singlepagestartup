@@ -1,7 +1,7 @@
 {
   "$schema": "../../../../../block.schema.json",
   "id": "rbac.subject.me-social-module-profile-find-information",
-  "title": "RBAC Subject / me-social-module-profile-find-information",
+  "title": "me-social-module-profile-find-information",
   "description": "Current-subject social profile relation list.",
   "layer": "singlepage",
   "state": "draft",
