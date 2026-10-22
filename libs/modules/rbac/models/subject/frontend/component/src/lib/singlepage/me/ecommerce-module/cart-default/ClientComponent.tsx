@@ -15,7 +15,9 @@ import {
 export function Component(props: IComponentPropsExtended) {
   return (
     <Sheet>
-      <SheetTrigger>
+      <SheetTrigger
+        aria-label={props.language === "ru" ? "Открыть корзину" : "Open cart"}
+      >
         <div className="w-10 h-10 flex flex-row items-center justify-center rounded-full border border-primary relative">
           <ShoppingCart className="w-4 h-4 text-primary" />
 
@@ -40,9 +42,16 @@ export function Component(props: IComponentPropsExtended) {
           </Subject>
         </div>
       </SheetTrigger>
-      <SheetContent className="w-[400px] sm:w-[540px]">
-        <SheetHeader>
-          <SheetTitle>Cart</SheetTitle>
+      <SheetContent className="w-full max-w-full overflow-y-auto px-4 sm:max-w-md">
+        <SheetHeader className="min-w-0 space-y-4 text-left">
+          <SheetTitle>
+            {props.language === "ru" ? "Корзина" : "Cart"}
+          </SheetTitle>
+          <SheetDescription className="sr-only">
+            {props.language === "ru"
+              ? "Товары, количество и оформление заказа."
+              : "Review products, quantities and checkout options."}
+          </SheetDescription>
           <Subject
             isServer={false}
             variant="ecommerce-module-order-list-checkout-default"

@@ -1,3 +1,4 @@
+import { Component as SubjectMeCrmModuleFormRequestCreate } from "./subject-me-crm-module-form-request-create";
 import { Component as SubjectMeSocialModuleProfileChatOverviewDefault } from "./subject/me/social-module/profile/chat/overview-default";
 import { Component as SubjectMeSocialModuleProfileChatListDefault } from "./subject/me/social-module/profile/chat/list-default";
 import { Component as SubjectMeEcommerceModuleStoreOverviewDefault } from "./subject-me-ecommerce-module-store-overview-default";
@@ -41,6 +42,8 @@ import { Component as SubjectOverviewDefault } from "./subject/overview/default"
 import { Component as SubjectListDefault } from "./subject/list/default";
 
 export const variants = {
+  "subject-me-crm-module-form-request-create":
+    SubjectMeCrmModuleFormRequestCreate,
   "subject-me-social-module-profile-chat-overview-default":
     SubjectMeSocialModuleProfileChatOverviewDefault,
   "subject-me-social-module-profile-chat-list-default":

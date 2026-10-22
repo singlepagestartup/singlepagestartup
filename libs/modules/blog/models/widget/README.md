@@ -41,9 +41,13 @@ Missing keys do not issue unfiltered reads. Host dispatches saved Widgets throug
 the public registry with dataSource=props. Stored Widget records and content
 remain unchanged.
 
-Private Article composition exposes `renderPrivateContent({ data: article })`.
+Both Article overview compositions expose `renderContent({ data: article })`. Host supplies the same client-only RBAC content operation for public and private article URLs. The private variant retains `renderPrivateContent` as a compatibility alias. The resolved JSX replaces the Article view's public fallback reader and preserves mixed public/private positions.
 Article products expose `renderProduct({ data: product })`, with a public
 Ecommerce view as the default. Host supplies the RBAC operations in those typed
 slots; Blog imports no RBAC code. Callbacks execute beside the owning reader and
 produce JSX before any client boundary. Lower entity reads do not receive the
 routing map.
+
+Article and Category collection Widgets keep their saved curated relation order,
+fall back to the model collection when no links exist, and own their grid
+skeleton and empty state. Entity `loading` variants render one item.

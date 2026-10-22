@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { Component as Article } from "@sps/blog/models/article/frontend/component";
 import type { IContentProps } from "./interface";
 export function Component(props: IContentProps) {
@@ -22,6 +23,7 @@ export function Component(props: IContentProps) {
       }}
     >
       {({ data }) => {
+        if (data?.length === 0) notFound();
         return data?.map((entity, index) => {
           return (
             <Article
@@ -32,14 +34,9 @@ export function Component(props: IContentProps) {
               data={entity}
               language={props.language}
             >
-              <Article
-                isServer={props.isServer}
-                data={entity}
-                variant="default"
-                dataSource="props"
-                language={props.language}
-              />
-              {props.renderPrivateContent?.({ data: entity })}
+              {(props.renderContent ?? props.renderPrivateContent)?.({
+                data: entity,
+              })}
             </Article>
           );
         });

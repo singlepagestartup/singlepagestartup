@@ -1,3 +1,5 @@
+import type { IComponentProps as IPrivateContentDefault } from "./private-content-default/interface";
+import type { IComponentProps as ILoading } from "./loading/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
@@ -14,6 +16,8 @@ import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-de
 import { IComponentProps as IOverviewWithPrivateContentDefaultComponentProps } from "./overview-with-private-content-default/interface";
 
 export type IComponentProps =
+  | IPrivateContentDefault
+  | ILoading
   | IFindComponentProps
   | IAdminFormComponentProps
   | IAdminTableRowComponentProps

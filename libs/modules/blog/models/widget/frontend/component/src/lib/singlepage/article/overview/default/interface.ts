@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 export { type IModel } from "@sps/blog/models/widget/sdk/model";
 import { IModel } from "@sps/blog/models/widget/sdk/model";
 import {
@@ -12,6 +13,7 @@ export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
   articleSlug?: string;
+  renderContent?: (props: { data: IArticle }) => ReactNode;
 }
 
 export interface IComponentPropsExtended
@@ -25,4 +27,5 @@ export interface IContentProps {
   isServer: boolean;
   language: string;
   articleSlug?: string;
+  renderContent?: (props: { data: IArticle }) => ReactNode;
 }

@@ -1,3 +1,5 @@
+import { Component as PrivateContentDefault } from "./private-content-default";
+import { Component as Loading } from "./loading";
 import { Component as Find } from "./find";
 import { Component as AdminForm } from "./admin/form";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -14,6 +16,8 @@ import { Component as OverviewDefault } from "./overview-default";
 import { Component as OverviewWithPrivateContentDefault } from "./overview-with-private-content-default";
 
 export const variants = {
+  "private-content-default": PrivateContentDefault,
+  loading: Loading,
   find: Find,
   "admin-form": AdminForm,
   "admin-table-row": AdminTableRow,

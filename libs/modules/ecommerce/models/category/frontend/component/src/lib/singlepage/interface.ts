@@ -1,3 +1,4 @@
+import type { IComponentProps as ILoading } from "./loading/interface";
 import { IComponentProps as IButtonDefaultComponentProps } from "./button-default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
@@ -14,6 +15,7 @@ import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 
 export type IComponentProps =
+  | ILoading
   | IButtonDefaultComponentProps
   | IFindComponentProps
   | IAdminFormComponentProps

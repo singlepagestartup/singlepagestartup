@@ -1,20 +1,16 @@
-import { IComponentPropsExtended } from "./interface";
-import { cn } from "@sps/shared-frontend-client-utils";
-
+import { Component as Article } from "@sps/blog/models/article/frontend/component";
+import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
   return (
-    <div
-      data-module="blog"
-      data-model="article"
-      data-id={props.data?.id || ""}
-      data-variant={props.variant}
-      className={cn(
-        "w-full flex flex-col",
-        props.data.className,
-        props.className,
-      )}
+    <Article
+      isServer={props.isServer}
+      variant="overview-default"
+      dataSource="props"
+      data={props.data}
+      className={props.className}
+      language={props.language}
     >
       {props.children}
-    </div>
+    </Article>
   );
 }

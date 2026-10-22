@@ -19,8 +19,9 @@ Categories group articles and provide localized metadata for category pages.
 
 ## Variants
 
-- `default`: category card linking to the category page.
-- `overview-default`: category overview with description and related articles.
+- `default`: compact category card with localized rich subtitle and the category link.
+- `overview-default`: category header, rich description, ordered Website Builder widgets and related articles in one container.
+- `loading`: one category skeleton; collection Widgets compose the grid.
 - `find`: data-fetch wrapper for querying categories.
 - `admin-form`: admin create/edit form for localized fields and metadata.
 - `admin-select-input`: admin select input for choosing a category.

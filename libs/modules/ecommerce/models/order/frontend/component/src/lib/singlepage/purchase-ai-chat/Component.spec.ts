@@ -146,6 +146,45 @@ describe("Paid purchase details", () => {
     expect(mockReceiptLinks).not.toHaveBeenCalled();
     expect(mockReceiptFiles).not.toHaveBeenCalled();
   });
+  it("keeps an expired subscription purchase and its stored receipt available", () => {
+    const html = renderToStaticMarkup(
+      createElement(Component, {
+        isServer: false,
+        variant: "purchase-ai-chat",
+        dataSource: "props",
+        data: {
+          id: "expired-order",
+          receipt: "SPS-EXPIRED",
+          createdAt: "2026-10-08T12:00:00.000Z",
+          status: "expired",
+        } as any,
+        purchaseDetails: {
+          totals: [
+            {
+              total: 42,
+              billingModuleCurrency: {
+                id: "usd",
+                slug: "usd",
+                symbol: "$",
+              } as any,
+            },
+          ],
+          receipts: [
+            {
+              id: "receipt-file",
+              file: "/file-storage/static/expired.pdf",
+            } as any,
+          ],
+        },
+      }),
+    );
+    expect(html).toContain("Expired");
+    expect(html).toContain("SPS-EXPIRED");
+    expect(html).toContain("42 USD");
+    expect(html).toContain("/public/file-storage/static/expired.pdf");
+    expect(mockTotal).not.toHaveBeenCalled();
+    expect(mockReceiptLinks).not.toHaveBeenCalled();
+  });
   it("loads totals through the server SDK before rendering a server purchase", async () => {
     const serverApi = jest.requireMock(
       "@sps/ecommerce/models/order/sdk/server",

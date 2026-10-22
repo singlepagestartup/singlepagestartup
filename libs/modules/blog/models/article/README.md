@@ -19,9 +19,11 @@ Articles are the primary content entries in the blog, storing localized text and
 
 ## Variants
 
-- `default`: article card with title, subtitle, attached media, and link to the article page.
-- `overview-default`: overview card with description and attached website-builder widgets.
-- `overview-with-private-content-default`: wrapper variant for private/child content.
+- `default`: article card with localized rich subtitle, all ordered media and the article link.
+- `overview-default`: article header, rich body, all ordered media and an optional ordered content JSX slot. Public fallback reads only `default` Article→Widget associations.
+- `overview-with-private-content-default`: the same public article view with a higher-module content slot.
+- `private-content-default`: presentation for guest, locked, expired, checking, error and granted states; children mount only for granted access.
+- `loading`: one article skeleton; collection Widgets compose the grid.
 - `find`: data-fetch wrapper for querying articles.
 - `admin-form`: admin create/edit form for localized fields and metadata.
 - `admin-select-input`: admin select input for choosing an article.

@@ -62,7 +62,7 @@ export const Component = memo(function Component(
         <p className="text-sm font-semibold">
           Service purchase{" "}
           <span className="ml-2 inline-flex rounded-full bg-primary/25 px-2 py-1 text-xs font-medium">
-            Paid
+            {props.data.status === "expired" ? "Expired" : "Paid"}
           </span>
         </p>
         <p className="mt-1 text-xs text-muted-foreground">

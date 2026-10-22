@@ -25,7 +25,7 @@ export function Component(props: IComponentProps) {
           return null;
         }
         return (
-          <div className="flex flex-wrap gap-2 pb-2">
+          <div className="flex flex-wrap gap-2">
             {categoriesToProducts?.map((categoryToProduct, index) => {
               return (
                 <EcommerceModuleCategory
@@ -53,6 +53,7 @@ export function Component(props: IComponentProps) {
                           key={category.id}
                           isServer={props.isServer}
                           variant="button-default"
+                          dataSource="props"
                           data={category}
                           language={props.language}
                         />

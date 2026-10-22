@@ -21,6 +21,7 @@ export function Component(props: IComponentPropsExtended) {
               "packaging",
               "delivering",
               "delivered",
+              "expired",
               "completed",
             ],
           },

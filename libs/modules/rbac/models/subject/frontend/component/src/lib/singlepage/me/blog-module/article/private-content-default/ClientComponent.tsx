@@ -1,55 +1,78 @@
 "use client";
-
-import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
-import { Component as BlogModuleArticlesToWebsiteBuilderModuleWidgets } from "@sps/blog/relations/articles-to-website-builder-module-widgets/frontend/component";
-import type { IComponentProps } from "./interface";
-
-export function Component(props: IComponentProps) {
-  return (
-    <Subject
-      isServer={false}
-      variant="authentication-is-authorized-wrapper-default"
-      apiProps={{
-        params: {
-          permission: {
-            method: "GET",
-            route: "/api/blog/articles-to-website-builder-module-widgets",
-          },
-        },
-      }}
-      fallback={<div className="p-5 bg-blue-400">Not authorized</div>}
-    >
-      <BlogModuleArticlesToWebsiteBuilderModuleWidgets
+import { Component as BlogModuleArticle } from "@sps/blog/models/article/frontend/component";
+import { Component as WebsiteBuilderModuleWidget } from "@sps/website-builder/models/widget/frontend/component";
+import { ProtectedMediaProvider } from "@sps/file-storage/models/file/frontend/component";
+import { QueryScopeProvider } from "@sps/shared-frontend-client-api";
+import type { IClientComponentProps } from "./interface";
+export function Component(props: IClientComponentProps) {
+  if (props.state === "checking" || (props.state === "error" && !props.content))
+    return (
+      <BlogModuleArticle
         isServer={false}
-        variant="find"
-        apiProps={{
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "articleId",
-                  method: "eq",
-                  value: props.blogModuleArticle.id,
-                },
-              ],
-            },
-          },
-        }}
-      >
-        {({ data }) => {
-          return data?.map((entity, index) => {
-            return (
-              <BlogModuleArticlesToWebsiteBuilderModuleWidgets
-                key={index}
-                isServer={false}
-                variant={entity.variant as any}
-                data={entity}
-                language={props.language}
-              />
-            );
-          });
-        }}
-      </BlogModuleArticlesToWebsiteBuilderModuleWidgets>
-    </Subject>
+        variant="private-content-default"
+        language={props.language}
+        access={props.state}
+        onRetry={props.onRetry}
+      />
+    );
+  return (
+    <div
+      className="space-y-8"
+      data-article-content={props.blogModuleArticle.id}
+    >
+      {props.content?.items.map((item) => {
+        if (item.kind === "public")
+          return (
+            <WebsiteBuilderModuleWidget
+              key={item.key}
+              isServer={false}
+              variant={item.widget.variant as any}
+              dataSource="props"
+              data={item.widget}
+              language={props.language}
+            />
+          );
+        const granted =
+          props.state === "ready" && item.access.state === "granted";
+        const access =
+          props.state === "error"
+            ? "error"
+            : granted
+              ? "granted"
+              : props.state === "expired"
+                ? "expired"
+                : item.access.state;
+        const scopeKey = `${props.queryScopePrefix}:${item.key}`;
+        return (
+          <BlogModuleArticle
+            key={item.key}
+            isServer={false}
+            variant="private-content-default"
+            language={props.language}
+            access={access}
+            actionHref={
+              access === "guest"
+                ? `/${props.language}/rbac/subjects/me/authentication/select-method`
+                : `/${props.language}/ecommerce/products`
+            }
+            onRetry={props.onRetry}
+          >
+            {granted && item.access.state === "granted" && "widget" in item ? (
+              <QueryScopeProvider key={scopeKey} scopeKey={scopeKey}>
+                <ProtectedMediaProvider scopeKey={scopeKey}>
+                  <WebsiteBuilderModuleWidget
+                    isServer={false}
+                    variant={item.widget.variant as any}
+                    dataSource="props"
+                    data={item.widget}
+                    language={props.language}
+                  />
+                </ProtectedMediaProvider>
+              </QueryScopeProvider>
+            ) : null}
+          </BlogModuleArticle>
+        );
+      })}
+    </div>
   );
 }

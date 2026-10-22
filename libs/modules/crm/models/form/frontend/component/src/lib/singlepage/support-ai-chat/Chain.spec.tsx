@@ -435,3 +435,17 @@ it("required metadata validates before producing a transport payload", async () 
   expect(await screen.findByText("This field is required.")).toBeVisible();
   expect(submitted).not.toHaveBeenCalled();
 });
+
+it("keeps saved Option relation order even when the Option query returns a different order", async () => {
+  mockRecords.options.reverse();
+  render(<Component />);
+  fireEvent.keyDown(
+    screen.getByRole("combobox", { name: "Preferred contact" }),
+    { key: "ArrowDown" },
+  );
+  const options = await screen.findAllByRole("option");
+  expect(options.map((option) => option.textContent)).toEqual([
+    "Email",
+    "Phone",
+  ]);
+});

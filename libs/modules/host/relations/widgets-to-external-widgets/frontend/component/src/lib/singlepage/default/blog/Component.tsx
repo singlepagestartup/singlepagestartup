@@ -38,9 +38,9 @@ export function Component(props: IExternalWidgetProps) {
                 articleSlug={routeParams?.["blog.articles.slug"]}
                 categorySlug={routeParams?.["blog.categories.slug"]}
                 variant={entity.variant as any}
-                renderPrivateContent={({ data }) => (
+                renderContent={({ data }) => (
                   <RbacModuleSubject
-                    isServer={props.isServer}
+                    isServer={false}
                     variant="me-blog-module-article-private-content-default"
                     blogModuleArticle={data}
                     language={props.language}

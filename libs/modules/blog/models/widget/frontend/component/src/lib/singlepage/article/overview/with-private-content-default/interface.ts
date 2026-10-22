@@ -13,6 +13,7 @@ export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
   articleSlug?: string;
+  renderContent?: (props: { data: IArticle }) => ReactNode;
   renderPrivateContent?: (props: { data: IArticle }) => ReactNode;
 }
 
@@ -27,5 +28,6 @@ export interface IContentProps {
   isServer: boolean;
   language: string;
   articleSlug?: string;
+  renderContent?: (props: { data: IArticle }) => ReactNode;
   renderPrivateContent?: IComponentProps["renderPrivateContent"];
 }

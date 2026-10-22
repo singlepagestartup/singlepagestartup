@@ -114,3 +114,17 @@ The list selects one owned acting Profile and requests a single Subject-wide
 Chat collection. Shared chats appear once even when several owned Profiles
 participate. Participant data is included in the collection response; loaded
 rows use `dataSource="props"` instead of individual detail queries.
+
+## CRM contact form
+
+`subject-me-crm-module-form-request-create` owns the Framework contact operation.
+Its exact `widgets-to-website-builder-module-widgets` link selects the saved
+`content-feature-find-row` frame. Its exact `widgets-to-crm-module-widgets`
+link selects the CRM Widget; that Widget's ordered `widgets-to-forms` links
+select the real Forms. The default Website Builder relation renders the Subject
+form as children. No second CRM presentation wraps that slot.
+
+The current-Subject request operation retains schema-driven Steps, Inputs,
+Options, submissionId and separate Request/notification results. Host dispatches
+the saved RBAC Widget through its ordinary module bridge. Existing direct CRM
+blocks keep the legacy Host CRM composition for compatibility.
