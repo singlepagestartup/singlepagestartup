@@ -596,9 +596,9 @@ use the public Subject registry.
 
 The `me-blog-module-article-private-content-default` variant accepts an explicit
 blogModuleArticle and language. Its client view owns the authorization wrapper
-and reads the Article's Website Builder associations through their component
-SDK. Blog Widgets receive the rendered operation through a typed slot; this
-Subject variant receives no routing map.
+and reads ordered content through the current-Subject content SDK. Blog Widgets
+receive the rendered operation through a typed slot; this Subject variant
+receives no routing map.
 
 ### Authorized Chat participants
 
@@ -636,3 +636,50 @@ target Profile in a Chat. An ordinary requester must participate; the existing
 administrative Chat scope may read without joining. The target Profile must
 still belong to that Chat and each Source must belong to the target Profile.
 Membership denial is a permission error, rather than an expired session.
+
+### Article content access
+
+`GET /api/rbac/subjects/:id/blog-module/articles/:blogModuleArticleId/content`
+uses the current JWT Subject, including an initialized guest session. A missing
+session returns 401; a different Subject returns 403. The typed client/server
+SDK operation is `blogModuleArticleFindByIdContentFind`.
+
+Subscription access requires the owned active paid period and its current
+Product Roles. An Identity or email registration is not an access requirement;
+an entitled guest Subject receives granted content. A guest without entitlement
+receives the guest presentation state.
+
+Its result contains ordered public entries and private placeholders with opaque
+slot keys. Protected IDs and body appear only in granted entries. Effective
+expiry includes every private root needed by the entry's descendants. The
+client query keeps the result in the principal-specific shared cache, forwards
+cancellation and clears inaccessible data on 401/403. Its request-start
+timestamp lets the reader close content without extending access by transport
+latency. Any other failed revalidation replaces cached private entries with
+locked placeholders while retaining the public entries. Protected results are
+not copied into the debug event log.
+
+`apps/api/app.ts` injects `IGraphServices` using the effective model and relation
+Services from the loaded module registry. The graph never constructs their
+repositories or calls the public API over HTTP. The injected `assertIsolated`
+callback checks incoming references from higher modules before private marking
+and attachment. Standalone graph writers must supply this callback; missing
+services or isolation checks fail closed.
+
+The API host installs `ProtectedBlogContent.bytes()` before `/public/*` and
+`ProtectedBlogContent.init()` after query parsing, before both HTTP response
+caches. List and count restrictions enter the repository filter before
+pagination. Repeated query parsers preserve the guarded filter. Protected
+metadata, content and static paths are excluded from both response caches.
+The bytes middleware reapplies private/no-store headers after the static
+handler returns its Response. Guarded graph writes share a database transaction
+and graph lock with their owning controller mutation. Tests may inject a
+transaction callback for an in-memory graph; production uses the shared
+consistency database context.
+
+The operator-only maintenance operation
+`POST /api/rbac/subjects/:id/ecommerce-module/orders/:ecommerceModuleOrderId/subscription-period/freeze`
+uses SDK `ecommerceModuleOrderFreezeSubscriptionPeriod`. It accepts an expected
+stored update timestamp, verifies the exact owned Order and current complete
+Product Roles, and delegates period freezing to Ecommerce. Callers cannot
+supply arbitrary period timestamps.

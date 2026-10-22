@@ -36,3 +36,25 @@ set to `schema.ts`. Constraints never own column declarations.
 - `admin-select-input`: admin select input for choosing a relation.
 - `admin-table`: admin table listing relations.
 - `admin-table-row`: admin row showing relation fields.
+
+## Subscription revocation
+
+Generic delete and reassignment use the owning relation Service. Its API-host
+composition marks matching owned subscription Orders through the effective
+Ecommerce Service before deleting or changing the grant. Both writes share the
+owning grant transaction and Subject delivery lock. An unconfigured Service
+fails closed for these operations; recreating a Role does not clear an Order's
+server-owned revocation marker.
+
+`deleteForOrderFulfillment` is an internal capability with an exact Subject,
+Order and grant scope. It verifies natural subscription expiry or completion
+or cancellation of an owned Order. Subscription cancellation requires that
+Order's revocation marker. The operation preserves grants required by another
+current subscription. No REST parameter bypasses explicit revocation.
+
+`apps/api/app.ts` calls `configureRevocation({ revoke, canFulfill })` on both
+the HTTP relation Service and the Subject-injected relation Service. These
+callbacks delegate Order reads and revocation to the effective Ecommerce
+Service. Tests constructing this relation Service directly must provide the
+callbacks before delete or reassignment. The owning repository locks only
+Subject grant rows and tracks that read through the shared consistency layer.

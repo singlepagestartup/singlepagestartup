@@ -1,5 +1,5 @@
 {
-  "fingerprint": "d2b8fdeb5e483f912463e3d8780f002143aff38c239ebea5a6fcdf39ab7ef50b",
+  "fingerprint": "eb6efc49fc1c0cd178672715bb0545531104aef71848ea443014816f238d1d76",
   "resources": [
     {
       "resource": "public.bg_as_to_ee_me_ps_bd9",
@@ -1166,7 +1166,11 @@
         "status": "status",
         "type": "type",
         "receipt": "receipt",
-        "comment": "comment"
+        "comment": "comment",
+        "subscriptionPeriodStartsAt": "subscription_period_starts_at",
+        "subscriptionPeriodEndsAt": "subscription_period_ends_at",
+        "subscriptionPeriodInvoiceId": "subscription_period_invoice_id",
+        "subscriptionRevokedAt": "subscription_revoked_at"
       }
     },
     {

@@ -14,6 +14,47 @@ Orders store cart and checkout information, including status and metadata.
 - `type`: order type (default: `cart`).
 - `receipt`: receipt reference string.
 - `comment`: optional comment.
+- `subscriptionPeriodStartsAt`, `subscriptionPeriodEndsAt`: nullable fixed
+  subscription delivery interval.
+- `subscriptionPeriodInvoiceId`: nullable accepted paid Invoice anchor.
+- `subscriptionRevokedAt`: nullable server time of explicit Role revocation;
+  ordinary updates cannot set or clear it.
+
+## Subscription delivery period
+
+RBAC order proceed calls the internal `acceptSubscriptionPeriod` capability
+after checking the current Subject's ownership and product Role grants. The
+Order service reads the configured interval and its own paid Invoices. It
+accepts the latest Invoice by immutable `createdAt`, then ID, using one
+conditional write for the complete period. A replay or competing retry cannot
+extend the same Invoice twice. The first period starts at confirmation;
+renewal extends the end by one interval from the later of confirmation and
+the previous end. An early renewal preserves the start of continuous paid
+coverage; a late renewal starts a new covered span at confirmation.
+
+Generic create/update cannot change period fields. Unchanged fields in existing
+full-record update payloads are removed before writing. An OPEN Invoice and an
+unrelated Order update do not change the deadline. Access expires at
+`now >= subscriptionPeriodEndsAt`; requested cancellation keeps the original
+deadline. Explicit Role deletion stamps `subscriptionRevokedAt` on affected
+owned subscription Orders. Proceed, repeated paid transitions, recreated Roles
+and automatic renewal cannot restore those Orders.
+
+Natural recurring expiry removes its grant through the internal fulfillment
+operation and sets `status=expired`, retaining its paid Invoice anchor. A later
+newer paid Invoice can reactivate that same unrevoked Order for a full interval.
+Role changes, credits and period acceptance share one transaction with Subject
+and Order locks; failure leaves the paid Order retryable. Notifications and
+automatic follow-up checkout run after commit. Urgent paid/cleanup work precedes
+the bounded recurring scan, which rotates by ID without changing delivery dates.
+
+Legacy delivering orders require the operator-only Subject freeze operation.
+It checks exact ownership, current product Roles and the expected previous
+`updatedAt`, then calls `freezeSubscriptionPeriod`. The server preserves the
+old delivery start and calendar interval; it does not accept caller-supplied
+period timestamps. Missing grants, unpaid or ambiguous invoice context and
+concurrent changes require data reconciliation. Repeating a completed freeze
+does not change the period.
 
 ## Variants
 

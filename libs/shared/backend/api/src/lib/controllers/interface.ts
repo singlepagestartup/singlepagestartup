@@ -14,7 +14,7 @@ import {
 export interface IHttpRoute {
   path: string;
   handler: Handler<any, string, BlankInput, HandlerResponse<any>>;
-  method: "GET" | "POST" | "DELETE" | "PATCH";
+  method: "GET" | "HEAD" | "POST" | "DELETE" | "PATCH";
   middlewares?: ReturnType<typeof createMiddleware>[];
 }
 

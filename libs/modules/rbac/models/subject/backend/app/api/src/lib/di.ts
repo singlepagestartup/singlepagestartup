@@ -1,3 +1,4 @@
+import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
 import type { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
 export interface IReadService {
   find: (props?: any) => Promise<any>;
@@ -25,7 +26,16 @@ export interface IExtendedReadService extends IReadService {
 
 export interface IEcommerceOrderReadService
   extends IExtendedReadService,
-    ICreateService {
+    ICreateService,
+    Pick<
+      EcommerceOrderService,
+      | "acceptSubscriptionPeriod"
+      | "freezeSubscriptionPeriod"
+      | "assertSubscriptionPayment"
+      | "lockForLifecycle"
+      | "revokeSubscription"
+      | "update"
+    > {
   findByIdCartDetails: (props: {
     id: string;
   }) => Promise<import("@sps/ecommerce/models/order/sdk/model").ICartDetails>;

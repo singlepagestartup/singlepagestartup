@@ -50,6 +50,13 @@
       "when": 1792110607748,
       "tag": "0006_consistency-capture",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792710665768,
+      "tag": "0007_consistency-capture",
+      "breakpoints": true
     }
   ]
 }

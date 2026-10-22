@@ -40,6 +40,7 @@ export const statuses = [
   "packaging",
   "delivering",
   "delivered",
+  "expired",
   "requested_cancelation",
   "canceling",
   "canceled",

@@ -59,3 +59,32 @@ PDF.js bundle; images support zoom, Markdown has formatted/source modes, and
 text formats use a scrolling plain-text view. Unsupported formats and preview
 errors retain original/download actions. Blocked legacy SVG/unavailable
 attachments keep their noninteractive card.
+
+## Protected article media
+
+`ProtectedMediaProvider` receives a principal/article/slot scope key from the
+granted RBAC content boundary. Within that subtree, the registered
+`authenticated-content` variant reads original bytes through `fileApi.content`
+and displays a Blob URL. It receives already loaded metadata and does not add
+a second record query or SDK Provider. Public `default` rendering is unchanged.
+
+Byte queries belong to React Query, carry File realtime topics and the captured
+API-host/principal scope, and are cancelled and removed when that scope closes.
+Blob URLs are revoked on replacement, denial and unmount. A 401/403 removes the
+previous source immediately; transient failures preserve currently mounted media
+while exposing Retry. No protected Blob enters the global action debug snapshot.
+
+### Protected bytes
+
+`GET` and `HEAD /api/file-storage/files/:uuid/content` use the owning File
+service to return managed bytes after the API host verifies all private roots.
+The client/server SDK operation `content` returns a Blob and supports request
+cancellation. It sends current credentials with no-store request options;
+protected responses have private/no-store headers. The protected File reader
+owns the temporary object URL and removes it when its access scope closes.
+The public `download` operation keeps its existing behavior.
+
+The same access check protects File metadata, canonical managed byte aliases
+and direct `/public/...` GET/HEAD paths. A protected file's storage location
+cannot be replaced through ordinary multipart update. Private graphs use
+isolated managed bytes; existing public files are copied before marking.

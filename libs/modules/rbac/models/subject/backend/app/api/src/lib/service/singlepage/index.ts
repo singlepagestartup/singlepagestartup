@@ -1,4 +1,8 @@
 import {
+  Service as FreezeSubscriptionPeriod,
+  type IExecuteProps as IFreezeSubscriptionPeriodProps,
+} from "./ecommerce/order/freeze-subscription-period";
+import {
   Service as ChatParticipants,
   type IExecuteProps as IChatParticipantsProps,
 } from "./social-module/chat/participants";
@@ -250,6 +254,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       subjectsToOrders: this.subjectsToEcommerceModuleOrders,
       ordersToProducts: this.ecommerceModule.ordersToProducts,
     }).execute(props);
+  }
+
+  async ecommerceModuleOrderFreezeSubscriptionPeriod(
+    props: IFreezeSubscriptionPeriodProps,
+  ) {
+    return new FreezeSubscriptionPeriod({ service: this }).execute(props);
   }
 
   async isAuthorized(props: IIsAuthorizedExecuteProps): Promise<any> {

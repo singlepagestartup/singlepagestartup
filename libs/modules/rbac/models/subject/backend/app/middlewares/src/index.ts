@@ -28,3 +28,10 @@ export {
   Middleware as RequestSubjectOwnsEcommerceModuleOrder,
   type IMiddlewareGeneric as IRequestSubjectOwnsEcommerceModuleOrderMiddlewareGeneric,
 } from "./lib/request-subject-owns-ecommerce-module-order";
+
+export {
+  Middleware as ProtectedBlogContent,
+  protectedContentRoutes,
+} from "./lib/protected-blog-content";
+
+export { Middleware as RequestOperatorSecret } from "./lib/request-operator-secret";
