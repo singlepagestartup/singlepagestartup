@@ -3,9 +3,9 @@ issue_number: 376
 issue_title: "Перенести визуал Storybook в Framework с сохранением функциональности и исправить доступ к закрытым виджетам"
 repository: singlepagestartup
 created_at: 2026-10-22T21:58:34Z
-last_updated: 2026-10-22T22:03:17Z
+last_updated: 2026-10-22T23:57:42Z
 status: active
-current_phase: plan
+current_phase: complete
 ---
 
 # Process Log: ISSUE-376 — перенос визуала Storybook в Framework
@@ -19,9 +19,9 @@ current_phase: plan
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: not_started
-- Current phase: plan
-- Next step: Перейти Ready for Dev → In Dev и выполнить утверждённый план; финальный Code Review остаётся пользователю.
+- Implement: completed
+- Current phase: complete
+- Next step: Человеческий Code Review пользователем; GitHub Code Review подтверждён shared helper. PR/push/merge и Done не выполняются.
 
 ## Phase Notes
 
@@ -47,13 +47,14 @@ current_phase: plan
 
 ### Implement
 
-- Summary: Не начат.
-- Outputs:
-- Notes:
+- Summary: Все шесть фаз реализованы и проверены на codex/issue-376-framework-visual. Website Builder 84087145cf, backend 6d7e1f09c9, frontend cb4296b6f0, cutover 6a9be42bb6. Раздельные авторы и независимые review-pr закрыли замечания до итогового PASS phase_reviewer против 6a9be42bb6.
+- Outputs: Progress/handoff; ISSUE-376-implementation.md, ISSUE-376-browser.md, ISSUE-376-reviews.md; действующий локальный Host :3000, API :4000 и Storybook :4321.
+- Verification: Frozen Host build и полный Studio validation exit 0; actual API/PostgreSQL/Redis access matrix и functional CRM/dummy checkout, focused frontend/SDK/period suites PASS. Final browser desktop/320, EN/RU, cart CRUD, saved schema/content, guest gate и not-found UI PASS, console errors/warnings 0. Локальный SDK apply/repeat/rollback/reapply принят. API TypeScript сохраняет 20 полных baseline diagnostics, новых нет; исходный Next streaming transport HTTP 200/noindex для not-found не менялся.
+- Notes: Final preflight PASS поддерживает передачу на человеческий Code Review, но не заменяет его. Browser paid session, CRM Submit и внешние доставки/платежи не заявляются; API/React/service tests покрывают соответствующие границы. PR/push/merge нет. Generated Order/capture migrations, exact private classification и два public Blog GET prerequisites входят в rollout; snapshots не менялись. Apply/rollback требуют exclusive CMS window, общий conditional PATCH не добавлен.
 
 ## Incident Log
 
-<!-- incident-count: 3 -->
+<!-- incident-count: 11 -->
 
 ### Incident 1 — GitHub недоступен из sandbox
 
@@ -85,6 +86,24 @@ current_phase: plan
 - **Preventive Action**: Для зависимых подзадач указывать явного получателя отчёта; root проверяет доставку, а не только completed агента.
 - **References**: агенты research_access, research_runtime; `thoughts/shared/research/singlepagestartup/ISSUE-376.md`.
 
+### Incident 4 — Сообщение не запускает завершённого агента
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Backend автор оставался completed после сообщения GO.
+- **Root Cause**: send_message доставляет текст, но не запускает новый turn завершённого агента.
+- **Fix**: Отправлен followup_task; автор подтвердил запуск и создал SDK/service contracts.
+- **Preventive Action**: Для completed агента использовать followup_task и дождаться подтверждения начала.
+
+### Incident 5 — Nx worker и локальные соединения
+
+- **Phase**: Implement
+- **Occurrences**: 2
+- **Symptom**: Nx зависает при изоляции plugins; миграция и HTTP/read probes не соединяются с localhost в sandbox.
+- **Root Cause**: Ограничения окружения запуска.
+- **Fix**: NX_DAEMON=false NX_ISOLATE_PLUGINS=false; конкретные локальные DB/socket команды повторены с escalation. Миграция сгенерирована штатным repository-generate и применена.
+- **Preventive Action**: Использовать эти Nx флаги; не менять runtime-код ради sandbox соединения.
+
 ## Reusable Learnings
 
 - Для issue по локальному визуалу указывать точные source paths и Storybook IDs, а также состояние Git. Незакоммиченные материалы и снимки `/tmp` требуют доступной ревизии перед продолжением research.
@@ -96,3 +115,63 @@ current_phase: plan
 - Host TypeScript: passed до runtime-переноса. Module dependencies: 14772 source files, 0 violations.
 - Existing own-Subject controller: 13 tests passed; route matcher: 9; consistency-cache: 5. Workflow lookup: 10 isolated tests и live status transition passed.
 - Sandbox запрещает loopback/listen: read probes и socket tests повторяются с escalation. Это ограничение среды, без изменения приложения.
+
+### Incident 6 — Native Date и точный deadline
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Real API matrix обнаружила преждевременный отказ на millisecond boundary.
+- **Root Cause**: String(native Date) теряет миллисекунды.
+- **Fix**: Native Date → getTime; unit boundary и реальная matrix PASS.
+- **Preventive Action**: Проверять точный deadline с фактическим типом PostgreSQL driver.
+
+### Incident 7 — Холодный Host и invalidation churn
+
+- **Phase**: Implement
+- **Occurrences**: 2
+- **Symptom**: Dev Ready без готовой страницы во время параллельных edits.
+- **Root Cause**: Существующий большой catch-all/Admin graph и повторные compile после edits. Новые циклы/package edges не найдены; одна задержка ответа после compile остаётся без точной причины.
+- **Fix**: Изолированный production dist, frozen build/start; HTTP 200 и browser verification.
+- **Preventive Action**: Подтверждать работу HTTP и UI, сохранять стабильные sources при финальной сборке.
+
+### Incident 8 — Cart drawer layout
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Price/Interval/Topup сжаты до нескольких букв в строке.
+- **Root Cause**: Product cart grid-cols-3 внутри узкого drawer.
+- **Fix**: Вертикальный compact layout и адаптивная ширина drawer; browser recheck ожидается.
+- **Preventive Action**: Проверять заполненную корзину desktop/320 px, сохраняя реальные actions и attributes.
+
+### Incident 9 — Отсутствующие публичные GET Blog relations
+
+- **Phase**: Implement
+- **Occurrences**: 2
+- **Symptom**: `/en/blog` возвращал 500 из-за 403 `/api/blog/widgets-to-categories`.
+- **Root Cause**: Сохранённого GET permission нет; соседние count и widgets-to-articles уже public. Исходный snapshot также не содержит его. Новый private guard запрос пропускает; отказ происходит в общем RBAC.
+- **Fix**: Локальный operator Permission SDK создал точные roleless GET widgets-to-categories (4cea3bc3-1549-40da-8cf5-c166f2eec7b8) и categories-to-website-builder-module-widgets (c4ed950e-6d6d-48f6-bec8-1a172913ee6f). Оба anonymous GET 200. Полный аудит 14 list/count reads семи Blog relations отделяет отсутствующие permissions от private guards. Существующие публичные Category links и последующие writes не могут переиспользовать private graph.
+- **Preventive Action**: Проверять фактические разрешения saved Blog graph; документировать targeted SDK repair, не расширять Subject routes или global bypass.
+
+### Incident 10 — Studio Order projection отстаёт от schema
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: studio:validate catalog test не находит четыре добавленных server-owned поля Order.
+- **Root Cause**: Локальная Studio projection имеет прежний набор metadata fields.
+- **Fix**: ReadSchemaFields обновил только Order admin-v2-table schema, records получили null, IRecord содержит четыре nullable поля. Полный studio:validate прошёл, включая loopback preview.
+- **Preventive Action**: После generated schema migration синхронизировать локальную Studio projection, сохраняя authored UI и значения записей.
+
+### Incident 11 — ESLint heap и targeted cleanup
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: ESLint 221 изменённого TypeScript-файла завершился V8 heap error с default heap.
+- **Root Cause**: Typed parser загружает полный monorepo project.
+- **Fix**: Повтор с NODE_OPTIONS=--max-old-space-size=8192 завершил анализ. Пять файлов требовали объединения imports, удаления ссылки на отсутствующее lint rule и форматирования; исправленные файлы повторно прошли ESLint exit 0.
+- **Preventive Action**: Для полного typed project выделять достаточный heap; правила не отключать ради результата. Исправления imports/types/comments/formatting не меняют исполняемую семантику final build.
+
+## Human review handoff
+
+- GitHub status: Code Review, verified 2026-10-22T23:58:52Z через shared update/get helpers.
+- Summary: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6353992295.
+- Issue открыт. Человеческий review ожидается; PR, push, merge и Done не выполнялись.

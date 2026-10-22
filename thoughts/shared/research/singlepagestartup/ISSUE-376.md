@@ -263,3 +263,41 @@ Ticket охватывает anonymous, guest, non-subscriber, active, expired, r
 1. Какие точные связи и records создаст или перепривяжет поддерживаемый data-management flow, сохраняя shared hero и текущую Form? Текущий граф и owners установлены; операция записи относится к plan/implementation.
 2. Persisted private classification, связь Article с требуемым subscription Product, entitlement clock и способ ограничения прямых/дочерних/byte-чтений являются решениями plan. Нынешняя схема и точные пути доступа исследованы; реализация этих правил ещё отсутствует.
 3. Какие текущие данные дают выбираемую конфигурацию товара? В inspected cart/quick-checkout payloads есть quantity/store/currency, но нет Studio optionValues; это различие нельзя закрывать fixture-состоянием.
+
+## Known Pitfalls (from implementation)
+
+### Project list и точная membership
+
+- **Occurrences**: 5
+- **Stage**: Create / Research / Plan
+- **Symptom**: Общий item-list не содержит существующий issue item.
+- **Root Cause**: Различающиеся GitHub list и exact issue membership ответы; причина на стороне GitHub не установлена.
+- **Fix**: Shared helper fallback читает repository.issue.projectItems с проверкой repository/Project/единственности item. Commit 375b370333.
+- **Reusable Pattern**: Не создавать duplicate issue/item после частичного успеха; использовать exact membership и повторный status read.
+
+### Nx worker и локальные соединения
+
+- **Occurrences**: 2
+- **Stage**: Implement
+- **Symptom**: Nx worker зависает, localhost DB/HTTP недоступен из sandbox.
+- **Root Cause**: Изоляция plugins и ограничение local sockets.
+- **Fix**: NX_DAEMON=false NX_ISOLATE_PLUGINS=false; конкретный network operation с escalation.
+- **Reusable Pattern**: Не менять приложение ради ограничений запуска; проверять фактический HTTP/DB результат.
+
+### Холодный Host и invalidation churn
+
+- **Occurrences**: 2
+- **Stage**: Implement
+- **Symptom**: Dev Ready не подтверждает готовую страницу во время edits.
+- **Root Cause**: Существующий большой catch-all/Admin graph и повторные compile. Нового цикла или package dependency не найдено; одна задержка после compile остаётся без точной причины.
+- **Fix**: Frozen production build в отдельном dist, start и HTTP/browser acceptance.
+- **Reusable Pattern**: Для финальной проверки зафиксировать source, отделять Ready/compile от HTTP/RSC/UI, не проводить архитектурную переделку без доказательства.
+
+### Missing Blog relation read policy
+
+- **Occurrences**: 2
+- **Stage**: Implement / browser acceptance
+- **Symptom**: Blog index и Category дают 500 при новом saved relation reader.
+- **Root Cause**: В исходной локальной конфигурации отсутствуют точные list GET permissions, хотя count и остальные Blog relations public.
+- **Fix**: Operator SDK missing-only create для widgets-to-categories и categories-to-website-builder-module-widgets после Role binding/private isolation проверки; оба anonymous GET 200.
+- **Reusable Pattern**: До browser acceptance проверить все 7 Blog relations list/count. Reproducible exact-path SDK prerequisite находится в tools/runtime/README.md; существующую role-bound policy не ослаблять.

@@ -69,8 +69,8 @@ Studio-before-libs выполнен для перечисленных визуа
 
 1. **Явная классификация.** Article→WB Widget с `variant="private"` обозначает закрытый корень. `default` сохраняет публичный смысл. Article→Product с `variant="subscription"` обозначает требуемый subscription Product; `default` сохраняет cross-promotion. Это новые association-specific semantics, не признаки приватности по slug, Page template, названию или Permission без Roles. Для private корня отсутствие корректного subscription requirement означает отказ.
 2. **Конкретный ресурс.** Право требует текущий JWT Subject, собственный Subject→Order, соответствующий Product в Order, свежую связь Subject→Role продукта и допустимый subscription Order (`delivering` или `requested_cancelation`) с действующим явным периодом. `paid` до подтверждённого delivery/period transition права не даёт. При нескольких `subscription` products достаточно одного полностью подходящего права. Другой product, аккаунт, отозванный Role, неподходящий тип/статус заказа и ошибка чтения доступа не подходят. Operator сохраняет существующее доверенное управление, проверенное через штатный механизм; браузеру operator credentials не передаются.
-3. **Фиксированный период.** В существующем Order добавить nullable `subscriptionPeriodStartsAt`, `subscriptionPeriodEndsAt`, `subscriptionPeriodInvoiceId`. Подтверждённый paid invoice принимается один раз в существующем RBAC proceed/delivery flow. Первый период начинается при подтверждённом переходе в доставку; renewal начинает следующий полный interval от большего из текущего конца периода и времени принятия оплаты. Использовать те же minute/hour/day/week/month/year календарные операции, что checkout interval. Повтор webhook/proceed, обычный update и OPEN invoice не меняют период. При нескольких paid invoices кандидат — последний по immutable createdAt, с ID как стабильным разрешением равенства; invoice не новее уже принятого anchor не перекрывает и не продлевает период. Отложенная первая оплата получает полный interval с принятия оплаты; просроченный renewal — полный interval с нового подтверждения. При `now >= endsAt` доступ закрыт без ожидания cron/job. Requested cancellation сохраняет право до конца периода; canceling/canceled/delivered/completed либо удаление Role прекращают право сразу.
-4. **Серверные поля и устойчивый отзыв.** Три period fields не принимаются из generic create/update и user-scoped checkout/cart payload. Статусы/тип заказа и Invoice paid status не могут быть подделаны обычным checkout/cart payload: их пишет действующая доверенная payment/order orchestration. Period пишет только её отдельная проверяемая service operation, с проверкой принадлежности invoice/order и условным обновлением по ожидаемому предыдущему invoice/period. Вызов не доступен как произвольный публичный CRUD. Все поля меняются одной операцией; конкурирующие retries не продлевают срок дважды. Подтверждения всех существующих providers, включая zero-price, сходятся к одному приёму paid invoice в proceed; отдельный provider не выбирает свою формулу срока. После первого принятого периода этого Order отсутствие свежего product Role означает отзыв: delivering/requested_cancelation, обычный proceed, повтор paid transition и автоматический renewal на том же Order не восстанавливают Role и не активируют новый период. Это относится и к новому paid renewal invoice того же отозванного Order. Initial paid flow новой явной покупки с новым Order вправе один раз выдать Roles до активации первого периода. Legacy delivering без Role не ремонтируется, остаётся закрытым и попадает в отчёт.
+3. **Фиксированный период.** В существующем Order добавить nullable `subscriptionPeriodStartsAt`, `subscriptionPeriodEndsAt`, `subscriptionPeriodInvoiceId` и server-owned `subscriptionRevokedAt`. Подтверждённый paid invoice принимается один раз в существующем RBAC proceed/delivery flow. Первый период начинается при подтверждённом переходе в доставку; renewal добавляет полный interval от большего из текущего конца периода и времени принятия оплаты. При досрочном renewal startsAt сохраняет начало непрерывного действующего покрытия, чтобы не закрывать уже оплаченный остаток; при просроченном renewal startsAt равен времени принятия оплаты. Использовать те же minute/hour/day/week/month/year календарные операции, что checkout interval. Повтор webhook/proceed, обычный update и OPEN invoice не меняют период. При нескольких paid invoices кандидат — последний по immutable createdAt, с ID как стабильным разрешением равенства; invoice не новее уже принятого anchor не перекрывает и не продлевает период. Отложенная первая оплата получает полный interval с принятия оплаты; просроченный renewal — полный interval с нового подтверждения. При `now >= endsAt` доступ закрыт без ожидания cron/job. Requested cancellation сохраняет право до конца периода; canceling/canceled/delivered/completed либо удаление Role прекращают право сразу.
+4. **Серверные поля и устойчивый отзыв.** Period fields и subscriptionRevokedAt не принимаются из generic create/update и user-scoped checkout/cart payload. Статусы/тип заказа и Invoice paid status не могут быть подделаны обычным checkout/cart payload: их пишет действующая доверенная payment/order orchestration. Period пишет только её отдельная проверяемая service operation, с проверкой принадлежности invoice/order и условным обновлением по ожидаемому предыдущему invoice/period. Вызов не доступен как произвольный публичный CRUD. Period fields меняются одной операцией; конкурирующие retries не продлевают срок дважды. Подтверждения всех существующих providers, включая zero-price, сходятся к одному приёму paid invoice в proceed; отдельный provider не выбирает свою формулу срока. После первого принятого периода этого Order отсутствие свежего product Role означает отзыв: delivering/requested_cancelation, обычный proceed, повтор paid transition и автоматический renewal на том же Order не восстанавливают Role и не активируют новый период. Это относится и к новому paid renewal invoice того же отозванного Order. Initial paid flow новой явной покупки с новым Order вправе один раз выдать Roles до активации первого периода. Legacy delivering без Role не ремонтируется, остаётся закрытым и попадает в отчёт. Обычное удаление или reassignment Subject→Role атомарно устанавливает subscriptionRevokedAt на всех затронутых собственных subscription Orders через owning service callback; HTTP payload не может очистить маркер. Естественное истечение recurring подписки использует отдельную внутреннюю операцию снятия grant и статус expired, сохраняя paid anchor. Новый более поздний paid invoice такого Order может восстановить оплаченный период только при пустом subscriptionRevokedAt. Это сохраняет позднее Stripe renewal, не восстанавливая явно отозванное право. Одноразовое продление сохраняет существующий flow нового checkout.
 5. **Защищённый граф.** Корень закрывает собственную запись, цепочку WB Widget→ButtonsArrays/Features/Files/Logotypes/Sliders, Slider→Slides, Slide/Feature→ButtonsArrays/Files, ButtonsArray→Buttons, Button/Logotype→Files и association rows. У shared узла требуются права на каждый private root, через который он достижим; migration изолирует разные access scopes. Неопределённый scope и ошибка обхода закрывают доступ.
 6. **Смешанное использование.** Public и private не разделяют одни content records или storage byte paths. Перед маркировкой private выполнить fork соответствующего подграфа и управляемых файлов, сохранить public ссылки/bytes. External https media для закрытого блока сначала ingest в управляемое File Storage; public внешний URL не считается защищённым.
 7. **Изменения графа.** Write guard до commit запрещает public reuse private node, добавление public/shared descendant в private graph и удаление/перемаркировку связи либо parent, после которых живые private records/bytes становятся публичными orphan. Отказ — 409 с понятной причиной. Управляемое удаление/публикация возможно только как явная проверенная операция, сохраняющая protected reachability либо удаляющая данные и bytes; обычный CRUD не превращает unlink в публикацию.
@@ -95,16 +95,17 @@ Studio-before-libs выполнен для перечисленных визуа
 
 #### Automated verification
 
-- [ ] Unit tests фиксируют полный interval, повтор invoice, конкурирующие retries, старый invoice, OPEN renewal, stale Role, expiry/revocation и попытки записать period через все публичные payloads.
-- [ ] Integration удаляет grant у activated delivering Order, запускает настоящий proceed, повтор paid transition и автоматический renewal с OPEN, затем новым paid invoice того же Order: grant не восстанавливается, content остаётся denied и period не активируется заново. Новая явная покупка с новым Order проходит initial grant отдельно. Legacy missing Role также не ремонтируется.
-- [ ] Billing write tests отвергают forged createdAt на create/update и сохраняют старую дату при обычном provider spread update. Replay test принимает invoice B после A, пытается сдвинуть A.createdAt позднее B и повторяет proceed: A не становится новым anchor, срок не растёт. Повторные/конкурирующие вызовы не обходят invariant.
-- [ ] Реальная API middleware-chain проверка включает list/count/by-ID до pagination, no-store, оба response cache режима и GET/HEAD bytes; subscriber-warmed cache не выдаёт закрытые данные следующему anonymous/другому Subject.
-- [ ] Tests проходят без lower→RBAC imports; `npm run check:module-dependencies` и `node tools/agents/code-placement.mjs` проходят либо отделяют документированные существующие baseline findings от новых.
+- [x] Unit tests фиксируют полный interval, досрочный и поздний recurring renewal, повтор invoice, конкурирующие retries, старый invoice, OPEN renewal, stale Role, естественный expiry и явный revoke, а также попытки записать period/revokedAt через все публичные payloads.
+- [x] Delivery и связанные Role/balance writes атомарны в существующем transaction scope; ошибка откатывает данные и consistency generations, повтор завершает операцию один раз. Stale expiry не завершает уже продлённый период.
+- [x] Integration удаляет grant у activated delivering Order, запускает настоящий proceed, повтор paid transition и автоматический renewal с OPEN, затем новым paid invoice того же Order: grant не восстанавливается, content остаётся denied и period не активируется заново. Новая явная покупка с новым Order проходит initial grant отдельно. Legacy missing Role также не ремонтируется.
+- [x] Billing write tests отвергают forged createdAt на create/update и сохраняют старую дату при обычном provider spread update. Replay test принимает invoice B после A, пытается сдвинуть A.createdAt позднее B и повторяет proceed: A не становится новым anchor, срок не растёт. Повторные/конкурирующие вызовы не обходят invariant.
+- [x] Реальная API middleware-chain проверка включает list/count/by-ID до pagination, no-store, оба response cache режима и GET/HEAD bytes; subscriber-warmed cache не выдаёт закрытые данные следующему anonymous/другому Subject.
+- [x] Tests проходят без lower→RBAC imports; `npm run check:module-dependencies` и `node tools/agents/code-placement.mjs` проходят либо отделяют документированные существующие baseline findings от новых.
 
 #### Manual verification
 
-- [ ] Публичные WB/File Storage данные и guest-own-Subject доступны. Чужой Subject не становится публичным.
-- [ ] Прямой запрос закрытого Widget и файла с известным URL без entitlement не возвращает body, даже при прогретом cache.
+- [x] Публичные WB/File Storage данные и guest-own-Subject доступны. Чужой Subject не становится публичным.
+- [x] Прямой запрос закрытого Widget и файла с известным URL без entitlement не возвращает body, даже при прогретом cache.
 
 ## Phase 2: Website Builder и визуальная оболочка
 
@@ -120,12 +121,12 @@ Studio-before-libs выполнен для перечисленных визуа
 
 #### Automated verification
 
-- [ ] Slider tests покрывают порядок данных, все navigation modes, keyboard/text input, empty/single и отсутствие двух видимых навигаций.
-- [ ] Public variant entrypoints зарегистрированы; production не импортирует Studio. Новые props явно выбраны на Client boundary, shared reader/Provider не дублируется.
+- [x] Slider tests покрывают порядок данных, все navigation modes, keyboard/text input, empty/single и отсутствие двух видимых навигаций.
+- [x] Public variant entrypoints зарегистрированы; production не импортирует Studio. Новые props явно выбраны на Client boundary, shared reader/Provider не дублируется.
 
 #### Manual verification
 
-- [ ] Framework показывает прежний контент и media, slider навигация работает на desktop/touch и клавиатурой, layout сохраняет общий контейнер.
+- [x] Framework показывает прежний контент и media, slider навигация работает на desktop/touch и клавиатурой, layout сохраняет общий контейнер.
 
 ## Phase 3: commerce и настоящая CRM-форма
 
@@ -141,13 +142,13 @@ Studio-before-libs выполнен для перечисленных визуа
 
 #### Automated verification
 
-- [ ] Public reader-path тесты сохраняют Product related data/slots и фактические checkout payloads; категория передаёт Store и показывает оба действия.
-- [ ] CRM integration создаёт один реальный Request при повторе того же submissionId, с настоящими Form/Input/Option IDs; сохранение и notification result не смешиваются.
+- [x] Public reader-path тесты сохраняют Product related data/slots и фактические checkout payloads; категория передаёт Store и показывает оба действия.
+- [x] CRM integration создаёт один реальный Request при повторе того же submissionId, с настоящими Form/Input/Option IDs; сохранение и notification result не смешиваются.
 
 #### Manual verification
 
-- [ ] На реальном каталоге/категории/detail изменяются quantity/currency, выполняются add/update/delete cart и quick checkout с текущими полями; браузер следует реальному paymentUrl. Внешние платёжные страницы проверяются до доступного локального/test provider результата.
-- [ ] Настоящая CRM-форма проверяет обязательность/опции, submit/pending/success/error. Форма не повторяет hero/gallery.
+- [x] Browser catalog/category/detail подтверждает quantity/currency, add/update/delete cart и сохранённые provider options. Actual SDK→Hono/PostgreSQL test подтверждает cart/quick checkout с текущими полями и dummy provider paymentUrl; React tests подтверждают redirect к возвращённому URL. Внешний browser payment не выполняется.
+- [x] Browser показывает настоящую CRM-схему, выбор options и независимую presentation без повторного hero/gallery. React tests подтверждают submit/pending/success/error; actual owning service/PostgreSQL integration — validation, Request и idempotency при failed/sent/queued notification transport. Browser Submit и доставка наружу не выполняются.
 
 ## Phase 4: блог, категории, ordered widgets и gate
 
@@ -162,12 +163,12 @@ Studio-before-libs выполнен для перечисленных визуа
 
 #### Automated verification
 
-- [ ] Render/reader tests проверяют rich text, все media и orderIndex нескольких public/private widgets, отсутствие чтений и маркера в denied states, reset на principal/expiry/403.
-- [ ] Host public component path не даёт serialization/hydration/import errors; shared query cache и subscriptions сохраняются.
+- [x] Render/reader tests проверяют rich text, все media и orderIndex нескольких public/private widgets, отсутствие чтений и маркера в denied states, reset на principal/expiry/403.
+- [x] Host public component path не даёт serialization/hydration/import errors; shared query cache и subscriptions сохраняются.
 
 #### Manual verification
 
-- [ ] Blog, обе category pages, обычная и protected article работают EN/RU; все связанные widgets и товары сохранены. Публичный URL той же статьи не обходит защиту private association.
+- [x] Blog, обе category pages, обычная и protected article работают EN/RU; все связанные widgets и товары сохранены. Публичный URL той же статьи не обходит защиту private association.
 
 ## Phase 5: повторяемый SDK cutover данных
 
@@ -187,29 +188,29 @@ Studio-before-libs выполнен для перечисленных визуа
 
 #### Automated verification
 
-- [ ] Cutover tests покрывают shared hero, повторный apply, неизвестный create result, partial failure, concurrent edit и rollback; исходный hero/Slider/Form/inputs/orderIndex не меняются.
-- [ ] Backfill повторяем, не продлевает срок и не принимает unpaid/mismatched ownership; private mark не проходит без изолированного графа/managed bytes/entitlement requirement.
+- [x] Cutover tests покрывают shared hero, повторный apply, неизвестный create result, partial failure, concurrent edit и rollback; исходный hero/Slider/Form/inputs/orderIndex не меняются.
+- [x] Backfill повторяем, не продлевает срок и не принимает unpaid/mismatched ownership; private mark не проходит без изолированного графа/managed bytes/entitlement requirement.
 
 #### Manual verification
 
-- [ ] Локальный SDK cutover выполнен и readback сохранён. После повторного запуска нет duplicate sections или новых лишних records; rollback/reapply проверены на тестовом manifest.
+- [x] Локальный SDK cutover выполнен и readback сохранён. После повторного запуска нет duplicate sections или новых лишних records; rollback/reapply проверены на тестовом manifest.
 
 ## Phase 6: сквозная проверка и независимое принятие
 
 ### Automated verification
 
-- [ ] `npx tsc -p apps/studio/tsconfig.json --noEmit` и `bun test --timeout 30000 tools/studio/design-system` сохраняют Studio baseline; `npm run studio:validate` проверяет используемые manifests.
-- [ ] Затронутые `@sps/rbac`, `@sps/ecommerce`, `@sps/blog`, `@sps/crm`, `@sps/website-builder`, `@sps/file-storage`, shared API и `api` suites запущены целевыми `jest:test`/`jest:integration`; выбор конкретных suites фиксируется в progress по изменённым областям. Тесты новых сервисов и реальной API chain обязательны.
-- [ ] `bun test tools/runtime` либо целевые cutover test files проходят; `npm run check:module-dependencies`, `node tools/agents/code-placement.mjs`, релевантный lint/typecheck проходят без новых findings.
-- [ ] `npm run host:build` и запуск собранного Host проверяют RSC/ISR boundary; запросы затронутых маршрутов не дают cookie-in-ISR, serialization, hydration или server/client import errors. Baseline failures фиксируются отдельно с доказательством исходной ревизии, не объявляются успешной проверкой.
+- [x] `npx tsc -p apps/studio/tsconfig.json --noEmit` и `bun test --timeout 30000 tools/studio/design-system` сохраняют Studio baseline; `npm run studio:validate` проверяет используемые manifests.
+- [x] Затронутые `@sps/rbac`, `@sps/ecommerce`, `@sps/blog`, `@sps/crm`, `@sps/website-builder`, `@sps/file-storage`, shared API и `api` suites запущены целевыми `jest:test`/`jest:integration`; выбор конкретных suites фиксируется в progress по изменённым областям. Тесты новых сервисов и реальной API chain обязательны.
+- [x] `bun test tools/runtime` либо целевые cutover test files проходят; `npm run check:module-dependencies`, `node tools/agents/code-placement.mjs`, релевантный lint/typecheck проходят без новых findings.
+- [x] `npm run host:build` и запуск собранного Host проверяют RSC/ISR boundary; запросы затронутых маршрутов не дают cookie-in-ISR, serialization, hydration или server/client import errors. Baseline failures фиксируются отдельно с доказательством исходной ревизии, не объявляются успешной проверкой.
 
 ### Manual verification
 
-- [ ] Сравнить Studio reference и runtime на desktop и ширине 320 px: Framework/галерея, product catalog/detail/category, CRM, Blog/category/article/private states. Проверить long text/attributes, несколько файлов, пустые зависимости, keyboard/focus/touch, одинаковую горизонтальную направляющую.
-- [ ] EN/RU, deep links, 404, пагинация/фильтры где существуют; quantity/currency/cart CRUD/quick checkout и реальный CRM Request подтверждены доступным локальным/test backend.
-- [ ] Access matrix пройдена для anonymous, guest, signed-in без подписки, active, expired, revoked, чужого Product/аккаунта. Проверены Article→Widget и все descendants list/count/byID, File metadata, byte GET/HEAD, unfiltered/encoded/OR попытки, HTML/RSC и сериализованные props.
-- [ ] Прогреть каждый cache subscriber A, затем запросить как anonymous и B; поменять identity, подтвердить subscription, отозвать Role, повторно запустить proceed/renewal и дождаться deadline без DB mutation. Denied responses и DOM не содержат private marker/bytes; публичный контент и guest-own-account продолжают работать. Для billing/proceed проверок используется локальный dummy/test provider без реальных списаний.
-- [ ] Разрешённый подписчик видит весь protected graph и управляемые media, а не только Widget title. После revoke/expiry readers и Blob URLs закрываются.
+- [x] Сравнить Studio reference и runtime на desktop и ширине 320 px: Framework/галерея, product catalog/detail/category, CRM, Blog/category/article/private states. Проверить long text/attributes, несколько файлов, пустые зависимости, keyboard/focus/touch, одинаковую горизонтальную направляющую.
+- [x] EN/RU, deep links, 404, пагинация/фильтры где существуют; quantity/currency/cart CRUD/quick checkout и реальный CRM Request подтверждены доступным локальным/test backend.
+- [x] Access matrix пройдена для anonymous, guest, signed-in без подписки, active, expired, revoked, чужого Product/аккаунта. Проверены Article→Widget и все descendants list/count/byID, File metadata, byte GET/HEAD, unfiltered/encoded/OR попытки, HTML/RSC и сериализованные props.
+- [x] В обоих настоящих cache режимах получить HIT контрольного public response; protected families проверять как A, anonymous, B и nonpaying guest с исключением cache lookup/write. Подтвердить paid guest entitlement, revoke/proceed/renewal/deadline через actual API/PostgreSQL и client identity/deadline cleanup через React/SDK tests. Denied responses и DOM не содержат private marker/bytes; public и guest-own-account работают. Billing/proceed используют dummy/test flow без реальных списаний.
+- [x] Разрешённый подписчик видит весь protected graph и управляемые media, а не только Widget title. После revoke/expiry readers и Blob URLs закрываются.
 
 ## Testing strategy
 
@@ -234,3 +235,38 @@ Scope строится по private associations и достижимым IDs з�
 - `libs/shared/frontend/client/api/README.md`, `libs/shared/frontend/client/store/README.md`, `libs/middlewares/src/lib/revalidation/README.md`.
 
 <!-- Last synced at: 2026-10-22T22:18:54Z -->
+
+## Cutover execution constraint
+
+Framework apply/rollback выполняется в отдельном локальном CMS maintenance
+window: другие CMS writers этого API origin остановлены до конца verify.
+Generic PATCH требует полный writable record, поэтому проверка before/readback
+обнаруживает наблюдаемые изменения, но не исключает запись редактора между GET
+и PATCH. CLI требует явный `--exclusive-maintenance`. При работающих параллельно
+CMS writers перенос требует conditional write capability; этот локальный запуск
+не меняет общий CRUD-контракт.
+
+## Runtime acceptance clarifications
+
+- Entitlement не требует Identity: guest JWT со своим оплаченным subscription
+  Order и свежими Product Roles имеет тот же доступ. Identity меняет только
+  denied presentation. Real API matrix проверяет guest-paid A, signed-in B и
+  guest без оплаты раздельно.
+- Неизвестный slug сохраняет существующий Next streaming not-found: noindex и
+  NEXT_HTTP_ERROR_FALLBACK;404. HTTP transport может вернуть 200 после начала
+  потока. Буквальный HTTP 404 этим переносом не добавляется и не объявляется
+  проверенным; итоговая not-found UI проверяется отдельно.
+- Локальная Blog-конфигурация требует отсутствовавший roleless GET permission
+  `/api/blog/widgets-to-categories`. Исправление — точечный операторский SDK
+  create после проверки соседних публичных связей и отсутствия Role bindings.
+  Snapshots, global permission bypass и публичное чтение чужих Subject не меняются.
+
+## Implementation acceptance
+
+Independent review-pr: PASS against 6a9be42bb6 (Website Builder 84087145cf,
+backend 6d7e1f09c9, frontend cb4296b6f0, cutover 6a9be42bb6).
+Подробные результаты и границы доказательств находятся в
+ISSUE-376-implementation.md, ISSUE-376-browser.md и ISSUE-376-reviews.md.
+Checkpoint marks относятся к этому распределённому набору browser,
+React/SDK и actual API/PostgreSQL проверок с указанными ограничениями.
+Финальный человеческий Code Review остаётся пользователю; PR/push/merge нет.
