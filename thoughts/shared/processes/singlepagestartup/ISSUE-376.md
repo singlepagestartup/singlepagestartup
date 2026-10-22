@@ -18,10 +18,10 @@ current_phase: plan
 
 - Create: completed
 - Research: completed
-- Plan: in_progress
+- Plan: completed
 - Implement: not_started
 - Current phase: plan
-- Next step: Завершить core-20-plan, пройти независимый review-pr плана, при PASS перейти Ready for Dev.
+- Next step: Перейти Ready for Dev → In Dev и выполнить утверждённый план; финальный Code Review остаётся пользователю.
 
 ## Phase Notes
 
@@ -41,9 +41,9 @@ current_phase: plan
 
 ### Plan
 
-- Summary: В работе. Автор — агент planner с core-20-plan; проверка — phase_reviewer с review-pr, независимо от автора.
-- Outputs:
-- Notes:
+- Summary: План из шести фаз подготовлен. Автор — агент planner с core-20-plan; проверка — phase_reviewer с review-pr, независимо от автора. Явные association semantics, фиксированный subscription period, scoped content API, защищённые bytes и SDK cutover определены без открытых вопросов.
+- Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-376.md`; summary в issue.
+- Notes: Пользователь делегирует промежуточные подтверждения, поэтому проверка плана выполняется независимым агентом вместо повторного запроса согласия. Первый review требует доработки: delivering не должен восстанавливать отозванную роль, Invoice.createdAt должен быть неизменяемым для порядка paid invoice. План возвращён Plan in Progress, исправлен автором и повторно принят phase_reviewer: PASS. Runtime-реализация этим review не подтверждается.
 
 ### Implement
 
