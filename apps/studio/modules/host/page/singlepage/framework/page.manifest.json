@@ -1,0 +1,50 @@
+{
+  "id": "framework",
+  "title": "Host Page / framework",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Framework page composed from public Studio model and widget entries.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.content-default",
+      "path": "../../../../website-builder/widget/singlepage/content-default"
+    },
+    {
+      "id": "website-builder.slider.default",
+      "path": "../../../../website-builder/slider/singlepage/default"
+    },
+    {
+      "id": "ecommerce.widget.product-find-card",
+      "path": "../../../../ecommerce/widget/singlepage/product-find-card"
+    },
+    {
+      "id": "crm.form.default",
+      "path": "../../../../crm/form/singlepage/default"
+    },
+    {
+      "id": "ecommerce.widget.category-find-card",
+      "path": "../../../../ecommerce/widget/singlepage/category-find-card"
+    },
+    {
+      "id": "website-builder.widget.content-feature-find-row",
+      "path": "../../../../website-builder/widget/singlepage/content-feature-find-row"
+    },
+    {
+      "id": "rbac.subject.me-crm-module-form-default",
+      "path": "../../../../rbac/subject/singlepage/me-crm-module-form-default"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "framework",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

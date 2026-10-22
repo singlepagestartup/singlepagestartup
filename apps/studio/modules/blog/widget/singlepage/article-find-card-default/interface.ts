@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { CategoryButtonDefaultProps } from "../../../category/index";
 
 export const variant = "article-find-card-default";
@@ -8,6 +9,8 @@ export interface ArticleFindCardDefaultArticle {
   slug: string;
   title: string;
   excerpt: string;
+  excerptContent?: ReactNode;
+  media?: { id: string; src: string; alt: string }[];
   coverImage: string;
   category: string;
   date: string;
@@ -19,6 +22,9 @@ export interface ArticleFindCardDefaultArticle {
 }
 
 export type ArticleFindCardDefaultProps = {
+  embedded?: boolean;
+  title?: string;
+  description?: ReactNode;
   categories: BlogCategoryTab[];
   articles: ArticleFindCardDefaultArticle[];
 };

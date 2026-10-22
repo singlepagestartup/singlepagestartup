@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "blog.article.private-content-default",
+  "title": "Blog Article / private-content-default",
+  "description": "Framework presentation with explicit content and composition slots.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "article",
+    "variant": "private-content-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "blog.article",
+    "pageName": "blog",
+    "variantName": "private-content-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

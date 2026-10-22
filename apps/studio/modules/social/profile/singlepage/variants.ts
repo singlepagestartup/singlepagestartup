@@ -14,7 +14,6 @@ import { Component as FindRow } from "./find-row/index";
 import { Component as IdAiChatProject } from "./id/ai-chat/project/index";
 import { Component as KnowledgeModuleSourceListDocumentAiChat } from "./knowledge-module/source/list/document/ai-chat/index";
 import { Component as KnowledgeModuleSourceListSidebarAiChat } from "./knowledge-module/source/list/sidebar/ai-chat/index";
-import { Component as List } from "./list/index";
 import { Component as OverviewDefault } from "./overview/default/index";
 import { Component as ScopeAiChatProject } from "./scope/ai-chat/project/index";
 import { Component as SelectAiChatProject } from "./select/ai-chat/project/index";
@@ -41,7 +40,6 @@ export const variants = {
     KnowledgeModuleSourceListDocumentAiChat,
   "knowledge-module-source-list-sidebar-ai-chat":
     KnowledgeModuleSourceListSidebarAiChat,
-  list: List,
   "overview-default": OverviewDefault,
   "scope-ai-chat-project": ScopeAiChatProject,
   "select-ai-chat-project": SelectAiChatProject,

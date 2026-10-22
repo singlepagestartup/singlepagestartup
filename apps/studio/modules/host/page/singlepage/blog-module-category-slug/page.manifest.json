@@ -1,0 +1,30 @@
+{
+  "id": "blog-module-category-slug",
+  "title": "Host Page / blog-module-category-slug",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Framework page composed from public Studio model and widget entries.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "blog.widget.category-overview-default",
+      "path": "../../../../blog/widget/singlepage/category-overview-default"
+    },
+    {
+      "id": "blog.category.overview-default",
+      "path": "../../../../blog/category/singlepage/overview-default"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "blog-module-category-slug",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

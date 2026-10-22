@@ -5,6 +5,9 @@ import { Component as ArticleFindCardDefault } from "./article-find-card-default
 import { Component as ArticleFindDefault } from "./article-find-default/index";
 import { Component as ArticleFindFeatured } from "./article-find-featured/index";
 import { Component as ArticleOverviewDefault } from "./article-overview-default/index";
+import { Component as ArticleOverviewWithPrivateContentDefault } from "./article-overview-with-private-content-default/index";
+import { Component as CategoryFindCard } from "./category-find-card/index";
+import { Component as CategoryOverviewDefault } from "./category-overview-default/index";
 import { Component as List } from "./list/index";
 import { Component as TagFindButton } from "./tag-find-button/index";
 
@@ -16,6 +19,10 @@ export const variants = {
   "article-find-default": ArticleFindDefault,
   "article-find-featured": ArticleFindFeatured,
   "article-overview-default": ArticleOverviewDefault,
+  "article-overview-with-private-content-default":
+    ArticleOverviewWithPrivateContentDefault,
+  "category-find-card": CategoryFindCard,
+  "category-overview-default": CategoryOverviewDefault,
   list: List,
   "tag-find-button": TagFindButton,
 };

@@ -28,7 +28,7 @@ export function BlogFindArticleCard({
 }: IComponentProps = {}) {
   return (
     <div data-module="host" data-model="page" data-variant={variant}>
-      <Layout variant="website" footer="compact">
+      <Layout variant="website" activeHref="/blog" footer="compact">
         <main
           className="min-w-0"
           data-ds-page="host.page.blog-module-article-find"
@@ -41,7 +41,12 @@ export function BlogFindArticleCard({
               title="Insights, Guides & Updates"
               description="Tutorials, engineering deep-dives, case studies, and product announcements from the team."
             />
-            <BlogModuleWidget variant="article-find-featured" compact />
+            <BlogModuleWidget variant="category-find-card" />
+            <BlogModuleWidget
+              variant="article-find-featured"
+              compact
+              title="Popular articles"
+            />
             <BlogModuleWidget variant="article-find-card-default" />
             <BlogModuleWidget variant="tag-find-button" />
           </SectionStack>

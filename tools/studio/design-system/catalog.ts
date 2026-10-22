@@ -595,7 +595,11 @@ export function scaffoldEntity(root: string, entity: ModuleEntityRecord) {
   const existing = variantAliases(
     path.join(directory, "singlepage/variants.ts"),
   );
-  for (const variant of ["admin-v2-table", "admin-v2-card", "list"].filter(
+  const projections =
+    entity.entity === "widget"
+      ? ["admin-v2-table", "admin-v2-card", "list"]
+      : ["admin-v2-table", "admin-v2-card"];
+  for (const variant of projections.filter(
     (variant) => !existing.has(variant) || existing.get(variant) === variant,
   )) {
     const folder = path.join(directory, "singlepage", variant);

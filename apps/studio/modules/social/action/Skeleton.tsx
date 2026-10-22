@@ -8,7 +8,9 @@ export function Skeleton({
   const form = /(?:form|create|update|settings|authentication|checkout)/.test(
     variant ?? "",
   );
-  const image = /(?:avatar|image|cover|asset|preview)/.test(variant ?? "");
+  const image = /(?:avatar|image|cover|asset|preview|card|gallery)/.test(
+    variant ?? "",
+  );
   const conversation =
     false && /ai-chat/.test(variant ?? "") && !table && !form;
   const project =
@@ -46,7 +48,11 @@ export function Skeleton({
       }
     >
       <span className="sr-only">Loading action…</span>
-      <div aria-hidden="true" className="space-y-4">
+      <div
+        aria-hidden="true"
+        data-skeleton-entity="single"
+        className="space-y-4"
+      >
         <div className="h-5 w-2/5 rounded bg-muted motion-safe:animate-pulse" />
         {project ? (
           <div className="grid min-h-96 gap-5 lg:grid-cols-[210px_minmax(0,1fr)]">
@@ -88,21 +94,18 @@ export function Skeleton({
             </div>
           </div>
         ) : image || media ? (
-          <div className="aspect-square w-full max-w-xs rounded-xl bg-muted motion-safe:animate-pulse" />
+          <div className="space-y-4">
+            <div className="aspect-square w-full rounded-xl bg-muted motion-safe:animate-pulse" />
+            <div className="h-6 w-3/4 rounded bg-muted motion-safe:animate-pulse" />
+            <div className="h-4 w-full rounded bg-muted motion-safe:animate-pulse" />
+            <div className="h-4 w-2/3 rounded bg-muted motion-safe:animate-pulse" />
+          </div>
         ) : (
-          <div
-            className={
-              table ? "divide-y divide-border" : "grid gap-4 sm:grid-cols-2"
-            }
-          >
-            {Array.from({ length: count }, (_, index) => (
+          <div className={table ? "divide-y divide-border" : "space-y-4"}>
+            {Array.from({ length: table || form ? count : 1 }, (_, index) => (
               <div
                 key={index}
-                className={
-                  table
-                    ? "flex items-center gap-4 py-3"
-                    : "space-y-3 rounded-lg border border-border p-4"
-                }
+                className={table ? "flex items-center gap-4 py-3" : "space-y-3"}
               >
                 <div
                   className={

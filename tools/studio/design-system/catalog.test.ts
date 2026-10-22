@@ -295,16 +295,32 @@ test("scaffolding preserves authored data and UI and skips relations and Telegra
   expect(readFileSync(path.join(table, "Component.tsx"), "utf8")).toContain(
     "Owned records",
   );
+  expect(existsSync(path.join(table, "../list"))).toBe(false);
+  const widgetEntity = { ...entity, entity: "widget" };
+  const widgetNative = path.join(
+    directory,
+    "libs/modules",
+    entity.module,
+    "models/widget/backend/repository/database/src/lib",
+  );
+  mkdirSync(widgetNative, { recursive: true });
+  writeFileSync(
+    path.join(widgetNative, "schema.ts"),
+    readFileSync(path.join(native, "schema.ts"), "utf8"),
+  );
+  scaffoldEntity(directory, widgetEntity);
   const listStory = readFileSync(
-    path.join(table, "../list/Component.stories.tsx"),
+    path.join(
+      directory,
+      "apps/studio/modules",
+      entity.module,
+      "widget/singlepage/list/Component.stories.tsx",
+    ),
     "utf8",
   );
   expect(listStory).toContain("count: { control:");
   expect(listStory).toContain(
-    'title: "Modules/Analytic/Metric/Singlepage/list"',
-  );
-  expect(listStory).toContain(
-    'id: "modules-analytic-models-metric-singlepage-list"',
+    'title: "Modules/Analytic/Widget/Singlepage/list"',
   );
   const model = path.dirname(path.dirname(table));
   const own = path.join(model, "singlepage/owned-list");
@@ -313,7 +329,7 @@ test("scaffolding preserves authored data and UI and skips relations and Telegra
     path.join(own, "Component.tsx"),
     "export function Component() { return <p>Owned list</p>; }",
   );
-  rmSync(path.join(model, "singlepage/list"), { recursive: true });
+  rmSync(path.join(model, "singlepage/list"), { recursive: true, force: true });
   writeFileSync(
     path.join(own, "interface.ts"),
     'export const variant = "list"; export interface IComponentProps { variant?: typeof variant }',

@@ -104,16 +104,19 @@ entry. `studio:catalog` preserves authored contracts and requires an owning
 interface before assembling custom variants. Its generated table, card and list
 views use the same structure.
 
-The current tree has 63 model entries and 430 presentation variants, plus the
-shared Icon and Toast entries. Every model exports a provider-free `Skeleton` and
-`ISkeletonProps` from its public index, with a `Loading` story. The skeleton uses
-the selected variant to distinguish list/table, form and image layouts. Source
-editors, Profile project frames and Chat/Thread conversations have their own
-loading compositions and stories; the RBAC chat workspace retains its dedicated
-frame. Loading previews need no model data
-or API. When transferring a view to production, pass a rendered node through the
-existing template parameter: `Skeleton={<Skeleton ... />}`. Both server Suspense
-and client pending reads use that node.
+Each model exports a provider-free `Skeleton` and `ISkeletonProps` from its
+public entry, with a `Loading` story. A public model preview shows one entity;
+its related images, fields, messages or other dependencies may repeat within it.
+Collection widgets compose a grid of those individual model skeletons and expose
+a `Loading` story beside the collection. Product, Article and Category loading
+previews use one card. Their Widget collections own grid loading. Explicit admin
+tables and forms retain their own layouts.
+
+Source editors, Profile project frames, Chat/Thread conversations and the RBAC
+chat workspace retain their dedicated loading compositions. Loading previews
+need no API. When transferring a view to production, pass the rendered node
+through the existing template parameter: `Skeleton={<Skeleton ... />}`. Server
+Suspense and client pending reads use that node.
 
 Static glyphs live in `modules/shared/icon`, independently of Website Builder
 Feature records. Use its public entry with `variant="phosphor"` and one of the
@@ -136,11 +139,47 @@ states within that variant. Bidirectional compositions use ReactNode slots:
 Host supplies an author's Article list; Blog Widget supplies the Article tags
 card. This keeps model entry imports acyclic.
 
-The catalog provides `admin-v2-table`, `admin-v2-card` and `list`. Tables expose
-`empty`; lists expose `empty` and `count` through Storybook Controls. List stories
-include Default, Empty and Many (20 cards). Repeated cards use one local example.
-Custom model variants retain their own props and interactive states. Studio
-composes its own models and fixtures without production SDKs, providers or an API.
+The catalog provides `admin-v2-table` and `admin-v2-card`. It generates the generic
+`list` projection only for Widgets. A Product, Article or Category model has a
+single-record public view; its public list belongs to its domain Widget. Dedicated
+admin variants retain their existing management operations. Tables expose `empty`;
+generic Widget lists expose `empty` and `count`, with Default, Empty and Many
+stories. Studio composes local models and fixtures without production SDKs,
+providers or an API.
+
+## Framework examples
+
+`Host/Page/Singlepage/framework` combines the description, slider, full product
+cards, contact form and product categories. Category models in Ecommerce and Blog
+provide `card` and `overview-default`; their Widgets own `category-find-card` and
+`category-overview-default`. The Host category pages compose those Widgets.
+
+Product cards accept multiple linked categories and attached images. The product
+catalog passes attributes, configuration, currencies and payment choices into
+those cards. Product details accept rich description content, category links and
+explicit gallery images; the purchase section reuses the card controls.
+
+Article cards accept formatted preview content and attached images. Article
+`detail` accepts an ordered rendered `widgets` slot. Blog Widget
+`article-overview-with-private-content-default` composes a public introduction,
+a public widget and Article `private-content-default`. Its stories cover guest,
+locked, expired, granted, checking and error states. The owning production Widget
+must resolve access and supply protected data only when allowed; these stories
+preview the presentation and do not enforce API access.
+
+The CRM Form `Framework` story contains Name, Email and the interest select.
+The Framework page uses the existing `content-feature-find-row` contact section
+with `Subject/me-crm-module-form-default` in its form slot, matching the homepage
+composition. Both category pages use embedded collections so the page header,
+description and collection share one container and one horizontal gutter.
+
+The Website Builder Slide `default` shows one slide. Slider `default` exposes
+Arrows, Numbers and Dots stories through its `navigation` prop. Each mode shows
+one navigation pattern. Arrow controls sit on the slide, appear on hover or
+keyboard focus and stay visible on touch devices. Number and dot navigation sit
+below the slide. Slide position remains available to screen readers without a
+second visible counter. The Product gallery keeps thumbnails below the image
+and arrow controls on the image.
 
 Studio shares three exact UI-only public entries with production:
 `@sps/shared-frontend-client-utils/chat-scroll`,
@@ -491,6 +530,27 @@ Workspace’s AI Chat website prototype lives in
 `workspace/products/singlepage/ai-chat/website/Preview/`. Its component snapshot,
 fixtures and state are editable Workspace files. It uses Workspace tokens and
 assets; changes to Module variants do not replace this snapshot.
+
+## Ecommerce product card
+
+`Modules/Ecommerce/Product/Singlepage/card` contains a local purchase prototype.
+The default service card supports expandable attributes, configurable options,
+USD/EUR/RUB prices, quantity, cart feedback and inline quick checkout with
+currency-specific payment methods, email and an optional note. Prices are fixture
+values; currency selection does not use exchange rates. Checkout produces an order
+preview without creating an order or taking a payment.
+
+Stories cover quick checkout, twelve attributes, a subscription, a physical
+product, unavailable products, missing payment methods, cart errors and a catalog.
+The Icons story displays the shared Phosphor glyphs used by the card.
+
+The server-compatible `Component.tsx` passes explicit presentation props to
+`ClientComponent.tsx`, which owns local selection and form state. `onAddToCart`
+receives product ID, quantity, currency ID and selected option IDs. `onCheckout`
+also receives payment provider ID, email and comment. When porting this design to
+Framework, the owning domain Widget supplies SDK data and mutations through these
+inputs and callbacks. Existing catalog callers that pass only `priceLabel` retain
+the detail-link footer; structured `prices` enable the purchase controls.
 
 ## Host model previews
 

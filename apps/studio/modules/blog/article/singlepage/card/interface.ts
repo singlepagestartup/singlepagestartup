@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 export const variant = "card";
 
 export type ArticleCardProps = {
@@ -8,6 +9,8 @@ export type ArticleCardProps = {
   date: string;
   title: string;
   excerpt: string;
+  excerptContent?: ReactNode;
+  media?: { id: string; src: string; alt: string }[];
   authorName: string;
   authorAvatar: string;
   authorSlug: string;

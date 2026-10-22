@@ -1,0 +1,21 @@
+{
+  "componentName": "blog.widget",
+  "pageName": "blog",
+  "variantName": "category-find-card",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "blog.widget.category-find-card",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "blog/widget/singlepage/category-find-card",
+    "sps.figma.component": "blog.widget",
+    "sps.figma.variant": "category-find-card",
+    "sps.source.module": "blog",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "category-find-card",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/blog/widget/singlepage/category-find-card/Component.tsx",
+    "sps.code.story": "apps/studio/modules/blog/widget/singlepage/category-find-card/Component.stories.tsx"
+  }
+}

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 export const variant = "content-default";
 
 export interface ContentDefaultProps {
@@ -7,6 +8,10 @@ export interface ContentDefaultProps {
   eyebrow?: string;
   title: string;
   description?: string;
+  descriptionContent?: ReactNode;
+  media?: ReactNode;
+  children?: ReactNode;
+  actions?: { id: string; label: string; href: string }[];
   primaryAction?: {
     label: string;
     href: string;

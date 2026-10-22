@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { IComponentProps, ArticleCardProps } from "./interface";
 export type { ArticleCardProps } from "./interface";
 import { Component as SocialModuleProfile } from "../../../../social/profile/index";
@@ -7,7 +8,9 @@ import { Component as SocialModuleProfile } from "../../../../social/profile/ind
  * The footer separates the Social profile byline from reading metadata.
  */
 
-export function ArticleCard(props?: IComponentProps) {
+export const ArticleCard = memo<IComponentProps>(function ArticleCard(
+  props?: IComponentProps,
+) {
   const {
     href,
     slug,
@@ -16,6 +19,8 @@ export function ArticleCard(props?: IComponentProps) {
     date,
     title,
     excerpt,
+    excerptContent,
+    media,
     authorName,
     authorAvatar,
     readTime,
@@ -41,10 +46,7 @@ export function ArticleCard(props?: IComponentProps) {
     </div>
   );
   return (
-    <a
-      href={href ?? `/blog/articles/${slug}`}
-      target={target}
-      rel={target === "_blank" ? "noreferrer" : undefined}
+    <article
       className={`group grid h-full min-w-0 overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground motion-reduce:transition-none ${compact ? "grid-cols-[96px_minmax(0,1fr)] items-start gap-4 p-4" : "grid-rows-[auto_1fr]"} ${kit.focus}`}
       data-ds-block="blog.article.card"
       data-ds-imports="social.profile.byline"
@@ -61,14 +63,32 @@ export function ArticleCard(props?: IComponentProps) {
             <span>{date}</span>
           </div>
           <h3 className="text-2xl font-semibold leading-7 tracking-tight">
-            {title}
+            <a
+              href={href ?? `/blog/articles/${slug}`}
+              target={target}
+              rel={target === "_blank" ? "noreferrer" : undefined}
+              className="rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+            >
+              {title}
+            </a>
           </h3>
         </div>
       )}
       <div
         className={`aspect-square overflow-hidden ${compact ? "rounded-xl" : ""}`}
       >
-        <img src={coverImage} alt="" className="h-full w-full object-cover" />
+        <a
+          href={href ?? `/blog/articles/${slug}`}
+          target={target}
+          aria-label={`Read ${title}`}
+          className="block h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+        >
+          <img
+            src={media?.[0]?.src ?? coverImage}
+            alt={media?.[0]?.alt ?? ""}
+            className="h-full w-full object-cover"
+          />
+        </a>
       </div>
       <div className={`flex min-w-0 flex-col ${compact ? "" : "p-5 sm:p-6"}`}>
         {!editorial && (
@@ -80,21 +100,51 @@ export function ArticleCard(props?: IComponentProps) {
             <h3
               className={`${compact ? "text-lg leading-6" : "text-2xl leading-7"} font-semibold tracking-tight text-foreground`}
             >
-              {title}
+              <a
+                href={href ?? `/blog/articles/${slug}`}
+                target={target}
+                rel={target === "_blank" ? "noreferrer" : undefined}
+                className="rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+              >
+                {title}
+              </a>
             </h3>
           </>
         )}
-        {!compact && (
-          <p className="mb-5 mt-3 line-clamp-2 text-sm leading-[22px] text-muted-foreground">
+        {excerptContent ? (
+          <div className="mb-5 mt-3 text-sm leading-6 text-muted-foreground">
+            {excerptContent}
+          </div>
+        ) : excerpt ? (
+          <p className="mb-5 mt-3 text-sm leading-[22px] text-muted-foreground">
             {excerpt}
           </p>
-        )}
+        ) : null}
+        {media && media.length > 1 ? (
+          <div className="mb-5 flex flex-wrap gap-2">
+            {media.slice(1).map((item) => (
+              <a
+                key={item.id}
+                href={item.src}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+              >
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  className="size-16 rounded-lg object-cover"
+                />
+              </a>
+            ))}
+          </div>
+        ) : null}
         {!compact && <div className="mt-auto">{metadata}</div>}
       </div>
       {compact && <div className="col-span-2">{metadata}</div>}
-    </a>
+    </article>
   );
-}
+});
 const focus =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const buttonBase =

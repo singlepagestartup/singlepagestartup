@@ -7,7 +7,6 @@ import { Component as Card } from "./card/index";
 import { Component as CardRelated } from "./card-related/index";
 import { Component as CartDefault } from "./cart-default/index";
 import { Component as Gallery } from "./gallery/index";
-import { Component as List } from "./list/index";
 import { Component as OverviewCta } from "./overview-cta/index";
 import { Component as OverviewDefault } from "./overview-default/index";
 import { Component as OverviewPurchase } from "./overview-purchase/index";
@@ -24,7 +23,6 @@ export const variants = {
   "card-related": CardRelated,
   "cart-default": CartDefault,
   gallery: Gallery,
-  list: List,
   "overview-cta": OverviewCta,
   "overview-default": OverviewDefault,
   "overview-purchase": OverviewPurchase,

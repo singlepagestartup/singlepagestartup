@@ -51,3 +51,27 @@ export const Comparison: Story = {
     </div>
   ),
 };
+
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+export const Framework: Story = {
+  args: {
+    excerptContent: (
+      <WebsiteBuilderModuleWidget
+        variant="content-rich"
+        content="<p>A formatted <strong>article introduction</strong> with its original content.</p>"
+      />
+    ),
+    media: [
+      {
+        id: "cover",
+        src: "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
+        alt: "A project discussion",
+      },
+      {
+        id: "detail",
+        src: "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus-square.png",
+        alt: "Work in progress",
+      },
+    ],
+  },
+};

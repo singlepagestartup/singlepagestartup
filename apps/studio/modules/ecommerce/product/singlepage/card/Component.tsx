@@ -1,102 +1,120 @@
 import type { IComponentProps, ProductCardProps } from "./interface";
+import { Component as ClientComponent } from "./ClientComponent";
 export type { ProductCardProps } from "./interface";
 
-import { Component as SharedIcon } from "../../../../shared/icon";
-
-import { forwardRef, type SVGProps } from "react";
-import { twMerge as twMerge } from "tailwind-merge";
-import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
-interface IModuleIconProps extends SVGProps<SVGSVGElement> {
-  size?: number;
-}
-type IconName = keyof typeof IconGlyphs;
-function createIcon(name: IconName) {
-  const Component = forwardRef<SVGSVGElement, IModuleIconProps>(
-    function ModuleGlyph({ className, size = 20, children, ...props }, ref) {
-      return (
-        <span className="contents">
-          <Icon
-            name={name}
-            className={twMerge("h-5 w-5", className)}
-            svgProps={{ ...props, ref, width: size, height: size }}
-          />
-        </span>
-      );
-    },
-  );
-  Component.displayName = `Phosphor(${name})`;
-  return Component;
-}
-function Icon(props: {
-  name: keyof typeof IconGlyphs;
-  size?: 20 | 24;
-  className?: string;
-  svgProps?: React.SVGProps<SVGSVGElement>;
-}) {
-  return <SharedIcon {...props} variant="phosphor" />;
-}
-
-export function ProductCard(props?: IComponentProps) {
-  const {
-    slug,
-    href,
-    target,
-    image,
-    badge,
-    priceLabel,
-    title,
-    subtitle,
-    shortDescription,
-  } = { ...defaultProductCardProps, ...props };
-  const description = subtitle || shortDescription;
+export function ProductCard(props: IComponentProps = {}) {
+  const product = { ...defaultProductCardProps, ...props };
   return (
-    <a
-      href={href ?? `/ecommerce/products/${slug}`}
-      target={target}
-      rel={target === "_blank" ? "noreferrer" : undefined}
-      className="group flex h-full cursor-pointer min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card transition motion-reduce:transition-none hover:border-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
-      data-ds-block="ecommerce.product.card"
-      data-ds-layer="singlepage"
-      aria-label={`Open ${title}`}
-      data-module="ecommerce"
-      data-model="product"
-      data-variant={props?.variant ?? "card"}
-    >
-      <div className="relative aspect-square overflow-hidden bg-muted">
-        <img src={image} alt={title} className="h-full w-full object-cover" />
-        {badge ? (
-          <span className="absolute left-4 top-4 rounded-full bg-card px-3 py-1.5 text-xs font-semibold text-foreground">
-            {badge}
-          </span>
-        ) : null}
-      </div>
-      <div className="flex flex-1 flex-col gap-4 p-5 sm:p-6">
-        <h3 className="text-2xl font-semibold leading-tight text-foreground">
-          {title}
-        </h3>
-        <p className="text-sm leading-6 text-muted-foreground">{description}</p>
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
-          <span className="text-base font-semibold text-foreground">
-            {priceLabel}
-          </span>
-          <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
-            Details <ArrowUpRight className="h-5 w-5" />
-          </span>
-        </div>
-      </div>
-    </a>
+    <ClientComponent
+      key={props.id ?? product.slug}
+      variant="card"
+      id={props.id}
+      slug={product.slug}
+      href={product.href}
+      target={product.target}
+      image={product.image}
+      media={product.media}
+      categories={product.categories}
+      showMedia={product.showMedia}
+      badge={props.badge}
+      category={product.category}
+      title={product.title}
+      subtitle={product.subtitle}
+      shortDescription={product.shortDescription}
+      techStack={product.techStack}
+      priceLabel={product.priceLabel}
+      attributes={props.attributes ?? []}
+      visibleAttributeCount={product.visibleAttributeCount}
+      options={props.options ?? []}
+      prices={props.prices ?? []}
+      priceNote={props.priceNote}
+      paymentMethods={props.paymentMethods ?? []}
+      initialCurrencyId={product.initialCurrencyId}
+      initialQuantity={product.initialQuantity}
+      initialOptionValues={product.initialOptionValues}
+      initialCheckoutOpen={product.initialCheckoutOpen}
+      quantityLabel={product.quantityLabel}
+      maxQuantity={product.maxQuantity}
+      available={product.available}
+      className={product.className}
+      onAddToCart={product.onAddToCart}
+      onCheckout={product.onCheckout}
+    />
   );
 }
-const ArrowUpRight = createIcon("arrow-up-right");
+
 export const defaultProductCardProps: ProductCardProps = {
+  id: "product-website-development",
   slug: "website-development",
   image:
     "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
-  category: "development",
-  priceLabel: "from $4,999",
-  title: "Website Development",
-  subtitle: "Custom websites built for performance",
-  shortDescription:
-    "Full-cycle website development — from landing pages to complex multi-page portals with CMS integration and responsive design.",
+  badge: "Digital service",
+  category: "Development",
+  priceLabel: "$4,999",
+  title: "Website development",
+  subtitle: "A website built around your business.",
+  shortDescription: "Design, development and a CMS your team can use.",
   techStack: ["React", "Next.js", "Tailwind CSS", "TypeScript", "Vercel"],
+  attributes: [
+    { id: "delivery", label: "Delivery", value: "15–20 business days" },
+    { id: "pages", label: "Pages", value: "Up to 8 unique pages" },
+    { id: "cms", label: "Content editing", value: "CMS included" },
+    { id: "responsive", label: "Devices", value: "Desktop, tablet & mobile" },
+    { id: "handoff", label: "Handoff", value: "Source code & documentation" },
+    { id: "support", label: "Support", value: "30 days after launch" },
+  ],
+  options: [
+    {
+      id: "support",
+      label: "Support",
+      values: [
+        { id: "standard", label: "30 days included" },
+        {
+          id: "extended",
+          label: "90 days",
+          priceAdjustments: { usd: 499, eur: 459, rub: 45000 },
+        },
+      ],
+    },
+  ],
+  prices: [
+    { id: "usd", code: "USD", symbol: "$", amount: 4999 },
+    { id: "eur", code: "EUR", symbol: "€", amount: 4599 },
+    { id: "rub", code: "RUB", symbol: "₽", amount: 449900 },
+  ],
+  priceNote: "One-time payment. Selected support is included in the total.",
+  paymentMethods: [
+    {
+      id: "stripe",
+      label: "Bank card",
+      description: "Stripe",
+      icon: "credit-card",
+      currencyIds: ["usd", "eur"],
+    },
+    {
+      id: "0xprocessing",
+      label: "Crypto",
+      description: "0xProcessing",
+      icon: "wallet",
+      currencyIds: ["usd", "eur"],
+    },
+    {
+      id: "cloudpayments",
+      label: "Bank card",
+      description: "CloudPayments",
+      icon: "credit-card",
+      currencyIds: ["rub"],
+    },
+    {
+      id: "paykeeper",
+      label: "Bank payment",
+      description: "PayKeeper",
+      icon: "bank",
+      currencyIds: ["rub"],
+    },
+  ],
+  initialCurrencyId: "usd",
+  initialQuantity: 1,
+  maxQuantity: 99,
+  available: true,
 };

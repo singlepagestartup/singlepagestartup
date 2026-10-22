@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "blog.category.card",
+  "title": "Blog Category / card",
+  "description": "Framework presentation with explicit content and composition slots.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "category",
+    "variant": "card"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "blog.category",
+    "pageName": "blog",
+    "variantName": "card",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

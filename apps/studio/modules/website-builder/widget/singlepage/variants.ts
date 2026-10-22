@@ -1,7 +1,3 @@
-import { Component as ContentSocialChatDefault } from "./content/social/chat-default";
-import { Component as ContentAiChatResetPassword } from "./content/ai-chat/reset-password";
-import { Component as ContentAiChatForgotPassword } from "./content/ai-chat/forgot-password";
-import { Component as ContentAiChatRegistration } from "./content/ai-chat/registration";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Navigation } from "./admin-v2-navigation/index";
 import { Component as AdminV2RichEditor } from "./admin-v2-rich-editor/index";
@@ -22,11 +18,15 @@ import { Component as ContentRich } from "./content-rich/index";
 import { Component as ContentTestimonials } from "./content-testimonials/index";
 import { Component as ContentAiChatAuthentication } from "./content/ai-chat/authentication/index";
 import { Component as ContentAiChatContinue } from "./content/ai-chat/continue/index";
+import { Component as ContentAiChatForgotPassword } from "./content/ai-chat/forgot-password/index";
 import { Component as ContentAiChatHelp } from "./content/ai-chat/help/index";
 import { Component as ContentAiChatHero } from "./content/ai-chat/hero/index";
 import { Component as ContentAiChatMaterialsProcessing } from "./content/ai-chat/materials-processing/index";
 import { Component as ContentAiChatProfileCreate } from "./content/ai-chat/profile-create/index";
+import { Component as ContentAiChatRegistration } from "./content/ai-chat/registration/index";
+import { Component as ContentAiChatResetPassword } from "./content/ai-chat/reset-password/index";
 import { Component as ContentAiChatTry } from "./content/ai-chat/try/index";
+import { Component as ContentSocialChatDefault } from "./content/social/chat-default/index";
 import { Component as FooterCompact } from "./footer-compact/index";
 import { Component as FooterDefault } from "./footer-default/index";
 import { Component as FooterAiChat } from "./footer/ai-chat/index";
@@ -36,10 +36,6 @@ import { Component as NavbarAiChat } from "./navbar/ai-chat/index";
 import { Component as NavbarAiChatLanding } from "./navbar/ai-chat-landing/index";
 
 export const variants = {
-  "content-social-chat-default": ContentSocialChatDefault,
-  "content-ai-chat-reset-password": ContentAiChatResetPassword,
-  "content-ai-chat-forgot-password": ContentAiChatForgotPassword,
-  "content-ai-chat-registration": ContentAiChatRegistration,
   "admin-v2-card": AdminV2Card,
   "admin-v2-navigation": AdminV2Navigation,
   "admin-v2-rich-editor": AdminV2RichEditor,
@@ -60,11 +56,15 @@ export const variants = {
   "content-testimonials": ContentTestimonials,
   "content-ai-chat-authentication": ContentAiChatAuthentication,
   "content-ai-chat-continue": ContentAiChatContinue,
+  "content-ai-chat-forgot-password": ContentAiChatForgotPassword,
   "content-ai-chat-help": ContentAiChatHelp,
   "content-ai-chat-hero": ContentAiChatHero,
   "content-ai-chat-materials-processing": ContentAiChatMaterialsProcessing,
   "content-ai-chat-profile-create": ContentAiChatProfileCreate,
+  "content-ai-chat-registration": ContentAiChatRegistration,
+  "content-ai-chat-reset-password": ContentAiChatResetPassword,
   "content-ai-chat-try": ContentAiChatTry,
+  "content-social-chat-default": ContentSocialChatDefault,
   "footer-compact": FooterCompact,
   "footer-default": FooterDefault,
   "footer-ai-chat": FooterAiChat,

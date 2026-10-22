@@ -50,6 +50,7 @@ export type ArticleDetailProps = {
 } & {
   cover?: ReactNode;
   tagsCard?: ReactNode;
+  widgets?: ReactNode;
 };
 
 type IVariantInputs = NonNullable<
@@ -60,4 +61,6 @@ export interface IComponentProps extends Omit<IVariantInputs, "variant"> {
   variant?: "detail";
 }
 
-export interface IComponentPropsExtended extends IComponentProps {}
+export interface IComponentPropsExtended extends ArticleDetailProps {
+  variant?: "detail";
+}

@@ -1,0 +1,21 @@
+{
+  "componentName": "website-builder.slider",
+  "pageName": "website-builder",
+  "variantName": "default",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "website-builder.slider.default",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "website-builder/slider/singlepage/default",
+    "sps.figma.component": "website-builder.slider",
+    "sps.figma.variant": "default",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "slider",
+    "sps.source.variant": "default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/website-builder/slider/singlepage/default/Component.tsx",
+    "sps.code.story": "apps/studio/modules/website-builder/slider/singlepage/default/Component.stories.tsx"
+  }
+}

@@ -32,3 +32,6 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "default",
 };
+
+import { Skeleton } from "./Skeleton";
+export const Loading: Story = { render: () => <Skeleton /> };
