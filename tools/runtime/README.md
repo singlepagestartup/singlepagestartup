@@ -146,3 +146,158 @@ removing a compatible application version. Release in stages: make the new
 variants available alongside the old composition, transfer bindings, then
 remove the Host injection. Rollback after cleanup also restores the compatible
 application version. Repository data snapshots are not migration inputs.
+
+## Framework visual and private content
+
+`framework-widget-links.ts` prepares exact-instance contact and article changes.
+Deploy the matching Order schema, fixed-period writer, resource/byte guards,
+SDKs and frontend variants before apply. The CLI requires operator credentials,
+uses the normal server SDKs with no-store and binds its manifest to one API
+origin. Use `--allow-api-origin` for a selected HTTPS deployment as above.
+
+Input sections are optional; at least one is required:
+
+```json
+{
+  "contact": {
+    "hostLinkId": "EXACT_HOST_CRM_ASSOCIATION_ID",
+    "crmWidgetId": "d947bcab-0873-40a5-8c91-66ec59c54c3b",
+    "crmFormId": "744eb654-aac3-4aac-af93-f9fb5e290b23",
+    "crmPresentationLinkId": "2ac1155e-f1b1-421d-9962-7d6e70d3d5e6",
+    "sharedHeroWidgetId": "4e55875f-1298-4544-a61d-19af05367bef",
+    "anchor": "contact"
+  },
+  "privateArticles": [
+    {
+      "articleId": "5ade2625-007e-4c90-86bd-989a33e534fa",
+      "articleWidgetLinkIds": ["992b28da-d5a7-4e9a-a0f4-350e0c73cee3"],
+      "subscriptionProductId": "EXACT_CONFIGURED_SUBSCRIPTION_PRODUCT_ID"
+    }
+  ],
+  "freezeOrders": [
+    {
+      "subjectId": "EXACT_LEGACY_ORDER_OWNER_ID",
+      "orderId": "EXACT_LEGACY_SUBSCRIPTION_ORDER_ID",
+      "expectedUpdatedAt": "EXACT_ORDER_UPDATED_AT_FROM_SDK"
+    }
+  ]
+}
+```
+
+The UUIDs describe the researched local demo graph. Supply the actual IDs from
+the deployment being maintained, including the Host external association ID,
+subscription Product and any legacy Orders. Preparation checks exact ownership
+and existing Form links; it does not select a Product by title or variant.
+
+```sh
+npx dotenv -e apps/api/.env -- bun run --tsconfig-override ./tsconfig.base.json tools/runtime/framework-widget-links.ts prepare /absolute/input.json /absolute/new-framework-manifest.json
+npx dotenv -e apps/api/.env -- bun run --tsconfig-override ./tsconfig.base.json tools/runtime/framework-widget-links.ts apply /absolute/new-framework-manifest.json --exclusive-maintenance
+npx dotenv -e apps/api/.env -- bun run --tsconfig-override ./tsconfig.base.json tools/runtime/framework-widget-links.ts verify /absolute/new-framework-manifest.json
+npx dotenv -e apps/api/.env -- bun run --tsconfig-override ./tsconfig.base.json tools/runtime/framework-widget-links.ts rollback /absolute/new-framework-manifest.json --exclusive-maintenance
+bun test --tsconfig-override ./tsconfig.base.json tools/runtime/framework-widget-links.test.ts
+```
+
+Prepare reads the saved graph and writes a protected manifest without API
+mutations. Contact receives an independent `content-feature-find-row` frame
+using the existing localized Form copy, a functional RBAC Widget and exact
+default relations to that frame and the existing CRM Widget. Hero, slides,
+Form fields/options and their order remain unchanged. The existing CRM frame
+association keeps its ID; the active Host link switches last and an inactive
+legacy association preserves its natural key.
+
+Private preparation traverses all thirteen Website Builder relation kinds and
+uses registry metadata to check incoming relations across modules, with SDK
+pagination. Shared roots/descendants, external media and inline unmanaged media
+abort before marking anything private. First create distinct managed records
+and byte copies through the supported content/file SDK flow, relink the exact
+article association, then prepare again. This command does not clone or import
+assets. Backend write guards independently validate the prospective private
+graph when the marker is applied. Subscription Product role links must exist;
+the backend checks the actual paid ownership, period and grant at read time.
+
+Legacy period freeze uses only the operator Subject SDK
+`ecommerceModuleOrderFreezeSubscriptionPeriod` with expectedUpdatedAt. It runs
+before content writes, records readback and recovers an unknown outcome from
+the fixed start/period fields. The tool never writes period timestamps through
+generic Order CRUD. A nonmatching or unaccepted freeze stops apply.
+
+Apply rechecks private topology and original records, recovers unknown create
+responses by deterministic selectors, persists server-assigned IDs and resumes
+the same manifest. Verify checks managed records, unchanged sources, private
+isolation and frozen Orders. Files use mode 0600 and a per-manifest lock; their
+before snapshots can contain protected content and must stay out of Git.
+
+Rollback restores contact/Host presentation changes, refuses concurrent edits
+and retains additive records. It retains private article classifications,
+subscription requirements and fixed legacy periods. Reverting visual changes
+does not republish protected data. Prepare a fresh manifest after rollback to
+reuse those records; retain the original manifest for recovery.
+
+Apply and rollback require an exclusive CMS maintenance window. Generic PATCH
+validates required fields with a full writable record and can overwrite an edit
+made between its verification read and write. Stop other CMS writers for this
+API origin before passing `--exclusive-maintenance`, and keep them stopped until
+verify completes. The API continues accepting requests during the command.
+Preflight and readback detect observed changes; each manifest has its own local
+process lock. An API with concurrent CMS writers needs conditional writes before
+this cutover can run safely.
+
+Before checking Blog, verify the saved public read policy for these exact GETs:
+
+- `/api/blog/widgets-to-categories`
+- `/api/blog/categories-to-website-builder-module-widgets`
+
+The new curated views use these relations. Their count routes and the other
+Blog relation reads were public in the local demo, but these two list permissions
+were absent. For another deployment, create a missing permission only when its
+saved Blog configuration requires public category content. Preserve an existing
+role-bound policy. The private graph guard still filters Article→Widget reads;
+private marking and later writes reject public reuse of protected WB/File graphs.
+This configuration repair remains separate from visual rollback.
+
+Run the following in the repository's operator SDK environment with the reviewed
+API origin and credentials. It creates only missing exact GET permissions,
+refuses ambiguous or role-bound policies, and verifies unauthenticated reads.
+Then open Blog and a saved Blog category in the built Host.
+
+```ts
+import { api as permissions } from "@sps/rbac/models/permission/sdk/server";
+import { api as rolePermissions } from "@sps/rbac/relations/roles-to-permissions/sdk/server";
+
+const host = "http://localhost:4000";
+const options = {
+  cache: "no-store" as const,
+  headers: { "X-RBAC-SECRET-KEY": process.env.RBAC_SECRET_KEY! },
+};
+for (const path of ["/api/blog/widgets-to-categories", "/api/blog/categories-to-website-builder-module-widgets"]) {
+  const existing = await permissions.find({
+    host,
+    options,
+    params: {
+      filters: {
+        and: [
+          { column: "path", method: "eq", value: path },
+          { column: "method", method: "eq", value: "GET" },
+        ],
+      },
+    },
+  });
+  if (existing.length > 1) throw Error("Ambiguous read permissions");
+  if (existing.length) {
+    const bindings = await rolePermissions.find({
+      host,
+      options,
+      params: { filters: { and: [{ column: "permissionId", method: "eq", value: existing[0].id }] } },
+    });
+    if (bindings.length) throw Error("Preserve the existing role-bound policy");
+  } else {
+    await permissions.create({
+      host,
+      options,
+      data: { variant: "default", type: "HTTP", method: "GET", path },
+    });
+  }
+  const response = await fetch(host + path, { cache: "no-store" });
+  if (!response.ok) throw Error(`Public relation read failed: ${response.status}`);
+}
+```
