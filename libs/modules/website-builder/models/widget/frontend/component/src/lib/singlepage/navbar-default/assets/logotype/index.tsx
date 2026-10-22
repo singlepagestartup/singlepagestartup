@@ -22,17 +22,23 @@ export function Component(props: IComponentPropsExtended) {
         }}
       >
         {({ data }) => {
-          return data?.map((entity, index) => {
-            return (
-              <WidgetsToLogotypes
-                key={index}
-                isServer={props.isServer}
-                variant={entity.variant as any}
-                data={entity}
-                language={props.language}
-              />
-            );
-          });
+          return data
+            ?.toSorted(
+              (a, b) =>
+                (a.orderIndex ?? 0) - (b.orderIndex ?? 0) ||
+                a.id.localeCompare(b.id),
+            )
+            .map((entity) => {
+              return (
+                <WidgetsToLogotypes
+                  key={entity.id}
+                  isServer={props.isServer}
+                  variant={entity.variant as any}
+                  data={entity}
+                  language={props.language}
+                />
+              );
+            });
         }}
       </WidgetsToLogotypes>
     </div>

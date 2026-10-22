@@ -25,7 +25,9 @@ import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IContentDefaultComponentProps } from "./content-default/interface";
 import { IComponentProps as IFooterDefaultComponentProps } from "./footer-default/interface";
 import { IComponentProps as INavbarDefaultComponentProps } from "./navbar-default/interface";
+import type { IComponentProps as IContentFeatureFindRow } from "./content-feature-find-row/interface";
 export type IComponentProps =
+  | IContentFeatureFindRow
   | IContentSocialChatDefault
   | IContentEcommerceDefault
   | IContentAiChatResetPassword

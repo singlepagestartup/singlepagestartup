@@ -21,18 +21,27 @@ export function Component(props: IComponentProps) {
       className="grid min-w-0 overflow-hidden rounded-3xl border border-border bg-card lg:grid-cols-2"
     >
       <div className="flex flex-col justify-center p-6 sm:p-10">
-        <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">
-          {slide.href ? (
-            <a
-              href={slide.href}
-              className="rounded underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
-            >
-              {slide.title}
-            </a>
-          ) : (
-            slide.title
-          )}
-        </h2>
+        {slide.title ? (
+          <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">
+            {slide.href ? (
+              <a
+                href={slide.href}
+                className="rounded underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+              >
+                {slide.title}
+              </a>
+            ) : (
+              slide.title
+            )}
+          </h2>
+        ) : slide.href ? (
+          <a
+            href={slide.href}
+            className="w-fit rounded-xl border border-border px-4 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+          >
+            Open slide
+          </a>
+        ) : null}
         {slide.description ? (
           <p className="mt-5 max-w-lg text-lg leading-8 text-muted-foreground">
             {slide.description}

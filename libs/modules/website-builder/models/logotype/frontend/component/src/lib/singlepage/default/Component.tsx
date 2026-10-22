@@ -43,17 +43,21 @@ export function Component(props: IComponentPropsExtended) {
         }}
       >
         {({ data }) => {
-          return data?.map((entity, index) => {
-            return (
-              <LogotypesToFileStorageWidgets
-                key={index}
-                isServer={props.isServer}
-                variant={entity.variant as any}
-                data={entity}
-                language={props.language}
-              />
-            );
-          });
+          return data
+            ?.toSorted(
+              (a, b) => a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
+            )
+            .map((entity) => {
+              return (
+                <LogotypesToFileStorageWidgets
+                  key={entity.id}
+                  isServer={props.isServer}
+                  variant={entity.variant as any}
+                  data={entity}
+                  language={props.language}
+                />
+              );
+            });
         }}
       </LogotypesToFileStorageWidgets>
     </Link>

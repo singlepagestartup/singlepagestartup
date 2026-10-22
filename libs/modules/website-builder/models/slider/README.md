@@ -25,3 +25,16 @@ Sliders render carousels composed of ordered slides.
 - `admin-table-row`: admin UI row for slider listings.
 - `admin-form`: admin UI create/edit form.
 - `admin-table`: admin UI table for browsing sliders.
+
+## Navigation
+
+`default` uses the standard saved-record reader and orders slide relations by
+`orderIndex`, then ID. Its public `navigation` prop selects exactly one control
+set: `arrows` (default), `numbers` or `dots`. Arrow buttons overlay the slide and
+appear on hover/focus; touch devices keep them visible. Empty and single-slide
+galleries have no navigation controls.
+
+Embla owns drag and slide selection. Arrow keys, Home and End navigate from the
+gallery; editable fields keep their normal keys. Inactive slides are inert, and
+selection has a screen-reader announcement. The interactive view receives
+rendered slide nodes rather than SDK bindings.

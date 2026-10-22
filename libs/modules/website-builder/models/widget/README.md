@@ -32,7 +32,8 @@ Widgets store reusable content blocks (text, media, structured sections) for bui
 - `landing-ai-chat`: landing presentation with its own local interactive demonstration. The walkthrough uses prepared copy and local state without a Social Chat record, API writes or AI calls. It imports no Social or RBAC components.
 
 - `default`: sample component, for debugging.
-- `content-default`: rich content sections (article-like text blocks).
+- `content-default`: saved hero copy, ordered media, sliders, features and CTA groups.
+- `content-feature-find-row`: two-column saved contact introduction and features with a rendered form slot. The owning domain Widget supplies its form as children or contactForm.
 - `footer-default`: site footer layout (links, navigation, legal).
 - `navbar-default`: site header/navigation bar (menus, branding).
 - `find`: internal data-fetch wrapper for queries; not used directly on pages.
@@ -58,3 +59,18 @@ description, anchor and className around a rendered children slot. RBAC Widget
 variants own catalog and purchase composition and select this exact record
 through their default Widget relation. This presentation imports no RBAC or
 Ecommerce models and performs no session, cart or order reads.
+
+## Framework presentation
+
+Content sections, navbar and footer share a `max-w-7xl` grid with responsive
+horizontal padding. Ecommerce children occupy that grid without a second card
+container. Saved relation order and IDs determine content order and React keys.
+The navbar uses the standard record reader; its client boundary receives only
+loaded display data and rendered logo/navigation slots. Mobile navigation closes
+after following a saved link or pressing Escape.
+
+### Icons
+
+Lucide React supplies the navigation glyphs: Menu ☰ and X ×. They are decorative
+inside buttons with localized accessible names. Slider arrows use the same
+library, ArrowLeft ← and ArrowRight →. No new photographic assets are bundled.

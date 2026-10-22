@@ -11,14 +11,15 @@ export function Component(props: IComponentPropsExtended) {
       data-id={props.data?.id || ""}
       data-variant={props.variant}
       className={cn(
-        "w-full bg-white flex flex-col",
-        props.data.className || "pb-4 pt-12 px-4 lg:pb-6 lg:pt-16 lg:px-2",
+        "w-full border-t border-border bg-background text-foreground",
+        "py-8",
+        props.data.className,
         props.className,
       )}
     >
-      <div className="mx-auto w-full max-w-7xl flex flex-col gap-4">
-        <div className="w-full flex flex-col lg:grid lg:grid-cols-4 justify-end gap-12">
-          <div className="w-fit flex flex-col gap-2">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 lg:px-8">
+        <div className="grid w-full gap-8 lg:grid-cols-[1fr_2fr]">
+          <div className="flex min-w-0 flex-col gap-4">
             <WidgetsToLogotypes
               isServer={props.isServer}
               variant="find"
@@ -37,24 +38,25 @@ export function Component(props: IComponentPropsExtended) {
               }}
             >
               {({ data }) => {
-                return data?.map((entity, index) => {
-                  return (
-                    <WidgetsToLogotypes
-                      key={index}
-                      variant={entity.variant as any}
-                      isServer={props.isServer}
-                      data={entity}
-                      language={props.language}
-                    />
-                  );
-                });
+                return data
+                  ?.toSorted(
+                    (a, b) =>
+                      (a.orderIndex ?? 0) - (b.orderIndex ?? 0) ||
+                      a.id.localeCompare(b.id),
+                  )
+                  .map((entity) => {
+                    return (
+                      <WidgetsToLogotypes
+                        key={entity.id}
+                        variant={entity.variant as any}
+                        isServer={props.isServer}
+                        data={entity}
+                        language={props.language}
+                      />
+                    );
+                  });
               }}
             </WidgetsToLogotypes>
-            {/* {props.data.subtitle ? (
-              <p className="text-muted-foreground text-xs">
-                {props.data.subtitle}
-              </p>
-            ) : null} */}
             <WidgetsToButtonsArrays
               isServer={props.isServer}
               variant="find"
@@ -78,21 +80,27 @@ export function Component(props: IComponentPropsExtended) {
               }}
             >
               {({ data }) => {
-                return data?.map((entity, index) => {
-                  return (
-                    <WidgetsToButtonsArrays
-                      key={index}
-                      isServer={props.isServer}
-                      variant={entity.variant as any}
-                      data={entity}
-                      language={props.language}
-                    />
-                  );
-                });
+                return data
+                  ?.toSorted(
+                    (a, b) =>
+                      (a.orderIndex ?? 0) - (b.orderIndex ?? 0) ||
+                      a.id.localeCompare(b.id),
+                  )
+                  .map((entity) => {
+                    return (
+                      <WidgetsToButtonsArrays
+                        key={entity.id}
+                        isServer={props.isServer}
+                        variant={entity.variant as any}
+                        data={entity}
+                        language={props.language}
+                      />
+                    );
+                  });
               }}
             </WidgetsToButtonsArrays>
           </div>
-          <div className="flex flex-col col-span-2 col-start-3 lg:grid lg:grid-cols-3 gap-6">
+          <div className="grid min-w-0 gap-6 sm:grid-cols-3">
             <WidgetsToButtonsArrays
               isServer={props.isServer}
               variant="find"
@@ -116,30 +124,29 @@ export function Component(props: IComponentPropsExtended) {
               }}
             >
               {({ data }) => {
-                return data?.map((entity, index) => {
-                  return (
-                    <WidgetsToButtonsArrays
-                      key={index}
-                      isServer={props.isServer}
-                      variant={entity.variant as any}
-                      data={entity}
-                      language={props.language}
-                    />
-                  );
-                });
+                return data
+                  ?.toSorted(
+                    (a, b) =>
+                      (a.orderIndex ?? 0) - (b.orderIndex ?? 0) ||
+                      a.id.localeCompare(b.id),
+                  )
+                  .map((entity) => {
+                    return (
+                      <WidgetsToButtonsArrays
+                        key={entity.id}
+                        isServer={props.isServer}
+                        variant={entity.variant as any}
+                        data={entity}
+                        language={props.language}
+                      />
+                    );
+                  });
               }}
             </WidgetsToButtonsArrays>
           </div>
         </div>
-        <div className="w-full h-px bg-gray-400"></div>
-        <div className="flex flex-col items-start lg:flex-row lg:items-center justify-between gap-4">
-          {/* <div>
-            {props.data.description ? (
-              <p className="text-muted-foreground text-xs">
-                {props.data.description}
-              </p>
-            ) : null}
-          </div> */}
+        <div className="h-px w-full bg-border"></div>
+        <div className="flex flex-col items-start justify-between gap-4 text-sm text-muted-foreground sm:flex-row sm:items-center">
           <div className="flex items-center flex-wrap gap-4">
             <WidgetsToButtonsArrays
               isServer={props.isServer}
@@ -164,17 +171,23 @@ export function Component(props: IComponentPropsExtended) {
               }}
             >
               {({ data }) => {
-                return data?.map((entity, index) => {
-                  return (
-                    <WidgetsToButtonsArrays
-                      key={index}
-                      isServer={props.isServer}
-                      variant={entity.variant as any}
-                      data={entity}
-                      language={props.language}
-                    />
-                  );
-                });
+                return data
+                  ?.toSorted(
+                    (a, b) =>
+                      (a.orderIndex ?? 0) - (b.orderIndex ?? 0) ||
+                      a.id.localeCompare(b.id),
+                  )
+                  .map((entity) => {
+                    return (
+                      <WidgetsToButtonsArrays
+                        key={entity.id}
+                        isServer={props.isServer}
+                        variant={entity.variant as any}
+                        data={entity}
+                        language={props.language}
+                      />
+                    );
+                  });
               }}
             </WidgetsToButtonsArrays>
           </div>

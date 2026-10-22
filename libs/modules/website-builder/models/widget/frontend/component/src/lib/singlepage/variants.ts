@@ -25,7 +25,9 @@ import { Component as Default } from "./default";
 import { Component as ContentDefaultComponent } from "./content-default";
 import { Component as FooterDefaultComponent } from "./footer-default";
 import { Component as NavbarDefaultComponent } from "./navbar-default";
+import { Component as ContentFeatureFindRow } from "./content-feature-find-row";
 export const variants = {
+  "content-feature-find-row": ContentFeatureFindRow,
   "content-social-chat-default": ContentSocialChatDefault,
   "content-ecommerce-default": ContentEcommerceDefault,
   "content-ai-chat-reset-password": ContentAiChatResetPassword,

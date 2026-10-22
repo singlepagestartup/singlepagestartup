@@ -9,7 +9,11 @@ export function Component(props: IComponentPropsExtended) {
       data-model="buttons-array"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex", props.data.className, props.className)}
+      className={cn(
+        "flex w-full flex-wrap items-center gap-3",
+        props.data.className,
+        props.className,
+      )}
     >
       <ButtonsArraysToButtons
         isServer={props.isServer}
@@ -29,17 +33,21 @@ export function Component(props: IComponentPropsExtended) {
         }}
       >
         {({ data }) => {
-          return data?.map((entity, index) => {
-            return (
-              <ButtonsArraysToButtons
-                key={index}
-                isServer={props.isServer}
-                variant={entity.variant as any}
-                data={entity}
-                language={props.language}
-              />
-            );
-          });
+          return data
+            ?.toSorted(
+              (a, b) => a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
+            )
+            .map((entity) => {
+              return (
+                <ButtonsArraysToButtons
+                  key={entity.id}
+                  isServer={props.isServer}
+                  variant={entity.variant as any}
+                  data={entity}
+                  language={props.language}
+                />
+              );
+            });
         }}
       </ButtonsArraysToButtons>
     </div>
