@@ -1,12 +1,24 @@
 import { IRouteRule, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
 
+/** Routes whose controllers authenticate the caller and enforce resource access. */
+export const controllerGuardedRoutes: IRouteRule[] = [
+  {
+    regexPath: new RegExp(
+      `^/api/rbac/subjects${UUID_PATH_SUFFIX_REGEX.source}`,
+    ),
+    methods: ["GET"],
+  },
+];
+
 /**
- * Framework-default routes allowed WITHOUT authentication (singlepage layer).
+ * Framework routes that skip the global role check (singlepage layer).
  *
- * A request matching any of these (path + method) skips the is-authorized
- * check. Projects add their own in `./startup.ts` or via constructor options.
+ * Public endpoints accept anonymous requests; controller-guarded routes still
+ * enforce their own authentication and ownership checks. Projects add rules
+ * in `./startup.ts` or via constructor options.
  */
 export const allowedRoutes: IRouteRule[] = [
+  ...controllerGuardedRoutes,
   {
     regexPath: /\/favicon.ico/,
     methods: ["GET"],

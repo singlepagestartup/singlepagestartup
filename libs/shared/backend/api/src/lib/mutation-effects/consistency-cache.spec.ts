@@ -16,6 +16,69 @@ jest.mock("@sps/providers-db", () => ({ ConsistencyStore: jest.fn() }));
 import { createConsistencyRuntime } from "./consistency";
 import { consistencyContext } from "../repository/database/context";
 
+it("never serves cached responses before a controller guard on excluded routes", async () => {
+  values.clear();
+  const key = "public.fixture|id|record";
+  const store: any = {
+    status: jest.fn(async () => ({
+      epoch: "test",
+      cursor: "0",
+      oldest: "0",
+      degraded: false,
+    })),
+    versions: async () => ({ [key]: "0" }),
+    register: async () => ({
+      protocol: 1,
+      ref: "ref",
+      epoch: "test",
+      cursor: "0",
+      expiresAt: new Date(Date.now() + 60000).toISOString(),
+    }),
+    covered: async () => true,
+  };
+  const runtime = createConsistencyRuntime({
+    store,
+    verifyAuthorization: async () => {},
+  });
+  let denied = false;
+  const read = jest.fn((c) => {
+    consistencyContext.getStore()!.dependencies.set(key, "0");
+    return c.json({ data: { id: "record" } });
+  });
+  const fixture = (exclude: boolean) => {
+    const app = new Hono();
+    app.use(runtime.middleware());
+    app.use(
+      runtime.cache({
+        excludedRoutes: exclude
+          ? [{ regexPath: /^\/api\/fixture$/, methods: ["GET"] }]
+          : [],
+      }),
+    );
+    app.get("/api/fixture", (c) =>
+      denied ? c.json({ error: "Forbidden" }, 403) : read(c),
+    );
+    return app;
+  };
+  const cached = fixture(false);
+  await cached.request("/api/fixture");
+  expect(
+    (await cached.request("/api/fixture")).headers.get("X-SPS-Cache"),
+  ).toBe("hit");
+  read.mockClear();
+  store.status.mockClear();
+
+  const guarded = fixture(true);
+  expect(
+    (await guarded.request("/api/fixture")).headers.get("X-SPS-Cache"),
+  ).not.toBe("hit");
+  expect(read).toHaveBeenCalledTimes(1);
+  denied = true;
+  expect((await guarded.request("/api/fixture")).status).toBe(403);
+  expect(read).toHaveBeenCalledTimes(1);
+  expect(store.status).not.toHaveBeenCalled();
+});
+
 it("keeps the deployed health probe independent of a stalled cache-version lookup", async () => {
   const template = readFileSync(
     resolve(

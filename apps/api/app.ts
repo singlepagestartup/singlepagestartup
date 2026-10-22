@@ -17,6 +17,7 @@ import {
   ActionLoggerMiddleware,
   BillRouteMiddleware,
   OperatorSecretMiddleware,
+  controllerGuardedRoutes,
 } from "@sps/middlewares";
 import {
   MIDDLEWARE_HTTP_CACHE,
@@ -254,7 +255,10 @@ app.use(parseQueryMiddleware.init());
 if (MIDDLEWARE_HTTP_CACHE === "true") {
   if (consistencyMode !== "off")
     app.use(
-      consistencyRuntime.cache({ observe: consistencyMode === "observe" }),
+      consistencyRuntime.cache({
+        observe: consistencyMode === "observe",
+        excludedRoutes: controllerGuardedRoutes,
+      }),
     );
   else app.use(httpCacheMiddleware.init());
   httpCacheMiddleware.setRoutes(app);

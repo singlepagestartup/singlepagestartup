@@ -6,6 +6,8 @@ import {
   CONSISTENCY_HEADER,
   KV_PROVIDER,
   HTTP_CACHE_MAX_ENTRY_BYTES,
+  RouteMatcher,
+  type IRouteRule,
   type IConsistencyDelivery,
 } from "@sps/shared-utils";
 import {
@@ -272,14 +274,18 @@ export function createConsistencyRuntime(props: IConsistencyRuntimeProps) {
     },
     tick,
     /** Register after authorization. PostgreSQL, never Redis, proves freshness. */
-    cache(options: { observe?: boolean } = {}) {
+    cache(options: { observe?: boolean; excludedRoutes?: IRouteRule[] } = {}) {
       const cache = new KVProvider({ type: KV_PROVIDER });
+      const excludedRoutesMatcher = new RouteMatcher(
+        options.excludedRoutes || [],
+      );
       return createMiddleware(async (c, next) => {
         const context = consistencyContext.getStore();
         if (
           c.req.method !== "GET" ||
           !context ||
           !context.complete ||
+          excludedRoutesMatcher.matches(c.req.path, c.req.method) ||
           c.req.header("Cache-Control") === "no-store"
         )
           return next();

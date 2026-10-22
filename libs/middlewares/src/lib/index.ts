@@ -14,6 +14,7 @@ export {
   type IMiddlewareGeneric as IIsAuthorizedMiddlewareGeneric,
   type IMiddlewareOptions as IIsAuthorizedMiddlewareOptions,
 } from "./is-authorized";
+export { controllerGuardedRoutes } from "./is-authorized/routes";
 export {
   Middleware as ObserverMiddleware,
   type IMiddlewareGeneric as IObserverMiddlewareGeneric,

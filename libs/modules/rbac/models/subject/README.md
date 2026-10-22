@@ -48,6 +48,19 @@ A caller's own Subject ID alone does not authorize changes to another order.
 - For example, chat thread routes use `RequestSubjectOwnsSocialModuleChat` and `RequestSocialModuleThreadBelongsToChat`, which call `socialModuleChatLifecycleAssertSubjectOwnsChat` and `socialModuleChatLifecycleAssertThreadBelongsToChat`.
 - Handlers may keep the same assertions as a defense-in-depth check, but the access model must not depend on custom route exceptions inside the global authorization service.
 
+### Reading the current Subject
+
+`GET /api/rbac/subjects/:id` accepts a verified session JWT whose Subject ID
+matches the requested ID. This includes guest sessions without identities or
+roles. The controller registers `RequestSubjectReadAccess` before the existing
+find-by-id handler. A foreign Subject requires an explicit RBAC permission;
+the operator secret retains its existing access. Missing, expired and invalid
+session tokens cannot read a Subject.
+
+The exact UUID read delegates authorization to this controller guard. Subject
+collection, count and nested routes keep their existing access rules. The read
+bypasses HTTP response caches so a cached response cannot skip the guard.
+
 ### Social Thread Permission Routes
 
 Thread management through `rbac.subject` requires `rbac.permission` records for the HTTP routes and route-level subject/chat/thread middleware for resource checks:

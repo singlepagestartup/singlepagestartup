@@ -18,6 +18,7 @@ import {
   RequestSocialModuleThreadBelongsToChat,
   RequestSubjectCanManageChatAgentProfile,
   RequestSubjectIdOwner,
+  RequestSubjectReadAccess,
   RequestSubjectOwnsEcommerceModuleOrder,
   RequestSubjectOwnsSocialModuleChat,
   RequestSubjectOwnsIdentity,
@@ -252,6 +253,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/:uuid",
         handler: this.findById,
+        middlewares: [new RequestSubjectReadAccess(this.service).init()],
       },
       {
         method: "GET",

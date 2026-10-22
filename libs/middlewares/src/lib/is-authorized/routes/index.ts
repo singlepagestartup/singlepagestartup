@@ -7,11 +7,12 @@ import { allowedRoutes as singlepageAllowedRoutes } from "./singlepage";
 import { allowedRoutes as startupAllowedRoutes } from "./startup";
 
 export type { IRouteRule };
+export { controllerGuardedRoutes } from "./singlepage";
 export { allowedRoutes as singlepageAllowedRoutes } from "./singlepage";
 export { allowedRoutes as startupAllowedRoutes } from "./startup";
 
 /**
- * Builds the "allowed without auth" matcher from the three layers:
+ * Builds the global role-check bypass matcher from the three layers:
  * constructor options → project startup → framework singlepage defaults.
  * Delegates to the shared `createLayeredRouteMatcher` (issue #195 cleanup).
  */
