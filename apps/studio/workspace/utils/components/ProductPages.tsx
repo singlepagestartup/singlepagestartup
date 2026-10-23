@@ -6,6 +6,15 @@ import {
   type ReactNode,
 } from "react";
 import type { IProductPageView } from "../products/pages";
+import {
+  canNavigateWorkspacePage,
+  workspaceNavigationAnchor as navigationAnchor,
+  findWorkspacePage,
+  flattenWorkspacePages as flatten,
+  requestedWorkspacePage,
+  type WorkspaceLinkResolver,
+  type WorkspacePageRepresentation,
+} from "../pages";
 import { WorkspacePage } from "./WorkspacePage";
 import {
   documentConfirmation,
@@ -14,19 +23,13 @@ import {
 import { DocumentReviewToolbar } from "./DocumentStatus";
 import { DocumentDownloads } from "./DocumentDownloads";
 
-function flatten(pages: IProductPageView[]): IProductPageView[] {
-  return pages.flatMap((page) => [page, ...flatten(page.children)]);
-}
-
 interface IProductPagesProps {
   pages: IProductPageView[];
   overview?: boolean;
   children: ReactNode;
   downloadContext?: string;
-  resolveLink?: (url: string) => string | { href: string; target: "_top" };
+  resolveLink?: WorkspaceLinkResolver;
 }
-
-type Representation = "text" | "preview";
 
 /** A page tree selects the document; Text/Layout selects its representation. */
 export function ProductPages({
@@ -38,17 +41,36 @@ export function ProductPages({
 }: IProductPagesProps) {
   const all = flatten(pages);
   const first = all.find((page) => page.kind !== "group");
-  const [selected, setSelected] = useState(overview ? "overview" : first?.id);
-  const [navigationHref, setNavigationHref] = useState<string>();
-  const [representation, setRepresentation] = useState<Representation>("text");
+  const [initialSelection] = useState(() =>
+    requestedWorkspacePage(pages, {
+      overview,
+      search: typeof window === "undefined" ? "" : window.location.search,
+      baseHref:
+        typeof window === "undefined" ? undefined : window.location.href,
+    }),
+  );
+  const [selected, setSelected] = useState(initialSelection.selected);
+  const [navigationHref, setNavigationHref] = useState(
+    initialSelection.navigationHref,
+  );
+  const [representation, setRepresentation] =
+    useState<WorkspacePageRepresentation>(initialSelection.representation);
   const [expanded, setExpanded] = useState<Set<string>>(
     () =>
       new Set(
         all.filter((page) => page.children.length).map((page) => page.id),
       ),
   );
-  const [focused, setFocused] = useState(all[0]?.id);
-  const pendingAnchor = useRef<string | null>(null);
+  const [focused, setFocused] = useState(
+    initialSelection.selected === "overview"
+      ? all[0]?.id
+      : initialSelection.selected,
+  );
+  const pendingAnchor = useRef<string | null>(
+    initialSelection.navigationHref
+      ? navigationAnchor(initialSelection.navigationHref)
+      : null,
+  );
   const contentRef = useRef<HTMLDivElement>(null);
   const exportRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -100,7 +122,11 @@ export function ProductPages({
   const activate = (node: IProductPageView) => {
     setFocused(node.id);
     if (node.kind === "group") toggle(node.id);
-    else setSelected(node.id);
+    else {
+      pendingAnchor.current = null;
+      setNavigationHref(undefined);
+      setSelected(node.id);
+    }
   };
   const keyDown = (
     event: KeyboardEvent<HTMLButtonElement>,
@@ -212,44 +238,32 @@ export function ProductPages({
     <div
       className="grid min-w-0 grid-cols-1 md:grid-cols-[220px_minmax(0,1fr)]"
       onClickCapture={(event) => {
-        if (
-          event.button !== 0 ||
-          event.metaKey ||
-          event.ctrlKey ||
-          event.shiftKey ||
-          event.altKey
-        )
-          return;
         const link = (event.target as HTMLElement).closest<HTMLAnchorElement>(
           "a[href]",
         );
-        if (!link || link.hasAttribute("download")) return;
+        if (
+          !link ||
+          !canNavigateWorkspacePage({
+            button: event.button,
+            metaKey: event.metaKey,
+            ctrlKey: event.ctrlKey,
+            shiftKey: event.shiftKey,
+            altKey: event.altKey,
+            target: link.getAttribute("target"),
+            download: link.hasAttribute("download"),
+          })
+        )
+          return;
         const target = new URL(link.href, window.location.href);
-        if (target.origin !== window.location.origin) return;
-        const linked =
-          all.find((entry) => entry.route === target.pathname) ??
-          all.find((entry) => {
-            const url = entry.representations?.text.url ?? entry.url;
-            const routeParts = entry.route?.split("/");
-            const targetParts = target.pathname.split("/");
-            const routeMatches =
-              routeParts?.length === targetParts.length &&
-              routeParts.every((part, index) =>
-                /^\[[^\]]+\]$/.test(part)
-                  ? Boolean(targetParts[index])
-                  : part === targetParts[index],
-              );
-            return (
-              routeMatches ||
-              (url &&
-                new URL(url, window.location.href).pathname === target.pathname)
-            );
-          });
+        const linked = findWorkspacePage(
+          pages,
+          link.href,
+          window.location.href,
+        );
         if (!linked) return;
         event.preventDefault();
-        setNavigationHref(target.pathname + target.hash);
-        const anchorId = decodeURIComponent(target.hash.slice(1));
-        pendingAnchor.current = anchorId;
+        setNavigationHref(target.pathname + target.search + target.hash);
+        pendingAnchor.current = navigationAnchor(target.href);
         setSelected(linked.id);
         setFocused(linked.id);
         setRepresentation((current) =>
@@ -274,7 +288,11 @@ export function ProductPages({
           <button
             type="button"
             aria-current={selected === "overview" ? "page" : undefined}
-            onClick={() => setSelected("overview")}
+            onClick={() => {
+              pendingAnchor.current = null;
+              setNavigationHref(undefined);
+              setSelected("overview");
+            }}
             className={`mb-4 w-full rounded-lg px-3 py-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-[var(--workspace-brand-focus)] ${selected === "overview" ? "bg-[var(--workspace-brand-surface)] font-semibold text-[var(--workspace-brand-foreground)]" : "text-[var(--workspace-brand-muted)] hover:bg-[var(--workspace-brand-background)]"}`}
           >
             Overview

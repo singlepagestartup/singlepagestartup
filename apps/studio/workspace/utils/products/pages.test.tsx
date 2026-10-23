@@ -8,8 +8,15 @@ import { describe, expect, test } from "bun:test";
 import { stringify } from "yaml";
 import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
+import { createRoot } from "react-dom/client";
+import { act } from "react";
+import { JSDOM } from "jsdom";
 import { parseProductCatalog, resolveProductCatalog } from "./catalog";
-import { resolveProductSections, type IProductPageSources } from "./pages";
+import {
+  resolveProductSections,
+  resolveProductPreviewLink,
+  type IProductPageSources,
+} from "./pages";
 import { ProductPages } from "../components/ProductPages";
 import { WorkspacePage } from "../components/WorkspacePage";
 import { productReviewPages } from "../../../../../tools/studio/workspace/review";
@@ -19,6 +26,12 @@ import {
   parseAIChatWebsite,
 } from "../../products/singlepage/ai-chat/website/content";
 import { ProductCatalog } from "../components/ProductCatalog";
+import {
+  canNavigateWorkspacePage,
+  findWorkspacePage,
+  requestedWorkspacePage,
+  type IWorkspacePageView,
+} from "../pages";
 import type { IProductCatalogView } from "./source";
 import { extensionProduct } from "../../../../../tools/studio/products/fixtures/catalog";
 import { validateProductSectionFiles } from "../../../../../tools/studio/products/validate";
@@ -62,6 +75,29 @@ function sources(layer: "startup" | "singlepage"): IProductPageSources {
 }
 
 describe("product pages", () => {
+  test("passes the product link resolver to React layouts", () => {
+    const html = renderToStaticMarkup(
+      <WorkspacePage
+        resolveLink={() => ({ href: "/?path=other-product", target: "_top" })}
+        page={{
+          id: "landing",
+          title: "Landing",
+          kind: "react",
+          layer: "singlepage",
+          children: [],
+          Component: ({ resolveLink }) => {
+            const link = resolveLink!("/");
+            return (
+              <a {...(typeof link === "string" ? { href: link } : link)}>
+                AI Chat
+              </a>
+            );
+          },
+        }}
+      />,
+    );
+    expect(html).toContain('href="/?path=other-product" target="_top"');
+  });
   test("passes the internal destination to chat layouts", () => {
     const html = renderToStaticMarkup(
       <WorkspacePage
@@ -165,22 +201,17 @@ describe("product pages", () => {
       ),
       "utf8",
     );
+    const original = parseCodeFrameworkWebsite(markdown);
     const revised = markdown
-      .replace(
-        "Build your product on a foundation you can reuse.",
-        "Your next business starts here.",
-      )
-      .replace("Accounts and access", "Your customer accounts")
-      .replace(
-        "Do I need to write the code myself?",
-        "How do I direct my agent?",
-      );
+      .replace(original.hero.title, "Your next business starts here.")
+      .replace(original.foundation.items[0].title, "Your customer accounts")
+      .replace(original.questions.items[0].title, "How do I direct my agent?");
     const content = parseCodeFrameworkWebsite(revised);
     expect(content.hero.title).toBe("Your next business starts here.");
     expect(content.foundation.items[0].title).toBe("Your customer accounts");
     expect(content.questions.items[0].title).toBe("How do I direct my agent?");
     expect(content.journey.items).toHaveLength(3);
-    expect(content.footer.links).toHaveLength(3);
+    expect(content.footer.links).toEqual(original.footer.links);
     expect(content.labels["copy-success"]).toContain("Request copied");
     expect(content.hero.paragraphs.join(" ")).not.toContain("confirmed:");
   });
@@ -682,5 +713,433 @@ describe("product pages", () => {
         fixture,
       ),
     ).toThrow("Missing React page default export");
+  });
+});
+
+describe("declared product preview navigation", () => {
+  const page = (id: string, route: string): IWorkspacePageView => ({
+    id,
+    title: id,
+    route,
+    kind: "markdown",
+    layer: "singlepage",
+    children: [],
+    representations: {
+      text: {
+        id,
+        title: id,
+        kind: "markdown",
+        layer: "singlepage",
+        children: [],
+        markdown: `# ${id}`,
+      },
+      preview: {
+        id,
+        title: id,
+        kind: "react",
+        layer: "singlepage",
+        children: [],
+        Component: ({ navigationHref }) => (
+          <div data-destination={navigationHref}>Preview {id}</div>
+        ),
+      },
+    },
+  });
+  const frameworkPages = [
+    page("landing", "/framework"),
+    page("blog", "/blog"),
+    page("article", "/blog/articles/[slug]"),
+    page("article-new", "/blog/articles/new"),
+    page("commerce", "/ecommerce"),
+  ];
+  const chatPages = [
+    page("chat", "/"),
+    page("tokens", "/ai-chat/rbac/subjects/tokens"),
+  ];
+  const view: IProductCatalogView = {
+    id: "singlepage",
+    label: "singlepage",
+    inherited: false,
+    sourcePaths: [],
+    products: [
+      {
+        id: "singlepagestartup",
+        name: "Code Framework",
+        summary: "Framework",
+        documents: [],
+        sections: [{ id: "website", title: "Website", pages: frameworkPages }],
+      },
+      {
+        id: "ai-chat",
+        name: "AI Chat",
+        summary: "Prepare a business",
+        documents: [],
+        sections: [{ id: "website", title: "Website", pages: chatPages }],
+      },
+    ],
+  };
+  const locationHref =
+    "http://localhost:4321/iframe.html?id=workspace-40-products-singlepage--product-singlepagestartup&viewMode=story";
+  const options = {
+    catalog: view,
+    currentProductId: "singlepagestartup",
+    currentSection: "website",
+    locationHref,
+  };
+
+  test("opens a cross-product route at its declared page and Layout", () => {
+    const link = resolveProductPreviewLink("/?from=framework#prepare", options);
+    expect(typeof link).toBe("object");
+    if (typeof link === "string") throw new Error("Expected a product story");
+    expect(link.target).toBe("_top");
+    const url = new URL(link.href, locationHref);
+    expect(url.pathname).toBe("/");
+    expect(url.searchParams.get("path")).toBe(
+      "/story/workspace-40-products-singlepage--product-ai-chat",
+    );
+    expect(url.searchParams.get("product")).toBe("ai-chat");
+    expect(url.searchParams.get("section")).toBe("promotion");
+    expect(url.searchParams.get("surface")).toBe("website");
+    expect(url.searchParams.has("id")).toBe(false);
+    const selection = requestedWorkspacePage(chatPages, {
+      search: url.search,
+      baseHref: locationHref,
+      overview: true,
+    });
+    expect(selection).toEqual({
+      selected: "chat",
+      representation: "preview",
+      navigationHref: "/?from=framework#prepare",
+    });
+  });
+
+  test("keeps same-product routes local and carries dynamic destinations across products", () => {
+    const article = "/blog/articles/hono-services?language=en#controllers";
+    expect(resolveProductPreviewLink(article, options)).toBe(article);
+    const link = resolveProductPreviewLink(article, {
+      ...options,
+      currentProductId: "ai-chat",
+    });
+    if (typeof link === "string") throw new Error("Expected a framework story");
+    const url = new URL(link.href, locationHref);
+    expect(url.searchParams.get("product")).toBe("singlepagestartup");
+    expect(url.searchParams.get("page")).toBe("article");
+    expect(url.searchParams.get("navigationHref")).toBe(article);
+    expect(
+      requestedWorkspacePage(frameworkPages, {
+        search: url.search,
+        baseHref: locationHref,
+      }).navigationHref,
+    ).toBe(article);
+    expect(
+      findWorkspacePage(frameworkPages, "/blog/articles/new", locationHref)?.id,
+    ).toBe("article-new");
+  });
+
+  test("resolves another section of the same product through its review surface", () => {
+    const link = resolveProductPreviewLink("/blog", {
+      ...options,
+      currentSection: "content",
+    });
+    if (typeof link === "string") throw new Error("Expected a website story");
+    const url = new URL(link.href, locationHref);
+    expect(url.searchParams.get("page")).toBe("blog");
+    expect(url.searchParams.get("surface")).toBe("website");
+    expect(url.searchParams.get("representation")).toBe("preview");
+  });
+
+  test("preserves source layers and gives the current product priority on shared routes", () => {
+    const inherited = resolveProductPreviewLink("/", {
+      ...options,
+      catalog: { ...view, id: "default", inherited: true },
+    });
+    expect(typeof inherited === "object" && inherited.href).toContain(
+      "workspace-40-products-singlepage--product-ai-chat",
+    );
+    const startup = resolveProductPreviewLink("/", {
+      ...options,
+      catalog: { ...view, id: "default", inherited: false },
+    });
+    expect(typeof startup === "object" && startup.href).toContain(
+      "workspace-40-products-startup--product-ai-chat",
+    );
+    expect(
+      resolveProductPreviewLink("/", {
+        ...options,
+        currentProductId: "ai-chat",
+      }),
+    ).toBe("/");
+    expect(
+      resolveProductPreviewLink("/", {
+        ...options,
+        catalog: {
+          ...view,
+          products: view.products.map((product) =>
+            product.id === "singlepagestartup"
+              ? {
+                  ...product,
+                  sections: [
+                    { ...product.sections[0], pages: [page("shared", "/")] },
+                  ],
+                }
+              : product,
+          ),
+        },
+      }),
+    ).toBe("/");
+  });
+
+  test("does not route undeclared pages, source files or external origins", () => {
+    for (const href of [
+      "/unpublished",
+      "https://github.com/singlepagestartup/singlepagestartup",
+      "//external.example/blog",
+      "/workspace-products/singlepage/ai-chat/website/page.md",
+      "#foundation",
+    ])
+      expect(resolveProductPreviewLink(href, options)).toBe(href);
+    expect(
+      findWorkspacePage(
+        frameworkPages,
+        "https://external.example/blog",
+        locationHref,
+      ),
+    ).toBeUndefined();
+  });
+
+  test("ignores invalid page and route parameters instead of rendering a foreign destination", () => {
+    const group: IWorkspacePageView = {
+      id: "pages",
+      title: "Pages",
+      kind: "group",
+      layer: "singlepage",
+      children: frameworkPages,
+    };
+    for (const requested of ["missing", "pages"]) {
+      expect(
+        requestedWorkspacePage([group], {
+          search: `?page=${requested}&representation=preview&navigationHref=/blog`,
+          overview: true,
+        }),
+      ).toEqual({ selected: "overview", representation: "text" });
+    }
+    for (const destination of [
+      "https://external.example/blog",
+      "//external.example/blog",
+      "/framework",
+      "/missing",
+    ]) {
+      expect(
+        requestedWorkspacePage(frameworkPages, {
+          search: `?page=blog&representation=preview&navigationHref=${encodeURIComponent(destination)}`,
+        }),
+      ).toEqual({
+        selected: "blog",
+        representation: "preview",
+        navigationHref: undefined,
+      });
+    }
+    const textOnly = { ...page("text", "/text"), representations: undefined };
+    expect(
+      requestedWorkspacePage([textOnly], {
+        search: "?page=text&representation=preview",
+      }).representation,
+    ).toBe("text");
+  });
+
+  test("leaves target, modified and download activations to the browser", () => {
+    expect(canNavigateWorkspacePage({ button: 0 })).toBe(true);
+    expect(canNavigateWorkspacePage({ button: 0, target: "_self" })).toBe(true);
+    for (const activation of [
+      { button: 1 },
+      { button: 0, metaKey: true },
+      { button: 0, ctrlKey: true },
+      { button: 0, shiftKey: true },
+      { button: 0, altKey: true },
+      { button: 0, target: "_top" },
+      { button: 0, target: "_blank" },
+      { button: 0, target: "another-frame" },
+      { button: 0, download: true },
+    ])
+      expect(canNavigateWorkspacePage(activation)).toBe(false);
+  });
+
+  test("selects Layout from a valid link, preserves query, and clears the destination on sidebar selection", async () => {
+    const params = new URLSearchParams({
+      page: "blog",
+      representation: "preview",
+      navigationHref: "/blog?category=backend",
+    });
+    const dom = new JSDOM("<div id='root'></div>", {
+      url: `http://localhost:4321/iframe.html?${params}`,
+    });
+    const globals: Record<string, unknown> = {
+      window: dom.window,
+      document: dom.window.document,
+      HTMLElement: dom.window.HTMLElement,
+      IS_REACT_ACT_ENVIRONMENT: true,
+    };
+    const previous = Object.fromEntries(
+      Object.keys(globals).map((key) => [
+        key,
+        Object.getOwnPropertyDescriptor(globalThis, key),
+      ]),
+    );
+    for (const [key, value] of Object.entries(globals))
+      Object.defineProperty(globalThis, key, {
+        configurable: true,
+        writable: true,
+        value,
+      });
+    dom.window.HTMLElement.prototype.scrollIntoView = () => {};
+    const host = dom.window.document.getElementById("root")!;
+    const root = createRoot(host);
+    const articleHref = "/blog/articles/hono?category=backend#example";
+    let intercepted: boolean | undefined;
+    let nativeCrossActivation: boolean | undefined;
+    dom.window.document.addEventListener("click", (event) => {
+      if ((event.target as HTMLElement).id === "cross-link")
+        nativeCrossActivation = !event.defaultPrevented;
+      event.preventDefault();
+    });
+    const pages = frameworkPages.map((entry) => ({
+      ...entry,
+      representations: {
+        ...entry.representations!,
+        preview: {
+          ...entry.representations!.preview!,
+          Component: ({ navigationHref }: { navigationHref?: string }) => (
+            <div data-destination={navigationHref ?? "default"}>
+              <a id="article-link" href={articleHref}>
+                Open article
+              </a>
+              <a id="cross-link" href="/?from=framework#prepare">
+                AI Chat
+              </a>
+              <a
+                id="cancelled-cross-link"
+                href="/?from=framework#prepare"
+                onClick={(event) => event.preventDefault()}
+              >
+                Cancelled transition
+              </a>
+              <a
+                id="top-link"
+                href="/blog"
+                target="_top"
+                onClick={(event) => {
+                  intercepted = event.defaultPrevented;
+                  event.preventDefault();
+                }}
+              >
+                Other story
+              </a>
+            </div>
+          ),
+        },
+      },
+    }));
+    try {
+      await act(async () =>
+        root.render(
+          <ProductPages
+            pages={pages}
+            overview
+            resolveLink={(href) => resolveProductPreviewLink(href, options)}
+          >
+            {null}
+          </ProductPages>,
+        ),
+      );
+      expect(
+        host
+          .querySelector("[data-destination]")
+          ?.getAttribute("data-destination"),
+      ).toBe("/blog?category=backend");
+      expect(
+        [...host.querySelectorAll("button")]
+          .find((button) => button.textContent === "Layout")
+          ?.getAttribute("aria-pressed"),
+      ).toBe("true");
+      const crossLink = host.querySelector("#cross-link") as HTMLAnchorElement;
+      await act(async () => crossLink.click());
+      const crossDestination = new URL(crossLink.href);
+      expect(crossLink.target).toBe("_top");
+      expect(crossDestination.searchParams.get("product")).toBe("ai-chat");
+      expect(crossDestination.searchParams.get("navigationHref")).toBe(
+        "/?from=framework#prepare",
+      );
+      expect(nativeCrossActivation).toBe(true);
+      expect(
+        host
+          .querySelector("[data-destination]")
+          ?.getAttribute("data-destination"),
+      ).toBe("/blog?category=backend");
+      const cancelled = host.querySelector(
+        "#cancelled-cross-link",
+      ) as HTMLAnchorElement;
+      await act(async () => cancelled.click());
+      expect(cancelled.getAttribute("href")).toBe("/?from=framework#prepare");
+      expect(cancelled.getAttribute("target")).toBeNull();
+      await act(async () =>
+        (host.querySelector("#article-link") as HTMLAnchorElement).click(),
+      );
+      expect(
+        host
+          .querySelector("[data-destination]")
+          ?.getAttribute("data-destination"),
+      ).toBe(articleHref);
+      expect(
+        host
+          .querySelector('[data-page-id="article"]')
+          ?.getAttribute("aria-selected"),
+      ).toBe("true");
+      await act(async () =>
+        (host.querySelector("#top-link") as HTMLAnchorElement).click(),
+      );
+      expect(intercepted).toBe(false);
+      expect(
+        host
+          .querySelector("[data-destination]")
+          ?.getAttribute("data-destination"),
+      ).toBe(articleHref);
+      await act(async () =>
+        (
+          host.querySelector('[data-page-id="blog"]') as HTMLButtonElement
+        ).click(),
+      );
+      expect(
+        host
+          .querySelector("[data-destination]")
+          ?.getAttribute("data-destination"),
+      ).toBe("default");
+      await act(async () =>
+        (host.querySelector("#article-link") as HTMLAnchorElement).click(),
+      );
+      await act(async () =>
+        [...host.querySelectorAll("button")]
+          .find((button) => button.textContent === "Overview")!
+          .click(),
+      );
+      expect(host.querySelector("[data-destination]")).toBeNull();
+      await act(async () =>
+        (
+          host.querySelector('[data-page-id="blog"]') as HTMLButtonElement
+        ).click(),
+      );
+      expect(
+        host
+          .querySelector("[data-destination]")
+          ?.getAttribute("data-destination"),
+      ).toBe("default");
+    } finally {
+      await act(async () => root.unmount());
+      for (const key of Object.keys(globals)) {
+        if (previous[key])
+          Object.defineProperty(globalThis, key, previous[key]!);
+        else Reflect.deleteProperty(globalThis, key);
+      }
+      dom.window.close();
+    }
   });
 });
