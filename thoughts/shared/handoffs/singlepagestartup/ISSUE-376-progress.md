@@ -3,7 +3,7 @@ issue_number: 376
 issue_title: "Перенос визуала Storybook в Framework и доступ к закрытым виджетам"
 start_date: 2026-10-22T22:34:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-376-platform-followup.md
-status: in_progress
+status: completed
 branch: codex/issue-376-framework-visual
 ---
 
@@ -13,8 +13,9 @@ branch: codex/issue-376-framework-visual
 
 Baseline implementation: `18f454fef1`; documentation: `922d823da6`; the current
 tree also contains the verified named-action backend correction and two Category
-CSS changes. Independent final review by code_review_readiness is PASS. Issue
-remains In Dev pending root commit/checkpoint and verified Code Review transition.
+CSS changes, committed as `e39747ae4e`. Independent final review by
+code_review_readiness is PASS. GitHub Project status is verified as Code Review;
+the user's human review remains open.
 No PR, push, merge or human acceptance.
 
 The Next/Nx production target completed compilation, types and static generation
@@ -252,12 +253,13 @@ Source revision: 129dd65f92. Commits: 4db50ba65f, 2457eebd1e, 129dd65f92. Шес
 - [x] Final Category source/generated16/9 CSS and desktop geometry.
 - [x] Final Category at actual 320 px: frame 272 × 153, computed ratio 16/9; no horizontal overflow.
 - [x] Independent final review-pr: code_review_readiness PASS, with recorded evidence limits.
-- [ ] Root commit/checkpoint and verified GitHub Code Review handoff to the user.
+- [x] Root commit `e39747ae4e` and verified GitHub Code Review handoff to the user.
 
 Pro costs 29 USD or 1900 RUB per month for 5000 tokens. Five top-ups cost
 100/300/500/1000/3000 RUB at 0.13 RUB per token. Existing token consumption math
 is unchanged. Commercial publication, legacy Order compatibility and the
-numeric Key correction have their scoped verification. The final independent review and status gates above remain open.
+numeric Key correction have their scoped verification. Independent final review
+and the Code Review transition are complete; human acceptance remains open.
 
 ## Historical recovery checkpoint — 2026-10-23, before platform publication
 
@@ -441,8 +443,8 @@ types/static generation 8/8;36 built HTTP 200, maximum 0.826 s. Supervisor exit 
 post-exit signalling incident; its sampled RSS is not a complete peak receipt.
 The build predates only the two final Category Tailwind media-frame changes.
 Source, generated 16/9 CSS, desktop 1216.015625 × 684.00390625 and mobile
-272 × 153 frames pass. Independent final review is PASS. Issue remains In Dev until root records the
-commit/checkpoint and verifies the Code Review transition.
+272 × 153 frames pass. Independent final review is PASS. Implementation and
+acceptance are committed as `e39747ae4e`; the verified issue status is Code Review.
 
 Evidence: `ISSUE-376-platform-reviews.md`, `ISSUE-376-browser-r2.md`,
 `/tmp/issue376-production-resume-build.log`, `/tmp/issue376-built-http.json`,
@@ -450,3 +452,11 @@ Evidence: `ISSUE-376-platform-reviews.md`, `ISSUE-376-browser-r2.md`,
 and `/tmp/issue376-fixture-cleanup-review.json`. The platform review lists the
 final cleanup and readiness receipts. Credentials and protected row contents
 remain outside these documents.
+
+## Verified Code Review handoff
+
+Implementation/acceptance commit: `e39747ae4e`; branch:
+`codex/issue-376-framework-visual`. GitHub Project update and subsequent status
+read both confirm **Code Review**. The [issue summary](https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6376141035)
+contains the checks and their limits. Normal API/Host dev servers remain on
+4000/3000. Human Code Review is pending; no PR, push, merge or Done transition.

@@ -1,10 +1,10 @@
 # ISSUE-376 round 2 — current acceptance checkpoint
 
 Checkpoint: 2026-10-24; baseline implementation `18f454fef1`, documentation
-`922d823da6`, plus the current backend-guard and two Category CSS corrections.
+`922d823da6`, plus backend-guard and two Category CSS corrections in `e39747ae4e`.
 Independent final verdict: PASS by code_review_readiness for human Code Review.
-Issue remains In Dev until root commit/checkpoint and the verified GitHub status
-transition. Earlier sections below retain their phase/revision
+GitHub Project status is verified as Code Review. Human acceptance remains open.
+Earlier sections below retain their phase/revision
 scope; pending statements there describe those historical checkpoints.
 
 - Completed production target: build ID `MKpFtIHdiJJQqecTuXDQO`, Next/Nx success,
@@ -37,7 +37,8 @@ scope; pending statements there describe those historical checkpoints.
   Prettier/diff and generated CSS checks pass; CSS line 4172 supplies 16/9.
   Desktop frame 1216.015625 × 684.00390625 with absolute child/cover passes.
   Actual 320 px geometry also passes: frame 272 × 153, computed ratio 16/9 and
-  inner/client/scroll widths 320. Independent final review is PASS; root commit/status remain pending.
+  inner/client/scroll widths 320. Independent final review is PASS; commit `e39747ae4e`
+  and the Code Review transition are verified.
 
 Primary reports: `ISSUE-376-browser-r2.md`, `ISSUE-376-final-source-review.md`
 and `ISSUE-376-final-acceptance.md`. Raw current receipts are named in the
@@ -602,6 +603,13 @@ widths 320, absolute child and cover. Console error list is empty; viewport and
 original 80% zoom are restored and the QA tab is closed. Multiple/no-media Studio
 cases remain source fixtures only; no extra Studio compiler was started. The
 independent final verdict by code_review_readiness is PASS for human Code
-Review. Issue remains In Dev until root commit/checkpoint and verified GitHub
-Code Review transition. No production recompilation
+Review. Commit `e39747ae4e` and GitHub status Code Review are verified. No production recompilation
 is claimed for those final class-only edits.
+
+## Verified Code Review handoff
+
+Implementation/acceptance commit: `e39747ae4e`; branch:
+`codex/issue-376-framework-visual`. GitHub Project update and subsequent status
+read both confirm **Code Review**. The [issue summary](https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6376141035)
+contains the checks and their limits. Normal API/Host dev servers remain on
+4000/3000. Human Code Review is pending; no PR, push, merge or Done transition.

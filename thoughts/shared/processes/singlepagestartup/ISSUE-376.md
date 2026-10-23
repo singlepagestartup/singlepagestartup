@@ -3,7 +3,7 @@ issue_number: 376
 issue_title: "Перенести визуал Storybook в Framework с сохранением функциональности и исправить доступ к закрытым виджетам"
 repository: singlepagestartup
 created_at: 2026-10-22T21:58:34Z
-last_updated: 2026-10-23T22:31:08Z
+last_updated: 2026-10-23T22:40:07Z
 status: active
 current_phase: implement
 ---
@@ -19,9 +19,9 @@ current_phase: implement
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
+- Implement: completed
 - Current phase: implement
-- Next step: root сохраняет commit/checkpoint и подтверждает GitHub переход Code Review. Independent final review PASS; issue остаётся In Dev до проверенного перехода.
+- Next step: пользовательский Code Review. Independent final review PASS, commit `e39747ae4e`; статус Code Review подтверждён GitHub helper.
 
 ## Current round — platform follow-up, 2026-10-24
 
@@ -54,10 +54,11 @@ Read-only review подтверждает отсутствие обоих fixtur
 при 1536 MiB heap/1024 MiB native target/2 threads. Framework cold HTTP 200 —83.643 s, Category 200 —1.093 s; authenticated
 consistency lag/pending/failures 0, degraded false.
 
-Issue остаётся In Dev. Production build предшествует двум class-only Category
-исправлениям. Их source review, generated 16/9 CSS и desktop/actual 320 px geometry
-PASS. Итоговый independent review от code_review_readiness — PASS;
-ожидается root commit/checkpoint и проверенный GitHub Code Review transition.
+Статус issue подтверждён как Code Review; implementation/acceptance commit —
+`e39747ae4e`. Production build предшествует двум class-only Category исправлениям.
+Их source review, generated 16/9 CSS и desktop/actual 320 px geometry PASS.
+Итоговый independent review от code_review_readiness — PASS; пользовательское
+принятие остаётся открытым.
 PR/push/merge отсутствуют. Подробности: platform-reviews и browser-r 2 artifacts;
 записи прежних приёмок ниже относятся к указанным ревизиям.
 
@@ -85,10 +86,10 @@ PR/push/merge отсутствуют. Подробности: platform-reviews �
 
 ### Implement — current platform round
 
-- Summary: R2 implementation, saved cutovers, completed production target, scoped browser/auth API, cleanup и Category desktop/320 px проверены. Independent final review code_review_readiness — PASS; workflow transition ожидается.
+- Summary: R2 implementation, saved cutovers, completed production target, scoped browser/auth API, cleanup и Category desktop/320 px проверены. Independent final review code_review_readiness — PASS; commit `e39747ae4e` и статус Code Review подтверждены.
 - Outputs: `ISSUE-376-progress.md`, `ISSUE-376-platform-reviews.md`, commercial input/reviews, client-boundary и final source review reports.
 - Verification: Next/Nx build `MKpFtIHdiJJQqecTuXDQO`,36 built HTTP 200, Article/account browser flow,20 access tests и real private cache/bytes matrix 1/1 PASS. Fixture cleanup и fresh commercial prepare 0/84 protections проверены. Build предшествует двум Category class-only changes; их source, generated CSS и desktop/320 px geometry PASS.
-- Notes: Independent final review PASS. Issue остаётся In Dev до root commit/checkpoint и подтверждённого перехода Code Review; пользователь принимает конечный результат. PR/push/merge отсутствуют.
+- Notes: Independent final review PASS. Статус Code Review повторно прочитан после перехода; пользователь принимает конечный результат. PR/push/merge отсутствуют.
 
 ### Implement — historical first delivery, 2026-10-22
 
@@ -463,5 +464,14 @@ with 0 references across 12 FK columns; their origin remains unassigned.
 
 Normal API/Host dev sessions 19270/6711 are restored, Host Ready 6.2 s at 1536 MiB
 heap/1024 MiB native target/2 threads. Category source/CSS/desktop/320 px acceptance after the two class-only edits
-passes. Independent final review by code_review_readiness is PASS. Root commit/checkpoint
-and the verified GitHub Code Review transition remain pending; issue is In Dev. No GitHub or status mutation is part of this checkpoint.
+passes. Independent final review by code_review_readiness is PASS. Commit
+`e39747ae4e` records the implementation and acceptance; GitHub status Code Review
+is verified. Human review remains open.
+
+## Verified Code Review handoff
+
+Implementation/acceptance commit: `e39747ae4e`; branch:
+`codex/issue-376-framework-visual`. GitHub Project update and subsequent status
+read both confirm **Code Review**. The [issue summary](https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6376141035)
+contains the checks and their limits. Normal API/Host dev servers remain on
+4000/3000. Human Code Review is pending; no PR, push, merge or Done transition.

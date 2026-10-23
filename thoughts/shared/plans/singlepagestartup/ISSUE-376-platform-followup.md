@@ -1,10 +1,10 @@
 ---
 issue_number: 376
 round: 2
-status: in_progress
+status: completed
 branch: codex/issue-376-framework-visual
 canonical_plan: thoughts/shared/plans/singlepagestartup/ISSUE-376.md
-publication_gate: saved cutovers and scoped runtime accepted; independent final PASS; Code Review transition pending
+publication_gate: saved cutovers and scoped runtime accepted; independent final PASS; verified Code Review handoff
 ---
 
 # Round 2: account, authors, shell and commercial fulfillment
@@ -12,9 +12,9 @@ publication_gate: saved cutovers and scoped runtime accepted; independent final 
 ## Текущее состояние — 2026-10-24
 
 Implementation checkpoint — `18f454fef1`, документация — `922d823da6`;
-последующие backend-guard и два Category CSS исправления находятся в текущем дереве.
-Итоговый независимый review-pr: PASS от code_review_readiness. Issue остаётся
-In Dev до проверенного root перехода Code Review.
+последующие backend-guard и два Category CSS исправления сохранены в `e39747ae4e`.
+Итоговый независимый review-pr: PASS от code_review_readiness. Статус GitHub
+Project подтверждён как Code Review; пользовательское принятие остаётся открытым.
 PR, push и merge отсутствуют.
 
 - [x] R2.1–R2.2: ownership/privacy, atomic Article и token lifecycle; focused и actual PostgreSQL/Hono/cache evidence сохранено.
@@ -25,7 +25,7 @@ PR, push и merge отсутствуют.
 - [x] R2.6 Category source/CSS/desktop: generated rule 16/9 и frame 1216.015625 × 684.00390625 проверены.
 - [x] R2.6 Category 320 px: inner/client/scroll width 320, frame 272 × 153, computed 16/9, absolute child и object-cover проверены.
 - [x] Итоговый независимый review-pr: code_review_readiness PASS; scoped evidence и ограничения приняты.
-- [ ] Root commit/checkpoint и подтверждённый GitHub переход на пользовательский Code Review.
+- [x] Root commit `e39747ae4e` и подтверждённый GitHub переход на пользовательский Code Review.
 
 Production build завершён; внешний supervisor завершился exit 1 после EPERM при
 сигнале уже завершившейся группе. Его final RSS receipt отсутствует; сохранённый
@@ -75,7 +75,7 @@ degraded false. Scope и ограничения проверки находят�
 
 Текущий сохранённый каталог соответствует `ISSUE-376-commercial-confirmed-input.json`: Pro 29 USD или 1900 RUB в месяц за 5000 токенов; пополнения 100/300/500/1000/3000 RUB по 0.13 RUB за токен; Landing USD 100 и Startup from USD 2000. Free initial 3000 остаётся внутренним once-only grant. Расчёт списаний AI не менялся; количества пакетов и precision policy записаны в `ISSUE-376-commercial-review.md`.
 
-R2.5b применён через maintained SDK flow: 70 creates/6 updates, verify, repeat 76 skips, fresh prepare 0 operations, rollback и reapply 0 creates/6 updates. Все 84 protected selections/669 rows совпали; семь старых Pro Orders читаются после смены цен. Дополнительное исправление numeric Token Key создало один Key и изменило только шесть новых Key associations: verify, repeat 7 skips и fresh prepare 0, те же 84 защиты сохранены. Старый shared Key и Free не менялись. Commercial application завершён в этом scope. После удаления fixtures fresh prepare снова даёт 0 operations при 84 protected selections. Scoped production/auth/browser и Category geometry evidence принято; итоговый независимый review R2.6 PASS, GitHub Code Review transition остаётся открытым.
+R2.5b применён через maintained SDK flow: 70 creates/6 updates, verify, repeat 76 skips, fresh prepare 0 operations, rollback и reapply 0 creates/6 updates. Все 84 protected selections/669 rows совпали; семь старых Pro Orders читаются после смены цен. Дополнительное исправление numeric Token Key создало один Key и изменило только шесть новых Key associations: verify, repeat 7 skips и fresh prepare 0, те же 84 защиты сохранены. Старый shared Key и Free не менялись. Commercial application завершён в этом scope. После удаления fixtures fresh prepare снова даёт 0 operations при 84 protected selections. Scoped production/auth/browser и Category geometry evidence принято; итоговый независимый review R2.6 PASS, commit `e39747ae4e` и GitHub Code Review transition подтверждены.
 
 ## Владение файлами и порядок интеграции
 
@@ -179,3 +179,11 @@ R2.5b применён через maintained SDK flow: 70 creates/6 updates, ver
 6. Реальные warm-cache tests: public author DTO cache корректен, raw Profile/private content до cache denied, account principal change очищает private UI/data. Targeted invalidation старых public Profile/Article/Host и обоих response-cache families завершена до заявления о privacy исправлении.
 
 Фазы принимаются независимым review-pr после исправления findings; root обновляет issue/process/status. Итоговый статус — Code Review. Пользователь принимает конечный результат; PR/push/merge отсутствуют.
+
+## Verified Code Review handoff
+
+Implementation/acceptance commit: `e39747ae4e`; branch:
+`codex/issue-376-framework-visual`. GitHub Project update and subsequent status
+read both confirm **Code Review**. The [issue summary](https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6376141035)
+contains the checks and their limits. Normal API/Host dev servers remain on
+4000/3000. Human Code Review is pending; no PR, push, merge or Done transition.
