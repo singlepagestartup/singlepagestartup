@@ -1,0 +1,42 @@
+{
+  "tool": "image_gen.imagegen",
+  "prompt": "Use case: identity-preserve. Edit target: supplied original Living Focus blog photograph. Prepare a square 1:1 delivery derivative by OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and below the complete original horizontal photograph until the result is square. Preserve the ENTIRE original frame inside the central horizontal band, at its full original width. Do not crop, zoom, stretch, move or recompose any original person, hand, laptop, notebook, table or meaningful scene detail. Keep every face, expression, anatomy, pose, clothing, cool daylight, warm skin, reflected teal glass and photographic texture unchanged. Add only plausible quiet continuation of the same room/window above and table/foreground below, with matching perspective and light. No borders, new objects, text, logos, UI or watermark. This is the SAME photograph on a larger square canvas.",
+  "assets": [
+    {
+      "slug": "next-server-client",
+      "master": "next-server-client-master.png",
+      "delivery": "next-server-client-square.png",
+      "generatedSource": "/Users/rogwild/.codex/generated_images/01a16324-9b9d-7690-a40e-58af1dd151a5/exec-8d22df5e-00ff-4f1d-8b86-a8e3ca8f956b.png"
+    },
+    {
+      "slug": "react-query-realtime",
+      "master": "react-query-realtime-master.png",
+      "delivery": "react-query-realtime-square.png",
+      "generatedSource": "/Users/rogwild/.codex/generated_images/01a16324-9b9d-7690-a40e-58af1dd151a5/exec-9cdf9bbf-fd85-44b6-8c92-a8ffa1157dd0.png"
+    },
+    {
+      "slug": "hono-layered-api",
+      "master": "hono-layered-api-master.png",
+      "delivery": "hono-layered-api-square.png",
+      "generatedSource": "/Users/rogwild/.codex/generated_images/01a16324-9b9d-7690-a40e-58af1dd151a5/exec-a1bcc573-550d-4139-a870-5ca235902a2c.png"
+    },
+    {
+      "slug": "subscription-access",
+      "master": "subscription-access-master.png",
+      "delivery": "subscription-access-square.png",
+      "generatedSource": "/Users/rogwild/.codex/generated_images/01a16324-9b9d-7690-a40e-58af1dd151a5/exec-1b1a405a-64ac-4741-a8a9-9ae0726ec55d.png"
+    },
+    {
+      "slug": "nx-bun-docker",
+      "master": "nx-bun-docker-master.png",
+      "delivery": "nx-bun-docker-square.png",
+      "generatedSource": "/Users/rogwild/.codex/generated_images/01a16324-9b9d-7690-a40e-58af1dd151a5/exec-cc08efc7-29f7-4313-b389-e0ac4bec2919.png"
+    },
+    {
+      "slug": "safe-build-rollout",
+      "master": "safe-build-rollout-master.png",
+      "delivery": "safe-build-rollout-square.png",
+      "generatedSource": "/Users/rogwild/.codex/generated_images/01a16324-9b9d-7690-a40e-58af1dd151a5/exec-6d117650-1ee0-4d70-b732-960669cd7252.png"
+    }
+  ]
+}

@@ -301,3 +301,49 @@ for (const path of ["/api/blog/widgets-to-categories", "/api/blog/categories-to-
   if (!response.ok) throw Error(`Public relation read failed: ${response.status}`);
 }
 ```
+
+## Curated Blog examples
+
+`blog-example-content.ts` publishes an explicit six-article, three-category local
+example set through server SDKs. Its `sps.blog-example-content-input.v1` input
+names existing Category IDs, five new Article slugs, the preserved private
+Article ID/slug, seven uploaded File IDs, the `sps-editorial` author, exact Blog
+Widget curation, eight Article ID/slug pairs to retire and the two selected
+public Social author-relation GET paths. Localized descriptions contain saved
+TipTap JSON strings. Supply complete EN/RU copy; files must already exist.
+
+```sh
+API_SERVICE_URL=http://localhost:4000 npx dotenv -e apps/api/.env -- bun run --tsconfig-override ./tsconfig.base.json tools/runtime/blog-example-content.ts prepare /absolute/input.json /absolute/new-blog-manifest.json
+API_SERVICE_URL=http://localhost:4000 npx dotenv -e apps/api/.env -- bun run --tsconfig-override ./tsconfig.base.json tools/runtime/blog-example-content.ts apply /absolute/new-blog-manifest.json --exclusive-maintenance
+API_SERVICE_URL=http://localhost:4000 npx dotenv -e apps/api/.env -- bun run --tsconfig-override ./tsconfig.base.json tools/runtime/blog-example-content.ts verify /absolute/new-blog-manifest.json
+bun test --tsconfig-override ./tsconfig.base.json tools/runtime/blog-example-content.test.ts
+```
+
+Prepare is read-only and refuses an existing manifest. Review its exact
+retirement list and FK relation snapshots before apply. Keep other CMS writers
+stopped through verify. The mode-0600 manifest records original versions,
+server-assigned IDs and progress before each mutation; resume the same manifest
+following an interrupted or unknown response. Repeat apply and a fresh prepare
+must require zero writes.
+
+The command checks the protected Article's subscription associations and full
+Website Builder/File closure before writes and before retirement. Those records
+remain unchanged. It creates real cover, author, avatar, category and Widget
+relations and reads them back before deleting the eight explicit Articles.
+Retirement refuses saved Website Builder/File associations that would leave
+content orphaned. Product cross-promotion relations may cascade while their
+Products remain. It never deletes Profiles, Files, Products or Website Builder
+records. Existing role-bound GET permissions abort; missing selected author GET
+permissions are additive and their anonymous reads are verified. Article
+retirement has no automatic rollback; retain the before manifest and inventory.
+
+For the researched local dataset, old Article
+`abd1a6da-b3e0-4051-92b4-403829dfd81b` has public WB association
+`8264f0d8-e472-42e6-aa17-0300c0b56553` to Widget
+`802f309b-cd1e-43f7-a844-b03e95b67ba5`. Back up and inspect that root's incoming
+and outgoing relations through SDKs. Resolve it through a separate explicit
+content operation before prepare; delete the old root only when it is owned
+exclusively by the retired example. Keep shared roots and descendants. The
+publication command does not perform this cleanup. Its selected protected-graph
+snapshot complements the deployed resource and media write guards; those guards
+also reject public reuse of any other protected graph or byte-path alias.

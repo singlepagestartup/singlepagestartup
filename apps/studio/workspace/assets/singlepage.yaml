@@ -5686,3 +5686,581 @@ assets:
       Preserve the whole mascot without cropping or redesign; center it with
       transparent breathing room for a circular UI avatar.
     source_or_tool: Built-in image_gen, referenced-image edit.
+
+  - id: singlepage-blog-next-server-client-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/next-server-client-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for next-server-client.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1536
+      height: 1024
+    content_sha256: f99999a060ae5500423a1124612b424ffca1c97e2ef5c23ffb721b5c8c811d7e
+    production_stage: original-master
+    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: A woman developer in her
+      thirties with short dark curly hair and a charcoal knitted sweater
+      discusses a laptop prototype with a bespectacled colleague at a wooden
+      table beside a tall studio window. She gestures at the laptop edge while
+      listening; an intimate side view shows her face and the two natural hands.
+      Focus on the human boundary between explaining and building, quiet
+      greenery and cool daylight in the background. Visually distinguish the
+      scene with a low over-the-shoulder camera angle."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-next-server-client-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/next-server-client-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for next-server-client.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-next-server-client-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 6fcf83114f37beb3a8b9e3c9e419a31062468bc83ff647d4c538dea3b5b2087e
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-next-server-client-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: next-server-client-master.png
+      crop: false
+      stretch: false
+  - id: singlepage-blog-react-query-realtime-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/react-query-realtime-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for react-query-realtime.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1672
+      height: 941
+    content_sha256: 4c9c5711d05d92cf0e2fe57d8fe3e356d17f6255083eb1b0de435d8bc636e536
+    production_stage: original-master
+    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: A thoughtful Black male
+      developer in his forties with close-cropped hair and a deep blue work
+      shirt checks a laptop and a handwritten notebook beside a large bright
+      window. Seen through a soft translucent teal glass reflection, his eyes
+      are sharp; one hand rests naturally on the trackpad. Capture a quiet
+      moment of confirming that two views agree, with another out-of-focus work
+      station behind him. Screen content is blurred and unreadable."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-react-query-realtime-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/react-query-realtime-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for react-query-realtime.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-react-query-realtime-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 0914221e5a106a38c65d2bb8fdfe8a8e53ac097058884f3b374da8fc82788c7a
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-react-query-realtime-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: react-query-realtime-master.png
+      crop: false
+      stretch: false
+  - id: singlepage-blog-hono-layered-api-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/hono-layered-api-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for hono-layered-api.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1536
+      height: 1024
+    content_sha256: 20b203b31dae072f98ab715acba8ba6f7651a355a5264f26c03ba6c86ba3599d
+    production_stage: original-master
+    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: Two software developers, a short
+      dark curly-haired woman in a charcoal sweater and a Black man in a blue
+      shirt, work together at a compact studio table arranging a few plain paper
+      cards into an orderly sequence next to a laptop. No text or diagram is
+      readable. One explains a step with a natural open-hand gesture while the
+      other listens. Cool morning daylight, green plant out of focus, honest
+      editorial energy; medium framing with both faces and hands visible."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-hono-layered-api-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/hono-layered-api-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for hono-layered-api.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-hono-layered-api-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: bb7f24c77ce845914998c95f7553ebe841684f7b32bb8a30288ae9548e5e2656
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-hono-layered-api-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: hono-layered-api-master.png
+      crop: false
+      stretch: false
+  - id: singlepage-blog-subscription-access-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/subscription-access-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for subscription-access.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1536
+      height: 1024
+    content_sha256: ded42e3554a028bcd3675bade36b98ee78ed08bb1a3b87f7180047c0eb837471
+    production_stage: original-master
+    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: A dark curly-haired woman
+      engineer, charcoal textured sweater, leans forward thoughtfully during a
+      code review with a colleague whose shoulder is softly out of focus. One
+      hand holds a pencil over an open notebook beside a closed plain folder and
+      laptop. A careful, attentive expression suggests checking access before
+      sharing work. Cool side-window light, natural warm skin, detailed hair rim
+      light, no staged business smile, no padlock props or security graphics."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-subscription-access-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/subscription-access-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for subscription-access.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-subscription-access-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 14636c86b9bc6b1c7b93ccf542524913e43e32077746d2a36f68f6aea75a9e8b
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-subscription-access-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: subscription-access-master.png
+      crop: false
+      stretch: false
+  - id: singlepage-blog-nx-bun-docker-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/nx-bun-docker-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for nx-bun-docker.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1672
+      height: 941
+    content_sha256: 2fdd6ce7f54928ec4797f27fc0c24e8fd3ece1ba19c9152bc506f469bfedc75e
+    production_stage: original-master
+    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: Two developers prepare a small
+      shared workbench in a sunlit creative studio: a Black man in a deep blue
+      shirt connects a neat cable to a laptop while a woman with dark wavy hair
+      checks a notebook nearby. A small unbranded desktop computer and neatly
+      grouped practical equipment suggest a repeatable development workspace.
+      Candid action, softly blurred nearest hand, faces clear, cool blue
+      daylight and warm skin, no server-rack glamour, no technical logos."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-nx-bun-docker-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/nx-bun-docker-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for nx-bun-docker.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-nx-bun-docker-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 535fc76fdc4b7966ae0a29d8bfa7d209a540d47df4f59a1e336e6b9bef5b1640
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-nx-bun-docker-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: nx-bun-docker-master.png
+      crop: false
+      stretch: false
+  - id: singlepage-blog-safe-build-rollout-master
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/safe-build-rollout-master.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Preserved original blog cover source for safe-build-rollout.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-generated-living-focus-photography-business-conversation-square
+      - singlepage-generated-living-focus-photography-moment-of-focus-square
+    dimensions:
+      width: 1672
+      height: 941
+    content_sha256: 69e1635428ef03de700b661444d4ab9eb507b3522cc8740d00ea06018e43acf4
+    production_stage: original-master
+    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+      cover photograph for SinglePageStartup's Living Focus visual system. Style
+      master: Candid editorial photography of people at work, with cool blue or
+      teal daylight balanced by warm natural skin tones. Use close human
+      framing, a present gesture and a clear point of attention. Keep the image
+      photographic and contemporary, with soft foreground or background depth;
+      allow natural motion blur when the action calls for it. Quiet blue-grey
+      interiors, real wood, practical clothes, authentic skin and hair texture,
+      soft window reflections. Generate a full-bleed original master with
+      natural scene-driven framing; do not constrain the aspect ratio to a
+      square. No text, logos, readable screens, watermark, UI overlays or
+      science-fiction glow. Conceptual editorial imagery, not documentary
+      evidence of the actual team. Scene brief: A small software team pauses
+      together after reviewing a release on a laptop at a wooden window-side
+      table. A Black man with close-cropped hair in a deep blue shirt points
+      calmly to a notebook while a dark curly-haired woman in a charcoal sweater
+      studies it. An unbranded monitor sits blurred in the background. The mood
+      is attentive and composed, no celebration or claims of success; late cool
+      daylight, teal glass foreground reflections and natural human detail."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-prompts.json.
+  - id: singlepage-blog-safe-build-rollout-square
+    design_role: null
+    design_key: null
+    path: assets/singlepage/generated/living-focus/blog/safe-build-rollout-square.png
+    source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
+    evidence: false
+    rights_status: AI-generated conceptual editorial imagery; no actual team or
+      customer is depicted.
+    purpose: Square blog cover delivery for safe-build-rollout.
+    related_artifacts:
+      - singlepage.products
+    allowed_use:
+      - Conceptual imagery for the Framework blog examples requested by the
+        operator.
+    prohibited_use:
+      - Do not present the people as actual staff or customers.
+    reference_asset_ids:
+      - singlepage-blog-safe-build-rollout-master
+    dimensions:
+      width: 1254
+      height: 1254
+    content_sha256: 1d5523553057411d590db2ce0d158bce62c3cecc208b5870da94de54a0d2e787
+    production_stage: square-delivery
+    prompt: "Use case: identity-preserve. Edit target: supplied original Living
+      Focus blog photograph. Prepare a square 1:1 delivery derivative by
+      OUTPAINTING ONLY: extend the shorter vertical canvas dimension above and
+      below the complete original horizontal photograph until the result is
+      square. Preserve the ENTIRE original frame inside the central horizontal
+      band, at its full original width. Do not crop, zoom, stretch, move or
+      recompose any original person, hand, laptop, notebook, table or meaningful
+      scene detail. Keep every face, expression, anatomy, pose, clothing, cool
+      daylight, warm skin, reflected teal glass and photographic texture
+      unchanged. Add only plausible quiet continuation of the same room/window
+      above and table/foreground below, with matching perspective and light. No
+      borders, new objects, text, logos, UI or watermark. This is the SAME
+      photograph on a larger square canvas."
+    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+      inspected by the implementation agent. Exact prompts and original tool-output
+      paths are recorded in utils/media/issue-376-blog-adaptation.json.
+    source_master_asset_id: singlepage-blog-safe-build-rollout-master
+    adaptation:
+      operation: canvas-outpainting
+      tool: image_gen.imagegen
+      source: safe-build-rollout-master.png
+      crop: false
+      stretch: false
