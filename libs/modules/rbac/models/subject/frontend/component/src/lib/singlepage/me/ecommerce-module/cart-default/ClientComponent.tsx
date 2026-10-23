@@ -3,6 +3,7 @@
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { IComponentPropsExtended } from "./interface";
 import { ShoppingCart } from "lucide-react";
+import { cn } from "@sps/shared-frontend-client-utils";
 import {
   Sheet,
   SheetContent,
@@ -17,9 +18,13 @@ export function Component(props: IComponentPropsExtended) {
     <Sheet>
       <SheetTrigger
         aria-label={props.language === "ru" ? "Открыть корзину" : "Open cart"}
+        className={cn(
+          "relative inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground",
+          props.className,
+        )}
       >
-        <div className="w-10 h-10 flex flex-row items-center justify-center rounded-full border border-primary relative">
-          <ShoppingCart className="w-4 h-4 text-primary" />
+        <div className="relative flex size-full items-center justify-center">
+          <ShoppingCart className="size-5" />
 
           <Subject
             isServer={false}
@@ -31,8 +36,8 @@ export function Component(props: IComponentPropsExtended) {
             {({ data: ecommerceModuleOrderQuantity }) => {
               if (ecommerceModuleOrderQuantity) {
                 return (
-                  <div className="absolute -top-1 -left-1 w-fit min-w-5 h-5 px-1 rounded-xl bg-primary flex items-center justify-center text-[10px] font-medium text-white">
-                    <p className="text-white">{ecommerceModuleOrderQuantity}</p>
+                  <div className="absolute -right-1.5 -top-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-primary-foreground">
+                    <p>{ecommerceModuleOrderQuantity}</p>
                   </div>
                 );
               }
