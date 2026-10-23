@@ -296,7 +296,7 @@ Current follow-up checkpoint, 2026-10-24: monthly Pro terms are confirmed. Norma
 - **Stage**: Commercial preflight
 - **Symptom**: Retiring Pro's Star offer would make existing Star Orders fail their extended read.
 - **Root Cause**: The history projection recalculated its quote from current Product attributes; billing transport type and Product delivery type can differ.
-- **Fix**: A bounded saved-Invoice/interval projection and regression cases are under independent review. Commercial apply remains held until the correction passes review and tests.
+- **Fix**: The saved-Invoice/interval projection and ambiguity guards pass independent source review and45 regression tests. All7 old Pro Orders remain readable after commercial application; protected financial observations are unchanged.
 - **Preventive Action**: Exercise historical paid, completed, canceled, OPEN and unbilled Orders before changing live Product currencies or intervals; preserve financial rows and fixed accepted periods.
 
 ### Incident 21 — Reported heating during production type checking
@@ -309,3 +309,9 @@ Current follow-up checkpoint, 2026-10-24: monthly Pro terms are confirmed. Norma
 - **Preventive Action**: Keep checks serial and bounded; inspect process ownership and actual resources, stop task-owned work on a thermal report, and distinguish source review, completed compilation and a completed production build.
 
 Current thermal checkpoint: no Host or production compiler is running. API remains on4000 through npm run api:dev. User confirms cooling after the build stop. Client-boundary review is recorded in ISSUE-376-rbac-client-boundary-review.md; independent root/Host/source acceptance is in ISSUE-376-final-source-review.md. The new Blog Provider cycle is removed through its narrow public alias; the unfiltered empty Popular fallback is removed. Full production acceptance, commercial application and final Code Review handoff remain pending.
+
+## Current checkpoint
+
+Implementation: local commit `18f454fef1`; no push or PR. Order regressions pass45/45 in1.982seconds; all7 real old Pro Orders remain readable. The confirmed monthly Pro/top-up catalog applied70 creates/6 updates. Verify, repeat76 skips, fresh prepare0 operations, configuration rollback and reapply0 creates/6 updates pass with84 protected selections/669 rows unchanged. Detailed receipts and limitations: `ISSUE-376-platform-reviews.md` and `ISSUE-376-commercial-review.md`.
+
+API remains on4000. Host is stopped after the thermal report. Issue stays In Dev: post-checkpoint Host verification, a completed production build, exact320px and complete authenticated browser transitions are pending. No further heavy build or type checker has run.

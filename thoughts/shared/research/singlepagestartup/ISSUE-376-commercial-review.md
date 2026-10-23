@@ -176,3 +176,15 @@ The first default-sandbox snapshot attempt could not reach the API and performed
 no writes. No apply, freeze, tests, TSC, Nx, compiler, browser or server was run
 by this agent. Live behavior, independent acceptance, application, repeat and
 rollback remain unclaimed.
+
+## Root acceptance after the source checkpoint
+
+Local commit `18f454fef1` contains the implementation and bounded client-boundary correction; hooks performed formatting only, and its actual downstream trailers validate. No push or PR was created.
+
+The serial Order regression command passed all45 tests in3 suites in1.982seconds, with Node heap1536MiB. It covers saved Invoice/interval projection, retired-currency checkout rejection and fixed subscription periods, including the independent cross-currency correction. The attempted nice adjustment was unavailable in the sandbox; the test process completed and exited.
+
+Actual SDK reads succeed for all7 existing Pro Orders before and after the price change. Their type/status classification still matches the zero-candidate legacy-freeze observation. A fresh protected preparation matches all84 independently reviewed selections/669 rows exactly. No fixed period needed freezing; inactive paid and OPEN cancellation histories gained no entitlement.
+
+Commercial publication through the maintained local SDK tool:70 additive records and6 existing updates; verify passed. Repeat skipped76 operations with zero writes; fresh preparation required0 operations. Rollback restored6 existing configuration records while retaining additive records, then a fresh prepare found6 updates. Reapply performed0 creates/6 updates and verification passed. Final terms are Pro29USD or1900RUB per month for5000 tokens, five RUB top-ups at the existing0.13RUB/token rate, and the two service examples. Financial observations, original Product/Attribute records and the protected Article graph are unchanged. No checkout, payment, token grant or notification was performed by publication. Private receipts remain mode0600 under `.git/sps-runtime/issue-376`.
+
+Host and full production acceptance remain held after the thermal report. API continues on4000 through `npm run api:dev`. Exact320px, complete authenticated browser transitions, post-checkpoint Host compilation and a completed production build remain open. The issue remains In Dev; these results do not claim final Code Review readiness.
