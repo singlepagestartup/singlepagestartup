@@ -184,3 +184,70 @@ Other reviewers' scoped acceptances were inspected in /tmp/sps-376-access-review
 - Browser entitlement coverage is the guest gate. Granted/expired/revoked/multiple-principal graph and bytes use actual API/PG/Redis coverage; client deadline/media/cache disposal use focused React/SDK coverage. No paid browser session, browser CRM Submit, external notification delivery, external payment or provider settlement is claimed.
 - Saved browser Gallery media are images; native audio/video handling uses focused tests. Unknown URLs preserve Next streaming not-found UI/noindex/digest; literal HTTP 404 is not established.
 - Live cutover has 9 operations and zero legacy freezes. Apply/readback/repeat, rollback retaining private classification and reuse/reapply are recorded. Live legacy backfill is not claimed; its service/adapter behavior has separate coverage. Manifests remain outside Git.
+
+---
+
+# ISSUE-376 — Blog follow-up independent review
+
+Verdict: **PASS** for local source revision `129dd65f92` and the published local demonstration, within the evidence limits below. No open source, publication-tool or access finding remains. Final human Code Review remains with the user; this review does not create a PR or approve a merge.
+
+Comparison: `698713c331` → frontend `4db50ba65f`, editorial/publication `2457eebd1e`, Cart trigger `129dd65f92`. The reviewer used review-pr, inspected the actual source and tool, independently reran the tests listed below, and read the final operator/build/browser artifacts. Implementation, data mutations, commits and statuses remain owned by root and the implementing agents.
+
+## Resolved findings
+
+1. **P2 — unnamed links for empty card titles.** Article and Category stretched primary links now have localized accessible names when the saved title is empty or whitespace. EN/RU regressions cover both models.
+2. **P2 — missing byline loading layout.** One Profile-owned BylineSkeleton is wired to the model reader, author association reader, linked Profile find and Host association find. Actual shared-client pending paths pass for both xs and sm. There is no extra Provider or query owner.
+3. **P2 — rich-text renderer used for plain Profile subtitle.** Byline now uses the existing getLocalizedPlainText helper and a normal paragraph. Plain EN/RU saved data is restored; legacy serialized TipTap remains readable. EN/RU plain/legacy regressions verify no TipTap invocation or console diagnostic. Profile schema, admin text fields and existing overview behavior remain compatible.
+
+The browser's Cart styling finding is also resolved in the owning RBAC component: a 44px neutral rounded-xl trigger and right-aligned quantity badge replace the old circular primary-colored treatment. Subject/cart readers, Sheet content and mutations remain unchanged.
+
+## Source and composition
+
+Host queries Social ProfilesToBlogArticles using the actually loaded Article ID. Blog receives a rendered author node through a same-runtime callback; it does not import Social or RBAC. Default association renderers forward the typed callback and resolve it after loading their linked Article. Social byline/author-default literals, registries, public exports and props unions are registered.
+
+Categories use actual CategoriesToArticles links and saved records/order. Their cover is the first ordered attachment of the first ordered linked Article. Article retains its attachments, rich text and scoped private-content slot. The primary stretched anchor covers the card without nested anchors; category/description links and native media controls remain above it. Both Studio cards use the same primary-link behavior. Primary keyboard focus outlines the card.
+
+Navbar retains saved logo/button relations and Host-provided JSX slots, with one responsive navigation instance. Opening focuses its first link; Escape closes it and returns focus. The unchanged Host default-navbar wrapper supplies Cart only. Studio's full Framework fixture supplies an optional account entry; runtime preserves its existing cart-only composition. Identical fixture content or a newly added Sign-in operation is not claimed. Session logic remains in RBAC/Host composition.
+
+## Independent verification
+
+- Blog: 13 tests / 3 suites PASS.
+- Final Social byline/reader: 10 tests / 2 suites PASS.
+- Host Blog bridge: 3 tests / 1 suite PASS.
+- Navbar: 4 tests / 2 suites PASS.
+- Final RBAC Cart trigger: 3 tests / 1 suite PASS.
+- Frontend total: **33 tests / 9 suites**, independently rerun.
+- Publication tool: `bun test --tsconfig-override ./tsconfig.base.json tools/runtime/blog-example-content.test.ts`: **9 tests / 36 assertions PASS**. Bun's directory-mismatch warning does not change exit 0.
+- Code-placement check PASS. Author focused TypeScript programs cover nine frontend roots and the final Byline source/spec with zero diagnostics. Final module audit reports 14,877 sources and 0 violations; diff check passes.
+
+The final production build passes compilation, full Host type validation, static generation and trace collection: `/tmp/sps-376-blog-accepted-retry-build.log`. An earlier attempt failed with ENOSPC while writing Webpack cache. Root removed four inactive task build outputs and reran using the existing `SPS_HOST_WEBPACK_CACHE=false` and `NX_SKIP_NX_CACHE=true` settings without source changes. Final source/config worktree is clean; only Core artifacts remained dirty at review.
+
+The asset pipeline has no new Blog registration gap. Its remaining gaps are eight existing mascot items under one structural check and four existing approval gaps. No approval stamp is granted by this review. Root's Studio validation exits 0; the pipeline gap report is retained separately in `/tmp/sps-376-blog-assets-pipeline.json`.
+
+## Editorial and media
+
+All six EN/RU articles were inspected against their listed repository sources; every listed local path exists. TipTap descriptions parse and code blocks contain actual line breaks, without literal escaped newline/quote sequences. Public Article bodies contain no protected marker. The private revocation appendix remains separate and uses explicit local fixture inputs, current-subject reads without operator bypass, and deletion of only the fixture's exact Role grant. Its protected list/count examples distinguish filtered denial from unfiltered public collections.
+
+External technical statements match primary documentation: [Next.js 15 component composition](https://nextjs.org/docs/15/app/getting-started/server-and-client-components), [Next.js 15 revalidateTag](https://nextjs.org/docs/15/app/api-reference/functions/revalidateTag), [Hono middleware order](https://hono.dev/docs/guides/middleware), [Drizzle migration generation](https://orm.drizzle.team/docs/drizzle-kit-generate), and [TanStack Query keys](https://tanstack.com/query/v5/docs/framework/react/guides/query-keys). SPS ownership, query scope, cache lifecycle and private-access claims match the reviewed code/contracts. Code examples use illustrative isolated fixtures; they are not live credentials or drop-in commands for an existing account.
+
+Six photographic masters and square outpainted deliveries are retained. Their prompts/adaptation metadata live under workspace/utils/media; the registry records the current proposal. Root verified the seven uploaded managed assets byte-for-byte. The byline uses a real saved editorial Profile and brand avatar, without invented person credentials.
+
+## Publication safety and actual state
+
+The tool uses explicit localhost:4000 and rejects apply without `--exclusive-maintenance` before credentials/network. It snapshots exact ID/slug retirements and metadata-declared incoming Article links, the selected protected graph and existing assets. It verifies all new copy/cover/author/avatar/category/curation sets before retiring any old Article. Unknown create/delete outcomes resume using saved progress and actual returned IDs. Existing Role-bound policies abort; only the two explicitly selected missing Social author GET policies may be created. Full-record PATCH relies on the documented exclusive CMS window.
+
+The tool performs no Website Builder/File/Product deletion and has no automatic retirement rollback. Its README names the separate old public Widget/link prerequisite (802f309b… / 8264f0d8…) with ownership inspection, backup and readback before prepare. Root performed that SDK cleanup after checking the sole incoming link and absence of outgoing/Host references. The selected File-ID check complements the active global graph/byte-alias guards; preparation alone does not prove unrelated aliases safe.
+
+Operator logs and the mode-0600 manifest show 51 initial operations, 6 Articles, 3 Categories, 8 exact retired Articles, and unchanged protected graph; repeat apply writes 0. Fresh preparation after the plain subtitle restoration has **0 operations**, and final verify again returns 6/3/8 with the same protected fingerprint. Evidence: `/tmp/sps-376-blog-{apply,verify,repeat}.log`, `/tmp/sps-376-blog-before.json`, `/tmp/sps-376-blog-final-state.json`, `/tmp/sps-376-blog-final-{prepare,verify}.log`.
+
+The retained private Article remains `5ade2625-007e-4c90-86bd-989a33e534fa`, with private link `992b28da-d5a7-4e9a-a0f4-350e0c73cee3`, subscription link `b7722336-de44-4760-9b67-b1bf92102b3b` and WB Widget `6580e777-393d-4255-94b9-58f3607ce465`. Private closure fingerprint is `a1d4124433fdc22fc77018e0441ca7dafef45b788a169135b76530d9ea4af140`. Product targets remain after old cross-promotion links cascade. Seven assets and the actual returned editorial Profile are recorded.
+
+## Built runtime acceptance and limits
+
+Final HTTP JSON independently inspected: **27 Host responses** are 200 without notFound, protected marker or private Widget ID. They cover six Articles and three Categories in EN/RU, plus eight private Article HTML/RSC responses across EN/RU Blog and Framework aliases. Five actual API reads confirm private Widget403, filtered list empty, filtered count0, Article count6 and Category count3. The three direct protected Widget API responses are private/no-store; public Host HTML/RSC contains public Article content and the client access slot. Evidence: `/tmp/sps-376-blog-accepted-http.json` and `.log`.
+
+Final browser evidence targets source129dd65f92, cache-disabled accepted build, Host session24587. Its timestamp-filtered console after fresh navigation contains 0 warnings/errors, including no subtitle/TipTap, hydration or failed-request diagnostic. Desktop bylines and localized bodies/source links render. Actual320 measurements show page scrollWidth320, a 320×900 Cart drawer, 44px Cart/Menu controls and correct Escape focus. All four settled EN/RU Blog/Framework private routes show public content plus the localized denied block, without protected marker or Widget ID.
+
+This reviewer visually inspected the valid final RU Article and Cart 320×900 screenshots: localized byline/plain subtitle/date/avatar and neutral Cart/Menu treatment fit. Nine captures are 320×169 and unusable: the final index/code/two private-alias images, plus earlier RU Article, Backend/DevOps Category and two private-gate images. All nine are explicitly excluded by the corrected browser report and retained only as capture diagnostics. The cause is unproven. Their measurements/settled-gate checks are browser-agent DOM evidence, supported by the separate actual HTTP matrix. Earlier valid desktop screenshots and 320×900 Index/Frontend Category/Nx Article/code/Storybook-header screenshots, plus native blank-padding/image/category-link click checks, are attributed to the earlier build; the only later source changes are the separately tested byline renderer and Cart trigger. No claim of new final-build coordinate clicks is made.
+
+Browser report: `/tmp/sps-376-blog-browser-report.md`; empty final warning/error list: `/tmp/sps-376-blog-browser/final-console.json`. Original zoom/viewport were restored; agent-created tabs were closed. No payment, CRM submission, mail, login/logout, subscription purchase or user-session change was performed in this follow-up. Earlier entitled/expired/API/cache/security integration evidence remains separate and is not represented as a new browser subscription test.

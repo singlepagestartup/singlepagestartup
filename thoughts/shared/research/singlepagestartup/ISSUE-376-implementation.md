@@ -147,3 +147,9 @@ Source commits: 84087145cf, 6d7e1f09c9, cb4296b6f0, 6a9be42bb6.
 человеческий Code Review остаётся пользователю.
 
 GitHub Project status Code Review подтверждён shared helper 2026-10-22T23:58:52Z. Итог: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6353992295.
+
+## Blog follow-up: source 129dd65f92
+
+Шесть полных EN/RU статей, категории Frontend/Backend/DevOps по две, generated Living Focus covers и редакционный author опубликованы через SDK. Восемь старых Article удалены после readback. Private Article сохраняет identity, subscription и protected graph. Article/Category cards открываются целиком; navbar и Cart control используют Studio visual, сохраняя текущую runtime composition.
+
+Независимые проверки: 33 frontend tests в 9 suites и 9 tool tests с 36 assertions, PASS; fresh prepare — 0 операций, repeat — 0 записей. Final production build 129dd65f92 PASS; 27 Host HTML/RSC ответов 200 и 5 API reads; scoped desktop/320 browser PASS. Точная атрибуция screenshot/DOM/HTTP доказательств и ограничения находятся в [Blog follow-up](ISSUE-376-blog-followup.md), [reviews](ISSUE-376-reviews.md) и [browser](ISSUE-376-browser.md).

@@ -84,3 +84,56 @@ The live Framework reference renders hero/gallery/products/CRM/categories. Next 
 - Browser entitlement coverage is the existing guest session. Subscriber/expired/multiple-principal behavior, raw endpoints, bytes, cache and HTML/RSC isolation belong to the independent server/API acceptance; this report does not claim those browser scenarios.
 - Saved gallery media in the checked runtime are images. Native video/audio keyboard handling has focused test coverage; no live video/audio fixture was added for browser testing.
 - Chrome's viewport capability clamps this native window to 400px. Real 320px checks use the CUA-operated DevTools Responsive UI, with document dimensions checked explicitly. Viewport captures are used; a full-page screenshot API changed the effective viewport to 380px, so its file is labelled unverified and excluded from evidence.
+
+---
+
+# Published Blog browser verification
+
+Status: PASS for the exercised runtime checks, with the screenshot limitation documented below. Nine malformed captures are excluded from visual evidence.
+
+Final runtime: source `129dd65f92`, cache-disabled retry build `.next-issue376-blog-accepted`, Host port 3000, session 24587. Build log: `/tmp/sps-376-blog-accepted-retry-build.log`; runtime log: `/tmp/sps-376-blog-accepted-production.log`. API port 4000 and Storybook port 4321 are local.
+
+Final browser console cutoff: `2026-10-23T08:29:08.693Z`. Warning/error entries after fresh accepted-build navigation: **0**, including no TipTap byline, hydration or failed-request console diagnostics. Raw timestamp-filtered result: `/tmp/sps-376-blog-browser/final-console.json`. No HAR or complete network-request capture is claimed; root owns the separate HTTP/RSC/cache matrix.
+
+## Final accepted-build checks
+
+- Desktop 2250 CSS px: Blog renders three Categories, nine Article cards and six distinct Article IDs. Popular Articles deliberately repeats three records. Editorial bylines render on every Article card.
+- EN Next.js Article and RU React Query Article render their localized title, category, subtitle, actual editorial byline, plain-text editorial subtitle, creation date, full body and source references. External Next.js/TanStack documentation destinations are present with safe link attributes.
+- Cart trigger measures 43.994 px at desktop and 44 px at mobile, with `size-11`, `rounded-xl`, neutral border/background and `size-5` dark icon. This matches the Storybook trigger geometry and treatment.
+- At actual `innerWidth=320`, `innerHeight=900`, DPR 1, the Cart drawer measures 320×900 and the page scrollWidth stays 320. Its real empty state renders. Escape closes it and returns focus to the localized Cart trigger. No cart items were changed.
+- The Russian mobile menu opens with focus on `О нас`; Escape closes it and returns focus to `Открыть меню`. Cart and Menu buttons each measure 44×44.
+- Live read-only DOM measurements on the final accepted build: Blog at 320 retains three Categories, nine Article cards and editorial bylines, with scrollWidth 320. React Query code has `overflow-x:auto`, `white-space:pre-wrap`, clientWidth 238 and scrollWidth 238; the page scrollWidth is 320. These final index/code observations have no usable final viewport capture. Earlier valid 320 captures cover the unchanged card/code presentation. No horizontal code scrolling is claimed when there is no overflow.
+- Live read-only DOM checks on the final accepted build, after the authentication link became visible: all four private Article routes settle before inspection: EN/RU `/blog/articles/framework-private-content-audit` and EN/RU `/framework/blog/articles/framework-private-content-audit`. Public Article bodies remain readable (EN 6,094 / RU 6,922 rendered text characters). Each route shows the localized denied subscription block and locale-specific authentication URL. Both the protected marker and private Widget ID are absent from the live DOM. All four report innerWidth 320 and scrollWidth 320. The final private-gate captures are unusable; these are DOM observations, supported separately by root's HTTP/RSC matrix, not final screenshot proof.
+
+The current runtime Navbar composition preserves its existing Cart-only functional entry. Its authentication slot remains available; this saved composition has no Sign-in entry. The configured Sign-in example in Storybook is not represented as an added runtime operation. Root's baseline/source review confirms that composition is preserved.
+
+## Earlier publication interaction evidence
+
+These checks used `.next-issue376-blog-final`, before the final byline-renderer and Cart-trigger changes. The exact earlier source commit was not recorded; final accepted-source checks above are attributed separately.
+
+- Desktop widths 1,666 and 2,250 CSS px and at actual 320 CSS px: Frontend, Backend and DevOps Category pages each contain the two intended distinct Articles. Their actual saved covers load at 1,254 px natural width; the editorial SVG avatar loads at 512 px.
+- Article paragraph click opens the Next.js Article. Article image click opens the Hono Article. A native pointer click in blank left padding of a DevOps Article card opens the Nx Article. The Article Category chip independently opens its Category.
+- A native pointer click in blank padding of the Frontend Category card at 320 opens the Frontend Category page.
+- All six Article destinations were visited. Structured headings, paragraphs, code and source references render. EN Next.js/Hono/TanStack/Drizzle destinations and the translated RU React Query source link were inspected. External links use `_blank` with `noopener noreferrer nofollow`.
+- The private Article retains its Oct 22 creation date; the five new Articles show Oct 23. Reading time is absent and is not a current implementation requirement.
+- Storybook Framework at actual 320 has the same 81 px header height and mobile menu placement. Logo and navigation content come from the actual saved runtime records.
+
+## Evidence and cleanup
+
+Usable evidence files are in `/tmp/sps-376-blog-browser/`. A `file` metadata audit checks the sizes stated below. Only the listed usable captures are visual evidence.
+
+Final accepted build:
+
+- `final-index-desktop.jpg`, `final-article-en-desktop.jpg` — 2250×1190.
+- `final-article-ru-320.jpg`, `final-cart-320.jpg` — 320×900; independently checked by the reviewer.
+
+Earlier interaction pass, attributed to `.next-issue376-blog-final`:
+
+- `index-desktop.jpg`, `article-desktop.jpg`, `category-frontend-desktop.jpg`, `category-backend-desktop.jpg`, `category-devops-desktop.jpg` — 1666×1250.
+- `index-320.jpg`, `category-frontend-320.jpg`, `article-nx-320.jpg`, `code-320.jpg`, `storybook-header-320.jpg` — 320×900. The index image visibly shows the actual 320 card layout. Card and code presentation source was unchanged by the final byline/Cart fixes.
+
+Excluded captures: `final-index-320.jpg`, `final-code-320.jpg`, `final-private-en-alias-320.jpg`, `final-private-ru-alias-320.jpg`, `article-ru-320.jpg`, `category-backend-320.jpg`, `category-devops-320.jpg`, `private-320.jpg`, `private-gate-320.jpg`. Each file is 320×169, inconsistent with the requested/measured 320×900 viewport. The reviewer also observed a tiny page strip in the final index capture. These files are retained only for diagnosing the capture mismatch; they are not evidence of the mobile layout or gates. No cause for the mismatch has been established, and no new browser run or recapture was performed during this report correction.
+
+The temporary viewport and native tab zoom were restored: original localhost zoom 80%, desktop 2250 CSS px, native DPR 1.6. DevTools device mode is off and DevTools is closed. Both agent-created comparison/QA tabs are closed. User tabs and authentication were preserved.
+
+Scope limits: no payment, CRM submission, mail, login/logout, subscription purchase or user-session alteration. Entitled/expired access and HTTP/RSC/cache/security matrices belong to root's separate evidence. No frontend source was changed during this browser pass.

@@ -3,9 +3,9 @@ issue_number: 376
 issue_title: "Перенести визуал Storybook в Framework с сохранением функциональности и исправить доступ к закрытым виджетам"
 repository: singlepagestartup
 created_at: 2026-10-22T21:58:34Z
-last_updated: 2026-10-22T23:57:42Z
+last_updated: 2026-10-23T08:39:01Z
 status: active
-current_phase: complete
+current_phase: code_review
 ---
 
 # Process Log: ISSUE-376 — перенос визуала Storybook в Framework
@@ -20,7 +20,7 @@ current_phase: complete
 - Research: completed
 - Plan: completed
 - Implement: completed
-- Current phase: complete
+- Current phase: code_review
 - Next step: Человеческий Code Review пользователем; GitHub Code Review подтверждён shared helper. PR/push/merge и Done не выполняются.
 
 ## Phase Notes
@@ -175,3 +175,35 @@ current_phase: complete
 - GitHub status: Code Review, verified 2026-10-22T23:58:52Z через shared update/get helpers.
 - Summary: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6353992295.
 - Issue открыт. Человеческий review ожидается; PR, push, merge и Done не выполнялись.
+
+## Blog follow-up
+
+Source: user feedback after first Code Review handoff. Scope: six useful Next.js/Hono articles, Frontend/Backend/DevOps, generated covers, real authors/categories, default navbar matching Studio and whole-card navigation. Existing private demo is rewritten in place; unrelated protected associations remain intact. Root owns local SDK publication, content_frontend owns Blog/Social/Host slots, host_compile_diagnosis owns navbar, planner drafts technical EN/RU content, research_runtime owns publication tool, phase_reviewer independently reviews. Final handoff remains human Code Review without PR/push/merge.
+
+### Incident 12 — Plain Profile subtitle
+
+- **Phase**: Blog follow-up
+- **Occurrences**: 1
+- **Symptom**: Новый byline давал TipTap parse warnings.
+- **Root Cause**: Profile.subtitle штатно редактируется как текст, renderer ожидал JSON.
+- **Fix**: Существующий getLocalizedPlainText и paragraph; исходные plain данные восстановлены через SDK. Независимые plain/legacy EN/RU tests и чистая финальная browser console подтверждены.
+- **Preventive Action**: До выбора renderer читать owning form/schema и существующие consumers.
+
+### Incident 13 — ENOSPC при final build
+
+- **Phase**: Blog follow-up
+- **Occurrences**: 1
+- **Symptom**: Webpack не смог записать дисковый cache.
+- **Root Cause**: Несколько task outputs и большой cache заняли доступное место.
+- **Fix**: Только неактивные task dist удалены; existing cache-off flags дали финальную сборку размером 185 MB с exit 0 без source changes.
+- **Preventive Action**: Для разовой приёмки проверять место и использовать существующий режим без дискового webpack/Nx cache.
+
+## Blog follow-up handoff
+
+- Implementation: completed; source 129dd65f92.
+- Independent review-pr: PASS.
+- Data: 6 Articles / 3 Categories / 8 retired, repeat 0 writes, fresh 0 operations, private fingerprint unchanged.
+- Runtime: frozen build PASS;27 Host 200 responses + 5 API checks; scoped desktop/320 browser PASS, console 0 warnings/errors.
+- Artifacts: ISSUE-376-blog-followup.md, ISSUE-376-blog-content.json, appended reviews/browser evidence.
+- GitHub: Code Review, verified 2026-10-23T08:39:01Z; https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6360936917.
+- Human Code Review остаётся пользователю; PR/push/merge/Done отсутствуют.

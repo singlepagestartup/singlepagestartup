@@ -270,3 +270,15 @@ ISSUE-376-implementation.md, ISSUE-376-browser.md и ISSUE-376-reviews.md.
 Checkpoint marks относятся к этому распределённому набору browser,
 React/SDK и actual API/PostgreSQL проверок с указанными ограничениями.
 Финальный человеческий Code Review остаётся пользователю; PR/push/merge нет.
+
+## Blog content and navigation follow-up
+
+Source: direct user instruction in the current Codex conversation after the first Code Review handoff.
+
+- Six complete EN/RU architecture articles cover Next.js, Hono and actual SPS patterns, with code, explanations and source references. Frontend, Backend and DevOps each contain two Articles.
+- Article/Category views show actual covers, categories and editorial author associations. Generated covers use people in the Living Focus photographic style; original masters and square outpaint deliveries remain traceable.
+- The eight selected old Articles are retired only after the new graph readback. The existing private Article retains its ID/slug/subscription/protected graph and receives a useful public article plus protected appendix.
+- Whole-card Article/Category navigation preserves independent secondary links. Default navbar and Cart controls follow Studio styling while preserving saved runtime content and operations.
+- Independent review-pr, exact SDK readback/repeat/fresh preparation, frozen Host build and bounded desktop/320 browser evidence pass before returning to human Code Review. PR/push/merge remain outside the task.
+
+Implementation and acceptance: [ISSUE-376-blog-followup.md](../../research/singlepagestartup/ISSUE-376-blog-followup.md).

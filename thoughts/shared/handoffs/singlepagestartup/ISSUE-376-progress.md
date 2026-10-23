@@ -4,7 +4,7 @@ issue_title: "Перенос визуала Storybook в Framework и досту
 start_date: 2026-10-22T22:34:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-376.md
 status: complete
-completed_date: 2026-10-22T23:57:42Z
+completed_date: 2026-10-23T08:39:01Z
 branch: codex/issue-376-framework-visual
 ---
 
@@ -74,7 +74,7 @@ Production Host собран и отвечает HTTP 200 на :3000. Оконч
 
 ## Incident Log
 
-<!-- incident-count: 6 -->
+<!-- incident-count: 8 -->
 
 ### Incident 1 — Native Date теряет миллисекунды при преобразовании через String
 
@@ -176,3 +176,38 @@ Known GitHub/sandbox/agent coordination incidents находятся в пост
 - Code Review передаётся пользователю; Done/merge не выполняются.
 
 GitHub handoff: Code Review подтверждён 2026-10-22T23:58:52Z. Summary comment: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6353992295. Issue открыт; PR/push/merge/Done отсутствуют.
+
+## Blog follow-up from user review
+
+- [x] Новый scope: шесть содержательных EN/RU статей про Next.js/Hono и SPS, Frontend/Backend/DevOps по две, covers/authors/category associations, cleanup старых generic records.
+- [x] Шесть generated masters и отдельные square outpaint derivatives сохранены; uploaded managed File bytes readback exact.
+- [x] Тексты и safe SDK publication/readback/repeat.
+- [x] Navbar по Studio и whole-card links, реальные author/category metadata и модельные skeletons.
+- [x] Independent review-pr, frozen build и desktop/mobile browser acceptance.
+- [x] Повторная передача на Code Review.
+
+User feedback продолжает issue376 в той же ветке; прежняя приёмка относится к source6a9be42bb6, новая проверка охватит последующие edits и данные. Исходный private Article сохраняет ID/slug/security associations и получает содержательную публичную статью/закрытый appendix. Остальные восемь старых Article подлежат явному SDK deletion после новой graph readback.
+
+### Incident 7 — Profile subtitle renderer
+
+- **Phase**: Blog follow-up
+- **Occurrences**: 1
+- **Symptom**: Byline TipTap пишет parse warnings для штатной строки subtitle.
+- **Root Cause**: Новый view выбрал rich-text renderer, хотя Profile form и overview используют plain text.
+- **Fix**: getLocalizedPlainText и обычный paragraph; временная нормализация данных возвращена к исходному тексту через SDK. EN/RU plain/legacy и loading regressions PASS.
+- **Preventive Action**: Проверять form/schema и существующие consumers перед выбором renderer.
+
+### Incident 8 — Дисковый build cache
+
+- **Phase**: Blog follow-up
+- **Occurrences**: 1
+- **Symptom**: Повторная финальная сборка завершилась ENOSPC при записи webpack cache.
+- **Root Cause**: Большие task build caches заняли доступный диск.
+- **Fix**: Удалены только четыре неактивных task outputs. Существующие SPS_HOST_WEBPACK_CACHE=false и NX_SKIP_NX_CACHE=true дали финальный build exit 0; working Host сохранён.
+- **Preventive Action**: Проверять свободное место и отключать дисковый cache для разовых frozen builds.
+
+## Blog follow-up acceptance
+
+Source revision: 129dd65f92. Commits: 4db50ba65f, 2457eebd1e, 129dd65f92. Шесть EN/RU статей, три категории по две статьи, реальные cover/author associations, whole-card links и Studio navbar/cart controls готовы. Публикация: 51 writes, 8 retired; repeat 0 writes, fresh prepare 0 operations, private graph unchanged. Независимый review-pr PASS; 33 frontend tests/9 suites и 9 tool tests/36 assertions PASS. Frozen build PASS, 27 Host HTML/RSC200 +5 API checks, desktop/320 browser PASS в документированных пределах. Ошибочные capture-файлы исключены из evidence.
+
+Полный результат: [ISSUE-376-blog-followup.md](../../research/singlepagestartup/ISSUE-376-blog-followup.md). GitHub Code Review проверен 2026-10-23T08:39:01Z; summary: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6360936917. Следующий шаг — пользовательский Code Review. PR/push/merge/Done не выполнялись.
