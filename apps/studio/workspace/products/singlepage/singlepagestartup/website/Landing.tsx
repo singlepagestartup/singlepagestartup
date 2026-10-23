@@ -23,6 +23,7 @@ interface ICodeFrameworkLandingProps {
 interface ISectionHeadingProps {
   eyebrow: string;
   children: ReactNode;
+  inverse?: boolean;
 }
 
 interface ISectionLinkProps {
@@ -69,12 +70,20 @@ function SectionLink({ href, children, className, label }: ISectionLinkProps) {
   );
 }
 
-function SectionHeading({ eyebrow, children }: ISectionHeadingProps) {
+function SectionHeading({
+  eyebrow,
+  children,
+  inverse = false,
+}: ISectionHeadingProps) {
   return (
     <div>
-      <p className={`text-sm ${muted}`}>{eyebrow}</p>
+      <p
+        className={`text-sm font-medium ${inverse ? "text-[var(--workspace-brand-muted-on-primary)]" : muted}`}
+      >
+        {eyebrow}
+      </p>
       <h2
-        className={`mt-4 text-[32px] leading-[1.1] @3xl:text-[40px] ${display}`}
+        className={`mt-3 max-w-2xl text-balance text-3xl leading-[1.15] @4xl:text-4xl ${display}`}
       >
         {children}
       </h2>
@@ -134,23 +143,29 @@ function CopySetupRequest({ content }: IWebsiteCopyProps) {
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 sm:p-8">
-      <p className={`text-sm ${muted}`}>{content.request.title}</p>
-      <blockquote className="mt-5 select-text text-base leading-7">
+    <div className="rounded-2xl bg-[var(--workspace-brand-surface)] p-5 text-[var(--workspace-brand-foreground)] @3xl:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <p className="flex items-center gap-2 text-sm font-medium">
+          <Icon name="code" size={20} />
+          {content.request.title}
+        </p>
+        <button
+          type="button"
+          onClick={copy}
+          disabled={status === "pending"}
+          className={`${kit.secondary} shrink-0 disabled:cursor-wait`}
+        >
+          {status === "success" ? <Icon name="check" size={20} /> : null}
+          {status === "pending"
+            ? content.labels["copy-pending"]
+            : content.labels["copy-action"]}
+        </button>
+      </div>
+      <blockquote className="mt-5 select-text rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] p-4 text-sm leading-6 @3xl:text-base @3xl:leading-7">
         {content.request.quote}
       </blockquote>
-      <button
-        type="button"
-        onClick={copy}
-        disabled={status === "pending"}
-        className={`${kit.secondary} mt-6 disabled:cursor-wait`}
-      >
-        {status === "pending"
-          ? content.labels["copy-pending"]
-          : content.labels["copy-action"]}
-      </button>
       <p
-        className={`mt-3 min-h-10 text-sm leading-6 ${status === "error" ? "text-[var(--workspace-brand-danger)]" : muted}`}
+        className={`mt-3 min-h-5 text-xs leading-5 ${status === "error" ? "text-[var(--workspace-brand-danger)]" : muted}`}
         role="status"
         aria-live="polite"
       >
@@ -185,7 +200,7 @@ export default function CodeFrameworkLanding({
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-4 px-5 py-5 @3xl:px-8">
           <SectionLink
             href="#cf-main"
-            className={focus}
+            className={`inline-flex min-h-11 items-center ${focus}`}
             label="SinglePageStartup Code Framework — page introduction"
           >
             <img
@@ -203,19 +218,19 @@ export default function CodeFrameworkLanding({
           >
             <SectionLink
               href="#cf-foundation"
-              className={`rounded-md py-2 ${muted} hover:text-[var(--workspace-brand-foreground)] ${focus}`}
+              className={`inline-flex min-h-11 items-center rounded-md py-2 ${muted} hover:text-[var(--workspace-brand-foreground)] ${focus}`}
             >
               {content.labels["navigation-foundation"]}
             </SectionLink>
             <SectionLink
               href="#cf-start"
-              className={`rounded-md py-2 ${muted} hover:text-[var(--workspace-brand-foreground)] ${focus}`}
+              className={`inline-flex min-h-11 items-center rounded-md py-2 ${muted} hover:text-[var(--workspace-brand-foreground)] ${focus}`}
             >
               {content.labels["navigation-local"]}
             </SectionLink>
             <SectionLink
               href="#cf-chat"
-              className={`rounded-md py-2 ${muted} hover:text-[var(--workspace-brand-foreground)] ${focus}`}
+              className={`inline-flex min-h-11 items-center rounded-md py-2 ${muted} hover:text-[var(--workspace-brand-foreground)] ${focus}`}
             >
               {content.chat.paragraphs[3]}
             </SectionLink>
@@ -225,7 +240,7 @@ export default function CodeFrameworkLanding({
               rel="noreferrer"
               className={`${kit.secondary} gap-2`}
             >
-              <Icon name="github-logo" size={18} />
+              <Icon name="github-logo" size={20} />
               {content.labels["navigation-code"] ?? content.hero.links[0].text}
               <span className="sr-only">{content.labels["github-hint"]}</span>
             </a>
@@ -260,7 +275,7 @@ export default function CodeFrameworkLanding({
                 >
                   {content.labels["navigation-included"] ??
                     content.labels["navigation-foundation"]}
-                  <Icon name="arrow-down" size={18} />
+                  <Icon name="arrow-down" size={20} />
                 </SectionLink>
               </div>
               <p className={`mt-4 max-w-md text-xs leading-5 ${muted}`}>
@@ -283,82 +298,95 @@ export default function CodeFrameworkLanding({
         <section
           id="cf-foundation"
           tabIndex={-1}
-          className="border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]"
+          className="border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] outline-none"
           aria-label="Reusable foundation"
         >
-          <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-16 sm:px-6 lg:px-8 @4xl:grid-cols-2">
-            <div>
+          <div className="mx-auto max-w-7xl px-5 py-12 @3xl:px-8 @3xl:py-16">
+            <div className="grid items-end gap-5 @3xl:grid-cols-2 @3xl:gap-10">
               <SectionHeading eyebrow={content.foundation.paragraphs[0]}>
                 {content.foundation.title}
               </SectionHeading>
-              <p className={`mt-5 text-base leading-7 ${muted}`}>
+              <p className={`max-w-xl text-base leading-7 ${muted}`}>
                 {content.foundation.paragraphs[1]}
               </p>
-              <dl className="mt-8 divide-y divide-[var(--workspace-brand-line)]">
-                {content.foundation.items.map((item) => (
-                  <div key={item.title} className="py-5">
-                    <dt className="text-base font-semibold">{item.title}</dt>
-                    <dd className={`mt-2 text-base leading-7 ${muted}`}>
-                      {item.text}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-              <a
-                href={content.foundation.links[0].href}
-                target="_blank"
-                rel="noreferrer"
-                className={`mt-5 inline-block text-sm underline underline-offset-4 ${focus}`}
-              >
-                {content.foundation.links[0].text}
-                <span className="sr-only">{content.labels["github-hint"]}</span>
-              </a>
             </div>
-            <figure>
-              <img
-                src={assets.modules.src}
-                alt={assets.modules.alt}
-                data-asset-id={assets.modules.id}
-                width={1254}
-                height={1254}
-                loading="lazy"
-                className="block aspect-square h-auto w-full rounded-2xl object-cover"
-              />
-            </figure>
+            <div className="mt-8 grid items-center gap-8 @3xl:grid-cols-[0.9fr_1.1fr] @3xl:gap-12">
+              <figure className="mx-auto w-full max-w-md">
+                <img
+                  src={assets.modules.src}
+                  alt={assets.modules.alt}
+                  data-asset-id={assets.modules.id}
+                  width={1254}
+                  height={1254}
+                  loading="lazy"
+                  className="block aspect-square h-auto w-full object-contain"
+                />
+              </figure>
+              <div>
+                <dl className="divide-y divide-[var(--workspace-brand-line)]">
+                  {content.foundation.items.map((item) => (
+                    <div key={item.title} className="relative py-5 pl-9">
+                      <Icon
+                        name="check-circle"
+                        className="absolute left-0 top-5"
+                        size={24}
+                      />
+                      <dt className="text-base font-semibold leading-6">
+                        {item.title}
+                      </dt>
+                      <dd className={`mt-2 text-sm leading-6 ${muted}`}>
+                        {item.text}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <a
+                  href={content.foundation.links[0].href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`mt-5 inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-medium underline underline-offset-4 ${focus}`}
+                >
+                  {content.foundation.links[0].text}
+                  <Icon name="arrow-up-right" size={20} />
+                  <span className="sr-only">
+                    {content.labels["github-hint"]}
+                  </span>
+                </a>
+              </div>
+            </div>
           </div>
         </section>
 
         <section
           id="cf-start"
           tabIndex={-1}
-          className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 @4xl:py-24"
+          className="mx-auto max-w-7xl px-5 py-12 outline-none @3xl:px-8 @3xl:py-16"
           aria-label="Start locally"
         >
-          <SectionHeading eyebrow={content.journey.paragraphs[0]}>
-            {content.journey.title}
-          </SectionHeading>
-          <ol className="mt-8 grid gap-6 @3xl:grid-cols-3">
-            {content.journey.items.map((item, index) => (
-              <li
-                key={item.title}
-                className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-6"
-              >
-                <span className="grid size-10 place-items-center rounded-xl bg-[var(--workspace-brand-background)] text-sm font-semibold">
-                  0{index + 1}
-                </span>
-                <h3 className="mt-4 text-base font-semibold">{item.title}</h3>
-                <p className={`mt-3 text-base leading-7 ${muted}`}>
-                  {item.text}
-                </p>
-              </li>
-            ))}
-          </ol>
-          <div className="mt-8">
-            <CopySetupRequest content={content} />
+          <div className="rounded-3xl bg-[var(--workspace-brand-foreground)] p-6 text-[var(--workspace-brand-on-primary)] @3xl:p-8 @5xl:p-10">
+            <SectionHeading eyebrow={content.journey.paragraphs[0]} inverse>
+              {content.journey.title}
+            </SectionHeading>
+            <ol className="mt-8 grid gap-6 @3xl:grid-cols-3">
+              {content.journey.items.map((item, index) => (
+                <li key={item.title} className="border-t border-white/20 pt-5">
+                  <span className="text-sm font-medium text-[var(--workspace-brand-accent)]">
+                    0{index + 1}
+                  </span>
+                  <h3 className="mt-3 text-base font-semibold">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)]">
+                    {item.text}
+                  </p>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-8">
+              <CopySetupRequest content={content} />
+            </div>
           </div>
 
-          <div className="mt-12 grid items-center gap-8 @4xl:grid-cols-2">
-            <figure>
+          <div className="mt-12 grid items-center gap-8 @3xl:grid-cols-2 @3xl:gap-12">
+            <figure className="mx-auto w-full max-w-md overflow-hidden rounded-3xl bg-white">
               <img
                 src={assets.agents.src}
                 alt={assets.agents.alt}
@@ -366,22 +394,22 @@ export default function CodeFrameworkLanding({
                 width={1254}
                 height={1254}
                 loading="lazy"
-                className="block aspect-square h-auto w-full rounded-2xl object-cover"
+                className="block aspect-square h-auto w-full object-contain"
               />
             </figure>
             <div>
               <h3
-                className={`text-[32px] leading-[1.1] @3xl:text-[40px] ${display}`}
+                className={`max-w-lg text-balance text-3xl leading-[1.15] @4xl:text-4xl ${display}`}
               >
                 {content.change.title}
               </h3>
-              <p className={`mt-5 text-base leading-7 ${muted}`}>
+              <p className={`mt-5 text-xs font-medium ${muted}`}>
                 {content.change.paragraphs[0]}
               </p>
-              <blockquote className="mt-3 border-l-2 border-[var(--workspace-brand-foreground)] pl-5 text-base leading-7">
+              <blockquote className="mt-3 rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5 text-base leading-7">
                 {content.change.quote}
               </blockquote>
-              <p className={`mt-5 text-base leading-7 ${muted}`}>
+              <p className={`mt-4 text-sm leading-6 ${muted}`}>
                 {content.change.paragraphs[1]}
               </p>
             </div>
@@ -391,18 +419,21 @@ export default function CodeFrameworkLanding({
         <section
           id="cf-chat"
           tabIndex={-1}
-          className="border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]"
+          className="border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] outline-none"
           aria-label="The AI Chat connection"
         >
-          <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 lg:px-8 @4xl:grid-cols-2">
-            <SectionHeading eyebrow={content.chat.paragraphs[0]}>
-              {content.chat.title}
-            </SectionHeading>
+          <div className="mx-auto grid max-w-7xl items-start gap-8 px-5 py-12 @3xl:grid-cols-2 @3xl:gap-12 @3xl:px-8 @3xl:py-16">
+            <div>
+              <Icon name="chat-circle" size={24} className="mb-5" />
+              <SectionHeading eyebrow={content.chat.paragraphs[0]}>
+                {content.chat.title}
+              </SectionHeading>
+            </div>
             <div>
               <p className={`text-base leading-7 ${muted}`}>
                 {content.chat.paragraphs[1]}
               </p>
-              <p className={`mt-4 text-base leading-7 ${muted}`}>
+              <p className={`mt-4 text-sm leading-6 ${muted}`}>
                 {content.chat.paragraphs[2]}
               </p>
               <div className="mt-6">
@@ -416,21 +447,23 @@ export default function CodeFrameworkLanding({
         </section>
 
         <section
-          className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8"
+          className="mx-auto max-w-7xl px-5 py-12 @3xl:px-8 @3xl:py-16"
           aria-label="Cost and common questions"
         >
-          <div className="grid items-start gap-8 @4xl:grid-cols-2">
-            <div className="rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 sm:p-8">
+          <div className="grid items-start gap-8 @3xl:grid-cols-[0.9fr_1.1fr] @3xl:gap-12">
+            <div className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-6 @3xl:p-8">
               <p className={`text-sm ${muted}`}>
                 {content.price.paragraphs[0]}
               </p>
-              <p className={`mt-5 text-[56px] leading-[1.1] ${display}`}>
+              <p
+                className={`mt-4 text-5xl leading-[1.1] @4xl:text-6xl ${display}`}
+              >
                 {content.price.title}
               </p>
               <p className="mt-5 text-base leading-7">
                 {content.price.paragraphs[1]}
               </p>
-              <p className={`mt-4 text-base leading-7 ${muted}`}>
+              <p className={`mt-4 text-sm leading-6 ${muted}`}>
                 {content.price.paragraphs[2]}
               </p>
               <div className="mt-6">
@@ -439,19 +472,24 @@ export default function CodeFrameworkLanding({
             </div>
             <div>
               <h2
-                className={`text-[32px] leading-[1.1] @3xl:text-[40px] ${display}`}
+                className={`text-3xl leading-[1.15] @4xl:text-4xl ${display}`}
               >
                 {content.questions.title}
               </h2>
               <div className="mt-6 divide-y divide-[var(--workspace-brand-line)]">
                 {content.questions.items.map((item) => (
-                  <details key={item.title} className="py-5">
+                  <details key={item.title} className="group py-3">
                     <summary
-                      className={`cursor-pointer text-sm font-semibold leading-6 ${focus}`}
+                      className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 rounded-md text-sm font-semibold leading-6 [&::-webkit-details-marker]:hidden ${focus}`}
                     >
-                      {item.title}
+                      <span>{item.title}</span>
+                      <Icon
+                        name="plus"
+                        size={20}
+                        className="mt-0.5 shrink-0 group-open:rotate-45 motion-safe:transition-transform"
+                      />
                     </summary>
-                    <p className={`mt-4 text-base leading-7 ${muted}`}>
+                    <p className={`mt-3 pr-8 text-sm leading-6 ${muted}`}>
                       {item.text}
                     </p>
                   </details>
@@ -462,25 +500,38 @@ export default function CodeFrameworkLanding({
         </section>
       </main>
 
-      <footer className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 border-t border-[var(--workspace-brand-line)] px-4 py-8 sm:px-6 lg:px-8">
-        <p className="text-sm">{content.footer.title}</p>
-        <nav
-          aria-label="Repository resources"
-          className="flex flex-wrap gap-6 text-sm"
-        >
-          {content.footer.links.map(({ text: label, href }) => (
-            <a
-              key={label}
-              href={href}
-              target="_blank"
-              rel="noreferrer"
-              className={`underline underline-offset-4 ${focus}`}
-            >
-              {label}
-              <span className="sr-only">{content.labels["github-hint"]}</span>
-            </a>
-          ))}
-        </nav>
+      <footer className="border-t border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-5 py-8 @3xl:px-8">
+          <div>
+            <img
+              src={assets.logo.src}
+              alt={assets.logo.alt}
+              data-asset-id={assets.logo.id}
+              width={176}
+              height={38}
+              loading="lazy"
+              className="h-auto w-44"
+            />
+            <p className={`mt-3 text-xs ${muted}`}>{content.footer.title}</p>
+          </div>
+          <nav
+            aria-label="Repository resources"
+            className="flex flex-wrap gap-x-5 gap-y-3 text-sm"
+          >
+            {content.footer.links.map(({ text: label, href }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className={`inline-flex min-h-11 items-center rounded-md ${muted} hover:text-[var(--workspace-brand-foreground)] ${focus}`}
+              >
+                {label}
+                <span className="sr-only">{content.labels["github-hint"]}</span>
+              </a>
+            ))}
+          </nav>
+        </div>
       </footer>
     </div>
   );
