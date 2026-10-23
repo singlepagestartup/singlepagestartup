@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { Component } from "./Component";
 const mockWidgetLinks = jest.fn();
+jest.mock("../default/Categories", () => ({ Categories: () => null }));
 jest.mock("@sps/shared-ui-shadcn", () => ({
   TipTap: ({ value }: any) => <div>{value}</div>,
 }));

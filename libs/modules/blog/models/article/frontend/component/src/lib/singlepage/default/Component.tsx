@@ -7,6 +7,7 @@ import Link from "next/link";
 import { internationalization } from "@sps/shared-configuration";
 import { saveLanguageContext } from "@sps/shared-utils";
 import { ArrowRight } from "lucide-react";
+import { Categories } from "./Categories";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
@@ -15,6 +16,10 @@ export const Component = memo(function Component(
     props.language,
     internationalization.languages,
   );
+  const title =
+    props.data.title?.[props.language]?.trim() || props.data.title?.en?.trim();
+  const createdAt = new Date(String(props.data.createdAt));
+  const hasDate = !Number.isNaN(createdAt.getTime());
   return (
     <article
       data-module="blog"
@@ -22,7 +27,7 @@ export const Component = memo(function Component(
       data-id={props.data.id}
       data-variant={props.variant}
       className={cn(
-        "group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground motion-reduce:transition-none",
+        "group relative isolate flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground motion-reduce:transition-none",
         props.data.className,
         props.className,
       )}
@@ -43,7 +48,7 @@ export const Component = memo(function Component(
       >
         {({ data }) =>
           data?.length ? (
-            <div className="grid gap-2 overflow-hidden [&_[data-model=file]]:aspect-square [&_[data-model=file]]:overflow-hidden [&_img]:h-full [&_img]:w-full [&_img]:object-cover">
+            <div className="grid gap-2 overflow-hidden [&_[data-model=file]]:aspect-square [&_[data-model=file]]:overflow-hidden [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_a]:relative [&_a]:z-10 [&_audio]:relative [&_audio]:z-10 [&_video]:relative [&_video]:z-10">
               {data.map((link) => (
                 <ArticlesToFileStorageModuleFiles
                   key={link.id}
@@ -59,12 +64,33 @@ export const Component = memo(function Component(
         }
       </ArticlesToFileStorageModuleFiles>
       <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+          <Categories
+            isServer={props.isServer}
+            articleId={props.data.id}
+            language={props.language}
+          />
+          {hasDate ? (
+            <time dateTime={createdAt.toISOString()}>
+              {createdAt.toLocaleDateString(props.language, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                timeZone: "UTC",
+              })}
+            </time>
+          ) : null}
+        </div>
         <h3 className="break-words text-2xl font-semibold leading-7 tracking-tight">
           <Link
             href={href}
-            className="rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+            aria-label={
+              title ||
+              (props.language === "ru" ? "Читать статью" : "Read article")
+            }
+            className="after:absolute after:inset-0 after:z-[1] after:rounded-2xl hover:underline focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-[-2px] focus-visible:after:outline-foreground"
           >
-            {props.data.title?.[props.language] || props.data.title?.en}
+            {title}
           </Link>
         </h3>
         {props.data.subtitle?.[props.language] || props.data.subtitle?.en ? (
@@ -74,16 +100,21 @@ export const Component = memo(function Component(
               props.data.subtitle?.en ||
               ""
             }
-            className="text-sm leading-6 text-muted-foreground"
+            className="text-sm leading-6 text-muted-foreground [&_a]:relative [&_a]:z-10"
           />
         ) : null}
-        <Link
-          href={href}
-          className="mt-auto inline-flex min-h-11 w-fit items-center gap-2 rounded text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+        <span
+          aria-hidden="true"
+          className="mt-auto inline-flex min-h-11 w-fit items-center gap-2 text-sm font-medium"
         >
           {props.language === "ru" ? "Читать статью" : "Read article"}
           <ArrowRight className="size-4" aria-hidden="true" />
-        </Link>
+        </span>
+        {props.author ? (
+          <div className="border-t border-border pt-4 [&_a]:relative [&_a]:z-10">
+            {props.author}
+          </div>
+        ) : null}
       </div>
     </article>
   );

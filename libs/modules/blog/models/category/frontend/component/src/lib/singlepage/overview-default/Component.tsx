@@ -109,6 +109,7 @@ export function Component(props: IComponentPropsExtended) {
                     dataSource="props"
                     data={link}
                     language={props.language}
+                    renderAuthor={props.renderAuthor}
                   />
                 ))}
               </div>

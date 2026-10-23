@@ -33,6 +33,11 @@ export function Component(props: IContentProps) {
               dataSource="props"
               data={entity}
               language={props.language}
+              author={props.renderAuthor?.({
+                data: entity,
+                size: "sm",
+                inverse: true,
+              })}
             >
               {(props.renderContent ?? props.renderPrivateContent)?.({
                 data: entity,

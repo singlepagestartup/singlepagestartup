@@ -3,7 +3,10 @@ import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as ArticlesToWebsiteBuilderModuleWidgets } from "@sps/blog/relations/articles-to-website-builder-module-widgets/frontend/component";
 import { Component as ArticlesToFileStorageModuleFiles } from "@sps/blog/relations/articles-to-file-storage-module-files/frontend/component";
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { Categories } from "../default/Categories";
 export function Component(props: IComponentPropsExtended) {
+  const createdAt = new Date(String(props.data.createdAt));
+  const hasDate = !Number.isNaN(createdAt.getTime());
   return (
     <article
       data-module="blog"
@@ -17,6 +20,13 @@ export function Component(props: IComponentPropsExtended) {
       )}
     >
       <header className="rounded-3xl bg-default p-6 text-default-foreground sm:p-10">
+        <div className="mb-6">
+          <Categories
+            isServer={props.isServer}
+            articleId={props.data.id}
+            language={props.language}
+          />
+        </div>
         <h1 className="max-w-4xl break-words text-3xl font-semibold tracking-tight sm:text-5xl">
           {props.data.title?.[props.language] || props.data.title?.en}
         </h1>
@@ -29,6 +39,24 @@ export function Component(props: IComponentPropsExtended) {
             }
             className="mt-5 max-w-3xl text-lg leading-8 text-default-muted-foreground"
           />
+        ) : null}
+        {props.author || hasDate ? (
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-default-foreground/20 pt-5">
+            {props.author}
+            {hasDate ? (
+              <time
+                className="text-xs text-default-muted-foreground"
+                dateTime={createdAt.toISOString()}
+              >
+                {createdAt.toLocaleDateString(props.language, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  timeZone: "UTC",
+                })}
+              </time>
+            ) : null}
+          </div>
         ) : null}
       </header>
       <ArticlesToFileStorageModuleFiles

@@ -18,3 +18,9 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface ICoverProps {
+  isServer: boolean;
+  language: string;
+  articleId: string;
+}

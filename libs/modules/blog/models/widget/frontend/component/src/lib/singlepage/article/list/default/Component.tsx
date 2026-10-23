@@ -63,6 +63,7 @@ export function Component(props: IComponentPropsExtended) {
                   dataSource="props"
                   data={link}
                   language={props.language}
+                  renderAuthor={props.renderAuthor}
                 />
               ))}
             </div>
@@ -83,6 +84,10 @@ export function Component(props: IComponentPropsExtended) {
                         dataSource="props"
                         data={entity}
                         language={props.language}
+                        author={props.renderAuthor?.({
+                          data: entity,
+                          size: "xs",
+                        })}
                       />
                     ))}
                   </div>

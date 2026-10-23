@@ -9,6 +9,7 @@ export function Component(props: IComponentPropsExtended) {
       data={props.data}
       className={props.className}
       language={props.language}
+      author={props.author}
     >
       {props.children}
     </Article>

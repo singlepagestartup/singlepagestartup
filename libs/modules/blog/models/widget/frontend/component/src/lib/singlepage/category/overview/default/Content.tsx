@@ -33,6 +33,7 @@ export function Component(props: IContentProps) {
               dataSource="props"
               data={entity}
               language={props.language}
+              renderAuthor={props.renderAuthor}
             />
           );
         });

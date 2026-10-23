@@ -36,6 +36,8 @@ connection parameters for additional servers.
 - `id-ai-chat-project`: server project frame with navigation and content slots.
 - `id-settings-ai-chat`: personal Profile editor receiving an avatar slot and save callback from RBAC Subject.
 
+- `byline`: Studio avatar/name presentation using the stored localized title and first ordered Profile→File attachment. The larger size includes the stored subtitle. Missing media shows initials derived from the stored title or slug; names and roles have no fixture fallback.
+
 - `default`: profile card with title.
 - `overview-default`: profile hero section with description and widgets.
 - `articles-default`: responsive grid of linked Blog article cards, ordered by the relation's `orderIndex` ascending.
@@ -51,6 +53,10 @@ Documents and topic rows use Social Thread `list-item-sidebar-ai-chat`.
 - `admin-select-input`: admin select input for choosing a profile.
 - `admin-table`: admin table listing profiles.
 - `admin-table-row`: admin row showing profile fields.
+
+The public `BylineSkeleton` presentation renders one pending avatar/name entity
+for both byline sizes. The byline reader, author association reader and Host
+author lookup use this same skeleton; it owns no SDK or Provider.
 
 ## Blog articles
 

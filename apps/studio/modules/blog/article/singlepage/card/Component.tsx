@@ -1,5 +1,9 @@
 import { memo } from "react";
-import type { IComponentProps, ArticleCardProps } from "./interface";
+import type {
+  IComponentProps,
+  ArticleCardProps,
+  ArticleCardTarget,
+} from "./interface";
 export type { ArticleCardProps } from "./interface";
 import { Component as SocialModuleProfile } from "../../../../social/profile/index";
 /**
@@ -47,7 +51,7 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
   );
   return (
     <article
-      className={`group grid h-full min-w-0 overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground motion-reduce:transition-none ${compact ? "grid-cols-[96px_minmax(0,1fr)] items-start gap-4 p-4" : "grid-rows-[auto_1fr]"} ${kit.focus}`}
+      className={`group relative isolate grid h-full min-w-0 overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground motion-reduce:transition-none ${compact ? "grid-cols-[96px_minmax(0,1fr)] items-start gap-4 p-4" : "grid-rows-[auto_1fr]"} ${kit.focus}`}
       data-ds-block="blog.article.card"
       data-ds-imports="social.profile.byline"
       data-ds-layer="singlepage"
@@ -67,7 +71,8 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
               href={href ?? `/blog/articles/${slug}`}
               target={target}
               rel={target === "_blank" ? "noreferrer" : undefined}
-              className="rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+              aria-label={title?.trim() || "Read article"}
+              className="after:absolute after:inset-0 after:z-[1] after:rounded-2xl hover:underline focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-[-2px] focus-visible:after:outline-foreground"
             >
               {title}
             </a>
@@ -77,18 +82,11 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
       <div
         className={`aspect-square overflow-hidden ${compact ? "rounded-xl" : ""}`}
       >
-        <a
-          href={href ?? `/blog/articles/${slug}`}
-          target={target}
-          aria-label={`Read ${title}`}
-          className="block h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
-        >
-          <img
-            src={media?.[0]?.src ?? coverImage}
-            alt={media?.[0]?.alt ?? ""}
-            className="h-full w-full object-cover"
-          />
-        </a>
+        <img
+          src={media?.[0]?.src ?? coverImage}
+          alt={media?.[0]?.alt ?? ""}
+          className="h-full w-full object-cover"
+        />
       </div>
       <div className={`flex min-w-0 flex-col ${compact ? "" : "p-5 sm:p-6"}`}>
         {!editorial && (
@@ -104,7 +102,8 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
                 href={href ?? `/blog/articles/${slug}`}
                 target={target}
                 rel={target === "_blank" ? "noreferrer" : undefined}
-                className="rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+                aria-label={title?.trim() || "Read article"}
+                className="after:absolute after:inset-0 after:z-[1] after:rounded-2xl hover:underline focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-[-2px] focus-visible:after:outline-foreground"
               >
                 {title}
               </a>
@@ -112,7 +111,7 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
           </>
         )}
         {excerptContent ? (
-          <div className="mb-5 mt-3 text-sm leading-6 text-muted-foreground">
+          <div className="mb-5 mt-3 text-sm leading-6 text-muted-foreground [&_a]:relative [&_a]:z-10">
             {excerptContent}
           </div>
         ) : excerpt ? (
@@ -128,7 +127,7 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
                 href={item.src}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+                className="relative z-10 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
               >
                 <img
                   src={item.src}
@@ -171,5 +170,3 @@ export const defaultArticleCardProps = {
   readTime: "7 min read",
   target: undefined as ArticleCardTarget | undefined,
 };
-
-import type { ArticleCardTarget } from "./interface";

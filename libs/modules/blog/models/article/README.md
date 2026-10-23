@@ -19,8 +19,8 @@ Articles are the primary content entries in the blog, storing localized text and
 
 ## Variants
 
-- `default`: article card with localized rich subtitle, all ordered media and the article link.
-- `overview-default`: article header, rich body, all ordered media and an optional ordered content JSX slot. Public fallback reads only `default` Article→Widget associations.
+- `default`: article card with localized rich subtitle, ordered media, linked categories, creation date and an optional author JSX slot. One stretched link covers the card; category and rich-text links keep their own destinations.
+- `overview-default`: article header with actual category links, creation date and optional author JSX, rich body, all ordered media and an optional ordered content JSX slot. Public fallback reads only `default` Article→Widget associations.
 - `overview-with-private-content-default`: the same public article view with a higher-module content slot.
 - `private-content-default`: presentation for guest, locked, expired, checking, error and granted states; children mount only for granted access.
 - `loading`: one article skeleton; collection Widgets compose the grid.
@@ -41,3 +41,11 @@ import Social. Admin-v2 relation rows can open the linked article editor.
 Profile lists render the existing article `default` card through the profile's
 `articles-default` variant. Reading links and articles uses existing RBAC
 permissions. Deleting a link preserves the article and profile.
+
+Host supplies author presentation through Blog Widget `renderAuthor` slots after
+Article loading. Cards and detail receive the rendered `author` node. The
+callback stays in the composing runtime; Blog does not import Social or resolve
+profiles. `TRenderAuthor` and `IAuthorSlotProps` are exported by the public
+Article frontend entrypoint. An article without linked authors has no invented
+byline. Category labels use the current Category records linked through
+`categories-to-articles`, preserving relation order.

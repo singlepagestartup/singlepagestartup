@@ -16,7 +16,7 @@ export const Component = memo(function CategoryCard(props: IComponentProps) {
   const category = { ...defaultCategoryCardProps, ...props };
   return (
     <article
-      className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card"
+      className="relative isolate flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card"
       data-module="blog"
       data-model="category"
       data-id={category.id}
@@ -37,7 +37,8 @@ export const Component = memo(function CategoryCard(props: IComponentProps) {
             <a
               target={category.target}
               href={category.href ?? `/blog/categories/${category.slug}`}
-              className="rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+              aria-label={category.title?.trim() || "Explore category"}
+              className="after:absolute after:inset-0 after:z-[1] after:rounded-2xl focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-[-2px] focus-visible:after:outline-foreground"
             >
               {category.title}
             </a>
@@ -48,17 +49,20 @@ export const Component = memo(function CategoryCard(props: IComponentProps) {
             </span>
           ) : null}
         </div>
-        <div className="text-sm leading-6 text-muted-foreground">
+        <div className="text-sm leading-6 text-muted-foreground [&_a]:relative [&_a]:z-10">
           {category.subtitleContent ?? <p>{category.subtitle}</p>}
         </div>
-        {category.children}
-        <a
-          target={category.target}
-          href={category.href ?? `/blog/categories/${category.slug}`}
-          className="mt-auto inline-flex min-h-11 w-fit items-center gap-2 rounded-lg text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+        {category.children ? (
+          <div className="[&_a]:relative [&_a]:z-10 [&_button]:relative [&_button]:z-10">
+            {category.children}
+          </div>
+        ) : null}
+        <span
+          aria-hidden="true"
+          className="mt-auto inline-flex min-h-11 w-fit items-center gap-2 rounded-lg text-sm font-medium"
         >
           Explore category <SharedIcon variant="phosphor" name="arrow-right" />
-        </a>
+        </span>
       </div>
     </article>
   );

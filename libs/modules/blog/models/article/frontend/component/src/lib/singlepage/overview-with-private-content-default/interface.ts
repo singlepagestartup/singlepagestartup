@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 export { type IModel } from "@sps/blog/models/article/sdk/model";
 import { IModel } from "@sps/blog/models/article/sdk/model";
 import {
@@ -10,6 +11,7 @@ export const variant = "overview-with-private-content-default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
+  author?: ReactNode;
 }
 
 export interface IComponentPropsExtended

@@ -14,7 +14,10 @@ jest.mock("@sps/blog/models/article/frontend/component", () => ({
     return props.variant === "find" ? (
       props.children({ data: mockData })
     ) : (
-      <article>{props.children}</article>
+      <article>
+        {props.author}
+        {props.children}
+      </article>
     );
   },
 }));
@@ -73,3 +76,30 @@ it("supplies the same scoped content slot to both article compositions", () => {
     expect(html).toContain("Scoped ordered stream");
   }
 });
+it.each([true, false])(
+  "resolves author metadata to JSX before the Article view in runtime %s",
+  (isServer) => {
+    mockData = [{ id: "article" }];
+    for (const View of [PublicContent, PrivateContent]) {
+      const html = renderToStaticMarkup(
+        <View
+          isServer={isServer}
+          language="en"
+          articleSlug="existing"
+          renderAuthor={({ data, size, inverse }) => (
+            <span>
+              {data.id}:{size}:{String(inverse)}
+            </span>
+          )}
+        />,
+      );
+      expect(html).toContain("article:sm:true");
+      const view = mockRead.mock.calls
+        .map(([props]) => props)
+        .findLast((props) => props.variant !== "find");
+      expect(view.author).toBeDefined();
+      expect(view.renderAuthor).toBeUndefined();
+      expect(view.dataSource).toBe("props");
+    }
+  },
+);

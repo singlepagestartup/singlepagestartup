@@ -1,3 +1,4 @@
+import type { TRenderAuthor } from "@sps/blog/models/article/frontend/component";
 import type { ReactNode } from "react";
 export { type IModel } from "@sps/blog/models/widget/sdk/model";
 import { IModel } from "@sps/blog/models/widget/sdk/model";
@@ -12,6 +13,7 @@ export const variant = "article-overview-default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
+  renderAuthor?: TRenderAuthor;
   articleSlug?: string;
   renderContent?: (props: { data: IArticle }) => ReactNode;
 }
@@ -26,6 +28,7 @@ export interface IComponentPropsExtended
 export interface IContentProps {
   isServer: boolean;
   language: string;
+  renderAuthor?: TRenderAuthor;
   articleSlug?: string;
   renderContent?: (props: { data: IArticle }) => ReactNode;
 }

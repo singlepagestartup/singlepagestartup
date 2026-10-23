@@ -3,7 +3,7 @@ import { Component as WidgetsToLogotypes } from "@sps/website-builder/relations/
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <div className="w-fit">
+    <div className="min-w-0 w-fit max-w-full sm:max-w-48 [&_[data-model=logotype]]:max-w-full [&_[data-relation=logotypes-to-file-storage-module-files]]:max-w-full [&_[data-model=logotype]]:min-h-11 [&_[data-model=logotype]]:justify-center [&_[data-model=logotype]]:rounded-xl [&_[data-model=logotype]:focus-visible]:outline-2 [&_[data-model=logotype]:focus-visible]:outline-offset-2 [&_[data-model=logotype]:focus-visible]:outline-foreground [&_img]:max-h-8">
       <WidgetsToLogotypes
         isServer={props.isServer}
         variant="find"
