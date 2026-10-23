@@ -1,7 +1,7 @@
 import { Component as CollectionSkeleton } from "./Skeleton";
 import type { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as Category } from "@sps/ecommerce/models/category/frontend/component";
+import { Component as WidgetsToCategories } from "@sps/ecommerce/relations/widgets-to-categories/frontend/component";
 import { TipTap } from "@sps/shared-ui-shadcn";
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -30,24 +30,38 @@ export function Component(props: IComponentPropsExtended) {
             />
           )}
         </header>
-        <Category
+        <WidgetsToCategories
           isServer={props.isServer}
           variant="find"
           skeleton={<CollectionSkeleton />}
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  { column: "widgetId", method: "eq", value: props.data.id },
+                ],
+              },
+            },
+          }}
         >
           {({ data }) =>
             data?.length ? (
               <div className="grid items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {data.map((category) => (
-                  <Category
-                    key={category.id}
-                    isServer={props.isServer}
-                    variant={category.variant as any}
-                    dataSource="props"
-                    data={category}
-                    language={props.language}
-                  />
-                ))}
+                {data
+                  .toSorted(
+                    (a, b) =>
+                      a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
+                  )
+                  .map((link) => (
+                    <WidgetsToCategories
+                      key={link.id}
+                      isServer={props.isServer}
+                      variant={link.variant as any}
+                      dataSource="props"
+                      data={link}
+                      language={props.language}
+                    />
+                  ))}
               </div>
             ) : (
               <p
@@ -60,7 +74,7 @@ export function Component(props: IComponentPropsExtended) {
               </p>
             )
           }
-        </Category>
+        </WidgetsToCategories>
       </div>
     </section>
   );

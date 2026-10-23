@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "social.widget.author-overview-default",
+  "title": "author-overview-default",
+  "description": "author-overview-default presentation.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "author-overview-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "social.widget",
+    "pageName": "social",
+    "variantName": "author-overview-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "social",
+    "widget",
+    "author-overview-default"
+  ]
+}

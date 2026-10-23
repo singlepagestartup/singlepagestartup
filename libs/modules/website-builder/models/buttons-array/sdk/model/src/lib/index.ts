@@ -20,4 +20,4 @@ export const options = {
     revalidate: REVALIDATE,
   },
 } as NextRequestOptions;
-export const variants = ["default"] as const;
+export const variants = ["footer-column", "default"] as const;

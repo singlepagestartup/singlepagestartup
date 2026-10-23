@@ -31,7 +31,13 @@ import {
   type IForDocumentProps as IProfileDocumentSkillProps,
 } from "./social-module/profile/skills";
 import { Service as AuthenticationMe } from "./authentication/me";
-import { Service as FreeSubscription } from "./billing/free-subscription";
+import {
+  Service as FreeSubscription,
+  type IConstructorProps as IFreeSubscriptionDependencies,
+} from "./billing/free-subscription";
+import { Service as BlogArticleCreate } from "./blog/article/create";
+import type { IArticleCreateInput } from "@sps/rbac/models/subject/sdk/model/src/lib/blog-article-create";
+import type { Service as SubjectsToBlogModuleArticlesService } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api/src/lib/service";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
 import { Service as Logout } from "./logout";
 import {
@@ -99,6 +105,7 @@ import {
 } from "./ecommerce/order/proceed";
 import {
   SubjectDI,
+  type IBlogModule,
   type IBillingModule,
   type IBroadcastModule,
   type ICrmModule,
@@ -171,6 +178,9 @@ import {
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  declare repository: Repository;
+  blogModule: IBlogModule;
+  subjectsToBlogModuleArticles: SubjectsToBlogModuleArticlesService;
   socialModule: ISocialModule;
   ecommerceModule: IEcommerceModule;
   billingModule: IBillingModule;
@@ -225,6 +235,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService,
     @inject(SubjectDI.ISubjectsToBillingModuleCurrenciesService)
     subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService,
+    @inject(SubjectDI.IBlogModule) blogModule: IBlogModule,
+    @inject(SubjectDI.ISubjectsToBlogModuleArticlesService)
+    subjectsToBlogModuleArticles: SubjectsToBlogModuleArticlesService,
   ) {
     super(repository);
     this.socialModule = socialModule;
@@ -247,6 +260,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.subjectsToRoles = subjectsToRoles;
     this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
     this.subjectsToBillingModuleCurrencies = subjectsToBillingModuleCurrencies;
+    this.blogModule = blogModule;
+    this.subjectsToBlogModuleArticles = subjectsToBlogModuleArticles;
   }
 
   async ecommerceModuleOrderAssertAccess(props: IEcommerceOrderAccessProps) {
@@ -439,6 +454,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new ProfileOwnership(this).ensure(props);
   }
 
+  async blogModuleArticleCreate(props: {
+    subjectId: string;
+    data: IArticleCreateInput;
+  }) {
+    return new BlogArticleCreate(this).execute(props);
+  }
+
   async authenticationMe(props: { subjectId: string }) {
     return new AuthenticationMe(this).execute(props);
   }
@@ -460,14 +482,23 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async freeSubscriptionEnsure(props: { subjectId: string }) {
-    await new FreeSubscription({
-      checkout: (checkoutProps) => this.ecommerceProductCheckout(checkoutProps),
+    await new FreeSubscription(this.getFreeSubscriptionDependencies()).execute({
+      id: props.subjectId,
+    });
+  }
+
+  protected getFreeSubscriptionDependencies(): IFreeSubscriptionDependencies {
+    return {
+      repository: this.repository,
       ecommerceModule: this.ecommerceModule,
       billingModule: this.billingModule,
       subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
-    }).activate({ id: props.subjectId }, (proceedProps) =>
-      this.ecommerceOrderProceed(proceedProps),
-    );
+      subjectsToIdentities: this.subjectsToIdentities,
+      fulfillPaidOrderInTransaction: (scope) =>
+        this.ecommerceOrderProceedService.fulfillPaidOrderInTransaction(scope),
+      dispatchPaidEffects: (effect) =>
+        this.ecommerceOrderProceedService.dispatchPaidEffects(effect),
+    };
   }
 
   async deleteAnonymousSubjects(props?: IDeleteAnonymousSubjectsExecuteProps) {
@@ -610,7 +641,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async telegramBootstrap(
     props: ITelegramBootstrapExecuteProps,
   ): Promise<ITelegramBootstrapResult> {
-    return new TelegramBootstrap({
+    const result = await new TelegramBootstrap({
       findById: ({ id }) => this.findById({ id }),
       identity: this.identity,
       socialModule: this.socialModule,
@@ -621,6 +652,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ensureProfileManagementAccess: (accessProps) =>
         this.socialModuleProfileKnowledgeAccessEnsure(accessProps),
     }).execute(props);
+    await this.socialModuleProfileOwnershipEnsure({
+      subjectId: result.rbacModuleSubject.id,
+    });
+    return result;
   }
 
   async telegramPersonalAiAgentEnsure(
@@ -665,12 +700,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async telegramCheckoutFreeSubscription(
     props: ITelegramCheckoutFreeSubscriptionExecuteProps,
   ) {
-    return new TelegramCheckoutFreeSubscription({
-      checkout: (checkoutProps) => this.ecommerceProductCheckout(checkoutProps),
-      ecommerceModule: this.ecommerceModule,
-      billingModule: this.billingModule,
-      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
-    }).execute(props);
+    return new TelegramCheckoutFreeSubscription(
+      this.getFreeSubscriptionDependencies(),
+    ).execute(props);
   }
 
   protected getChatLifecycleService() {

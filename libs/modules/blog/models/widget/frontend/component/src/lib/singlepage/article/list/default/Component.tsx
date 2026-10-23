@@ -68,38 +68,11 @@ export function Component(props: IComponentPropsExtended) {
               ))}
             </div>
           ) : (
-            <Article
-              isServer={props.isServer}
-              variant="find"
-              skeleton={loading}
-            >
-              {({ data }) =>
-                data?.length ? (
-                  <div className="grid items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                    {data.map((entity) => (
-                      <Article
-                        key={entity.id}
-                        isServer={props.isServer}
-                        variant="default"
-                        dataSource="props"
-                        data={entity}
-                        language={props.language}
-                        author={props.renderAuthor?.({
-                          data: entity,
-                          size: "xs",
-                        })}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {props.language === "ru"
-                      ? "Пока ничего нет."
-                      : "Nothing here yet."}
-                  </p>
-                )
-              }
-            </Article>
+            <p className="text-sm text-muted-foreground">
+              {props.language === "ru"
+                ? "Пока ничего нет."
+                : "Nothing here yet."}
+            </p>
           )
         }
       </WidgetsToArticles>

@@ -20,7 +20,7 @@ export default function Client(props: IComponentProps) {
           variant="private-content-default"
           language={props.language}
           access="guest"
-          actionHref={`/${props.language}/rbac/subjects/me/authentication/select-method`}
+          actionHref={`/${props.language}/rbac/subject/authentication/select-method`}
         />
       }
     >

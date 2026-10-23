@@ -12,6 +12,20 @@ Check the startup ordering and failure handling with
 command below changes persisted content configuration through normal SDKs.
 Neither command implements behavior by editing repository data snapshots.
 
+## Local Host memory budget
+
+`npm run api:dev` starts the API and `npm run host:dev` starts Next.js with
+Turbopack. Run cold compilation and other project checks sequentially on a
+memory-constrained machine. `SPS_HOST_TURBOPACK_MEMORY_MB` supplies Next's target
+native bundler memory limit in MiB; it must be a positive integer. The Node heap
+has its separate `NODE_OPTIONS=--max-old-space-size=...` limit. The bundler target
+is not a hard limit on total process or system memory.
+
+For example, `SPS_HOST_TURBOPACK_MEMORY_MB=1024 NODE_OPTIONS=--max-old-space-size=1536 npm run host:dev`
+sets a 1 GiB bundler target and a 1.5 GiB Node heap. An unset bundler variable
+preserves the Next.js default. A dev-server Ready message still requires a
+successful page request before runtime acceptance.
+
 ## AI Chat Widget links
 
 First deploy the two additive RBAC relation migrations and the API/SDK code.
@@ -347,3 +361,54 @@ exclusively by the retired example. Keep shared roots and descendants. The
 publication command does not perform this cleanup. Its selected protected-graph
 snapshot complements the deployed resource and media write guards; those guards
 also reject public reuse of any other protected graph or byte-path alias.
+
+## Platform example content
+
+`platform-example-content.ts` applies an explicit saved-content graph for the
+Framework shell, About, Authors, article form and curated catalog. It uses the
+same SDK adapter and resumable operation engine as the Widget cutovers.
+
+The `sps.platform-example-input.v1` input contains ordered `targets` with a unique
+`key`, an entity, an exact selector and writable `data`. Existing targets may
+also name their exact `id`. A `{"$ref":"earlier-key"}` value selects the actual
+ID of an earlier target. The command records server-assigned IDs before writing
+child relations. Mark an existing consumer with `switch: true` to update it
+only after the additive records and links have read back. One record may have
+only one target. Mark security configuration `retainOnRollback: true` when its
+protection must survive a visual rollback.
+
+`protectedSelections` is required. Each entry names an entity and exact equality
+filters; an empty selector observes the whole collection. Preparation records
+all matching rows, including an empty result. Apply verifies these collections
+before writes, before switching existing consumers and after publication.
+Observe the relevant Orders, Invoices, grants, balances, subscription references
+and protected content graph. A protected record cannot also be a write target.
+The private manifest can contain operational data; keep it out of Git and issue
+attachments.
+
+Targets marked `requiresCommercialConfirmation` require an explicit source,
+Pro period and positive price, token-rate and pack values in
+`commercialConfirmation`. Supply confirmed terms rather than placeholder prices.
+The tool records this input; it does not infer a subscription period or invoke
+checkout, fulfillment or token grants.
+
+```sh
+API_SERVICE_URL=http://localhost:4000 npx dotenv -e apps/api/.env -- bun run --tsconfig-override ./tsconfig.base.json tools/runtime/platform-example-content.ts prepare /absolute/input.json /absolute/new-before-manifest.json
+API_SERVICE_URL=http://localhost:4000 npx dotenv -e apps/api/.env -- bun run --tsconfig-override ./tsconfig.base.json tools/runtime/platform-example-content.ts apply /absolute/new-before-manifest.json --exclusive-maintenance
+API_SERVICE_URL=http://localhost:4000 npx dotenv -e apps/api/.env -- bun run --tsconfig-override ./tsconfig.base.json tools/runtime/platform-example-content.ts verify /absolute/new-before-manifest.json
+API_SERVICE_URL=http://localhost:4000 npx dotenv -e apps/api/.env -- bun run --tsconfig-override ./tsconfig.base.json tools/runtime/platform-example-content.ts rollback /absolute/new-before-manifest.json --exclusive-maintenance
+bun test --tsconfig-override ./tsconfig.base.json tools/runtime/platform-example-content.test.ts
+```
+
+Stop other CMS writers, billing jobs, webhook callbacks and authentication writes
+for this local origin before exclusive maintenance, through final verify. The
+flag acknowledges this window; it does not disable API jobs or provide a
+transaction across HTTP calls. A running API without watch can still process
+cron and webhook calls. Changes observed during the window abort publication.
+
+Prepare reads APIs and creates a new mode-0600 manifest. Apply persists progress
+around every mutation and refuses stale versions or ambiguous create recovery.
+Resume the same manifest after an unknown response. Repeat apply and a fresh
+prepare require zero writes. Rollback restores only changed existing records;
+additive records and retained security configuration remain. Keep the original
+manifest and deploy matching application code when restoring old variants.

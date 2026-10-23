@@ -1,4 +1,9 @@
 import {
+  action as blogModuleArticleCreate,
+  type IProps as IBlogModuleArticleCreateProps,
+  type IResult as IBlogModuleArticleCreateResult,
+} from "./blog-module/article/create";
+import {
   action as ecommerceModuleOrderFreezeSubscriptionPeriod,
   type IProps as IEcommerceModuleOrderFreezeSubscriptionPeriodProps,
   type IResult as IEcommerceModuleOrderFreezeSubscriptionPeriodResult,
@@ -475,6 +480,7 @@ import {
 } from "./social-module/chat/find-by-id/profile/delete";
 
 export type IProps = {
+  IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
   IEcommerceModuleOrderFreezeSubscriptionPeriodProps: IEcommerceModuleOrderFreezeSubscriptionPeriodProps;
   IBlogModuleArticleFindByIdContentFindProps: IBlogModuleArticleFindByIdContentFindProps;
   IBillingModuleBalanceProps: IBillingModuleBalanceProps;
@@ -576,6 +582,7 @@ export type IProps = {
 };
 
 export type IResult = {
+  IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
   IEcommerceModuleOrderFreezeSubscriptionPeriodResult: IEcommerceModuleOrderFreezeSubscriptionPeriodResult;
   IBlogModuleArticleFindByIdContentFindResult: IBlogModuleArticleFindByIdContentFindResult;
   IBillingModuleBalanceResult: IBillingModuleBalanceResult;
@@ -677,6 +684,7 @@ export type IResult = {
 };
 
 export const api = {
+  blogModuleArticleCreate,
   ecommerceModuleOrderFreezeSubscriptionPeriod,
   blogModuleArticleFindByIdContentFind,
   socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate,

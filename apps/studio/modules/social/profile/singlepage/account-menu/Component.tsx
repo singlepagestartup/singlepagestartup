@@ -27,6 +27,9 @@ export function Component({
   page,
   settingsHref = "/ai-chat/rbac/subjects/settings",
   settingsTarget,
+  createArticleHref,
+  authorHref,
+  chatsHref,
   onNavigate,
   onSignOut,
 }: IComponentProps = {}) {
@@ -107,6 +110,42 @@ export function Component({
             )}
           </DropdownMenu.Label>
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
+          {createArticleHref ? (
+            <DropdownMenu.Item asChild>
+              <a
+                href={createArticleHref}
+                target={settingsTarget}
+                className={menuItemClassName}
+              >
+                <Icon name="file-text" />
+                Create article
+              </a>
+            </DropdownMenu.Item>
+          ) : null}
+          {authorHref ? (
+            <DropdownMenu.Item asChild>
+              <a
+                href={authorHref}
+                target={settingsTarget}
+                className={menuItemClassName}
+              >
+                <Icon name="user-circle" />
+                My author page
+              </a>
+            </DropdownMenu.Item>
+          ) : null}
+          {chatsHref ? (
+            <DropdownMenu.Item asChild>
+              <a
+                href={chatsHref}
+                target={settingsTarget}
+                className={menuItemClassName}
+              >
+                <Icon name="chat-circle" />
+                My chats
+              </a>
+            </DropdownMenu.Item>
+          ) : null}
           {showTokens && (
             <DropdownMenu.Item asChild>
               <a

@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/website-builder/features";
-export const variants = ["default"];
+export const variants = ["card", "default"];
 export const query = {};
 export const options = {
   next: {

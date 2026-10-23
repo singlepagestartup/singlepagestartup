@@ -72,22 +72,28 @@ describe("paid order atomic fulfillment", () => {
         amount: "0",
       },
     });
+    let activeOrderId = order.id;
+    let activeInvoices = [invoice.id];
+    let quantity = 1;
+    let creditAmount = "5000";
+    let productType = "subscription";
     const readExtended = async () =>
       ({
-        ...(await orders.findFirstByField("id", order.id)),
+        ...(await orders.findFirstByField("id", activeOrderId)),
         checkoutAttributesByCurrency: {
           amount: 0,
-          type: "subscription",
+          type: productType,
           interval: "day",
         },
         ordersToProducts: [
           {
             productId: "synthetic-product",
+            quantity,
             product: {
               productsToAttributes: [
                 {
                   attribute: {
-                    number: "7",
+                    number: creditAmount,
                     attributeKeysToAttribute: [
                       { attributeKey: { type: "topup" } },
                     ],
@@ -107,9 +113,11 @@ describe("paid order atomic fulfillment", () => {
           {
             billingModulePaymentIntent: {
               type: "one_off",
-              paymentIntentsToInvoices: [
-                { invoice: await invoices.findFirstByField("id", invoice.id) },
-              ],
+              paymentIntentsToInvoices: await Promise.all(
+                activeInvoices.map(async (id) => ({
+                  invoice: await invoices.findFirstByField("id", id),
+                })),
+              ),
               paymentIntentsToCurrencies: [{ currency }],
             },
           },
@@ -131,7 +139,7 @@ describe("paid order atomic fulfillment", () => {
           assertSubscriptionPayment: (props) => period.assertPayment(props),
           acceptSubscriptionPeriod: (props) => period.execute(props),
           find: async (props) => {
-            const current = await orders.findFirstByField("id", order.id);
+            const current = await orders.findFirstByField("id", activeOrderId);
             const status = props.params.filters.and.find(
               (filter) => filter.column === "status",
             );
@@ -150,7 +158,7 @@ describe("paid order atomic fulfillment", () => {
       } as any,
       {
         find: async () => [
-          { subjectId: subject.id, ecommerceModuleOrderId: order.id },
+          { subjectId: subject.id, ecommerceModuleOrderId: activeOrderId },
         ],
       } as any,
       grants,
@@ -219,7 +227,7 @@ describe("paid order atomic fulfillment", () => {
       (await orders.findFirstByField("id", order.id))
         .subscriptionPeriodInvoiceId,
     ).toBe(invoice.id);
-    expect((await balances.findById({ id: balance.id }))?.amount).toBe("7");
+    expect((await balances.findById({ id: balance.id }))?.amount).toBe("5000");
     expect(
       await grants.find({
         params: {
@@ -235,5 +243,90 @@ describe("paid order atomic fulfillment", () => {
     expect(
       after.every((version, index) => BigInt(version) > BigInt(before[index])),
     ).toBe(true);
+
+    const renewal = await invoices.insert({
+      status: "open",
+      amount: 0,
+      provider: "dummy",
+    });
+    cleanup.push(() => invoices.deleteFirstByField("id", renewal.id));
+    activeInvoices.push(renewal.id);
+    const freshProps = async () => ({
+      order: await readExtended(),
+      extendedOrder: await readExtended(),
+      subjectToEcommerceModuleOrder: {
+        subjectId: subject.id,
+        ecommerceModuleOrderId: activeOrderId,
+      },
+    });
+    await (service as any).renewSubscription(await freshProps());
+    expect((await balances.findById({ id: balance.id }))?.amount).toBe("5000");
+    await invoices.updateFirstByField("id", renewal.id, {
+      ...renewal,
+      status: "paid",
+    });
+    await Promise.all(
+      [1, 2, 3].map(async () =>
+        (service as any).renewSubscription(await freshProps()),
+      ),
+    );
+    expect(
+      (await orders.findFirstByField("id", order.id))
+        .subscriptionPeriodInvoiceId,
+    ).toBe(renewal.id);
+    expect((await balances.findById({ id: balance.id }))?.amount).toBe("10000");
+
+    const secondOrder = await orders.insert({
+      type: "history",
+      status: "paid",
+    });
+    cleanup.push(() => orders.deleteFirstByField("id", secondOrder.id));
+    const secondInvoice = await invoices.insert({
+      status: "paid",
+      amount: 0,
+      provider: "dummy",
+    });
+    cleanup.push(() => invoices.deleteFirstByField("id", secondInvoice.id));
+    activeOrderId = secondOrder.id;
+    activeInvoices = [secondInvoice.id];
+    await service.fromPaidStatus(await freshProps());
+    expect((await balances.findById({ id: balance.id }))?.amount).toBe("15000");
+    expect((await orders.findFirstByField("id", order.id)).status).toBe(
+      "delivering",
+    );
+    expect((await orders.findFirstByField("id", secondOrder.id)).status).toBe(
+      "delivering",
+    );
+
+    const packOrder = await orders.insert({ type: "history", status: "paid" });
+    cleanup.push(() => orders.deleteFirstByField("id", packOrder.id));
+    const packInvoice = await invoices.insert({
+      status: "paid",
+      amount: 0,
+      provider: "dummy",
+    });
+    cleanup.push(() => invoices.deleteFirstByField("id", packInvoice.id));
+    activeOrderId = packOrder.id;
+    activeInvoices = [packInvoice.id];
+    quantity = 2;
+    creditAmount = "1000";
+    productType = "one_off";
+    await Promise.all(
+      [1, 2, 3].map(async () => service.fromPaidStatus(await freshProps())),
+    );
+    expect((await balances.findById({ id: balance.id }))?.amount).toBe("17000");
+    expect((await orders.findFirstByField("id", packOrder.id)).status).toBe(
+      "approving",
+    );
+
+    activeOrderId = secondOrder.id;
+    activeInvoices = [secondInvoice.id];
+    productType = "subscription";
+    quantity = 1;
+    creditAmount = "5000";
+    await orders.revokeSubscription({ id: secondOrder.id });
+    await orders.updateFirstByField("id", secondOrder.id, { status: "paid" });
+    await service.fromPaidStatus(await freshProps());
+    expect((await balances.findById({ id: balance.id }))?.amount).toBe("17000");
   });
 });

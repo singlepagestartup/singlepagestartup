@@ -11,6 +11,8 @@ import {
 import {
   ProtectedBlogContent,
   protectedContentRoutes,
+  RawSocialProfileRead,
+  rawSocialProfileReadRoutes,
 } from "@sps/rbac/models/subject/backend/app/middlewares";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -505,7 +507,7 @@ app.use(revalidationMiddleware.init());
  * MIDDLEWARE_HTTP_CACHE below; scoped reads also need exclusions or no-store.
  */
 const httpCacheMiddleware = new HTTPCacheMiddleware({
-  excludedRoutes: protectedContentRoutes,
+  excludedRoutes: [...protectedContentRoutes, ...rawSocialProfileReadRoutes],
 });
 
 const actionLoggerMiddleware = new ActionLoggerMiddleware();
@@ -520,13 +522,18 @@ app.use(billRouteMiddleware.init());
 const parseQueryMiddleware = new ParseQueryMiddleware();
 app.use(parseQueryMiddleware.init());
 app.use(protectedBlogContent.init());
+app.use(new RawSocialProfileRead(() => currentSubjectService).init());
 
 if (MIDDLEWARE_HTTP_CACHE === "true") {
   if (consistencyMode !== "off")
     app.use(
       consistencyRuntime.cache({
         observe: consistencyMode === "observe",
-        excludedRoutes: [...controllerGuardedRoutes, ...protectedContentRoutes],
+        excludedRoutes: [
+          ...controllerGuardedRoutes,
+          ...protectedContentRoutes,
+          ...rawSocialProfileReadRoutes,
+        ],
       }),
     );
   else app.use(httpCacheMiddleware.init());

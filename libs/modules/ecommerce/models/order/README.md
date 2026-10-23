@@ -40,6 +40,26 @@ deadline. Explicit Role deletion stamps `subscriptionRevokedAt` on affected
 owned subscription Orders. Proceed, repeated paid transitions, recreated Roles
 and automatic renewal cannot restore those Orders.
 
+Extended Order reads preserve existing payment terms when a Product's prices
+or offered currencies change. The read uses the Order's matching-currency paid
+Invoice amount and its Payment Intent's saved subscription interval. Commerce
+Product type still selects delivery: a Telegram `one_off` payment transport can
+settle a subscription while retaining its saved interval. The latest
+paid Invoice wins by creation time, then ID; an accepted period anchor must
+still belong to that paid context. The read never rewrites the accepted period.
+A sole unpaid Invoice remains visible with its saved amount and interval, while
+its unpaid status and missing entitlement stay unchanged. Missing anchors,
+conflicting payment currencies and ambiguous Invoice contexts require
+reconciliation rather than an arbitrary fallback.
+
+An unbilled new cart uses current Product prices. If its previously selected
+currency is no longer offered, its extended read can show the saved
+Order-to-Currency amount. This keeps an old cart inspectable; the checkout
+attributes command still requires a current Product price in that currency.
+The internal initial-Free zero one-off settlement retains its Product's
+subscription delivery contract. No retired price is added to the public catalog
+or new checkout through this read compatibility.
+
 Natural recurring expiry removes its grant through the internal fulfillment
 operation and sets `status=expired`, retaining its paid Invoice anchor. A later
 newer paid Invoice can reactivate that same unrevoked Order for a full interval.

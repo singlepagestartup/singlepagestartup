@@ -71,3 +71,9 @@ profile types unchanged.
 ```
 
 The caller needs RBAC access to the relation and linked Blog articles.
+
+## Public authors
+
+`authorFind`, `authorFindCount` and `authorFindById` use the named `/api/social/profiles/authors` routes. A default or Telegram Profile appears publicly after an explicit link to an existing Article or Product. Public URLs use the Profile UUID; the DTO omits private slugs, Subject/Identity identifiers, administrative fields and AI workspace configuration. Article and Product references contain only their public summary fields.
+
+The `author-card-default`, `author-byline-default` and `author-overview-default` variants consume these DTOs. Already loaded results use props mode. Own-account and private Chat reads retain their Subject/Chat scope, including historical sender and actor avatar presentation. Generic Profile list/count/detail reads require an operator or a current explicit administrative Role binding. Public author reads bypass the legacy route-topic cache; the consistency cache records the owning Service dependencies.

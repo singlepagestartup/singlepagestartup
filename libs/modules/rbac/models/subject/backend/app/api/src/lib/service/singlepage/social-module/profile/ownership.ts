@@ -1,6 +1,5 @@
 import type { Service as SubjectService } from "../../index";
-import { api as profileApi } from "@sps/social/models/profile/sdk/server";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import type { Repository } from "../../../../repository";
 
 export interface IEnsureProps {
   subjectId: string;
@@ -37,6 +36,13 @@ export class Service {
   }
 
   async ensure({ subjectId }: IEnsureProps) {
+    return (this.service.repository as Repository).withSubjectLock(
+      { subjectId },
+      () => this.ensureLocked({ subjectId }),
+    );
+  }
+
+  private async ensureLocked({ subjectId }: IEnsureProps) {
     const subject = await this.service.findById({ id: subjectId });
     if (
       !subject ||
@@ -188,11 +194,7 @@ export class Service {
       (await this.ensureEntity({
         service: {
           find: (props) => this.service.socialModule.profile.find(props),
-          create: (props) =>
-            profileApi.create({
-              data: props.data,
-              options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY! } },
-            }),
+          create: (props) => this.service.socialModule.profile.create(props),
         },
         filters: [
           { column: "slug", method: "eq", value: `subject-${subjectId}` },
@@ -218,7 +220,7 @@ export class Service {
         },
       });
     if (
-      profile.variant !== "default" ||
+      !["default", "telegram"].includes(profile.variant) ||
       profileOwners.some((link) => link.subjectId !== subjectId)
     )
       throw new Error(

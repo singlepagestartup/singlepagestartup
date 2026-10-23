@@ -3,6 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { Service as ActionPresentations } from "../../../../../../../../service/singlepage/social-module/chat/actions";
 
 export class Handler {
   service: Service;
@@ -38,6 +39,10 @@ export class Handler {
       if (!socialModuleChatId) {
         throw new Error("Validation error. No socialModuleChatId provided");
       }
+      await this.service.socialModuleChatLifecycleAssertSubjectOwnsChat({
+        subjectId: id,
+        socialModuleChatId,
+      });
 
       const parsedQuery = c.get("parsedQuery");
       const limit = parsedQuery?.limit || 100;
@@ -118,7 +123,9 @@ export class Handler {
         );
 
         return c.json({
-          data: socialModuleActions,
+          data: await new ActionPresentations(this.service).enrich(
+            socialModuleActions,
+          ),
         });
       }
 
@@ -166,7 +173,9 @@ export class Handler {
       });
 
       return c.json({
-        data: socialModuleActions,
+        data: await new ActionPresentations(this.service).enrich(
+          socialModuleActions,
+        ),
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

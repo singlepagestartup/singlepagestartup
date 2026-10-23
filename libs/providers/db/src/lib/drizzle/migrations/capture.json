@@ -1,5 +1,5 @@
 {
-  "fingerprint": "eb6efc49fc1c0cd178672715bb0545531104aef71848ea443014816f238d1d76",
+  "fingerprint": "c368c6767dd08ad1b3358b560833df7c403c1dd85e621a250ec9a080ccb14d33",
   "resources": [
     {
       "resource": "public.bg_as_to_ee_me_ps_bd9",
@@ -182,6 +182,20 @@
         "className": "class_name",
         "widgetId": "wt_id",
         "crmModuleWidgetId": "cm_me_wt_id"
+      }
+    },
+    {
+      "resource": "public.rc_ws_to_em_me_ws_c76",
+      "topic": "rbac.widgets-to-ecommerce-module-widgets",
+      "columns": {
+        "id": "id",
+        "createdAt": "created_at",
+        "updatedAt": "updated_at",
+        "variant": "variant",
+        "orderIndex": "order_index",
+        "className": "class_name",
+        "widgetId": "wt_id",
+        "ecommerceModuleWidgetId": "em_me_wt_id"
       }
     },
     {
@@ -625,6 +639,20 @@
       }
     },
     {
+      "resource": "public.sl_ws_to_we_br_me_ws_c76",
+      "topic": "social.widgets-to-website-builder-module-widgets",
+      "columns": {
+        "id": "id",
+        "createdAt": "created_at",
+        "updatedAt": "updated_at",
+        "variant": "variant",
+        "orderIndex": "order_index",
+        "className": "class_name",
+        "widgetId": "wt_id",
+        "websiteBuilderModuleWidgetId": "we_br_me_wt_id"
+      }
+    },
+    {
       "resource": "public.sp_widget",
       "topic": "startup.widgets",
       "columns": {
@@ -889,6 +917,20 @@
         "title": "title",
         "subtitle": "subtitle",
         "description": "description"
+      }
+    },
+    {
+      "resource": "public.sps_blog_ws_to_we_br_me_ws_c76",
+      "topic": "blog.widgets-to-website-builder-module-widgets",
+      "columns": {
+        "id": "id",
+        "createdAt": "created_at",
+        "updatedAt": "updated_at",
+        "variant": "variant",
+        "orderIndex": "order_index",
+        "className": "class_name",
+        "widgetId": "wt_id",
+        "websiteBuilderModuleWidgetId": "we_br_me_wt_id"
       }
     },
     {

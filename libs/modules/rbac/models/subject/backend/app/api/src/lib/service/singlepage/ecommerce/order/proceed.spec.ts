@@ -301,7 +301,7 @@ describe("durable subscription grant revocation", () => {
     expect(mockSubjectsToRolesCreate).not.toHaveBeenCalled();
     expect(grants()).toEqual([]);
     expect(order().subscriptionPeriodInvoiceId).toBeNull();
-    expect(mockLoggerError).toHaveBeenCalled();
+    expect(service.collectTopupCurrencies).not.toHaveBeenCalled();
   });
 
   it("uses the fresh Order instead of stale paid candidate data when a grant has been revoked", async () => {
@@ -467,9 +467,89 @@ describe("durable subscription grant revocation", () => {
       "invoice-b",
     );
   });
+  it("credits a newly accepted paid Pro cycle once and retains existing purchased tokens", async () => {
+    const { service, order } = lifecycle("delivering", true);
+    (service.collectTopupCurrencies as jest.Mock).mockResolvedValue([
+      {
+        billingModuleCurrencyId: "tokens",
+        billingModuleCurrency: { id: "tokens", slug: "token" },
+        amount: "5000",
+      },
+    ]);
+    let amount = "1200";
+    service.subjectsToBillingModuleCurrencies.find = jest.fn(
+      async () =>
+        [{ id: "wallet", billingModuleCurrencyId: "tokens", amount }] as any,
+    );
+    const credit = jest.fn(async (props) => {
+      expect(props.expectedAmount).toBe(amount);
+      amount = props.amount;
+      return { id: "wallet", amount };
+    });
+    service.subjectsToBillingModuleCurrencies.updateAmountIfUnchanged = credit;
+    await service.execute({ subjectId: "subject" });
+    expect(order().subscriptionPeriodInvoiceId).toBe("invoice-b");
+    expect(amount).toBe("6200");
+    await service.execute({ subjectId: "subject" });
+    expect(amount).toBe("6200");
+    expect(credit).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not apply referral bonuses to the exact initial 3000 Free grant", async () => {
+    const { service, order } = lifecycle("paid", false, false);
+    order().ordersToProducts[0].product.slug = "free-subscription";
+    service.subjectsToIdentities.find = jest.fn(
+      async () => [{ subjectId: "subject" }] as any,
+    );
+    service.ecommerceModule.ordersToProducts = {
+      find: jest.fn(async () => [
+        { orderId: "subscription", productId: "product" },
+      ]),
+    } as any;
+    (service.collectTopupCurrencies as jest.Mock).mockResolvedValue([
+      {
+        billingModuleCurrencyId: "tokens",
+        billingModuleCurrency: { id: "tokens", slug: "token" },
+        amount: "3000",
+      },
+    ]);
+    service.subjectsToSocialModuleProfiles.find = jest.fn(
+      async () => [{ socialModuleProfileId: "invited" }] as any,
+    );
+    await service.execute({ subjectId: "subject" });
+    expect(service.socialModule.attribute.find).not.toHaveBeenCalled();
+    expect(mockSubjectsToBillingModuleCurrenciesCreate).toHaveBeenCalledWith({
+      data: {
+        subjectId: "subject",
+        billingModuleCurrencyId: "tokens",
+        amount: "3000",
+      },
+    });
+  });
+
+  it("does not clear any Currency balance while canceling a Pro Order", async () => {
+    const { service, order } = lifecycle("canceling", true);
+    service.ecommerceModule.order.revokeSubscription = jest.fn(async () => {
+      order().subscriptionRevokedAt = new Date();
+      return order();
+    });
+    service.subjectsToBillingModuleCurrencies.find = jest.fn(
+      async () =>
+        [
+          { id: "tokens", amount: "9000" },
+          { id: "usd", amount: "25" },
+        ] as any,
+    );
+    await service.execute({ subjectId: "subject" });
+    expect(order().status).toBe("canceled");
+    expect(
+      service.subjectsToBillingModuleCurrencies.find,
+    ).not.toHaveBeenCalled();
+    expect(mockSubjectsToBillingModuleCurrenciesUpdate).not.toHaveBeenCalled();
+  });
 });
 
-it("renews an expired zero-price daily subscription without requiring a Telegram chat", async () => {
+it("never renews internal Free and preserves all wallet balances on completion", async () => {
   jest.clearAllMocks();
   const { service } = createService();
   (
@@ -512,21 +592,9 @@ it("renews an expired zero-price daily subscription without requiring a Telegram
     productsRolesIds: [],
     subjectsToRoles: [],
   });
-  expect(mockSubjectProductCheckout).toHaveBeenCalledWith({
-    id: "user",
-    productId: "free-product",
-    data: {
-      provider: "dummy",
-      billingModule: { currency: { id: "currency" } },
-    },
-  });
-  expect(mockSubjectsToBillingModuleCurrenciesUpdate).toHaveBeenCalledTimes(1);
-  expect(mockSubjectsToBillingModuleCurrenciesUpdate).toHaveBeenCalledWith(
-    expect.objectContaining({
-      id: "token-balance",
-      data: expect.objectContaining({ amount: "0" }),
-    }),
-  );
+  expect(mockSubjectProductCheckout).not.toHaveBeenCalled();
+  expect(mockSubjectsToBillingModuleCurrenciesUpdate).not.toHaveBeenCalled();
+  expect(service.subjectsToBillingModuleCurrencies.find).not.toHaveBeenCalled();
 });
 
 function createService(props?: {
@@ -552,6 +620,7 @@ function createService(props?: {
 
   const service = new Service(
     {
+      lockOrderDelivery: async () => undefined,
       withOrderDelivery: async (
         _scope: unknown,
         operation: () => Promise<unknown>,
@@ -593,6 +662,10 @@ function createService(props?: {
     { find: subjectsToSocialModuleProfilesFind } as any,
     {
       find: jest.fn().mockResolvedValue([]),
+      updateAmountIfUnchanged: jest.fn(async (props) => ({
+        id: props.id,
+        amount: props.amount,
+      })),
       create: (...args: unknown[]) =>
         mockSubjectsToBillingModuleCurrenciesCreate(...args),
       update: (...args: unknown[]) =>
@@ -983,6 +1056,7 @@ describe("Given: delivered subscription order without invoice context", () => {
           ordersToProducts: [
             {
               productId: "product-1",
+              product: { id: "product-1", slug: "paid-subscription" },
             },
           ],
           ordersToFileStorageModuleFiles: [],
@@ -1085,6 +1159,7 @@ describe("Given: an expired Telegram Stars subscription order", () => {
         ordersToProducts: [
           {
             productId: "product-1",
+            product: { id: "product-1", slug: "paid-subscription" },
           },
         ],
         ordersToFileStorageModuleFiles: [],
@@ -1121,4 +1196,96 @@ describe("Given: an expired Telegram Stars subscription order", () => {
       },
     });
   });
+});
+
+describe("quantity-aware additive token collection", () => {
+  const topup = (number: string, currencyId = "token") => ({
+    attribute: {
+      number,
+      attributeKeysToAttribute: [{ attributeKey: { type: "topup" } }],
+      attributesToBillingModuleCurrencies: [
+        {
+          billingModuleCurrencyId: currencyId,
+          billingModuleCurrency: { id: currencyId, slug: currencyId },
+        },
+      ],
+    },
+  });
+  it("multiplies each pack by its paid quantity and sums by Currency", async () => {
+    const { service } = createService();
+    const result = await service.collectTopupCurrencies({
+      extendedOrder: {
+        ordersToProducts: [
+          { quantity: 2, product: { productsToAttributes: [topup("100")] } },
+          { quantity: 3, product: { productsToAttributes: [topup("50")] } },
+        ],
+      } as any,
+      subjectToEcommerceModuleOrder: { subjectId: "subject" } as any,
+    });
+    expect(result).toEqual([
+      {
+        billingModuleCurrencyId: "token",
+        billingModuleCurrency: { id: "token", slug: "token" },
+        amount: "350",
+      },
+    ]);
+  });
+  it("does not suppress a newly paid Pro Order because the same Product is already delivering", async () => {
+    const { service, subjectsToEcommerceModuleOrdersFind } = createService();
+    subjectsToEcommerceModuleOrdersFind.mockResolvedValue([
+      { subjectId: "subject", ecommerceModuleOrderId: "old-delivering-pro" },
+    ]);
+    const result = await service.collectTopupCurrencies({
+      extendedOrder: {
+        ordersToProducts: [
+          {
+            productId: "pro",
+            quantity: 1,
+            product: { id: "pro", productsToAttributes: [topup("5000")] },
+          },
+        ],
+      } as any,
+      subjectToEcommerceModuleOrder: {
+        subjectId: "subject",
+        ecommerceModuleOrderId: "new-paid-pro",
+      } as any,
+    });
+    expect(result[0].amount).toBe("5000");
+    expect(subjectsToEcommerceModuleOrdersFind).not.toHaveBeenCalled();
+  });
+  it.each([0, -1, 1.5, Infinity])(
+    "rejects invalid paid quantity %s",
+    async (quantity) => {
+      const { service } = createService();
+      await expect(
+        service.collectTopupCurrencies({
+          extendedOrder: {
+            ordersToProducts: [
+              { quantity, product: { productsToAttributes: [topup("100")] } },
+            ],
+          } as any,
+          subjectToEcommerceModuleOrder: {} as any,
+        }),
+      ).rejects.toThrow("positive integer");
+    },
+  );
+  it.each(["", "-1", "NaN", "Infinity"])(
+    "rejects invalid credit amount %s",
+    async (amount) => {
+      const { service } = createService();
+      await expect(
+        service.collectTopupCurrencies({
+          extendedOrder: {
+            ordersToProducts: [
+              {
+                quantity: 1,
+                product: { productsToAttributes: [topup(amount)] },
+              },
+            ],
+          } as any,
+          subjectToEcommerceModuleOrder: {} as any,
+        }),
+      ).rejects.toThrow("finite and positive");
+    },
+  );
 });

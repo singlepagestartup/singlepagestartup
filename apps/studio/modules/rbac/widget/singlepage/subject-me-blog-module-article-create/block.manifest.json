@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "rbac.widget.subject-me-blog-module-article-create",
+  "title": "subject-me-blog-module-article-create",
+  "description": "subject-me-blog-module-article-create presentation.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-blog-module-article-create"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "subject-me-blog-module-article-create",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "rbac",
+    "widget",
+    "subject-me-blog-module-article-create"
+  ]
+}

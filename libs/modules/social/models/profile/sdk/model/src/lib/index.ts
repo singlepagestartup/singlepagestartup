@@ -6,6 +6,7 @@ export {
 } from "@sps/social/models/profile/backend/repository/database";
 export * from "./mcp-servers";
 export * from "./plain-text";
+export * from "./author";
 import {
   API_SERVICE_URL,
   NEXT_PUBLIC_API_SERVICE_URL,
@@ -17,6 +18,10 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/social/profiles";
 export const variants = [
+  "author-card-default",
+  "author-byline-default",
+  "author-overview-default",
+
   "agent-id-ai-chat",
   "id-settings-ai-chat",
 

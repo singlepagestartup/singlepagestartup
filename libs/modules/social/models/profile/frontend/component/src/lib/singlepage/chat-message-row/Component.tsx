@@ -7,6 +7,8 @@ export function Component(props: IComponentPropsExtended) {
       isServer={props.isServer}
       className={props.className}
       data={props.data}
+      profile={props.profile}
+      avatar={props.avatar}
       language={props.language}
       message={props.message}
       isDeleting={props.isDeleting}

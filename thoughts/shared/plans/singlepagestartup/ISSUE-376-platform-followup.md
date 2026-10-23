@@ -1,10 +1,10 @@
 ---
 issue_number: 376
 round: 2
-status: in_review
+status: in_progress
 branch: codex/issue-376-framework-visual
 canonical_plan: thoughts/shared/plans/singlepagestartup/ISSUE-376.md
-publication_gate: independent Plan PASS; commercial R2.5b requires confirmed input
+publication_gate: independent Plan PASS; R2.5b terms confirmed, compatibility and runtime checks required
 ---
 
 # Round 2: account, authors, shell and commercial fulfillment
@@ -40,7 +40,7 @@ publication_gate: independent Plan PASS; commercial R2.5b requires confirmed inp
 
 ## Граница коммерческого применения
 
-Подтверждены: Free initial 3000, Pro 5000 credits, Landing USD 100, Startup from USD 2000. Принятый engineering scope реализует эти правила на typed fixtures и текущих сохранённых данных, отделяя commercial application в R2.5b. Новую цену/период Pro и точные pack prices/credits/rounding разрешено применять только из отдельного подтверждённого оператором input manifest. Эти значения не выводятся из test minute/RUB/Star records или старого Studio retail-rate текста. До такого input R2.5b имеет статус pending и не меняет эти attrs/pack memberships; независимые backend/UI, Landing/Startup и остальные data changes выполняются. Финальный отчёт явно сообщает этот pending scope, не объявляя commercial application завершённым.
+Подтверждены: Free initial 3000, Pro 5000 credits, Landing USD 100, Startup from USD 2000. Принятый engineering scope реализует эти правила на typed fixtures и текущих сохранённых данных, отделяя commercial application в R2.5b. Новую цену/период Pro и точные pack prices/credits/rounding разрешено применять только из отдельного подтверждённого оператором input manifest. Эти значения не выводятся из test minute/RUB/Star records или старого Studio retail-rate текста. Подтверждённый input — `ISSUE-376-commercial-confirmed-input.json`: Pro 29 USD или 1900 RUB в месяц за 5000 токенов; пополнения 100/300/500/1000/3000 RUB по 0.13 RUB за токен. Применение R2.5b ожидает проверки старых заказов; независимые backend/UI, Landing/Startup и остальные data changes выполняются. Финальный отчёт явно сообщает этот pending scope, не объявляя commercial application завершённым.
 
 ## Владение файлами и порядок интеграции
 

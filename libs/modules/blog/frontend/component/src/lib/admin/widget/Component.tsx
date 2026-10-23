@@ -1,5 +1,7 @@
 "use client";
 
+import { Component as WidgetsToWebsiteBuilderModuleWidgets } from "@sps/blog/relations/widgets-to-website-builder-module-widgets/frontend/component";
+
 import { Component as ParentComponent } from "@sps/blog/models/widget/frontend/component";
 
 import { Component as WidgetsToArticles } from "@sps/blog/relations/widgets-to-articles/frontend/component";
@@ -16,6 +18,23 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
+            widgetsToWebsiteBuilderModuleWidgets={({ data }) =>
+              data ? (
+                <WidgetsToWebsiteBuilderModuleWidgets
+                  isServer={false}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          { column: "widgetId", method: "eq", value: data.id },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              ) : null
+            }
             widgetsToArticles={({ data, isServer }) => {
               if (!data) {
                 return;

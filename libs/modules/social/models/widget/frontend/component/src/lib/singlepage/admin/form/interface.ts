@@ -10,7 +10,11 @@ import {
 export const variant = "admin-form" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {}
+  extends IParentComponentProps<IModel, typeof variant> {
+  widgetsToWebsiteBuilderModuleWidgets?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
+}
 
 export interface IComponentPropsExtended
   extends IParentComponentPropsExtended<

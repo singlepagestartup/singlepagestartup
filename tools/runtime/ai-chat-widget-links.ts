@@ -45,7 +45,8 @@ export interface IWidgetCutoverManifest {
     | "sps.ai-chat-widget-cutover.v1"
     | "sps.ecommerce-widget-cutover.v1"
     | "sps.social-widget-cutover.v1"
-    | "sps.framework-widget-cutover.v1";
+    | "sps.framework-widget-cutover.v1"
+    | "sps.platform-example-cutover.v1";
   createdAt: string;
   apiOrigin?: string;
   hostBindings?: Pick<
@@ -644,6 +645,7 @@ export async function applyWidgetCutover(
       "sps.ecommerce-widget-cutover.v1",
       "sps.social-widget-cutover.v1",
       "sps.framework-widget-cutover.v1",
+      "sps.platform-example-cutover.v1",
     ].includes(manifest.schema) ||
     ["rolling-back", "rolled-back"].includes(manifest.status)
   )
@@ -751,6 +753,7 @@ export async function rollbackWidgetCutover(
       "sps.ecommerce-widget-cutover.v1",
       "sps.social-widget-cutover.v1",
       "sps.framework-widget-cutover.v1",
+      "sps.platform-example-cutover.v1",
     ].includes(manifest.schema)
   )
     throw new Error("Unknown manifest schema");

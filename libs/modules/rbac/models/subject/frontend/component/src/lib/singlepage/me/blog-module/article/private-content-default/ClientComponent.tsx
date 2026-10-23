@@ -52,8 +52,8 @@ export function Component(props: IClientComponentProps) {
             access={access}
             actionHref={
               access === "guest"
-                ? `/${props.language}/rbac/subjects/me/authentication/select-method`
-                : `/${props.language}/ecommerce/products`
+                ? `/${props.language}/rbac/subject/authentication/select-method`
+                : `/${props.language}/ecommerce`
             }
             onRetry={props.onRetry}
           >

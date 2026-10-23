@@ -272,9 +272,15 @@ delete action is called.
 
 ### Subject Profile collection
 
-`GET /api/rbac/subjects/:id/social-module/profiles` returns the Subject's own Profiles and Profiles connected through its Chats, with caller filters applied within that scope.
+`GET /api/rbac/subjects/:id/social-module/profiles` returns only Profiles explicitly owned by that Subject. Caller filters apply within this scope; shared Chat membership does not grant ownership.
 
-`POST` at the same URL accepts `data.title` and `data.variant` (`default` or `artificial-intelligence`). Profile model defaults generate `slug` and `adminTitle`; caller values for those fields are not forwarded. The AI Chat form supplies `artificial-intelligence` and asks only for the project name. AI Profile creation also provisions its Chat, default Thread and Agent Subject using the existing bootstrap. The returned model is the created Profile.
+`POST` at the same URL creates an `artificial-intelligence` Profile from its title. The authenticated registration flow provisions the single personal Profile; callers cannot create another personal Profile through this endpoint. Model defaults generate `slug` and `adminTitle`; caller values for those fields are not forwarded. AI Profile creation also provisions its Chat, default Thread and Agent Subject through the existing bootstrap. The returned model is the created Profile.
+
+### Publishing an Article
+
+`POST /api/rbac/subjects/:id/blog-module/articles` requires the current Subject's JWT and a registered human Identity. Its strict JSON envelope contains `data.requestId`, localized `title` and TipTap-serialized `description`, optional localized `subtitle`, and an optional `categoryId`. The server chooses the caller's personal Social Profile and atomically creates Article, ownership, authorship and optional category links. A retry with the same request UUID and unchanged payload returns the same Article; a changed or foreign request conflicts. This operation publishes immediately.
+
+Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `authors/count` and `authors/:id` reads expose allowlisted author presentation and explicitly linked Articles/Products. They omit private Profile handles, Subject IDs and AI workspace data. Generic Profile list/count/detail reads require operator or an explicitly Role-bound administrative Permission; account settings use the existing Subject scope. Authorized Chat reads carry current participant and historical sender/actor presentation, including avatars, within their Chat scope.
 
 ## Variants
 
@@ -535,9 +541,11 @@ permits startup specialization; controllers do not construct ProfileSkills.
 `ecommerceProductCheckout` creates the Product checkout graph and delegates to
 `ecommerceOrderCheckout`, which performs payment checkout and retains its
 compensation behavior. The Product HTTP handler and both order-renewal paths use
-the same public capability. Authentication bootstrap and the Telegram
-free-subscription flow also invoke it directly after selecting the configured
-zero-price Product. The public HTTP checkout retains its Subject JWT ownership
+the same public capability. Authentication and Telegram initial-Free grants use
+a separate direct-Service transaction for the zero-price graph and settlement.
+That operation grants 3000 credits once, rejects an ambient outer transaction
+and dispatches effects after its own commit. It does not invoke HTTP checkout
+or renew the Free allowance. The public HTTP checkout retains its Subject JWT ownership
 check. Proceed receives a deferred DI callback so resolving Subject and Proceed
 does not form a constructor cycle, and startup Subject methods remain effective.
 

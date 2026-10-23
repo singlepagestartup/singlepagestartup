@@ -1,3 +1,5 @@
+import { Component as AuthorListDefault } from "./author-list-default";
+import { Component as AuthorOverviewDefault } from "./author-overview-default";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 import { Component as AdminV2Form } from "./admin-v2/form";
@@ -14,6 +16,8 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Find } from "./find";
 import { Component as Default } from "./default";
 export const variants = {
+  "author-list-default": AuthorListDefault,
+  "author-overview-default": AuthorOverviewDefault,
   "profile-overview-default": ProfileOverviewDefault,
   "chat-list-default": ChatListDefault,
   "chat-overview-default": ChatOverviewDefault,

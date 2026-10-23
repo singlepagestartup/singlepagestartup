@@ -1,5 +1,6 @@
 import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
 import type { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
+import type { Service as SocialProfileService } from "@sps/social/models/profile/backend/app/api/src/lib/service";
 export interface IReadService {
   find: (props?: any) => Promise<any>;
   findById: (props: { id: string }) => Promise<any>;
@@ -56,7 +57,14 @@ export interface IEcommerceOrdersToProductsService extends ICreateService {
 }
 
 export interface ISocialModule {
-  profile: IReadService;
+  profile: ICreateService &
+    Pick<
+      SocialProfileService,
+      | "authorFind"
+      | "authorFindCount"
+      | "authorFindById"
+      | "profilePresentation"
+    >;
   skill: ICreateUpdateService;
   chat: IReadService;
   thread: IUpdateService;
@@ -72,6 +80,7 @@ export interface ISocialModule {
   profilesToMessages: ICreateService;
   profilesToActions: IReadService;
   profilesToAttributes: IReadService;
+  profilesToBlogModuleArticles: ICreateService;
   chatsToThreads: IReadService;
   chatsToMessages: ICreateService;
   chatsToActions: IReadService;
@@ -90,7 +99,7 @@ export interface IEcommerceModule {
   storesToOrders: ICreateService;
   ordersToProducts: IEcommerceOrdersToProductsService;
   ordersToBillingModuleCurrencies: ICreateService;
-  ordersToBillingModulePaymentIntents: IReadService;
+  ordersToBillingModulePaymentIntents: ICreateService;
   ordersToFileStorageModuleFiles: IReadService;
   productsToAttributes: IReadService;
   productsToFileStorageModuleFiles: IReadService;
@@ -100,10 +109,16 @@ export interface IEcommerceModule {
 
 export interface IBillingModule {
   currency: IReadService;
-  paymentIntent: IReadService;
-  paymentIntentsToCurrencies: IReadService;
-  invoice: IReadService;
-  paymentIntentsToInvoices: IReadService;
+  paymentIntent: ICreateUpdateService;
+  paymentIntentsToCurrencies: ICreateService;
+  invoice: ICreateUpdateService;
+  paymentIntentsToInvoices: ICreateService;
+}
+
+export interface IBlogModule {
+  article: ICreateService;
+  category: IReadService;
+  categoriesToArticles: ICreateService;
 }
 
 export interface INotificationModule {
@@ -142,6 +157,10 @@ export interface IBroadcastModule {
 }
 
 export const SubjectDI = {
+  IBlogModule: Symbol.for("rbac.subject.blog.module"),
+  ISubjectsToBlogModuleArticlesService: Symbol.for(
+    "rbac.subject.subjects-to-blog-module-articles.service",
+  ),
   ISocialModule: Symbol.for("rbac.subject.social.module"),
   IEcommerceModule: Symbol.for("rbac.subject.ecommerce.module"),
   IBillingModule: Symbol.for("rbac.subject.billing.module"),

@@ -1,3 +1,5 @@
+import { Component as SubjectMeBlogModuleArticleCreate } from "./subject-me-blog-module-article-create";
+import { Component as SubjectMeEcommerceModuleProductListDefault } from "./subject-me-ecommerce-module-product-list-default";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Table } from "./admin-v2-table/index";
 import { Component as List } from "./list/index";
@@ -13,6 +15,9 @@ import { Component as SubjectMeSocialModuleProfileChatListDefault } from "./subj
 import { Component as SubjectMeSocialModuleProfileChatOverviewDefault } from "./subject/me/social-module/profile/chat/overview-default/index";
 
 export const variants = {
+  "subject-me-blog-module-article-create": SubjectMeBlogModuleArticleCreate,
+  "subject-me-ecommerce-module-product-list-default":
+    SubjectMeEcommerceModuleProductListDefault,
   "admin-v2-card": AdminV2Card,
   "admin-v2-table": AdminV2Table,
   list: List,

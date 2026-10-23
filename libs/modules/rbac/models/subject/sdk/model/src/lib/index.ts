@@ -1,4 +1,9 @@
 export {
+  articleCreateSchema,
+  type IArticleCreateInput,
+  type IArticleCreateResult,
+} from "./blog-article-create";
+export {
   type IInsertSchema,
   type ISelectSchema as IModel,
   insertSchema,
@@ -15,6 +20,9 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/rbac/subjects";
 export const variants = [
+  "me-account",
+  "me-blog-module-article-create-default",
+
   "me-social-module-profile-id-sidebar-ai-chat",
   "me-authentication-email-and-password-reset-password-form-ai-chat",
   "me-authentication-email-and-password-forgot-password-form-ai-chat",

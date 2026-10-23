@@ -1,3 +1,4 @@
+import type { IComponentProps as IArticleFeedDefault } from "./article-feed-default/interface";
 import { IComponentProps as ICategoryOverviewDefaultComponentProps } from "./category/overview/default/interface";
 import { IComponentProps as ICategoryListDefaultComponentProps } from "./category/list/default/interface";
 import { IComponentProps as IArticleOverviewEcommerceModuleProductListCardDefaultComponentProps } from "./article/overview/ecommerce-module/product/list/default/interface";
@@ -18,6 +19,7 @@ import { IComponentProps as IArticleOverviewDefaultComponentProps } from "./arti
 import { IComponentProps as IArticleOverviewWithPrivateContentDefaultComponentProps } from "./article/overview/with-private-content-default/interface";
 
 export type IComponentProps =
+  | IArticleFeedDefault
   | ICategoryOverviewDefaultComponentProps
   | ICategoryListDefaultComponentProps
   | IArticleOverviewEcommerceModuleProductListCardDefaultComponentProps

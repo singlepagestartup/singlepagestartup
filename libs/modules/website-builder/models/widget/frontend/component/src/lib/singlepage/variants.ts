@@ -1,3 +1,7 @@
+import { Component as ContentCollection } from "./content-collection";
+import { Component as ContentForm } from "./content-form";
+import { Component as ContentHero } from "./content-hero";
+import { Component as ContentFeatureFindCard } from "./content-feature-find-card";
 import { Component as ContentSocialChatDefault } from "./content/social/chat-default";
 import { Component as ContentEcommerceDefault } from "./content-ecommerce-default";
 import { Component as ContentAiChatResetPassword } from "./content-ai-chat-reset-password";
@@ -27,6 +31,11 @@ import { Component as FooterDefaultComponent } from "./footer-default";
 import { Component as NavbarDefaultComponent } from "./navbar-default";
 import { Component as ContentFeatureFindRow } from "./content-feature-find-row";
 export const variants = {
+  "content-collection": ContentCollection,
+  "content-form": ContentForm,
+  "content-hero": ContentHero,
+  "content-feature-find-card": ContentFeatureFindCard,
+
   "content-feature-find-row": ContentFeatureFindRow,
   "content-social-chat-default": ContentSocialChatDefault,
   "content-ecommerce-default": ContentEcommerceDefault,

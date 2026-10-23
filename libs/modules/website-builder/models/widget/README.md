@@ -33,8 +33,12 @@ Widgets store reusable content blocks (text, media, structured sections) for bui
 
 - `default`: sample component, for debugging.
 - `content-default`: saved hero copy, ordered media, sliders, features and CTA groups.
+- `content-hero`: saved localized hero heading, subtitle and description with ordered media and CTA groups.
+- `content-feature-find-card`: saved section heading and description with ordered Feature cards and CTA groups.
+- `content-form`: saved heading and description around a rendered domain form slot.
+- `content-collection`: saved heading and description around rendered collection rows and an optional footer slot. The saved `className` controls the content grid; a detail frame may leave its heading empty when the model supplies one.
 - `content-feature-find-row`: two-column saved contact introduction and features with a rendered form slot. The owning domain Widget supplies its form as children or contactForm.
-- `footer-default`: site footer layout (links, navigation, legal).
+- `footer-default`: saved brand description, Logotype, ordered navigation groups and copyright. A `footer-column` ButtonsArray supplies each group's heading; other arrays retain their existing presentations.
 - `navbar-default`: site header/navigation bar (menus, branding).
 - `find`: internal data-fetch wrapper for queries; not used directly on pages.
 - `admin-select-input`: admin UI select input for linking widgets.
@@ -45,8 +49,9 @@ Widgets store reusable content blocks (text, media, structured sections) for bui
 ## Presentation ownership
 
 These variants render content and JSX slots without loading a Subject, choosing
-its form or receiving a business mode. RBAC owns those operations and selects
-an exact presentation through its default Widget relation. The authentication
+its form or receiving a business mode. Domain Widgets own those operations and
+select an exact presentation through their default Widget relation. RBAC owns
+authenticated operations; Blog and Social own their public collections. The authentication
 family shares a stateless layout within Website Builder. Localized title,
 subtitle and description override its default heading, introduction and aside
 body. Default images and supplementary copy remain variant-owned presentation;

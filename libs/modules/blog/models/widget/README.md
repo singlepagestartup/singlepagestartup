@@ -22,7 +22,8 @@ Blog widgets are reusable content blocks that render article and category lists 
 - `default`: placeholder widget view.
 - `category-list-default`: renders a card with all categories listed.
 - `category-overview-default`: selects and renders the Category identified by its explicit slug.
-- `article-list-default`: renders a card with related articles (or all articles if no relation).
+- `article-list-default`: renders only the Widget's ordered Article membership; an empty selection shows the empty state.
+- `article-feed-default`: paginated global Article feed using the Article SDK list/count operations, ordered by `createdAt` descending with an ID tie-breaker.
 - `article-overview-default`: selects and renders the Article identified by its explicit slug.
 - `article-overview-with-private-content-default`: Article view with a higher-module private-content slot.
 - `article-overview-ecommerce-module-product-list-default`: related Product views with a higher-module purchase slot.
@@ -48,6 +49,25 @@ slots; Blog imports no RBAC code. Callbacks execute beside the owning reader and
 produce JSX before any client boundary. Lower entity reads do not receive the
 routing map.
 
-Article and Category collection Widgets keep their saved curated relation order,
-fall back to the model collection when no links exist, and own their grid
+Article collection Widgets keep their saved curated relation order and never
+replace an empty selection with all Articles. The legacy Category collection
+falls back to the model collection when it has no links. Both own their grid
 skeleton and empty state. Entity `loading` variants render one item.
+
+The global `article-feed-default` Widget reads Articles independently from
+curated membership. It resolves its exact
+`widgets-to-website-builder-module-widgets` association with a `widgetId` filter
+and uses the default relation renderer. Website Builder's saved
+`content-collection` frame owns heading, description and grid layout. Blog
+supplies rendered Article rows and pagination through children/footer slots.
+
+Article author presentation remains a higher-module composition slot. Host
+creates the client author callback inside its generic client composition scope;
+the feed consumes that port in the same client runtime. Server Article and
+Category views keep their server callbacks. Rendered JSX children cross the
+client boundary; server callbacks and SDK bindings do not.
+
+Client consumers import `ClientCompositionProvider` and `useClientComposition`
+from the narrow public entry `@sps/blog/frontend/component/provider`. This entry
+contains only the client render-port context and its type imports; it does not
+load the module's admin compositions or create another query Provider.

@@ -1,3 +1,7 @@
+import type { IComponentProps as IContentCollectionProps } from "./content-collection/interface";
+import type { IComponentProps as IContentFormProps } from "./content-form/interface";
+import type { IComponentProps as IContentHero } from "./content-hero/interface";
+import type { IComponentProps as IContentFeatureFindCard } from "./content-feature-find-card/interface";
 import type { IComponentProps as IContentSocialChatDefault } from "./content/social/chat-default/interface";
 import type { IComponentProps as IContentEcommerceDefault } from "./content-ecommerce-default/interface";
 import type { IComponentProps as IContentAiChatResetPassword } from "./content-ai-chat-reset-password/interface";
@@ -27,6 +31,10 @@ import { IComponentProps as IFooterDefaultComponentProps } from "./footer-defaul
 import { IComponentProps as INavbarDefaultComponentProps } from "./navbar-default/interface";
 import type { IComponentProps as IContentFeatureFindRow } from "./content-feature-find-row/interface";
 export type IComponentProps =
+  | IContentCollectionProps
+  | IContentFormProps
+  | IContentHero
+  | IContentFeatureFindCard
   | IContentFeatureFindRow
   | IContentSocialChatDefault
   | IContentEcommerceDefault

@@ -1,5 +1,8 @@
 import { DI, type FindServiceProps } from "@sps/shared-backend-api";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
@@ -44,6 +47,12 @@ interface ILifecycleProps {
   existingRolesIds?: string[];
   productsRolesIds?: string[];
   subjectsToRoles?: ISubjectsToRoles[];
+}
+
+export interface IPaidFulfillmentEffect {
+  accepted: true;
+  extendedOrder: IExtendedEcommerceModuleOrder;
+  status: string;
 }
 
 type ISubjectsToEcommerceModuleOrder = Awaited<
@@ -391,33 +400,6 @@ export class Service {
                   }
                 }
 
-                const subjectsToBillingModuleCurrencies =
-                  await this.subjectsToBillingModuleCurrencies.find({
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "subjectId",
-                            method: "eq",
-                            value: subjectToEcommerceModuleOrder.subjectId,
-                          },
-                        ],
-                      },
-                    },
-                  });
-
-                if (subjectsToBillingModuleCurrencies?.length) {
-                  for (const subjectToBillingModuleCurrency of subjectsToBillingModuleCurrencies) {
-                    await this.subjectsToBillingModuleCurrencies.update({
-                      id: subjectToBillingModuleCurrency.id,
-                      data: {
-                        ...subjectToBillingModuleCurrency,
-                        amount: "0",
-                      },
-                    });
-                  }
-                }
-
                 await this.ecommerceModule.order.update({
                   id: order.id,
                   data: {
@@ -535,168 +517,187 @@ export class Service {
     };
   }): Promise<
     {
-      billingModuleCurrencyId: IEcommerceModuleAttributesToBillingModuleCurrencies["billingModuleCurrencyId"];
+      billingModuleCurrencyId: string;
       billingModuleCurrency: IBillingModuleCurrency;
       amount: string;
     }[]
   > {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. 'RBAC_SECRET_KEY' not set.");
-    }
-
-    const topupCurrencies: {
-      billingModuleCurrencyId: IEcommerceModuleAttributesToBillingModuleCurrencies["billingModuleCurrencyId"];
-      billingModuleCurrency: IBillingModuleCurrency;
-      amount: string;
-    }[] = [];
-
-    for (const orderToProduct of props.extendedOrder.ordersToProducts) {
-      const productsToAttributes =
-        orderToProduct.product.productsToAttributes ?? [];
-
-      const deliveringProducts = await this.subjectsToEcommerceModuleOrders
-        .find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "subjectId",
-                  method: "eq",
-                  value: props.subjectToEcommerceModuleOrder.subjectId,
-                },
-              ],
-            },
-          },
-        })
-        .then(async (subjectToEcommerceModuleOrders) => {
-          if (!subjectToEcommerceModuleOrders?.length) {
-            return [];
-          }
-
-          if (!RBAC_SECRET_KEY) {
-            throw new Error("Configuration error. 'RBAC_SECRET_KEY' not set.");
-          }
-
-          const deliveringExtendedOrders = await this.ecommerceModule.order
-            .find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "id",
-                      method: "inArray",
-                      value: subjectToEcommerceModuleOrders?.map(
-                        (subjectToEcommerceModuleOrder) => {
-                          return subjectToEcommerceModuleOrder.ecommerceModuleOrderId;
-                        },
-                      ),
-                    },
-                    {
-                      column: "status",
-                      method: "eq",
-                      value: "delivering",
-                    },
-                  ],
-                },
-              },
-            })
-            .then(async (ecommerceModuleOrders) => {
-              let orders: IExtendedEcommerceModuleOrder[] = [];
-
-              if (!ecommerceModuleOrders?.length) {
-                return ecommerceModuleOrders;
-              }
-
-              for (const ecommerceModuleOrder of ecommerceModuleOrders) {
-                const extended = await this.getExtendedEcommerceModuleOrderById(
-                  {
-                    id: ecommerceModuleOrder.id,
-                  },
-                );
-
-                orders.push(extended);
-              }
-
-              return orders
-                .map((order) => {
-                  return order.ordersToProducts.map((orderToProduct) => {
-                    return orderToProduct.product;
-                  });
-                })
-                .flat(1);
-            });
-
-          return deliveringExtendedOrders;
-        });
-
-      for (const productToAttribute of productsToAttributes) {
-        const { attribute } = productToAttribute;
-
-        const isTopupAttribute =
-          attribute.attributeKeysToAttribute?.some(
-            (attributeKeyToAttribute) =>
-              attributeKeyToAttribute.attributeKey?.type === "topup",
-          ) ?? false;
-
-        if (!isTopupAttribute) {
+    const currencies = new Map<
+      string,
+      {
+        billingModuleCurrencyId: string;
+        billingModuleCurrency: IBillingModuleCurrency;
+        amount: string;
+      }
+    >();
+    for (const line of props.extendedOrder.ordersToProducts) {
+      const quantity = Number(line.quantity ?? 1);
+      if (!Number.isSafeInteger(quantity) || quantity <= 0)
+        throw new Error(
+          "Validation error. Topup quantity must be a positive integer",
+        );
+      for (const { attribute } of line.product.productsToAttributes ?? []) {
+        if (
+          !attribute.attributeKeysToAttribute?.some(
+            (link) => link.attributeKey?.type === "topup",
+          )
+        )
           continue;
-        }
-
-        const attributesToBillingModuleCurrencies =
-          attribute.attributesToBillingModuleCurrencies ?? [];
-
-        for (const attributeToBillingModuleCurrency of attributesToBillingModuleCurrencies) {
-          if (!attributeToBillingModuleCurrency.billingModuleCurrency) {
-            throw new Error(
-              "Not found error. 'attributeToBillingModuleCurrency.billingModuleCurrency' not found.",
-            );
-          }
-
-          if (typeof attribute.number !== "string") {
-            throw new Error(
-              "Validation error. 'attribute.number' can not be null for topup attributes.",
-            );
-          }
-
+        const amount = Number(attribute.number);
+        if (
+          typeof attribute.number !== "string" ||
+          !attribute.number.trim() ||
+          !Number.isFinite(amount) ||
+          amount <= 0
+        )
+          throw new Error(
+            "Validation error. Topup amount must be finite and positive",
+          );
+        const links = attribute.attributesToBillingModuleCurrencies ?? [];
+        if (!links.length)
+          throw new Error("Configuration error. Topup currency is missing");
+        const seen = new Set<string>();
+        for (const link of links) {
           if (
-            deliveringProducts?.find((deliveringProduct) => {
-              return deliveringProduct.id === orderToProduct.productId;
-            })
-          ) {
-            continue;
-          }
-
-          topupCurrencies.push({
-            billingModuleCurrencyId:
-              attributeToBillingModuleCurrency.billingModuleCurrencyId,
-            billingModuleCurrency:
-              attributeToBillingModuleCurrency.billingModuleCurrency,
-            amount: attribute.number,
+            !link.billingModuleCurrency ||
+            seen.has(link.billingModuleCurrencyId)
+          )
+            throw new Error(
+              "Configuration error. Topup currency is missing or duplicated",
+            );
+          seen.add(link.billingModuleCurrencyId);
+          const previous = currencies.get(link.billingModuleCurrencyId);
+          const total = Number(previous?.amount ?? 0) + amount * quantity;
+          if (!Number.isFinite(total) || total <= 0)
+            throw new Error(
+              "Validation error. Topup total must be finite and positive",
+            );
+          currencies.set(link.billingModuleCurrencyId, {
+            billingModuleCurrencyId: link.billingModuleCurrencyId,
+            billingModuleCurrency: link.billingModuleCurrency,
+            amount: String(total),
           });
         }
       }
     }
-
-    return topupCurrencies;
+    return [...currencies.values()];
   }
 
-  async fromPaidStatus(props: ILifecycleProps) {
-    const result = await this.repository.withOrderDelivery(
-      {
-        subjectId: props.subjectToEcommerceModuleOrder.subjectId,
-        orderId: props.order.id,
-      },
-      async () => {
-        await this.ecommerceModule.order.lockForLifecycle({
-          id: props.order.id,
-        });
-        const current = await this.freshLifecycleProps(props);
-        if (!current || !["paid", "expired"].includes(current.order.status))
-          return undefined;
-        return this.applyPaidStatus(current);
-      },
+  private isInitialFree(order: IExtendedEcommerceModuleOrder) {
+    return order.ordersToProducts.some(
+      (line) => line.product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
     );
-    if (!result) return;
+  }
+
+  private async freeDeliveryEligible(props: ILifecycleProps) {
+    if (!this.isInitialFree(props.extendedOrder)) return true;
+    if (
+      props.extendedOrder.ordersToProducts.length !== 1 ||
+      Number(props.extendedOrder.ordersToProducts[0].quantity ?? 1) !== 1
+    )
+      throw new Error(
+        "Validation error. Initial Free must contain exactly one unit of its internal Product",
+      );
+    const identities = await this.subjectsToIdentities.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: props.subjectToEcommerceModuleOrder.subjectId,
+            },
+          ],
+        },
+      },
+    });
+    if (!identities.length)
+      throw new Error(
+        "Permission error. Initial Free requires a registered Subject",
+      );
+    const owned = await this.subjectsToEcommerceModuleOrders.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: props.subjectToEcommerceModuleOrder.subjectId,
+            },
+          ],
+        },
+      },
+    });
+    const ids = owned
+      .filter(
+        (link) =>
+          link.subjectId === props.subjectToEcommerceModuleOrder.subjectId,
+      )
+      .map((link) => link.ecommerceModuleOrderId);
+    const lines = await this.ecommerceModule.ordersToProducts.find({
+      params: {
+        filters: {
+          and: [
+            { column: "orderId", method: "inArray", value: ids },
+            {
+              column: "productId",
+              method: "eq",
+              value: props.extendedOrder.ordersToProducts[0].productId,
+            },
+          ],
+        },
+      },
+    });
+    const freeIds = [...new Set(lines.map((line) => line.orderId))];
+    const orders = await this.ecommerceModule.order.find({
+      params: {
+        filters: { and: [{ column: "id", method: "inArray", value: freeIds }] },
+      },
+    });
+    const candidates = orders.filter((order) => freeIds.includes(order.id));
+    if (
+      candidates.some(
+        (order) =>
+          order.id !== props.order.id &&
+          (order.subscriptionPeriodInvoiceId ||
+            !["new", "paying", "paid"].includes(order.status)),
+      )
+    )
+      return false;
+    candidates.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime() ||
+        a.id.localeCompare(b.id),
+    );
+    return (
+      !props.order.subscriptionPeriodInvoiceId &&
+      candidates[0]?.id === props.order.id
+    );
+  }
+
+  /** Internal orchestration only: caller owns the common Subject transaction. */
+  async fulfillPaidOrderInTransaction(scope: {
+    subjectId: string;
+    orderId: string;
+  }): Promise<IPaidFulfillmentEffect | undefined> {
+    await this.repository.lockOrderDelivery(scope);
+    await this.ecommerceModule.order.lockForLifecycle({ id: scope.orderId });
+    const extendedOrder = await this.getExtendedEcommerceModuleOrderById({
+      id: scope.orderId,
+    });
+    const current = await this.freshLifecycleProps({
+      order: extendedOrder,
+      extendedOrder,
+      subjectToEcommerceModuleOrder: {
+        subjectId: scope.subjectId,
+        ecommerceModuleOrderId: scope.orderId,
+      },
+    });
+    if (!current || !["paid", "expired"].includes(current.order.status)) return;
+    return this.applyPaidStatus(current);
+  }
+
+  async dispatchPaidEffects(result: IPaidFulfillmentEffect) {
     await this.notifyAdmin({
       extendedEcommerceModuleOrder: result.extendedOrder,
       status: result.status,
@@ -707,11 +708,41 @@ export class Service {
     }).catch(() => undefined);
   }
 
-  private async applyPaidStatus(props: ILifecycleProps) {
+  async fromPaidStatus(props: ILifecycleProps) {
+    const scope = {
+      subjectId: props.subjectToEcommerceModuleOrder.subjectId,
+      orderId: props.order.id,
+    };
+    const result = await this.repository.withOrderDelivery(scope, () =>
+      this.fulfillPaidOrderInTransaction(scope),
+    );
+    if (result) await this.dispatchPaidEffects(result);
+  }
+
+  private async applyPaidStatus(
+    props: ILifecycleProps,
+  ): Promise<IPaidFulfillmentEffect | undefined> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
+    const free = this.isInitialFree(props.extendedOrder);
+    if (free && !(await this.freeDeliveryEligible(props))) return;
+    const paidInvoices = props.extendedOrder.ordersToBillingModulePaymentIntents
+      .flatMap(
+        (link) => link.billingModulePaymentIntent.paymentIntentsToInvoices,
+      )
+      .map((link) => link.invoice)
+      .filter((invoice) => invoice?.status === "paid");
+    if (!paidInvoices.length) return;
+    if (
+      free &&
+      (props.extendedOrder.checkoutAttributesByCurrency.amount !== 0 ||
+        paidInvoices.some((invoice) => invoice!.amount !== 0))
+    )
+      throw new Error(
+        "Validation error. Initial Free settlement must be zero-priced",
+      );
     const subscription =
       props.extendedOrder.checkoutAttributesByCurrency.type === "subscription";
     const activated = Boolean(props.order.subscriptionPeriodInvoiceId);
@@ -803,7 +834,7 @@ export class Service {
 
     const invitedSocialModuleProfilesIds: string[] = [];
 
-    if (rbacSubjectsToSocialModuleProfiles?.length) {
+    if (!free && rbacSubjectsToSocialModuleProfiles?.length) {
       for (const rbacSubjectsToSocialModuleProfile of rbacSubjectsToSocialModuleProfiles) {
         const socialModuleAttributes = await this.socialModule.attribute.find({
           params: {
@@ -833,6 +864,15 @@ export class Service {
       }
     }
 
+    if (
+      free &&
+      (topupCurrencies.length !== 1 ||
+        topupCurrencies[0].billingModuleCurrency.slug !== "token" ||
+        Number(topupCurrencies[0].amount) !== 3000)
+    )
+      throw new Error(
+        "Configuration error. Initial Free requires exactly 3000 Token credits",
+      );
     if (topupCurrencies.length) {
       const subjectsToBillingModuleCurrencies =
         await this.subjectsToBillingModuleCurrencies.find({
@@ -908,6 +948,7 @@ export class Service {
     }
 
     return {
+      accepted: true,
       extendedOrder: props.extendedOrder,
       status: updateEcommerceOrderData.status,
     };
@@ -937,6 +978,7 @@ export class Service {
     }
 
     const canAutoRenew =
+      !this.isInitialFree(props.extendedOrder) &&
       !props.order.subscriptionRevokedAt &&
       (props.productsRolesIds ?? []).every((roleId) =>
         props.existingRolesIds?.includes(roleId),
@@ -969,38 +1011,6 @@ export class Service {
           id: rbacSubjectToRole.id,
           subjectId: props.subjectToEcommerceModuleOrder.subjectId,
           orderId: props.order.id,
-        });
-      }
-    }
-
-    const subjectsToBillingModuleCurrencies =
-      await this.subjectsToBillingModuleCurrencies.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "subjectId",
-                method: "eq",
-                value: props.subjectToEcommerceModuleOrder.subjectId,
-              },
-              {
-                column: "amount",
-                method: "ne",
-                value: "0",
-              },
-            ],
-          },
-        },
-      });
-
-    if (subjectsToBillingModuleCurrencies?.length) {
-      for (const subjectToBillingModuleCurrency of subjectsToBillingModuleCurrencies) {
-        await this.subjectsToBillingModuleCurrencies.update({
-          id: subjectToBillingModuleCurrency.id,
-          data: {
-            ...subjectToBillingModuleCurrency,
-            amount: "0",
-          },
         });
       }
     }
@@ -1504,7 +1514,8 @@ export class Service {
   }
 
   private async renewSubscription(props: ILifecycleProps) {
-    return this.repository.withOrderDelivery(
+    if (this.isInitialFree(props.extendedOrder)) return;
+    const result = await this.repository.withOrderDelivery(
       {
         subjectId: props.subjectToEcommerceModuleOrder.subjectId,
         orderId: props.order.id,
@@ -1525,13 +1536,12 @@ export class Service {
             (roleId) => !current.existingRolesIds?.includes(roleId),
           )
         )
-          return undefined;
-        return this.ecommerceModule.order.acceptSubscriptionPeriod({
-          id: props.order.id,
-          expectedInvoiceId: current.order.subscriptionPeriodInvoiceId,
-        });
+          return;
+        return this.applyPaidStatus(current);
       },
     );
+    if (result) await this.dispatchPaidEffects(result);
+    return result;
   }
 
   private async freshLifecycleProps(

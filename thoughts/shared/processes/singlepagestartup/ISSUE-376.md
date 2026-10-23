@@ -5,7 +5,7 @@ repository: singlepagestartup
 created_at: 2026-10-22T21:58:34Z
 last_updated: 2026-10-23T18:34:00Z
 status: active
-current_phase: plan
+current_phase: implement
 ---
 
 # Process Log: ISSUE-376 — перенос визуала Storybook в Framework
@@ -18,10 +18,10 @@ current_phase: plan
 
 - Create: completed
 - Research: completed
-- Plan: in_progress
-- Implement: not_started
-- Current phase: plan
-- Next step: независимое принятие платформенного плана, затем реализация; конечный Code Review остаётся пользователю.
+- Plan: completed
+- Implement: in_progress
+- Current phase: implement
+- Next step: реализовать R2.1–R2.6 и провести независимые проверки; R2.5b ожидает коммерческие параметры; конечный Code Review остаётся пользователю.
 
 ## Phase Notes
 
@@ -54,7 +54,7 @@ current_phase: plan
 
 ## Incident Log
 
-<!-- incident-count: 14 -->
+<!-- incident-count: 21 -->
 
 ### Incident 1 — GitHub недоступен из sandbox
 
@@ -230,3 +230,82 @@ Research summary: https://github.com/singlepagestartup/singlepagestartup/issues/
 - **Root Cause**: Checkout использует loopback SDK/provider/Observer; эти записи не входят в ambient DB transaction, а callback может ждать ту же блокировку.
 - **Fix**: План определяет отдельную internal direct-Service операцию для zero-price graph, принятия Invoice, Role и credit в одной транзакции, с эффектами после commit. Публичная author pagination дополнена отдельным safe count API.
 - **Preventive Action**: До обещания атомарности прослеживать транспорт каждого owning Service и порядок locks; HTTP и polling не включать в DB transaction.
+
+Platform Plan PASS: phase_reviewer, /tmp/sps-376-round2-plan-review.md, archived in ISSUE-376-platform-reviews.md. Both transaction/count findings resolved in 3e6447dbf9. Unblocked implementation authorized; R2.5b remains pending operator input.
+
+### Incident 15 — Machine restart during parallel implementation
+
+- **Phase**: Platform Implement
+- **Occurrences**: 1
+- **Symptom**: Пользователь сообщил о выключении компьютера; API/Host и агенты остановились, файлы /tmp исчезли.
+- **Root Cause**: Не установлена. После перезагрузки наблюдались load average 434, около 5 ГБ swap на машине с 18 ГБ RAM и высокая нагрузка процессов VS Code. До перезагрузки свободное место составляло около 2,4 ГБ. Эти наблюдения не устанавливают причину выключения.
+- **Fix**: Изменения в ветке сохранены. Восстановление выполняется двумя source-only агентами и root; build, TSC, lint, Nx и серверы не запускаются параллельно. Временные результаты проверок не считаются подтверждёнными.
+- **Preventive Action**: Запускать тяжёлые проверки по одной после оценки ресурсов; хранить итоговые результаты в постоянных артефактах, ограничивать количество процессов. Не выключать сторонние приложения и не удалять пользовательские кэши.
+
+Commercial input: пользователь подтвердил Pro 29 USD или 1900 RUB и сохранение текущего расчёта списаний AI. Период Pro ожидает ответа на отдельный вопрос; Products rate/top-up sums сохраняются.
+
+Recovery verification update (2026-10-23): API source typecheck, serial Node heap 3072 MiB, exits 2 with 20 known diagnostics after new author/SDK/Free type corrections. Studio typecheck exits 0 at the same cap. Host typecheck found six unsupported legacy admin props; those props were removed and final source recheck remains pending. Code placement passes; module dependency audit covers 15,197 sources with zero violations. R2.1 scoped Chat/controller tests: 15 in five suites; Social author/Chat display: eight in two suites; catalog/Profile reader/Chat loader: 35 in three suites. These focused tests pass and do not substitute for RSC/browser verification.
+
+The actual PostgreSQL credit tests pass: two suites, six cases, bounded serial execution; disposable fixtures were cleaned up. Generated Blog/Social Widget→Website Builder migrations and consistency capture 0009 (158 resources) are applied locally. The canonical SVG was uploaded through the File SDK and its 1739 bytes match the repository source exactly. New public content has not yet been applied. The user requires final verification through npm run api:dev and npm run host:dev; API is now started through the former, Host verification follows source freeze.
+
+Legacy author cache correction: the real PostgreSQL/Hono cache scenario reproduced stale public author list/count/detail after first publication in legacy cache mode. Consistency cache dependency generations updated correctly. The canonical legacy HTTP-cache exclusions now cover only the named public author GET/HEAD family; the consistency cache retains its actual Service dependency tracking. The same scenario is being rerun after the fix. Subject's new direct Free graph writes now receive effective lower module Services instead of activating generic CRUD wrappers for those writes. Independent re-review is pending.
+
+### Incident 16 — Host dev heap limit
+
+- **Occurrences**: 1
+- **Stage**: Platform runtime verification
+- **Symptom**: Webpack Host dev starts on 3000, then its first Framework request receives an empty reply after 101.1 seconds; Next exits with V8 heap exhaustion.
+- **Root Cause**: The cold dev compilation exceeds its explicit 3072 MiB Node heap. This is a process failure and does not establish the earlier machine shutdown cause. System memory remained about 31% free.
+- **Fix**: No heap increase. The default Turbo dev restart uses a 1536 MiB Node heap and optional Next native-bundler target 1024 MiB through SPS_HOST_TURBOPACK_MEMORY_MB; the first page response remains under verification.
+- **Preventive Action**: Keep cold compilation, TSC, lint and builds serial; distinguish listening/Ready from a verified rendered page. The native bundler target is not a hard RSS guarantee.
+
+### Incident 17 — Client directive below imports
+
+- **Occurrences**: 1
+- **Stage**: Platform dev verification
+- **Symptom**: Turbo Host returns 500: the use-client directive must precede other expressions in Subject client SDK.
+- **Root Cause**: The Article-create import was prepended above the existing directive; formatting retained it as a parenthesized string expression. TypeScript accepted that syntax, but Next rejected the client boundary.
+- **Fix**: Restored the directive as the first statement and scanned module/Host sources for the same misplaced form. Only this occurrence was found. HTTP recheck is pending.
+- **Preventive Action**: Preserve directive prologues when adding imports and verify actual Next compilation, not TypeScript alone.
+
+Runtime policy prerequisite: the new curated Category reader also needs exact public GET /api/ecommerce/widgets-to-categories. Fresh SDK inspection found no existing policy or Role binding; one additive policy was prepared and applied separately through the same protected manifest flow. Main confirmed input now has170targets. This repeats the missing-public-read rollout issue; no broad bypass or existing Role policy was changed.
+
+Current follow-up checkpoint, 2026-10-24: monthly Pro terms are confirmed. Normal SDK publication of the shell/About/Authors/article form/source links and two service Products is verified, including repeat/rollback/reapply. The Category policy follow-up verifies applied. The actual dev Host responses and authorized browser cart/navigation/private gate checks pass for the stated scope in ISSUE-376-platform-reviews.md. Studio/Workspace presentation tests pass380/380; both validators, Studio TypeScript, scoped lint, code placement and module order pass. API TypeScript retains20 baseline diagnostics. Production build and commercial compatibility/application remain open; issue stays In Dev.
+
+### Incident 18 — Private Article actions used nonexistent routes
+
+- **Occurrences**: 1
+- **Stage**: Platform browser verification
+- **Symptom**: Guest lock linked to plural Subject sign-in; the subscription action linked to a missing Product-list Page.
+- **Root Cause**: Hardcoded paths differed from the saved singular sign-in and Ecommerce routes.
+- **Fix**: Both owning RBAC client renderers use localized `/rbac/subject/authentication/select-method` and `/ecommerce`. The guest browser transition succeeds.
+- **Preventive Action**: Verify action destinations against actual saved Pages and follow the rendered action.
+
+### Incident 19 — New Studio variants omitted contract metadata
+
+- **Occurrences**: 1
+- **Stage**: Platform Studio acceptance
+- **Symptom**: Validation reported ten missing Figma metadata files; contract tests found private story imports and three unmarked early-return roots.
+- **Root Cause**: New variants had not completed the public-entry and inspection metadata contract.
+- **Fix**: Truthful not-created metadata, public story entries with literal variants, root data attributes and the NoProjects example are corrected. Full presentation tests passed380/380 before the final NoProjects count correction; Studio typecheck and validators passed.
+- **Preventive Action**: Run variant contracts and validators before accepting a new Studio projection; do not claim a Figma node from placeholder metadata.
+
+### Incident 20 — Changed Product prices break historical Order reads
+
+- **Occurrences**: 1
+- **Stage**: Commercial preflight
+- **Symptom**: Retiring Pro's Star offer would make existing Star Orders fail their extended read.
+- **Root Cause**: The history projection recalculated its quote from current Product attributes; billing transport type and Product delivery type can differ.
+- **Fix**: A bounded saved-Invoice/interval projection and regression cases are under independent review. Commercial apply remains held until the correction passes review and tests.
+- **Preventive Action**: Exercise historical paid, completed, canceled, OPEN and unbilled Orders before changing live Product currencies or intervals; preserve financial rows and fixed accepted periods.
+
+### Incident 21 — Reported heating during production type checking
+
+- **Occurrences**: 1
+- **Stage**: Platform final runtime verification
+- **Symptom**: The user reported strong computer heating after Webpack compilation completed in88seconds and the build entered type checking.
+- **Root Cause**: Not established. The build's type worker used about100%CPU; VSCode Tailwind/Nx extensions and system cleanup also had high CPU. These observations do not establish an unsafe import or explain the earlier shutdown.
+- **Fix**: Root stopped only its build processes53069,53070,53815. Host was already stopped for the isolated build; API remained running. Memory free rose to about60%, and the user confirmed that heating noticeably decreased. No further heavy build or type checker was started.
+- **Preventive Action**: Keep checks serial and bounded; inspect process ownership and actual resources, stop task-owned work on a thermal report, and distinguish source review, completed compilation and a completed production build.
+
+Current thermal checkpoint: no Host or production compiler is running. API remains on4000 through npm run api:dev. User confirms cooling after the build stop. Client-boundary review is recorded in ISSUE-376-rbac-client-boundary-review.md; independent root/Host/source acceptance is in ISSUE-376-final-source-review.md. The new Blog Provider cycle is removed through its narrow public alias; the unfiltered empty Popular fallback is removed. Full production acceptance, commercial application and final Code Review handoff remain pending.

@@ -1,413 +1,472 @@
 import {
-  ALLOWED_BILLING_SERVICE_PROVIDERS,
+  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import type { ICheckout } from "../ecommerce/product/checkout";
-import { api as orderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { type IBillingModule, type IEcommerceModule } from "../../../di";
-import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
-
-const terminalSubscriptionOrderStatuses = new Set(["completed", "canceled"]);
+import { consistencyContext } from "@sps/shared-backend-api";
+import { internationalization } from "@sps/shared-configuration";
+import { isSupportedOrderInterval } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/checkout-attributes";
+import type { IResult as IProduct } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service/singlepage/get-extended";
+import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
+import type { IBillingModule, IEcommerceModule } from "../../../di";
+import type { Repository } from "../../../repository";
+import type { Service as SubjectsToOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
+import type { Service as SubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
+import type { Service as PaidFulfillment } from "../ecommerce/order/proceed";
 
 export interface IExecuteProps {
   id: string;
   chatId?: string;
   email?: string;
 }
-
 export interface IConstructorProps {
+  repository: Pick<Repository, "withSubjectLock" | "lockOrderDelivery">;
   ecommerceModule: IEcommerceModule;
   billingModule: IBillingModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
-  checkout: ICheckout;
+  subjectsToEcommerceModuleOrders: Pick<SubjectsToOrders, "find" | "create">;
+  subjectsToIdentities: Pick<SubjectsToIdentities, "find">;
+  fulfillPaidOrderInTransaction: PaidFulfillment["fulfillPaidOrderInTransaction"];
+  dispatchPaidEffects: PaidFulfillment["dispatchPaidEffects"];
+}
+interface IConfiguration {
+  productId: string;
+  storeId: string;
+  currencyId: string;
 }
 
+/** Trusted authentication bootstrap; never selected by a request payload. */
 export class Service {
-  readonly checkout: ICheckout;
-  ecommerceModule: IEcommerceModule;
-  billingModule: IBillingModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
-
-  constructor(props: IConstructorProps) {
-    this.checkout = props.checkout;
-    this.ecommerceModule = props.ecommerceModule;
-    this.billingModule = props.billingModule;
-    this.subjectsToEcommerceModuleOrders =
-      props.subjectsToEcommerceModuleOrders;
-  }
-
-  protected async hasActiveSubscriptionOrder(props: {
-    subjectToOrders?: { ecommerceModuleOrderId?: string | null }[];
-  }) {
-    if (!props.subjectToOrders?.length) {
-      return false;
-    }
-
-    for (const subjectToOrder of props.subjectToOrders) {
-      if (!subjectToOrder.ecommerceModuleOrderId) {
-        continue;
-      }
-
-      const ecommerceModuleOrder = await this.ecommerceModule.order.findById({
-        id: subjectToOrder.ecommerceModuleOrderId,
-      });
-
-      if (!ecommerceModuleOrder) {
-        continue;
-      }
-
-      if (
-        ecommerceModuleOrder.status &&
-        terminalSubscriptionOrderStatuses.has(ecommerceModuleOrder.status)
-      ) {
-        continue;
-      }
-
-      const checkoutAttributes =
-        await this.ecommerceModule.order.findByIdCheckoutAttributes({
-          id: ecommerceModuleOrder.id,
-        });
-
-      if (checkoutAttributes?.type === "subscription") {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  protected async hasPreviousProductOrder(props: {
-    subjectToOrders?: { ecommerceModuleOrderId?: string | null }[];
-    productId: string;
-  }) {
-    const orderIds = Array.from(
-      new Set(
-        props.subjectToOrders
-          ?.map((item) => item.ecommerceModuleOrderId)
-          .filter((orderId): orderId is string => Boolean(orderId)) ?? [],
-      ),
-    );
-
-    if (!orderIds.length) {
-      return false;
-    }
-
-    const ordersToProducts = await this.ecommerceModule.ordersToProducts.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "orderId",
-              method: "inArray",
-              value: orderIds,
-            },
-            {
-              column: "productId",
-              method: "eq",
-              value: props.productId,
-            },
-          ],
-        },
-      },
-    });
-
-    return Boolean(ordersToProducts?.length);
-  }
+  constructor(readonly dependencies: IConstructorProps) {}
 
   async execute(props: IExecuteProps) {
-    const rbacSecretKey = RBAC_SECRET_KEY;
-
-    if (!rbacSecretKey) {
+    if (!RBAC_SECRET_KEY)
       throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
-    }
-
-    if (!props.id) {
-      throw new Error("Validation error. 'id' is required");
-    }
-
-    return this.executeCheckout(props);
+    if (!props.id) throw new Error("Validation error. Subject is required");
+    if (consistencyContext.getStore()?.database)
+      throw new Error(
+        "Configuration error. Initial Free bootstrap must own its outer transaction",
+      );
+    const result = await this.dependencies.repository.withSubjectLock(
+      { subjectId: props.id },
+      async () => {
+        const identities = await this.dependencies.subjectsToIdentities.find({
+          params: {
+            filters: {
+              and: [{ column: "subjectId", method: "eq", value: props.id }],
+            },
+          },
+        });
+        if (!identities.some((link) => link.subjectId === props.id))
+          throw new Error(
+            "Permission error. Initial Free requires a registered Subject",
+          );
+        const config = await this.configuration();
+        const owned =
+          await this.dependencies.subjectsToEcommerceModuleOrders.find({
+            params: {
+              filters: {
+                and: [{ column: "subjectId", method: "eq", value: props.id }],
+              },
+            },
+          });
+        const orderIds = owned
+          .filter((link) => link.subjectId === props.id)
+          .map((link) => link.ecommerceModuleOrderId);
+        const lines = orderIds.length
+          ? await this.dependencies.ecommerceModule.ordersToProducts.find({
+              params: {
+                filters: {
+                  and: [
+                    { column: "orderId", method: "inArray", value: orderIds },
+                    {
+                      column: "productId",
+                      method: "eq",
+                      value: config.productId,
+                    },
+                  ],
+                },
+              },
+            })
+          : [];
+        const previousIds = [
+          ...new Set<string>(lines.map((line) => line.orderId)),
+        ];
+        const previous = await Promise.all(
+          previousIds.map((id) =>
+            this.dependencies.ecommerceModule.order.findById({ id }),
+          ),
+        );
+        if (previous.some((order) => !order))
+          throw new Error("Conflict error. Initial Free history is incomplete");
+        if (
+          previous.some(
+            (order) =>
+              order.subscriptionPeriodInvoiceId ||
+              order.subscriptionRevokedAt ||
+              [
+                "delivering",
+                "delivered",
+                "completed",
+                "expired",
+                "approving",
+                "packaging",
+                "canceled",
+                "canceling",
+                "requested_cancelation",
+              ].includes(order.status),
+          )
+        )
+          return null;
+        if (
+          previous.length > 1 ||
+          previous.some(
+            (order) =>
+              !["new", "paying", "paid"].includes(order.status) ||
+              order.subscriptionRevokedAt,
+          )
+        )
+          throw new Error(
+            "Conflict error. Initial Free history needs reconciliation",
+          );
+        const order =
+          previous[0] ??
+          (await this.dependencies.ecommerceModule.order.create({
+            data: { type: "history", status: "paid" },
+          }));
+        await this.dependencies.repository.lockOrderDelivery({
+          subjectId: props.id,
+          orderId: order.id,
+        });
+        await this.dependencies.ecommerceModule.order.lockForLifecycle({
+          id: order.id,
+        });
+        await this.ensureOrderGraph(props.id, order.id, config);
+        const invoice = await this.settleZeroInvoice(
+          order.id,
+          config.currencyId,
+        );
+        await this.dependencies.ecommerceModule.order.update({
+          id: order.id,
+          data: { ...order, status: "paid", type: "history" },
+        });
+        const effect = await this.dependencies.fulfillPaidOrderInTransaction({
+          subjectId: props.id,
+          orderId: order.id,
+        });
+        if (!effect)
+          throw new Error(
+            "Conflict error. Initial Free delivery was not accepted",
+          );
+        return { invoice, effect };
+      },
+    );
+    if (!result) return null;
+    await this.dependencies.dispatchPaidEffects(result.effect);
+    return { billingModule: { invoices: [result.invoice] } };
   }
 
-  protected async executeCheckout(props: IExecuteProps) {
-    const subjectToOrders = await this.subjectsToEcommerceModuleOrders.find({
+  async activate(props: IExecuteProps) {
+    return this.execute(props);
+  }
+
+  private async configuration(): Promise<IConfiguration> {
+    const { ecommerceModule } = this.dependencies;
+    const products = await ecommerceModule.product.find({
       params: {
         filters: {
           and: [
             {
-              column: "subjectId",
+              column: "slug",
               method: "eq",
-              value: props.id,
+              value: INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
             },
+            { column: "type", method: "eq", value: "subscription" },
           ],
         },
       },
     });
-
-    const hasActiveSubscriptionOrder = await this.hasActiveSubscriptionOrder({
-      subjectToOrders: subjectToOrders ?? [],
-    });
-
-    if (hasActiveSubscriptionOrder) {
-      return null;
-    }
-
-    const subscriptionProducts = await this.ecommerceModule.product.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "type",
-              method: "eq",
-              value: "subscription",
-            },
-            { column: "slug", method: "eq", value: "free-subscription" },
-          ],
-        },
-      },
-    });
-
-    if (!subscriptionProducts?.length) {
-      return this.unavailable(props);
-    }
-
-    const priceAttributeKeys = await this.ecommerceModule.attributeKey.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "type",
-              method: "eq",
-              value: "price",
-            },
-          ],
-        },
-      },
-    });
-
-    const priceAttributeKey = priceAttributeKeys?.[0];
-    if (!priceAttributeKey) {
-      return this.unavailable(props);
-    }
-
-    const priceKeyToAttributes =
-      await this.ecommerceModule.attributeKeysToAttributes.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "attributeKeyId",
-                method: "eq",
-                value: priceAttributeKey.id,
-              },
-            ],
-          },
-        },
-      });
-
-    if (!priceKeyToAttributes?.length) {
-      return this.unavailable(props);
-    }
-
-    const productsToPriceAttributes =
-      await this.ecommerceModule.productsToAttributes.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "productId",
-                method: "inArray",
-                value: subscriptionProducts.map((item) => item.id),
-              },
-              {
-                column: "attributeId",
-                method: "inArray",
-                value: priceKeyToAttributes.map((item) => item.attributeId),
-              },
-            ],
-          },
-        },
-      });
-
-    if (!productsToPriceAttributes?.length) {
-      return this.unavailable(props);
-    }
-
-    const productPriceAttributes = await this.ecommerceModule.attribute.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: productsToPriceAttributes.map((item) => item.attributeId),
-            },
-          ],
-        },
-      },
-    });
-
-    if (!productPriceAttributes?.length) {
-      return this.unavailable(props);
-    }
-
-    const zeroPriceAttributes = productPriceAttributes.filter((item) => {
-      return item.number === "0";
-    });
-
-    if (!zeroPriceAttributes.length) {
-      return this.unavailable(props);
-    }
-
-    const zeroPriceProductToAttributes = productsToPriceAttributes.filter(
-      (productToAttribute) => {
-        return zeroPriceAttributes
-          .map((item) => item.id)
-          .includes(productToAttribute.attributeId);
-      },
-    );
-
-    if (!zeroPriceProductToAttributes.length) {
-      return this.unavailable(props);
-    }
-
-    const everyProductToAttributeIsTheSameProduct =
-      zeroPriceProductToAttributes.every((item) => {
-        return item.productId === zeroPriceProductToAttributes[0].productId;
-      });
-
-    if (!everyProductToAttributeIsTheSameProduct) {
-      return this.unavailable(props);
-    }
-
-    const attributesToBillingCurrencies =
-      await this.ecommerceModule.attributesToBillingModuleCurrencies.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "attributeId",
-                method: "inArray",
-                value: zeroPriceAttributes.map((item) => item.id),
-              },
-            ],
-          },
-        },
-      });
-
-    if (!attributesToBillingCurrencies?.length) {
-      return this.unavailable(props);
-    }
-
-    const billingModuleCurrency = await this.billingModule.currency.findById({
-      id: attributesToBillingCurrencies[0].billingModuleCurrencyId,
-    });
-
-    if (!billingModuleCurrency) {
-      return this.unavailable(props);
-    }
-
-    const freeSubscriptionProduct = subscriptionProducts.find((item) => {
-      return item.id === zeroPriceProductToAttributes[0].productId;
-    });
-
-    if (!freeSubscriptionProduct) {
-      return this.unavailable(props);
-    }
-
-    const hasPreviousFreeSubscriptionOrder = await this.hasPreviousProductOrder(
-      {
-        subjectToOrders: subjectToOrders ?? [],
-        productId: freeSubscriptionProduct.id,
-      },
-    );
-
-    if (hasPreviousFreeSubscriptionOrder) {
-      return null;
-    }
-
     if (
-      !props.chatId &&
-      !ALLOWED_BILLING_SERVICE_PROVIDERS.split(",").includes("dummy")
+      products.length !== 1 ||
+      products[0].slug !== INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG ||
+      products[0].type !== "subscription"
     )
       throw new Error(
-        "Configuration error. Enable the internal dummy provider for automatic zero-price subscriptions.",
+        "Configuration error. Configure the exact internal Free subscription Product",
       );
-
-    return this.checkout({
-      id: props.id,
-      productId: freeSubscriptionProduct.id,
-      data: {
-        provider: props.chatId ? "telegram-star" : "dummy",
-        billingModule: {
-          currency: billingModuleCurrency,
-        },
-        ...(props.chatId ? { account: props.chatId } : { email: props.email }),
-      },
+    const product: IProduct = await ecommerceModule.product.findByIdExtended({
+      id: products[0].id,
     });
-  }
-
-  private unavailable(props: IExecuteProps): null {
-    if (!props.chatId)
-      throw new Error(
-        "Configuration error. Configure the free-subscription product with a zero price, interval and token top-up before registering users.",
+    const attributes =
+      product.productsToAttributes?.map((link) => link.attribute) ?? [];
+    const typed = (type: string) =>
+      attributes.filter((attribute) =>
+        attribute.attributeKeysToAttribute?.some(
+          (link) => link.attributeKey?.type === type,
+        ),
       );
-    return null;
+    const prices = typed("price");
+    if (
+      !prices.length ||
+      prices.some(
+        (attribute) =>
+          !attribute.number?.trim() || Number(attribute.number) !== 0,
+      )
+    )
+      throw new Error(
+        "Configuration error. Initial Free must have only zero prices",
+      );
+    const currencies = prices
+      .flatMap(
+        (attribute) => attribute.attributesToBillingModuleCurrencies ?? [],
+      )
+      .map((link) => link.billingModuleCurrency)
+      .filter((currency) => !!currency);
+    const unique = [
+      ...new Map(
+        currencies.map((currency) => [currency.id, currency]),
+      ).values(),
+    ];
+    const defaultCurrencies = unique.filter((currency) => currency.isDefault);
+    const currency =
+      unique.length === 1
+        ? unique[0]
+        : defaultCurrencies.length === 1
+          ? defaultCurrencies[0]
+          : undefined;
+    const intervals = typed("interval");
+    if (
+      !currency ||
+      intervals.length !== 1 ||
+      !isSupportedOrderInterval(
+        intervals[0].string?.[internationalization.defaultLanguage.code] ?? "",
+      )
+    )
+      throw new Error(
+        "Configuration error. Initial Free requires a Currency and a valid interval",
+      );
+    const topups = typed("topup");
+    const topupLinks = topups.flatMap(
+      (attribute) => attribute.attributesToBillingModuleCurrencies ?? [],
+    );
+    if (
+      topups.length !== 1 ||
+      Number(topups[0].number) !== 3000 ||
+      topupLinks.length !== 1 ||
+      topupLinks[0].billingModuleCurrency?.slug !== "token"
+    )
+      throw new Error(
+        "Configuration error. Initial Free requires exactly 3000 Token credits",
+      );
+    const stores = await ecommerceModule.store.find();
+    if (stores.length !== 1)
+      throw new Error(
+        "Configuration error. Initial Free requires exactly one Store",
+      );
+    return {
+      productId: product.id,
+      currencyId: currency.id,
+      storeId: stores[0].id,
+    };
   }
 
-  async activate(
-    props: IExecuteProps,
-    proceed: (props: { subjectId: string }) => Promise<unknown>,
+  private async ensureOrderGraph(
+    subjectId: string,
+    orderId: string,
+    config: IConfiguration,
   ) {
-    const result = await this.execute(props);
-    if (!result) return;
-    const options = {
-      headers: {
-        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY!,
-        "Cache-Control": "no-store",
+    const { ecommerceModule, subjectsToEcommerceModuleOrders } =
+      this.dependencies;
+    const filters = {
+      params: {
+        filters: { and: [{ column: "orderId", method: "eq", value: orderId }] },
       },
     };
-    const links = await this.subjectsToEcommerceModuleOrders.find({
+    const owners = await subjectsToEcommerceModuleOrders.find({
       params: {
         filters: {
-          and: [{ column: "subjectId", method: "eq", value: props.id }],
+          and: [
+            { column: "ecommerceModuleOrderId", method: "eq", value: orderId },
+          ],
         },
       },
     });
-    const ids = links.map((link) => link.ecommerceModuleOrderId);
-    // Zero-price invoices settle locally. Complete delivery before issuing the session.
-    for (let attempt = 0; attempt < 40; attempt++) {
-      const orders = await this.ecommerceModule.order.find({
+    if (
+      owners.length > 1 ||
+      owners.some((link) => link.subjectId !== subjectId)
+    )
+      throw new Error("Conflict error. Initial Free Order owner is ambiguous");
+    if (!owners.length)
+      await subjectsToEcommerceModuleOrders.create({
+        data: { subjectId, ecommerceModuleOrderId: orderId },
+      });
+    const lines = await ecommerceModule.ordersToProducts.find(filters);
+    if (
+      lines.length > 1 ||
+      lines.some(
+        (line) =>
+          line.productId !== config.productId ||
+          Number(line.quantity ?? 1) !== 1,
+      )
+    )
+      throw new Error(
+        "Conflict error. Initial Free Order has unrelated Products",
+      );
+    if (!lines.length)
+      await ecommerceModule.ordersToProducts.create({
+        data: { orderId, productId: config.productId, quantity: 1 },
+      });
+    const stores = await ecommerceModule.storesToOrders.find(filters);
+    if (
+      stores.length > 1 ||
+      stores.some((link) => link.storeId !== config.storeId)
+    )
+      throw new Error("Conflict error. Initial Free Store is ambiguous");
+    if (!stores.length)
+      await ecommerceModule.storesToOrders.create({
+        data: { orderId, storeId: config.storeId },
+      });
+    const currencies =
+      await ecommerceModule.ordersToBillingModuleCurrencies.find(filters);
+    if (
+      currencies.length > 1 ||
+      currencies.some(
+        (link) => link.billingModuleCurrencyId !== config.currencyId,
+      )
+    )
+      throw new Error("Conflict error. Initial Free Currency is ambiguous");
+    if (!currencies.length)
+      await ecommerceModule.ordersToBillingModuleCurrencies.create({
+        data: { orderId, billingModuleCurrencyId: config.currencyId },
+      });
+  }
+
+  private async settleZeroInvoice(
+    orderId: string,
+    currencyId: string,
+  ): Promise<IInvoice> {
+    const { ecommerceModule, billingModule } = this.dependencies;
+    const orderLinks =
+      await ecommerceModule.ordersToBillingModulePaymentIntents.find({
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "eq", value: orderId }],
+          },
+        },
+      });
+    if (orderLinks.length > 1)
+      throw new Error(
+        "Conflict error. Initial Free PaymentIntent is ambiguous",
+      );
+    let intent = orderLinks.length
+      ? await billingModule.paymentIntent.findById({
+          id: orderLinks[0].billingModulePaymentIntentId,
+        })
+      : undefined;
+    if (orderLinks.length && !intent)
+      throw new Error("Conflict error. Initial Free PaymentIntent is missing");
+    if (
+      intent &&
+      (intent.amount !== 0 ||
+        ![
+          "requires_payment_method",
+          "requires_confirmation",
+          "requires_action",
+          "processing",
+          "succeeded",
+        ].includes(intent.status))
+    )
+      throw new Error(
+        "Conflict error. Initial Free PaymentIntent cannot be settled",
+      );
+    if (!intent) {
+      intent = await billingModule.paymentIntent.create({
+        data: { amount: 0, status: "succeeded", type: "one_off" },
+      });
+      await ecommerceModule.ordersToBillingModulePaymentIntents.create({
+        data: { orderId, billingModulePaymentIntentId: intent.id },
+      });
+    }
+    const relatedOrders =
+      await ecommerceModule.ordersToBillingModulePaymentIntents.find({
         params: {
           filters: {
             and: [
-              { column: "id", method: "inArray", value: ids },
               {
-                column: "status",
-                method: "inArray",
-                value: ["paying", "paid", "delivering"],
+                column: "billingModulePaymentIntentId",
+                method: "eq",
+                value: intent.id,
               },
             ],
           },
         },
       });
-      for (const order of orders.filter((order) => order.status === "paying"))
-        await orderApi.check({ id: order.id, data: {}, options });
-      await proceed({ subjectId: props.id });
-      const ready = await this.ecommerceModule.order.find({
-        params: {
-          filters: {
-            and: [
-              { column: "id", method: "inArray", value: ids },
-              { column: "status", method: "eq", value: "delivering" },
-            ],
-          },
+    if (relatedOrders.length !== 1 || relatedOrders[0].orderId !== orderId)
+      throw new Error("Conflict error. Initial Free PaymentIntent is shared");
+    const intentFilter = {
+      params: {
+        filters: {
+          and: [{ column: "paymentIntentId", method: "eq", value: intent.id }],
         },
+      },
+    };
+    const currencies =
+      await billingModule.paymentIntentsToCurrencies.find(intentFilter);
+    if (
+      currencies.length > 1 ||
+      currencies.some((link) => link.currencyId !== currencyId)
+    )
+      throw new Error(
+        "Conflict error. Initial Free PaymentIntent Currency is ambiguous",
+      );
+    if (!currencies.length)
+      await billingModule.paymentIntentsToCurrencies.create({
+        data: { paymentIntentId: intent.id, currencyId },
       });
-      if (ready.length) return;
-      await new Promise((resolve) => setTimeout(resolve, 250));
+    const invoiceLinks =
+      await billingModule.paymentIntentsToInvoices.find(intentFilter);
+    if (invoiceLinks.length > 1)
+      throw new Error("Conflict error. Initial Free Invoice is ambiguous");
+    let invoice = invoiceLinks.length
+      ? await billingModule.invoice.findById({ id: invoiceLinks[0].invoiceId })
+      : undefined;
+    if (invoiceLinks.length && !invoice)
+      throw new Error("Conflict error. Initial Free Invoice is missing");
+    if (
+      invoice &&
+      (invoice.amount !== 0 ||
+        !["draft", "open", "paid"].includes(invoice.status) ||
+        !["dummy", "telegram-star"].includes(invoice.provider ?? ""))
+    )
+      throw new Error("Conflict error. Initial Free Invoice cannot be settled");
+    if (!invoice) {
+      invoice = await billingModule.invoice.create({
+        data: { amount: 0, status: "paid", provider: "dummy" },
+      });
+      await billingModule.paymentIntentsToInvoices.create({
+        data: { paymentIntentId: intent.id, invoiceId: invoice.id },
+      });
     }
-    throw new Error(
-      "Configuration error. Free subscription delivery did not complete.",
-    );
+    const relatedIntents = await billingModule.paymentIntentsToInvoices.find({
+      params: {
+        filters: {
+          and: [{ column: "invoiceId", method: "eq", value: invoice.id }],
+        },
+      },
+    });
+    if (
+      relatedIntents.length !== 1 ||
+      relatedIntents[0].paymentIntentId !== intent.id
+    )
+      throw new Error("Conflict error. Initial Free Invoice is shared");
+    if (invoice.status !== "paid")
+      invoice = await billingModule.invoice.update({
+        id: invoice.id,
+        data: { ...invoice, status: "paid" },
+      });
+    if (intent.status !== "succeeded" || intent.type !== "one_off")
+      await billingModule.paymentIntent.update({
+        id: intent.id,
+        data: { ...intent, status: "succeeded", type: "one_off" },
+      });
+    return invoice;
   }
 }

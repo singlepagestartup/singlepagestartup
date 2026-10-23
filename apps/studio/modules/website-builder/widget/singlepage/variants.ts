@@ -1,3 +1,5 @@
+import { Component as ContentCollection } from "./content-collection";
+import { Component as ContentForm } from "./content-form";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Navigation } from "./admin-v2-navigation/index";
 import { Component as AdminV2RichEditor } from "./admin-v2-rich-editor/index";
@@ -36,6 +38,8 @@ import { Component as NavbarAiChat } from "./navbar/ai-chat/index";
 import { Component as NavbarAiChatLanding } from "./navbar/ai-chat-landing/index";
 
 export const variants = {
+  "content-collection": ContentCollection,
+  "content-form": ContentForm,
   "admin-v2-card": AdminV2Card,
   "admin-v2-navigation": AdminV2Navigation,
   "admin-v2-rich-editor": AdminV2RichEditor,

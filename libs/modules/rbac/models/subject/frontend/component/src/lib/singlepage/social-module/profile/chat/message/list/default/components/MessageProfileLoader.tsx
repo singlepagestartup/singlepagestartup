@@ -1,73 +1,37 @@
 "use client";
-
-import { getFallbackSocialModuleProfile } from "../utils";
-import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
-import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
-import { Component as SocialModuleProfilesToMessages } from "@sps/social/relations/profiles-to-messages/frontend/component";
 import type { ReactNode } from "react";
-
+import type { IChatMessage } from "@sps/social/models/message/sdk/model";
+import type {
+  IModel as ISocialModuleProfile,
+  IProfilePresentation,
+} from "@sps/social/models/profile/sdk/model";
 interface MessageProfileLoaderProps {
-  children: (profile: ISocialModuleProfile) => ReactNode;
-  messageId: string;
+  message: IChatMessage;
+  participants?: ISocialModuleProfile[];
+  children: (author: {
+    presentation: IProfilePresentation;
+    profile?: ISocialModuleProfile;
+  }) => ReactNode;
 }
-
+/** Sender badges are returned by the authorized Message operation, including departed senders. */
 export function MessageProfileLoader(props: MessageProfileLoaderProps) {
-  return (
-    <SocialModuleProfilesToMessages
-      isServer={false}
-      variant="find"
-      apiProps={{
-        params: {
-          filters: {
-            and: [
-              {
-                column: "messageId",
-                method: "eq",
-                value: props.messageId,
-              },
-            ],
-          },
-        },
-      }}
-    >
-      {({ data: socialModuleProfilesToMessages }) => {
-        const socialModuleProfilesToMessage =
-          socialModuleProfilesToMessages?.[0];
-
-        if (!socialModuleProfilesToMessage) {
-          return props.children(getFallbackSocialModuleProfile());
-        }
-
-        return (
-          <SocialModuleProfile
-            isServer={false}
-            variant="find"
-            apiProps={{
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "id",
-                      method: "eq",
-                      value: socialModuleProfilesToMessage.profileId,
-                    },
-                  ],
-                },
-              },
-            }}
-          >
-            {({ data: socialModuleProfiles }) => {
-              const socialModuleProfile = socialModuleProfiles?.[0];
-
-              if (!socialModuleProfile) {
-                return props.children(getFallbackSocialModuleProfile());
-              }
-
-              return props.children(socialModuleProfile);
-            }}
-          </SocialModuleProfile>
-        );
-      }}
-    </SocialModuleProfilesToMessages>
-  );
+  const presentation = props.message.authorProfiles?.[0];
+  const id = presentation?.id ?? props.message.authorProfileIds?.[0];
+  const profile = id
+    ? props.participants?.find((item) => item.id === id)
+    : undefined;
+  const fallback: IProfilePresentation = profile
+    ? {
+        id: profile.id,
+        title: profile.title,
+        subtitle: profile.subtitle,
+        avatar: null,
+      }
+    : {
+        id: "unknown",
+        title: { en: "Unknown profile", ru: "Неизвестный профиль" },
+        subtitle: {},
+        avatar: null,
+      };
+  return props.children({ presentation: presentation ?? fallback, profile });
 }

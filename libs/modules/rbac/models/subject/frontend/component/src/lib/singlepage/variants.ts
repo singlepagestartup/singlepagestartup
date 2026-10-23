@@ -1,3 +1,5 @@
+import { Component as MeBlogModuleArticleCreateDefault } from "./me/blog-module/article/create-default";
+import { Component as MeAccount } from "./me/account";
 import { Component as SocialModuleProfileFind } from "./social-module/profile/find";
 import { Component as MeBlogModuleArticlePrivateContentDefault } from "./me/blog-module/article/private-content-default";
 import { Component as MeNavigationControlsAiChat } from "./me/navigation/controls-ai-chat";
@@ -84,6 +86,8 @@ import { Component as SocialModuleProfileChatListDefault } from "./social-module
 import { Component as SocialModuleProfileChatOverviewDefault } from "./social-module/profile/chat/overview/default";
 
 export const variants = {
+  "me-blog-module-article-create-default": MeBlogModuleArticleCreateDefault,
+  "me-account": MeAccount,
   "social-module-profile-find": SocialModuleProfileFind,
   "me-blog-module-article-private-content-default":
     MeBlogModuleArticlePrivateContentDefault,

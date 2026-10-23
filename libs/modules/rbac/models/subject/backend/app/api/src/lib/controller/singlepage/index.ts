@@ -1,4 +1,5 @@
 import { Handler as BlogArticleContent } from "./blog-module/article/content";
+import { Handler as BlogArticleCreate } from "./blog/article/create";
 import { Handler as FreezeSubscriptionPeriod } from "./ecommerce-module/order/freeze-subscription-period";
 import { Handler as SubjectProfileAvatarUpdate } from "./social-module/profile/find-by-id/avatar/update";
 import { Handler as SubjectBalance } from "./billing-module/balance";
@@ -123,6 +124,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     super(service);
     this.service = service;
     this.bindHttpRoutes([
+      {
+        method: "POST",
+        path: "/:id/blog-module/articles",
+        handler: (c) => new BlogArticleCreate(this.service).execute(c),
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
       {
         method: "GET",
         path: "/:id/blog-module/articles/:blogModuleArticleId/content",

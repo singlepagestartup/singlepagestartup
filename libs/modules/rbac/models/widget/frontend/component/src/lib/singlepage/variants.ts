@@ -1,3 +1,4 @@
+import { Component as SubjectMeBlogModuleArticleCreate } from "./subject/me/blog-module/article/create";
 import { Component as SubjectMeCrmModuleFormRequestCreate } from "./subject-me-crm-module-form-request-create";
 import { Component as SubjectMeSocialModuleProfileChatOverviewDefault } from "./subject/me/social-module/profile/chat/overview-default";
 import { Component as SubjectMeSocialModuleProfileChatListDefault } from "./subject/me/social-module/profile/chat/list-default";
@@ -42,6 +43,7 @@ import { Component as SubjectOverviewDefault } from "./subject/overview/default"
 import { Component as SubjectListDefault } from "./subject/list/default";
 
 export const variants = {
+  "subject-me-blog-module-article-create": SubjectMeBlogModuleArticleCreate,
   "subject-me-crm-module-form-request-create":
     SubjectMeCrmModuleFormRequestCreate,
   "subject-me-social-module-profile-chat-overview-default":

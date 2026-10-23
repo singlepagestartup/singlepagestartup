@@ -13,6 +13,7 @@ import { memo, useEffect, useMemo, type MutableRefObject } from "react";
 
 interface MessageTimelineSectionProps {
   language: string;
+  participants?: ISocialModuleProfile[];
   /**
    * Callback-ref bridge to the composer: the shell passes a stable ref, the
    * section registers its scroll handler into it. This keeps the composer →
@@ -160,6 +161,7 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
         <MessageTimeline
           deletingMessageId={messageActions.deletingMessageId}
           items={socialModuleMessagesAndActionsQuery}
+          participants={props.participants}
           language={props.language}
           messagesContentRef={messageThreadScroll.messagesContentRef}
           onMessageDelete={messageActions.onMessageRowDelete}

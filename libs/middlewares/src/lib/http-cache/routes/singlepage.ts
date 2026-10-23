@@ -31,6 +31,13 @@ export const excludedRoutes: IRouteRule[] = [
   {
     regexPath: /^\/api\/host\/pages\/(find-by-url|url-segment-value|urls)$/i,
   },
+  // Public author projections combine Profiles, Articles, Products and media.
+  // Legacy route topics cannot describe that graph; read it fresh. The
+  // consistency cache separately records the actual Service dependencies.
+  {
+    regexPath: /^\/api\/social\/profiles\/authors(?:\/[^/]+)?\/?$/i,
+    methods: ["GET", "HEAD"],
+  },
   // Issue-152: subject cart aggregate counters — exact-path cache
   // invalidation may leave stale quantity/total after cart mutations.
   {

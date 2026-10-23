@@ -1,4 +1,8 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
@@ -93,6 +97,23 @@ export class Handler {
 
       if (order.status !== "new") {
         throw new Error("Not Found error. Order is not in 'new' status");
+      }
+
+      const lines = await this.service.ecommerceModule.ordersToProducts.find({
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "eq", value: orderId }],
+          },
+        },
+      });
+      for (const line of lines) {
+        const product = await this.service.ecommerceModule.product.findById({
+          id: line.productId,
+        });
+        if (product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
+          throw new Error(
+            "Permission error. Initial Free cannot be changed through a cart",
+          );
       }
 
       await ecommerceOrderApi.update({

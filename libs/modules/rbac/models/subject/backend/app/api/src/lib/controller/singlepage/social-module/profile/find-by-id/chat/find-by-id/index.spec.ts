@@ -25,6 +25,14 @@ function setup(include: boolean) {
     subjectsToSocialModuleProfiles: { find: profileLinks },
     subjectsToRoles: { find: jest.fn().mockResolvedValue([]) },
     socialModule: {
+      profile: {
+        profilePresentation: jest.fn(async ({ id }) => ({
+          id,
+          title: { en: id },
+          subtitle: {},
+          avatar: null,
+        })),
+      },
       profilesToChats: { find: chatLinks },
       chat: { findById: jest.fn().mockResolvedValue(chat) },
     },
