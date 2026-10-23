@@ -54,7 +54,7 @@ current_phase: plan
 
 ## Incident Log
 
-<!-- incident-count: 13 -->
+<!-- incident-count: 14 -->
 
 ### Incident 1 — GitHub недоступен из sandbox
 
@@ -221,3 +221,12 @@ GitHub Code Review → Research Needed → Research in Progress проверен
 Research platform follow-up: PASS by phase_reviewer at 55af94890b. Reports and exact graph retained in ISSUE-376-platform-followup.md; review in ISSUE-376-platform-reviews.md. Public Profile UUID, raw GET privacy guards, scoped historical Chat badges, atomic Article ownership, additive wallet and once-only Free are required plan criteria.
 
 Research summary: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6372463266. Research in Review → Ready for Plan → Plan in Progress verified. Canonical platform plan saved; independent review-pr in progress.
+
+### Incident 14 — Free checkout transport in transaction
+
+- **Phase**: Platform Plan
+- **Occurrences**: 1
+- **Symptom**: Независимый review-pr отклонил общую Subject-блокировку вокруг текущего Free checkout.
+- **Root Cause**: Checkout использует loopback SDK/provider/Observer; эти записи не входят в ambient DB transaction, а callback может ждать ту же блокировку.
+- **Fix**: План определяет отдельную internal direct-Service операцию для zero-price graph, принятия Invoice, Role и credit в одной транзакции, с эффектами после commit. Публичная author pagination дополнена отдельным safe count API.
+- **Preventive Action**: До обещания атомарности прослеживать транспорт каждого owning Service и порядок locks; HTTP и polling не включать в DB transaction.
