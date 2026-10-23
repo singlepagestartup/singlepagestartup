@@ -39,6 +39,7 @@ export function Component(props: IComponentPropsExtended) {
             filters: {
               and: [
                 { column: "categoryId", method: "eq", value: props.data.id },
+                { column: "variant", method: "eq", value: "default" },
               ],
             },
           },
@@ -46,16 +47,22 @@ export function Component(props: IComponentPropsExtended) {
       >
         {({ data }) =>
           data?.length ? (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div
+              className={cn("grid gap-4", data.length > 1 && "sm:grid-cols-2")}
+            >
               {data.map((link) => (
-                <CategoriesToFiles
+                <div
                   key={link.id}
-                  isServer={props.isServer}
-                  variant={link.variant as any}
-                  dataSource="props"
-                  data={link}
-                  language={props.language}
-                />
+                  className="relative aspect-[16/9] w-full min-w-0 overflow-hidden rounded-3xl bg-muted [&>div]:absolute [&>div]:inset-0 [&>div]:h-full [&_[data-model=file]]:h-full [&_img]:!h-full [&_img]:!w-full [&_img]:!object-cover"
+                >
+                  <CategoriesToFiles
+                    isServer={props.isServer}
+                    variant="default"
+                    dataSource="props"
+                    data={link}
+                    language={props.language}
+                  />
+                </div>
               ))}
             </div>
           ) : null

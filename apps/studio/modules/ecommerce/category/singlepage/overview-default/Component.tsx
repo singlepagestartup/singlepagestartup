@@ -1,14 +1,22 @@
+import { Children } from "react";
 import type { IComponentProps } from "./interface";
 import { defaultCategoryCardProps } from "../card/Component";
 export function Component({
   title = defaultCategoryCardProps.title,
   subtitle = defaultCategoryCardProps.subtitle,
   description,
-  media,
+  media = (
+    <img
+      src={defaultCategoryCardProps.image}
+      alt={defaultCategoryCardProps.imageAlt ?? ""}
+      className="h-full w-full object-cover"
+    />
+  ),
   widgets,
   children,
   backHref = "/ecommerce",
 }: IComponentProps) {
+  const mediaItems = Children.toArray(media);
   return (
     <section
       data-module="ecommerce"
@@ -36,7 +44,17 @@ export function Component({
           {subtitle}
         </p>
       </header>
-      {media}
+      {mediaItems.length ? (
+        <div
+          className={`grid gap-4 ${mediaItems.length > 1 ? "sm:grid-cols-2" : ""}`}
+        >
+          {Children.map(mediaItems, (item) => (
+            <div className="relative aspect-[16/9] w-full min-w-0 overflow-hidden rounded-3xl bg-muted [&>*]:absolute [&>*]:inset-0 [&>*]:h-full [&>*]:w-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover">
+              {item}
+            </div>
+          ))}
+        </div>
+      ) : null}
       {description ? (
         <div className="rounded-3xl border border-border bg-card p-6 sm:p-8">
           {description}

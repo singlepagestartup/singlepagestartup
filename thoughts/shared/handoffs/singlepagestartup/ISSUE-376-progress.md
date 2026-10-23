@@ -9,7 +9,36 @@ branch: codex/issue-376-framework-visual
 
 # Implementation Progress: ISSUE-376
 
-## Phase Progress
+## Current round — platform follow-up, 2026-10-24
+
+Baseline implementation: `18f454fef1`; documentation: `922d823da6`; the current
+tree also contains the verified named-action backend correction and two Category
+CSS changes. Independent final review by code_review_readiness is PASS. Issue
+remains In Dev pending root commit/checkpoint and verified Code Review transition.
+No PR, push, merge or human acceptance.
+
+The Next/Nx production target completed compilation, types and static generation
+8/8 with build ID `MKpFtIHdiJJQqecTuXDQO`. All 36 built HTTP checks returned 200
+without error/private markers. The outer supervisor ended exit 1 after signalling
+an already-exited group and has no final resource receipt. Its 2803.1 MiB sample
+at 516.7 s is not the complete run's maximum.
+
+Built-browser acceptance covers Article publication, global feed, UUID author
+page, conditional author menu, three-field draft disposal on A logout/B login,
+guest editor gate and B's private-content denial, with no console errors. Actual
+API checks prove one Profile/initial Free 3000 per fixture, replay/isolation and
+cleanup. The four unrelated orphan guest Subjects remain preserved; their
+origin is unassigned. No paid-subscriber browser session is claimed.
+
+The completed build predates two class-only Category fixes. Source review, generated 16/9 CSS and desktop frame
+1216.015625 × 684.00390625 pass. At 320 px, the frame is 272 × 153, computed ratio
+is 16/9 and inner/client/scroll widths all equal 320. Normal API/Host dev sessions 19270/6711 are restored. Host Ready took 6.2 s at 1536 MiB heap,
+1024 MiB native target and two threads. Framework returned 200 after the 83.643 s
+cold compilation; Category returned 200 in 1.093 s.
+Detailed evidence and limitations are in `ISSUE-376-platform-reviews.md` and
+`ISSUE-376-browser-r2.md`; earlier acceptances below retain their named revisions.
+
+## Historical Phase Progress — first delivery, 2026-10-22
 
 ### Phase 1: Серверный период, scope и bytes
 
@@ -73,7 +102,7 @@ Production Host собран и отвечает HTTP 200 на :3000. Оконч
 
 ## Incident Log
 
-<!-- incident-count: 21 -->
+<!-- incident-count: 30 -->
 
 ### Incident 1 — Native Date теряет миллисекунды при преобразовании через String
 
@@ -112,7 +141,7 @@ Known GitHub/sandbox/agent coordination incidents находятся в пост
 - Query scopes принадлежат отдельным mounted private subtree. Deadline начинается до transport; ошибки повторной проверки закрывают private readers и Blob URLs.
 - Apply/rollback требуют --exclusive-maintenance: сторонние CMS writers остановлены до verify. Generic full PATCH не обеспечивает CAS между GET и PATCH; локальное окно исключает параллельные CMS edits.
 
-## Summary
+## Historical summary — first delivery, 2026-10-22
 
 ### Changes Made
 
@@ -130,7 +159,7 @@ Known GitHub/sandbox/agent coordination incidents находятся в пост
 
 Не создаётся по прямой инструкции пользователя. Результат — локальная ветка и commits для человеческого Code Review.
 
-### Final Status
+### Historical final status — first delivery
 
 - [x] Все фазы реализованы
 - [x] Автоматические и браузерные проверки завершены; failing baseline API TypeScript выделен отдельно
@@ -164,7 +193,7 @@ Known GitHub/sandbox/agent coordination incidents находятся в пост
 - **Fix**: ReadSchemaFields синхронизировал admin-v2-table metadata, значения новых полей null и IRecord nullable; полный studio:validate exit 0.
 - **Reusable Pattern**: После schema generation синхронизировать локальную projection без перегенерации authored views/данных.
 
-## Final acceptance evidence
+## Historical final acceptance evidence — first delivery, 2026-10-22
 
 - Independent reviewer phase_reviewer: review-pr PASS, revision 6a9be42bb6.
 - Durable implementation/browser/review reports: thoughts/shared/research/singlepagestartup/ISSUE-376-{implementation,browser,reviews}.md.
@@ -216,15 +245,21 @@ Source revision: 129dd65f92. Commits: 4db50ba65f, 2457eebd1e, 129dd65f92. Шес
 - [x] Research: registration/author scope, shell/About, catalogue/credit lifecycle, GitHub source references.
 - [x] Independent research review and detailed implementation plan.
 - [x] Plan review and Ready for Dev.
-- [ ] Studio-first account/authors/editor and Website Builder blocks.
-- [ ] Backend profile/Article ownership and credit lifecycle.
-- [ ] Runtime frontend and saved SDK data cutover.
-- [ ] Source tests, built Host, desktop/mobile/authenticated acceptance.
-- [ ] Independent final review-pr, commits and human Code Review handoff.
+- [x] Studio-first account/authors/editor and Website Builder blocks; Studio validators/typecheck and scoped tests passed.
+- [x] Backend profile/Article ownership and credit lifecycle implementation; focused API/PostgreSQL evidence recorded.
+- [x] Runtime frontend implementation and saved SDK data cutovers, including commercial configuration and numeric Token Key correction.
+- [x] Focused source tests, completed production target and scoped built desktop/mobile/account acceptance.
+- [x] Final Category source/generated16/9 CSS and desktop geometry.
+- [x] Final Category at actual 320 px: frame 272 × 153, computed ratio 16/9; no horizontal overflow.
+- [x] Independent final review-pr: code_review_readiness PASS, with recorded evidence limits.
+- [ ] Root commit/checkpoint and verified GitHub Code Review handoff to the user.
 
-Pro costs 29 USD or 1900 RUB per month for 5000 tokens. Existing token consumption math, top-up rate and pack amounts remain unchanged. Commercial publication requires the legacy Order projection correction and independent verification.
+Pro costs 29 USD or 1900 RUB per month for 5000 tokens. Five top-ups cost
+100/300/500/1000/3000 RUB at 0.13 RUB per token. Existing token consumption math
+is unchanged. Commercial publication, legacy Order compatibility and the
+numeric Key correction have their scoped verification. The final independent review and status gates above remain open.
 
-## Platform recovery after machine restart
+## Historical recovery checkpoint — 2026-10-23, before platform publication
 
 Source baseline 3e6447dbf9. Partial implementation remains uncommitted; no new CMS publication was performed in this round. /tmp research inventories, draft source-link transform and test outputs were lost. Canonical research/plan/reviews remain in Git. New tests/builds have not been accepted. Source-only agents: r2_auth_finish, r2_ui_finish; root integrates the existing commerce/catalog/shell work and managed publication. Heavy checks run one at a time after resource verification. Pro prices confirmed 29 USD / 1900 RUB; period pending.
 
@@ -290,10 +325,128 @@ Runtime policy prerequisite: the new curated Category reader also needs exact pu
 - **Fix**: Root stopped only its build processes53069,53070,53815. Host was already stopped for the isolated build; API remained running. Memory free rose to about60%, and the user confirmed that heating noticeably decreased. No further heavy build or type checker was started.
 - **Preventive Action**: Keep checks serial and bounded; inspect process ownership and actual resources, stop task-owned work on a thermal report, and distinguish source review, completed compilation and a completed production build.
 
-Current thermal checkpoint: no Host or production compiler is running. API remains on4000 through npm run api:dev. User confirms cooling after the build stop. Client-boundary review is recorded in ISSUE-376-rbac-client-boundary-review.md; independent root/Host/source acceptance is in ISSUE-376-final-source-review.md. The new Blog Provider cycle is removed through its narrow public alias; the unfiltered empty Popular fallback is removed. Full production acceptance, commercial application and final Code Review handoff remain pending.
+### Incident 22 — Numeric token values used a text Attribute Key
 
-## Current checkpoint
+- **Occurrences**: 1
+- **Stage**: Commercial browser readback
+- **Symptom**: The five new packs displayed `Topup —` although their descriptions and numeric credits were correct.
+- **Root Cause**: Their shared legacy Topup Key selected `string`; the six new managed Attributes populated `number`. Fulfillment reads `number` directly.
+- **Fix**: Independent review accepted one new numeric `Tokens` Key and six exact association switches. Local SDK apply/verify, repeat7 skips and fresh prepare0 pass with84 protected selections unchanged. Browser EN/RU confirms all five numbers and Pro5000.
+- **Preventive Action**: Match Attribute value storage to Key.field and verify both the rendered field and its owning calculation; preserve historical Keys and paid data.
 
-Implementation: local commit `18f454fef1`; no push or PR. Order regressions pass45/45 in1.982seconds; all7 real old Pro Orders remain readable. The confirmed monthly Pro/top-up catalog applied70 creates/6 updates. Verify, repeat76 skips, fresh prepare0 operations, configuration rollback and reapply0 creates/6 updates pass with84 protected selections/669 rows unchanged. Detailed receipts and limitations: `ISSUE-376-platform-reviews.md` and `ISSUE-376-commercial-review.md`.
+### Incident 23 — A single Category cover occupied half the content width
 
-API remains on4000. Host is stopped after the thermal report. Issue stays In Dev: post-checkpoint Host verification, a completed production build, exact320px and complete authenticated browser transitions are pending. No further heavy build or type checker has run.
+- **Occurrences**: 1
+- **Stage**: Current Category browser acceptance
+- **Symptom**: A newly populated single cover rendered as an unframed600px image below the full-width category header.
+- **Root Cause**: The transferred gallery always used two desktop columns and had no media frame; Studio's default example omitted media.
+- **Fix**: Studio includes single/multiple/no-media examples. The matching runtime uses full width for one active cover, two columns for multiple covers and rounded aspect-video frames. Independent source review passes; built-Host readback remains required.
+- **Preventive Action**: Populate optional media in Studio before accepting the transfer and check zero, one and multiple records.
+
+### Incident 24 — A fixed relation renderer could expose hidden Category covers
+
+- **Occurrences**: 1
+- **Stage**: Independent review of the Category cover correction
+- **Symptom**: Source review found that selecting the default renderer for every loaded link would render records whose saved variant was hidden.
+- **Root Cause**: The new renderer selection ignored relation visibility, and hidden records also affected the number of columns.
+- **Fix**: The existing relation find now filters exact Category ID and variant=default before counting or rendering. Hidden records remain saved. Independent reread passes; the faulty revision was not applied to the running Host.
+- **Preventive Action**: Check all saved relation variants when changing a renderer; apply visibility before layout counts and preserve retired records.
+
+### Incident 25 — Supervisor signals an already-exited build group
+
+- **Occurrences**: 1
+- **Stage**: Platform production verification
+- **Symptom**: The outer supervisor exits 1 with EPERM after Next/Nx reports a successful build; its final resource receipt is absent.
+- **Root Cause**: The child exits between the supervisor's status check and process-group signalling.
+- **Fix**: The temporary supervisor checks child completion after the signalling race. Build ID/manifests and the full target log establish completion; sampled 2803.1 MiB at 516.7 s is retained without claiming a complete peak.
+- **Preventive Action**: Record compiler result and supervisor result separately; do not recompile solely to repair resource bookkeeping.
+
+### Incident 26 — Temporary CLI flag collides with bcrypt tooling
+
+- **Occurrences**: 1
+- **Stage**: Real registration harness startup
+- **Symptom**: The temporary API harness fails during bcrypt/node-pre-gyp startup.
+- **Root Cause**: Its generic `--directory` option collides with the dependency's CLI option handling.
+- **Fix**: The harness uses `--fixture-state-dir`; the failed process is gone and baseline/fixture absence checks pass before retry. Environment files and application behavior are unchanged.
+- **Preventive Action**: Use task-specific CLI names and verify the harness starts before creating fixture accounts.
+
+### Incident 27 — Named Identity action treated as a UUID record
+
+- **Occurrences**: 1
+- **Stage**: Real registration acceptance
+- **Symptom**: Registration returns 403 before creating rows; PostgreSQL reports 22P02 for `email-and-password`.
+- **Root Cause**: The global protected-content mutation guard passes an action segment to the Identity `findById` lookup.
+- **Fix**: Only the existing accepted normalized UUID shape becomes recordId. Named mutations still undergo body/private-reference checks and normal route authorization. Independent source review,20 access tests and the real registration retry pass in their stated scope.
+- **Preventive Action**: Test named collection actions through the global middleware, alongside UUID aliases, bulk mutations and protected-reference rejection.
+
+### Incident 28 — SIGTERM bypasses temporary harness cleanup
+
+- **Occurrences**: 1
+- **Stage**: Temporary API shutdown
+- **Symptom**: SIGTERM reaches an imported provider's immediate-exit handler before temporary harness cleanup completes.
+- **Root Cause**: The process shares dependency signal handlers whose exit behavior precedes the harness teardown.
+- **Fix**: The temporary harness handles USR2 for awaited cleanup and shutdown. Normal API startup is restored; recorded fixture IDs are absent and nonfixture hashes are preserved.
+- **Preventive Action**: Inspect imported signal behavior and use an explicit awaited teardown path for disposable full-app harnesses.
+
+### Incident 29 — Temporary JWT resolver fails after registration commit
+
+- **Occurrences**: 1
+- **Stage**: Real registration acceptance
+- **Symptom**: A's registration returns 500 after its Identity/Profile/Free graph has committed.
+- **Root Cause**: The temporary global Hono JWT resolver differs from the project's canonical verification adapter.
+- **Fix**: The harness uses canonical verifyJwt/project rules. A's normal UI login succeeds; B registration returns 201, and both have one Profile/Free graph and 3000 tokens. A's response remains documented as 500, not 201.
+- **Preventive Action**: Reuse the project's transport adapter; after an uncertain response inspect committed ownership/credit state before retrying account creation.
+
+### Incident 30 — Named aspect utility is absent from the Tailwind preset
+
+- **Occurrences**: 1
+- **Stage**: Built Category browser acceptance
+- **Symptom**: `aspect-video` computes to `auto`; a Category cover is 1216 × 1216 on desktop and 272 × 272 at 320 px instead of 16:9.
+- **Root Cause**: The configured aspect-ratio plugin has no named video token; source class presence alone does not create that CSS rule.
+- **Fix**: The two runtime/Studio views use `aspect-[16/9]` and an absolute media child. Narrow source, generated 16/9 CSS and desktop geometry pass; actual 320 px frame 272 × 153, computed 16/9 and document widths 320 pass. Console errors are absent; viewport/zoom are restored and the QA tab is closed. The completed production build predates this class-only change.
+- **Preventive Action**: Check generated utilities and computed geometry with real media; keep this token issue separate from Incident 23's single-cover column layout.
+
+Historical thermal checkpoint — 2026-10-24, after the build stop and before the current dev restart: no Host or production compiler was running. API remained on4000 through npm run api:dev. User confirmed cooling after the build stop. Client-boundary review is recorded in ISSUE-376-rbac-client-boundary-review.md; independent root/Host/source acceptance is in ISSUE-376-final-source-review.md. The new Blog Provider cycle is removed through its narrow public alias; the unfiltered empty Popular fallback is removed. Production acceptance, commercial application and final Code Review handoff were still pending at that checkpoint.
+
+## Current checkpoint — completed R2 evidence, 2026-10-24
+
+Commercial publication remains verified: Pro costs 29 USD or 1900 RUB per month
+for 5000 tokens,
+five RUB packs at 0.13 RUB/token, 70 creates/6 updates; repeat 76 skips,
+rollback/reapply and all 84 protected selections/669 rows match. All 7 old Pro
+Orders remain readable. Numeric Key correction: 1 create/6 link updates,
+repeat 7 skips and fresh prepare 0. Post-account-cleanup commercial preparation
+again has 0 operations across 77 targets with 84 protections. Free, old Keys,
+paid records and consumption code are unchanged.
+
+The final named-action classification correction passes 20/20 access tests in
+1.401 s. The actual private PostgreSQL/Hono/Redis/both-cache/bytes matrix passes
+1/1 in 22.233 s, and the six final changed files pass ESLint. The real registration
+receipt proves one Identity/Profile/Free Order/paid zero Invoice and 3000 tokens
+for A/B. B returns 201; A committed before a temporary JWT adapter error returned 500. A's later normal login works. Article replay returns the same saved graph;
+B's collision is 409 and a cross-Subject request is 401. The temporary adapter
+uses canonical verifyJwt/project Hono rules after correction.
+
+The independent built-browser addendum verifies publication/feed/author and
+A-draft→logout→B-empty-editor, guest gating and B private denial. Test fixtures
+are removed:92 recorded IDs, zero pre-existing drift, all captured nonfixture
+hashes preserved. Read-only cleanup review finds neither fixture Subject and
+classifies four preserved default Subjects with zero references across 12 FK
+columns as ordinary orphan guests; their provenance is not established.
+The temporary API stopped cleanly through USR2; normal API and bounded dev Host
+are restored. No outside payment or notification delivery is claimed.
+
+Production receipt: `MKpFtIHdiJJQqecTuXDQO`, Next/Nx target success including
+types/static generation 8/8;36 built HTTP 200, maximum 0.826 s. Supervisor exit 1 is the separate
+post-exit signalling incident; its sampled RSS is not a complete peak receipt.
+The build predates only the two final Category Tailwind media-frame changes.
+Source, generated 16/9 CSS, desktop 1216.015625 × 684.00390625 and mobile
+272 × 153 frames pass. Independent final review is PASS. Issue remains In Dev until root records the
+commit/checkpoint and verifies the Code Review transition.
+
+Evidence: `ISSUE-376-platform-reviews.md`, `ISSUE-376-browser-r2.md`,
+`/tmp/issue376-production-resume-build.log`, `/tmp/issue376-built-http.json`,
+`/tmp/issue376-auth-registration-proof.json`, `/tmp/issue376-auth-replay-proof.json`
+and `/tmp/issue376-fixture-cleanup-review.json`. The platform review lists the
+final cleanup and readiness receipts. Credentials and protected row contents
+remain outside these documents.

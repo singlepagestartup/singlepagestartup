@@ -1,3 +1,49 @@
+# ISSUE-376 round 2 — current acceptance checkpoint
+
+Checkpoint: 2026-10-24; baseline implementation `18f454fef1`, documentation
+`922d823da6`, plus the current backend-guard and two Category CSS corrections.
+Independent final verdict: PASS by code_review_readiness for human Code Review.
+Issue remains In Dev until root commit/checkpoint and the verified GitHub status
+transition. Earlier sections below retain their phase/revision
+scope; pending statements there describe those historical checkpoints.
+
+- Completed production target: build ID `MKpFtIHdiJJQqecTuXDQO`, Next/Nx success,
+  type validity, static generation 8/8, optimization/traces/manifests. Built HTTP matrix:
+  18 EN/RU paths twice,36 responses 200, maximum 0.826 s, no error/private markers.
+- Supervisor limitation: outer exit 1 after EPERM signalling an already-exited
+  group; no final RSS receipt. A sample reached 2803.1 MiB at 516.7 s; no complete
+  peak is claimed. The helper race is fixed without recompiling for bookkeeping.
+- Backend correction: only accepted normalized UUIDs reach the mutation record
+  lookup. Named actions retain body/private-reference checks. Access 20/20 PASS
+  in 1.401 s; actual private PostgreSQL/Hono/Redis/both-cache/bytes 1/1 PASS in 22.233 s;
+  six final changed files pass ESLint.
+- Auth/API: B registration 201; A committed before a temporary JWT adapter error
+  returned 500, then normal UI login A succeeds. Each fixture has one Identity,
+  Profile, Free Order, paid zero Invoice and 3000 tokens. Article retry returns
+  the same graph; foreign collision 409 and cross-Subject 401.
+- Built browser: publication/feed/UUID author/menu, three-field draft disposal
+  on A logout/B login, guest editor gate and B private denial pass; console
+  errors 0. This does not claim a paid-subscriber browser session or new CRM submit.
+- Cleanup:92 recorded fixture IDs removed, pre-existing drift 0 and all captured
+  nonfixture hashes preserved. Read-only review confirms both fixtures absent
+  and preserves four default orphan guest Subjects with no references across 12
+  FK columns. Their origin is unassigned. Fresh commercial preparation again
+  has 0 operations across 77 targets with 84 protected selections.
+- Normal API/Host dev sessions 19270/6711 are restored. Host Ready 6.2 s at 1536 MiB
+  heap/1024 MiB native target/2 threads. Final dev Framework 200 after 83.643 s cold
+  compile; Category 200 in 1.093 s. Public Article/Product API reads 200; authenticated
+  consistency status 200, lag 0/pending 0/degraded false/failures 0.
+- The completed build predates two class-only Category fixes. Narrow source,
+  Prettier/diff and generated CSS checks pass; CSS line 4172 supplies 16/9.
+  Desktop frame 1216.015625 × 684.00390625 with absolute child/cover passes.
+  Actual 320 px geometry also passes: frame 272 × 153, computed ratio 16/9 and
+  inner/client/scroll widths 320. Independent final review is PASS; root commit/status remain pending.
+
+Primary reports: `ISSUE-376-browser-r2.md`, `ISSUE-376-final-source-review.md`
+and `ISSUE-376-final-acceptance.md`. Raw current receipts are named in the
+completed verification addendum at the end; credentials and protected rows
+are excluded. No PR, push, merge or human Code Review acceptance is claimed.
+
 # ISSUE-376 round 2 — independent research review
 
 Verdict: **PASS for Research** at source revision `55af94890b`. The four reports establish the current behavior, the required corrections, ownership and implementation checks. This verdict accepts the research scope; it does not claim that the identified runtime defects are fixed. Source, CMS, Git and workflow status were not changed by this reviewer.
@@ -363,7 +409,7 @@ This is a Turbopack target, not a hard limit on process RSS or a replacement for
 
 Final Host TypeScript before dev startup: exit 0 with a 3072 MiB heap and no diagnostics. Webpack dev then failed within its separate 3072 MiB heap on first page compilation; default Turbo dev with a 1024 MiB native target and 1536 MiB Node heap is under HTTP verification. Browser reload of the old internal connection-error document was rejected by browser policy; no retry or alternate browser surface was used. Manual opening of the actual localhost URL was requested.
 
-## Current dev HTTP verification
+## Earlier dev HTTP verification — 2026-10-24
 
 API runs through npm run api:dev; Host runs through npm run host:dev with Node heap1536 MiB and the optional native Turbo target1024 MiB. The misplaced client directive and missing curated Category read policy were fixed before this matrix. All15 inspected EN/RU Host responses are200 with no Permission error, Internal Server Error, NEXT_HTTP_ERROR_FALLBACK, private marker or private Widget ID. This verifies server response content, not hydration, clicks or mobile layout.
 
@@ -387,7 +433,7 @@ Actual public author list/count/detail API reads are200 with one eligible editor
 
 Browser automation remains blocked: the reload of the old connection-error document was rejected by URL policy; after the user reported manually opening the actual page, automatic approval review also rejected observing that tab as a retry. No alternate browser or indirect UI observation was used. Explicit browser approval is pending. The user has separately been asked for the missing Pro billing period.
 
-## Current recovery verification, 2026-10-24
+## Historical recovery verification — before commercial application, 2026-10-24
 
 Pro terms are confirmed: 29 USD or 1900 RUB per month for 5000 tokens. The separate commercial input preserves the 0.13 RUB/token top-up rate and 100/300/500/1000/3000 RUB prices. Preparation is read-only; application waits for the legacy Order reader correction and independent review. Earlier pending-period notes describe the preceding checkpoint.
 
@@ -407,7 +453,7 @@ The bounded RBAC source audit covers5466 unique project files across its six nam
 
 The independent source reviewer also found the empty curated Popular Widget falling back to all Articles. Its linked membership query now renders empty on an empty selection. This and the corrected private Article actions have source acceptance; runtime regression checks after these final changes remain held.
 
-## Root acceptance after the source checkpoint
+## Historical root acceptance after the source checkpoint
 
 Local commit `18f454fef1` contains the implementation and bounded client-boundary correction; hooks performed formatting only, and its actual downstream trailers validate. No push or PR was created.
 
@@ -418,3 +464,144 @@ Actual SDK reads succeed for all7 existing Pro Orders before and after the price
 Commercial publication through the maintained local SDK tool:70 additive records and6 existing updates; verify passed. Repeat skipped76 operations with zero writes; fresh preparation required0 operations. Rollback restored6 existing configuration records while retaining additive records, then a fresh prepare found6 updates. Reapply performed0 creates/6 updates and verification passed. Final terms are Pro29USD or1900RUB per month for5000 tokens, five RUB top-ups at the existing0.13RUB/token rate, and the two service examples. Financial observations, original Product/Attribute records and the protected Article graph are unchanged. No checkout, payment, token grant or notification was performed by publication. Private receipts remain mode0600 under `.git/sps-runtime/issue-376`.
 
 Host and full production acceptance remain held after the thermal report. API continues on4000 through `npm run api:dev`. Exact320px, complete authenticated browser transitions, post-checkpoint Host compilation and a completed production build remain open. The issue remains In Dev; these results do not claim final Code Review readiness.
+
+## Resumed dev verification, 2026-10-24
+
+The user authorized restarting Host and continuing to Code Review. The exact
+`npm run host:dev` command runs with Node heap1536MiB, Turbopack memory target
+1024MiB, Nx daemon/plugin isolation/cache disabled and the separate
+`.next-issue376-recovery-turbo` directory. Ready took5.8seconds; the first
+Framework compilation/request returned200 in84.23seconds. A serial warm matrix
+of15 EN/RU Framework, About, Blog, Authors, editor, Ecommerce and Article routes
+returned200 in0.88–1.94seconds per request, without Next error markers or the
+protected Article marker/Widget ID. Exact route results are in
+`/tmp/issue376-current-dev-http.json`. This proves the current dev rendering,
+not a production build.
+
+The numeric Token attribute correction has independent source/manifest PASS.
+Its maintained SDK application created one numeric Key and changed only the
+Key reference in six existing managed associations. Verify passed; repeat
+skipped7 operations with0 writes; fresh preparation returned0 operations.
+All84 protected selections matched. Full input now contains77 targets; the
+bounded correction has7. Source, hashes and private receipt paths are recorded
+in `ISSUE-376-commercial-topup-key-review.md`. UI readback is recorded separately
+by the browser reviewer.
+
+Disk preflight found1.6GiB available before the next build. Root removed one
+generated Host Nx cache entry, `10454412573202851796`, dated19October; its
+generated contents occupied7.8GiB. No application source or saved content was
+removed. Available space then measured7.4GiB. The current dev output and
+private data receipts remain available.
+
+## Completed production target and built Host verification
+
+The resumed Next/Nx build completed compilation in4.2minutes, type validity,
+static generation8/8, optimization, traces and the final route table. Nx reports
+`Successfully ran target next:build for project host`. Fresh build ID:
+`MKpFtIHdiJJQqecTuXDQO`; app/page/prerender manifests exist. The builder PIDs
+75725,75762,75763,77914 are gone. The independent final reviewer accepts this
+as a completed Next/Nx build.
+
+The temporary CPU supervisor ended with exit1 after a PermissionError signalling
+the already-exited process group. It did not save its final resource receipt;
+its outer exit is not0. Recorded samples reached2803.1MiB at elapsed516.7seconds;
+they do not establish the complete run's maximum. The supervisor now checks the
+child's exit after a signalling race. No repeat compiler run is needed solely
+for that bookkeeping error. Raw log:
+`/tmp/issue376-production-resume-build.log`; explicit observation/limitation:
+`/tmp/issue376-production-build-observation.json`.
+
+During the built verification, `npm run host:start` served that exact output
+on3000, PID78267, Ready448ms,
+Node heap1536MiB. A serial matrix requests18 EN/RU Framework, About, Blog,
+Authors, editor, Ecommerce, Category and Article paths twice. All36 first/repeat
+requests return200 without Next error markers, DYNAMIC_SERVER_USAGE, the private
+Article marker or protected Widget ID. Maximum observed request time0.826s.
+Receipt: `/tmp/issue376-built-http.json`. An initial Python attempt had no local
+socket permission in the sandbox; the matrix above is its permitted retry.
+
+## Historical first registration attempt — before guard correction
+
+The normal API was stopped for the reviewed temporary full-app harness on4000.
+Only new fixture Orders' outbound paid notifications are replaced. The two
+Telegram diagnostic-delivery variables are empty in that process; console logs,
+auth, RBAC, DB, fulfillment and ordinary business notifications remain active.
+Normal environment files are unchanged. A startup flag collision with bcrypt's
+node-pre-gyp was corrected by using `--fixture-state-dir`. Before retry, every
+captured baseline row matched exactly, no fixture ID existed and the failed
+process was gone; prepared credentials were preserved.
+
+The first real registration reaches the actual Identity action and fails403
+before creating a row. The private-content mutation guard interprets
+`/api/rbac/identities/email-and-password` as a UUID detail route, then the owning
+lookup raises PostgreSQL22P02. The guard's fail-closed wrapper returns403.
+This is a backend classification defect, not a missing guest permission or a
+client/server import error. Its correction, independent reread, focused tests
+and a new real registration remain required before authenticated acceptance.
+
+## Completed registration, browser and cleanup evidence
+
+The narrow named-action correction has independent source PASS in
+`ISSUE-376-final-source-review.md`. Only normalized 32-hex UUID record IDs reach
+the WriteAccess record lookup; named Identity actions still parse the cloned request and
+run private-reference protection. Bulk processing, find-or-create body checks,
+transaction/graph locks, private CRUD and encoded/braced/hyphenless read handling
+remain. The focused Hono fixture uses a real Graph/WriteAccess and a JSON echo
+handler; real multipart registration is covered separately below.
+
+```sh
+NODE_OPTIONS=--max-old-space-size=1536 node node_modules/jest/bin/jest.js --config libs/modules/rbac/jest.config.ts --runInBand --runTestsByPath libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/blog/article/access.spec.ts
+NODE_OPTIONS=--max-old-space-size=1536 node node_modules/jest/bin/jest.js --config apps/api/jest.integration.config.ts --runInBand --runTestsByPath apps/api/specs/integration/private-content.integration.spec.ts
+```
+
+Root's serial results:20/20 access tests in 1.401 s and the actual private
+PostgreSQL/Hono/Redis/cache/bytes matrix 1/1 in 22.233 s. Six final changed files
+pass scoped ESLint. These commands did not run concurrently with a compiler.
+
+The reviewed temporary full-app API harness then accepts real fixture
+registrations. B receives 201. A's Identity/Profile/Free transaction commits,
+then a mismatched temporary global Hono JWT resolver returns 500. The harness
+uses canonical verifyJwt/project adapter after correction; A's normal browser
+login succeeds. Both persisted fixture graphs contain one human Identity,
+one personal Profile, one initial Free Order, one paid zero Invoice and a 3000
+Token balance. A's initial response is preserved as 500 in the evidence.
+The receipt records four suppressed fixture notifications, not real external
+delivery. The normal app environment files are unchanged.
+
+Identical Article request UUID/payload returns the same Article and unchanged
+owner/author/category graph. B's collision returns 409 and A targeting Subject B
+returns 401. The built-browser addendum independently observes publication,
+feed card, UUID portfolio/byline and the new My author page menu. Three unique
+unsaved draft values disappear after A logout; B's three editor fields are
+empty, guest editor inputs are absent and B's private gate contains neither
+hidden marker nor Widget ID. Chrome error logs are empty for this pass.
+
+The temporary API exits through awaited USR2 teardown, and normal API/Host dev
+commands are restored. Cleanup removes 92 recorded IDs with zero baseline drift
+and exact preservation of captured nonfixture hashes. A read-only repeatable-
+read review inspects 12 Subject FK columns: both fixture Subjects are absent;
+four remaining default Subjects have zero references and are preserved as
+ordinary orphan guest records with unassigned provenance. No ownership evidence
+supports deleting them. The old registration receipt's fixturesCleaned=false
+is a pre-cleanup observation; the final cleanup receipt records the current
+state. Post-cleanup commercial prepare has 0 operations and 84 protected selections.
+
+Current receipts:
+
+- `/tmp/issue376-production-resume-build.log` and `/tmp/issue376-production-build-observation.json`: completed target and separate supervisor limitation.
+- `/tmp/issue376-built-http.json`:36 first/repeat built HTTP responses.
+- `/tmp/issue376-auth-registration-proof.json` and `/tmp/issue376-auth-replay-proof.json`: actual registration state and replay/isolation.
+- `/tmp/issue376-final-cleanup-proof.json` and `/tmp/issue376-fixture-cleanup-review.json`: cleanup and preserved orphan classification.
+- `/tmp/issue376-final-api-readiness.json`, `/tmp/issue376-final-consistency-status.json` and `/tmp/issue376-final-dev-readiness.json`: public API, authenticated diagnostics and final dev responses.
+- `/tmp/issue376-final-category-css-proof.json`: generated explicit 16/9 rule; mobile frame 272 × 153/computed 16/9 also passes.
+
+The completed production build predates only the two Category Tailwind frame
+changes (`aspect-[16/9]` and absolute child). Their narrow source and generated
+CSS evidence pass; desktop geometry is 16:9. Actual 320 px verification passes: frame 272 × 153, computed 16/9, inner/client/scroll
+widths 320, absolute child and cover. Console error list is empty; viewport and
+original 80% zoom are restored and the QA tab is closed. Multiple/no-media Studio
+cases remain source fixtures only; no extra Studio compiler was started. The
+independent final verdict by code_review_readiness is PASS for human Code
+Review. Issue remains In Dev until root commit/checkpoint and verified GitHub
+Code Review transition. No production recompilation
+is claimed for those final class-only edits.

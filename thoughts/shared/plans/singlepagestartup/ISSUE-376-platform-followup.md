@@ -4,10 +4,43 @@ round: 2
 status: in_progress
 branch: codex/issue-376-framework-visual
 canonical_plan: thoughts/shared/plans/singlepagestartup/ISSUE-376.md
-publication_gate: independent Plan PASS; R2.5b terms confirmed, compatibility and runtime checks required
+publication_gate: saved cutovers and scoped runtime accepted; independent final PASS; Code Review transition pending
 ---
 
 # Round 2: account, authors, shell and commercial fulfillment
+
+## Текущее состояние — 2026-10-24
+
+Implementation checkpoint — `18f454fef1`, документация — `922d823da6`;
+последующие backend-guard и два Category CSS исправления находятся в текущем дереве.
+Итоговый независимый review-pr: PASS от code_review_readiness. Issue остаётся
+In Dev до проверенного root перехода Code Review.
+PR, push и merge отсутствуют.
+
+- [x] R2.1–R2.2: ownership/privacy, atomic Article и token lifecycle; focused и actual PostgreSQL/Hono/cache evidence сохранено.
+- [x] R2.3–R2.4: Studio/runtime account, authors, shell и About; built-browser публикация, feed/author и очистка draft при logout/login проверены.
+- [x] R2.5: saved SDK cutovers, commercial repeat/rollback/reapply и защита старых записей; после fixture cleanup fresh prepare даёт 0 operations при 84 protected selections.
+- [x] R2.6 production target: Next/Nx compilation, types, static generation 8/8 и build ID `MKpFtIHdiJJQqecTuXDQO`; 36 built HTTP checks без error/private markers.
+- [x] R2.6 auth/backend: named-action guard 20/20, full private PostgreSQL/Hono/Redis/cache/bytes matrix 1/1, реальные A/B registration/Profile/Free и Article replay/isolation; fixture cleanup проверен.
+- [x] R2.6 Category source/CSS/desktop: generated rule 16/9 и frame 1216.015625 × 684.00390625 проверены.
+- [x] R2.6 Category 320 px: inner/client/scroll width 320, frame 272 × 153, computed 16/9, absolute child и object-cover проверены.
+- [x] Итоговый независимый review-pr: code_review_readiness PASS; scoped evidence и ограничения приняты.
+- [ ] Root commit/checkpoint и подтверждённый GitHub переход на пользовательский Code Review.
+
+Production build завершён; внешний supervisor завершился exit 1 после EPERM при
+сигнале уже завершившейся группе. Его final RSS receipt отсутствует; сохранённый
+sample 2803.1 MiB на 516.7 s не является максимумом всего запуска. Повторный build
+только ради bookkeeping не требуется. Эта сборка предшествует Category замене
+`aspect-video` на `aspect-[16/9]` и absolute media child; итоговая проверка этих
+двух файлов опирается на narrow source, generated CSS и dev geometry evidence.
+Desktop и фактические 320 px проверены; повторная production-компиляция этих
+двух class-only edits не заявляется.
+
+Обычные `npm run api:dev` и `npm run host:dev` восстановлены: sessions 19270/6711,
+Host Ready за 6.2 s, heap 1536 MiB, Turbopack target 1024 MiB, два потока.
+Framework дал 200 после cold compile 83.643 s, Category — 200 за 1.093 s.
+Public API reads 200, authenticated consistency status: lag/pending/failures 0,
+degraded false. Scope и ограничения проверки находятся в `ISSUE-376-platform-reviews.md` и `ISSUE-376-browser-r2.md`.
 
 ## Цель и границы
 
@@ -40,7 +73,9 @@ publication_gate: independent Plan PASS; R2.5b terms confirmed, compatibility an
 
 ## Граница коммерческого применения
 
-Подтверждены: Free initial 3000, Pro 5000 credits, Landing USD 100, Startup from USD 2000. Принятый engineering scope реализует эти правила на typed fixtures и текущих сохранённых данных, отделяя commercial application в R2.5b. Новую цену/период Pro и точные pack prices/credits/rounding разрешено применять только из отдельного подтверждённого оператором input manifest. Эти значения не выводятся из test minute/RUB/Star records или старого Studio retail-rate текста. Подтверждённый input — `ISSUE-376-commercial-confirmed-input.json`: Pro 29 USD или 1900 RUB в месяц за 5000 токенов; пополнения 100/300/500/1000/3000 RUB по 0.13 RUB за токен. Применение R2.5b ожидает проверки старых заказов; независимые backend/UI, Landing/Startup и остальные data changes выполняются. Финальный отчёт явно сообщает этот pending scope, не объявляя commercial application завершённым.
+Текущий сохранённый каталог соответствует `ISSUE-376-commercial-confirmed-input.json`: Pro 29 USD или 1900 RUB в месяц за 5000 токенов; пополнения 100/300/500/1000/3000 RUB по 0.13 RUB за токен; Landing USD 100 и Startup from USD 2000. Free initial 3000 остаётся внутренним once-only grant. Расчёт списаний AI не менялся; количества пакетов и precision policy записаны в `ISSUE-376-commercial-review.md`.
+
+R2.5b применён через maintained SDK flow: 70 creates/6 updates, verify, repeat 76 skips, fresh prepare 0 operations, rollback и reapply 0 creates/6 updates. Все 84 protected selections/669 rows совпали; семь старых Pro Orders читаются после смены цен. Дополнительное исправление numeric Token Key создало один Key и изменило только шесть новых Key associations: verify, repeat 7 skips и fresh prepare 0, те же 84 защиты сохранены. Старый shared Key и Free не менялись. Commercial application завершён в этом scope. После удаления fixtures fresh prepare снова даёт 0 operations при 84 protected selections. Scoped production/auth/browser и Category geometry evidence принято; итоговый независимый review R2.6 PASS, GitHub Code Review transition остаётся открытым.
 
 ## Владение файлами и порядок интеграции
 
@@ -124,9 +159,9 @@ publication_gate: independent Plan PASS; R2.5b terms confirmed, compatibility an
 **Owner:** root с отдельным tools/runtime агентом; CMS writes только после backend/variants ready. Каждый managed flow имеет prepare/apply/verify/repeat/rollback и private0600 manifest с API origin. Другие CMS writers остановлены на explicit maintenance window для generic writes; новые capability CAS используются там, где такая проверка заявлена атомарной.
 
 - Добавить RBAC-owned relation `widgets-to-ecommerce-module-widgets` по существующему CRM counterpart: `widgetId` FK RBAC Widget, `ecommerceModuleWidgetId` FK Ecommerce Widget, metadata и unique owner+target. Зарегистрировать стандартные API/SDK/admin/find/default/readers и выполнить matching relation `repository-generate`; миграции вручную не писать. Это новая явная representation в разрешённом направлении RBAC→Ecommerce. Текущий unfiltered Product.find у RBAC Widget `49cd582a-5ab2-4916-9660-801bf9064df0` заменить exact one target selection через relation `find`; ordered Ecommerce `widgets-to-products` фильтруются настоящим Ecommerce Widget ID. Cards остаются в RBAC и получают Product props/slot; нижний модуль не знает Subject/screen IDs. Empty curated Product selection остаётся empty; missing/ambiguous owning Widget link — unavailable, никогда all Products. Save exact new Widget/relation IDs в manifest и проверь both Framework/Ecommerce consumers.
-- **R2.5a, подтверждённые changes:** Free Product `2a167247-3770-4365-ad17-a2e916cf0659` не удалять и не переименовывать; исключить из public selection и self-service reacquisition. Pro `e939ed88-22ba-4630-86e4-9743ad94338c`, Article subscription `b7722336-de44-4760-9b67-b1bf92102b3b`, RoleProduct `d0046fc6-c883-4c5f-b3d8-bcf9c4b36618` сохраняются. Landing USD 100, Startup from USD 2000 и confirmed Pro allowance 5000; менять allowance отдельно от ещё не подтверждённой цены/period. Header/footer/About/authors/source changes и retirement старых examples проходят в том же разрешённом publication window.
+- **R2.5a, подтверждённые changes:** Free Product `2a167247-3770-4365-ad17-a2e916cf0659` не удалять и не переименовывать; исключить из public selection и self-service reacquisition. Pro `e939ed88-22ba-4630-86e4-9743ad94338c`, Article subscription `b7722336-de44-4760-9b67-b1bf92102b3b`, RoleProduct `d0046fc6-c883-4c5f-b3d8-bcf9c4b36618` сохраняются. Landing USD 100, Startup from USD 2000 и Pro allowance 5000 применены; подтверждённые Pro цены и месяц опубликованы отдельным R2.5b cutover. Header/footer/About/authors/source changes и retirement старых examples проверены в разрешённом publication window.
 - **R2.5a policy prerequisites:** root создаёт через operator SDK только отсутствующие exact GET permissions `/api/social/profiles/authors`, `/api/social/profiles/authors/count`, `/api/social/profiles/authors/[social.profiles.id]` для публичных allowlisted read операций; HEAD следует существующей GET convention. Prepare сначала сверяет совпадающие route/method и Role bindings: существующая role-bound/custom policy не заменяется roleless, конфликт останавливает эту публикацию. Author count берётся только через `authorFindCount`. Authenticated Article POST получает только exact owner Role permission из ensure; roleless write permissions и общие Subject/Profile collection grants не добавляются. Три raw Profile GET policies отдельно переводятся на admin binding после consumer migration, как указано в R2.1.
-- **R2.5b, отдельный pending commercial apply:** новая Pro price/period и новые one_off packs с Price/Topup/Currency links появляются только из подтверждённого input. Prepare отказывает при отсутствующем/неполном коммерческом input, не создаёт нулевые placeholder prices и не показывает такие packs как available. Цена/period существующего Pro остаются текущими до отдельного cutover; это ограничение фиксируется в final review evidence.
+- **R2.5b, проверенный commercial apply:** Pro 29 USD/1900 RUB в месяц, allowance 5000 и пять one_off packs опубликованы из подтверждённого input с точными Price/Topup/Currency links. Prepare сохраняет отказ при отсутствующих/неполных коммерческих параметрах и не создаёт нулевые placeholder prices. Legacy Order projection и семь реальных старых Pro Orders проверены; исходные суммы Invoice, owner links, fixed fields и balances сохранены. Numeric Key correction меняет только шесть новых topup associations. Подробные receipts и пределы проверки — в commercial и platform review artifacts.
 - Перед изменением interval/commercial attrs перечитать active legacy Orders. Freeze eligible owned paid periods старым canonical interval через существующий server-owned operation; delivered/completed Pro histories и requested-cancellation с OPEN Invoice не получают entitlement. Все 41 Orders, Invoice amounts/owners/revocation/balances и private Article references — protected observations до/после publication.
 - Store `92aefa1f-247b-49a9-b1b9-c8029cc840dc` и 41 Store→Order links сохраняются. Убрать публичную Store-list section association `e8b3b798-fe75-4ec1-a095-78c964be3745` из Ecommerce Page, старые test memberships/junk categories — только после incoming-reference check. Не показывать operational Store API-key section; скрытые legacy direct associations не активировать. Store/key records не удалять ради визуала.
 - Source transform расширяет maintained `tools/runtime/blog-example-content.ts`/его input flow: только public Article source-reference TipTap nodes всех шести EN/RU статей. 29 published files получают проверенный github.com/singlepagestartup/singlepagestartup/blob/main URL; 10 local-only — ближайший существующий tree/main каталог с явной подписью «каталог; новый файл в локальной ветке»/EN equivalent. Недоступные file URLs и ссылки на неопубликованную ветку не создаются; push/PR не выполняются. CodeBlock text, meaning, cover/author/category links и B2 private graph сохраняются. Map принимает только проверенный origin/ref/path из root manifests.

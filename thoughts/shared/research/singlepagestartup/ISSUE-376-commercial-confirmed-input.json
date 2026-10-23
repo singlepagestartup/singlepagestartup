@@ -39,6 +39,25 @@
   },
   "targets": [
     {
+      "key": "token-credit-topup-key",
+      "entity": "ecommerce.attribute-key",
+      "selector": {
+        "slug": "token-credit-topup"
+      },
+      "data": {
+        "slug": "token-credit-topup",
+        "variant": "default",
+        "adminTitle": "Token credit top-up",
+        "type": "topup",
+        "field": "number",
+        "title": {
+          "en": "Tokens",
+          "ru": "Токены"
+        }
+      },
+      "requiresCommercialConfirmation": true
+    },
+    {
       "key": "framework-commercial-catalog",
       "entity": "ecommerce.widget",
       "selector": {
@@ -220,20 +239,24 @@
       "key": "ai-chat-pro-topup-5000-key",
       "entity": "ecommerce.attribute-keys-to-attributes",
       "selector": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "id": "01edc8c0-d9a4-41c8-b5c2-e017fe8cd217",
         "attributeId": {
           "$ref": "ai-chat-pro-topup-5000"
         }
       },
       "data": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
         "attributeId": {
           "$ref": "ai-chat-pro-topup-5000"
         },
         "variant": "default",
         "orderIndex": 0
       },
-      "requiresCommercialConfirmation": true
+      "requiresCommercialConfirmation": true,
+      "id": "01edc8c0-d9a4-41c8-b5c2-e017fe8cd217",
+      "switch": true
     },
     {
       "key": "ai-chat-pro-topup-5000-currency",
@@ -352,20 +375,24 @@
       "key": "ai-chat-tokens-100-rub-topup-key",
       "entity": "ecommerce.attribute-keys-to-attributes",
       "selector": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "id": "9be020bf-d960-4975-b185-bdb42406b793",
         "attributeId": {
           "$ref": "ai-chat-tokens-100-rub-topup"
         }
       },
       "data": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
         "attributeId": {
           "$ref": "ai-chat-tokens-100-rub-topup"
         },
         "variant": "default",
         "orderIndex": 0
       },
-      "requiresCommercialConfirmation": true
+      "requiresCommercialConfirmation": true,
+      "id": "9be020bf-d960-4975-b185-bdb42406b793",
+      "switch": true
     },
     {
       "key": "ai-chat-tokens-100-rub-topup-currency",
@@ -573,20 +600,24 @@
       "key": "ai-chat-tokens-300-rub-topup-key",
       "entity": "ecommerce.attribute-keys-to-attributes",
       "selector": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "id": "f0a4c2d2-2858-4bad-a1b2-a0eff38c0ee5",
         "attributeId": {
           "$ref": "ai-chat-tokens-300-rub-topup"
         }
       },
       "data": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
         "attributeId": {
           "$ref": "ai-chat-tokens-300-rub-topup"
         },
         "variant": "default",
         "orderIndex": 0
       },
-      "requiresCommercialConfirmation": true
+      "requiresCommercialConfirmation": true,
+      "id": "f0a4c2d2-2858-4bad-a1b2-a0eff38c0ee5",
+      "switch": true
     },
     {
       "key": "ai-chat-tokens-300-rub-topup-currency",
@@ -794,20 +825,24 @@
       "key": "ai-chat-tokens-500-rub-topup-key",
       "entity": "ecommerce.attribute-keys-to-attributes",
       "selector": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "id": "afa4d198-516b-40e6-87d6-50abbb53b517",
         "attributeId": {
           "$ref": "ai-chat-tokens-500-rub-topup"
         }
       },
       "data": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
         "attributeId": {
           "$ref": "ai-chat-tokens-500-rub-topup"
         },
         "variant": "default",
         "orderIndex": 0
       },
-      "requiresCommercialConfirmation": true
+      "requiresCommercialConfirmation": true,
+      "id": "afa4d198-516b-40e6-87d6-50abbb53b517",
+      "switch": true
     },
     {
       "key": "ai-chat-tokens-500-rub-topup-currency",
@@ -1015,20 +1050,24 @@
       "key": "ai-chat-tokens-1000-rub-topup-key",
       "entity": "ecommerce.attribute-keys-to-attributes",
       "selector": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "id": "e5feca52-91de-49dd-9b38-cb46050a6fe5",
         "attributeId": {
           "$ref": "ai-chat-tokens-1000-rub-topup"
         }
       },
       "data": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
         "attributeId": {
           "$ref": "ai-chat-tokens-1000-rub-topup"
         },
         "variant": "default",
         "orderIndex": 0
       },
-      "requiresCommercialConfirmation": true
+      "requiresCommercialConfirmation": true,
+      "id": "e5feca52-91de-49dd-9b38-cb46050a6fe5",
+      "switch": true
     },
     {
       "key": "ai-chat-tokens-1000-rub-topup-currency",
@@ -1236,20 +1275,24 @@
       "key": "ai-chat-tokens-3000-rub-topup-key",
       "entity": "ecommerce.attribute-keys-to-attributes",
       "selector": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "id": "89c8d5e2-fc03-4ccd-b3c7-a26076b3637e",
         "attributeId": {
           "$ref": "ai-chat-tokens-3000-rub-topup"
         }
       },
       "data": {
-        "attributeKeyId": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+        "attributeKeyId": {
+          "$ref": "token-credit-topup-key"
+        },
         "attributeId": {
           "$ref": "ai-chat-tokens-3000-rub-topup"
         },
         "variant": "default",
         "orderIndex": 0
       },
-      "requiresCommercialConfirmation": true
+      "requiresCommercialConfirmation": true,
+      "id": "89c8d5e2-fc03-4ccd-b3c7-a26076b3637e",
+      "switch": true
     },
     {
       "key": "ai-chat-tokens-3000-rub-topup-currency",

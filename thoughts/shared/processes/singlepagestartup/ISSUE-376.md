@@ -3,7 +3,7 @@ issue_number: 376
 issue_title: "Перенести визуал Storybook в Framework с сохранением функциональности и исправить доступ к закрытым виджетам"
 repository: singlepagestartup
 created_at: 2026-10-22T21:58:34Z
-last_updated: 2026-10-23T18:34:00Z
+last_updated: 2026-10-23T22:31:08Z
 status: active
 current_phase: implement
 ---
@@ -21,7 +21,45 @@ current_phase: implement
 - Plan: completed
 - Implement: in_progress
 - Current phase: implement
-- Next step: реализовать R2.1–R2.6 и провести независимые проверки; R2.5b ожидает коммерческие параметры; конечный Code Review остаётся пользователю.
+- Next step: root сохраняет commit/checkpoint и подтверждает GitHub переход Code Review. Independent final review PASS; issue остаётся In Dev до проверенного перехода.
+
+## Current round — platform follow-up, 2026-10-24
+
+Baseline implementation `18f454fef1`, documentation `922d823da6`; текущие guard и
+Category CSS corrections описаны ниже. Pro стоит 29 USD или 1900 RUB в месяц за 5000 токенов; пять
+RUB packs по 0.13 RUB/token применены с verify/repeat/rollback/reapply. Все 84
+protected selections/669 rows сохранены,7 old Pro Orders читаются; после
+fixture cleanup fresh commercial prepare снова даёт 0 operations. Free 3000 —
+внутренний once-only grant; AI consumption math не менялся.
+
+Next/Nx production target завершён: build ID `MKpFtIHdiJJQqecTuXDQO`, types,
+static generation 8/8, manifests и итоговый route table. Built Host дал 36/36 HTTP 200,
+maximum 0.826 s, без error/private markers. Supervisor outer exit 1 вызван
+post-exit signalling race; final RSS receipt отсутствует, sample 2803.1 MiB
+при 516.7 s не определяет полный максимум. Повторная компиляция ради receipt
+не требуется.
+
+Built browser подтверждает публикацию/feed/UUID author/menu и очистку трёх
+полей draft после A logout/B login, guest editor gate и B private denial,
+console errors 0. Реальные auth/API receipts подтверждают one Profile/Free 3000
+для A/B, Article replay и foreign denials. B registration 201; A 500 возник
+после commit из-за временного JWT adapter mismatch, затем normal login A
+работает. Guard 20/20 и real private Hono/PostgreSQL/Redis/cache/bytes 1/1 PASS.
+
+Cleanup:92 fixture IDs удалены, pre-existing drift 0, nonfixture hashes сохранены.
+Read-only review подтверждает отсутствие обоих fixture Subjects; четыре
+сохранённых default Subjects без references по 12 FK columns совместимы с
+обычными orphan guests, их origin не установлен. Temporary harness остановлен
+через USR2. Обычные API/Host dev sessions 19270/6711 восстановлены; Host Ready 6.2 s
+при 1536 MiB heap/1024 MiB native target/2 threads. Framework cold HTTP 200 —83.643 s, Category 200 —1.093 s; authenticated
+consistency lag/pending/failures 0, degraded false.
+
+Issue остаётся In Dev. Production build предшествует двум class-only Category
+исправлениям. Их source review, generated 16/9 CSS и desktop/actual 320 px geometry
+PASS. Итоговый independent review от code_review_readiness — PASS;
+ожидается root commit/checkpoint и проверенный GitHub Code Review transition.
+PR/push/merge отсутствуют. Подробности: platform-reviews и browser-r 2 artifacts;
+записи прежних приёмок ниже относятся к указанным ревизиям.
 
 ## Phase Notes
 
@@ -45,7 +83,14 @@ current_phase: implement
 - Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-376.md`; summary в issue.
 - Notes: Пользователь делегирует промежуточные подтверждения, поэтому проверка плана выполняется независимым агентом вместо повторного запроса согласия. Первый review требует доработки: delivering не должен восстанавливать отозванную роль, Invoice.createdAt должен быть неизменяемым для порядка paid invoice. План возвращён Plan in Progress, исправлен автором и повторно принят phase_reviewer: PASS. Runtime-реализация этим review не подтверждается.
 
-### Implement
+### Implement — current platform round
+
+- Summary: R2 implementation, saved cutovers, completed production target, scoped browser/auth API, cleanup и Category desktop/320 px проверены. Independent final review code_review_readiness — PASS; workflow transition ожидается.
+- Outputs: `ISSUE-376-progress.md`, `ISSUE-376-platform-reviews.md`, commercial input/reviews, client-boundary и final source review reports.
+- Verification: Next/Nx build `MKpFtIHdiJJQqecTuXDQO`,36 built HTTP 200, Article/account browser flow,20 access tests и real private cache/bytes matrix 1/1 PASS. Fixture cleanup и fresh commercial prepare 0/84 protections проверены. Build предшествует двум Category class-only changes; их source, generated CSS и desktop/320 px geometry PASS.
+- Notes: Independent final review PASS. Issue остаётся In Dev до root commit/checkpoint и подтверждённого перехода Code Review; пользователь принимает конечный результат. PR/push/merge отсутствуют.
+
+### Implement — historical first delivery, 2026-10-22
 
 - Summary: Все шесть фаз реализованы и проверены на codex/issue-376-framework-visual. Website Builder 84087145cf, backend 6d7e1f09c9, frontend cb4296b6f0, cutover 6a9be42bb6. Раздельные авторы и независимые review-pr закрыли замечания до итогового PASS phase_reviewer против 6a9be42bb6.
 - Outputs: Progress/handoff; ISSUE-376-implementation.md, ISSUE-376-browser.md, ISSUE-376-reviews.md; действующий локальный Host :3000, API :4000 и Storybook :4321.
@@ -54,7 +99,7 @@ current_phase: implement
 
 ## Incident Log
 
-<!-- incident-count: 21 -->
+<!-- incident-count: 30 -->
 
 ### Incident 1 — GitHub недоступен из sandbox
 
@@ -170,7 +215,7 @@ current_phase: implement
 - **Fix**: Повтор с NODE_OPTIONS=--max-old-space-size=8192 завершил анализ. Пять файлов требовали объединения imports, удаления ссылки на отсутствующее lint rule и форматирования; исправленные файлы повторно прошли ESLint exit 0.
 - **Preventive Action**: Для полного typed project выделять достаточный heap; правила не отключать ради результата. Исправления imports/types/comments/formatting не меняют исполняемую семантику final build.
 
-## Human review handoff
+## Historical human review handoff — 2026-10-22
 
 - GitHub status: Code Review, verified 2026-10-22T23:58:52Z через shared update/get helpers.
 - Summary: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6353992295.
@@ -198,7 +243,7 @@ Source: user feedback after first Code Review handoff. Scope: six useful Next.js
 - **Fix**: Только неактивные task dist удалены; existing cache-off flags дали финальную сборку размером 185 MB с exit 0 без source changes.
 - **Preventive Action**: Для разовой приёмки проверять место и использовать существующий режим без дискового webpack/Nx cache.
 
-## Blog follow-up handoff
+## Historical Blog follow-up handoff — 2026-10-23
 
 - Implementation: completed; source 129dd65f92.
 - Independent review-pr: PASS.
@@ -212,7 +257,7 @@ Source: user feedback after first Code Review handoff. Scope: six useful Next.js
 
 Source: девять browser comments в текущей Codex-сессии.
 
-Scope: GitHub source links; актуальный S-logo и Framework landing link; footer/header navigation с AI Chat; гостевой вход и меню профиля; создание статьи с server-owned Social author; регистрация обеспечивает Profile; публичные авторы/портфолио вместо Subjects; Chats доступен из профиля; About по Studio Products Code Framework; каталог Free implicit3000 once / Pro5000 / token topups / Landing$100 / Startup from$2000. Цена/период Pro и пакеты пополнения уточняются через pending async question.
+Scope: GitHub source links; актуальный S-logo и Framework landing link; footer/header navigation с AI Chat; гостевой вход и меню профиля; создание статьи с server-owned Social author; регистрация обеспечивает Profile; публичные авторы/портфолио вместо Subjects; Chats доступен из профиля; About по Studio Products Code Framework; каталог Free implicit 3000 once / monthly Pro 5000 за 29 USD/1900 RUB / пять RUB topups по 0.13 RUB/token / Landing $100 / Startup from $2000. Коммерческие параметры подтверждены пользователем и применены; финальные runtime gates остаются открытыми.
 
 Research owners: research_access — registration/ownership/public-author API; content_frontend — account/author/editor/Studio; host_compile_diagnosis — saved shell/About; research_runtime — catalogue/credit lifecycle. Root — content links, SDK publication, workflow. Planner — core-20-plan, phase_reviewer — независимый review-pr. PR/push/merge отсутствуют; конечный Code Review выполняет пользователь.
 
@@ -220,7 +265,7 @@ GitHub Code Review → Research Needed → Research in Progress проверен
 
 Research platform follow-up: PASS by phase_reviewer at 55af94890b. Reports and exact graph retained in ISSUE-376-platform-followup.md; review in ISSUE-376-platform-reviews.md. Public Profile UUID, raw GET privacy guards, scoped historical Chat badges, atomic Article ownership, additive wallet and once-only Free are required plan criteria.
 
-Research summary: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6372463266. Research in Review → Ready for Plan → Plan in Progress verified. Canonical platform plan saved; independent review-pr in progress.
+Historical research handoff: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6372463266. Research in Review → Ready for Plan → Plan in Progress verified at that stage. The canonical platform plan subsequently passed independent review and now tracks the remaining R2.6 gates.
 
 ### Incident 14 — Free checkout transport in transaction
 
@@ -231,7 +276,7 @@ Research summary: https://github.com/singlepagestartup/singlepagestartup/issues/
 - **Fix**: План определяет отдельную internal direct-Service операцию для zero-price graph, принятия Invoice, Role и credit в одной транзакции, с эффектами после commit. Публичная author pagination дополнена отдельным safe count API.
 - **Preventive Action**: До обещания атомарности прослеживать транспорт каждого owning Service и порядок locks; HTTP и polling не включать в DB transaction.
 
-Platform Plan PASS: phase_reviewer, /tmp/sps-376-round2-plan-review.md, archived in ISSUE-376-platform-reviews.md. Both transaction/count findings resolved in 3e6447dbf9. Unblocked implementation authorized; R2.5b remains pending operator input.
+Historical Plan PASS, 2026-10-23: phase_reviewer, /tmp/sps-376-round2-plan-review.md, archived in ISSUE-376-platform-reviews.md. Both transaction/count findings resolved in 3e6447dbf9. Implementation was authorized at that checkpoint; commercial input was still pending then. Its confirmed application is recorded in the current checkpoint.
 
 ### Incident 15 — Machine restart during parallel implementation
 
@@ -242,13 +287,13 @@ Platform Plan PASS: phase_reviewer, /tmp/sps-376-round2-plan-review.md, archived
 - **Fix**: Изменения в ветке сохранены. Восстановление выполняется двумя source-only агентами и root; build, TSC, lint, Nx и серверы не запускаются параллельно. Временные результаты проверок не считаются подтверждёнными.
 - **Preventive Action**: Запускать тяжёлые проверки по одной после оценки ресурсов; хранить итоговые результаты в постоянных артефактах, ограничивать количество процессов. Не выключать сторонние приложения и не удалять пользовательские кэши.
 
-Commercial input: пользователь подтвердил Pro 29 USD или 1900 RUB и сохранение текущего расчёта списаний AI. Период Pro ожидает ответа на отдельный вопрос; Products rate/top-up sums сохраняются.
+Historical recovery input, 2026-10-23 before period confirmation: пользователь подтвердил Pro 29 USD или 1900 RUB и сохранение текущего расчёта списаний AI; период ещё ожидался на том checkpoint. Текущие подтверждённые условия — месяц и5000 токенов — уже применены; Products rate/top-up sums сохранены.
 
-Recovery verification update (2026-10-23): API source typecheck, serial Node heap 3072 MiB, exits 2 with 20 known diagnostics after new author/SDK/Free type corrections. Studio typecheck exits 0 at the same cap. Host typecheck found six unsupported legacy admin props; those props were removed and final source recheck remains pending. Code placement passes; module dependency audit covers 15,197 sources with zero violations. R2.1 scoped Chat/controller tests: 15 in five suites; Social author/Chat display: eight in two suites; catalog/Profile reader/Chat loader: 35 in three suites. These focused tests pass and do not substitute for RSC/browser verification.
+Historical recovery verification (2026-10-23, before platform publication): API source typecheck, serial Node heap 3072 MiB, exits 2 with 20 known diagnostics after new author/SDK/Free type corrections. Studio typecheck exits 0 at the same cap. Host typecheck found six unsupported legacy admin props; those props were removed and final source recheck remained pending at that checkpoint. Code placement passes; module dependency audit covers 15,197 sources with zero violations. R2.1 scoped Chat/controller tests: 15 in five suites; Social author/Chat display: eight in two suites; catalog/Profile reader/Chat loader: 35 in three suites. These focused tests pass and do not substitute for RSC/browser verification.
 
-The actual PostgreSQL credit tests pass: two suites, six cases, bounded serial execution; disposable fixtures were cleaned up. Generated Blog/Social Widget→Website Builder migrations and consistency capture 0009 (158 resources) are applied locally. The canonical SVG was uploaded through the File SDK and its 1739 bytes match the repository source exactly. New public content has not yet been applied. The user requires final verification through npm run api:dev and npm run host:dev; API is now started through the former, Host verification follows source freeze.
+At that recovery checkpoint, actual PostgreSQL credit tests passed: two suites, six cases, bounded serial execution; disposable fixtures were cleaned up. Generated Blog/Social Widget→Website Builder migrations and consistency capture 0009 (158 resources) were applied locally. The canonical SVG was uploaded through the File SDK and its 1739 bytes matched the repository source exactly. New public content had not yet been applied. Its later publication and the required npm API/Host dev verification are recorded in the current checkpoint.
 
-Legacy author cache correction: the real PostgreSQL/Hono cache scenario reproduced stale public author list/count/detail after first publication in legacy cache mode. Consistency cache dependency generations updated correctly. The canonical legacy HTTP-cache exclusions now cover only the named public author GET/HEAD family; the consistency cache retains its actual Service dependency tracking. The same scenario is being rerun after the fix. Subject's new direct Free graph writes now receive effective lower module Services instead of activating generic CRUD wrappers for those writes. Independent re-review is pending.
+Historical cache checkpoint, 2026-10-23: the real PostgreSQL/Hono scenario reproduced stale public author list/count/detail after first publication in legacy cache mode. Consistency cache dependency generations updated correctly. The canonical legacy HTTP-cache exclusions cover only the named public author GET/HEAD family; the consistency cache retains its actual Service dependency tracking. The rerun and independent re-review were still pending at that checkpoint. Subject's direct Free graph writes receive effective lower module Services instead of activating generic CRUD wrappers. Subsequent verification evidence belongs to ISSUE-376-platform-reviews.md.
 
 ### Incident 16 — Host dev heap limit
 
@@ -270,7 +315,7 @@ Legacy author cache correction: the real PostgreSQL/Hono cache scenario reproduc
 
 Runtime policy prerequisite: the new curated Category reader also needs exact public GET /api/ecommerce/widgets-to-categories. Fresh SDK inspection found no existing policy or Role binding; one additive policy was prepared and applied separately through the same protected manifest flow. Main confirmed input now has170targets. This repeats the missing-public-read rollout issue; no broad bypass or existing Role policy was changed.
 
-Current follow-up checkpoint, 2026-10-24: monthly Pro terms are confirmed. Normal SDK publication of the shell/About/Authors/article form/source links and two service Products is verified, including repeat/rollback/reapply. The Category policy follow-up verifies applied. The actual dev Host responses and authorized browser cart/navigation/private gate checks pass for the stated scope in ISSUE-376-platform-reviews.md. Studio/Workspace presentation tests pass380/380; both validators, Studio TypeScript, scoped lint, code placement and module order pass. API TypeScript retains20 baseline diagnostics. Production build and commercial compatibility/application remain open; issue stays In Dev.
+Historical pre-commercial checkpoint, 2026-10-24: monthly Pro terms were confirmed. Normal SDK publication of the shell/About/Authors/article form/source links and two service Products was verified, including repeat/rollback/reapply. The Category policy follow-up verified applied. The actual dev Host responses and authorized browser cart/navigation/private gate checks passed for the stated scope in ISSUE-376-platform-reviews.md. Studio/Workspace presentation tests passed380/380; both validators, Studio TypeScript, scoped lint, code placement and module order passed. API TypeScript retained20 baseline diagnostics. Production build and commercial application were still open at that checkpoint; commercial application has since passed its scoped acceptance.
 
 ### Incident 18 — Private Article actions used nonexistent routes
 
@@ -308,10 +353,115 @@ Current follow-up checkpoint, 2026-10-24: monthly Pro terms are confirmed. Norma
 - **Fix**: Root stopped only its build processes53069,53070,53815. Host was already stopped for the isolated build; API remained running. Memory free rose to about60%, and the user confirmed that heating noticeably decreased. No further heavy build or type checker was started.
 - **Preventive Action**: Keep checks serial and bounded; inspect process ownership and actual resources, stop task-owned work on a thermal report, and distinguish source review, completed compilation and a completed production build.
 
-Current thermal checkpoint: no Host or production compiler is running. API remains on4000 through npm run api:dev. User confirms cooling after the build stop. Client-boundary review is recorded in ISSUE-376-rbac-client-boundary-review.md; independent root/Host/source acceptance is in ISSUE-376-final-source-review.md. The new Blog Provider cycle is removed through its narrow public alias; the unfiltered empty Popular fallback is removed. Full production acceptance, commercial application and final Code Review handoff remain pending.
+### Incident 22 — Numeric token values used a text Attribute Key
 
-## Current checkpoint
+- **Occurrences**: 1
+- **Stage**: Commercial browser readback
+- **Symptom**: The five new packs displayed `Topup —` although their descriptions and numeric credits were correct.
+- **Root Cause**: Their shared legacy Topup Key selected `string`; the six new managed Attributes populated `number`. Fulfillment reads `number` directly.
+- **Fix**: Independent review accepted one new numeric `Tokens` Key and six exact association switches. Local SDK apply/verify, repeat7 skips and fresh prepare0 pass with84 protected selections unchanged. Browser EN/RU confirms all five numbers and Pro5000.
+- **Preventive Action**: Match Attribute value storage to Key.field and verify both the rendered field and its owning calculation; preserve historical Keys and paid data.
 
-Implementation: local commit `18f454fef1`; no push or PR. Order regressions pass45/45 in1.982seconds; all7 real old Pro Orders remain readable. The confirmed monthly Pro/top-up catalog applied70 creates/6 updates. Verify, repeat76 skips, fresh prepare0 operations, configuration rollback and reapply0 creates/6 updates pass with84 protected selections/669 rows unchanged. Detailed receipts and limitations: `ISSUE-376-platform-reviews.md` and `ISSUE-376-commercial-review.md`.
+### Incident 23 — A single Category cover occupied half the content width
 
-API remains on4000. Host is stopped after the thermal report. Issue stays In Dev: post-checkpoint Host verification, a completed production build, exact320px and complete authenticated browser transitions are pending. No further heavy build or type checker has run.
+- **Occurrences**: 1
+- **Stage**: Current Category browser acceptance
+- **Symptom**: A newly populated single cover rendered as an unframed600px image below the full-width category header.
+- **Root Cause**: The transferred gallery always used two desktop columns and had no media frame; Studio's default example omitted media.
+- **Fix**: Studio includes single/multiple/no-media examples. The matching runtime uses full width for one active cover, two columns for multiple covers and rounded aspect-video frames. Independent source review passes; built-Host readback remains required.
+- **Preventive Action**: Populate optional media in Studio before accepting the transfer and check zero, one and multiple records.
+
+### Incident 24 — A fixed relation renderer could expose hidden Category covers
+
+- **Occurrences**: 1
+- **Stage**: Independent review of the Category cover correction
+- **Symptom**: Source review found that selecting the default renderer for every loaded link would render records whose saved variant was hidden.
+- **Root Cause**: The new renderer selection ignored relation visibility, and hidden records also affected the number of columns.
+- **Fix**: The existing relation find now filters exact Category ID and variant=default before counting or rendering. Hidden records remain saved. Independent reread passes; the faulty revision was not applied to the running Host.
+- **Preventive Action**: Check all saved relation variants when changing a renderer; apply visibility before layout counts and preserve retired records.
+
+### Incident 25 — Supervisor signals an already-exited build group
+
+- **Occurrences**: 1
+- **Stage**: Platform production verification
+- **Symptom**: The outer supervisor exits 1 with EPERM after Next/Nx reports a successful build; its final resource receipt is absent.
+- **Root Cause**: The child exits between the supervisor's status check and process-group signalling.
+- **Fix**: The temporary supervisor checks child completion after the signalling race. Build ID/manifests and the full target log establish completion; sampled 2803.1 MiB at 516.7 s is retained without claiming a complete peak.
+- **Preventive Action**: Record compiler result and supervisor result separately; do not recompile solely to repair resource bookkeeping.
+
+### Incident 26 — Temporary CLI flag collides with bcrypt tooling
+
+- **Occurrences**: 1
+- **Stage**: Real registration harness startup
+- **Symptom**: The temporary API harness fails during bcrypt/node-pre-gyp startup.
+- **Root Cause**: Its generic `--directory` option collides with the dependency's CLI option handling.
+- **Fix**: The harness uses `--fixture-state-dir`; the failed process is gone and baseline/fixture absence checks pass before retry. Environment files and application behavior are unchanged.
+- **Preventive Action**: Use task-specific CLI names and verify the harness starts before creating fixture accounts.
+
+### Incident 27 — Named Identity action treated as a UUID record
+
+- **Occurrences**: 1
+- **Stage**: Real registration acceptance
+- **Symptom**: Registration returns 403 before creating rows; PostgreSQL reports 22P02 for `email-and-password`.
+- **Root Cause**: The global protected-content mutation guard passes an action segment to the Identity `findById` lookup.
+- **Fix**: Only the existing accepted normalized UUID shape becomes recordId. Named mutations still undergo body/private-reference checks and normal route authorization. Independent source review,20 access tests and the real registration retry pass in their stated scope.
+- **Preventive Action**: Test named collection actions through the global middleware, alongside UUID aliases, bulk mutations and protected-reference rejection.
+
+### Incident 28 — SIGTERM bypasses temporary harness cleanup
+
+- **Occurrences**: 1
+- **Stage**: Temporary API shutdown
+- **Symptom**: SIGTERM reaches an imported provider's immediate-exit handler before temporary harness cleanup completes.
+- **Root Cause**: The process shares dependency signal handlers whose exit behavior precedes the harness teardown.
+- **Fix**: The temporary harness handles USR2 for awaited cleanup and shutdown. Normal API startup is restored; recorded fixture IDs are absent and nonfixture hashes are preserved.
+- **Preventive Action**: Inspect imported signal behavior and use an explicit awaited teardown path for disposable full-app harnesses.
+
+### Incident 29 — Temporary JWT resolver fails after registration commit
+
+- **Occurrences**: 1
+- **Stage**: Real registration acceptance
+- **Symptom**: A's registration returns 500 after its Identity/Profile/Free graph has committed.
+- **Root Cause**: The temporary global Hono JWT resolver differs from the project's canonical verification adapter.
+- **Fix**: The harness uses canonical verifyJwt/project rules. A's normal UI login succeeds; B registration returns 201, and both have one Profile/Free graph and 3000 tokens. A's response remains documented as 500, not 201.
+- **Preventive Action**: Reuse the project's transport adapter; after an uncertain response inspect committed ownership/credit state before retrying account creation.
+
+### Incident 30 — Named aspect utility is absent from the Tailwind preset
+
+- **Occurrences**: 1
+- **Stage**: Built Category browser acceptance
+- **Symptom**: `aspect-video` computes to `auto`; a Category cover is 1216 × 1216 on desktop and 272 × 272 at 320 px instead of 16:9.
+- **Root Cause**: The configured aspect-ratio plugin has no named video token; source class presence alone does not create that CSS rule.
+- **Fix**: The two runtime/Studio views use `aspect-[16/9]` and an absolute media child. Narrow source, generated 16/9 CSS and desktop geometry pass; actual 320 px frame 272 × 153, computed 16/9 and document widths 320 pass. Console errors are absent; viewport/zoom are restored and the QA tab is closed. The completed production build predates this class-only change.
+- **Preventive Action**: Check generated utilities and computed geometry with real media; keep this token issue separate from Incident 23's single-cover column layout.
+
+Historical thermal checkpoint — 2026-10-24, after the build stop and before the current dev restart: no Host or production compiler was running. API remained on4000 through npm run api:dev. User confirmed cooling after the build stop. Client-boundary review is recorded in ISSUE-376-rbac-client-boundary-review.md; independent root/Host/source acceptance is in ISSUE-376-final-source-review.md. The new Blog Provider cycle is removed through its narrow public alias; the unfiltered empty Popular fallback is removed. Production acceptance, commercial application and final Code Review handoff were still pending at that checkpoint.
+
+## Current checkpoint — R2 acceptance evidence, 2026-10-24
+
+Commercial configuration, legacy Order reads and all 84 protected selections
+remain verified after fixture cleanup: fresh preparation has 0 operations.
+Production target `MKpFtIHdiJJQqecTuXDQO` completed types/static generation 8/8 and serves 36
+HTTP 200 checks. The supervisor's separate outer exit 1 and missing full RSS
+receipt are recorded in Incident 25. No recompile is needed for bookkeeping.
+
+Named Identity actions now reach their owning controller without a non-UUID
+record lookup; all body/private-graph guards remain. Independent narrow source
+review and 20/20 access tests in 1.401 s pass. Actual private Hono/PostgreSQL/
+Redis/both-cache/bytes matrix 1/1 passes in 22.233 s; six final files pass ESLint.
+B's real registration is 201; A's graph committed before temporary adapter 500,
+then A's ordinary login succeeds. Both fixtures have one Identity/Profile/Free
+Order/paid zero Invoice and 3000 tokens. Identical Article retry returns the
+same graph; foreign collision 409 and cross-Subject 401 remain enforced.
+
+Built-browser publication, feed/author/menu, draft disposal across logout/login
+and B private denial pass within `ISSUE-376-browser-r2.md`. A paid-subscriber
+browser session and new CRM submit are not claimed; their existing real service/
+cache/bytes and persisted Request evidence remain separate. All 92 recorded
+fixture IDs are removed with 0 baseline drift and captured nonfixture hashes
+unchanged. Read-only review preserves four unrelated orphan default Subjects
+with 0 references across 12 FK columns; their origin remains unassigned.
+
+Normal API/Host dev sessions 19270/6711 are restored, Host Ready 6.2 s at 1536 MiB
+heap/1024 MiB native target/2 threads. Category source/CSS/desktop/320 px acceptance after the two class-only edits
+passes. Independent final review by code_review_readiness is PASS. Root commit/checkpoint
+and the verified GitHub Code Review transition remain pending; issue is In Dev. No GitHub or status mutation is part of this checkpoint.

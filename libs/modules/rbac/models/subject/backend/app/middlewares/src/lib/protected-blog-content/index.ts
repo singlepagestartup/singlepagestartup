@@ -180,10 +180,11 @@ export class Middleware {
             .replace(/^\{(.*)\}$/, "$1")
         : undefined;
       const hex = rawId?.replaceAll("-", "");
-      const requestedId =
+      const recordId =
         hex && /^[a-f0-9]{32}$/.test(hex)
           ? `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
-          : rawId;
+          : undefined;
+      const requestedId = recordId || rawId;
 
       const relevant =
         content ||
@@ -333,11 +334,7 @@ export class Middleware {
               await writeAccess.execute({
                 resource,
                 method: c.req.method,
-                id:
-                  requestedId &&
-                  !["bulk", "find-or-create"].includes(requestedId)
-                    ? requestedId
-                    : undefined,
+                id: recordId,
                 data: data as Record<string, unknown> | undefined,
                 graph: state,
               });

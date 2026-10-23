@@ -19,6 +19,7 @@ import {
 import { Service as Access } from "./access";
 import { Service as Content } from "./content";
 import { Middleware } from "../../../../../../../middlewares/src/lib/protected-blog-content";
+const privateLinkId = "a0000000-0000-4000-8000-000000000003";
 function fixture() {
   const rows: Record<string, IGraphRecord[]> = {
     "blog/articles": [{ id: "article" }],
@@ -31,7 +32,7 @@ function fixture() {
         orderIndex: 0,
       },
       {
-        id: "private-link",
+        id: privateLinkId,
         articleId: "article",
         websiteBuilderModuleWidgetId: "private-widget",
         variant: "private",
@@ -380,7 +381,7 @@ it("rejects orphaning private links and public reuse even for an operator", asyn
   expect(
     (
       await app.request(
-        "/api/blog/articles-to-website-builder-module-widgets/private-link",
+        `/api/blog/articles-to-website-builder-module-widgets/${privateLinkId}`,
         { method: "DELETE", headers },
       )
     ).status,
@@ -403,6 +404,92 @@ it("rejects orphaning private links and public reuse even for an operator", asyn
       )
     ).status,
   ).toBe(409);
+});
+
+it("runs a named Identity action without a UUID record lookup and preserves its body", async () => {
+  const { graph } = fixture();
+  const findById = jest.fn(async () => {
+    throw new Error("invalid input syntax for type uuid: email-and-password");
+  });
+  graph.services["rbac/identities"] = {
+    find: jest.fn().mockResolvedValue([]),
+    findById,
+  };
+  const { app } = chain(graph);
+  const action = jest.fn(async (payload: unknown) => payload);
+  app.post("/api/rbac/identities/email-and-password", async (context) =>
+    context.json({ data: await action(await context.req.json()) }, 201),
+  );
+  const data = { email: "fixture@example.test", password: "fixture-only" };
+  const response = await app.request(
+    "/api/rbac/identities/email-and-password",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data }),
+    },
+  );
+  expect(response.status).toBe(201);
+  expect(action).toHaveBeenCalledWith({ data });
+  expect(findById).not.toHaveBeenCalled();
+});
+
+it.each([
+  { websiteBuilderModuleWidgetId: "private-widget" },
+  { fileStorageModuleFileId: "private-file" },
+])(
+  "still denies protected body references in a named action: %o",
+  async (data) => {
+    const { graph } = fixture();
+    const findById = jest.fn(async () => {
+      throw new Error("Named actions are not record IDs");
+    });
+    graph.services["rbac/identities"] = {
+      find: jest.fn().mockResolvedValue([]),
+      findById,
+    };
+    const { app } = chain(graph);
+    const action = jest.fn();
+    app.post("/api/rbac/identities/email-and-password", (context) => {
+      action();
+      return context.json({ data: { ok: true } }, 201);
+    });
+    const response = await app.request(
+      "/api/rbac/identities/email-and-password",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data }),
+      },
+    );
+    expect(response.status).toBe(409);
+    expect(action).not.toHaveBeenCalled();
+    expect(findById).not.toHaveBeenCalled();
+  },
+);
+
+it("looks up canonical protected UUID records and denies DELETE through every accepted spelling", async () => {
+  const { graph } = fixture();
+  const { app } = chain(graph);
+  const findById =
+    graph.services["blog/articles-to-website-builder-module-widgets"].findById;
+  for (const spelling of [
+    privateLinkId,
+    privateLinkId.toUpperCase(),
+    "%61" + privateLinkId.slice(1),
+    encodeURIComponent("{" + privateLinkId + "}"),
+    privateLinkId.replaceAll("-", ""),
+  ]) {
+    expect(
+      (
+        await app.request(
+          "/api/blog/articles-to-website-builder-module-widgets/" + spelling,
+          { method: "DELETE" },
+        )
+      ).status,
+    ).toBe(409);
+    expect(findById).toHaveBeenLastCalledWith({ id: privateLinkId });
+  }
 });
 
 it("canonicalizes encoded and alternative UUID spellings before the cache", async () => {
@@ -444,7 +531,7 @@ it("rejects first private mark when owning app isolation detects an existing Hos
     c.json({ data: { ok: true } }),
   );
   const response = await app.request(
-    "/api/blog/articles-to-website-builder-module-widgets/private-link",
+    `/api/blog/articles-to-website-builder-module-widgets/${privateLinkId}`,
     {
       method: "PATCH",
       headers: {

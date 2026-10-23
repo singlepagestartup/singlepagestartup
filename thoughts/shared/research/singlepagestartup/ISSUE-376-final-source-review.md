@@ -173,3 +173,144 @@ alongside USD 29/RUB 1900; confirmation alone does not prove its prepared graph
 was reviewed, applied or verified. The later legacy Order correction also needs
 its own independent review and checks. This scoped source PASS supplies none of
 those missing results and changes no workflow status.
+
+## Addendum: numeric Token key input
+
+Verdict: **source/manifest PASS for this bounded data correction before apply**.
+This reviewer did not author the input and performed no API call, data/source
+write, server operation or test. Only this review receipt was added. The earlier
+commercial exclusion above remains in force for work outside this correction.
+
+Reviewed input hashes and the prepared receipt at review time:
+
+| File                                                                  | SHA-256                                                            |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `ISSUE-376-commercial-topup-key-input.json`                           | `0219ce119476ced74192c298aa678cbfc755f4ad149024c489539af5d0ef05a5` |
+| `ISSUE-376-commercial-confirmed-input.json`                           | `1a3edddb6f7efc6ace65ea5791dd6fb66fa87f2c5874ad05401ed10e7e9bd385` |
+| Private `.git/sps-runtime/issue-376/commercial-topup-key-before.json` | `ad19d1a22821f44909f6e703fc4d269060705359c4a2a1c5edd1bc167460ee96` |
+
+The receipt is `prepared`, mode 0600, bound to `http://localhost:4000`, and its
+embedded input equals the tracked bounded input. Private protected row values
+are not reproduced here.
+
+Its seven operations are exactly one new `ecommerce.attribute-key` and six
+existing `ecommerce.attribute-keys-to-attributes` updates. The new Key uses the
+owning schema's existing fields: unique slug `token-credit-topup`,
+`variant="default"`, `type="topup"`, `field="number"`, and localized
+`Tokens`/`Токены` title. It precedes all references. Each existing update changes
+only `attributeKeyId`; its exact ID and unchanged Attribute ID match the prepared
+row. All six rows previously selected the legacy shared Topup Key. They also
+match the six pinned association IDs in the revised canonical commercial input.
+Both inputs have unique target keys and no unknown or forward references.
+
+All 84 protected selections are retained unchanged from the commercial input,
+including financial histories, ownership, balances, original configuration and
+the closed-content graph. The receipt's selectors match them, and no operation
+intersects a protected row. The old Key
+`e005389b-41c4-4efb-89a2-6d84a354cfed` is explicitly protected and retains its
+`topup` type and `string` field. Neither input changes that old Key for this
+repair. The bounded operation set contains no Attribute amount, Price, Currency,
+Product membership, Free, Order, Invoice, Role or wallet write. All six switches
+follow the additive Key's create/readback.
+
+The source establishes the display mismatch and the bounded effect:
+`libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/default/Attributes.tsx:88`
+passes the selected Key's field to the Attribute renderer;
+`libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/default/Component.tsx:7`
+selects localized `string` or the declared numeric field. In contrast,
+`libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/order/proceed.ts:542`
+selects Topup by type and line 546 reads `attribute.number` directly. Preserving
+the `topup` type, numeric Attribute values, quantity and Currency links preserves
+that calculation while correcting the displayed field. No consumption or
+frontend code change is part of this repair.
+
+Root still owns the exclusive maintenance window, fresh protected-drift checks,
+actual create-ID remapping, apply/readback, repeat and fresh-prepare zero writes,
+and browser confirmation of the Token amounts. This review does not claim those
+operations ran. The existing rollback restores the six changed references only
+when its drift/protected checks permit and retains the additive Key. It supplies
+no financial rollback and no transaction across the seven HTTP writes.
+
+## Addendum: Category cover framing
+
+Verdict: **narrow source PASS after correction**. This reviewer inspected the
+four frozen files only after the author signalled readiness and authored none
+of their changes:
+
+- `libs/modules/ecommerce/models/category/frontend/component/src/lib/singlepage/overview-default/Component.tsx`
+- `apps/studio/modules/ecommerce/category/singlepage/overview-default/Component.tsx`
+- `apps/studio/modules/ecommerce/category/singlepage/overview-default/Component.stories.tsx`
+- `apps/studio/modules/ecommerce/widget/singlepage/category-overview-default/Component.stories.tsx`
+
+**Resolved P2 — hidden covers entered the default renderer.** The initial
+framing patch changed every File relation row to `variant="default"`. The
+relation SDK also supports saved `hidden` links, so that patch would render a
+retired cover and count it toward the two-column layout. This was an established
+presentation path, not proof of private-byte access.
+
+The final `CategoriesToFiles` reader filters both the exact `categoryId` and
+`variant="default"` under `apiProps.params.filters.and` before counting or
+mapping. Only those active rows reach the default relation renderer. One active
+cover occupies the full grid width, multiple active covers use two columns from
+`sm`, and no active covers produce no gallery. Hidden rows remain stored and do
+not trigger target reads through this composition. Each active row retains its
+ID key, props-mode data and locale inside a rounded `aspect-video` frame. Existing
+relation traversal and ordering behavior are unchanged.
+
+The Category header, localized title/subtitle/description, overview Website
+Builder relations and rendered children remain. No saved field, relation, media
+record or heading is removed or hidden to achieve the layout. The ordinary
+singlepage default reader, API bindings, Skeleton and client/server boundaries
+are unchanged.
+
+Studio uses the existing default cover and the same single/multiple framing.
+Both the model and its Widget recipe expose MultipleMedia and WithoutMedia
+stories through public model entries. `media: null` explicitly suppresses the
+Studio default image. These are presentation fixtures; they add no production
+data access.
+
+`git diff --check` passed for the four files. No test, build, type checker, API,
+server, browser or source edit was run by this reviewer. The post-change rendered
+layout and any production build result remain root's runtime evidence.
+
+## Addendum: named Identity action and protected mutation lookup
+
+Verdict: **narrow source PASS**. This reviewer inspected the author's frozen
+changes in `protected-blog-content/index.ts` and `blog/article/access.spec.ts`,
+the unchanged owning `WriteAccess` service and Identity controller, and the real
+registration checkpoint recorded in `ISSUE-376-platform-reviews.md`. The reviewer
+did not author this fix.
+
+The middleware now separates a canonical `recordId` from `requestedId`. The
+existing decoded, lowercased, brace/hyphen normalization still accepts exactly
+32 hexadecimal digits for a record lookup. Only that canonical UUID reaches
+the non-bulk `WriteAccess` lookup. An action segment such as
+`email-and-password` therefore no longer reaches the Identity repository as a
+UUID. `requestedId` retains the raw segment when it is not a UUID, preserving
+the existing read handling.
+
+This changes lookup classification, not authorization. Named mutations still
+read the protected graph and principal, clone and parse the request body, and
+invoke `WriteAccess` before the owning route. Its checks for protected Website
+Builder and File references still run without an existing record. No named
+action allowlist, mutation early return, new guest permission or operator bypass
+was added. Existing route permissions and handler validation remain responsible
+for the action. The array branch retains its protected-reference scan and
+per-item lookup; `find-or-create` retains its body validation without treating
+its action name as a record ID. The transaction, graph lock, fail-closed error
+mapping and static/content guards are unchanged.
+
+The new Hono harness tests assert that a named action returns 201, receives its
+untouched JSON body and makes no UUID lookup; that either a protected Widget or
+File body reference returns 409 before its handler; and that canonical,
+uppercase, percent-encoded, braced and hyphenless UUID spellings resolve to the
+same protected link and reject DELETE with 409. The former synthetic private
+link fixture now uses a real UUID, so existing private-link DELETE and PATCH
+assertions continue to exercise the production record classification. The
+existing bulk-private-marker test remains unchanged.
+
+`git diff --check` passed for the two changed files. These tests were read, not
+executed by this reviewer. The happy-path harness echoes JSON rather than
+executing the real multipart Identity handler. Focused test execution and the
+root's repeated real registration remain required runtime evidence; this source
+verdict does not establish successful registration or authenticated acceptance.
