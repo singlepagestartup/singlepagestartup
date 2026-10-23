@@ -115,6 +115,8 @@ Coding-agent charges, infrastructure and hosted AI Chat are separate. Help and m
 | --------------------- | ------------------------------------------------ |
 | navigation-foundation | The foundation                                   |
 | navigation-local      | Start locally                                    |
+| navigation-code       | Get the code                                     |
+| navigation-included   | Explore the foundation                           |
 | skip-link             | Skip to content                                  |
 | copy-action           | Copy request                                     |
 | copy-pending          | Copying…                                         |
