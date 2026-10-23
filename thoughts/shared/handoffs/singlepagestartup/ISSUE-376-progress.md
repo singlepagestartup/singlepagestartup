@@ -3,8 +3,7 @@ issue_number: 376
 issue_title: "Перенос визуала Storybook в Framework и доступ к закрытым виджетам"
 start_date: 2026-10-22T22:34:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-376.md
-status: complete
-completed_date: 2026-10-23T08:39:01Z
+status: in_progress
 branch: codex/issue-376-framework-visual
 ---
 
@@ -211,3 +210,16 @@ User feedback продолжает issue376 в той же ветке; преж�
 Source revision: 129dd65f92. Commits: 4db50ba65f, 2457eebd1e, 129dd65f92. Шесть EN/RU статей, три категории по две статьи, реальные cover/author associations, whole-card links и Studio navbar/cart controls готовы. Публикация: 51 writes, 8 retired; repeat 0 writes, fresh prepare 0 operations, private graph unchanged. Независимый review-pr PASS; 33 frontend tests/9 suites и 9 tool tests/36 assertions PASS. Frozen build PASS, 27 Host HTML/RSC200 +5 API checks, desktop/320 browser PASS в документированных пределах. Ошибочные capture-файлы исключены из evidence.
 
 Полный результат: [ISSUE-376-blog-followup.md](../../research/singlepagestartup/ISSUE-376-blog-followup.md). GitHub Code Review проверен 2026-10-23T08:39:01Z; summary: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6360936917. Следующий шаг — пользовательский Code Review. PR/push/merge/Done не выполнялись.
+
+## Platform follow-up progress
+
+- [ ] Research: registration/author scope, shell/About, catalogue/credit lifecycle, GitHub source references.
+- [ ] Independent research review and detailed implementation plan.
+- [ ] Plan review and Ready for Dev.
+- [ ] Studio-first account/authors/editor and Website Builder blocks.
+- [ ] Backend profile/Article ownership and credit lifecycle.
+- [ ] Runtime frontend and saved SDK data cutover.
+- [ ] Source tests, built Host, desktop/mobile/authenticated acceptance.
+- [ ] Independent final review-pr, commits and human Code Review handoff.
+
+Commercial inputs Pro price/period and token topups remain pending; unrelated implementation can proceed after approved plan.

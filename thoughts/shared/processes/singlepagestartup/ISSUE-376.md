@@ -3,9 +3,9 @@ issue_number: 376
 issue_title: "Перенести визуал Storybook в Framework с сохранением функциональности и исправить доступ к закрытым виджетам"
 repository: singlepagestartup
 created_at: 2026-10-22T21:58:34Z
-last_updated: 2026-10-23T08:39:01Z
+last_updated: 2026-10-23T18:34:00Z
 status: active
-current_phase: code_review
+current_phase: plan
 ---
 
 # Process Log: ISSUE-376 — перенос визуала Storybook в Framework
@@ -18,10 +18,10 @@ current_phase: code_review
 
 - Create: completed
 - Research: completed
-- Plan: completed
-- Implement: completed
-- Current phase: code_review
-- Next step: Человеческий Code Review пользователем; GitHub Code Review подтверждён shared helper. PR/push/merge и Done не выполняются.
+- Plan: in_progress
+- Implement: not_started
+- Current phase: plan
+- Next step: независимое принятие платформенного плана, затем реализация; конечный Code Review остаётся пользователю.
 
 ## Phase Notes
 
@@ -54,7 +54,7 @@ current_phase: code_review
 
 ## Incident Log
 
-<!-- incident-count: 11 -->
+<!-- incident-count: 13 -->
 
 ### Incident 1 — GitHub недоступен из sandbox
 
@@ -89,7 +89,7 @@ current_phase: code_review
 ### Incident 4 — Сообщение не запускает завершённого агента
 
 - **Phase**: Implement
-- **Occurrences**: 1
+- **Occurrences**: 2
 - **Symptom**: Backend автор оставался completed после сообщения GO.
 - **Root Cause**: send_message доставляет текст, но не запускает новый turn завершённого агента.
 - **Fix**: Отправлен followup_task; автор подтвердил запуск и создал SDK/service contracts.
@@ -207,3 +207,17 @@ Source: user feedback after first Code Review handoff. Scope: six useful Next.js
 - Artifacts: ISSUE-376-blog-followup.md, ISSUE-376-blog-content.json, appended reviews/browser evidence.
 - GitHub: Code Review, verified 2026-10-23T08:39:01Z; https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6360936917.
 - Human Code Review остаётся пользователю; PR/push/merge/Done отсутствуют.
+
+## Platform follow-up — пользовательский Code Review
+
+Source: девять browser comments в текущей Codex-сессии.
+
+Scope: GitHub source links; актуальный S-logo и Framework landing link; footer/header navigation с AI Chat; гостевой вход и меню профиля; создание статьи с server-owned Social author; регистрация обеспечивает Profile; публичные авторы/портфолио вместо Subjects; Chats доступен из профиля; About по Studio Products Code Framework; каталог Free implicit3000 once / Pro5000 / token topups / Landing$100 / Startup from$2000. Цена/период Pro и пакеты пополнения уточняются через pending async question.
+
+Research owners: research_access — registration/ownership/public-author API; content_frontend — account/author/editor/Studio; host_compile_diagnosis — saved shell/About; research_runtime — catalogue/credit lifecycle. Root — content links, SDK publication, workflow. Planner — core-20-plan, phase_reviewer — независимый review-pr. PR/push/merge отсутствуют; конечный Code Review выполняет пользователь.
+
+GitHub Code Review → Research Needed → Research in Progress проверен shared helpers. Scope comment: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6371892799.
+
+Research platform follow-up: PASS by phase_reviewer at 55af94890b. Reports and exact graph retained in ISSUE-376-platform-followup.md; review in ISSUE-376-platform-reviews.md. Public Profile UUID, raw GET privacy guards, scoped historical Chat badges, atomic Article ownership, additive wallet and once-only Free are required plan criteria.
+
+Research summary: https://github.com/singlepagestartup/singlepagestartup/issues/376#issuecomment-6372463266. Research in Review → Ready for Plan → Plan in Progress verified. Canonical platform plan saved; independent review-pr in progress.

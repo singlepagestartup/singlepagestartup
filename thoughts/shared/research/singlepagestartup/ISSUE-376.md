@@ -301,3 +301,7 @@ Ticket охватывает anonymous, guest, non-subscriber, active, expired, r
 - **Root Cause**: В исходной локальной конфигурации отсутствуют точные list GET permissions, хотя count и остальные Blog relations public.
 - **Fix**: Operator SDK missing-only create для widgets-to-categories и categories-to-website-builder-module-widgets после Role binding/private isolation проверки; оба anonymous GET 200.
 - **Reusable Pattern**: До browser acceptance проверить все 7 Blog relations list/count. Reproducible exact-path SDK prerequisite находится в tools/runtime/README.md; существующую role-bound policy не ослаблять.
+
+## Platform follow-up — nine browser comments
+
+Research and exact saved graph: [ISSUE-376-platform-followup.md](ISSUE-376-platform-followup.md). Independent Research PASS: [ISSUE-376-platform-reviews.md](ISSUE-376-platform-reviews.md). Final author handles use Profile UUID and omit stored slugs. The implementation plan preserves scoped private Chat presentation while closing raw Profile reads, makes article authorship server-owned, and repairs additive token fulfillment. Commercial publication awaits the pending Pro/top-up input.

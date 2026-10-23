@@ -282,3 +282,9 @@ Source: direct user instruction in the current Codex conversation after the firs
 - Independent review-pr, exact SDK readback/repeat/fresh preparation, frozen Host build and bounded desktop/320 browser evidence pass before returning to human Code Review. PR/push/merge remain outside the task.
 
 Implementation and acceptance: [ISSUE-376-blog-followup.md](../../research/singlepagestartup/ISSUE-376-blog-followup.md).
+
+## Platform follow-up — active plan
+
+[ISSUE-376-platform-followup.md](ISSUE-376-platform-followup.md) contains the six phases for the nine platform review comments. Earlier completed phases remain historical acceptance. The platform plan is in review; price-dependent Pro/top-up publication is a separate pending data phase. Final acceptance remains human Code Review without PR/push/merge.
+
+<!-- Last synced at: 2026-10-23T18:59:31Z -->
