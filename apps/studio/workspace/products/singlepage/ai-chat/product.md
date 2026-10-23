@@ -71,6 +71,18 @@ sources:
     date: "2026-10-06"
     source: Current operator correction and subsequent browser comments defining each file as its own working thread, retained in Brief sources.ai_chat_landing_presentation and Customers and value.
     scope: Initial upload and AI review happen in chat. Each generated Brief, Strategy, Brand, Design and Products file has its own working thread, with separate discussion, editing and bot interaction. Users create topics in the general project workspace and attach selected saved documents as context. A reviewed version stays available while a new draft is being revised; edits need review before replacing that accepted context. Supplied material, gaps and review state remain visible without requiring every document to be complete. The walkthrough's prefilled answer and enriched Products.md illustrate the intended interaction, not observed AI quality, commercial guarantees or implemented readiness calculations.
+  framework-preparation-journey:
+    classification: client-claim
+    resolution: operator-fact
+    date: "2026-10-24"
+    source: Brief intake.framework_preparation_journey; operator goal-objective.md in the current task.
+    scope: AI Chat prepares a business model, concept, business plan and structured project and product documents. The user reviews and exports useful accepted material, then briefs a coding agent to build a landing page or product with free Code Framework. Tokens pay for hosted AI Chat work; automatic hosted landing-page assembly and deployment remain future development.
+  allowance-and-pro:
+    classification: client-claim
+    resolution: operator-fact
+    date: "2026-10-24"
+    source: Brief sources.ai_chat_allowance_and_pro; explicit operator price, period and unchanged-deduction answers in this task.
+    scope: Registration grants 3000 internal tokens once. Pro grants 5000 internal tokens per month for 29 USD or 1900 roubles per month. Five top-up amounts, the 0.13-rouble internal-token price and existing deduction and failed-request return terms remain unchanged.
   commercial-corrections:
     classification: client-claim
     resolution: operator-fact
@@ -88,8 +100,8 @@ confirmation:
   content_sha256: 42ddf02fc96144fbda92fbffde2ff32d5c115b3d66f5108cad5855e271b2f5dd
 review:
   dependencies:
-    brief: 1fcbfd98ca6f0c346a752a38256f36a69d324fcef58b6355c9a15a3eda8c624d
-    product.ai-chat.research: 18c4eb91ecafed47abbb711b79b2c66926274541a86113ec1627ae2880147c1d
+    brief: 490a648452b91afd083215d3b2420e6990deedbfcc94442dc30b731613cb3258
+    product.ai-chat.research: 0dd825258be22f2d82b37c504bd3a8862a400eea7f6f47c2f24aacbe06ac3f7f
 ---
 
 # Product
@@ -113,7 +125,7 @@ review:
 | Beneficiary    | The user and the project or business being described, tested and developed.                                                                                                                                                                                 |
 | Decision-maker | The user reviews and approves the project and product descriptions, corrects shortcomings and chooses later work; a future organization's internal purchasing authority remains customer-specific.                                                          |
 
-People who need the hosted workspace can remain AI Chat users. A separate concrete software need can lead them to the existing Code Framework; server publication through AI Chat belongs to the future offer.
+People can use AI Chat to prepare the business model, concept, business plan and written project and product descriptions needed for a landing page or software product. They review the useful material, export it and give a coding agent a concrete brief for Code Framework. Continuing in the hosted workspace remains an option; automatic server publication through AI Chat belongs to the future offer.
 
 The qualifying need is a project whose scattered material and unsettled decisions must become a maintained business model, rather than a single isolated answer. The proposed segment excludes commissioned custom website work, continuous live assistance and guaranteed business results: none belongs to the current offer. This is a professional-choice boundary based on the Brief and the support and responsibility limits below, not an observed customer preference.
 
@@ -145,12 +157,13 @@ General AI chats without a maintained project structure and separate planning do
 
 Access provides the hosted workspace and this intended sequence:
 
-1. Register with email and password and receive the currently available free token allowance.
+1. Register with email and password and receive 3000 internal tokens once.
 2. Create a project by entering its name. Upload notes, documents, photographs and images on the next screen, with an optional description. Follow the analysis on its own screen and review the facts AI Chat extracts from the material.
 3. Read the agent's questions and identified gaps. Answer while it drafts compact Brief, Strategy, Brand, Design and Products files, with each product's own Product/customer/offer, Operations & Economics, Sales, Promotion, Analytics and applicable research.
 4. Open each file's working thread to discuss and edit it with the agent. Check the proposed changes, correct shortcomings, keep unknowns and conflicts visible and accept the descriptions when ready. Each file retains its own conversation and edits.
 5. Create discussion topics in the general project workspace and attach selected saved documents as their knowledge base. Use them to develop or challenge ideas and improve business materials; return to the owning file's thread for document changes. Export the text artifacts for use outside the service.
-6. Buy tokens when the balance blocks further paid AI work, or top up earlier; return to the exact saved task after payment.
+6. Buy a top-up or choose monthly Pro for continued hosted AI work; return to the saved task after payment. Revenue Streams defines the allowance, prices and intended request-admission limit.
+7. When the business needs a landing page or product, export the useful reviewed documents and brief a coding agent with the audience, offer, intended action, business rules and remaining unknowns. Follow Code Framework's module explanations and local setup guide to build on the free source. This handoff does not require purchasing tokens or an automatic hosted deployment service.
 
 Uploaded files and the project and product documents are visible alongside the conversations. Each section indicates the material available, what is missing and whether it still needs review. A document's reviewed version stays available as topic context while a new draft is being revised; the new text replaces it after review. The person can continue with selected saved documents while other sections still have open questions. These indicators show the current work and unanswered questions; they do not prove the project's viability.
 
@@ -170,14 +183,16 @@ Customers can freely export and use their material and generated documents or pa
 
 ## Revenue Streams
 
-| Element        | Terms                                                                                                                                                                                                                                              |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Payer and unit | The person using the chat buys tokens. One internal token is USD 0.001 of provider cost.                                                                                                                                                           |
-| Price          | Sold at a thirty per cent margin over that cost, converted at a fixed 100 roubles per dollar, so a token costs 0.13 roubles.                                                                                                                       |
-| Packages       | Five top-ups: 100, 300, 500, 1,000 and 3,000 roubles, at the same token price, so a larger package carries no discount.                                                                                                                            |
-| Payment timing | One token is charged when the input is sent to the model; the balance is settled once the answer returns and its cost is known. A successful request costs at least one token, or 0.13 roubles. Failed or cancelled requests have zero net charge. |
-| Conditions     | Tokens do not expire. Purchases are normally final; a refund is a case-by-case decision, not a published entitlement. Registration grants the current free allowance.                                                                              |
-| Collection     | Payments are accepted in Russia through an online cash register. The accepting party and its details are configured in the product interface, not decided here.                                                                                    |
+| Element                | Terms                                                                                                                                                                                                                                              |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Payer and unit         | The person using the chat buys tokens. One internal token is USD 0.001 of provider cost.                                                                                                                                                           |
+| Price                  | Sold at a thirty per cent margin over that cost, converted at a fixed 100 roubles per dollar, so a token costs 0.13 roubles.                                                                                                                       |
+| Packages               | Five top-ups: 100, 300, 500, 1,000 and 3,000 roubles, at the same token price, so a larger package carries no discount.                                                                                                                            |
+| Registration allowance | 3000 internal tokens once per registered account. Free is the default allowance, not a public product to purchase.                                                                                                                                 |
+| Pro                    | 5000 internal tokens per month for 29 USD or 1900 roubles per month. Monthly Pro and one-off top-ups use the same existing deduction rules.                                                                                                        |
+| Payment timing         | One token is charged when the input is sent to the model; the balance is settled once the answer returns and its cost is known. A successful request costs at least one token, or 0.13 roubles. Failed or cancelled requests have zero net charge. |
+| Conditions             | Tokens do not expire. Purchases are normally final; a refund is a case-by-case decision, not a published entitlement. Registration grants the one-time allowance above.                                                                            |
+| Collection             | Payments are accepted in Russia through an online cash register. The accepting party and its details are configured in the product interface, not decided here.                                                                                    |
 
 The margin is taken at top-up and not again on consumption, which is charged at
 cost. Settlement rounds each successful turn up to a whole token, which adds an unmeasured
@@ -203,22 +218,22 @@ live coverage or a resolution deadline. The intended customer process is in
 
 ## Key Resources
 
-| Resource ID       | Scope and share                                                                                                                                                                            | Availability                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| `founder-time`    | Half of the owner's development and support time; 80% of time spent on remaining owner activities. Code Framework carries the other half of development and support and the remaining 20%. | Allocated as the project develops; no recurring hours committed.      |
-| `repository`      | The same shared codebase Code Framework distributes, which this service runs on. Counted under Code Framework.                                                                             | 16 modules, 65 models, 91 relations.                                  |
-| `service-host`    | A Contabo server in Amsterdam running the service and its PostgreSQL with pgvector, where the uploaded corpus and its vectors are stored.                                                  | Carried entirely by this product; Code Framework consumes none of it. |
-| `provider-budget` | Owner-funded AI, storage and payment expenses.                                                                                                                                             | No ongoing cash allowance is set.                                     |
+| Resource ID       | Scope and share                                                                                                                                                                            | Availability                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `founder-time`    | Half of the owner's development and support time; 80% of time spent on remaining owner activities. Code Framework carries the other half of development and support and the remaining 20%. | Allocated as the project develops; no recurring hours committed.                                                  |
+| `repository`      | The same shared codebase Code Framework distributes, which this service runs on. Counted under Code Framework.                                                                             | Named modules, documented models, relations and SDKs; Code Framework Research records the inspected source scope. |
+| `service-host`    | A Contabo server in Amsterdam running the service and its PostgreSQL with pgvector, where the uploaded corpus and its vectors are stored.                                                  | Carried entirely by this product; Code Framework consumes none of it.                                             |
+| `provider-budget` | Owner-funded AI, storage and payment expenses.                                                                                                                                             | No ongoing cash allowance is set.                                                                                 |
 
 ## Key Partnerships
 
-| Partner              | Function and dependence                                                                                                                                                                                   |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OpenRouter           | Every model call and every embedding. The offered models are the ones its router declares, and `qwen/qwen3-embedding-8b` vectorizes uploads. A change to its prices changes this product's cost directly. |
-| Contabo              | The Amsterdam server holding the service and the corpus. Its backups keep copies for up to six months after an account is deleted, which the project cannot shorten.                                      |
-| Online cash register | Accepting payments in Russia.                                                                                                                                                                             |
-| GitHub               | Future publication dependency: authorization for the customer's single repository and the Actions workflow that deploys it.                                                                               |
-| Beget, Timeweb       | Intended hosting options for the future deployment offer. Their restrictions on OpenRouter are the supplied reason AI Chat itself runs on Contabo.                                                        |
+| Partner              | Function and dependence                                                                                                                                                                                                                            |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OpenRouter           | The configured model and embedding provider. Source configuration declares text-output answering with automatic routing and `qwen/qwen3-embedding-8b` for uploads; Research records its snapshot and limits. Provider prices affect delivery cost. |
+| Contabo              | The Amsterdam server holding the service and the corpus. Its backups keep copies for up to six months after an account is deleted, which the project cannot shorten.                                                                               |
+| Online cash register | Accepting payments in Russia.                                                                                                                                                                                                                      |
+| GitHub               | Future publication dependency: authorization for the customer's single repository and the Actions workflow that deploys it.                                                                                                                        |
+| Beget, Timeweb       | Intended hosting options for the future deployment offer. Their restrictions on OpenRouter are the supplied reason AI Chat itself runs on Contabo.                                                                                                 |
 
 No partnership agreement or dedicated supplier terms exist with any of them. The
 future publication route attaches a customer-owned domain through their
@@ -261,13 +276,13 @@ or support commitment.
 
 ## Business goals and metrics
 
-| Goal                  | Intended business outcome                                                                                       | Metric and management use                                                                                                                                                                               |
-| --------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Project activation    | Turn a suitable user's available material into an accepted project foundation.                                  | Projects started, material supplied, sections completed, corrections before acceptance and unresolved contradictions; improve intake and structuring.                                                   |
-| Workflow learning     | Learn whether the first users can describe their projects and correct the shortcomings the AI agent identifies. | Usable text artifacts, corrections made, unresolved shortcomings, abandonment and user feedback; improve the description workflow. No observation is treated as proof of demand for the user's project. |
-| Continued value       | Help the user develop, question and apply ideas from the accepted project context.                              | User-rated useful discussions, accepted criticism, later materials, return use and repeated-input problems; improve work that creates a reason to continue.                                             |
-| Revenue and retention | Earn token purchases and continued paid use.                                                                    | Purchases, repeat purchases and attributable service costs; assess the offer's economics.                                                                                                               |
-| Framework adoption    | Use the existing Code Framework for a separate concrete software need.                                          | Attributable framework handoffs, independent adaptations and later-product reuse; improve the handoff. These are separate from first-stage AI Chat activation and token purchases.                      |
+| Goal                  | Intended business outcome                                                                                               | Metric and management use                                                                                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Project activation    | Turn a suitable user's available material into an accepted project foundation.                                          | Projects started, material supplied, sections completed, corrections before acceptance and unresolved contradictions; improve intake and structuring.                                                   |
+| Workflow learning     | Learn whether the first users can describe their projects and correct the shortcomings the AI agent identifies.         | Usable text artifacts, corrections made, unresolved shortcomings, abandonment and user feedback; improve the description workflow. No observation is treated as proof of demand for the user's project. |
+| Continued value       | Help the user develop, question and apply ideas from the accepted project context.                                      | User-rated useful discussions, accepted criticism, later materials, return use and repeated-input problems; improve work that creates a reason to continue.                                             |
+| Revenue and retention | Earn token purchases and continued paid use.                                                                            | Purchases, repeat purchases and attributable service costs; assess the offer's economics.                                                                                                               |
+| Framework adoption    | Turn reviewed business and product documents into a coding-agent brief for a landing page or product on Code Framework. | Attributable framework handoffs, independent adaptations and later-product reuse; improve the handoff. These are separate from first-stage AI Chat activation and token purchases.                      |
 
 These are intended outcomes. Numerical targets, time-to-site claims, customer gains, market response and revenue forecasts are unset.
 

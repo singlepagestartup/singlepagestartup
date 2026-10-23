@@ -5650,8 +5650,10 @@ assets:
     alt: "A man reviewing a project sketch beside his laptop."
 
   - id: singlepage-generated-account-mascot
-    path: apps/studio/workspace/assets/singlepage/generated/living-focus/singlepagestartup-account-mascot.png
+    path: assets/singlepage/generated/living-focus/singlepagestartup-account-mascot.png
     source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
     evidence: false
     rights_status: AI-generated illustrative draft for Studio preview.
     purpose: Original user-avatar mascot master.
@@ -5673,8 +5675,10 @@ assets:
     source_or_tool: Built-in image_gen, text generation.
 
   - id: singlepage-generated-account-mascot-square
-    path: apps/studio/workspace/assets/singlepage/generated/living-focus/singlepagestartup-account-mascot-square.png
+    path: assets/singlepage/generated/living-focus/singlepagestartup-account-mascot-square.png
     source_type: generated
+    lifecycle: proposed
+    proposal_id: living-focus
     evidence: false
     rights_status: AI-generated illustrative draft for Studio preview.
     purpose: Square delivery avatar from the preserved mascot master.
@@ -5713,7 +5717,8 @@ assets:
       height: 1024
     content_sha256: f99999a060ae5500423a1124612b424ffca1c97e2ef5c23ffb721b5c8c811d7e
     production_stage: original-master
-    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
       cover photograph for SinglePageStartup's Living Focus visual system. Style
       master: Candid editorial photography of people at work, with cool blue or
       teal daylight balanced by warm natural skin tones. Use close human
@@ -5733,7 +5738,8 @@ assets:
       Focus on the human boundary between explaining and building, quiet
       greenery and cool daylight in the background. Visually distinguish the
       scene with a low over-the-shoulder camera angle."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-prompts.json.
   - id: singlepage-blog-next-server-client-square
@@ -5774,7 +5780,8 @@ assets:
       above and table/foreground below, with matching perspective and light. No
       borders, new objects, text, logos, UI or watermark. This is the SAME
       photograph on a larger square canvas."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-adaptation.json.
     source_master_asset_id: singlepage-blog-next-server-client-master
@@ -5810,7 +5817,8 @@ assets:
       height: 941
     content_sha256: 4c9c5711d05d92cf0e2fe57d8fe3e356d17f6255083eb1b0de435d8bc636e536
     production_stage: original-master
-    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
       cover photograph for SinglePageStartup's Living Focus visual system. Style
       master: Candid editorial photography of people at work, with cool blue or
       teal daylight balanced by warm natural skin tones. Use close human
@@ -5829,7 +5837,8 @@ assets:
       are sharp; one hand rests naturally on the trackpad. Capture a quiet
       moment of confirming that two views agree, with another out-of-focus work
       station behind him. Screen content is blurred and unreadable."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-prompts.json.
   - id: singlepage-blog-react-query-realtime-square
@@ -5870,7 +5879,8 @@ assets:
       above and table/foreground below, with matching perspective and light. No
       borders, new objects, text, logos, UI or watermark. This is the SAME
       photograph on a larger square canvas."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-adaptation.json.
     source_master_asset_id: singlepage-blog-react-query-realtime-master
@@ -5906,7 +5916,8 @@ assets:
       height: 1024
     content_sha256: 20b203b31dae072f98ab715acba8ba6f7651a355a5264f26c03ba6c86ba3599d
     production_stage: original-master
-    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
       cover photograph for SinglePageStartup's Living Focus visual system. Style
       master: Candid editorial photography of people at work, with cool blue or
       teal daylight balanced by warm natural skin tones. Use close human
@@ -5925,7 +5936,8 @@ assets:
       readable. One explains a step with a natural open-hand gesture while the
       other listens. Cool morning daylight, green plant out of focus, honest
       editorial energy; medium framing with both faces and hands visible."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-prompts.json.
   - id: singlepage-blog-hono-layered-api-square
@@ -5966,7 +5978,8 @@ assets:
       above and table/foreground below, with matching perspective and light. No
       borders, new objects, text, logos, UI or watermark. This is the SAME
       photograph on a larger square canvas."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-adaptation.json.
     source_master_asset_id: singlepage-blog-hono-layered-api-master
@@ -6002,7 +6015,8 @@ assets:
       height: 1024
     content_sha256: ded42e3554a028bcd3675bade36b98ee78ed08bb1a3b87f7180047c0eb837471
     production_stage: original-master
-    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
       cover photograph for SinglePageStartup's Living Focus visual system. Style
       master: Candid editorial photography of people at work, with cool blue or
       teal daylight balanced by warm natural skin tones. Use close human
@@ -6021,7 +6035,8 @@ assets:
       laptop. A careful, attentive expression suggests checking access before
       sharing work. Cool side-window light, natural warm skin, detailed hair rim
       light, no staged business smile, no padlock props or security graphics."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-prompts.json.
   - id: singlepage-blog-subscription-access-square
@@ -6062,7 +6077,8 @@ assets:
       above and table/foreground below, with matching perspective and light. No
       borders, new objects, text, logos, UI or watermark. This is the SAME
       photograph on a larger square canvas."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-adaptation.json.
     source_master_asset_id: singlepage-blog-subscription-access-master
@@ -6098,7 +6114,8 @@ assets:
       height: 941
     content_sha256: 2fdd6ce7f54928ec4797f27fc0c24e8fd3ece1ba19c9152bc506f469bfedc75e
     production_stage: original-master
-    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
       cover photograph for SinglePageStartup's Living Focus visual system. Style
       master: Candid editorial photography of people at work, with cool blue or
       teal daylight balanced by warm natural skin tones. Use close human
@@ -6117,7 +6134,8 @@ assets:
       grouped practical equipment suggest a repeatable development workspace.
       Candid action, softly blurred nearest hand, faces clear, cool blue
       daylight and warm skin, no server-rack glamour, no technical logos."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-prompts.json.
   - id: singlepage-blog-nx-bun-docker-square
@@ -6158,7 +6176,8 @@ assets:
       above and table/foreground below, with matching perspective and light. No
       borders, new objects, text, logos, UI or watermark. This is the SAME
       photograph on a larger square canvas."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-adaptation.json.
     source_master_asset_id: singlepage-blog-nx-bun-docker-master
@@ -6194,7 +6213,8 @@ assets:
       height: 941
     content_sha256: 69e1635428ef03de700b661444d4ab9eb507b3522cc8740d00ea06018e43acf4
     production_stage: original-master
-    prompt: "Use case: photorealistic-natural. Asset type: original editorial blog
+    prompt:
+      "Use case: photorealistic-natural. Asset type: original editorial blog
       cover photograph for SinglePageStartup's Living Focus visual system. Style
       master: Candid editorial photography of people at work, with cool blue or
       teal daylight balanced by warm natural skin tones. Use close human
@@ -6213,7 +6233,8 @@ assets:
       studies it. An unbranded monitor sits blurred in the background. The mood
       is attentive and composed, no celebration or claims of success; late cool
       daylight, teal glass foreground reflections and natural human detail."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-prompts.json.
   - id: singlepage-blog-safe-build-rollout-square
@@ -6254,7 +6275,8 @@ assets:
       above and table/foreground below, with matching perspective and light. No
       borders, new objects, text, logos, UI or watermark. This is the SAME
       photograph on a larger square canvas."
-    source_or_tool: Built-in image_gen.imagegen; source and square output visually
+    source_or_tool:
+      Built-in image_gen.imagegen; source and square output visually
       inspected by the implementation agent. Exact prompts and original tool-output
       paths are recorded in utils/media/issue-376-blog-adaptation.json.
     source_master_asset_id: singlepage-blog-safe-build-rollout-master

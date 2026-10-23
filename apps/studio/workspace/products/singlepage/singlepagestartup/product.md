@@ -29,8 +29,9 @@ sources:
       - sources.audience_value_and_flow
       - intake.product_direction
       - sources.ai_chat_launch_stage
-    date: 2026-10-06
-    supports: Novice makers direct Claude Code or Codex Desktop and inspect the UI; a maker with a concrete software need reaches the existing foundation through GitHub for adaptation and next-product reuse without buying chat tokens. The intended future AI Chat publication route creates the customer's own repository on this foundation; AI Chat's current offer creates written project and product descriptions.
+      - intake.framework_preparation_journey
+    date: 2026-10-24
+    supports: AI Chat prepares a business model, concept, business plan and structured project and product documents for human review. Makers export the useful accepted material, brief Claude Code or Codex Desktop and build a landing page or product on the free foundation. Existing business material can enter the same coding-agent handoff directly. Hosted automatic landing-page assembly and publication remain future development.
     limitation: Selected product journey; public chat readiness, automatic setup and measured conversion are not established. Future AI Chat deployment commercial terms are undecided and the free code does not establish free deployment.
   approved_direction:
     classification: constraint
@@ -102,31 +103,33 @@ sources:
     limitation: The license governs the distributed source only; it establishes no runtime behavior, adoption or support commitment.
   inventory:
     classification: verified-fact
-    source: Brief repository observation, 2026-09-12.
-    supports: Sixteen modules, 65 models and 91 relations describe repository scope.
-    limitation: Earlier supplied 1836 frontend variants and 24 Studio examples are not used as current product counts; Research owns revalidation.
+    source: Research sources.current_repository_inspection at aa780be0f99f78f5d25802d259059cb1b66f4cb0.
+    finding_ids: [CF-SPS-38]
+    inspected_at: 2026-10-24
+    supports: Named module responsibilities and source-backed examples describe the foundation; public copy does not depend on volatile catalog totals.
+    limitation: A module or variant entry does not establish finished visual coverage, live operation, customer adoption or comparative savings.
 review:
   dependencies:
-    brief: 1fcbfd98ca6f0c346a752a38256f36a69d324fcef58b6355c9a15a3eda8c624d
-    product.singlepagestartup.research: 701750f671f10c53facf325cd0c445738db088b304dea025a7610a897f096d74
+    brief: 490a648452b91afd083215d3b2420e6990deedbfcc94442dc30b731613cb3258
+    product.singlepagestartup.research: 2bfd1f9d4d535851fb7ed25de7883719ca25fe296a41e6f6366613a9fc5f16b8
 ---
 
 # Product
 
 ## Product identity
 
-| Decision              | Definition                                                                                                                                                            |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Brand and product     | **SinglePageStartup Code Framework** (`singlepagestartup`): a reusable foundation for building web products with a coding agent.                                      |
-| Category              | A boilerplate combining common business functions, documentation and instructions for agents.                                                                         |
-| Development direction | Build on the existing team-developed codebase to make SPS a convenient starting point for a maker's current and future products. The project owner defines its scope. |
-| Boundary              | Code Framework supplies the foundation. **AI Chat** is a separate hosted service and its planned public demonstration.                                                |
+| Decision              | Definition                                                                                                                                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Brand and product     | **SinglePageStartup Code Framework** (`singlepagestartup`): a reusable foundation for building web products with a coding agent.                                                                             |
+| Category              | A boilerplate combining common business functions, documentation and instructions for agents.                                                                                                                |
+| Development direction | Build on the existing team-developed codebase to make SPS a convenient starting point for a maker's current and future products. The project owner defines its scope.                                        |
+| Boundary              | Code Framework supplies reusable code. **AI Chat** prepares business and product material that a person can review, export and give to a coding agent; it is a separate hosted offer on the same foundation. |
 
 ## Customer Segments
 
 The primary segment, `makers`, is novice creators and vibe coders who want their own product. They mainly communicate with Claude Code or Codex Desktop; the agent changes code while the person directs the work and reviews the interface.
 
-The maker or adopting team is the user, beneficiary and decision-maker. There is no framework buyer; the maker separately pays for chosen coding tools and infrastructure. People seeking only hosted answers use AI Chat.
+The maker or adopting team is the user, beneficiary and decision-maker. There is no framework buyer; the maker separately pays for chosen coding tools and infrastructure. People preparing business material can start with AI Chat and continue using its hosted workspace without beginning software development.
 
 The longer-term segment, `developer-agents`, is agents selecting SPS as a foundation for assigned projects. Clear project instructions and reusable functions support that direction.
 
@@ -150,18 +153,20 @@ Other starters also offer authentication and payments. SPS positions the complet
 
 ## Offer and usage
 
-The offer includes source code, documentation and agent instructions; account and access functions; catalogs, carts and orders; payment integrations; and the shared application foundation. Business-specific rules and presentation are developed for each project.
+The offer includes source code, documentation and agent instructions; account and access functions; catalogs, carts and orders; payment integrations; and the shared application foundation. Business-specific rules and presentation are developed for each project. Module explanations and linked Blog articles show which existing responsibility fits a task, which records and relationships it uses and what the coding agent still needs to change. These are source-backed examples, not promises that every variant has a finished design or every integration is configured for a new project.
 
 The selected distribution model is free code under MIT through GitHub. [Revenue Streams](#revenue-streams) owns the money terms. Coding-agent subscriptions, infrastructure and hosted AI Chat usage are separate. Help and maintenance are provided as time permits; custom implementation and managed hosting are outside the offer.
 
-In the intended experience, a person discovers SPS through AI Chat, a demonstration, task guidance or a relevant community answer. A maker with a concrete software need follows **Run the project on your machine** to GitHub and asks a coding agent to deploy and adapt the project, without buying chat tokens. The maker describes changes, reviews the interface and develops the product; the same foundation can support the next idea. AI Chat's intended future publication route creates a customer repository on this foundation; its current offer creates written project and product descriptions, and its future deployment commercial terms remain undecided.
+The intended preparation route starts in AI Chat: supply notes and files, describe the business model and offer, review the project and product documents, and export the useful accepted material. The maker gives that context to a coding agent with the desired landing-page action or product behavior, then uses GitHub and the local setup guide to begin Code Framework development. The Framework landing introduces this route alongside module explanations, Blog articles and token purchases. Tokens fund hosted AI Chat work; acquiring the MIT code requires no token purchase.
+
+A maker with sufficient business material can begin directly from a demonstration, task guide, community answer or repository. The maker directs changes, reviews the interface and develops the product; the same foundation can support the next idea. AI Chat's future automatic page assembly and publication remain separate from this export-and-coding-agent route, and their commercial terms are undecided.
 
 ## Revenue Streams
 
-| Segment | Payer and unit                                            | Terms                                                                                                                                                                   |
-| ------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Makers  | The maker pays nothing in money for the code.             | MIT licence, no checkout, no licence fee. The price is paid in social capital: a star, a fork, a recommendation, an improvement contributed back.                       |
-| Project | The maker who later needs hosted work arrives at AI Chat. | A maker who trusts the foundation is the cheapest customer AI Chat can get. This return is intended, not measured; no conversion rate from adoption to purchase exists. |
+| Segment | Payer and unit                                            | Terms                                                                                                                                                                                             |
+| ------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Makers  | The maker pays nothing in money for the code.             | MIT licence, no checkout, no licence fee. The price is paid in social capital: a star, a fork, a recommendation, an improvement contributed back.                                                 |
+| Project | The maker who later needs hosted work arrives at AI Chat. | Trust in the foundation may introduce a maker to paid AI Chat preparation or continued document work. This return is intended, not measured; no conversion rate from adoption to purchase exists. |
 
 The recorded attention baseline is 4 stars and 2 forks. Attention, adoption,
 repeat use and contributions are counted separately, because a star costs the
@@ -181,11 +186,11 @@ The intended framework journey is in [Sales](sales.yaml).
 
 ## Key Resources
 
-| Resource ID       | Scope and share                                                                                                         | Availability                                                     |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `founder-time`    | 50% of development and support time, plus 20% of remaining owner activities. AI Chat carries the complementary shares.  | Allocated as the project develops; no recurring hours committed. |
-| `repository`      | The shared code and documentation, developed by a team over several years. Counted here; AI Chat runs on the same base. | 16 modules, 65 models, 91 relations.                             |
-| `identity-assets` | The shared brand, fonts and visual materials.                                                                           | Current approved identity and registered assets.                 |
+| Resource ID       | Scope and share                                                                                                         | Availability                                                                                |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `founder-time`    | 50% of development and support time, plus 20% of remaining owner activities. AI Chat carries the complementary shares.  | Allocated as the project develops; no recurring hours committed.                            |
+| `repository`      | The shared code and documentation, developed by a team over several years. Counted here; AI Chat runs on the same base. | Named modules, documented models, relations and SDKs; source scope is recorded in Research. |
+| `identity-assets` | The shared brand, fonts and visual materials.                                                                           | Current approved identity and registered assets.                                            |
 
 ## Key Partnerships
 
@@ -216,8 +221,9 @@ set.
 
 ## Assumptions and decision rules
 
-- `bridge`: a useful chat experience encourages interested makers to adopt the
-  foundation.
+- `bridge`: reviewed business and product material from AI Chat can become a
+  coding-agent brief for a landing page or product on the foundation. Handoff
+  usefulness and adoption remain unmeasured.
 - `framework-growth`: attention and stars are counted apart from product use,
   repeat use and contributions, because only the last two show the price was
   actually paid.

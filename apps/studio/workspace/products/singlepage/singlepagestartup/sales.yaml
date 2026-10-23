@@ -13,6 +13,16 @@ sources:
     Brief audience_value_and_flow and current_business, operator inputs reviewed 2026-09-13;
     novice makers, useful AI Chat experience, free framework, agent-led building, reuse and
     best-effort help.
+  preparation-journey:
+    classification: client-claim
+    resolution: operator-fact
+    date: "2026-10-24"
+    source: Brief intake.framework_preparation_journey; current operator goal-objective.md.
+    scope:
+      AI Chat prepares business and product descriptions for review and export.
+      A maker gives that material to a coding agent and uses free Code Framework
+      for a landing page or product. Blog and module examples explain the
+      foundation; token purchases support hosted preparation, not code access.
   direction:
     Approved Strategy Growth system and Customer journey, and Brand Meaning and message
     hierarchy; selected organic channels and optional hosted-chat-to-framework journey.
@@ -75,7 +85,7 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    product.singlepagestartup.product: f3730e0bc1b4a613fcd4b2d66156eeecdcd3f171030b00d691b28cdf81ee0f2b
+    product.singlepagestartup.product: d43a14f03a02493cd45ed9020b42868d739925087e816d4e8d60a90dc050f287
 segments:
   - id: makers
     name: Makers building with a coding agent
@@ -89,6 +99,8 @@ segments:
     needs:
       - Turn the current idea into a useful product by reusing functions relevant to its task;
         registration, carts and payments matter where that business needs them.
+      - Prepare a business model, audience, offer, intended action and product rules before
+        asking the coding agent to build; use AI Chat when that material needs structuring.
       - Understand what the foundation provides, what is unnecessary for this idea and what their
         own product still needs.
       - Direct work in ordinary language and judge the customer or business outcome alongside the
@@ -154,13 +166,14 @@ segments:
       - id: hosted-chat
         channel: AI Chat
         context:
-          A person with an idea for their own product may become interested in the foundation after a
-          useful chat experience.
-        message: Build your product on the foundation behind this chat.
-        cta: Run the project on your machine
+          A person has reviewed business and product documents in AI Chat and wants
+          to turn that material into a landing page or software product.
+        message: Give your coding agent the reviewed business material and build on Code Framework.
+        cta: Explore Code Framework
         destination:
-          GitHub and the maker’s coding-agent conversation when a personal project fits;
-          continuing to use hosted chat remains an option.
+          Framework landing, relevant module or Blog guide, then GitHub and a
+          coding-agent brief using the exported documents. Continuing in hosted
+          AI Chat remains an option.
       - id: video
         channel: YouTube demonstrations and related Shorts
         context:
@@ -202,6 +215,35 @@ segments:
         exit_condition: The visitor explores a fit for their own product, continues as a hosted consumer or leaves.
         failure: No current fit or interest; leave or return to another example later.
         metric: Relevant visits and framework interest by discovery route; chat use is counted separately.
+      - id: prepared-business-context
+        name: Prepare the business material
+        customer_goal: Give the coding agent a concrete business brief for the page or product.
+        customer_action:
+          Review existing audience, offer, business rules and intended customer action.
+          When material is scattered or incomplete, use AI Chat to structure it,
+          correct its gaps and export the useful reviewed documents.
+        customer_question: What should the page say, and what should the product do for its customer?
+        experience:
+          The Framework landing shows how reviewed written material becomes a
+          coding-agent brief, alongside direct access for makers who already have it.
+        touchpoint: Framework preparation block, AI Chat project documents and export.
+        owner: Maker owns the business decisions; the project owner provides preparation and framework guidance.
+        entry_conditions:
+          - The maker has a landing-page or product need and wants to explain it to an agent.
+        required_fields:
+          - Available business model or concept, audience, offer, desired action and business rules.
+          - Visible unknowns and reviewed project or product material where available.
+        action:
+          Show the preparation-to-development route and offer AI Chat for the
+          material that needs work. Keep free framework access available without
+          chat registration, token purchase or completion of every document.
+        exit_condition:
+          The maker has a useful brief for a fit decision, returns to a document
+          question or continues directly with material already prepared.
+        failure:
+          The maker pauses, works on the documents elsewhere or uses existing
+          material; paid hosted preparation is optional.
+        metric: Preparation-route visits, useful reviewed exports and voluntarily reported coding-agent handoffs.
       - id: recorded-decision
         name: Choose a foundation for the idea
         customer_goal: Understand whether adopting SPS is worthwhile for this particular product.
@@ -238,10 +280,14 @@ segments:
         entry_conditions:
           - The maker chooses SPS for the product.
         required_fields:
-          - Project idea and chosen coding agent.
+          - Project idea, chosen coding agent and useful reviewed business material.
+          - Audience, offer, desired page action or product behavior, and remaining unknowns.
         action:
-          Provide the foundation and a plain-language handoff to a personal project, with guidance for
-          continued changes and clear best-effort help expectations.
+          Provide the foundation and a plain-language handoff using the reviewed
+          business material. Link the relevant module or Blog example and local
+          setup guide, with guidance for continued changes and clear best-effort
+          help expectations. Automatic hosted generation and deployment remain
+          future AI Chat offers.
         exit_condition: The maker starts a product based on SPS.
         failure:
           The maker needs more guidance or prefers less responsibility; consult the guide, seek
@@ -446,7 +492,7 @@ segments:
         entry_conditions:
           - SPS is selected within the assignment’s authority.
         required_fields:
-          - Current product brief and relevant project instructions.
+          - Current product brief, reviewed business context and relevant project instructions.
         action: Supply the code, documentation and business-to-product workflow as the starting point.
         exit_condition: The assigned product is being developed on SPS.
         failure: The human postpones or changes direction; pause or use the selected alternative.
