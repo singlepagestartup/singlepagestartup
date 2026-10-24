@@ -1,7 +1,11 @@
 import type { IComponentProps } from "./interface";
 import { Component as Article } from "../../../article";
+import { frameworkArticlePreviews } from "../../../article";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
 export function Component({ access = "locked", article }: IComponentProps) {
+  const example = frameworkArticlePreviews.find(
+    (item) => item.slug === "framework-private-content-audit",
+  )!;
   const subscriberContent =
     access === "granted" ? (
       <WebsiteBuilderModuleWidget
@@ -18,15 +22,11 @@ export function Component({ access = "locked", article }: IComponentProps) {
       data-ds-layer="singlepage"
     >
       <Article
+        {...example}
         {...article}
         variant="overview-default"
-        title={
-          article?.title ?? "Build a page with public and subscriber content"
-        }
-        content={
-          article?.content ??
-          "<p>This introduction is available to everyone. The article can include ordinary widgets and a separate section for subscribers.</p>"
-        }
+        title={article?.title ?? example.title}
+        content={article?.content ?? example.content}
         widgets={
           <>
             <WebsiteBuilderModuleWidget

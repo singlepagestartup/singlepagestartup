@@ -25,9 +25,5 @@
     "syncStatus": "not-created",
     "metadataFile": "figma.json"
   },
-  "tags": [
-    "blog",
-    "widget",
-    "article-feed-default"
-  ]
+  "tags": ["blog", "widget", "article-feed-default"]
 }

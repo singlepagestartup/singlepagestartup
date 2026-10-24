@@ -1,6 +1,7 @@
 import type { IComponentProps, ArticleFindFeaturedProps } from "./interface";
 export type { ArticleFindFeaturedProps } from "./interface";
 import { Component as Article } from "../../../article/index";
+import { frameworkArticlePreviews } from "../../../article";
 
 const articleOverviewStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-blog-module-article-slug--default";
@@ -33,7 +34,7 @@ export function ArticleFindFeatured({
         ) : null}
         {description}
         <div className="grid gap-6">
-          {(articles ?? [{ id: "featured-article" }])
+          {(articles ?? frameworkArticlePreviews)
             .slice(0, count)
             .map((article) => (
               <Article

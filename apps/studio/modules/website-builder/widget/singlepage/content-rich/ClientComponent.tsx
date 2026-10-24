@@ -24,7 +24,7 @@ export function Component(props?: IComponentProps) {
         }),
         Link.configure({
           autolink: false,
-          openOnClick: false,
+          openOnClick: true,
         }),
       ],
       content,

@@ -16,6 +16,14 @@
     {
       "id": "blog.category.overview-default",
       "path": "../../../../blog/category/singlepage/overview-default"
+    },
+    {
+      "id": "blog.widget.category-find-card",
+      "path": "../../../../blog/widget/singlepage/category-find-card"
+    },
+    {
+      "id": "website-builder.widget.content-offer",
+      "path": "../../../../website-builder/widget/singlepage/content-offer"
     }
   ],
   "figma": {

@@ -3,9 +3,10 @@ import type {
   IComponentProps,
   ArticleCardProps,
   ArticleCardTarget,
+  IArticlePreview,
 } from "./interface";
 export type { ArticleCardProps } from "./interface";
-import { Component as SocialModuleProfile } from "../../../../social/profile/index";
+import fixture from "../admin-v2-table/data.json";
 /**
  * Model-owned article link. Balanced, editorial and compact are presentation
  * choices over the same article props; widgets compose this component.
@@ -21,12 +22,14 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
     coverImage,
     category,
     date,
+    createdAt,
     title,
     excerpt,
     excerptContent,
     media,
     authorName,
     authorAvatar,
+    author,
     readTime,
     target,
     layout = "balanced",
@@ -35,14 +38,17 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
   const editorial = layout === "editorial";
   const metadata = (
     <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
-      <div className="min-w-0">
-        <SocialModuleProfile
-          variant="byline"
-          name={authorName}
-          avatar={authorAvatar}
-          href={null}
-          size="xs"
-        />
+      <div className="min-w-0 [&_a]:relative [&_a]:z-10">
+        {author ?? (
+          <span className="inline-flex min-w-0 items-center gap-2 text-xs">
+            <img
+              src={authorAvatar}
+              alt=""
+              className="size-6 shrink-0 rounded-lg object-contain"
+            />
+            <span>{authorName}</span>
+          </span>
+        )}
       </div>
       <div className="ml-auto shrink-0 text-right text-xs leading-5 text-muted-foreground">
         <p>{readTime}</p>
@@ -53,7 +59,6 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
     <article
       className={`group relative isolate grid h-full min-w-0 overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground motion-reduce:transition-none ${compact ? "grid-cols-[96px_minmax(0,1fr)] items-start gap-4 p-4" : "grid-rows-[auto_1fr]"} ${kit.focus}`}
       data-ds-block="blog.article.card"
-      data-ds-imports="social.profile.byline"
       data-ds-layer="singlepage"
       data-card-layout={layout}
       data-module="blog"
@@ -64,7 +69,7 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
         <div className="px-5 pb-5 pt-6 sm:px-6">
           <div className="mb-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
             <span>{category}</span>
-            <span>{date}</span>
+            <time dateTime={createdAt}>{date}</time>
           </div>
           <h3 className="text-2xl font-semibold leading-7 tracking-tight">
             <a
@@ -93,7 +98,7 @@ export const ArticleCard = memo<IComponentProps>(function ArticleCard(
           <>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
               <span className="font-medium">{category}</span>
-              <span>{date}</span>
+              <time dateTime={createdAt}>{date}</time>
             </div>
             <h3
               className={`${compact ? "text-lg leading-6" : "text-2xl leading-7"} font-semibold tracking-tight text-foreground`}
@@ -151,22 +156,59 @@ const buttonBase =
 const kit = {
   focus: focus,
 };
-const sarahAvatar =
-  "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHdvbWFuJTIwZGV2ZWxvcGVyJTIwaGVhZHNob3R8ZW58MXx8fHwxNzcxNzE1ODgyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
-export const defaultArticleCardProps = {
-  href: undefined as string | undefined,
-  slug: "how-to-choose",
-  coverImage:
-    "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
-  category: "guides",
-  date: "Feb 18, 2026",
-  title: "How to Choose the Right Plan for Your Business",
-  excerpt:
-    "A comprehensive guide to evaluating subscription tiers, comparing features, and making the right decision for your team size and growth trajectory.",
-  authorName: "Sarah Kim",
-  authorAvatar: sarahAvatar,
-  authorSlug: "sarah-kim",
-  commentCount: 3,
-  readTime: "7 min read",
+/** Supplied Studio records and associations; no runtime reads or publication proof. */
+export const frameworkArticlePreviews: IArticlePreview[] = fixture.records.map(
+  (record) => {
+    const presentation = fixture.presentation.articles.find(
+      (item) => item.id === record.id,
+    )!;
+    const calendar = new Date(`${record.createdAt}T00:00:00Z`);
+    const createdAt =
+      Number.isFinite(calendar.getTime()) &&
+      calendar.toISOString().slice(0, 10) === record.createdAt
+        ? record.createdAt
+        : undefined;
+    return {
+      id: record.id,
+      href: `/?path=/story/modules-host-models-page-singlepage-blog-module-article-slug--default&args=articleSlug:${record.slug}`,
+      slug: record.slug,
+      title: record.title.en,
+      excerpt: record.subtitle.en,
+      content: record.description.en,
+      coverImage: presentation.coverImage,
+      media: [
+        {
+          id: `${record.id}:cover`,
+          src: presentation.coverImage,
+          alt: presentation.coverAlt,
+        },
+      ],
+      category: presentation.categoryLabel,
+      categorySlug: presentation.categorySlug,
+      createdAt,
+      date: createdAt
+        ? new Intl.DateTimeFormat("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            timeZone: "UTC",
+          }).format(calendar)
+        : "",
+      authorName: fixture.presentation.author.name,
+      authorRole: fixture.presentation.author.role,
+      authorAvatar: fixture.presentation.author.avatar,
+      authorSlug: fixture.presentation.author.slug,
+      commentCount: 0,
+      readTime: presentation.readTime,
+      outline: presentation.outline,
+      target: "_top",
+    };
+  },
+);
+
+export const defaultArticleCardProps: ArticleCardProps = {
+  ...frameworkArticlePreviews[0],
+  media: undefined,
+  href: undefined,
   target: undefined as ArticleCardTarget | undefined,
 };

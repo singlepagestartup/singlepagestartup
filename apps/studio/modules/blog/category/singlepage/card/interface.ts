@@ -12,6 +12,7 @@ export interface CategoryCardProps {
   target?: "_self" | "_top" | "_blank";
   count?: number;
   children?: ReactNode;
+  layout?: "balanced" | "compact";
 }
 export interface IComponentProps extends Partial<CategoryCardProps> {
   variant?: "card";

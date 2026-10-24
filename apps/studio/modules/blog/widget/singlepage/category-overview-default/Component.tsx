@@ -1,6 +1,6 @@
 import type { IComponentProps } from "./interface";
 import { Component as Category } from "../../../category";
-import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+import { frameworkCategoryPreviews } from "../../../category";
 import {
   ArticleFindCardDefault as ArticleWidget,
   defaultArticleFindCardDefaultProps,
@@ -10,6 +10,14 @@ export function Component({
   description,
   articles,
 }: IComponentProps) {
+  const selected =
+    frameworkCategoryPreviews.find((item) => item.slug === category?.slug) ??
+    frameworkCategoryPreviews[0];
+  const collection =
+    articles ??
+    defaultArticleFindCardDefaultProps.articles.filter(
+      (article) => article.categorySlug === selected.slug,
+    );
   return (
     <div
       data-module="blog"
@@ -19,31 +27,22 @@ export function Component({
       data-ds-layer="singlepage"
     >
       <Category
+        {...selected}
         {...category}
+        count={collection.length}
         variant="overview-default"
         backHref={
           category?.backHref ??
           "/?path=/story/modules-blog-models-widget-singlepage-category-find-card--default"
         }
-        description={
-          description ?? (
-            <WebsiteBuilderModuleWidget
-              variant="content-rich"
-              content="<p>Notes on building with Next.js, Hono and SinglePageStartup. <strong>Explore the collection below.</strong></p>"
-            />
-          )
-        }
+        description={description}
       >
         <ArticleWidget
           variant="article-find-card-default"
           embedded
           title="Articles in this category"
-          articles={
-            articles ??
-            defaultArticleFindCardDefaultProps.articles.filter(
-              (article) => article.category === "engineering",
-            )
-          }
+          categories={[]}
+          articles={collection}
         />
       </Category>
     </div>

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 export const variant = "overview-default";
 export interface CategoryOverviewProps {
+  slug?: string;
+  count?: number;
   title?: string;
   subtitle?: string;
   description?: ReactNode;

@@ -1,5 +1,6 @@
 import { Component as Page } from "../..";
 import type { Meta, StoryObj } from "@storybook/react";
+import { frameworkArticlePreviews } from "../../../../blog/article";
 
 const meta = {
   id: "modules-host-models-page-singlepage-blog-module-article-slug",
@@ -8,7 +9,16 @@ const meta = {
   parameters: {
     layout: "fullscreen",
   },
-  args: { variant: "blog-module-article-slug" },
+  args: {
+    variant: "blog-module-article-slug",
+    articleSlug: frameworkArticlePreviews[0].slug,
+  },
+  argTypes: {
+    articleSlug: {
+      control: "select",
+      options: frameworkArticlePreviews.map((article) => article.slug),
+    },
+  },
 } satisfies Meta<
   Extract<
     React.ComponentProps<typeof Page>,
@@ -22,4 +32,54 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "Default",
+};
+export const Hono: Story = {
+  args: { articleSlug: "hono-api-layers-di-and-owned-middleware" },
+};
+export const LocalStack: Story = {
+  args: { articleSlug: "nx-bun-docker-and-generated-migrations" },
+};
+export const Missing: Story = { args: { articleSlug: "not-in-the-journal" } };
+export const WithReplies: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Supplied preview comments exercise avatars, likes and nested replies; these are not production engagement counts.",
+      },
+    },
+  },
+  args: {
+    totalComments: 3,
+    comments: [
+      {
+        id: "guide-preview-comment",
+        author: "Framework reader",
+        avatar: "",
+        date: "Oct 23, 2026",
+        text: "Can a loaded Article keep its parent query when its presentation changes?",
+        likes: 2,
+        replies: [
+          {
+            id: "guide-preview-reply",
+            author: frameworkArticlePreviews[0].authorName,
+            avatar: frameworkArticlePreviews[0].authorAvatar,
+            date: "Oct 23, 2026",
+            text: "Use dataSource props and keep the query subscription in the owning reader.",
+            likes: 1,
+            replies: [
+              {
+                id: "guide-preview-follow-up",
+                author: "Framework reader",
+                avatar: "",
+                date: "Oct 23, 2026",
+                text: "That makes the ownership clear. Thank you.",
+                likes: 0,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 };

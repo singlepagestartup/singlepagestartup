@@ -7,6 +7,7 @@ export type ArticleCardProps = {
   coverImage: string;
   category: string;
   date: string;
+  createdAt?: string;
   title: string;
   excerpt: string;
   excerptContent?: ReactNode;
@@ -14,6 +15,7 @@ export type ArticleCardProps = {
   authorName: string;
   authorAvatar: string;
   authorSlug: string;
+  author?: ReactNode;
   commentCount: number;
   readTime: string;
   target: ArticleCardTarget | undefined;
@@ -21,6 +23,14 @@ export type ArticleCardProps = {
   /** Presentation choice only; the article record contract stays unchanged. */
   layout?: "balanced" | "editorial" | "compact";
 };
+
+export interface IArticlePreview extends ArticleCardProps {
+  id: string;
+  categorySlug: string;
+  content: string;
+  authorRole: string;
+  outline: { id: string; title: string }[];
+}
 
 type IVariantInputs = NonNullable<
   Partial<ArticleCardProps> & { variant?: "card" }

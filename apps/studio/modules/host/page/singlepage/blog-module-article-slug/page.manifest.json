@@ -3,7 +3,7 @@
   "title": "Blog: Find By Id Article Overview",
   "layer": "singlepage",
   "state": "draft",
-  "description": "Host page recipe for a blog article find-by-id overview page.",
+  "description": "Supplied Framework architecture guide, with code, linked sources, author, date, contents and adjacent guides.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
@@ -14,16 +14,28 @@
       "path": "../../../layout/singlepage/website"
     },
     {
-      "id": "host.widget.default",
-      "path": "../../../widget/singlepage/default"
-    },
-    {
-      "id": "host.widget.default",
-      "path": "../../../widget/singlepage/default"
-    },
-    {
       "id": "blog.widget.article-overview-default",
       "path": "../../../../blog/widget/singlepage/article-overview-default"
+    },
+    {
+      "id": "website-builder.widget.content-offer",
+      "path": "../../../../website-builder/widget/singlepage/content-offer"
+    },
+    {
+      "id": "social.profile.article-find-by-id-comment-form-default",
+      "path": "../../../../social/profile/singlepage/article-find-by-id-comment-form-default"
+    },
+    {
+      "id": "social.profile.compact",
+      "path": "../../../../social/profile/singlepage/compact"
+    },
+    {
+      "id": "social.profile.card",
+      "path": "../../../../social/profile/singlepage/card"
+    },
+    {
+      "id": "social.widget.profile-article-find-by-id-comment-find-default",
+      "path": "../../../../social/widget/singlepage/profile-article-find-by-id-comment-find-default"
     }
   ],
   "figma": {

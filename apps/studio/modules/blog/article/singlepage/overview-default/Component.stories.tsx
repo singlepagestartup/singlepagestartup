@@ -3,6 +3,7 @@ import { Component as Widget } from "../../../widget/index";
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { defaultArticleOverviewDefaultProps } from "./Component";
+import { frameworkArticlePreviews } from "../../index";
 
 const meta = {
   id: "modules-blog-models-article-singlepage-overview-default",
@@ -17,10 +18,12 @@ const meta = {
     <Article
       {...args}
       tagsCard={
-        <Widget
-          variant="article-find-by-id-tag-find-default"
-          tags={args?.tags}
-        />
+        args.tags?.length ? (
+          <Widget
+            variant="article-find-by-id-tag-find-default"
+            tags={args?.tags}
+          />
+        ) : undefined
       }
       variant="overview-default"
     />
@@ -36,3 +39,5 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "default",
 };
+export const Hono: Story = { args: frameworkArticlePreviews[2] };
+export const LocalStack: Story = { args: frameworkArticlePreviews[4] };

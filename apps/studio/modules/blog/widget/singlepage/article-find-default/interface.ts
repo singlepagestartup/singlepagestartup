@@ -11,6 +11,8 @@ export type ArticleFindDefaultProps = {
     excerpt: string;
     date: string;
     readTime: string;
+    href?: string;
+    authorName?: string;
   }[];
 };
 

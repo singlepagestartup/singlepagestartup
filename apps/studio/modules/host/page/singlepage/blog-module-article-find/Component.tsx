@@ -5,6 +5,7 @@ import { twMerge as twMerge } from "tailwind-merge";
 import { Component as Layout } from "../../../layout/index";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
 import { Component as BlogModuleWidget } from "../../../../blog/widget/index";
+import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button";
 interface SectionStackProps {
   children: ReactNode;
   className?: string;
@@ -37,18 +38,46 @@ export function BlogFindArticleCard({
             <WebsiteBuilderModuleWidget
               variant="content-page-header"
               compact
-              eyebrow="Blog"
-              title="Insights, Guides & Updates"
-              description="Tutorials, engineering deep-dives, case studies, and product announcements from the team."
+              eyebrow="The Framework journal"
+              title="Build with an understanding of the code."
+              description="Follow a saved page from Next.js to Hono, understand who owns its data, and make your next change with a clear place to start."
             />
-            <BlogModuleWidget variant="category-find-card" />
             <BlogModuleWidget
-              variant="article-find-featured"
-              compact
-              title="Popular articles"
+              variant="category-find-card"
+              title="Explore a subject"
+              layout="compact"
             />
-            <BlogModuleWidget variant="article-find-card-default" />
-            <BlogModuleWidget variant="tag-find-button" />
+            <BlogModuleWidget
+              variant="article-find-card-default"
+              pageSize={6}
+            />
+            <WebsiteBuilderModuleWidget
+              variant="content-offer"
+              title="Know what you want to build before you change the code."
+              description={
+                <p>
+                  Bring your idea and existing materials to AI Chat. Review the
+                  business model, audience, offer and product documents, then
+                  use them to brief a coding agent working with Code Framework.
+                </p>
+              }
+              actions={
+                <>
+                  <WebsiteBuilderModuleButton
+                    variant="primary"
+                    label="Prepare in AI Chat"
+                    href="/?path=/story/modules-host-models-page-singlepage-ai-chat--default"
+                    target="_top"
+                  />
+                  <WebsiteBuilderModuleButton
+                    variant="secondary"
+                    label="Explore Code Framework"
+                    href="/?path=/story/modules-host-models-page-singlepage-framework--default"
+                    target="_top"
+                  />
+                </>
+              }
+            />
           </SectionStack>
         </main>
       </Layout>

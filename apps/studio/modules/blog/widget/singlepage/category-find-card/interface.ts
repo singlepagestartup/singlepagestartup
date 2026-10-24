@@ -7,5 +7,6 @@ export interface IComponentProps {
   description?: ReactNode;
   categories?: CategoryCardProps[];
   loading?: boolean;
+  layout?: "balanced" | "compact";
 }
 export interface IComponentPropsExtended extends IComponentProps {}

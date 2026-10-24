@@ -1,66 +1,77 @@
 "use client";
-import type {
-  IComponentPropsExtended,
-  BlogCommentData,
-  RelatedArticle,
-  PinnedProduct,
-  ArticleDetailProps,
-} from "./interface";
+import type { IComponentPropsExtended, BlogCommentData } from "./interface";
 export type {
   BlogCommentData,
   RelatedArticle,
   PinnedProduct,
   ArticleDetailProps,
 } from "./interface";
-
+import { memo, useEffect, useRef, useState } from "react";
 import { Component as SharedIcon } from "../../../../shared/icon";
-
-import {
-  forwardRef,
-  type SVGProps,
-  forwardRef as forwardRefControl,
-  type ButtonHTMLAttributes as ButtonControlProps,
-  useState,
-  type ReactNode,
-} from "react";
-import { twMerge as twMerge } from "tailwind-merge";
-import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-import type IconGlyphs from "../../../../shared/icon/singlepage/phosphor/icons.json";
-import { Component as SocialModuleProfile } from "../../../../social/profile/index";
-import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
-import { Component as SocialModuleWidget } from "../../../../social/widget/index";
-import { Component as EcommerceModuleProduct } from "../../../../ecommerce/product/index";
-import { Component as Tag } from "../../../tag/index";
+import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button";
+import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget";
+import { Component as EcommerceModuleProduct } from "../../../../ecommerce/product";
+import { Component as Tag } from "../../../tag";
 import { ArticleRelatedDefault } from "../related-default/Component";
-interface IModuleIconProps extends SVGProps<SVGSVGElement> {
-  size?: number;
+
+interface ICommentPreviewProps {
+  comment: BlogCommentData;
+  nested?: boolean;
 }
-type IconName = keyof typeof IconGlyphs;
-function createIcon(name: IconName) {
-  const Component = forwardRef<SVGSVGElement, IModuleIconProps>(
-    function ModuleGlyph({ className, size = 20, children, ...props }, ref) {
-      return (
-        <span className="contents">
-          <Icon
-            name={name}
-            className={twMerge("h-5 w-5", className)}
-            svgProps={{ ...props, ref, width: size, height: size }}
+
+const CommentPreview = memo(function CommentPreview({
+  comment,
+  nested = false,
+}: ICommentPreviewProps) {
+  const initials = comment.author
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("");
+  return (
+    <article
+      className={
+        nested
+          ? "min-w-0 border-l-2 border-border pl-3"
+          : "min-w-0 rounded-2xl border border-border p-4"
+      }
+    >
+      <div className="flex min-w-0 items-start gap-3">
+        {comment.avatar ? (
+          <img
+            src={comment.avatar}
+            alt=""
+            className="size-9 shrink-0 rounded-full border border-border object-cover"
           />
-        </span>
-      );
-    },
+        ) : (
+          <span
+            aria-hidden="true"
+            className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-xs font-medium"
+          >
+            {initials}
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium">{comment.author}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{comment.date}</p>
+          <p className="mt-3 break-words leading-7">{comment.text}</p>
+          <p className="mt-3 inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <SharedIcon variant="phosphor" name="thumbs-up" />
+            {comment.likes} likes
+          </p>
+        </div>
+      </div>
+      {!!comment.replies?.length && (
+        <div className="mt-4 space-y-4">
+          {comment.replies.map((reply) => (
+            <CommentPreview key={reply.id} comment={reply} nested />
+          ))}
+        </div>
+      )}
+    </article>
   );
-  Component.displayName = `Phosphor(${name})`;
-  return Component;
-}
-function Icon(props: {
-  name: keyof typeof IconGlyphs;
-  size?: 20 | 24;
-  className?: string;
-  svgProps?: React.SVGProps<SVGSVGElement>;
-}) {
-  return <SharedIcon {...props} variant="phosphor" />;
-}
+});
 
 export function Component(props: IComponentPropsExtended) {
   const {
@@ -72,6 +83,8 @@ export function Component(props: IComponentPropsExtended) {
     authorRole,
     authorAvatar,
     date,
+    createdAt,
+    excerpt,
     readTime,
     totalComments,
     content,
@@ -81,9 +94,21 @@ export function Component(props: IComponentPropsExtended) {
     cover,
     tagsCard,
     widgets,
+    breadcrumb,
+    outline = [],
+    contents,
+    navigation,
+    author,
+    authorCard,
+    commentsContent,
   } = props;
+  const body = useRef<HTMLDivElement>(null);
   const [saved, setSaved] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
+  useEffect(() => {
+    setSaved(false);
+    setCopyStatus("");
+  }, [slug]);
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(
@@ -94,131 +119,175 @@ export function Component(props: IComponentPropsExtended) {
       setCopyStatus("Copy is unavailable in this preview.");
     }
   }
+  function readSection(label: string) {
+    const heading = [
+      ...(body.current?.querySelectorAll<HTMLElement>("h2,h3") ?? []),
+    ].find((item) => item.textContent?.trim() === label);
+    if (!heading) return;
+    heading.tabIndex = -1;
+    heading.scrollIntoView({ block: "start" });
+    heading.focus({ preventScroll: true });
+  }
   return (
     <div
       className="w-full min-w-0"
       data-ds-block="blog.article.detail"
-      data-ds-imports="blog.tag.button-default blog.article.related-default social.profile.article-find-by-id-comment-form-default social.widget.profile-article-find-by-id-comment-find-default"
+      data-ds-imports="blog.tag.button-default blog.article.related-default website-builder.widget.content-rich"
       data-ds-layer="singlepage"
       data-module="blog"
       data-model="article"
-      data-variant={props?.variant ?? "detail"}
+      data-variant={props.variant ?? "detail"}
     >
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <nav
-          aria-label="Article breadcrumb"
-          className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
-        >
-          <a
-            href={blogIndexStoryHref}
-            target="_top"
-            className={`inline-flex min-h-11 items-center gap-2 rounded-xl hover:text-foreground ${kit.focus}`}
-          >
-            <ArrowLeft className="size-5" />
-            All articles
-          </a>
-          <ChevronRight className="size-5" />
-          <span>{category}</span>
-        </nav>
-        <header
-          className={`grid min-w-0 gap-4 ${cover ? "lg:grid-cols-2" : ""}`}
-        >
-          <div className="flex min-w-0 flex-col justify-between gap-8 rounded-3xl bg-default p-6 text-default-foreground sm:p-8 lg:p-10">
-            <div>
-              <span className="inline-flex rounded-full bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium">
-                {category}
-              </span>
-              <h1 className="mt-6 break-words text-4xl font-semibold leading-[1.08] tracking-tight md:text-5xl">
-                {title}
-              </h1>
-            </div>
-            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-default-foreground/20 pt-5">
-              <SocialModuleProfile
-                variant="compact"
-                inverse
-                name={authorName}
-                role={authorRole}
-                avatar={authorAvatar}
-                href={authorOverviewStoryHref}
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 sm:py-12 lg:gap-10 lg:px-8">
+        <header className="min-w-0 max-w-4xl">
+          {breadcrumb ?? (
+            <nav
+              aria-label="Article breadcrumb"
+              className="flex min-h-11 flex-wrap items-center gap-2 text-sm text-muted-foreground"
+            >
+              <a
+                href={blogIndexStoryHref}
                 target="_top"
-              />
-              <div className="text-right text-xs leading-5 text-default-muted-foreground">
-                <p>{date}</p>
-                <p>{readTime}</p>
+                className={`inline-flex min-h-11 items-center gap-2 rounded-xl hover:text-foreground ${focus}`}
+              >
+                <SharedIcon variant="phosphor" name="arrow-left" />
+                The Framework journal
+              </a>
+              <span aria-hidden="true">/</span>
+              <span>{category}</span>
+            </nav>
+          )}
+          <h1 className="mt-6 text-balance text-3xl font-semibold leading-tight tracking-normal sm:text-4xl lg:text-5xl">
+            {title}
+          </h1>
+          {excerpt && (
+            <p className="mt-5 text-lg leading-8 text-muted-foreground">
+              {excerpt}
+            </p>
+          )}
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+            {author ?? (
+              <div className="inline-flex min-w-0 items-center gap-3">
+                <img
+                  src={authorAvatar}
+                  alt=""
+                  className="size-10 shrink-0 rounded-xl bg-card object-contain"
+                />
+                <div>
+                  <p className="font-medium">{authorName}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {authorRole}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
+            <time dateTime={createdAt} className="text-muted-foreground">
+              {date}
+            </time>
+            <p className="inline-flex items-center gap-2 text-muted-foreground">
+              <SharedIcon variant="phosphor" name="clock" />
+              {readTime}
+            </p>
           </div>
-          {cover && <div className="min-w-0">{cover}</div>}
         </header>
-        <div className="grid min-w-0 items-start gap-6 pt-6 sm:pt-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8">
+        <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_256px] lg:gap-10">
           <div className="min-w-0 space-y-8">
-            <div className="rounded-3xl border border-border bg-card p-5 sm:p-8 lg:p-10">
-              <div className="mb-8 flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <Tag
-                    variant="button-default"
-                    key={tag}
-                    label={tag}
-                    href={`/blog/tags/${tag}`}
-                  />
-                ))}
+            <div
+              className="min-w-0 rounded-3xl border border-border bg-card p-5 sm:p-8"
+              ref={body}
+            >
+              {cover && (
+                <div className="mx-auto mb-8 w-full max-w-lg">{cover}</div>
+              )}
+              {tags.length > 0 && (
+                <div className="mb-8 flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <Tag
+                      variant="button-default"
+                      key={tag}
+                      label={tag}
+                      href={`/blog/tags/${tag}`}
+                    />
+                  ))}
+                </div>
+              )}
+              <div className="min-w-0 [&_a]:[overflow-wrap:anywhere] [&_h2]:scroll-mt-28 [&_h3]:scroll-mt-28 [&_pre]:max-w-full">
+                <WebsiteBuilderModuleWidget
+                  variant="content-rich"
+                  content={content}
+                />
               </div>
-              <WebsiteBuilderModuleWidget
-                variant="content-rich"
-                content={content}
-              />
-              {widgets ? <div className="mt-8 space-y-6">{widgets}</div> : null}
+              {widgets && <div className="mt-8 space-y-6">{widgets}</div>}
               <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
-                <Button variant="secondary" onClick={copyLink}>
-                  <Share2 className="size-5" />
+                <WebsiteBuilderModuleButton
+                  variant="control"
+                  appearance="secondary"
+                  onClick={copyLink}
+                >
+                  <SharedIcon variant="phosphor" name="share-network" />
                   Copy link
-                </Button>
-                <Button
-                  variant="secondary"
+                </WebsiteBuilderModuleButton>
+                <WebsiteBuilderModuleButton
+                  variant="control"
+                  appearance="secondary"
                   aria-pressed={saved}
                   onClick={() => setSaved((value) => !value)}
                 >
-                  <Bookmark className="size-5" />
+                  <SharedIcon variant="phosphor" name="bookmark-simple" />
                   {saved ? "Saved in preview" : "Save article"}
-                </Button>
+                </WebsiteBuilderModuleButton>
               </div>
-              <p
-                aria-live="polite"
-                className="mt-3 text-xs text-muted-foreground"
-              >
+              <p role="status" className="mt-3 text-xs text-muted-foreground">
                 {copyStatus ||
                   (saved ? "Saved locally for this preview session." : "")}
               </p>
             </div>
-            <section
-              aria-label="Article comments"
-              className="rounded-3xl border border-border bg-card p-5 sm:p-8"
-            >
-              <h2 className="mb-6 flex items-center gap-3 text-2xl font-semibold tracking-tight">
-                <MessageSquare className="size-6" />
-                Comments{" "}
-                <span className="text-base font-normal text-muted-foreground">
-                  {totalComments}
-                </span>
-              </h2>
-              <div className="mb-8">
-                <SocialModuleProfile variant="article-find-by-id-comment-form-default" />
-              </div>
-              <SocialModuleWidget
-                variant="profile-article-find-by-id-comment-find-default"
-                comments={comments}
-              />
-            </section>
+            {(commentsContent || comments.length > 0) && (
+              <section
+                aria-label="Article comments"
+                className="rounded-3xl border border-border bg-card p-5 sm:p-8"
+              >
+                <h2 className="mb-6 flex items-center gap-3 text-2xl font-semibold">
+                  <SharedIcon variant="phosphor" name="chat" size={24} />
+                  Comments{" "}
+                  <span className="text-base font-normal text-muted-foreground">
+                    {totalComments}
+                  </span>
+                </h2>
+                {commentsContent ?? (
+                  <div className="space-y-5">
+                    {comments.map((comment) => (
+                      <CommentPreview key={comment.id} comment={comment} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
           </div>
-          <aside aria-label="Related resources" className="min-w-0 space-y-6">
-            <SocialModuleProfile
-              variant="card"
-              name={authorName}
-              role={authorRole}
-              avatar={authorAvatar}
-              href={authorOverviewStoryHref}
-              target="_top"
-            />
+          <aside
+            aria-label="Article resources"
+            className="order-first min-w-0 space-y-6 lg:order-last"
+          >
+            {(contents || outline.length > 0) && (
+              <section className="rounded-2xl border border-border bg-card p-5">
+                <h2 className="text-sm font-semibold">In this guide</h2>
+                {contents ?? (
+                  <nav aria-label="In this guide" className="mt-3 grid gap-1">
+                    {outline.map((heading) => (
+                      <button
+                        type="button"
+                        key={heading.id}
+                        onClick={() => readSection(heading.title)}
+                        className={`min-h-11 rounded-lg py-2 text-left text-sm leading-6 text-muted-foreground hover:underline ${focus}`}
+                      >
+                        {heading.title}
+                      </button>
+                    ))}
+                  </nav>
+                )}
+              </section>
+            )}
+            {authorCard}
             {pinnedProducts.length > 0 && (
               <section className="rounded-2xl border border-border bg-card p-5">
                 <h2 className="mb-4 text-lg font-semibold">Related products</h2>
@@ -232,8 +301,6 @@ export function Component(props: IComponentPropsExtended) {
                       shortDescription={product.shortDescription}
                       priceLabel={product.priceLabel}
                       category={product.category}
-                      href={productOverviewStoryHref}
-                      target="_top"
                     />
                   ))}
                 </div>
@@ -244,68 +311,25 @@ export function Component(props: IComponentPropsExtended) {
               <section className="rounded-2xl border border-border bg-card p-5">
                 <h2 className="mb-4 text-lg font-semibold">Keep reading</h2>
                 <div className="space-y-3">
-                  {relatedArticles.map((rel) => (
+                  {relatedArticles.map((article) => (
                     <ArticleRelatedDefault
-                      key={rel.id}
-                      href={articleOverviewStoryHref}
-                      slug={rel.slug}
-                      category={rel.category}
-                      title={rel.title}
-                      date={rel.date}
-                      readTime={rel.readTime}
+                      key={article.id}
+                      {...article}
+                      href={`/?path=/story/modules-host-models-page-singlepage-blog-module-article-slug--default&args=articleSlug:${article.slug}`}
                       target="_top"
                     />
                   ))}
                 </div>
               </section>
             )}
-            <a
-              href={blogIndexStoryHref}
-              target="_top"
-              className={`${kit.secondary} w-full`}
-            >
-              <ArrowLeft className="size-5" />
-              Back to all articles
-            </a>
           </aside>
         </div>
+        {navigation}
       </div>
     </div>
   );
 }
-const Share2 = createIcon("share-network");
-const MessageSquare = createIcon("chat");
-const ChevronRight = createIcon("caret-right");
-const Bookmark = createIcon("bookmark-simple");
-const ArrowLeft = createIcon("arrow-left");
 const focus =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
-const buttonBase =
-  "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition motion-reduce:transition-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
-const kit = {
-  secondary: `${buttonBase} border border-border bg-card text-foreground enabled:hover:bg-muted ${focus}`,
-  focus: focus,
-};
-const Button = forwardRefControl<
-  HTMLButtonElement,
-  ButtonControlProps<HTMLButtonElement> & {
-    variant?: "primary" | "secondary" | "plain" | "danger";
-  }
->(function Button({ variant = "primary", ...props }, ref) {
-  return (
-    <WebsiteBuilderModuleButton
-      {...props}
-      variant="control"
-      appearance={variant}
-      ref={ref}
-    />
-  );
-});
-const articleOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-blog-module-article-slug--default";
-const authorOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-social-module-profile-slug-author--default";
-const productOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-ecommerce-module-product-slug--default";
 const blogIndexStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-blog-module-article-find--default";

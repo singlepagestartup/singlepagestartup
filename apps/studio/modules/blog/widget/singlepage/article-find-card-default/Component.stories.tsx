@@ -28,3 +28,5 @@ export const Default: Story = {
 
 import { Skeleton } from "./Skeleton";
 export const Loading: Story = { render: () => <Skeleton /> };
+export const Empty: Story = { args: { articles: [] } };
+export const Pagination: Story = { args: { pageSize: 3 } };

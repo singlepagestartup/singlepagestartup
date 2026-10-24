@@ -8,6 +8,7 @@ export function Component({
   widgets,
   children,
   backHref = "/blog",
+  count,
 }: IComponentProps) {
   return (
     <section
@@ -23,16 +24,21 @@ export function Component({
         target="_top"
         className="inline-flex min-h-11 items-center rounded text-sm font-medium underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
       >
-        All categories
+        All articles
       </a>
-      <header className="rounded-3xl bg-default p-6 text-default-foreground sm:p-10">
-        <p className="text-sm text-default-muted-foreground">Blog category</p>
+      <header className="max-w-3xl">
+        <p className="text-sm text-muted-foreground">Read by subject</p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
           {title}
         </h1>
-        <p className="mt-5 max-w-2xl text-lg leading-8 text-default-muted-foreground">
+        <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
           {subtitle}
         </p>
+        {count !== undefined && (
+          <p className="mt-5 text-sm text-muted-foreground">
+            {count} guides with code and source links
+          </p>
+        )}
       </header>
       {media}
       {description ? (

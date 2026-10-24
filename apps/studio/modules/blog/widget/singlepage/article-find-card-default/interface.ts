@@ -13,7 +13,10 @@ export interface ArticleFindCardDefaultArticle {
   media?: { id: string; src: string; alt: string }[];
   coverImage: string;
   category: string;
+  categorySlug?: string;
   date: string;
+  createdAt?: string;
+  content?: string;
   readTime: string;
   commentCount: number;
   authorName: string;
@@ -27,6 +30,7 @@ export type ArticleFindCardDefaultProps = {
   description?: ReactNode;
   categories: BlogCategoryTab[];
   articles: ArticleFindCardDefaultArticle[];
+  pageSize?: number;
 };
 
 type IVariantInputs = NonNullable<

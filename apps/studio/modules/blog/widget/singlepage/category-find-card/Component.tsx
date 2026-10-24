@@ -1,7 +1,7 @@
 import type { IComponentProps } from "./interface";
 import {
   Component as Category,
-  defaultCategoryCardProps,
+  frameworkCategoryPreviews,
 } from "../../../category";
 import { Skeleton } from "./Skeleton";
 export function Component({
@@ -9,6 +9,7 @@ export function Component({
   description,
   categories = defaultCategories,
   loading = false,
+  layout,
 }: IComponentProps) {
   if (loading) return <Skeleton />;
   return (
@@ -27,7 +28,12 @@ export function Component({
       {categories.length ? (
         <div className="grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => (
-            <Category key={category.id} {...category} variant="card" />
+            <Category
+              key={category.id}
+              {...category}
+              layout={layout ?? category.layout}
+              variant="card"
+            />
           ))}
         </div>
       ) : (
@@ -41,29 +47,4 @@ export function Component({
     </section>
   );
 }
-export const defaultCategories = [
-  {
-    ...defaultCategoryCardProps,
-    href: "/?path=/story/modules-host-models-page-singlepage-blog-module-category-slug--default",
-  },
-  {
-    ...defaultCategoryCardProps,
-    id: "blog-category-2",
-    slug: "design",
-    title: "Guides",
-    image:
-      "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-moment-of-focus-square.png",
-    count: 4,
-    href: "/?path=/story/modules-host-models-page-singlepage-blog-module-category-slug--default",
-  },
-  {
-    ...defaultCategoryCardProps,
-    id: "blog-category-3",
-    slug: "updates",
-    title: "Updates",
-    image:
-      "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png",
-    count: 3,
-    href: "/?path=/story/modules-host-models-page-singlepage-blog-module-category-slug--default",
-  },
-];
+export const defaultCategories = frameworkCategoryPreviews;

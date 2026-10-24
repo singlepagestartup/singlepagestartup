@@ -1,22 +1,32 @@
 import { memo } from "react";
 import type { IComponentProps, CategoryCardProps } from "./interface";
 import { Component as SharedIcon } from "../../../../shared/icon";
-export const defaultCategoryCardProps: CategoryCardProps = {
-  id: "blog-category-1",
-  slug: "engineering",
-  title: "Engineering",
-  subtitle: "Notes on building with Next.js, Hono and SinglePageStartup.",
-  image:
-    "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
-  imageAlt: "A conversation about a project",
-  count: 6,
-  target: "_top",
-};
+import fixture from "../admin-v2-table/data.json";
+
+export const frameworkCategoryPreviews: CategoryCardProps[] =
+  fixture.records.map((record) => {
+    const presentation = fixture.presentation.find(
+      (item) => item.id === record.id,
+    )!;
+    return {
+      id: record.id,
+      slug: record.slug,
+      title: record.title.en,
+      subtitle: record.subtitle.en,
+      image: presentation.image,
+      imageAlt: presentation.imageAlt,
+      count: presentation.count,
+      href: `/?path=/story/modules-host-models-page-singlepage-blog-module-category-slug--default&args=categorySlug:${record.slug}`,
+      target: "_top",
+    };
+  });
+export const defaultCategoryCardProps = frameworkCategoryPreviews[0];
 export const Component = memo(function CategoryCard(props: IComponentProps) {
   const category = { ...defaultCategoryCardProps, ...props };
+  const compact = category.layout === "compact";
   return (
     <article
-      className="relative isolate flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card"
+      className={`relative isolate flex min-w-0 overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground motion-reduce:transition-none ${compact ? "flex-row items-start gap-4 p-4" : "flex-col"}`}
       data-module="blog"
       data-model="category"
       data-id={category.id}
@@ -28,10 +38,16 @@ export const Component = memo(function CategoryCard(props: IComponentProps) {
         <img
           src={category.image}
           alt={category.imageAlt ?? ""}
-          className="aspect-square w-full object-cover"
+          className={
+            compact
+              ? "aspect-square size-16 shrink-0 rounded-xl object-cover"
+              : "aspect-square w-full object-cover"
+          }
         />
       ) : null}
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div
+        className={`flex min-w-0 flex-1 flex-col gap-3 ${compact ? "" : "p-5"}`}
+      >
         <div className="flex items-start justify-between gap-3">
           <h3 className="min-w-0 text-xl font-semibold leading-6 tracking-tight">
             <a
@@ -43,7 +59,7 @@ export const Component = memo(function CategoryCard(props: IComponentProps) {
               {category.title}
             </a>
           </h3>
-          {category.count !== undefined ? (
+          {category.count !== undefined && !compact ? (
             <span className="shrink-0 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
               {category.count} articles
             </span>
@@ -57,12 +73,15 @@ export const Component = memo(function CategoryCard(props: IComponentProps) {
             {category.children}
           </div>
         ) : null}
-        <span
-          aria-hidden="true"
-          className="mt-auto inline-flex min-h-11 w-fit items-center gap-2 rounded-lg text-sm font-medium"
-        >
-          Explore category <SharedIcon variant="phosphor" name="arrow-right" />
-        </span>
+        {!compact && (
+          <span
+            aria-hidden="true"
+            className="mt-auto inline-flex min-h-11 w-fit items-center gap-2 rounded-lg text-sm font-medium"
+          >
+            Explore category{" "}
+            <SharedIcon variant="phosphor" name="arrow-right" />
+          </span>
+        )}
       </div>
     </article>
   );

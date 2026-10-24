@@ -165,7 +165,10 @@ export function Component(props: IComponentProps) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [page, setPage] = useState(1);
-  const pageSize = 3;
+  const requestedPageSize = props.pageSize ?? 6;
+  const pageSize = Number.isFinite(requestedPageSize)
+    ? Math.max(1, Math.floor(requestedPageSize))
+    : 6;
   const chooseCategory = useCallback((slug: string) => {
     setCategory(slug);
     setPage(1);
@@ -174,12 +177,16 @@ export function Component(props: IComponentProps) {
     setQuery(value);
     setPage(1);
   }, []);
+  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const filtered = articles.filter(
     (article) =>
-      (category === "all" || article.category === category) &&
-      `${article.title} ${article.excerpt} ${article.authorName}`
-        .toLowerCase()
-        .includes(query.trim().toLowerCase()),
+      (category === "all" ||
+        (article.categorySlug ?? article.category) === category) &&
+      terms.every((term) =>
+        `${article.title} ${article.excerpt} ${article.authorName} ${article.content ?? ""}`
+          .toLowerCase()
+          .includes(term),
+      ),
   );
   const activePage = Math.min(
     page,
@@ -230,6 +237,7 @@ export function Component(props: IComponentProps) {
               coverImage={article.coverImage}
               category={article.category}
               date={article.date}
+              createdAt={article.createdAt}
               title={article.title}
               excerpt={article.excerpt}
               excerptContent={article.excerptContent}
