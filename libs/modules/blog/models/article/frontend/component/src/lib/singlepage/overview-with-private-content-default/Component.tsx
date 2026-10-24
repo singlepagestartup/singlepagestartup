@@ -10,6 +10,9 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       language={props.language}
       author={props.author}
+      authorCard={props.authorCard}
+      navigation={props.navigation}
+      commentsContent={props.commentsContent}
     >
       {props.children}
     </Article>

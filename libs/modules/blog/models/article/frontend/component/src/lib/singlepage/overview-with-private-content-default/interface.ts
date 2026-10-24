@@ -12,6 +12,9 @@ export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
   author?: ReactNode;
+  authorCard?: ReactNode;
+  navigation?: ReactNode;
+  commentsContent?: ReactNode;
 }
 
 export interface IComponentPropsExtended

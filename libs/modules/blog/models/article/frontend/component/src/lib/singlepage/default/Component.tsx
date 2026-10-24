@@ -6,7 +6,7 @@ import { Component as ArticlesToFileStorageModuleFiles } from "@sps/blog/relatio
 import Link from "next/link";
 import { internationalization } from "@sps/shared-configuration";
 import { saveLanguageContext } from "@sps/shared-utils";
-import { ArrowRight } from "lucide-react";
+import { Icon } from "@sps/ui-adapter";
 import { Categories } from "./Categories";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
@@ -18,7 +18,10 @@ export const Component = memo(function Component(
   );
   const title =
     props.data.title?.[props.language]?.trim() || props.data.title?.en?.trim();
-  const createdAt = new Date(String(props.data.createdAt));
+  const createdAt =
+    props.data.createdAt instanceof Date
+      ? props.data.createdAt
+      : new Date(String(props.data.createdAt));
   const hasDate = !Number.isNaN(createdAt.getTime());
   return (
     <article
@@ -81,7 +84,7 @@ export const Component = memo(function Component(
             </time>
           ) : null}
         </div>
-        <h3 className="break-words text-2xl font-semibold leading-7 tracking-tight">
+        <h3 className="break-words text-xl font-semibold leading-snug tracking-normal">
           <Link
             href={href}
             aria-label={
@@ -108,7 +111,7 @@ export const Component = memo(function Component(
           className="mt-auto inline-flex min-h-11 w-fit items-center gap-2 text-sm font-medium"
         >
           {props.language === "ru" ? "Читать статью" : "Read article"}
-          <ArrowRight className="size-4" aria-hidden="true" />
+          <Icon name="arrow-right" />
         </span>
         {props.author ? (
           <div className="border-t border-border pt-4 [&_a]:relative [&_a]:z-10">

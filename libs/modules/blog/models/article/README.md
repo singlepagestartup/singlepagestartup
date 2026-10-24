@@ -20,7 +20,7 @@ Articles are the primary content entries in the blog, storing localized text and
 ## Variants
 
 - `default`: article card with localized rich subtitle, ordered media, linked categories, creation date and an optional author JSX slot. One stretched link covers the card; category and rich-text links keep their own destinations.
-- `overview-default`: article header with actual category links, creation date and optional author JSX, rich body, all ordered media and an optional ordered content JSX slot. Public fallback reads only `default` Article→Widget associations.
+- `overview-default`: light article introduction with actual category links, creation date and optional author JSX; all ordered media sit with the rich body. A client view builds its contents from the rendered public-body headings and moves keyboard focus to the chosen heading. Public fallback reads only `default` Article→Widget associations.
 - `overview-with-private-content-default`: the same public article view with a higher-module content slot.
 - `private-content-default`: presentation for guest, locked, expired, checking, error and granted states; children mount only for granted access.
 - `loading`: one article skeleton; collection Widgets compose the grid.
@@ -49,3 +49,14 @@ profiles. `TRenderAuthor` and `IAuthorSlotProps` are exported by the public
 Article frontend entrypoint. An article without linked authors has no invented
 byline. Category labels use the current Category records linked through
 `categories-to-articles`, preserving relation order.
+
+The overview keeps SDK selection and relation readers in its server-compatible
+`Component.tsx`. Its `ClientComponent.tsx` receives explicit display strings and
+rendered nodes for media, body, author and ordered content. `authorCard`,
+`navigation` and `commentsContent` are JSX slots for higher consumers. The contents observer
+only watches the public description; protected child widgets retain their
+existing access and cache owner. No reading-time value is invented: Article
+has no reading-time field.
+
+The comments slot carries a supplied Social composition; Blog does not own a
+comment model or invent persisted discussions. An absent slot stays empty.

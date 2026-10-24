@@ -12,6 +12,9 @@ export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
   author?: ReactNode;
+  authorCard?: ReactNode;
+  navigation?: ReactNode;
+  commentsContent?: ReactNode;
 }
 
 export interface IComponentPropsExtended
@@ -20,3 +23,27 @@ export interface IComponentPropsExtended
     typeof variant,
     IComponentProps
   > {}
+
+export interface IClientComponentProps {
+  articleId: string;
+  variant: typeof variant;
+  language: string;
+  title: string;
+  className?: string;
+  dateTime?: string;
+  dateLabel?: string;
+  categories: ReactNode;
+  subtitle?: ReactNode;
+  author?: ReactNode;
+  authorCard?: ReactNode;
+  media: ReactNode;
+  body?: ReactNode;
+  content: ReactNode;
+  navigation?: ReactNode;
+  commentsContent?: ReactNode;
+}
+
+export interface IArticleHeading {
+  id: string;
+  title: string;
+}

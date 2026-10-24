@@ -1,4 +1,5 @@
 import { BylineSkeleton as SocialModuleProfileBylineSkeleton } from "@sps/social/models/profile/frontend/component";
+import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import { Component as SocialModuleProfilesToBlogModuleArticles } from "@sps/social/relations/profiles-to-blog-module-articles/frontend/component";
 import { Component as Page } from "@sps/host/models/page/frontend/component";
 import type { IExternalWidgetProps } from "../interface";
@@ -81,6 +82,45 @@ export function Component(props: IExternalWidgetProps) {
                                 language={props.language}
                                 size={size}
                                 inverse={inverse}
+                              />
+                            ))}
+                          </div>
+                        ) : null
+                      }
+                    </SocialModuleProfilesToBlogModuleArticles>
+                  )}
+                  renderAuthorCard={({ data }) => (
+                    <SocialModuleProfilesToBlogModuleArticles
+                      isServer={props.isServer}
+                      variant="find"
+                      skeleton={<SocialModuleProfileBylineSkeleton size="sm" />}
+                      apiProps={{
+                        params: {
+                          filters: {
+                            and: [
+                              {
+                                column: "blogModuleArticleId",
+                                method: "eq",
+                                value: data.id,
+                              },
+                            ],
+                          },
+                          orderBy: {
+                            and: [{ column: "orderIndex", method: "asc" }],
+                          },
+                        },
+                      }}
+                    >
+                      {({ data: links }) =>
+                        links?.length ? (
+                          <div className="space-y-4">
+                            {links.map((link) => (
+                              <SocialModuleProfile
+                                key={link.id}
+                                isServer={props.isServer}
+                                variant="author-card-default"
+                                profileId={link.profileId}
+                                language={props.language}
                               />
                             ))}
                           </div>

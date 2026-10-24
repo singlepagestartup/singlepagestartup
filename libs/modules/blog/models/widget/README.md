@@ -22,7 +22,7 @@ Blog widgets are reusable content blocks that render article and category lists 
 - `default`: placeholder widget view.
 - `category-list-default`: renders a card with all categories listed.
 - `category-overview-default`: selects and renders the Category identified by its explicit slug.
-- `article-list-default`: renders only the Widget's ordered Article membership; an empty selection shows the empty state.
+- `article-list-default`: renders only the Widget's ordered Article membership into its exact linked Website Builder frame; an empty selection shows the empty state.
 - `article-feed-default`: paginated global Article feed using the Article SDK list/count operations, ordered by `createdAt` descending with an ID tie-breaker.
 - `article-overview-default`: selects and renders the Article identified by its explicit slug.
 - `article-overview-with-private-content-default`: Article view with a higher-module private-content slot.
@@ -49,10 +49,34 @@ slots; Blog imports no RBAC code. Callbacks execute beside the owning reader and
 produce JSX before any client boundary. Lower entity reads do not receive the
 routing map.
 
+Both overview Widgets resolve `renderAuthorCard`, `renderCommentsContent` and
+`renderNavigation` beside the loaded Article. Host supplies author cards from
+the saved Social Profile→Article links and the public `author-card-default`
+reader. Comments remain a neutral optional JSX port: the runtime has no
+Article-comment association or persisted comment operation to attach here.
+
+Without a supplied navigation port, overview Widgets browse real Articles in a
+stable ascending `id` sequence. The preceding Article uses `id < currentId`
+with descending ID order; the following Article uses `id > currentId` with
+ascending ID order. Each direction performs one SDK read with `limit: 1`, and
+the rendered result excludes the current ID defensively. Missing IDs issue no
+neighbor query. This sequence is independent of the feed's creation-date order:
+database timestamps may have greater precision than the API's JavaScript Date,
+so they are not round-tripped as navigation cursors. The private overview uses
+the same reader and retains its existing content callback and guard.
+
 Article collection Widgets keep their saved curated relation order and never
 replace an empty selection with all Articles. The legacy Category collection
 falls back to the model collection when it has no links. Both own their grid
 skeleton and empty state. Entity `loading` variants render one item.
+
+The curated `article-list-default` reads its own ordered
+`widgets-to-website-builder-module-widgets` links with a `widgetId` filter and
+uses their default renderer. Each saved frame receives the exact ordered
+`widgets-to-articles` rows as JSX children. A legacy Widget without a frame keeps
+its existing localized header and grid. Neither path substitutes the global
+Article collection for empty membership; query ordering and SDK limits remain
+with the association reader.
 
 The global `article-feed-default` Widget reads Articles independently from
 curated membership. It resolves its exact

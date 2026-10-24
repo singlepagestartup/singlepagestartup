@@ -14,6 +14,9 @@ export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
   renderAuthor?: TRenderAuthor;
+  renderAuthorCard?: TRenderAuthor;
+  renderCommentsContent?: (props: { data: IArticle }) => ReactNode;
+  renderNavigation?: (props: { data: IArticle }) => ReactNode;
   articleSlug?: string;
   renderContent?: (props: { data: IArticle }) => ReactNode;
 }
@@ -29,6 +32,20 @@ export interface IContentProps {
   isServer: boolean;
   language: string;
   renderAuthor?: TRenderAuthor;
+  renderAuthorCard?: TRenderAuthor;
+  renderCommentsContent?: IComponentProps["renderCommentsContent"];
+  renderNavigation?: IComponentProps["renderNavigation"];
   articleSlug?: string;
   renderContent?: (props: { data: IArticle }) => ReactNode;
+  articleVariant?: "overview-default" | "overview-with-private-content-default";
+}
+
+export interface INavigationProps {
+  isServer: boolean;
+  language: string;
+  data: IArticle;
+}
+
+export interface INeighborProps extends INavigationProps {
+  direction: "previous" | "next";
 }

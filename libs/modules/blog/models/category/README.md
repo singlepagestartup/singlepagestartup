@@ -20,7 +20,7 @@ Categories group articles and provide localized metadata for category pages.
 ## Variants
 
 - `default`: category card with localized rich subtitle, a count of its linked articles and one stretched category link. Its cover is the first ordered attachment of the first ordered linked article; a category without that attachment has no cover.
-- `overview-default`: category header, rich description, ordered Website Builder widgets and related articles in one container.
+- `overview-default`: light category introduction with a return link, rich description, ordered Website Builder widgets and the actual related Article collection/count in one container.
 - `loading`: one category skeleton; collection Widgets compose the grid.
 - `find`: data-fetch wrapper for querying categories.
 - `admin-form`: admin create/edit form for localized fields and metadata.

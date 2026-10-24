@@ -6,7 +6,7 @@ import { Component as CategoriesToArticles } from "@sps/blog/relations/categorie
 import Link from "next/link";
 import { internationalization } from "@sps/shared-configuration";
 import { saveLanguageContext } from "@sps/shared-utils";
-import { ArrowRight } from "lucide-react";
+import { Icon } from "@sps/ui-adapter";
 import { Cover } from "./Cover";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
@@ -55,7 +55,7 @@ export const Component = memo(function Component(
             ) : null}
             <div className="flex flex-1 flex-col gap-3 p-5">
               <div className="flex items-start justify-between gap-3">
-                <h3 className="min-w-0 break-words text-xl font-semibold leading-6 tracking-tight">
+                <h3 className="min-w-0 break-words text-xl font-semibold leading-6 tracking-normal">
                   <Link
                     href={href}
                     aria-label={
@@ -100,7 +100,7 @@ export const Component = memo(function Component(
                 {props.language === "ru"
                   ? "Открыть категорию"
                   : "Explore category"}
-                <ArrowRight className="size-4" aria-hidden="true" />
+                <Icon name="arrow-right" />
               </span>
             </div>
           </>
