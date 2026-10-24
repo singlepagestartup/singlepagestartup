@@ -7,6 +7,7 @@ import {
 import { SiteShell, PreviewLink, siteStyles as styles } from "../Site";
 import { parseModules, parseModulesPage, readModuleSlug } from "./content";
 import sourceText from "./page.md?raw";
+import SocialGuide from "./SocialGuide";
 
 interface IModulesPageProps extends IWorkspacePageProps {
   defaultSlug?: string;
@@ -24,6 +25,9 @@ export default function ModulesPage({
   const modules = parseModules(text ?? sourceText);
   const slug = readModuleSlug(navigationHref) ?? defaultSlug;
   const selected = modules.find((item) => item.id === slug);
+  if (selected?.id === "social") {
+    return <SocialGuide copy={copy.social} resolveLink={resolveLink} />;
+  }
   return (
     <SiteShell active="modules" resolveLink={resolveLink} lang="ru" acquisition>
       <main className="mx-auto max-w-7xl px-5 py-10 @3xl:px-8 @3xl:py-14">

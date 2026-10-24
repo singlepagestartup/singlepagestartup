@@ -7,7 +7,7 @@ export interface IFrameworkModule {
   group: string;
 }
 
-interface IModuleCopySection {
+export interface IModuleCopySection {
   title: string;
   paragraphs: string[];
   items: { title: string; text: string }[];
@@ -20,6 +20,7 @@ export interface IModulesPageContent {
   guide: IModuleCopySection;
   labels: Record<string, string>;
   articles: Record<string, IModuleCopySection>;
+  social: Record<string, IModuleCopySection>;
 }
 
 function readCopy(text: string): IModuleCopySection {
@@ -54,6 +55,11 @@ export function parseModulesPage(text = sourceText): IModulesPageContent {
     composition: section.composition,
     preparation: section.preparation,
     guide: section.guide,
+    social: Object.fromEntries(
+      Object.entries(section)
+        .filter(([key]) => key.startsWith("social-"))
+        .map(([key, value]) => [key.slice(7), value]),
+    ),
     articles: Object.fromEntries(
       Object.entries(section)
         .filter(([key]) => key.startsWith("article-"))

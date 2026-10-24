@@ -72,4 +72,52 @@ describe("editable Framework website copy", () => {
       "invalid-module-route",
     );
   });
+
+  test("Social guide renders its paired editable article and example copy", () => {
+    const edited = modules
+      .replace(
+        "Social: люди, общение и ИИ в вашем продукте",
+        "Social для моей школы",
+      )
+      .replace("Клуб создателей", "Сообщество выпускников")
+      .replace(
+        "Как собрать обратную связь от первых участников?",
+        "Как начать обсуждение?",
+      );
+    const html = renderToStaticMarkup(
+      <ModulesPage
+        text={edited}
+        navigationHref="/framework/modules/social"
+        resolveLink={(href) =>
+          href === "/ai-chat/rbac/subjects/authentication/registration"
+            ? "/preview/register"
+            : href
+        }
+      />,
+    );
+    expect(html).toContain("Social для моей школы");
+    expect(html).toContain("Сообщество выпускников");
+    expect(html).toContain("Как начать обсуждение?");
+    expect(html).toContain('href="/preview/register"');
+    expect(html).toContain("Сообщения остаются в этом макете");
+  });
+
+  test("the Social article does not replace other module guides or unknown routes", () => {
+    const billing = renderToStaticMarkup(
+      <ModulesPage
+        text={modules}
+        navigationHref="/framework/modules/billing"
+      />,
+    );
+    expect(billing).toContain("Billing: как работает модуль");
+    expect(billing).not.toContain('id="social-guide"');
+    const unknown = renderToStaticMarkup(
+      <ModulesPage
+        text={modules}
+        navigationHref="/framework/modules/not-a-module"
+      />,
+    );
+    expect(unknown).toContain("Модуль не найден");
+    expect(unknown).not.toContain('id="social-guide"');
+  });
 });
