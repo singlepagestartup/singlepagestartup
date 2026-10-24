@@ -42,12 +42,12 @@
    Widget и relation границы, единичные model loading и grid Widget loading.
    Product не импортирует эти реализации. Проверить свойства и состояния через
    публичные entrypoints и отдельного reviewer.
-5. **Runtime — реализация и независимое ревью в работе.** Перенести композицию через Website Builder
+5. **Runtime — реализован, source review и локальная публикация проверены.** Перенести композицию через Website Builder
    presentation Widgets, доменные Widgets и точные relation instances. Контент
    менять через явный SDK data-management flow, не repository snapshots.
    Сохранить регистрацию, социальные профили/авторов, корзину, валюты, checkout,
    токены, CRM и закрытый контент; проверить client/server границы и доступ.
-6. **Приёмка — ожидает Runtime.** Запустить `npm run api:dev` и
+6. **Приёмка — публичный dev-путь проверен; production и авторизованный документ ожидают проверки.** Запустить `npm run api:dev` и
    `npm run host:dev`, проверить реальные маршруты и основные сценарии. Выполнить
    scoped type/test/review проверки и необходимую проверку production RSC с
    ограниченными ресурсами. Обновить артефакты #376 и оставить финальный Code
@@ -117,3 +117,26 @@ FAQ, копирование, валюта и выбор пакета; ошибо
 `thoughts/shared/research/singlepagestartup/ISSUE-376-framework-modules-journey-review.md`.
 
 Эти результаты не заменяют приёмку production-компонентов и CMS cutover.
+
+## Runtime checkpoint
+
+Production-компоненты используют собственные SDK и точные сохранённые relations;
+Studio imports в runtime не добавлены. Framework, 15 справочных страниц, Blog,
+curated token catalogue и общая навигация опубликованы локально через явные
+SDK-входы. Повтор и итоговый fresh prepare обоих входов не требуют изменений.
+Первый cutover также прошёл rollback/reapply с сохранением additive records.
+
+Desktop и 320 CSS px проверены в браузере: ссылки, карточки, FAQ, копирование,
+Slider, Blog/author/TOC, currency и выбор пакета. Guest private Widget отсутствует
+в DOM, прямой GET возвращает 403/private no-store. Финансовые и CRM операции
+в этом проходе не отправлялись. Scoped runtime TypeScript и профильные тесты
+проходят; независимый reviewer закрыл все source/CMS findings в своём scope.
+
+Полная production-сборка не принята: Webpack достиг V8 heap limit, отдельную
+Turbopack compile остановил RSS watchdog. Source review не подтверждает unsafe
+client-to-server import, но не заменяет успешную сборку. Панель передачи документа
+проверена 16 runtime-component regressions; полный browser-проход в авторизованной
+сессии ещё не выполнен. Эти два ограничения остаются видимыми для Code Review.
+
+Подробный runtime report, закрытые замечания и точные границы доказательств:
+`thoughts/shared/research/singlepagestartup/ISSUE-376-framework-runtime-journey-review.md`.
