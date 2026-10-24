@@ -185,12 +185,13 @@ export async function preparePlatformExamples(
     (a, b) =>
       Number(switchIds.includes(a.id)) - Number(switchIds.includes(b.id)),
   );
-  const protectedSelections = await Promise.all(
-    input.protectedSelections.map(async (selection) => ({
+  const protectedSelections: IPlatformManifest["protectedSelections"] = [];
+  for (const selection of input.protectedSelections) {
+    protectedSelections.push({
       ...selection,
       rows: await find(adapter, selection),
-    })),
-  );
+    });
+  }
   for (const operation of operations) {
     if (
       protectedSelections.some(

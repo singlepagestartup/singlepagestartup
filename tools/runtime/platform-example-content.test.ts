@@ -108,6 +108,36 @@ function fixture() {
 }
 
 describe("platform content publication", () => {
+  it("bounds protected inventory reads instead of flooding the API", async () => {
+    const f = fixture();
+    f.input.protectedSelections = Array.from({ length: 8 }, (_, index) => ({
+      entity: "ecommerce.order",
+      selector: { id: `order-${index}` },
+    }));
+    let active = 0;
+    let peak = 0;
+    const adapter: IWidgetCutoverAdapter = async (entity) => {
+      const api = await f.adapter(entity);
+      return {
+        ...api,
+        find: async (props) => {
+          active += 1;
+          peak = Math.max(peak, active);
+          try {
+            await new Promise((resolve) => setTimeout(resolve, 1));
+            return await api.find(props);
+          } finally {
+            active -= 1;
+          }
+        },
+      };
+    };
+    const manifest = await preparePlatformExamples(f.input, adapter);
+    expect(manifest.protectedSelections).toHaveLength(8);
+    expect(peak).toBe(1);
+    expect(f.writes()).toBe(0);
+  });
+
   it("prepares without writes, remaps server IDs, repeats and freshly prepares zero operations", async () => {
     const f = fixture();
     const manifest = await preparePlatformExamples(f.input, f.adapter);
