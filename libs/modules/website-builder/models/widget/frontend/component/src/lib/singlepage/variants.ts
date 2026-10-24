@@ -1,3 +1,4 @@
+import { Component as ContentPageHeader } from "./content-page-header";
 import { Component as ContentFeatureSplit } from "./content-feature-split";
 import { Component as ContentFeatureSplitReverse } from "./content-feature-split-reverse";
 import { Component as ContentDefinitionGrid } from "./content-definition-grid";
@@ -39,6 +40,7 @@ import { Component as FooterDefaultComponent } from "./footer-default";
 import { Component as NavbarDefaultComponent } from "./navbar-default";
 import { Component as ContentFeatureFindRow } from "./content-feature-find-row";
 export const variants = {
+  "content-page-header": ContentPageHeader,
   "content-feature-split": ContentFeatureSplit,
   "content-feature-split-reverse": ContentFeatureSplitReverse,
   "content-definition-grid": ContentDefinitionGrid,

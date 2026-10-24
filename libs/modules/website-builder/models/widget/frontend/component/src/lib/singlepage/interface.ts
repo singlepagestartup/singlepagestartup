@@ -1,3 +1,4 @@
+import type { IComponentProps as IContentPageHeaderProps } from "./content-page-header/interface";
 import type { IComponentProps as IContentFeatureSplitProps } from "./content-feature-split/interface";
 import type { IComponentProps as IContentFeatureSplitReverseProps } from "./content-feature-split-reverse/interface";
 import type { IComponentProps as IContentDefinitionGridProps } from "./content-definition-grid/interface";
@@ -39,6 +40,7 @@ import { IComponentProps as IFooterDefaultComponentProps } from "./footer-defaul
 import { IComponentProps as INavbarDefaultComponentProps } from "./navbar-default/interface";
 import type { IComponentProps as IContentFeatureFindRow } from "./content-feature-find-row/interface";
 export type IComponentProps =
+  | IContentPageHeaderProps
   | IContentFeatureSplitProps
   | IContentFeatureSplitReverseProps
   | IContentDefinitionGridProps

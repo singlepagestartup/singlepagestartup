@@ -34,6 +34,7 @@ Widgets store reusable content blocks (text, media, structured sections) for bui
 - `default`: sample component, for debugging.
 - `content-default`: saved hero copy, ordered media, sliders, features and CTA groups.
 - `content-hero`: saved localized hero heading, subtitle and description with ordered media and CTA groups.
+- `content-page-header`: a compact full-width page introduction with saved subtitle as eyebrow, title as h1, rich description and exact ordered action groups. The default semantic classes set its compact spacing; saved `className` and explicit view classes can adjust the presentation. Its child slot renders separately, with no media column or Feature association payload.
 - `content-feature-split`: a two-column h2 section. Saved subtitle, title and rich description supply its copy; exact media, Feature and action associations supply its content. Without linked media, the heading and body occupy separate columns.
 - `content-feature-split-reverse`: the same section with a left illustration using `object-contain`.
 - `content-definition-grid`: an h2 capability collection with ordered saved Features and action groups. The Widget's `className` controls its grid.
