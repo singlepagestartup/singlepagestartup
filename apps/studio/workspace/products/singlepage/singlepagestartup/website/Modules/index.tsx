@@ -25,7 +25,7 @@ export default function ModulesPage({
   const slug = readModuleSlug(navigationHref) ?? defaultSlug;
   const selected = modules.find((item) => item.id === slug);
   return (
-    <SiteShell active="modules" resolveLink={resolveLink}>
+    <SiteShell active="modules" resolveLink={resolveLink} lang="ru" acquisition>
       <main className="mx-auto max-w-7xl px-5 py-10 @3xl:px-8 @3xl:py-14">
         <PreviewLink
           href="/framework"
@@ -47,20 +47,22 @@ export default function ModulesPage({
               <p className={`mt-6 max-w-2xl text-lg leading-8 ${styles.muted}`}>
                 {selected.responsibility}
               </p>
-              <div className="mt-8 grid gap-6 @3xl:grid-cols-2">
-                {copy.guide.items.map((item) => (
-                  <section
-                    key={item.title}
-                    className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-6"
-                  >
-                    <h2 className="text-xl font-semibold">
-                      {item.title.replaceAll("{module}", selected.name)}
-                    </h2>
-                    <p className={`mt-3 text-sm leading-7 ${styles.muted}`}>
-                      {item.text.replaceAll("{module}", selected.name)}
-                    </p>
-                  </section>
-                ))}
+              <div className="mt-8 space-y-6">
+                {(copy.articles[selected.id]?.items ?? copy.guide.items).map(
+                  (item) => (
+                    <section
+                      key={item.title}
+                      className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-6"
+                    >
+                      <h2 className="text-xl font-semibold">
+                        {item.title.replaceAll("{module}", selected.name)}
+                      </h2>
+                      <p className={`mt-3 text-sm leading-7 ${styles.muted}`}>
+                        {item.text.replaceAll("{module}", selected.name)}
+                      </p>
+                    </section>
+                  ),
+                )}
               </div>
               <div className="mt-8 flex flex-wrap gap-4">
                 <a
@@ -71,7 +73,10 @@ export default function ModulesPage({
                 >
                   {labels["source-guide"].replaceAll("{module}", selected.name)}
                   <Icon name="arrow-up-right" size={20} />
-                  <span className="sr-only"> (opens GitHub in a new tab)</span>
+                  <span className="sr-only">
+                    {" "}
+                    (открыть GitHub в новой вкладке)
+                  </span>
                 </a>
                 <PreviewLink
                   href="/framework/modules"

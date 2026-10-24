@@ -17,11 +17,28 @@ export default function ProjectExample({
     >
       <div
         aria-hidden="true"
-        className="flex h-9 items-center justify-between bg-white px-5 text-[10px] font-semibold"
+        className="relative flex h-11 items-center justify-between bg-white px-4 text-[11px] font-semibold"
       >
         <span>9:41</span>
-        <span className="h-3.5 w-14 rounded-full bg-[#0c141a]" />
-        <span className="text-[#61717c]">{labels["demo-badge"]}</span>
+        <span className="absolute left-1/2 h-5 w-16 -translate-x-1/2 rounded-full bg-[#0c141a]" />
+        <svg viewBox="0 0 58 14" className="h-3 w-12" fill="currentColor">
+          <rect x="0" y="9" width="3" height="4" rx=".7" />
+          <rect x="5" y="6" width="3" height="7" rx=".7" />
+          <rect x="10" y="3" width="3" height="10" rx=".7" />
+          <rect x="15" y="0" width="3" height="13" rx=".7" />
+          <path d="M22 4Q28-2 34 4L32 6Q28 2 24 6ZM25 7Q28 4 31 7L29 9Q28 8 27 9ZM27 10h2v2h-2Z" />
+          <rect
+            x="38"
+            y="2"
+            width="17"
+            height="10"
+            rx="2"
+            fill="none"
+            stroke="currentColor"
+          />
+          <rect x="40" y="4" width="13" height="6" rx="1" />
+          <rect x="56" y="5" width="2" height="4" rx="1" />
+        </svg>
       </div>
       <div
         key={selected}

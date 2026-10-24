@@ -7,7 +7,7 @@ import {
 import sourceText from "./page.md?raw";
 import type { IWorkspacePageProps } from "../../../../utils/pages";
 import { SiteShell, PreviewLink, siteStyles } from "./Site";
-import { articles, blogCover } from "./Blog/content";
+import { frameworkModules } from "./Modules/content";
 import ProjectExample from "./ProjectExample";
 import {
   parseCodeFrameworkWebsite,
@@ -178,58 +178,63 @@ export default function CodeFrameworkLanding({
           aria-labelledby="cf-foundation-title"
           className={`${section} outline-none`}
         >
-          <p
-            className={`text-xs font-medium uppercase tracking-widest ${muted}`}
-          >
-            {content.foundation.paragraphs[0]}
-          </p>
-          <div className="mt-4 flex flex-wrap items-end justify-between gap-5">
-            <h2
-              id="cf-foundation-title"
-              className={`max-w-xl text-balance text-3xl leading-tight @3xl:text-4xl ${display}`}
-            >
-              {content.foundation.title}
-            </h2>
-            <p className={`max-w-sm text-sm leading-6 ${muted}`}>
-              {content.foundation.paragraphs[1]}
-            </p>
-          </div>
-          <div className="mt-8 grid gap-7 rounded-3xl bg-[var(--workspace-brand-primary)] p-5 text-[var(--workspace-brand-on-primary)] @3xl:grid-cols-[0.8fr_1.2fr] @3xl:p-8 @3xl:gap-10">
-            <div className="flex min-w-0 flex-col justify-center">
-              <div
-                role="group"
-                aria-label={label["demo-selector-label"]}
-                className="space-y-2"
-              >
-                {content.foundation.items.map((item, index) => (
-                  <button
-                    key={item.title}
-                    type="button"
-                    aria-pressed={selected === index}
-                    onClick={() => setSelected(index)}
-                    className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-accent)] ${selected === index ? "border-[var(--workspace-brand-accent)] bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-primary)]" : "border-white/15 text-[var(--workspace-brand-on-primary)] hover:bg-white/5"}`}
+          <div className="rounded-3xl bg-[var(--workspace-brand-primary)] p-5 text-[var(--workspace-brand-on-primary)] @3xl:p-8">
+            <div className="grid items-center gap-7 @3xl:grid-cols-[1fr_1fr] @3xl:gap-10">
+              <div className="flex min-w-0 flex-col justify-center">
+                <p
+                  className={`text-xs font-medium uppercase tracking-widest text-[var(--workspace-brand-muted-on-primary)]`}
+                >
+                  {content.foundation.paragraphs[0]}
+                </p>
+                <div className="mt-4 flex flex-wrap items-end justify-between gap-5">
+                  <h2
+                    id="cf-foundation-title"
+                    className={`max-w-xl text-balance text-3xl leading-tight @3xl:text-4xl ${display}`}
                   >
-                    <span>{item.title}</span>
-                    <Icon
-                      name={selected === index ? "check" : "plus"}
-                      size={20}
-                    />
-                  </button>
-                ))}
+                    {content.foundation.title}
+                  </h2>
+                  <p
+                    className={`max-w-sm text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)]`}
+                  >
+                    {content.foundation.paragraphs[1]}
+                  </p>
+                </div>
+                <div
+                  role="group"
+                  aria-label={label["demo-selector-label"]}
+                  className="mt-7 space-y-2"
+                >
+                  {content.foundation.items.map((item, index) => (
+                    <div key={item.title}>
+                      <button
+                        aria-expanded={selected === index}
+                        aria-controls={`example-description-${index}`}
+                        type="button"
+                        aria-pressed={selected === index}
+                        onClick={() => setSelected(index)}
+                        className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-accent)] ${selected === index ? "border-[var(--workspace-brand-accent)] bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-primary)]" : "border-white/15 text-[var(--workspace-brand-on-primary)] hover:bg-white/5"}`}
+                      >
+                        <span>{item.title}</span>
+                        <Icon
+                          name={selected === index ? "check" : "plus"}
+                          size={20}
+                        />
+                      </button>
+                      <p
+                        hidden={selected !== index}
+                        id={`example-description-${index}`}
+                        className="px-4 pb-4 pt-3 text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)]"
+                      >
+                        {item.text}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <p
-                className="mt-5 min-h-12 text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)]"
-                aria-live="polite"
-              >
-                {content.foundation.items[selected]?.text}
-              </p>
+              <figure className="min-w-0">
+                <ProjectExample content={content} selected={selected} />
+              </figure>
             </div>
-            <figure className="min-w-0">
-              <ProjectExample content={content} selected={selected} />
-              <figcaption className="mt-4 text-xs leading-5 text-[var(--workspace-brand-muted-on-primary)]">
-                {label["demo-caption"]}
-              </figcaption>
-            </figure>
           </div>
         </section>
 
@@ -337,17 +342,21 @@ export default function CodeFrameworkLanding({
                     </div>
                   ) : index === 1 ? (
                     <div className="mt-5 space-y-2">
-                      {["document-one", "document-two", "document-three"].map(
-                        (key) => (
-                          <p
-                            key={key}
-                            className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs"
-                          >
-                            <Icon name="check" size={20} />
-                            {label[key]}
-                          </p>
-                        ),
-                      )}
+                      {[
+                        "document-one",
+                        "document-two",
+                        "document-three",
+                        "document-four",
+                        "document-five",
+                      ].map((key) => (
+                        <p
+                          key={key}
+                          className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs"
+                        >
+                          <Icon name="check" size={20} />
+                          {label[key]}
+                        </p>
+                      ))}
                     </div>
                   ) : (
                     <p className="mt-5 rounded-xl border border-white/20 p-4 text-xs leading-6">
@@ -406,25 +415,48 @@ export default function CodeFrameworkLanding({
                 <Icon name="arrow-right" size={20} />
               </PreviewLink>
             </div>
-            <div className="rounded-3xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-5 @3xl:p-8">
-              <p className={`text-xs font-medium ${muted}`}>
-                {content.change.paragraphs[0]}
+            <div className="overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-white">
+              <p className="border-b border-[var(--workspace-brand-line)] px-6 py-4 text-xs font-semibold">
+                {label["context-project"]}
               </p>
-              <blockquote
-                className={`mt-5 text-balance text-2xl leading-snug @3xl:text-3xl ${display}`}
-              >
-                “{content.change.quote}”
-              </blockquote>
-              <div className="mt-6 flex items-start gap-3 border-t border-[var(--workspace-brand-line)] pt-5">
-                <Icon name="pencil-simple" />
-                <div>
-                  <h3 className="text-base font-semibold">
-                    {content.change.title}
-                  </h3>
-                  <p className={`mt-3 text-sm leading-6 ${muted}`}>
-                    {content.change.paragraphs[1]}
+              <div className="p-6">
+                <h3 className="text-sm font-semibold">
+                  {label["context-saved"]}
+                </h3>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {[
+                    "document-one",
+                    "document-two",
+                    "document-three",
+                    "document-four",
+                    "document-five",
+                  ].map((key) => (
+                    <span
+                      key={key}
+                      className="inline-flex items-center gap-2 rounded-lg bg-[#eff4e6] px-3 py-2 text-xs"
+                    >
+                      <Icon name="file-text" size={20} />
+                      {label[key]}
+                    </span>
+                  ))}
+                </div>
+                <div className="my-5 flex justify-center">
+                  <Icon name="arrow-down" />
+                </div>
+                <h3 className="text-sm font-semibold">
+                  {label["context-new"]}
+                </h3>
+                <div className="mt-3 rounded-2xl bg-[var(--workspace-brand-primary)] p-4 text-white">
+                  <p className="text-xs text-[var(--workspace-brand-accent)]">
+                    {label["context-attachment"]}
+                  </p>
+                  <p className="mt-3 text-sm leading-6">
+                    {content.change.quote}
                   </p>
                 </div>
+                <p className={`mt-4 text-sm leading-6 ${muted}`}>
+                  {content.change.paragraphs[1]}
+                </p>
               </div>
             </div>
           </div>
@@ -449,52 +481,56 @@ export default function CodeFrameworkLanding({
               </h2>
             </div>
             <PreviewLink
-              href="/blog"
+              href="/framework/modules"
               resolveLink={resolveLink}
               className={`inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-medium ${focus}`}
             >
-              {content.articles.links[3].text}
+              {label["module-articles-all"]}
               <Icon name="arrow-right" size={20} />
             </PreviewLink>
           </div>
-          <div className="mt-8 grid gap-5 @2xl:grid-cols-3">
-            {content.articles.links.slice(0, 3).map((link, index) => {
-              const article = articles.find((item) =>
-                link.href.endsWith(`/${item.slug}`),
-              );
-              if (!article) return null;
-              return (
+          <div className="mt-8 grid gap-3 @2xl:grid-cols-2 @5xl:grid-cols-3">
+            {frameworkModules
+              .filter((module) =>
+                content.articles.links.some(
+                  (link) => link.href === `/framework/modules/${module.id}`,
+                ),
+              )
+              .map((module, index) => (
                 <PreviewLink
-                  key={article.slug}
-                  href={link.href}
+                  key={module.id}
+                  href={`/framework/modules/${module.id}`}
                   resolveLink={resolveLink}
-                  className={`group min-w-0 overflow-hidden rounded-2xl bg-[var(--workspace-brand-surface)] ${focus}`}
+                  className={`group flex min-w-0 flex-col rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5 ${focus}`}
                 >
                   <img
-                    src={blogCover(article.cover)}
-                    alt={label[`article-cover-${index + 1}`]}
-                    width={1024}
-                    height={1024}
+                    src={
+                      landingArtwork.modules[
+                        module.id === "social"
+                          ? 1
+                          : module.id === "billing"
+                            ? 5
+                            : 3
+                      ].src
+                    }
+                    alt=""
+                    width={1254}
+                    height={1254}
                     loading="lazy"
-                    className="aspect-[16/10] w-full object-cover"
+                    className="mb-4 aspect-[2/1] w-full object-contain"
                   />
-                  <div className="p-5">
-                    <p className={`text-xs ${muted}`}>
-                      {article.minutes} {label["reading-time"]}
-                    </p>
-                    <h3 className={`mt-3 text-xl leading-7 ${display}`}>
-                      {link.text}
-                    </h3>
-                    <p className={`mt-3 text-sm leading-6 ${muted}`}>
-                      {content.articles.items[index]?.text}
-                    </p>
-                    <span className="mt-4 inline-flex min-h-11 items-center">
-                      <Icon name="arrow-up-right" size={20} />
-                    </span>
-                  </div>
+                  <span className="text-xs text-[var(--workspace-brand-muted)]">
+                    {String(index + 1).padStart(2, "0")} / {module.name}
+                  </span>
+                  <h3 className={`mt-3 text-lg ${display}`}>
+                    {module.responsibility}
+                  </h3>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm">
+                    {label["module-article-action"]}
+                    <Icon name="arrow-right" size={20} />
+                  </span>
                 </PreviewLink>
-              );
-            })}
+              ))}
           </div>
         </section>
 

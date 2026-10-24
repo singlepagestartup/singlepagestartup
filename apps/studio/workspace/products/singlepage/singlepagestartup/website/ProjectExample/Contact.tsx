@@ -14,9 +14,9 @@ export function Contact({ labels: l }: IExampleProps) {
   };
   return (
     <>
-      <AppHeader title={l["demo-academy"]} icon="code" />
+      <AppHeader title={l["demo-academy"]} brand="start" />
       <Screen screenKey={submitted ? "complete" : "form"}>
-        <CourseArt title={l["demo-course-one"]} compact />
+        <CourseArt title={l["demo-course-one"]} compact brand="start" />
         <p className="text-[10px] font-medium uppercase tracking-wider text-[#61717c]">
           {l["demo-course-meta"]}
         </p>

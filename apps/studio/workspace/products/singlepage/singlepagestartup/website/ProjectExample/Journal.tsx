@@ -87,7 +87,7 @@ export function Journal({ labels: l }: IExampleProps) {
     );
   return (
     <>
-      <AppHeader title={l["demo-journal-name"]} icon="newspaper">
+      <AppHeader title={l["demo-journal-name"]} brand="journal">
         <Action
           tone="quiet"
           onClick={() => {

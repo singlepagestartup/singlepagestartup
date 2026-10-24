@@ -225,16 +225,10 @@ export function SiteShell({
                 className="h-auto w-44"
               />
             </PreviewLink>
-            <p className={`mt-3 text-xs ${siteStyles.muted}`}>
-              {content.footer.title}
-            </p>
             <p
               className={`mt-3 max-w-xs text-sm leading-6 ${siteStyles.muted}`}
             >
               {content.footer.paragraphs[0]}
-            </p>
-            <p className={`mt-4 text-xs ${siteStyles.muted}`}>
-              {content.footer.paragraphs[1]}
             </p>
           </div>
           {groups.map((group) => (

@@ -97,7 +97,7 @@ export function Courses({ labels: l }: IExampleProps) {
   const price = (value: number) => examplePrice(value, currency);
   return (
     <>
-      <AppHeader title={l["demo-courses-name"]} icon="book-open">
+      <AppHeader title={l["demo-courses-name"]} brand="courses">
         <Action
           tone="quiet"
           aria-label={`${l["demo-cart"]}: ${cart.length}`}

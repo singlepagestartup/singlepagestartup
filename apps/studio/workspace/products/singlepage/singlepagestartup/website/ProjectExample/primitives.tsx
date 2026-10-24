@@ -4,17 +4,14 @@ import {
   type ButtonHTMLAttributes,
   type ReactNode,
 } from "react";
-import {
-  Icon,
-  type IconName,
-} from "../../../../../design/singlepage/interface-kit/primitives";
+import { Icon } from "../../../../../design/singlepage/interface-kit/primitives";
 
 interface IActionProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   tone?: "primary" | "secondary" | "quiet";
 }
 interface IAppHeaderProps {
   title: string;
-  icon: IconName;
+  brand: "start" | "community" | "courses" | "journal";
   children?: ReactNode;
 }
 interface ITabsProps {
@@ -75,13 +72,63 @@ export function Action({
   );
 }
 
-export function AppHeader({ title, icon, children }: IAppHeaderProps) {
+/** Original geometric marks for fictional example brands; never the SPS identity. */
+export function BrandMark({ brand }: { brand: IAppHeaderProps["brand"] }) {
+  const color = {
+    start: "bg-[#e9e2ff] text-[#6944c4]",
+    community: "bg-[#dbf5ec] text-[#18785c]",
+    courses: "bg-[#ffeadb] text-[#b85120]",
+    journal: "bg-[#dceaff] text-[#245ab3]",
+  }[brand];
+  return (
+    <span
+      aria-hidden="true"
+      className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${color}`}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="size-6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {brand === "start" ? (
+          <>
+            <circle cx="7" cy="17" r="3" fill="currentColor" stroke="none" />
+            <path d="M8 12V5h11v11h-7M12 12l7-7" />
+          </>
+        ) : brand === "community" ? (
+          <>
+            <rect x="3" y="3" width="8" height="8" rx="3" />
+            <rect x="13" y="13" width="8" height="8" rx="3" />
+            <path d="M15 4h5v5M4 15v5h5" />
+          </>
+        ) : brand === "courses" ? (
+          <>
+            <path
+              d="M5 4h5v16H5zM14 4l6 3-6 3V4zM14 14l6 3-6 3v-6z"
+              fill="currentColor"
+              stroke="none"
+            />
+          </>
+        ) : (
+          <>
+            <path d="M5 4v16M10 6h9M10 12h6M10 18h9" />
+            <circle cx="19" cy="12" r="1" fill="currentColor" />
+          </>
+        )}
+      </svg>
+    </span>
+  );
+}
+
+export function AppHeader({ title, brand, children }: IAppHeaderProps) {
   return (
     <header className="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b border-[#e3e8eb] bg-white px-4 py-3">
       <div className="flex min-w-0 items-center gap-2">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#18232a] text-[#bfef61]">
-          <Icon name={icon} size={20} />
-        </span>
+        <BrandMark brand={brand} />
         <span className="text-xs font-semibold">{title}</span>
       </div>
       {children}
@@ -144,19 +191,21 @@ export function Back({
 export function CourseArt({
   title,
   compact = false,
+  brand = "courses",
 }: {
   title: string;
   compact?: boolean;
+  brand?: "start" | "courses";
 }) {
   return (
     <div
-      className={`relative flex min-w-0 flex-col justify-between overflow-hidden rounded-2xl bg-[#e6f1d4] text-[#18232a] ${compact ? "min-h-24 p-4" : "min-h-36 p-5"}`}
+      className={`relative flex min-w-0 flex-col justify-between overflow-hidden rounded-2xl ${brand === "start" ? "bg-[#e9e2ff] text-[#39216b]" : "bg-[#ffeadb] text-[#723516]"} ${compact ? "min-h-24 p-4" : "min-h-36 p-5"}`}
     >
       <div className="flex items-center justify-between gap-3">
         <span className="text-[10px] font-semibold uppercase tracking-widest">
-          SPS Academy
+          {brand === "start" ? "Точка старта" : "Практикум ИИ"}
         </span>
-        <Icon name="code" size={compact ? 20 : 24} />
+        <BrandMark brand={brand} />
       </div>
       <p
         className={`mt-6 max-w-52 font-semibold leading-tight ${compact ? "text-base" : "text-2xl"}`}

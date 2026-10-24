@@ -4,7 +4,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { parseCodeFrameworkWebsite } from "./content";
 import { SiteShell } from "./Site";
 import ModulesPage from "./Modules";
-import { parseModules, readModuleSlug } from "./Modules/content";
+import {
+  parseModules,
+  parseModulesPage,
+  readModuleSlug,
+} from "./Modules/content";
 
 const landing = readFileSync(new URL("./page.md", import.meta.url), "utf8");
 const modules = readFileSync(
@@ -42,7 +46,7 @@ describe("editable Framework website copy", () => {
   test("module Layout reflects its paired introduction and composition copy", () => {
     const edited = modules
       .replace(
-        "A place for each part of your product.",
+        parseModulesPage(modules).introduction.title,
         "Choose the parts for this project.",
       )
       .replace(

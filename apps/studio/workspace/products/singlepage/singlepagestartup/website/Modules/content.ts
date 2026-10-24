@@ -19,6 +19,7 @@ export interface IModulesPageContent {
   preparation: IModuleCopySection;
   guide: IModuleCopySection;
   labels: Record<string, string>;
+  articles: Record<string, IModuleCopySection>;
 }
 
 function readCopy(text: string): IModuleCopySection {
@@ -53,6 +54,11 @@ export function parseModulesPage(text = sourceText): IModulesPageContent {
     composition: section.composition,
     preparation: section.preparation,
     guide: section.guide,
+    articles: Object.fromEntries(
+      Object.entries(section)
+        .filter(([key]) => key.startsWith("article-"))
+        .map(([key, value]) => [key.slice(8), value]),
+    ),
     labels: Object.fromEntries(
       section.controls.items.map(({ title, text }) => [title, text]),
     ),

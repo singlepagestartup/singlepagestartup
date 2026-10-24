@@ -148,7 +148,7 @@ export function Community({ labels: l }: IExampleProps) {
 
   return (
     <>
-      <AppHeader title={l["demo-community-name"]} icon="users">
+      <AppHeader title={l["demo-community-name"]} brand="community">
         <div className="flex min-w-0 flex-wrap items-center gap-1">
           <Action tone="quiet" onClick={() => setJoining(true)}>
             {member ? nickname : l["demo-join"]}

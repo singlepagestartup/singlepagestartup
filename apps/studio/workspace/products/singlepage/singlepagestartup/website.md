@@ -36,7 +36,7 @@ sources:
     classification: client-claim
     source: operator instruction in the Product landing review
     date: 2026-10-24
-    supports: SinglePageStartup is a framework with a ready codebase tested across dozens of projects.
+    supports: SinglePageStartup is an open-source framework with a ready codebase tested across dozens of projects; its modules originate in client requests and are tested and maintained by the SPS team.
     limitation: Operator-supplied internal-use statement. No independent project inventory or measured time saving is asserted.
   mobile_examples:
     classification: assumption
@@ -150,11 +150,11 @@ The free-code block remains visible alongside this sequence. Code and documentat
 
 Capabilities use the responsibility of each module, not an unexplained inventory count. Accounts and permissions point to RBAC; profiles and conversations to Social; articles and categories to Blog; source material and retrieval to Knowledge; products, carts and orders to Ecommerce; invoices and currencies to Billing; reusable page content to Website Builder; pages and metadata to Host; contact requests to CRM; scheduled work to Agent. The text distinguishes the Agent module's background jobs from the person's external coding agent.
 
-The landing gives each of eight capability groups a distinct illustration, a consumer-facing label and one short description. **Explore all features** opens the module guides, where the technical responsibilities and repository documentation belong. Supporting articles explain a Next.js page, a Hono request or local development. Example interfaces illustrate possible projects; they do not claim that every integration is already configured for the visitor.
+The landing gives each of eight capability groups a distinct illustration, a consumer-facing label and one short description. **Explore all features** opens the module guides, where the technical responsibilities and repository documentation belong. Supporting articles explain individual modules, their associations and concrete use cases. Example interfaces illustrate possible projects; they do not claim that every integration is already configured for the visitor.
 
 ### Blog and articles
 
-The landing shows three featured articles, one per category, with a **Read all articles** action. The initial Blog contains six SPS architecture articles: Next.js readers and Widget slots; React Query, realtime and principal scopes; Hono controllers and owning services; subscription access to private article content; Nx, Bun, Docker and generated migrations; and builds, revalidation and content cutovers.
+The landing links to three module articles (Social, Billing and Knowledge) and the full module index. Each of the 15 modules has a Russian article covering its behavior, related responsibilities and a concrete example, with a link to its source README. The initial Blog contains six SPS architecture articles: Next.js readers and Widget slots; React Query, realtime and principal scopes; Hono controllers and owning services; subscription access to private article content; Nx, Bun, Docker and generated migrations; and builds, revalidation and content cutovers.
 
 Article cards show their real cover, one or more categories, title, excerpt, publication date and Social-profile author. The image, title and empty card area open the article. Category and author links keep their own destinations. Category cards use their actual descriptions, covers and article counts. Covers with people are editorial illustrations of work, not portraits of the author or proof of a customer result. The SinglePageStartup editorial profile is valid for project explanations; fabricated individual biographies are not.
 
@@ -176,7 +176,7 @@ The nine acquisition illustrations are registered under `framework-acquisition-v
 
 Vary the section structure: a short illustrated hero; a graphite panel with four selectable mobile apps; an illustrated capability grid; a dark three-step sequence; an asymmetric request example; compact article cards; and a centered lime registration panel. Keep detailed answers and the technical request in disclosures. Main actions lead to the AI Chat registration preview.
 
-The mobile examples share a phone frame and use the existing Phosphor icons. Their forms and controls are real local interactions. Course enrolment includes a programme, required name and email fields, study format, confirmation and editing. The community includes project reactions, member profiles, local joining, publishing a project and a members' chat. The shop includes course details, RUB/USD selection, cart additions and removals, a checkout with currency-compatible payment methods and an explicitly simulated order. The blog includes search, categories, article bodies, author pages, bookmarks and a subscriber block with explicit demo access. The demo label and caption explain that data stays in the preview; no payment or server request runs.
+The mobile examples share a phone frame and use the existing Phosphor icons. Their forms and controls are real local interactions. Course enrolment includes a programme, required name and email fields, study format, confirmation and editing. The community includes project reactions, member profiles, local joining, publishing a project and a members' chat. The shop includes course details, RUB/USD selection, cart additions and removals, a checkout with currency-compatible payment methods and an explicitly simulated order. The blog includes search, categories, article bodies, author pages, bookmarks and a subscriber block with explicit demo access. A native-style phone status bar shows time, signal, Wi-Fi and battery. Local form, payment and access states retain their contextual simulation notices; the external demo badge and caption are removed. No payment or server request runs.
 
 ## Metadata and review
 
@@ -197,3 +197,13 @@ read that copy and local props without importing Studio Modules, production SDKs
 or runtime business logic. The first implementation boundary is the complete
 Product journey; Modules/Host and runtime transfer follow separately. Historical
 confirmation metadata is not renewed by this scoped revision. -->
+
+### Registration and project preparation
+
+The Russian landing uses a consistent **Создать продукт** action to open registration. It explains the next steps: work with the AI assistant on Brief, Strategy, Brand, Design and Product documents, review them, then use a coding application to build, check and publish. “Начните создавать свой проект сегодня” invites a first step; it does not promise a one-hour deployment. Saved knowledge is shown as documents attached to a new request through an explicit `@knowledge` mention, consistent with the Social and Knowledge README contracts. This is a proposed acquisition journey, not a claim that the landing itself deploys a project.
+
+### Example identities and icons
+
+Four fictional example brands have independent geometric SVG marks: **Точка старта** uses a starting dot and ascending corner, **Собрано** uses connected rounded units, **Практикум ИИ** uses a spine with lesson/play shapes, and **Контекст** uses a margin and text lines. The glyphs are displayed in each example header; lavender, green, terracotta and blue distinguish the identities. These are custom vector interface drawings in `website/ProjectExample/primitives.tsx`, not photographic assets or SPS logo variants. Existing Phosphor icons remain for actions. Course descriptions, names, programmes and prices are illustrative and do not establish a real course offer.
+
+The dark example block includes its introduction. Only the selected example reveals its short explanation, directly below its control. The removed footer identity caption and licence sentence are omitted; documentation and licence destinations remain available in navigation.
