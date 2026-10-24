@@ -207,6 +207,22 @@ Production-проверка остаётся незавершённой. Вып�
 `/tmp/sps-framework-runtime-worker-2048-build-trace.jsonl`;
 его summary — `/tmp/sps-framework-runtime-worker-2048-build-trace-summary.json`.
 
+Raw trace не связывает второй PID или RSS-пик с конкретным compiler. Каждый
+worker заново строит все три Webpack config, хотя сам запускает один compiler;
+middleware bundle уже записан, а завершённых edge/client spans в trace нет.
+Поэтому причина превышения памяти пока не установлена.
+
+Source review установленного Next 15.4.8 выявило две дополнительные очереди:
+Webpack по умолчанию обрабатывает до 100 модулей, а Next MinifyPlugin передаёт
+assets в SWC через `p-limit(Infinity)`. `CIRCLE_NODE_TOTAL=2` задаёт Next `cpus=1`,
+но не ограничивает эти очереди. SWC wrapper создаёт входные Buffers вне V8 heap.
+Это возможные источники дополнительной памяти, не диагноз текущего RSS-пика.
+Для следующего ограниченного измерения подготовлены process-only
+`NEXT_WEBPACK_PARALLELISM=1`, compiler debug labels и числовые PID/heap/RSS
+samples. Скрипт и cleanup прошли source review; короткая проверка одного Node
+подтвердила запись только чисел в private-файлы. Production-запуск этого
+диагностического скрипта ещё не выполнялся. Общий лимит остаётся 3 GiB.
+
 Source review не установило небезопасного импорта server implementation в
 проверенные клиентские entrypoints. Обычный HTTP SDK с каталогом `server`
 сам по себе не является таким импортом. Широкие публичные registries расширяют
@@ -234,6 +250,14 @@ cookie jar и credentialed fetch. Атрибуты существующего в
 cookie нельзя доказать по исходникам. Текущие Strict JWT имеют SameSite-защиту;
 это не доказывает изоляцию всего API cookie store и не означает подтверждённого
 перезаписывания пользовательской сессии. Пользовательские cookies/storage не читались.
+
+Для обычного IAB подготовлена другая топология: один новый UUID-hostname для
+обоих browser endpoints, Host на 3007 и API/WS на 4000. Source assessment допускает
+такую изоляцию при ранних Host/Origin guards, проверке реальных resource URLs,
+отключённой аналитике, новом dev dist, обычном logout и точном cleanup. Временная
+реализация проходит отдельное review перед запуском. Это не выполненная
+авторизация: новый state и credentials по-прежнему не создавались. Изменение
+только frontend origin при прежнем API-origin остаётся неподходящим.
 
 Принята отдельная новая Safari Private Window с визуальным подтверждением private
 mode по [документации Apple](https://support.apple.com/en-gb/guide/safari/ibrw1069/mac).
