@@ -6,6 +6,9 @@ import {
 } from "../../../../design/singlepage/interface-kit/primitives";
 
 import sourceText from "./page.md?raw";
+import type { IWorkspacePageProps } from "../../../../utils/pages";
+import { SiteShell, PreviewLink } from "./Site";
+import { articles, blogCover, formatBlogDate } from "./Blog/content";
 import {
   parseCodeFrameworkWebsite,
   websiteAssets as assets,
@@ -16,9 +19,7 @@ interface IWebsiteCopyProps {
   content: ICodeFrameworkWebsiteContent;
 }
 
-interface ICodeFrameworkLandingProps {
-  text?: string;
-}
+type ICodeFrameworkLandingProps = IWorkspacePageProps;
 
 interface ISectionHeadingProps {
   eyebrow: string;
@@ -107,27 +108,6 @@ function RepositoryAction({ content }: IWebsiteCopyProps) {
   );
 }
 
-function ChatPreviewAction({
-  descriptionId,
-  content,
-}: IWebsiteCopyProps & { descriptionId: string }) {
-  return (
-    <div>
-      <button
-        type="button"
-        disabled
-        aria-describedby={descriptionId}
-        className={`${kit.secondary} disabled:opacity-60`}
-      >
-        {content.chat.paragraphs[3]}
-      </button>
-      <p id={descriptionId} className={`mt-2 text-sm leading-5 ${muted}`}>
-        {content.chat.paragraphs[4]}
-      </p>
-    </div>
-  );
-}
-
 function CopySetupRequest({ content }: IWebsiteCopyProps) {
   const [status, setStatus] = useState<
     "idle" | "pending" | "success" | "error"
@@ -182,72 +162,17 @@ function CopySetupRequest({ content }: IWebsiteCopyProps) {
 /** Presentation-only Website composition. No product APIs or live AI Chat. */
 export default function CodeFrameworkLanding({
   text,
+  resolveLink,
 }: ICodeFrameworkLandingProps = {}) {
   const content = parseCodeFrameworkWebsite(text ?? sourceText);
   return (
-    <div
-      data-workspace-projection="singlepage"
-      data-product-page="code-framework"
-      className="@container min-w-0 bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased [font-family:var(--workspace-brand-font-body)]"
-    >
+    <SiteShell active="framework" resolveLink={resolveLink} content={content}>
       <SectionLink
         href="#cf-main"
         className={`sr-only focus:not-sr-only focus:block focus:px-6 focus:py-4 ${focus}`}
       >
         {content.labels["skip-link"]}
       </SectionLink>
-      <header className="border-b border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-4 px-5 py-5 @3xl:px-8">
-          <SectionLink
-            href="#cf-main"
-            className={`inline-flex min-h-11 items-center ${focus}`}
-            label="SinglePageStartup Code Framework — page introduction"
-          >
-            <img
-              src={assets.logo.src}
-              alt={assets.logo.alt}
-              data-asset-id={assets.logo.id}
-              width={192}
-              height={42}
-              className="h-auto w-44 max-w-full @3xl:w-48"
-            />
-          </SectionLink>
-          <nav
-            aria-label="Code Framework"
-            className="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm"
-          >
-            <SectionLink
-              href="#cf-foundation"
-              className={`inline-flex min-h-11 items-center rounded-md py-2 ${muted} hover:text-[var(--workspace-brand-foreground)] ${focus}`}
-            >
-              {content.labels["navigation-foundation"]}
-            </SectionLink>
-            <SectionLink
-              href="#cf-start"
-              className={`inline-flex min-h-11 items-center rounded-md py-2 ${muted} hover:text-[var(--workspace-brand-foreground)] ${focus}`}
-            >
-              {content.labels["navigation-local"]}
-            </SectionLink>
-            <SectionLink
-              href="#cf-chat"
-              className={`inline-flex min-h-11 items-center rounded-md py-2 ${muted} hover:text-[var(--workspace-brand-foreground)] ${focus}`}
-            >
-              {content.chat.paragraphs[3]}
-            </SectionLink>
-            <a
-              href={content.hero.links[0].href}
-              target="_blank"
-              rel="noreferrer"
-              className={`${kit.secondary} gap-2`}
-            >
-              <Icon name="github-logo" size={20} />
-              {content.labels["navigation-code"] ?? content.hero.links[0].text}
-              <span className="sr-only">{content.labels["github-hint"]}</span>
-            </a>
-          </nav>
-        </div>
-      </header>
-
       <main id="cf-main" tabIndex={-1} className="outline-none">
         <section
           className="mx-auto max-w-7xl px-5 py-10 @3xl:px-8 @3xl:py-14"
@@ -270,7 +195,7 @@ export default function CodeFrameworkLanding({
               <div className="mt-7 flex flex-wrap items-center gap-4">
                 <RepositoryAction content={content} />
                 <SectionLink
-                  href="#cf-foundation"
+                  href="#cf-modules"
                   className={`inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-medium ${focus}`}
                 >
                   {content.labels["navigation-included"] ??
@@ -292,6 +217,50 @@ export default function CodeFrameworkLanding({
                 className="block aspect-square h-auto w-full object-cover"
               />
             </figure>
+          </div>
+        </section>
+
+        <section
+          id="cf-chat"
+          tabIndex={-1}
+          className="border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] outline-none"
+          aria-label="The AI Chat connection"
+        >
+          <div className="mx-auto grid max-w-7xl items-start gap-8 px-5 py-12 @3xl:grid-cols-2 @3xl:gap-12 @3xl:px-8 @3xl:py-16">
+            <div>
+              <Icon name="chat-circle" size={24} className="mb-5" />
+              <SectionHeading eyebrow={content.chat.paragraphs[0]}>
+                {content.chat.title}
+              </SectionHeading>
+            </div>
+            <div>
+              <p className={`text-base leading-7 ${muted}`}>
+                {content.chat.paragraphs[1]}
+              </p>
+              <p className={`mt-4 text-sm leading-6 ${muted}`}>
+                {content.chat.paragraphs[2]}
+              </p>
+              <div className="mt-6">
+                <PreviewLink
+                  href={content.chat.links[0].href}
+                  resolveLink={resolveLink}
+                  className={kit.button}
+                >
+                  {content.chat.paragraphs[3]}
+                  <Icon name="arrow-right" size={20} />
+                </PreviewLink>
+                <PreviewLink
+                  href="/ecommerce"
+                  resolveLink={resolveLink}
+                  className={`ml-4 inline-flex min-h-11 items-center text-sm underline underline-offset-4 ${focus}`}
+                >
+                  Plans & tokens
+                </PreviewLink>
+                <p className={`mt-4 text-xs leading-6 ${muted}`}>
+                  {content.chat.paragraphs[4]}
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -358,6 +327,53 @@ export default function CodeFrameworkLanding({
         </section>
 
         <section
+          id="cf-modules"
+          tabIndex={-1}
+          aria-labelledby="cf-modules-title"
+          className="mx-auto max-w-7xl px-5 py-12 outline-none @3xl:px-8 @3xl:py-16"
+        >
+          <div className="flex flex-wrap items-end justify-between gap-5">
+            <div>
+              <p className={`text-sm ${muted}`}>
+                {content.modules.paragraphs[0]}
+              </p>
+              <h2
+                id="cf-modules-title"
+                className={`mt-3 max-w-2xl text-3xl leading-tight @4xl:text-4xl ${display}`}
+              >
+                {content.modules.title}
+              </h2>
+              <p className={`mt-5 max-w-2xl text-base leading-7 ${muted}`}>
+                {content.modules.paragraphs[1]}
+              </p>
+            </div>
+            <PreviewLink
+              href="/framework/modules"
+              resolveLink={resolveLink}
+              className={kit.secondary}
+            >
+              Explore all modules
+              <Icon name="arrow-right" size={20} />
+            </PreviewLink>
+          </div>
+          <dl className="mt-8 grid gap-x-8 @2xl:grid-cols-2 @5xl:grid-cols-4">
+            {content.modules.items.map((item) => (
+              <div
+                key={item.title}
+                className="border-t border-[var(--workspace-brand-line)] py-5"
+              >
+                <dt className="text-base font-semibold leading-6">
+                  {item.title}
+                </dt>
+                <dd className={`mt-3 text-sm leading-7 ${muted}`}>
+                  {item.text}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <section
           id="cf-start"
           tabIndex={-1}
           className="mx-auto max-w-7xl px-5 py-12 outline-none @3xl:px-8 @3xl:py-16"
@@ -417,31 +433,112 @@ export default function CodeFrameworkLanding({
         </section>
 
         <section
-          id="cf-chat"
-          tabIndex={-1}
-          className="border-y border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] outline-none"
-          aria-label="The AI Chat connection"
+          aria-labelledby="cf-articles-title"
+          className="mx-auto max-w-7xl px-5 py-12 @3xl:px-8 @3xl:py-16"
         >
-          <div className="mx-auto grid max-w-7xl items-start gap-8 px-5 py-12 @3xl:grid-cols-2 @3xl:gap-12 @3xl:px-8 @3xl:py-16">
+          <div className="flex flex-wrap items-end justify-between gap-5">
             <div>
-              <Icon name="chat-circle" size={24} className="mb-5" />
-              <SectionHeading eyebrow={content.chat.paragraphs[0]}>
-                {content.chat.title}
-              </SectionHeading>
+              <p className={`text-sm ${muted}`}>
+                {content.articles.paragraphs[0]}
+              </p>
+              <h2
+                id="cf-articles-title"
+                className={`mt-3 max-w-2xl text-3xl leading-tight @4xl:text-4xl ${display}`}
+              >
+                {content.articles.title}
+              </h2>
+              <p className={`mt-5 max-w-2xl text-base leading-7 ${muted}`}>
+                {content.articles.paragraphs[1]}
+              </p>
             </div>
-            <div>
-              <p className={`text-base leading-7 ${muted}`}>
-                {content.chat.paragraphs[1]}
-              </p>
-              <p className={`mt-4 text-sm leading-6 ${muted}`}>
-                {content.chat.paragraphs[2]}
-              </p>
-              <div className="mt-6">
-                <ChatPreviewAction
-                  descriptionId="cf-chat-unavailable"
-                  content={content}
-                />
-              </div>
+            <PreviewLink
+              href="/blog"
+              resolveLink={resolveLink}
+              className={kit.secondary}
+            >
+              Read all articles
+              <Icon name="arrow-right" size={20} />
+            </PreviewLink>
+          </div>
+          <div className="mt-8 grid gap-5 @2xl:grid-cols-2 @5xl:grid-cols-3">
+            {content.articles.links.slice(0, 3).map((link) => {
+              const article = articles.find((item) =>
+                link.href.endsWith(`/${item.slug}`),
+              );
+              if (!article) return null;
+              return (
+                <PreviewLink
+                  key={article.slug}
+                  href={link.href}
+                  resolveLink={resolveLink}
+                  className={`group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--workspace-brand-line)] bg-white hover:border-[var(--workspace-brand-foreground)] ${focus}`}
+                >
+                  <img
+                    src={blogCover(article.cover)}
+                    alt={article.coverAlt}
+                    width={1024}
+                    height={1024}
+                    loading="lazy"
+                    className="aspect-square w-full object-cover"
+                  />
+                  <div className="flex flex-1 flex-col p-5">
+                    <p className={`text-xs capitalize ${muted}`}>
+                      {article.category} · {article.minutes} min read
+                      {article.createdAt ? (
+                        <>
+                          {" "}
+                          ·{" "}
+                          <time dateTime={article.createdAt}>
+                            {formatBlogDate(article.createdAt)}
+                          </time>
+                        </>
+                      ) : null}
+                    </p>
+                    <h3 className={`mt-3 text-xl leading-7 ${display}`}>
+                      {article.title}
+                    </h3>
+                    <p className={`mt-3 flex-1 text-sm leading-7 ${muted}`}>
+                      {article.excerpt}
+                    </p>
+                    <p className={`mt-4 text-xs ${muted}`}>{article.author}</p>
+                    <span className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-medium">
+                      Read article
+                      <Icon name="arrow-right" size={20} />
+                    </span>
+                  </div>
+                </PreviewLink>
+              );
+            })}
+          </div>
+        </section>
+
+        <section
+          className="mx-auto max-w-7xl px-5 pb-12 @3xl:px-8 @3xl:pb-16"
+          aria-labelledby="cf-handoff-title"
+        >
+          <div className="rounded-3xl bg-[var(--workspace-brand-foreground)] p-6 text-[var(--workspace-brand-on-primary)] @3xl:p-10">
+            <p className="text-sm text-[var(--workspace-brand-muted-on-primary)]">
+              {content.handoff.paragraphs[0]}
+            </p>
+            <h2
+              id="cf-handoff-title"
+              className={`mt-3 max-w-3xl text-balance text-3xl leading-tight @4xl:text-4xl ${display}`}
+            >
+              {content.handoff.title}
+            </h2>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-[var(--workspace-brand-muted-on-primary)]">
+              {content.handoff.paragraphs[1]}
+            </p>
+            <div className="mt-6 flex flex-wrap gap-4">
+              <PreviewLink
+                href="/"
+                resolveLink={resolveLink}
+                className={kit.button}
+              >
+                {content.handoff.links[0].text}
+                <Icon name="arrow-right" size={20} />
+              </PreviewLink>
+              <RepositoryAction content={content} />
             </div>
           </div>
         </section>
@@ -499,40 +596,6 @@ export default function CodeFrameworkLanding({
           </div>
         </section>
       </main>
-
-      <footer className="border-t border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-5 py-8 @3xl:px-8">
-          <div>
-            <img
-              src={assets.logo.src}
-              alt={assets.logo.alt}
-              data-asset-id={assets.logo.id}
-              width={176}
-              height={38}
-              loading="lazy"
-              className="h-auto w-44"
-            />
-            <p className={`mt-3 text-xs ${muted}`}>{content.footer.title}</p>
-          </div>
-          <nav
-            aria-label="Repository resources"
-            className="flex flex-wrap gap-x-5 gap-y-3 text-sm"
-          >
-            {content.footer.links.map(({ text: label, href }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noreferrer"
-                className={`inline-flex min-h-11 items-center rounded-md ${muted} hover:text-[var(--workspace-brand-foreground)] ${focus}`}
-              >
-                {label}
-                <span className="sr-only">{content.labels["github-hint"]}</span>
-              </a>
-            ))}
-          </nav>
-        </div>
-      </footer>
-    </div>
+    </SiteShell>
   );
 }

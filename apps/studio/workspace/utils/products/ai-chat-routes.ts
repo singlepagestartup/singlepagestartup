@@ -15,7 +15,7 @@ export interface IAIChatRoute {
 }
 
 export const aiChatServiceHrefs = {
-  landing: "/ai-chat/",
+  landing: "/",
   register: "/ai-chat/rbac/subjects/authentication/registration",
   login: "/ai-chat/rbac/subjects/authentication/select-method",
   "account-settings": "/ai-chat/rbac/subjects/settings",
@@ -38,6 +38,7 @@ export const aiChatThreadCreateHref = (
 
 export function resolveAIChatRoute(href: string): IAIChatRoute | undefined {
   const path = href.split(/[?#]/)[0].replace(/\/$/, "");
+  if (path === "/ai-chat") return { page: "landing" };
   for (const [page, address] of Object.entries(aiChatServiceHrefs)) {
     if (path === address.replace(/\/$/, ""))
       return { page: page as keyof typeof aiChatServiceHrefs };

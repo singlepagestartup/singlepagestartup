@@ -1,9 +1,16 @@
 ---
 confirmation:
   confirmed: false
+sources:
+  request_receipt:
+    classification: verified-fact
+    inspected_snapshot: aa780be0f99f78f5d25802d259059cb1b66f4cb0
+    source: libs/modules/rbac/models/subject/README.md
+    supports: The owned CRM request flow distinguishes a saved Request from notification readiness; a repeated submission returns the saved receipt without resending.
+    limitation: A saved Request proves storage, not successful email delivery. Product preview feedback is supplied local state. The 24-hour initial-response expectation remains the Sales promise rather than measured delivery evidence.
 review:
   dependencies:
-    product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
+    product.ai-chat.website: 01b952c5fa54af025f65408e64fd34bb8ab17b40c54ccecbf01604312b1abdc2
 ---
 
 # Get help
@@ -48,9 +55,9 @@ Keep your saved documents and task in place while you wait. [Return to the works
 
 <!-- section: success -->
 
-## Request submitted
+## Request saved
 
-We’ll respond within 24 hours. You can keep working in your workspace while you wait.
+Your support request is saved. You can keep working in your workspace while it is reviewed. A saved request does not confirm that an email notification was delivered.
 
 <!-- section: controls -->
 
@@ -73,4 +80,4 @@ We’ll respond within 24 hours. You can keep working in your workspace while yo
 | topic-error         | Choose a topic.                               |
 | details-error       | Describe what happened.                       |
 | result-error        | Tell us what result you need.                 |
-| success-message     | Support request submitted.                    |
+| success-message     | Support request saved.                        |

@@ -1,15 +1,28 @@
 ---
 confirmation:
   confirmed: false
+sources:
+  source_contract:
+    classification: verified-fact
+    inspected_snapshot: aa780be0f99f78f5d25802d259059cb1b66f4cb0
+    sources:
+      - libs/modules/rbac/models/subject/README.md
+      - libs/modules/knowledge/README.md
+    supports: The project chooser opens at /ai-chat/projects, direct creation at /ai-chat/projects?create=1, and ordinary threads use a title, current assistant and all Knowledge linked to the profile. New uploads use the supported image, PDF and text formats.
+    limitation: Supplied Product state is not a real session. Document-reference selection is a proposed presentation feature and does not prove a restricted retrieval scope.
+route_intent:
+  projects: /ai-chat/projects
+  create: /ai-chat/projects?create=1
+  product_simulation_alias: /ai-chat/social/profiles/create
 review:
-  dependencies:
-    product.ai-chat.page.content.one-hour-setup: 86532294fa856d249a06ab800b909744d631caf96cb8059e720b1bab48b7b2d3
-    product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
+  dependencies: {}
 ---
 
 # Create a project and add your materials
 
-Enter a project name. The next screen accepts your notes, files and images, with an optional description. Continue to a separate analysis screen, where the AI agent checks the material and prepares the project and product documents. Open a document's working thread to discuss and edit that file with the agent, then save the section after review. The first session is planned for about one focused hour; you can pause or leave a question open.
+Choose an existing project, or use **New project** and enter a name. The next screen accepts your notes, supported files and images, with an optional description. Continue to a separate analysis screen, where the AI agent checks the material and prepares the project and product documents. Open a document's working thread to discuss and edit that file with the agent, then save the section after review. The first session is planned for about one focused hour; you can pause or leave a question open.
+
+[Choose a project](/ai-chat/projects) · [New project](/ai-chat/projects?create=1)
 
 ## Create the project, upload and analyze
 
@@ -17,7 +30,7 @@ Enter a project name. The next screen accepts your notes, files and images, with
 
 **Project notes:** What are you working on, what already exists and what result do you need?
 
-**Attach files:** Add documents, tables, presentations, notes, screenshots or images in their current form. The attached files remain visible in the upload list and later beside the document chats.
+**Attach files:** Add PNG, JPG, WebP, GIF, PDF, TXT, MD, CSV or JSON. The attached files remain visible in the upload list and later beside the document chats. Open supported images, PDF, Markdown or text in a centered preview, with original-file and download actions when an inline view is unavailable. Existing SVG and SVGZ originals remain stored, with an unsupported-format message; they are unavailable for analysis, model context or active preview.
 
 Before uploading, read [How your materials are processed and stored](#how-your-materials-are-processed-and-stored).
 
@@ -54,9 +67,9 @@ Each Product owns its economics. When products share a resource, each states its
 1. Read the draft for the selected project stage or product section.
 2. Correct the shortcomings the AI agent identifies and edit the affected text.
 3. Accept the reviewed description, or leave an unanswered question open.
-4. Create a topic in the general project workspace and attach selected saved documents for the next conversation, or freely export the documents.
+4. Name a topic in the general project workspace for the next conversation, or freely export the documents. The assistant can use all Knowledge linked to the project's profile.
 
-Each document keeps its own conversation, edits and review state. Opening another file leaves that thread's work in place. Acceptance applies to the text you reviewed. A new proposed change is reviewed in the owning file's thread; the last reviewed version remains available for topics until you save the revision. You can create a topic with one reviewed document while other sections still have open questions.
+Each document keeps its own conversation, edits and review state. Opening another file leaves that thread's work in place. Acceptance applies to the text you reviewed. A new proposed change is reviewed in the owning file's thread; the last reviewed version remains available until you save the revision. An ordinary topic needs a title and can be created while documents remain unfinished. Selected-document controls in the intended view identify task references; other material linked to the project remains available to the assistant. Use `/skill-slug` explicitly when a conversation needs a connected skill.
 
 [Review my project texts](/ai-chat/social/profiles/example)
 

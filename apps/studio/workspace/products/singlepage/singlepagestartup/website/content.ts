@@ -29,6 +29,9 @@ export interface ICodeFrameworkWebsiteContent {
   request: IWebsiteSection;
   change: IWebsiteSection;
   chat: IWebsiteSection;
+  modules: IWebsiteSection;
+  articles: IWebsiteSection;
+  handoff: IWebsiteSection;
   price: IWebsiteSection;
   questions: IWebsiteSection;
   footer: IWebsiteSection;
@@ -116,6 +119,9 @@ export function parseCodeFrameworkWebsite(
     request: section("request"),
     change: section("change"),
     chat: section("chat"),
+    modules: section("modules"),
+    articles: section("articles"),
+    handoff: section("handoff"),
     price: section("price"),
     questions: section("questions"),
     footer: section("footer"),

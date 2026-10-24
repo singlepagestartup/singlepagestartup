@@ -1,9 +1,16 @@
 ---
 confirmation:
   confirmed: false
+sources:
+  balance:
+    classification: verified-fact
+    inspected_snapshot: aa780be0f99f78f5d25802d259059cb1b66f4cb0
+    source: libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/billing/balance.ts
+    supports: The owner-scoped response returns one token amount containing granted and purchased credits.
+    limitation: The response does not establish separate Free and paid ledgers or prove a live payment or credit. The Product composition uses supplied state.
 review:
   dependencies:
-    product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
+    product.ai-chat.website: 01b952c5fa54af025f65408e64fd34bb8ab17b40c54ccecbf01604312b1abdc2
 ---
 
 # Add tokens and return to your work
@@ -18,7 +25,7 @@ Your uploaded material, saved documents and current task remain in place while y
 
 ## Current balance
 
-See the available free and purchased token balance and the task you will return to after payment. The balance may be negative.
+See the token amount available in your account and the task you will return to after payment. Granted and purchased credits share one balance. The balance may be negative.
 
 <!-- section: packages -->
 
@@ -78,9 +85,9 @@ A failed or cancelled payment leaves your saved work and token balance unchanged
 
 <!-- section: success -->
 
-## Package selected
+## Top-up quote
 
-Review the selected amount and token total. You can choose a different package or return to your workspace.
+Review the selected amount and token total. This preview creates no order or payment. You can choose a different package or return to your workspace.
 
 <!-- section: controls -->
 
@@ -99,15 +106,14 @@ Review the selected amount and token total. You can choose a different package o
 | total-label           | Total                                                                              |
 | terms-label           | Token and payment terms                                                            |
 | credit-note           | Amount at the stated rate. The final credited amount will be shown before payment. |
-| free-balance-label    | Free tokens                                                                        |
-| paid-balance-label    | Purchased tokens                                                                   |
-| balance-source        | Free and purchased tokens in this account                                          |
+| balance-source        | Token balance for this account                                                     |
+| balance-scope-note    | Granted and purchased credits share one balance.                                   |
 | currency              | RUB                                                                                |
 | rate-label            | 0.13 roubles per internal token                                                    |
-| continue-payment      | Continue to payment                                                                |
+| continue-payment      | Preview top-up                                                                     |
 | retry                 | Try again                                                                          |
 | return-without-buying | Return without buying                                                              |
 | return-href           | /ai-chat/social/profiles/example                                                   |
 | help-label            | Ask for help                                                                       |
-| help-href             | /help                                                                              |
-| success-message       | Package selected.                                                                  |
+| help-href             | /ai-chat/help                                                                      |
+| success-message       | Top-up quote ready.                                                                |

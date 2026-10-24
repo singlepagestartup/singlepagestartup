@@ -38,10 +38,46 @@ products:
             children:
               - id: landing
                 title: Landing page
-                route: /
+                route: /framework
                 representations:
                   text: singlepagestartup/website/page.md
                   preview: singlepagestartup/website/Landing.tsx
+              - id: modules
+                title: Modules
+                route: /framework/modules
+                representations:
+                  text: singlepagestartup/website/Modules/page.md
+                  preview: singlepagestartup/website/Modules/index.tsx
+              - id: module-guide
+                title: Module guide
+                route: /framework/modules/[slug]
+                representations:
+                  text: singlepagestartup/website/Modules/page.md
+                  preview: singlepagestartup/website/Modules/Guide.tsx
+              - id: blog
+                title: Blog
+                route: /blog
+                representations:
+                  text: singlepagestartup/website/Blog/list.md
+                  preview: singlepagestartup/website/Blog/index.tsx
+              - id: blog-category
+                title: Blog category
+                route: /blog/categories/[slug]
+                representations:
+                  text: singlepagestartup/website/Blog/category.md
+                  preview: singlepagestartup/website/Blog/Category.tsx
+              - id: blog-article
+                title: Article
+                route: /blog/articles/[slug]
+                representations:
+                  text: singlepagestartup/website/Blog/article.md
+                  preview: singlepagestartup/website/Blog/Article.tsx
+              - id: tokens
+                title: Plans and tokens
+                route: /ecommerce
+                representations:
+                  text: singlepagestartup/website/Tokens/page.md
+                  preview: singlepagestartup/website/Tokens/index.tsx
       - id: creative
         title: Marketing Creative
         pages:
@@ -133,7 +169,7 @@ products:
             children:
               - id: landing
                 title: Landing page
-                route: /ai-chat/
+                route: /
                 representations:
                   text: ai-chat/website/page.md
                   preview: ai-chat/website/Landing.tsx
@@ -164,6 +200,12 @@ products:
                 representations:
                   text: ai-chat/website/tokens.md
                   preview: ai-chat/website/Tokens.tsx
+              - id: pro
+                title: Monthly Pro
+                route: /ai-chat/rbac/subjects/subscriptions/pro
+                representations:
+                  text: ai-chat/website/Pro/page.md
+                  preview: ai-chat/website/Pro/index.tsx
               - id: settings
                 title: Settings
                 route: /ai-chat/rbac/subjects/settings

@@ -4,6 +4,10 @@
 Область: Workspace → 40 Products → singlepage → Code Framework → Promotion → Website → Pages → Landing page → Layout.
 Storybook работает на `http://localhost:4321/`.
 
+Область этого отчёта — checkpoint `5cb165c6a5`. Связанный путь Framework ↔ AI Chat,
+новые страницы и их актуальная проверка описаны в
+`ISSUE-376-framework-product-journey-review.md`.
+
 Это макет Workspace для визуального review. Его подтверждение остаётся за
 пользователем. Он использует собственные файлы продукта, зарегистрированные
 изображения и интерфейсный набор Living Focus; производственные SDK в него

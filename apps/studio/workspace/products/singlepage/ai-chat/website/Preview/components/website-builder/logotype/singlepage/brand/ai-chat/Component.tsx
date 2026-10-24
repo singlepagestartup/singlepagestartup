@@ -34,7 +34,7 @@ function Icon({
 export function Component() {
   return (
     <a
-      href="/ai-chat/"
+      href="/"
       data-ds-block="website-builder.logotype.brand-ai-chat"
       data-module="website-builder"
       data-model="logotype"
