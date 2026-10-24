@@ -6,6 +6,7 @@ import { Component as SubjectMeEcommerceModuleStoreOverviewDefault } from "./sub
 import { Component as SubjectMeEcommerceModuleCategoryOverviewDefault } from "./subject-me-ecommerce-module-category-overview-default";
 import { Component as SubjectMeEcommerceModuleProductOverviewDefault } from "./subject-me-ecommerce-module-product-overview-default";
 import { Component as SubjectMeEcommerceModuleProductListDefault } from "./subject-me-ecommerce-module-product-list-default";
+import { Component as SubjectMeEcommerceModuleTokenFind } from "./subject-me-ecommerce-module-token-find";
 import { Component as SubjectEcommerceOrder } from "./subject-ecommerce-order";
 import { Component as SubjectEcommerceProductListDefault } from "./subject-ecommerce-product-list-default";
 import { Component as SubjectMeCrmModuleFormSupportAiChat } from "./subject-me-crm-module-form-support-ai-chat";
@@ -58,6 +59,7 @@ export const variants = {
     SubjectMeEcommerceModuleProductOverviewDefault,
   "subject-me-ecommerce-module-product-list-default":
     SubjectMeEcommerceModuleProductListDefault,
+  "subject-me-ecommerce-module-token-find": SubjectMeEcommerceModuleTokenFind,
   "subject-ecommerce-order": SubjectEcommerceOrder,
   "subject-ecommerce-product-list-default": SubjectEcommerceProductListDefault,
   "subject-me-crm-module-form-support-ai-chat":

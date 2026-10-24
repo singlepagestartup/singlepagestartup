@@ -6,6 +6,7 @@ import type { IComponentProps as ISubjectMeEcommerceModuleStoreOverviewDefault }
 import type { IComponentProps as ISubjectMeEcommerceModuleCategoryOverviewDefault } from "./subject-me-ecommerce-module-category-overview-default/interface";
 import type { IComponentProps as ISubjectMeEcommerceModuleProductOverviewDefault } from "./subject-me-ecommerce-module-product-overview-default/interface";
 import type { IComponentProps as ISubjectMeEcommerceModuleProductListDefault } from "./subject-me-ecommerce-module-product-list-default/interface";
+import type { IComponentProps as ISubjectMeEcommerceModuleTokenFind } from "./subject-me-ecommerce-module-token-find/interface";
 import type { IComponentProps as ISubjectEcommerceOrderInterface } from "./subject-ecommerce-order/interface";
 import type { IComponentProps as ISubjectEcommerceProductListDefaultInterface } from "./subject-ecommerce-product-list-default/interface";
 import type { IComponentProps as ISubjectMeCrmModuleFormSupportAiChat } from "./subject-me-crm-module-form-support-ai-chat/interface";
@@ -51,6 +52,7 @@ export type IComponentProps =
   | ISubjectMeEcommerceModuleCategoryOverviewDefault
   | ISubjectMeEcommerceModuleProductOverviewDefault
   | ISubjectMeEcommerceModuleProductListDefault
+  | ISubjectMeEcommerceModuleTokenFind
   | ISubjectEcommerceOrderInterface
   | ISubjectEcommerceProductListDefaultInterface
   | ISubjectMeCrmModuleFormSupportAiChat
