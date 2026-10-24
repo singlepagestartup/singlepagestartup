@@ -6286,3 +6286,210 @@ assets:
       source: safe-build-rollout-master.png
       crop: false
       stretch: false
+
+  - id: singlepage-generated-framework-acquisition-v2-hero
+    path: "assets/singlepage/generated/framework-acquisition-v2/hero.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: hero"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "2d3a194116fa5fd0abb4eabbdbd4780a8d886c5fd305a8a8ff18eca13796aacc"
+    prompt: "Use case: infographic-diagram.\nAsset type: Code Framework landing hero illustration, consumer-facing software reuse.\nPrimary request: show a finished small web product made from reusable ready-made functions, not people talking.\nStyle master (use verbatim): Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nReference image is STYLE ONLY. Replace its entire old cube hierarchy with the following clear new scene.\nSubject: one prominent isometric browser window showing a polished small business website with a contact form and a few product/article tiles. Around its lower edge are a few separate reusable feature cards with clear pictograms for an account, shopping bag and article. One selected lime-accent feature card visibly fits into the website window, explaining \"keep the ready-made essentials and adapt your own product\". The website is the focal subject, not a person, robot, computer hardware or generic abstract cubes.\nComposition: natural free proportions; generous clean margins; entire browser and cards visible. Simple large forms legible at small web display sizes. White interiors, restrained lime tabs, refined dark graphite outlines; no shadows, gradients, tinted background, tiny illegible text, brand logos, title text or claims. This is a conceptual illustration, not a screenshot of an existing feature."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-accounts
+    path: "assets/singlepage/generated/framework-acquisition-v2/accounts.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: accounts"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "d980553ca35c38a3f48b86a43b76a3dc6d477bda62b40c3b300e7b7d2844f1d3"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for accounts.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: One upright isometric personal account card with a simple head-and-shoulders profile glyph, accompanied by a small shield with a check and a key. Explain a ready-made account and protected access, with clear distinct objects.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-social
+    path: "assets/singlepage/generated/framework-acquisition-v2/social.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: social"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "34e27e319e4c289bca7bc9902e37f7c49ff5da88cd0094299e1f91229f370efe"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for social.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: Two small isometric profile cards connected by a pair of open conversation bubbles. Explain profiles and conversations; no people in a room.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-blog
+    path: "assets/singlepage/generated/framework-acquisition-v2/blog.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: blog"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "9922899a4dc45d75db0311998f863f498769ab376de042682c417c1769d2c877"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for blog.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: A short overlapping stack of isometric article cards: a clear large image block and a few text rules, plus a small category tab. Explain a ready-made blog and organised articles.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-knowledge
+    path: "assets/singlepage/generated/framework-acquisition-v2/knowledge.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: knowledge"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "2c28f6ba2c9fa7fb930d77dbe2bc3b13e1403dd30e503650d09b9311d47254b6"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for knowledge.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: An open isometric folder holding three paper documents, with a magnifying glass beside one selected lime tab. Explain keeping and finding project materials.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-ecommerce
+    path: "assets/singlepage/generated/framework-acquisition-v2/ecommerce.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: ecommerce"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "6e6314e4af0085be38e79bbeb2b8d3c181750d5f6416c6912ef786c11c0bc122"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for ecommerce.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: A small isometric storefront product card with a simple package, a shopping bag and a compact cart. Explain a ready-made product catalogue and orders. A coherent compact group.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-billing
+    path: "assets/singlepage/generated/framework-acquisition-v2/billing.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: billing"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "a00c228e0488a763dca0b1ded770be0cb7549b6caf9dc76c265d58023449f9b7"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for billing.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: A clean isometric payment card and short receipt beside two simple coins, with one restrained lime confirmation check. Explain payments and currency choices, not financial success.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-pages
+    path: "assets/singlepage/generated/framework-acquisition-v2/pages.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: pages"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "8a6c1eb07d7f71c329d1270f903c30c1c7869ba06b3115a0671fcf49147244b2"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for pages.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: A single isometric web browser frame with a large heading-shaped rule, a picture panel and three clean content blocks, one lime block slightly offset ready to fit into its place. Explain choosing and arranging website content.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
+
+  - id: singlepage-generated-framework-acquisition-v2-forms
+    path: "assets/singlepage/generated/framework-acquisition-v2/forms.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-acquisition-v2"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration using the existing operator-supplied illustration style."
+    purpose: "Product-only Code Framework acquisition landing: forms"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present as a real product screenshot or claim of automatic website generation.",
+      ]
+    reference_asset_ids:
+      [
+        "singlepage-generated-living-focus-illustration-module-hierarchy-cool-square",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "5cb7dcab79b4a39870ca36b0f2c7c6b05944e64477e60b73ccd2be92da5efd81"
+    prompt: "Use case: infographic-diagram.\nAsset type: one small standalone Code Framework feature illustration for forms.\nStyle master: Create airy isometric line art on a flat pure white background, using fine graphite contours, cool light-gray secondary lines, dotted connections and restrained #BFEF61 details. Keep forms simple, unshaded and open, with generous breathing room and only meaningful connections. Derive the objects from the content brief.\nUse the attached image only for its existing illustration STYLE; do not repeat the cube hierarchy or code symbol. Content: An isometric contact form card with a few short input rules and a lime submit button, connected to a small clock and an outgoing paper plane. Explain collecting requests and follow-up tasks.\nNatural free proportions. One compact coherent subject with breathing room, large easily recognised forms. Entire objects visible, pure white background and object faces, no gradient or shading. Fine graphite contours, cool light-gray construction lines, a few restrained lime #BFEF61 accents. No headings, readable text, numbers, logos, watermark, decorative sparkles or generic cube network. This must look like one member of the same eight-illustration family."
+    source_or_tool: "Built-in image_gen. Original already square; preserved and reused unchanged as delivery. No crop, resize or outpainting."
