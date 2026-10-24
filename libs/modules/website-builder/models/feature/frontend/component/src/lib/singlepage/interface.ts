@@ -1,3 +1,9 @@
+import type { IComponentProps as IDefinitionCardProps } from "./definition-card/interface";
+import type { IComponentProps as IDefinitionItemProps } from "./definition-item/interface";
+import type { IComponentProps as IDefinitionChecklistProps } from "./definition-checklist/interface";
+import type { IComponentProps as IStepProps } from "./step/interface";
+import type { IComponentProps as ICopyRequestProps } from "./copy-request/interface";
+import type { IComponentProps as IDropdownProps } from "./dropdown/interface";
 import type { IComponentProps as ICard } from "./card/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/interface";
@@ -13,6 +19,12 @@ import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-r
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
+  | IDefinitionCardProps
+  | IDefinitionItemProps
+  | IDefinitionChecklistProps
+  | IStepProps
+  | ICopyRequestProps
+  | IDropdownProps
   | ICard
   | IFindComponentProps
   | IAdminFormComponentProps

@@ -1,3 +1,9 @@
+import { Component as DefinitionCard } from "./definition-card";
+import { Component as DefinitionItem } from "./definition-item";
+import { Component as DefinitionChecklist } from "./definition-checklist";
+import { Component as Step } from "./step";
+import { Component as CopyRequest } from "./copy-request";
+import { Component as Dropdown } from "./dropdown";
 import { Component as Card } from "./card";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
@@ -13,6 +19,13 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Default } from "./default";
 
 export const variants = {
+  "definition-card": DefinitionCard,
+  "definition-item": DefinitionItem,
+  "definition-checklist": DefinitionChecklist,
+  step: Step,
+  "copy-request": CopyRequest,
+  dropdown: Dropdown,
+
   card: Card,
 
   "admin-form": AdminForm,
