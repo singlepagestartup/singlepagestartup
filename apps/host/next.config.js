@@ -36,6 +36,8 @@ function makeConfig() {
     distDir: process.env.SPS_HOST_DIST_DIR || ".next",
     experimental: {
       webpackMemoryOptimizations: true,
+      // Release each compiler's heap before the next build stage.
+      webpackBuildWorker: true,
       turbopackMemoryLimit:
         turbopackMemoryMb === undefined
           ? undefined
