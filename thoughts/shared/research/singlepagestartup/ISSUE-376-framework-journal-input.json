@@ -1,0 +1,2379 @@
+{
+  "schema": "sps.platform-example-input.v1",
+  "targets": [
+    {
+      "key": "framework-journal-introduction",
+      "entity": "website-builder.widget",
+      "selector": {
+        "slug": "framework-journal-introduction"
+      },
+      "data": {
+        "slug": "framework-journal-introduction",
+        "variant": "content-page-header",
+        "adminTitle": "Build with an understanding of the code.",
+        "title": {
+          "en": "Build with an understanding of the code.",
+          "ru": "Разрабатывайте с пониманием кода."
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Follow a saved page from Next.js to Hono, understand who owns its data, and make your next change with a clear place to start.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Проследите путь сохранённой страницы от Next.js до Hono, разберитесь, какой модуль отвечает за её данные, и выберите, с чего начать следующее изменение.\"}]}]}"
+        },
+        "className": "",
+        "subtitle": {
+          "en": "The Framework journal",
+          "ru": "Журнал Framework"
+        },
+        "anchor": "framework-journal"
+      }
+    },
+    {
+      "key": "framework-journal-preparation-offer",
+      "entity": "website-builder.widget",
+      "selector": {
+        "slug": "framework-journal-preparation-offer"
+      },
+      "data": {
+        "slug": "framework-journal-preparation-offer",
+        "variant": "content-offer",
+        "adminTitle": "Know what you want to build before you change the code.",
+        "title": {
+          "en": "Know what you want to build before you change the code.",
+          "ru": "Определите, что хотите создать, перед изменением кода."
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Prepare your business model, audience and offer in AI Chat. Review and export the documents, then give them to a coding agent working with Code Framework.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подготовьте бизнес-модель, описание аудитории и предложение в AI-чате. Проверьте и экспортируйте документы, затем передайте их coding agent для работы с Code Framework.\"}]}]}"
+        },
+        "className": "",
+        "subtitle": {},
+        "anchor": "prepare-your-project"
+      }
+    },
+    {
+      "key": "framework-journal-preparation-actions",
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "slug": "framework-journal-preparation-actions"
+      },
+      "data": {
+        "slug": "framework-journal-preparation-actions",
+        "variant": "default",
+        "adminTitle": "Prepare and build",
+        "title": {
+          "en": "Prepare and build",
+          "ru": "Подготовка и разработка"
+        },
+        "description": {},
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-preparation-button-0",
+      "entity": "website-builder.button",
+      "selector": {
+        "slug": "framework-journal-preparation-button-0"
+      },
+      "data": {
+        "slug": "framework-journal-preparation-button-0",
+        "variant": "primary",
+        "adminTitle": "Prepare in AI Chat",
+        "title": {
+          "en": "Prepare in AI Chat",
+          "ru": "Подготовить в AI-чате"
+        },
+        "subtitle": {},
+        "url": "/",
+        "className": "w-fit"
+      }
+    },
+    {
+      "key": "framework-journal-preparation-button-0-link",
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "buttonsArrayId": {
+          "$ref": "framework-journal-preparation-actions"
+        },
+        "buttonId": {
+          "$ref": "framework-journal-preparation-button-0"
+        }
+      },
+      "data": {
+        "buttonsArrayId": {
+          "$ref": "framework-journal-preparation-actions"
+        },
+        "buttonId": {
+          "$ref": "framework-journal-preparation-button-0"
+        },
+        "variant": "default",
+        "orderIndex": 0,
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-preparation-button-1",
+      "entity": "website-builder.button",
+      "selector": {
+        "slug": "framework-journal-preparation-button-1"
+      },
+      "data": {
+        "slug": "framework-journal-preparation-button-1",
+        "variant": "secondary",
+        "adminTitle": "Explore Code Framework",
+        "title": {
+          "en": "Explore Code Framework",
+          "ru": "Изучить Code Framework"
+        },
+        "subtitle": {},
+        "url": "/framework",
+        "className": "w-fit"
+      }
+    },
+    {
+      "key": "framework-journal-preparation-button-1-link",
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "buttonsArrayId": {
+          "$ref": "framework-journal-preparation-actions"
+        },
+        "buttonId": {
+          "$ref": "framework-journal-preparation-button-1"
+        }
+      },
+      "data": {
+        "buttonsArrayId": {
+          "$ref": "framework-journal-preparation-actions"
+        },
+        "buttonId": {
+          "$ref": "framework-journal-preparation-button-1"
+        },
+        "variant": "default",
+        "orderIndex": 1,
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-preparation-actions-link",
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-journal-preparation-offer"
+        },
+        "buttonsArrayId": {
+          "$ref": "framework-journal-preparation-actions"
+        }
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-preparation-offer"
+        },
+        "buttonsArrayId": {
+          "$ref": "framework-journal-preparation-actions"
+        },
+        "variant": "default",
+        "orderIndex": 0,
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-index-introduction-host",
+      "entity": "host.widget",
+      "selector": {
+        "slug": "framework-journal-index-introduction-host"
+      },
+      "data": {
+        "slug": "framework-journal-index-introduction-host",
+        "variant": "default",
+        "adminTitle": "framework-journal-index-introduction-host",
+        "title": {
+          "en": "framework-journal-index-introduction-host",
+          "ru": "framework-journal-index-introduction-host"
+        },
+        "description": {},
+        "className": "",
+        "subtitle": {}
+      }
+    },
+    {
+      "key": "framework-journal-index-introduction-host-intro",
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-journal-index-introduction-host"
+        },
+        "externalModule": "website-builder",
+        "externalWidgetId": {
+          "$ref": "framework-journal-introduction"
+        }
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-index-introduction-host"
+        },
+        "externalModule": "website-builder",
+        "externalWidgetId": {
+          "$ref": "framework-journal-introduction"
+        },
+        "variant": "default",
+        "orderIndex": 0,
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-index-introduction-host-source",
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-journal-index-introduction-host"
+        },
+        "externalModule": "blog",
+        "externalWidgetId": "945035dd-98ea-4760-876a-c4f55d34fe35"
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-index-introduction-host"
+        },
+        "externalModule": "blog",
+        "externalWidgetId": "945035dd-98ea-4760-876a-c4f55d34fe35",
+        "variant": "default",
+        "orderIndex": 1,
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-index-offer-host",
+      "entity": "host.widget",
+      "selector": {
+        "slug": "framework-journal-index-offer-host"
+      },
+      "data": {
+        "slug": "framework-journal-index-offer-host",
+        "variant": "default",
+        "adminTitle": "framework-journal-index-offer-host",
+        "title": {
+          "en": "framework-journal-index-offer-host",
+          "ru": "framework-journal-index-offer-host"
+        },
+        "description": {},
+        "className": "",
+        "subtitle": {}
+      }
+    },
+    {
+      "key": "framework-journal-index-offer-host-source",
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-journal-index-offer-host"
+        },
+        "externalModule": "blog",
+        "externalWidgetId": "a8e1cca9-22f3-4579-a508-ab9ad848440a"
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-index-offer-host"
+        },
+        "externalModule": "blog",
+        "externalWidgetId": "a8e1cca9-22f3-4579-a508-ab9ad848440a",
+        "variant": "default",
+        "orderIndex": 0,
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-index-offer-host-offer",
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-journal-index-offer-host"
+        },
+        "externalModule": "website-builder",
+        "externalWidgetId": {
+          "$ref": "framework-journal-preparation-offer"
+        }
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-index-offer-host"
+        },
+        "externalModule": "website-builder",
+        "externalWidgetId": {
+          "$ref": "framework-journal-preparation-offer"
+        },
+        "variant": "default",
+        "orderIndex": 1,
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-category-offer-host",
+      "entity": "host.widget",
+      "selector": {
+        "slug": "framework-journal-category-offer-host"
+      },
+      "data": {
+        "slug": "framework-journal-category-offer-host",
+        "variant": "default",
+        "adminTitle": "framework-journal-category-offer-host",
+        "title": {
+          "en": "framework-journal-category-offer-host",
+          "ru": "framework-journal-category-offer-host"
+        },
+        "description": {},
+        "className": "",
+        "subtitle": {}
+      }
+    },
+    {
+      "key": "framework-journal-category-offer-host-source",
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-journal-category-offer-host"
+        },
+        "externalModule": "blog",
+        "externalWidgetId": "b5151035-f297-406c-b1d0-7aa215bbd921"
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-category-offer-host"
+        },
+        "externalModule": "blog",
+        "externalWidgetId": "b5151035-f297-406c-b1d0-7aa215bbd921",
+        "variant": "default",
+        "orderIndex": 0,
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-category-offer-host-offer",
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-journal-category-offer-host"
+        },
+        "externalModule": "website-builder",
+        "externalWidgetId": {
+          "$ref": "framework-journal-preparation-offer"
+        }
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-category-offer-host"
+        },
+        "externalModule": "website-builder",
+        "externalWidgetId": {
+          "$ref": "framework-journal-preparation-offer"
+        },
+        "variant": "default",
+        "orderIndex": 1,
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-article-offer-host",
+      "entity": "host.widget",
+      "selector": {
+        "slug": "framework-journal-article-offer-host"
+      },
+      "data": {
+        "slug": "framework-journal-article-offer-host",
+        "variant": "default",
+        "adminTitle": "framework-journal-article-offer-host",
+        "title": {
+          "en": "framework-journal-article-offer-host",
+          "ru": "framework-journal-article-offer-host"
+        },
+        "description": {},
+        "className": "",
+        "subtitle": {}
+      }
+    },
+    {
+      "key": "framework-journal-article-offer-host-source",
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-journal-article-offer-host"
+        },
+        "externalModule": "blog",
+        "externalWidgetId": "45c15fb3-fffa-4c1b-bc2f-899a17906768"
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-article-offer-host"
+        },
+        "externalModule": "blog",
+        "externalWidgetId": "45c15fb3-fffa-4c1b-bc2f-899a17906768",
+        "variant": "default",
+        "orderIndex": 0,
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-article-offer-host-offer",
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "widgetId": {
+          "$ref": "framework-journal-article-offer-host"
+        },
+        "externalModule": "website-builder",
+        "externalWidgetId": {
+          "$ref": "framework-journal-preparation-offer"
+        }
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-article-offer-host"
+        },
+        "externalModule": "website-builder",
+        "externalWidgetId": {
+          "$ref": "framework-journal-preparation-offer"
+        },
+        "variant": "default",
+        "orderIndex": 1,
+        "className": ""
+      }
+    },
+    {
+      "key": "framework-journal-index-introduction-host-switch",
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "66321162-eb98-48e0-832d-fc9bfdd6f25b",
+        "pageId": "1a2ff3a8-9e00-4f86-a660-61dd0a747bdf"
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-index-introduction-host"
+        }
+      },
+      "id": "66321162-eb98-48e0-832d-fc9bfdd6f25b",
+      "switch": true
+    },
+    {
+      "key": "framework-journal-index-offer-host-switch",
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "bf0cd6dd-064c-40b4-a84b-5242607ff77a",
+        "pageId": "1a2ff3a8-9e00-4f86-a660-61dd0a747bdf"
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-index-offer-host"
+        }
+      },
+      "id": "bf0cd6dd-064c-40b4-a84b-5242607ff77a",
+      "switch": true
+    },
+    {
+      "key": "framework-journal-category-offer-host-switch",
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "d7764441-29b8-458c-8f89-b4a37f8cce7f",
+        "pageId": "dc0bf05e-ab62-44b4-9f67-0b95c068e2eb"
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-category-offer-host"
+        }
+      },
+      "id": "d7764441-29b8-458c-8f89-b4a37f8cce7f",
+      "switch": true
+    },
+    {
+      "key": "framework-journal-article-offer-host-switch",
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "041fe4a8-b48a-4dde-b65b-d77904374348",
+        "pageId": "b235c9ec-3e78-4a3f-915e-e371110ee1be"
+      },
+      "data": {
+        "widgetId": {
+          "$ref": "framework-journal-article-offer-host"
+        }
+      },
+      "id": "041fe4a8-b48a-4dde-b65b-d77904374348",
+      "switch": true
+    },
+    {
+      "key": "framework-journal-token-intro-compact-switch",
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "9abcb66a-9ff5-49e2-bc63-90e3644ff1f3",
+        "slug": "framework-journey-tokens-introduction"
+      },
+      "data": {
+        "variant": "content-page-header"
+      },
+      "id": "9abcb66a-9ff5-49e2-bc63-90e3644ff1f3",
+      "switch": true
+    }
+  ],
+  "protectedSelections": [
+    {
+      "entity": "ecommerce.order",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.orders-to-products",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.orders-to-billing-module-payment-intents",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.stores-to-orders",
+      "selector": {}
+    },
+    {
+      "entity": "billing.payment-intent",
+      "selector": {}
+    },
+    {
+      "entity": "billing.invoice",
+      "selector": {}
+    },
+    {
+      "entity": "billing.payment-intents-to-invoices",
+      "selector": {}
+    },
+    {
+      "entity": "billing.payment-intents-to-currencies",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-ecommerce-module-orders",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-billing-module-payment-intents",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-billing-module-currencies",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.subjects-to-roles",
+      "selector": {}
+    },
+    {
+      "entity": "rbac.roles-to-ecommerce-module-products",
+      "selector": {}
+    },
+    {
+      "entity": "blog.articles-to-ecommerce-module-products",
+      "selector": {}
+    },
+    {
+      "entity": "blog.articles-to-website-builder-module-widgets",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.products-to-attributes",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.attribute",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.attribute-key",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.products-to-file-storage-module-files",
+      "selector": {}
+    },
+    {
+      "entity": "ecommerce.categories-to-products",
+      "selector": {}
+    },
+    {
+      "entity": "billing.currency",
+      "selector": {}
+    },
+    {
+      "entity": "blog.article",
+      "selector": {}
+    },
+    {
+      "entity": "blog.category",
+      "selector": {}
+    },
+    {
+      "entity": "crm.form",
+      "selector": {}
+    },
+    {
+      "entity": "crm.step",
+      "selector": {}
+    },
+    {
+      "entity": "crm.input",
+      "selector": {}
+    },
+    {
+      "entity": "crm.option",
+      "selector": {}
+    },
+    {
+      "entity": "crm.request",
+      "selector": {}
+    },
+    {
+      "entity": "crm.forms-to-requests",
+      "selector": {}
+    },
+    {
+      "entity": "crm.forms-to-steps",
+      "selector": {}
+    },
+    {
+      "entity": "crm.steps-to-inputs",
+      "selector": {}
+    },
+    {
+      "entity": "crm.inputs-to-options",
+      "selector": {}
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "1a2ff3a8-9e00-4f86-a660-61dd0a747bdf"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "1e10dfab-62ff-4dfe-980f-af821914affc"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "23cdc964-5944-4114-92ea-021ac1669e1d"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "3e94a4e8-c990-47de-ad29-b90dce99082b"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "563182ee-1135-45a2-ac4a-32304683ab17"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "99ffcce1-adf1-44c0-878a-19902b9151ff"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "ad34d520-a87d-4543-8106-8e18683be712"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "b235c9ec-3e78-4a3f-915e-e371110ee1be"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "c9d1562a-ff09-4381-a46d-23d67fa62643"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "dc0bf05e-ab62-44b4-9f67-0b95c068e2eb"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "01f39ad8-5b96-4121-adc1-2a79951c0e2a"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "66f99ba7-2cc2-407b-bfa9-7ef3e55a7cf4"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "7068a7fc-c85c-49f9-9f4d-37ece256a38c"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "89ffc350-ca96-467e-acb1-1b02604d98ce"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "9e761df6-d548-4adf-a8dc-6f6571d0b6ae"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "a22958f9-92e8-4231-b992-81672bd57dfc"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "a9b2427c-ebd4-4072-b707-ac108bfebb48"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "b8ce23e9-63c3-406d-b44a-ba382b4cccc8"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "cdd585f7-62a8-4344-96c6-f9b593d37f1c"
+      }
+    },
+    {
+      "entity": "host.page",
+      "selector": {
+        "id": "f3f4a647-dae0-4fa9-b0b3-deb25fbd4eb5"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "selector": {
+        "id": "2999b562-6d35-4761-b8df-d4dbe4c4d447"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "selector": {
+        "id": "43edc5b9-332c-45f5-901c-c38b8b7ac8f9"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "selector": {
+        "id": "4e2de102-0e3a-4426-90ff-efca836b64b7"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "selector": {
+        "id": "b7170bac-a11d-4b9a-9420-e348597559a9"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "0b47a64a-3ddc-44b0-b208-f1507beb0d3e"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "2311dd75-4d46-47ac-a96b-e9a3a5c5e3b5"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "2cc8d59a-3e71-432c-93cc-9ffad75ac730"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "55c0c37f-e5fd-42cd-82da-7295f12b8d8d"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "6c20fbe6-4e73-4267-8209-4cd9fd0460ba"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "7015795f-30ad-4eaf-a694-33cd1d7ba85f"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "830d842f-4d04-42ae-ab01-75f040dd6b3d"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "a55f8097-8336-4c49-937c-3ef72e106acd"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "ab2c6648-2d72-4c4c-ba6d-fee5407550a1"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "dfaa852f-892c-4ad1-9da7-29bc4a416408"
+      }
+    },
+    {
+      "entity": "host.layout",
+      "selector": {
+        "id": "288ea6c6-10eb-41f6-9f9c-1771e6608a23"
+      }
+    },
+    {
+      "entity": "host.layouts-to-widgets",
+      "selector": {
+        "id": "10b3426e-dda9-49b7-abbf-cb7d4b7d8305"
+      }
+    },
+    {
+      "entity": "host.layouts-to-widgets",
+      "selector": {
+        "id": "8f4e4066-ae2f-48d1-92db-06bd24a94f03"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "04024071-3b33-41ec-9837-c493ec0d2a7c"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "0c2d389f-0c99-4d7f-8993-daaaf1750246"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "0ccae40a-ffc7-49c1-aa50-62f39755cfde"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "0e239179-331e-4900-b191-13ffc8175d20"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "0e414f82-3360-4159-bd90-1a4a4448aea9"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "1296adab-4fa8-46f0-b15e-722ac9a863a6"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "24af84a7-fd08-42b3-923d-f66c5dccb911"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "642e413e-3bda-4c17-b377-41c30f67c611"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "8ddc19f1-b7f2-498c-aa56-2db754352779"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "9054779f-9982-416c-bec5-0666b176f571"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "9be68bba-41ef-4558-9a83-79c1b2218de0"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "a3b93880-8708-4fb9-844a-5b2ecb20942a"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "b7043b22-8004-47d1-a6d7-3a30cfe658dc"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "b86c1653-1ae3-4d30-9a41-e7126cedb0fe"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "c849d623-7665-4939-b585-9c1818245c19"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "1b5aff36-7ea1-4c6e-9241-3ffac6a10d2b"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "2ffd1b09-52e2-4731-8fa8-fb7fe0b3429b"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "30dd1511-0b8a-4a30-a684-6b58e27b663f"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "311cdae2-5bb1-472a-9fda-118b1a998345"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "3388c501-996a-4574-a2d7-e5283706b12c"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "493db933-d8ac-4d04-9dd6-69c84e954bdf"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "4a55c115-cf4f-4758-8f9b-14d5fee26a1e"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "55678efe-2151-4be0-82f3-db29774b1402"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "7d33f738-101f-4cdd-8d47-6648ad4bdfdf"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "9749faa4-0e8d-4b9b-af52-ef12205e5999"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "a5a0855a-08bd-482c-bc82-e2330ef351b7"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "d2354446-aa47-47aa-8617-a68ee82a4971"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "e2514b33-0bd3-43e3-960e-9ddec897d66c"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "e8b3b798-fe75-4ec1-a095-78c964be3745"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "feea8a5f-925d-4b15-95f2-e5237a7d06d9"
+      }
+    },
+    {
+      "entity": "rbac.widget",
+      "selector": {
+        "id": "49cd582a-5ab2-4916-9660-801bf9064df0"
+      }
+    },
+    {
+      "entity": "rbac.widget",
+      "selector": {
+        "id": "abaeea88-a634-41b6-beee-f95cba9e50a3"
+      }
+    },
+    {
+      "entity": "rbac.widgets-to-website-builder-module-widgets",
+      "selector": {
+        "id": "a25497f4-5b10-4805-8841-f20e73346298"
+      }
+    },
+    {
+      "entity": "rbac.widgets-to-website-builder-module-widgets",
+      "selector": {
+        "id": "f4950bf1-fb22-435d-81fc-2f0588ed5ea8"
+      }
+    },
+    {
+      "entity": "blog.widget",
+      "selector": {
+        "id": "945035dd-98ea-4760-876a-c4f55d34fe35"
+      }
+    },
+    {
+      "entity": "blog.widget",
+      "selector": {
+        "id": "a8e1cca9-22f3-4579-a508-ab9ad848440a"
+      }
+    },
+    {
+      "entity": "blog.widget",
+      "selector": {
+        "id": "eab2ae6f-1b5f-491d-9f95-4c5ba2499e23"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-website-builder-module-widgets",
+      "selector": {
+        "id": "ed9dd231-628b-4411-8fde-defcbdf50675"
+      }
+    },
+    {
+      "entity": "ecommerce.widget",
+      "selector": {
+        "id": "6b47aa01-1d1b-4cd3-ba34-4de9c2ade6af"
+      }
+    },
+    {
+      "entity": "ecommerce.widget",
+      "selector": {
+        "id": "c7e80315-b876-48db-a862-41d0b8db0d67"
+      }
+    },
+    {
+      "entity": "ecommerce.widget",
+      "selector": {
+        "id": "8a2f425b-5674-4dbb-974d-1c5bb1c4a89e"
+      }
+    },
+    {
+      "entity": "rbac.widgets-to-ecommerce-module-widgets",
+      "selector": {
+        "id": "f083ce78-7207-4e1b-a5ea-9eb5ee3ef791"
+      }
+    },
+    {
+      "entity": "rbac.widgets-to-crm-module-widgets",
+      "selector": {
+        "id": "cefd5e63-165f-46e5-80cc-2dc332467e83"
+      }
+    },
+    {
+      "entity": "crm.widget",
+      "selector": {
+        "id": "d947bcab-0873-40a5-8c91-66ec59c54c3b"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "id": "2d3a804f-7995-457e-a5c2-88d8f9ba54d1"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "id": "3cb2f8f0-312d-40d4-8b71-b3c790896553"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "id": "3f56d4e5-0316-4a7f-85a6-8b71df5940c4"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "id": "6d5d922b-8326-4758-9280-9d0904ea21e9"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "id": "70ca96a2-c9f5-44e5-9ede-a97c8ed2c479"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "id": "746f2635-85c8-45fb-a79a-5ce5f3f77429"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "id": "7ab6f895-036d-4d77-828f-6a86585fca7d"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-products",
+      "selector": {
+        "id": "a5c9af7a-8257-48fc-b0be-d27cc1afe100"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-categories",
+      "selector": {
+        "id": "51811f1d-f3d1-4831-a030-66257d43097e"
+      }
+    },
+    {
+      "entity": "ecommerce.widgets-to-categories",
+      "selector": {
+        "id": "573d2c88-3118-4b24-912b-66215fb7a694"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "34da615d-433a-4e1a-b424-9dac843d98b3"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "53599101-ea47-4e1e-8531-64362cb87d05"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "75a81eab-4af1-43b3-b1a1-83ee0df7e7a2"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "830b6fb3-8e7f-4e55-aa60-387bbc8b5751"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "8aab55ed-f82d-49de-87b2-9625f5261f4c"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "b0929dd6-b345-4574-976e-4c1cbb40e094"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "e939ed88-22ba-4630-86e4-9743ad94338c"
+      }
+    },
+    {
+      "entity": "ecommerce.product",
+      "selector": {
+        "id": "fad008ee-3cd9-4279-b2c9-acc6f86b3094"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-articles",
+      "selector": {
+        "id": "2b0d9484-afb6-4215-ac0c-c3d19f3371a9"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-articles",
+      "selector": {
+        "id": "594efcad-40a0-4ff7-81a3-c4819eae9d52"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-articles",
+      "selector": {
+        "id": "68e278af-6be9-40ed-b424-054ff890b56d"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-articles",
+      "selector": {
+        "id": "99e4b603-81e1-44ad-b6c4-5481572775fe"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-articles",
+      "selector": {
+        "id": "9b8c3d5b-c8d6-4b59-9e5d-88f01748284a"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-articles",
+      "selector": {
+        "id": "adeb42b5-4fe3-4c16-87df-02d3dbd7fcb9"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-articles",
+      "selector": {
+        "id": "c313b04a-383f-4f30-917c-9e010d51ec6d"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-articles",
+      "selector": {
+        "id": "cd204b30-35ed-485c-aacd-0aec76e842fd"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-articles",
+      "selector": {
+        "id": "e011736d-fade-449c-b41e-24135552e34c"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-categories",
+      "selector": {
+        "id": "11e0b0dd-6562-4132-b794-ee0bc10423c4"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-categories",
+      "selector": {
+        "id": "1eef1557-2a9d-4f0a-b766-193098a8c65e"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-categories",
+      "selector": {
+        "id": "77849713-fe59-4db3-8dbc-9674f68b469c"
+      }
+    },
+    {
+      "entity": "blog.article",
+      "selector": {
+        "id": "00f09bf2-2a51-4aa8-b370-f38eba85fec1"
+      }
+    },
+    {
+      "entity": "blog.article",
+      "selector": {
+        "id": "5ade2625-007e-4c90-86bd-989a33e534fa"
+      }
+    },
+    {
+      "entity": "blog.article",
+      "selector": {
+        "id": "940c5c4a-e447-4bc1-a1a4-3f8ca07bfc3d"
+      }
+    },
+    {
+      "entity": "blog.article",
+      "selector": {
+        "id": "c084315b-4c5b-414e-b853-98833bb0317a"
+      }
+    },
+    {
+      "entity": "blog.article",
+      "selector": {
+        "id": "cd31c96a-dd5a-457d-a2c6-1a23f797e03e"
+      }
+    },
+    {
+      "entity": "blog.article",
+      "selector": {
+        "id": "fb44c1c5-7cf9-4ba2-8860-9e5405232e46"
+      }
+    },
+    {
+      "entity": "blog.category",
+      "selector": {
+        "id": "39fd51d2-822a-4546-a1b3-9852c951d80a"
+      }
+    },
+    {
+      "entity": "blog.category",
+      "selector": {
+        "id": "46712882-0121-463f-a00f-81ec07ea6c74"
+      }
+    },
+    {
+      "entity": "blog.category",
+      "selector": {
+        "id": "7e7866cf-3e25-4fb4-845d-2827ca9b5805"
+      }
+    },
+    {
+      "entity": "crm.widgets-to-forms",
+      "selector": {
+        "id": "5009c26b-534e-4095-a4f3-9edbced8252d"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "02556f05-94a6-4523-9fc4-59e3b11c3d26"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "2cdfdad9-5a98-4bb5-b8d2-da659ea1c6e0"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "314ccd04-c467-482b-b09b-9dd298aa1641"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "3f9702cf-73a9-4416-8bdb-836894021c00"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "41edd264-24a5-48a8-9d06-5fd5d65c0dfa"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "4e55875f-1298-4544-a61d-19af05367bef"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "5d735c1d-2fcb-4db2-9eda-f7e3e931221b"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "7e379b78-18a6-4671-8f4e-5abe53d2d236"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "830a3ac0-2c7a-41c8-ac4e-d42760406daa"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "ca5ee22a-eea8-494d-811c-e00339a4c175"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "ef9669bc-c530-4024-b9ca-df203c67a41e"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "116340c8-a128-4298-b98b-74c4b9dd7c45"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "1fb798a4-2e63-4c5e-830d-ba4e2581588c"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "5330b56e-3b26-4267-9d98-c0d968edd993"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "57204ff5-dbdf-4845-a1c3-2cf44a64e34c"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "7e1fd0fd-c28b-431e-8b3f-cfd764d129a6"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "7ea7ad8c-da9a-4159-9805-fef1312a6ded"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "91ca6b85-a71b-45e9-8074-1a6313b414bf"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "a906fcc6-0348-465a-be59-bcea7d4d6365"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "ab9a7ebf-5422-4bfb-b5ef-7bee9533543b"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "b6ec9745-8aa8-4bc6-afaf-bfdc939e3a9f"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "bc27aade-c052-4d7d-9d02-5a33d9628908"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "c7138ef0-a056-405a-a106-190a836d15e4"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "cda3a8d0-14d6-475b-be83-121a2a2d030d"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "dfb515d0-8414-4aa5-a031-dbbb99689670"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-logotypes",
+      "selector": {
+        "id": "b717ef72-fb44-4d47-84fa-45a8d896aed6"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-logotypes",
+      "selector": {
+        "id": "bc1001ef-9609-4b23-8ba0-cb9a65dd0f51"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "025e1ebb-f69a-4a66-9748-19ef3c08197d"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "0f3884fd-efbe-474e-9deb-28760ae3c009"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "1477da3d-8e17-4df3-95d1-30997f6c00b2"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "4d50d1be-26e5-4b5b-add7-525902a26287"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "569a56d5-3708-488b-8310-a124e23fc277"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "81798021-acd8-40bf-b470-053fbf3ec436"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "8bb8ab2d-1ee2-4647-bc1c-5ea3c11bf0f5"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "9ebc6653-f9f7-4aab-8beb-7704824e96ba"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "b83dc8f4-517b-4ebc-930d-0272491b4e79"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "bba16840-782f-4fd6-a35b-2e6bf04ee178"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "c5485c9a-6b2f-4ff8-ba08-8a7424c61526"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "id": "cdfdc4a4-10f6-45d3-87cb-6c177b258c1a"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-file-storage-module-files",
+      "selector": {
+        "id": "a54b963b-0879-4028-abff-97704993e852"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-sliders",
+      "selector": {
+        "id": "e2e661ec-a0ed-4a12-86d6-41413d4825be"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "1abd6283-ab2d-4bda-95c5-11d1501a2054"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "25069dd0-899e-4a61-8975-c2b5ff899214"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "5a6b19b2-0afa-4dad-a182-2bf2e3204a67"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "6f18dc7f-2c3e-4d4f-a434-f94ce9586495"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "79b3173f-21f5-4d33-aa5b-5d89bb8e1490"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "82b04a12-9e8e-42d2-bb6e-f403114045c0"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "8769cbdb-efa9-405b-b9c4-75c458281595"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "8997b868-a7de-48b1-abf9-d5ac4c881cc0"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "89d245b5-3e3e-483a-a5c5-32860e073f9b"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "9a37a2f9-1f30-4b5a-8c84-eceb9e8e8cf8"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "ab0807f2-362e-4339-9f23-1d2dc36e39c4"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "b42c162f-6a53-458c-a8e2-8baf7c69499f"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "bf6211ab-b521-4fcb-ac25-eeb6525b9cfb"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "f73447a2-29db-4d6a-922a-0ffa4b6abe19"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "083be906-089c-41ea-97d1-1b5197b38082"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "0a42b422-79c1-4b79-983a-483e00fceb3e"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "3001af44-b281-409b-8d36-01c2e2d696df"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "4805538c-46c2-4406-82c7-64e5e4604093"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "50e54f00-a467-4fa2-92bf-14873b5fee79"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "5bfbf853-f41f-453b-9410-d1fda44db087"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "623c05c2-a733-4ef3-b6ca-05a065719c3f"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "680e21ec-eb67-4a28-9329-5cee579781b4"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "70ff12c8-4c95-42bc-a009-9b9b1edc5f8b"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "7469770c-09f1-4eea-8128-c3d6255310e8"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "76b8f09f-1fe8-4fba-ba10-ef8d40fa9e8b"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "7b8c4daa-fbf7-4470-aa50-16007e492f65"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "7c9f1b26-3172-48a6-a23b-bc00547f1fc6"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "99e3bcdf-f172-416d-a3ca-581cb8e2bc70"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "99f96c83-8ff9-4840-a020-0dc8c46aa5ab"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "9c79475c-dddc-4570-8b1c-88a6b1062d9e"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "9d5e82bf-2a39-4540-9625-09f7adc3a8a1"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "a530efc0-5ef3-4ec1-b9d1-44ebe0c028e8"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "ad2d4438-b893-4f11-b4e7-342a8b4e4660"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "b4dfe21f-5013-426c-bfe0-462a3083fe78"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "bf9fc250-0740-419f-a1c9-5dc263097ebc"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "c6232fce-6992-4af1-b309-85f5982b5b70"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "daf9f146-63c0-4e60-bf89-d67410fe18ef"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "e2fabd66-12ab-4422-a921-10bba5fd64f8"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "fb78d0ab-1b18-43c0-8ae5-efe4baa783ae"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "fc97b37e-4e7d-49f5-bcc2-c1ef088cc682"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "2443bc51-eeec-4bf7-bf7a-ed63b15bd8c3"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "26d33e67-10b0-46dd-84f3-b682b8a82cad"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "26f7e03d-1c21-42da-a0f6-be36da6f3d3f"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "358a9dd1-d018-419b-b3a3-e080e895f9c2"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "3c273552-264d-46aa-af56-1aa7b84a86ec"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "3fe07489-3106-4c8d-93b8-37337c9f9105"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "4222e7ae-b1e4-49b6-ade1-ab8fe9ba23c4"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "5101f05e-c636-48e6-9219-b4e56228353e"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "5ca2b0cc-fbd6-4551-acd8-dbdb95c257eb"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "69f56e51-1b8c-48aa-bfc7-a90d04684a44"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "7871ad84-fa06-4124-a564-21c1d1c7cbb1"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "7c8e9baf-6817-43a8-8a9d-ab9cb67ebe94"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "86be0dc9-c4bc-4531-bfe7-e913f5536cc1"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "9838b5fe-eae5-4a80-840c-bed601479243"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "a4fe7e10-4cc2-487b-bf1f-2783bd85dbcd"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "aab1b3ec-6278-4168-94aa-5913306d65df"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "ab68b1c7-b853-4953-a055-d8e108d0c9c9"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "adf87d11-5fba-439d-be4c-e65152603199"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "b2286dbf-3d3d-460d-9e75-f46e07889d8a"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "c057c4d8-6f1b-4419-85f9-efb320099d6b"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "d71b7834-18c2-4d66-b609-8c30316d17a3"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "d7fca1f4-ae4f-4c71-a727-fc7533a6d0b0"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "e84aa628-9370-498b-952a-2e381a28b3b4"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "f569c1bb-cc8f-4e00-b787-89546c090e47"
+      }
+    },
+    {
+      "entity": "website-builder.logotype",
+      "selector": {
+        "id": "536dee30-8213-4f58-9c2c-a6adf4b4dfaa"
+      }
+    },
+    {
+      "entity": "website-builder.logotypes-to-file-storage-module-files",
+      "selector": {
+        "id": "94da75d9-b21b-4425-82a6-a02ee9f63862"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "054bd7c6-82f2-4e4b-8dfd-2c42b323146d"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "3edd8830-ca21-4b9b-9f5e-ac0105bfae19"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "40537e1c-5b38-4bc8-87ec-4c2307c67619"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "60187bee-e128-4b52-801f-20870d807fdb"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "66d3bdba-c0c6-4212-ba9d-9dea20bc353f"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "6da3d09c-5042-4e7a-8070-45366be0b3e0"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "7c26fc5e-0282-4f54-964d-e823765e753a"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "8393232d-b09e-414d-83ca-a19b42b20a6e"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "abf9d91c-bdb6-48e1-9c7e-c5f2a0b0e808"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "b6a1ef3c-64d9-4b5e-9d45-0fca3686cb4e"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "b8b6b538-5dc7-44a2-92d9-f3e264f97559"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "selector": {
+        "id": "c5470509-f25d-4148-8b75-e42699de0482"
+      }
+    },
+    {
+      "entity": "website-builder.slider",
+      "selector": {
+        "id": "7c58565e-095e-449c-b517-74640f2daa9d"
+      }
+    },
+    {
+      "entity": "website-builder.sliders-to-slides",
+      "selector": {
+        "id": "3c4b56ba-f849-4cfc-a6da-f057dff9dfdc"
+      }
+    },
+    {
+      "entity": "website-builder.sliders-to-slides",
+      "selector": {
+        "id": "b5a84f16-1e49-43ef-ad71-0e51cad11ee0"
+      }
+    },
+    {
+      "entity": "website-builder.sliders-to-slides",
+      "selector": {
+        "id": "ee0bbdd4-48d6-428d-b20a-e949e5234934"
+      }
+    },
+    {
+      "entity": "website-builder.slide",
+      "selector": {
+        "id": "7b354fd7-3a21-4fc6-a213-b4f6a1e01208"
+      }
+    },
+    {
+      "entity": "website-builder.slide",
+      "selector": {
+        "id": "b8cac576-7912-4bc7-9673-b7aff23458d8"
+      }
+    },
+    {
+      "entity": "website-builder.slide",
+      "selector": {
+        "id": "ff4031b2-4e1d-4b69-8090-e6263b39c5a2"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "selector": {
+        "id": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-file-storage-module-files",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-sliders",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "blog.articles-to-website-builder-module-widgets",
+      "selector": {
+        "articleId": "5ade2625-007e-4c90-86bd-989a33e534fa",
+        "variant": "private"
+      }
+    },
+    {
+      "entity": "blog.articles-to-ecommerce-module-products",
+      "selector": {
+        "articleId": "5ade2625-007e-4c90-86bd-989a33e534fa"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-logotypes",
+      "selector": {
+        "widgetId": "6580e777-393d-4255-94b9-58f3607ce465"
+      }
+    },
+    {
+      "entity": "blog.articles-to-website-builder-module-widgets",
+      "selector": {
+        "id": "992b28da-d5a7-4e9a-a0f4-350e0c73cee3"
+      }
+    },
+    {
+      "entity": "blog.articles-to-ecommerce-module-products",
+      "selector": {
+        "id": "b7722336-de44-4760-9b67-b1bf92102b3b"
+      }
+    },
+    {
+      "entity": "file-storage.file",
+      "selector": {
+        "id": "2e670925-bec9-4514-8330-b66d42f015cb"
+      }
+    },
+    {
+      "entity": "file-storage.file",
+      "selector": {
+        "id": "68956dac-b929-4e7f-8856-bf3493ea779d"
+      }
+    },
+    {
+      "entity": "file-storage.file",
+      "selector": {
+        "id": "d2db47e9-50c5-401a-a84d-c36694c664a6"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "05de9cbd-3fea-458a-83f2-2309a48688f9"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "selector": {
+        "id": "94e07ec6-2e4b-4365-a729-78cdb340b66d"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "80aab408-c69b-4b13-80ca-268d29185c77"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "23b42efb-a5d7-406b-bfec-ec8edef96e07"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "d4dc1f07-590d-44da-9ca2-61a241ad5a1b"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "selector": {
+        "id": "0194326e-2735-4c6b-8369-03f41962af6a"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "e7fda341-e5cc-473d-ad51-d2695329b3af"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "73a52ac3-cbbd-4fef-947a-b63298903ef1"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "35849e6e-67e5-4cd4-a491-25d34591c991"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "selector": {
+        "id": "d0079be4-2fe4-4d74-8073-f4e73976b0a4"
+      }
+    },
+    {
+      "entity": "blog.widget",
+      "selector": {
+        "id": "b5151035-f297-406c-b1d0-7aa215bbd921"
+      }
+    },
+    {
+      "entity": "blog.widget",
+      "selector": {
+        "id": "45c15fb3-fffa-4c1b-bc2f-899a17906768"
+      }
+    },
+    {
+      "entity": "blog.widget",
+      "selector": {
+        "id": "0ae98073-ca04-43dd-a16a-23f1f15561e7"
+      }
+    },
+    {
+      "entity": "blog.widget",
+      "selector": {
+        "id": "5be6bc1d-a608-4b79-aa57-af88b9a9bcd3"
+      }
+    },
+    {
+      "entity": "blog.widgets-to-articles",
+      "selector": {}
+    },
+    {
+      "entity": "blog.widgets-to-categories",
+      "selector": {}
+    },
+    {
+      "entity": "blog.widgets-to-website-builder-module-widgets",
+      "selector": {}
+    },
+    {
+      "entity": "blog.categories-to-articles",
+      "selector": {}
+    },
+    {
+      "entity": "blog.categories-to-website-builder-module-widgets",
+      "selector": {}
+    },
+    {
+      "entity": "blog.articles-to-file-storage-module-files",
+      "selector": {}
+    },
+    {
+      "entity": "social.profiles-to-blog-module-articles",
+      "selector": {}
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "selector": {
+        "widgetId": "9abcb66a-9ff5-49e2-bc63-90e3644ff1f3"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-file-storage-module-files",
+      "selector": {
+        "widgetId": "9abcb66a-9ff5-49e2-bc63-90e3644ff1f3"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "widgetId": "9abcb66a-9ff5-49e2-bc63-90e3644ff1f3"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "selector": {
+        "id": "d1ceeecc-7e6d-4dbe-b4ac-2ee08e033f7d"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "buttonsArrayId": "d1ceeecc-7e6d-4dbe-b4ac-2ee08e033f7d"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "128f46bf-14a7-4cbe-bf43-4b9e653db6c0"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "selector": {
+        "id": "49001ffb-35b2-460b-b553-42b01d741eca"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "selector": {
+        "id": "6f23cc45-10b3-43a0-aa95-0fe042484cab"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "ad9a5976-8713-4c54-a04f-11234f0bfaec"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "selector": {
+        "id": "f61d1f91-8da4-4b37-9026-f3ce55f13ee4"
+      }
+    }
+  ]
+}
