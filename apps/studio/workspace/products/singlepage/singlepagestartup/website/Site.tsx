@@ -50,16 +50,22 @@ interface ISiteShellProps {
   content?: ICodeFrameworkWebsiteContent;
   resolveLink?: IWorkspacePageProps["resolveLink"];
   active?: "framework" | "modules" | "blog" | "tokens";
+  acquisition?: boolean;
 }
 
 export function SiteShell({
   children,
   resolveLink,
   active,
+  acquisition = false,
   content: suppliedContent,
 }: ISiteShellProps) {
   const content = suppliedContent ?? parseCodeFrameworkWebsite(siteText);
   const labels = content.labels;
+  const repositoryHref =
+    content.handoff.links.find(({ href }) =>
+      href.startsWith("https://github.com/"),
+    )?.href ?? "https://github.com/singlepagestartup/singlepagestartup";
   const groups = [
     {
       title: labels["footer-build"],
@@ -126,7 +132,7 @@ export function SiteShell({
           </PreviewLink>
           <nav
             aria-label="Main navigation"
-            className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
+            className={`${acquisition ? "hidden @4xl:flex" : "flex"} flex-wrap items-center gap-x-5 gap-y-2 text-sm`}
           >
             {navigation.map((item) => (
               <PreviewLink
@@ -140,24 +146,63 @@ export function SiteShell({
               </PreviewLink>
             ))}
             <PreviewLink
-              href="/"
+              href={acquisition ? content.hero.links[0].href : "/"}
               resolveLink={resolveLink}
-              className={`${kit.secondary} gap-2`}
+              className={`${acquisition ? kit.button : kit.secondary} gap-2`}
             >
               <Icon name="chat-circle" size={20} />
-              {labels["navigation-chat"]}
+              {acquisition
+                ? labels["navigation-start"]
+                : labels["navigation-chat"]}
             </PreviewLink>
-            <a
-              href={content.hero.links[0].href}
-              target="_blank"
-              rel="noreferrer"
-              className={`${kit.button} gap-2`}
-            >
-              <Icon name="github-logo" size={20} />
-              {labels["navigation-code"]}
-              <span className="sr-only"> (opens GitHub in a new tab)</span>
-            </a>
+            {!acquisition ? (
+              <a
+                href={repositoryHref}
+                target="_blank"
+                rel="noreferrer"
+                className={`${kit.button} gap-2`}
+              >
+                <Icon name="github-logo" size={20} />
+                {labels["navigation-code"]}
+                <span className="sr-only"> (opens GitHub in a new tab)</span>
+              </a>
+            ) : null}
           </nav>
+          {acquisition ? (
+            <div className="flex items-center gap-2 @4xl:hidden">
+              <PreviewLink
+                href={content.hero.links[0].href}
+                resolveLink={resolveLink}
+                className={kit.button}
+              >
+                {labels["navigation-start"]}
+                <Icon name="arrow-right" size={20} />
+              </PreviewLink>
+              <details className="relative">
+                <summary
+                  aria-label={labels["navigation-menu"]}
+                  className={`flex min-h-11 cursor-pointer list-none items-center rounded-xl border border-[var(--workspace-brand-line)] px-3 ${siteStyles.focus}`}
+                >
+                  <Icon name="list" />
+                </summary>
+                <nav
+                  aria-label="Mobile navigation"
+                  className="absolute right-0 top-full z-20 mt-2 grid min-w-48 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-3 shadow-lg"
+                >
+                  {navigation.map((item) => (
+                    <PreviewLink
+                      key={item.id}
+                      href={item.href}
+                      resolveLink={resolveLink}
+                      className={`rounded-lg px-3 py-3 text-sm ${siteStyles.focus}`}
+                    >
+                      {item.text}
+                    </PreviewLink>
+                  ))}
+                </nav>
+              </details>
+            </div>
+          ) : null}
         </div>
       </header>
       {children}

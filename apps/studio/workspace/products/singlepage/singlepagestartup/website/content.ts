@@ -4,6 +4,11 @@ interface IWebsiteAsset {
   alt: string;
 }
 
+interface ILandingArtwork {
+  hero: IWebsiteAsset;
+  modules: IWebsiteAsset[];
+}
+
 export interface IWebsiteItem {
   title: string;
   text: string;
@@ -39,6 +44,32 @@ export interface ICodeFrameworkWebsiteContent {
 }
 
 const generated = "/workspace-assets/singlepage/generated/living-focus";
+
+const acquisition =
+  "/workspace-assets/singlepage/generated/framework-acquisition-v2";
+
+/** Product-only artwork; the existing Modules/runtime asset choices are untouched. */
+export const landingArtwork: ILandingArtwork = {
+  hero: {
+    id: "singlepage-generated-framework-acquisition-v2-hero",
+    src: `${acquisition}/hero.png`,
+    alt: "A website assembled from ready-made account, shop and article features.",
+  },
+  modules: [
+    "accounts",
+    "social",
+    "blog",
+    "knowledge",
+    "ecommerce",
+    "billing",
+    "pages",
+    "forms",
+  ].map((key) => ({
+    id: `singlepage-generated-framework-acquisition-v2-${key}`,
+    src: `${acquisition}/${key}.png`,
+    alt: "",
+  })),
+};
 
 /** Asset choices only. All visible page copy is authored in page.md. */
 export const websiteAssets: Record<

@@ -21,6 +21,12 @@ sources:
     date: 2026-10-24
     supports: The Framework landing connects business preparation, modules, architecture articles and token purchases; AI Chat's reviewed written material supplies the development brief.
     limitation: A selected customer journey, not evidence of automatic publication, runtime readiness or measured customer outcomes.
+  acquisition_path:
+    classification: client-claim
+    source: operator instruction in the Product landing review
+    date: 2026-10-24
+    supports: The landing introduces reusable features in consumer language and invites a new visitor to register and describe an idea in AI Chat. Detailed development instructions belong after that first step.
+    limitation: Product Storybook scope. Runtime and Studio Modules transfer require a separate review.
   account_offer:
     classification: client-claim
     sources:
@@ -51,15 +57,21 @@ sources:
   example_change:
     classification: assumption
     resolution: professional-choice
-    supports: A minimum order quantity illustrates a business change a maker can request.
+    supports: Workshop bookings and email enquiries illustrate a change a maker can request for an existing project.
   visual_application:
     classification: constraint
     source: ../../../design/singlepage.md
     asset_ids:
       - singlepage-generated-living-focus-primary-lockup
-      - singlepage-generated-living-focus-photography-business-conversation-square
-      - singlepage-generated-living-focus-illustration-module-hierarchy-cool-square
-      - singlepage-generated-living-focus-illustration-coordinated-agents-cool-square
+      - singlepage-generated-framework-acquisition-v2-hero
+      - singlepage-generated-framework-acquisition-v2-accounts
+      - singlepage-generated-framework-acquisition-v2-social
+      - singlepage-generated-framework-acquisition-v2-blog
+      - singlepage-generated-framework-acquisition-v2-knowledge
+      - singlepage-generated-framework-acquisition-v2-ecommerce
+      - singlepage-generated-framework-acquisition-v2-billing
+      - singlepage-generated-framework-acquisition-v2-pages
+      - singlepage-generated-framework-acquisition-v2-forms
     supports: Living Focus imagery, Onest typography, cool neutral surfaces, graphite and lime actions from the selected Design direction.
 route_intent:
   landing: /framework
@@ -90,21 +102,21 @@ Someone whose idea is still scattered across notes can prepare a business model,
 
 Visitors arrive through AI Chat, an architecture article, a demonstration, search or a shared link. The page answers what the framework contains, where business decisions come from, what the person and coding agent do next, and which costs belong to separate services. The `developer-agents` segment follows module documentation and source links to assess the fit for the person's task; the person owns the adoption decision.
 
-The primary action is **Run the project on your machine**, opening GitHub. **Prepare my business in AI Chat** opens AI Chat. It is available beside the development sequence and has a prominent explanatory section of its own. The choice follows the visitor's preparation, with no purchase or lead form before the code.
+The primary action is **Describe my idea**, opening AI Chat registration. **How it works** opens the three-step explanation on this page. Visitors can understand the offer and try AI Chat before choosing a coding app or downloading code. The shared features let them spend development tokens on their own requirements; the page makes no numerical savings claim.
 
 ## Final page specification
 
-| Page                                    | Visitor question and required content                                                                                                                                                             | Next action                                                                             |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Framework `/framework`                  | What can I reuse, what must I decide and how do I build? Hero, business preparation, module capabilities, local setup, one business-rule example, architecture articles, free-code terms and FAQ. | **Run the project on your machine** → GitHub; **Prepare my business in AI Chat** → `/`. |
-| Modules `/framework#modules`            | Which existing functions fit my product? Grouped responsibilities, concrete uses and exact README links.                                                                                          | Open a module's documentation or a related article.                                     |
-| Blog `/blog`                            | How is a product on this framework assembled? Frontend, Backend and DevOps categories, article covers, titles, excerpts, dates and authors.                                                       | Open a category or article.                                                             |
-| Blog category `/blog/categories/[slug]` | What can I learn about this part of the product? Category description, article count and its actual articles.                                                                                     | Open an article or return to all articles.                                              |
-| Article `/blog/articles/[slug]`         | Why does this SPS pattern work this way? Cover, title, category, author, date, full explanation, code, linked GitHub sources and related reading.                                                 | Read source, prepare the business brief or return to Framework.                         |
-| Tokens `/ecommerce`                     | What pays for hosted AI Chat, and what does the free framework cost? Free allowance, monthly Pro and fixed-rate top-ups, with the same account balance and currency choices used in AI Chat.      | Choose an offer, then continue to AI Chat's account purchase flow.                      |
-| AI Chat `/`                             | How do I turn existing notes and decisions into development material? Upload, document review, saved text, continued discussion and export.                                                       | Prepare or continue a project; return with reviewed documents when ready to develop.    |
+| Page                                    | Visitor question and required content                                                                                                                                                                      | Next action                                                                                      |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Framework `/framework`                  | What could I make, which features are ready and where do I start? Short hero, selectable project examples, illustrated capabilities, preparation and development steps, articles, free-code terms and FAQ. | **Describe my idea** → AI Chat registration; **How it works** → the page's development sequence. |
+| Modules `/framework/modules`            | Which existing functions fit my product? Grouped responsibilities, concrete uses and source links.                                                                                                         | Open a module guide, documentation or a related article.                                         |
+| Blog `/blog`                            | How is a product on this framework assembled? Frontend, Backend and DevOps categories, article covers, titles, excerpts, dates and authors.                                                                | Open a category or article.                                                                      |
+| Blog category `/blog/categories/[slug]` | What can I learn about this part of the product? Category description, article count and its actual articles.                                                                                              | Open an article or return to all articles.                                                       |
+| Article `/blog/articles/[slug]`         | Why does this SPS pattern work this way? Cover, title, category, author, date, full explanation, code, linked GitHub sources and related reading.                                                          | Read source, prepare the business brief or return to Framework.                                  |
+| Tokens `/ecommerce`                     | What pays for hosted AI Chat, and what does the free framework cost? Free allowance, monthly Pro and fixed-rate top-ups, with the same account balance and currency choices used in AI Chat.               | Choose an offer, then continue to AI Chat's account purchase flow.                               |
+| AI Chat `/`                             | How do I turn existing notes and decisions into development material? Upload, document review, saved text, continued discussion and export.                                                                | Prepare or continue a project; return with reviewed documents when ready to develop.             |
 
-The header uses the current SinglePageStartup lockup linked to `/framework`. Its navigation is **Modules**, **Blog**, **Tokens**, **AI Chat** and **Get the code**. **Modules** opens the local capability section; Blog and Tokens open their pages; AI Chat opens `/`; Get the code opens GitHub. Account access remains visible beside the navigation. A signed-in account opens its profile actions; personal chats belong there, outside the public navigation. A compact mobile menu exposes the same destinations.
+The header uses the current SinglePageStartup lockup linked to `/framework`. On the landing, **Framework**, **Modules**, **Blog** and **Tokens** accompany one primary **Try AI Chat** action leading to registration. Modules opens `/framework/modules`. A compact mobile menu exposes the public destinations. Other Product pages retain their AI Chat and GitHub navigation. Personal chats belong in account actions, outside the public navigation.
 
 The footer groups **Build** (Framework, modules, source documentation, source licence), **Learn** (Blog, Frontend, Backend, DevOps) and **Your project** (AI Chat, tokens, account access). **Issues and help** opens GitHub and says that framework help is available as time permits. Existing Privacy and Terms links retain their real destinations. No invented contact details, support schedule or unavailable legal page appears.
 
@@ -112,7 +124,7 @@ The footer groups **Build** (Framework, modules, source documentation, source li
 
 The preparation panel names the material to bring: notes, customer and offer decisions, a business model or plan, existing documents and visual references. AI Chat helps the person examine gaps and review written Brief, Strategy, Brand, Design and Product documents. The person exports selected reviewed files and gives them to Claude Code, Codex Desktop or another chosen coding agent. The coding agent opens the repository, runs it locally and changes the product; the person reviews the interface and business behaviour.
 
-The page makes that handoff concrete with a copyable request: use the attached reviewed documents, inspect the existing framework and propose a first landing page. Preserve unanswered facts and existing account, order and payment flows. The copied text contains no private project material. The person chooses and attaches their own exports outside this public page.
+The visible sequence has three steps: describe the idea, review the plan and build when ready. It names the coding app as a separate application on the person's computer. A collapsed **Already have a plan?** disclosure contains a copyable request and the GitHub link. The request asks the coding app to use reviewed documents, reuse suitable features and show what needs review. The person attaches their own exports outside this public page.
 
 The free-code block remains visible alongside this sequence. Code and documentation use the MIT licence. Coding tools, infrastructure and hosted AI Chat usage have separate costs. This manual development route is available independently of future AI Chat landing-page assembly and server deployment.
 
@@ -120,7 +132,7 @@ The free-code block remains visible alongside this sequence. Code and documentat
 
 Capabilities use the responsibility of each module, not an unexplained inventory count. Accounts and permissions point to RBAC; profiles and conversations to Social; articles and categories to Blog; source material and retrieval to Knowledge; products, carts and orders to Ecommerce; invoices and currencies to Billing; reusable page content to Website Builder; pages and metadata to Host; contact requests to CRM; scheduled work to Agent. The text distinguishes the Agent module's background jobs from the person's external coding agent.
 
-Every capability links to its exact repository README. Supporting articles explain one concrete pattern, such as a Next.js reader and presentation, a Hono route and owning service, or access to a subscription-only article widget. The module list does not claim that enabling a module produces a complete business or that every integration is configured for the visitor.
+The landing gives each of eight capability groups a distinct illustration, a consumer-facing label and one short description. **Explore all features** opens the module guides, where the technical responsibilities and repository documentation belong. Supporting articles explain a Next.js page, a Hono request or local development. Example interfaces illustrate possible projects; they do not claim that every integration is already configured for the visitor.
 
 ### Blog and articles
 
@@ -140,23 +152,23 @@ Offer selection shows the chosen amount, currency, interval where applicable and
 
 ## Design constraints
 
-Apply the Living Focus identity: Onest headings and body copy, white and cool gray surfaces, graphite text and panels, and lime actions. Human photography connects the page to business work; the module and agent illustrations explain reuse and direction.
+Apply the Living Focus identity: Onest headings and body copy, white and cool gray surfaces, graphite text and panels, and lime actions. The hero illustration shows a website assembled from reusable account, shop and article features. Each capability has its own graphite-and-lime infographic. Article photography remains editorial.
 
-Use the registered square photograph deliveries. Image cards show the full 1:1 image; hero frames may crop a square photograph while preserving its proportions. Use the registered illustrations with pure-white backgrounds and keep their full square compositions visible. Apply their native bitmap colors without CSS recoloring or background masks. Narrow screens stack content and allow the main button to wrap; wider screens pair text and imagery. Navigation, button states and FAQ disclosures remain clear and accessible.
+The nine acquisition illustrations are registered under `framework-acquisition-v2`. Their native square originals are also the square deliveries; preserve the files and show the full composition on white. Apply native bitmap colors without CSS recoloring or background masks. Article cards use landscape frames for their existing covers. Narrow screens stack content and allow buttons to wrap. Navigation, selectors, copy feedback and FAQ disclosures remain accessible by keyboard.
 
-The preparation section uses the same human and document imagery as AI Chat. Module and agent illustrations explain responsibilities and development. Article covers retain their own editorial subjects. Use compact module rows, clear article metadata and one visible primary action per decision; avoid a grid of identical promotional panels. The setup request can be copied, and its feedback explains what was copied. AI Chat is an active route, with its destination named in the action.
+Vary the section structure: a short illustrated hero; a graphite panel with four selectable project previews; an illustrated capability grid; a dark three-step sequence; an asymmetric request example; compact article cards; and a centered lime registration panel. Keep detailed answers and the technical request in disclosures. The four previews cover a contact page, community, shop and content project, using local presentation state without submitting forms. Main actions lead to the AI Chat registration preview.
 
 ## Metadata and review
 
-**Title:** Code Framework — Turn your business brief into a product | SinglePageStartup
+**Title:** Code Framework — Build your idea. The essentials are ready. | SinglePageStartup
 
-**Description:** Prepare your business documents in AI Chat, then build with a coding agent and reusable accounts, content, orders and payments. Code Framework is free under MIT.
+**Description:** Describe your idea in AI Chat, then build on reusable accounts, articles, products and payments. Keep the features you need and adapt the free Code Framework.
 
-**Open Graph title:** Your business brief. Your own product.
+**Open Graph title:** Build your idea. The essentials are ready.
 
-**Open Graph description:** Prepare the decisions, reuse common functions and direct a coding agent with SinglePageStartup.
+**Open Graph description:** Work out your idea in AI Chat and build your own product on SinglePageStartup's reusable code.
 
-The website is planned in English (`en`) and Russian (`ru`), using the framework’s existing internationalization configuration. Each version includes its headings, body, navigation, actions, tooltips, messages, accessibility labels and metadata in that language. Use the same semantic content keys for both versions; keep names such as SinglePageStartup, Code Framework, AI Chat, Claude Code and Codex Desktop unchanged. The local-project action is **Run the project on your machine** in English and **Развернуть проект на своей машине** in Russian. Never insert a label from another language into a page.
+The website is planned in English (`en`) and Russian (`ru`), using the framework’s existing internationalization configuration. Each version includes its headings, body, navigation, actions, tooltips, messages, accessibility labels and metadata in that language. Use the same semantic content keys for both versions; keep names such as SinglePageStartup, Code Framework, AI Chat, Claude Code and Codex Desktop unchanged. The first action is **Describe my idea** in English and **Описать мою идею** in Russian. The current Product landing preview uses the authored English source.
 
 The Framework route is `/framework`; AI Chat uses `/`. Canonical URLs include the selected public domain and locale when published. Blog and category titles name their subject and SinglePageStartup; each article supplies its own description and cover for Open Graph. Token metadata describes hosted AI Chat usage and never calls Code Framework a paid subscription.
 

@@ -3,179 +3,157 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    product.singlepagestartup.website: 52061278a388a00e3feb7bf505c9d6dd89fe7db19004c474abe62d1dbc8e21e1
+    product.singlepagestartup.website: 74dc80a053761d010344cffbf3e5ed4f4b5ce3701dce325bfed7d89d472ed894
 ---
 
 <!-- section: hero -->
 
-# Turn your business brief into a product.
+# Build your idea. The essentials are ready.
 
-Code Framework · Free code
+Code Framework by SinglePageStartup
 
-Prepare the decisions behind your business, then build with a coding agent. Reuse accounts, content, orders and payments while you shape your own product.
+Accounts, a blog, a shop — already in the code. Keep what your idea needs and use AI to make it yours.
 
-[Run the project on your machine](https://github.com/singlepagestartup/singlepagestartup)
+[Describe my idea](/ai-chat/rbac/subjects/authentication/registration)
 
-Bring an existing brief or prepare one in AI Chat. The framework code is free under MIT; coding tools, hosting and AI Chat have separate costs.
+[How it works](#cf-start)
+
+Start with a conversation in AI Chat. No code to download today.
 
 <!-- section: foundation -->
 
-## Reuse the functions your product needs.
+## Keep what you need. Make it yours.
 
-Your business rules belong in your product.
+A head start for your project
 
-Code Framework connects the frontend, API and common business functions. Your coding agent can inspect that code and adapt it to the offer, content and customer experience in your brief.
+Spend your tokens on your own idea. Reuse accounts, content and payments already in the code.
 
-| Function                   | Value                                                                                                      |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Accounts and access        | Give people an account and control access to their data and private content.                               |
-| Content and conversations  | Publish articles and categories, connect authors to profiles and work with project materials.              |
-| Carts, orders and payments | Use products, currencies, orders and payment flows; add your own commercial rules.                         |
-| Code and guidance together | Keep the Next.js frontend, Hono API, module documentation and coding-agent instructions in one repository. |
+| Project         | What you could build                               |
+| --------------- | -------------------------------------------------- |
+| Contact page    | A page that turns interest into enquiries.         |
+| Members space   | Accounts, profiles and content for your community. |
+| Online shop     | Your products, with a cart, orders and payments.   |
+| Content project | A home for your articles, categories and authors.  |
 
-[Explore the repository documentation](https://github.com/singlepagestartup/singlepagestartup#readme)
+[See the building blocks](/framework/modules)
 
 <!-- section: journey -->
 
-## Give your coding agent a brief it can use.
+## From a first conversation to your own product.
 
-Prepare the decisions, run the project and review the result.
+How it works
 
-| Step                   | What you do                                                                                               |
-| ---------------------- | --------------------------------------------------------------------------------------------------------- |
-| Bring a reviewed brief | Export your business and product documents from AI Chat, or use a brief you already have.                 |
-| Open and run the code  | Give the documents and repository to Claude Code or Codex Desktop. Ask it to run the project locally.     |
-| Develop your product   | Describe the first page and business rules. Review the interface, ask for changes and check how it works. |
+| Step                    | What you do                                                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Describe your idea      | Talk to AI Chat about who it is for and what it should do.                                                                     |
+| Shape the plan          | Review your offer, content and product requirements. Keep the documents you need.                                              |
+| Build when you’re ready | Export your plan to a coding app on your computer, such as Claude Code or Codex. It adapts the free framework to your project. |
 
 <!-- section: request -->
 
-### An example request for your coding agent
+### Already have a plan? Start from here.
 
-> Use my attached, reviewed business and product documents to plan a first landing page with SinglePageStartup Code Framework. Inspect the repository, help me run it locally and explain which existing modules fit the task. Keep unanswered business facts visible. Preserve the account, order and payment flows while adapting the page, then show me what to review.
+> Use my attached, reviewed business and product documents to plan a first version of my product with SinglePageStartup Code Framework. Help me run it locally. Reuse the existing features that fit, remove what I do not need and adapt the rest to my requirements. Keep unanswered questions visible and show me what to review.
 
 <!-- section: change -->
 
-### Describe the change that matters.
+## The next version starts with a request.
 
-Example request
+Room to grow
 
-> My store has a minimum order of six units. Add that rule while keeping the existing account and cart flow. Show me how the ordering experience changes.
+> Add workshop bookings and let people leave their email.
 
-Explore the result and ask for refinements. Keep using the foundation for this product and the next one when it fits.
+Keep improving the same project. Add your own rules and design on a codebase maintained by SinglePageStartup.
 
 <!-- section: chat -->
 
-## Prepare the business before you build the page.
+## You bring the idea. AI Chat helps you work it out.
 
-AI Chat → reviewed documents → development brief
+Start here
 
-Bring notes, a business model, a plan or an idea to AI Chat. Discuss the gaps and review written Brief, Strategy, Brand, Design and Product documents.
+Turn your notes into a clear plan for what to build. You can explore the idea before you touch the code.
 
-Export the documents you have reviewed and give them to your coding agent. Use Code Framework to develop the landing page or product those documents describe.
+[Try AI Chat](/ai-chat/rbac/subjects/authentication/registration)
 
-Prepare my business in AI Chat
-
-AI Chat prepares written material. You and your coding agent develop the product; automated website publication is a future service.
-
-[Prepare my business in AI Chat](/)
-
-[See AI Chat token options](/ecommerce)
+[Plans and tokens](/ecommerce)
 
 <!-- section: modules -->
 
-## Know what each part does.
+## The familiar parts, already thought through.
 
-Choose the functions that fit your product.
+Included in the code
 
-Each module has a defined responsibility and its own documentation. Explore the relevant parts before asking your agent to change them.
+Choose the features your project needs. Leave the rest out.
 
-| Module                     | What it handles                                                                               |
-| -------------------------- | --------------------------------------------------------------------------------------------- |
-| Accounts and permissions   | RBAC manages registration, identities, roles and access to resources.                         |
-| Profiles and conversations | Social connects public profiles, authors, chats, threads and messages.                        |
-| Articles and categories    | Blog stores article content, categories and the links used to present them.                   |
-| Project materials          | Knowledge stores editable sources and supports retrieval from the material a person supplies. |
-| Products and orders        | Ecommerce owns products, attributes, categories, carts and orders.                            |
-| Payments and currencies    | Billing owns payment intents, invoices and currencies.                                        |
-| Pages and content          | Host composes pages and metadata; Website Builder supplies reusable content sections.         |
-| Forms and background work  | CRM captures form requests; Agent defines scheduled jobs and their configuration.             |
+| Module                   | What it gives your project                           |
+| ------------------------ | ---------------------------------------------------- |
+| Accounts & access        | Let people sign in and protect their personal space. |
+| Profiles & conversations | Give your community a face and a place to talk.      |
+| Articles & categories    | Publish your knowledge and help readers find it.     |
+| Project materials        | Keep documents together and find what matters.       |
+| Products & orders        | Show what you sell and manage the orders.            |
+| Payments & currencies    | Take payments in the currencies your customers use.  |
+| Pages & content          | Shape the pages around your offer.                   |
+| Forms & follow-up        | Collect enquiries and organise the next step.        |
 
-[RBAC documentation](https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/rbac/README.md)
-
-[Social documentation](https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/social/README.md)
-
-[Blog documentation](https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/blog/README.md)
-
-[Knowledge documentation](https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/knowledge/README.md)
-
-[Ecommerce documentation](https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/ecommerce/README.md)
-
-[Billing documentation](https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/billing/README.md)
-
-[Host documentation](https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/host/README.md)
-
-[Website Builder documentation](https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/website-builder/README.md)
-
-[CRM documentation](https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/crm/README.md)
-
-[Agent documentation](https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/agent/README.md)
+[Explore all features](/framework/modules)
 
 <!-- section: articles -->
 
-## Read how the framework works.
+## A little further, when you’re curious.
 
-Architecture explained through SPS code.
+Read at your own pace
 
-Follow a page, an API request or a local setup through the repository. The examples explain where each responsibility belongs and why.
+Short routes into the details behind your project.
 
-| Article                          | What you will learn                                                                             |
-| -------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Next.js readers and Widget slots | Keep data readers, client interactions and page presentation in their owning components.        |
-| Hono controllers and services    | Follow an API request through middleware, the owning service and its repository.                |
-| Nx, Bun, Docker and migrations   | Understand the local applications and generate database changes through the repository targets. |
+| Article                       | What you will learn                       |
+| ----------------------------- | ----------------------------------------- |
+| How a page is put together    | See how content becomes a working page.   |
+| What happens behind a request | Follow the logic behind your product.     |
+| How development works         | Learn how to run and change your project. |
 
-[Next.js readers and Widget slots](/blog/articles/nextjs-server-client-readers-and-widget-slots)
+[How a page is put together](/blog/articles/nextjs-server-client-readers-and-widget-slots)
 
-[Hono controllers and services](/blog/articles/hono-api-layers-di-and-owned-middleware)
+[What happens behind a request](/blog/articles/hono-api-layers-di-and-owned-middleware)
 
-[Nx, Bun, Docker and migrations](/blog/articles/nx-bun-docker-and-generated-migrations)
+[How development works](/blog/articles/nx-bun-docker-and-generated-migrations)
 
-[Read all articles](/blog)
+[Visit the blog](/blog)
 
 <!-- section: handoff -->
 
-## Keep the decisions with the development task.
+## Start with the idea you keep coming back to.
 
-Your reviewed documents are the starting material.
+Your first step
 
-Attach the customer, offer, business rules, page description and visual references your coding agent needs. Keep open questions visible and choose what to build first.
+Tell AI Chat what you want to make. Work out the details now; build on the ready-made code when you’re ready.
 
-[Prepare the documents in AI Chat](/)
+[Let’s work on my idea](/ai-chat/rbac/subjects/authentication/registration)
 
-[Open Code Framework on GitHub](https://github.com/singlepagestartup/singlepagestartup)
+[View the code](https://github.com/singlepagestartup/singlepagestartup)
 
 <!-- section: price -->
 
-## Free
+## Free code. Your own product.
 
-Framework price
+The foundation stays yours
 
-Source code and documentation under MIT.
+Use and adapt Code Framework under MIT.
 
-Use the framework for your own project. Coding-agent charges, infrastructure and hosted AI Chat are separate. Help and maintenance are provided as time permits.
+AI Chat, coding tools and hosting have separate costs. The code is available independently.
 
 <!-- section: questions -->
 
-## Before you start
+## A few things to know.
 
-| Question                             | Answer                                                                                                                                                                    |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Do I need to write the code myself?  | Describe what you want to Claude Code or Codex Desktop. Your agent changes the code; you make decisions and explore the resulting interface.                              |
-| Can I build a product of my own?     | Yes. Use the foundation for your project and add your own business logic, content and design.                                                                             |
-| What should I prepare before coding? | A description of the customer, offer, business rules, page content and visual direction. AI Chat helps you draft and review those documents; an existing brief works too. |
-| Must I buy AI Chat tokens first?     | No. The framework is available independently under MIT. Tokens pay for hosted AI Chat work with your project material.                                                    |
-| Does AI Chat publish my website?     | Website assembly and automatic server deployment are future services. You can export the reviewed documents now and develop with a coding agent and Code Framework.       |
-| Can I get help?                      | Use GitHub to ask questions or suggest improvements. Help and maintenance are provided as time permits.                                                                   |
+| Question                                   | Answer                                                                                                                                                       |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Do I need to know how to code to start?    | No. Start by describing your idea in AI Chat. You can work on your offer, content and requirements before opening a coding app.                              |
+| Where does the coding happen?              | In a coding app on your computer, such as Claude Code or Codex. You give it your reviewed documents and Code Framework, then review the product it builds.   |
+| Does AI Chat build and publish my website? | AI Chat prepares the written material. Building the software and putting it online are separate steps with your coding app and hosting.                      |
+| Can I change the project later?            | Yes. Keep the same codebase and ask your coding app to change the features, design or business rules. You own the project and can work with a developer too. |
+| What is free?                              | Code Framework and its documentation are free under MIT. AI Chat usage, coding tools and hosting have separate costs.                                        |
+| Who maintains the framework?               | SinglePageStartup maintains the shared code. You can read the source, report issues and follow changes on GitHub.                                            |
 
 <!-- section: footer -->
 
@@ -211,26 +189,51 @@ Framework code: MIT license.
 
 ## Page labels
 
-| Element               | Text                                             |
-| --------------------- | ------------------------------------------------ |
-| navigation-framework  | Framework                                        |
-| footer-build          | Build                                            |
-| footer-prepare        | Prepare                                          |
-| footer-learn          | Learn                                            |
-| navigation-foundation | Modules                                          |
-| navigation-local      | Start locally                                    |
-| navigation-code       | Get the code                                     |
-| navigation-included   | Explore the modules                              |
-| navigation-blog       | Blog                                             |
-| navigation-tokens     | Tokens                                           |
-| navigation-chat       | AI Chat                                          |
-| navigation-sign-in    | Sign in                                          |
-| navigation-profile    | My profile                                       |
-| navigation-menu       | Open navigation                                  |
-| skip-link             | Skip to content                                  |
-| copy-action           | Copy request                                     |
-| copy-pending          | Copying…                                         |
-| copy-success          | Request copied. Paste it into your coding agent. |
-| copy-error            | Select the request above and copy it manually.   |
-| copy-idle             | Edit the request to fit your project.            |
-| github-hint           | Opens GitHub in a new tab                        |
+| Element               | Text                                                                 |
+| --------------------- | -------------------------------------------------------------------- |
+| navigation-framework  | Framework                                                            |
+| footer-build          | Build                                                                |
+| footer-prepare        | Prepare                                                              |
+| footer-learn          | Learn                                                                |
+| navigation-foundation | Modules                                                              |
+| navigation-local      | Start locally                                                        |
+| navigation-code       | Get the code                                                         |
+| navigation-included   | Explore the modules                                                  |
+| navigation-blog       | Blog                                                                 |
+| navigation-tokens     | Tokens                                                               |
+| navigation-chat       | AI Chat                                                              |
+| navigation-start      | Try AI Chat                                                          |
+| navigation-sign-in    | Sign in                                                              |
+| navigation-profile    | My profile                                                           |
+| navigation-menu       | Open navigation                                                      |
+| skip-link             | Skip to content                                                      |
+| copy-action           | Copy request                                                         |
+| copy-pending          | Copying…                                                             |
+| copy-success          | Request copied. Paste it into your coding app.                       |
+| copy-error            | Select the request above and copy it manually.                       |
+| copy-idle             | Edit the request to fit your project.                                |
+| github-hint           | Opens GitHub in a new tab                                            |
+| demo-label            | Explore an example                                                   |
+| demo-caption          | Example interfaces your coding app can adapt from the shared code.   |
+| demo-name             | Common Ground                                                        |
+| demo-subtitle         | Workshops, ideas and good company.                                   |
+| demo-form-title       | Be the first to hear.                                                |
+| demo-email            | Your email address                                                   |
+| demo-submit           | Keep me posted                                                       |
+| demo-members-title    | A space for your community.                                          |
+| demo-members-body     | Profiles, conversations and members-only content.                    |
+| demo-members-action   | Join the community                                                   |
+| demo-shop-title       | Made for everyday ideas.                                             |
+| demo-product-one      | Workshop resources                                                   |
+| demo-product-two      | Creative kit                                                         |
+| demo-shop-action      | Add to bag                                                           |
+| demo-blog-title       | Notes from the studio.                                               |
+| demo-article-one      | Make room for a new idea.                                            |
+| demo-article-two      | The things we learn together.                                        |
+| demo-ready            | Already in the foundation                                            |
+| hero-proof            | Free code · Yours to adapt · Maintained by SinglePageStartup         |
+| chat-example          | I want a website for my workshops. Where do I start?                 |
+| chat-reply            | Let’s work out who they’re for and what people should be able to do. |
+| document-one          | Your offer                                                           |
+| document-two          | Page content                                                         |
+| document-three        | Product plan                                                         |
