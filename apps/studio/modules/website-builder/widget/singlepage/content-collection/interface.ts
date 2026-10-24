@@ -4,8 +4,13 @@ export const variant = "content-collection" as const;
 
 export interface IComponentProps {
   variant?: typeof variant;
+  id?: string;
+  eyebrow?: string;
   title?: string;
-  description?: string;
+  headingLevel?: "h1" | "h2";
+  description?: ReactNode;
+  spacing?: "default" | "page";
+  actions?: ReactNode;
   className?: string;
   children?: ReactNode;
   footer?: ReactNode;

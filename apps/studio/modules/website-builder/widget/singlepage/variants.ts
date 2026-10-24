@@ -1,4 +1,11 @@
 import { Component as ContentCollection } from "./content-collection";
+import { Component as ContentFeatureSplit } from "./content-feature-split";
+import { Component as ContentFeatureSplitReverse } from "./content-feature-split-reverse";
+import { Component as ContentOfferCard } from "./content-offer-card";
+import { Component as ContentDefinitionGrid } from "./content-definition-grid";
+import { Component as ContentDefinitionGridPage } from "./content-definition-grid-page";
+import { Component as ContentSteps } from "./content-steps";
+import { Component as ContentOffer } from "./content-offer";
 import { Component as ContentForm } from "./content-form";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Navigation } from "./admin-v2-navigation/index";
@@ -38,6 +45,13 @@ import { Component as NavbarAiChat } from "./navbar/ai-chat/index";
 import { Component as NavbarAiChatLanding } from "./navbar/ai-chat-landing/index";
 
 export const variants = {
+  "content-feature-split": ContentFeatureSplit,
+  "content-feature-split-reverse": ContentFeatureSplitReverse,
+  "content-offer-card": ContentOfferCard,
+  "content-definition-grid": ContentDefinitionGrid,
+  "content-definition-grid-page": ContentDefinitionGridPage,
+  "content-steps": ContentSteps,
+  "content-offer": ContentOffer,
   "content-collection": ContentCollection,
   "content-form": ContentForm,
   "admin-v2-card": AdminV2Card,

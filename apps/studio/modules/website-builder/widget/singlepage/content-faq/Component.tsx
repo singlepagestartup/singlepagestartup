@@ -48,53 +48,67 @@ export function ContentFaq(props?: IComponentProps) {
   };
   return (
     <section
-      className="w-full bg-muted py-12 sm:py-16"
+      className="w-full bg-background py-12 @3xl:py-16"
       data-ds-block="website-builder.widget.content-faq"
       data-ds-layer="singlepage"
       data-module="website-builder"
       data-model="widget"
       data-variant={props?.variant ?? "content-faq"}
     >
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[1fr_1fr]">
+      <div className="mx-auto w-full max-w-7xl px-5 @3xl:px-8">
+        <div className="grid gap-8 @3xl:grid-cols-[0.9fr_1.1fr] @3xl:gap-12">
           <div>
-            <p className="mb-2 text-sm font-semibold tracking-normal text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="text-[2rem] font-semibold leading-tight tracking-normal sm:text-[2.5rem] text-foreground">
-              {title}
-            </h2>
-            <p className="mt-4 max-w-md text-base leading-7 text-muted-foreground">
-              {description}
-            </p>
-            <div className="mt-5">
-              <ButtonsArray
-                variant="default"
-                ariaLabel="FAQ contact actions"
-                buttons={[
-                  {
-                    href: contactHref,
-                    icon: ArrowRight,
-                    label: "Contact us",
-                    variant: "secondary",
-                  },
-                ]}
-              />
-            </div>
+            {props?.aside ?? (
+              <div className="rounded-3xl border border-border bg-muted p-6 @3xl:p-8">
+                <p className="mb-2 text-sm font-semibold tracking-normal text-muted-foreground">
+                  {eyebrow}
+                </p>
+                <h2 className="text-[2rem] font-semibold leading-tight tracking-normal sm:text-[2.5rem] text-foreground">
+                  {title}
+                </h2>
+                <div className="mt-4 max-w-md space-y-4 text-base leading-7 text-muted-foreground">
+                  {description}
+                </div>
+                <div className="mt-5">
+                  {props?.actions ?? (
+                    <ButtonsArray
+                      variant="default"
+                      ariaLabel="FAQ contact actions"
+                      buttons={[
+                        {
+                          href: contactHref,
+                          icon: ArrowRight,
+                          label: "Contact us",
+                          variant: "secondary",
+                        },
+                      ]}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-          <div
-            className="min-w-0 self-start rounded-2xl border border-border bg-card p-2"
-            data-ds-imports="website-builder.feature.dropdown"
-          >
-            {faq.map((item, idx) => (
-              <Feature
-                variant="dropdown"
-                key={item.q}
-                question={item.q}
-                answer={item.a}
-                open={idx === 0}
-              />
-            ))}
+          <div className="min-w-0 self-start">
+            {props?.questionsTitle ? (
+              <h2 className="mb-6 font-default text-3xl font-semibold leading-tight tracking-normal text-foreground @4xl:text-4xl">
+                {props.questionsTitle}
+              </h2>
+            ) : null}
+            <div
+              className="min-w-0 self-start rounded-2xl border border-border bg-card p-2"
+              data-ds-imports="website-builder.feature.dropdown"
+            >
+              {props?.children ??
+                faq.map((item, idx) => (
+                  <Feature
+                    variant="dropdown"
+                    key={item.q}
+                    question={item.q}
+                    answer={item.a}
+                    open={idx === 0}
+                  />
+                ))}
+            </div>
           </div>
         </div>
       </div>

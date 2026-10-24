@@ -35,6 +35,21 @@
       "name": "faq",
       "type": "list",
       "required": true
+    },
+    {
+      "name": "aside",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "actions",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "children",
+      "type": "richText",
+      "required": false
     }
   ],
   "figma": {

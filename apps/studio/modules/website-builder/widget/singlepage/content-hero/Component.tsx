@@ -12,7 +12,6 @@ import {
 import {
   Component as Feature,
   type FeatureBadgeDefaultProps,
-  type FeatureStatusDefaultProps,
 } from "../../../feature/index";
 
 type IconName = keyof typeof IconGlyphs;
@@ -51,62 +50,68 @@ export function ContentHero(props?: IComponentProps) {
     mediaSrc,
     mediaAlt,
     statusFeature,
+    actions,
   } = { ...defaultContentHeroProps, ...props };
   return (
-    <div
-      className="w-full bg-muted py-8 sm:py-12"
+    <section
+      className="w-full min-w-0 bg-background py-10 @3xl:py-14"
       data-ds-block="website-builder.widget.content-hero"
       data-ds-layer="singlepage"
       data-module="website-builder"
       data-model="widget"
       data-variant={props?.variant ?? "content-hero"}
     >
-      <div className="mx-auto grid w-full max-w-7xl gap-0 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-        <div className="flex min-w-0 flex-col items-start justify-center rounded-t-3xl bg-default p-6 sm:p-10 lg:rounded-l-3xl lg:rounded-tr-none lg:p-12">
-          <div className="mb-6">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-8 px-5 @3xl:grid-cols-2 @3xl:gap-10 @3xl:px-8">
+        <div className="min-w-0 py-2">
+          {feature?.label ? (
             <Feature {...feature} variant="badge-default" />
-          </div>
-          <h1 className="max-w-[14ch] text-[2.5rem] font-semibold leading-[1.08] tracking-normal text-default-foreground sm:text-5xl xl:text-[4rem]">
+          ) : null}
+          <h1 className="mt-5 max-w-2xl text-balance font-default text-4xl font-semibold leading-[1.08] tracking-normal @3xl:text-5xl @5xl:text-[56px]">
             {title}
           </h1>
-          <p className="mt-6 max-w-lg text-base leading-7 text-default-muted-foreground sm:text-lg sm:leading-8">
+          <div className="mt-5 max-w-lg space-y-4 text-base leading-7 text-muted-foreground">
             {description}
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3 [&_a]:focus-visible:outline-card">
-            <ButtonsArray variant="default" buttons={buttons} />
+          </div>
+          <div className="mt-7 flex flex-wrap items-center gap-4">
+            {actions ?? <ButtonsArray variant="default" buttons={buttons} />}
           </div>
         </div>
-        <div className="relative aspect-square min-w-0 overflow-hidden rounded-b-3xl bg-card lg:aspect-auto lg:min-h-[36rem] lg:rounded-r-3xl lg:rounded-bl-none">
+        <figure className="min-w-0 overflow-hidden rounded-3xl">
           <img
-            className="absolute inset-0 h-full w-full object-cover"
+            className="block aspect-square h-auto w-full object-cover"
+            width={1254}
+            height={1254}
             src={mediaSrc}
             alt={mediaAlt}
           />
-          <Feature
-            {...statusFeature}
-            variant="status-default"
-            className="absolute bottom-5 left-5 right-5 border-0 bg-card/95 p-4 backdrop-blur-sm sm:bottom-6 sm:left-6 sm:right-6"
-          />
-        </div>
+          {statusFeature ? (
+            <Feature
+              {...statusFeature}
+              variant="status-default"
+              className="mt-4 border border-border bg-card p-4"
+            />
+          ) : null}
+        </figure>
       </div>
-    </div>
+    </section>
   );
 }
+
 const Play = createIcon("play");
 const ArrowRight = createIcon("arrow-right");
 const heroImageUrl =
   "/module-assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png";
 export const defaultContentHeroProps = {
   feature: {
-    label: "v2.0 - Now with 15 modules",
+    label: "Code Framework · Free code",
   } satisfies FeatureBadgeDefaultProps,
-  title: "Domain control center",
+  title: "Turn your business brief into a product.",
   description:
-    "A modular platform for building and managing your entire digital ecosystem - from ecommerce and blogs to AI agents and RBAC - all from a single admin panel.",
+    "Prepare the decisions behind your business, then build with a coding agent. Reuse accounts, content, orders and payments while you shape your own product.",
   buttons: [
     {
-      label: "Open admin panel",
-      href: "/admin",
+      label: "Get the code",
+      href: "https://github.com/singlepagestartup/singlepagestartup",
       variant: "primary",
       icon: ArrowRight,
     },
@@ -119,10 +124,6 @@ export const defaultContentHeroProps = {
   ] satisfies ButtonsArrayItem[],
   mediaSrc: heroImageUrl,
   mediaAlt: "Editorial image of two people discussing their work",
-  statusFeature: {
-    label: "Status",
-    value: "All systems operational",
-  } satisfies Partial<FeatureStatusDefaultProps>,
 };
 
 import type { IModuleIconProps } from "./interface";

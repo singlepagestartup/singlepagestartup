@@ -1,34 +1,17 @@
-import type { SVGProps } from "react";
+import type { ReactNode, SVGProps } from "react";
+import type { ButtonsArrayItem } from "../../../buttons-array";
 
 export const variant = "content-hero";
 
 export type ContentHeroProps = {
   feature: { label: string };
   title: string;
-  description: string;
-  buttons: (
-    | {
-        label: string;
-        href: string;
-        variant: "primary";
-        icon: import("/Users/rogwild/code/singlepagestartup/sps-lite/node_modules/@types/react/index").ForwardRefExoticComponent<
-          Omit<IModuleIconProps, "ref"> &
-            import("/Users/rogwild/code/singlepagestartup/sps-lite/node_modules/@types/react/index").RefAttributes<SVGSVGElement>
-        >;
-      }
-    | {
-        label: string;
-        href: string;
-        variant: "secondary";
-        icon: import("/Users/rogwild/code/singlepagestartup/sps-lite/node_modules/@types/react/index").ForwardRefExoticComponent<
-          Omit<IModuleIconProps, "ref"> &
-            import("/Users/rogwild/code/singlepagestartup/sps-lite/node_modules/@types/react/index").RefAttributes<SVGSVGElement>
-        >;
-      }
-  )[];
+  description: ReactNode;
+  actions?: ReactNode;
+  buttons: ButtonsArrayItem[];
   mediaSrc: string;
   mediaAlt: string;
-  statusFeature: { label: string; value: string };
+  statusFeature?: { label: string; value: string };
 };
 
 type IVariantInputs = NonNullable<

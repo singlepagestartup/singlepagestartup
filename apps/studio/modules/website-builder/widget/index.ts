@@ -8,3 +8,9 @@ export type { NavbarDefaultProps } from "./interface";
 
 export { Skeleton } from "./Skeleton";
 export type { ISkeletonProps } from "./interface";
+export type {
+  IContentFeatureItem,
+  IContentFeatureMedia,
+  IContentDefinitionItem,
+  IContentStep,
+} from "./interface";
