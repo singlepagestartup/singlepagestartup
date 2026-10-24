@@ -287,24 +287,12 @@ export function Component({
                 </p>
               </div>
             </div>
-            <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-default-foreground/15 pt-5">
-              {[
-                [labels["free-balance-label"], aiChatAccount.balance?.free],
-                [
-                  labels["paid-balance-label"],
-                  aiChatAccount.balance?.purchased,
-                ],
-              ].map(([label, balance]) => (
-                <div key={label}>
-                  <dt className="text-xs text-default-foreground/70">
-                    {label}
-                  </dt>
-                  <dd className="mt-2 text-2xl font-semibold">
-                    {typeof balance === "number" ? number(balance) : "—"}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <div className="mt-5 space-y-2 border-t border-default-foreground/15 pt-5">
+              <p className="text-sm font-medium">{labels["balance-source"]}</p>
+              <p className="text-xs leading-5 text-default-foreground/70">
+                {labels["balance-scope-note"]}
+              </p>
+            </div>
           </section>
           <PageSection section={sections.packages} icon="plus">
             <fieldset>

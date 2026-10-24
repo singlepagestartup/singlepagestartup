@@ -4,11 +4,6 @@ export type { ISourceDownloadProps } from "./interface";
 
 import { Component as SharedIcon } from "../../../../../shared/icon";
 
-import { Component as WebsiteBuilderModuleButton } from "../../../../../website-builder/button/index";
-import {
-  forwardRef as forwardRefControl,
-  type ButtonHTMLAttributes as ButtonControlProps,
-} from "react";
 import type IconGlyphs from "../../../../../shared/icon/singlepage/phosphor/icons.json";
 import { useSource } from "../../id/ai-chat/Source";
 function Icon(props: {
@@ -44,30 +39,16 @@ export function Component({
       data-model="source"
       data-variant={variant}
     >
-      <Button
+      <button
+        type="button"
         data-ds-block="knowledge.source.download-ai-chat"
-        variant="secondary"
         aria-label={`Download ${source.title}.md`}
         onClick={download}
+        className="inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-2 text-sm font-semibold text-foreground transition motion-reduce:transition-none enabled:cursor-pointer enabled:hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       >
         <Icon name="arrow-down" />
         {label}
-      </Button>
+      </button>
     </span>
   );
 }
-const Button = forwardRefControl<
-  HTMLButtonElement,
-  ButtonControlProps<HTMLButtonElement> & {
-    variant?: "primary" | "secondary" | "plain" | "danger";
-  }
->(function Button({ variant = "primary", ...props }, ref) {
-  return (
-    <WebsiteBuilderModuleButton
-      {...props}
-      variant="control"
-      appearance={variant}
-      ref={ref}
-    />
-  );
-});

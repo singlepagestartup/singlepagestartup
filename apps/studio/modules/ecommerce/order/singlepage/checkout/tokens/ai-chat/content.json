@@ -11,7 +11,7 @@
     "balance": {
       "title": "Current balance",
       "paragraphs": [
-        "See the available free and purchased token balance and the task you will return to after payment. The balance may be negative."
+        "See the token amount available in your account and the task you will return to after payment. Granted and purchased credits share one balance. The balance may be negative."
       ],
       "items": [],
       "links": []
@@ -46,9 +46,9 @@
       "links": []
     },
     "purchase": {
-      "title": "Before payment",
+      "title": "Review a top-up",
       "paragraphs": [
-        "Purchased tokens do not expire. After a successful payment, return to your saved upload, document or chat task."
+        "Purchased tokens do not expire. This preview lets you review an amount and token estimate without creating an order or payment."
       ],
       "items": [],
       "links": []
@@ -97,9 +97,9 @@
       "links": []
     },
     "success": {
-      "title": "Package selected",
+      "title": "Top-up quote",
       "paragraphs": [
-        "Review the selected amount and token total. You can choose a different package or return to your workspace."
+        "Review the selected amount and token total. This preview creates no order or payment. You can choose a different package or return to your workspace."
       ],
       "items": [],
       "links": []
@@ -153,16 +153,8 @@
           "text": "Amount at the stated rate. The final credited amount will be shown before payment."
         },
         {
-          "title": "free-balance-label",
-          "text": "Free tokens"
-        },
-        {
-          "title": "paid-balance-label",
-          "text": "Purchased tokens"
-        },
-        {
           "title": "balance-source",
-          "text": "Free and purchased tokens in this account"
+          "text": "Token balance for this account"
         },
         {
           "title": "currency",
@@ -174,7 +166,7 @@
         },
         {
           "title": "continue-payment",
-          "text": "Continue to payment"
+          "text": "Preview top-up"
         },
         {
           "title": "retry",
@@ -198,7 +190,11 @@
         },
         {
           "title": "success-message",
-          "text": "Package selected."
+          "text": "Top-up quote ready."
+        },
+        {
+          "title": "balance-scope-note",
+          "text": "Granted and purchased credits share one balance."
         }
       ],
       "links": []
@@ -216,17 +212,16 @@
     "total-label": "Total",
     "terms-label": "Token and payment terms",
     "credit-note": "Amount at the stated rate. The final credited amount will be shown before payment.",
-    "free-balance-label": "Free tokens",
-    "paid-balance-label": "Purchased tokens",
-    "balance-source": "Free and purchased tokens in this account",
+    "balance-source": "Token balance for this account",
     "currency": "RUB",
     "rate-label": "0.13 roubles per internal token",
-    "continue-payment": "Continue to payment",
+    "continue-payment": "Preview top-up",
     "retry": "Try again",
     "return-without-buying": "Return without buying",
     "return-href": "/ai-chat/social/profiles/example",
     "help-label": "Ask for help",
     "help-href": "/ai-chat/help",
-    "success-message": "Package selected."
+    "success-message": "Top-up quote ready.",
+    "balance-scope-note": "Granted and purchased credits share one balance."
   }
 }

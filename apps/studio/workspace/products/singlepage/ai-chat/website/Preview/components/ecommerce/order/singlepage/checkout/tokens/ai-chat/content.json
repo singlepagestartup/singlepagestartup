@@ -11,7 +11,7 @@
     "balance": {
       "title": "Current balance",
       "paragraphs": [
-        "See the available free and purchased token balance and the task you will return to after payment. The balance may be negative."
+        "See the token amount available in your account and the task you will return to after payment. Granted and purchased credits share one balance. The balance may be negative."
       ],
       "items": [],
       "links": []
@@ -153,16 +153,12 @@
           "text": "Amount at the stated rate. The final credited amount will be shown before payment."
         },
         {
-          "title": "free-balance-label",
-          "text": "Free tokens"
-        },
-        {
-          "title": "paid-balance-label",
-          "text": "Purchased tokens"
-        },
-        {
           "title": "balance-source",
-          "text": "Free and purchased tokens in this account"
+          "text": "Token balance for this account"
+        },
+        {
+          "title": "balance-scope-note",
+          "text": "Granted and purchased credits share one balance."
         },
         {
           "title": "currency",
@@ -216,9 +212,7 @@
     "total-label": "Total",
     "terms-label": "Token and payment terms",
     "credit-note": "Amount at the stated rate. The final credited amount will be shown before payment.",
-    "free-balance-label": "Free tokens",
-    "paid-balance-label": "Purchased tokens",
-    "balance-source": "Free and purchased tokens in this account",
+    "balance-source": "Token balance for this account",
     "currency": "RUB",
     "rate-label": "0.13 roubles per internal token",
     "continue-payment": "Preview top-up",
@@ -227,6 +221,7 @@
     "return-href": "/ai-chat/social/profiles/example",
     "help-label": "Ask for help",
     "help-href": "/ai-chat/help",
-    "success-message": "Top-up quote ready."
+    "success-message": "Top-up quote ready.",
+    "balance-scope-note": "Granted and purchased credits share one balance."
   }
 }

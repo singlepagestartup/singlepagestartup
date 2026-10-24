@@ -15,6 +15,7 @@ import {
 } from "../../ai-chat/index";
 import { Component as SourceDownload } from "../../../download/ai-chat/index";
 import { useSource } from "./Source";
+import { sourceMaterials, sourceUserContext } from "../../ai-chat/utils";
 
 interface IDevelopmentHandoffProps {
   title: string;
@@ -38,7 +39,8 @@ function DevelopmentHandoff({ title, content }: IDevelopmentHandoffProps) {
     state: "idle",
     text: "",
   });
-  const empty = !content.trim();
+  const empty =
+    !sourceUserContext(content).trim() && !sourceMaterials(content).trim();
 
   useEffect(() => {
     revision.current += 1;

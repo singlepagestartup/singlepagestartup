@@ -4,6 +4,8 @@ import type { IProjectFile } from "../../../apps/studio/modules/social/profile/s
 import { SourceProvider } from "../../../apps/studio/modules/knowledge/source/singlepage/id/ai-chat/Source";
 import { FilesProvider } from "../../../apps/studio/modules/file-storage/file/singlepage/list-attachments-ai-chat/Files";
 import { Component as SourceSection } from "../../../apps/studio/modules/knowledge/source/singlepage/id/ai-chat/index";
+import { Component as Subject } from "../../../apps/studio/modules/rbac/subject";
+import { ThreadProvider } from "../../../apps/studio/modules/social/thread/singlepage/id/ai-chat/Thread";
 const files: IProjectFile[] = [
   {
     id: "a",
@@ -22,6 +24,64 @@ const files: IProjectFile[] = [
     fileUrl: "/audience.txt",
   },
 ];
+
+test("development handoff ignores empty storage markers and accepts generated material", () => {
+  const emptyWrapper =
+    "## Контекст пользователя\n<!-- knowledge:user -->\n\n<!-- /knowledge:user -->";
+  for (const { content, disabled } of [
+    { content: "", disabled: true },
+    { content: emptyWrapper, disabled: true },
+    {
+      content: `${emptyWrapper}\n\n## Сведения из материалов\nSix workshop places.`,
+      disabled: false,
+    },
+    { content: "Weekend pottery workshops.", disabled: false },
+  ]) {
+    const html = renderToStaticMarkup(
+      <FilesProvider initialFiles={[]}>
+        <SourceProvider
+          profileId="pottery"
+          initialSource={{
+            id: "products",
+            slug: "products",
+            variant: "id-ai-chat",
+            title: "Products",
+            content,
+          }}
+        >
+          <ThreadProvider
+            data={{
+              id: "thread",
+              slug: "thread",
+              title: "Launch plan.md",
+              variant: "id-ai-chat",
+            }}
+          >
+            <Subject
+              variant="me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat"
+              subjectId="operator"
+              profileId="pottery"
+              chatId="chat"
+              threadId="thread"
+            />
+          </ThreadProvider>
+        </SourceProvider>
+      </FilesProvider>,
+    );
+    const action = [...html.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g)]
+      .map(([button]) => button)
+      .find((button) => button.includes("Copy development request"));
+    expect(action).toBeDefined();
+    expect(/^<button[^>]*\sdisabled(?:=|\s|>)/.test(action ?? "")).toBe(
+      disabled,
+    );
+    expect(html.match(/Copy development request/g)).toHaveLength(1);
+    expect(html).toContain("export Launch plan.md");
+    expect(html).toContain(
+      "saved export excludes unsaved notes and unconfirmed proposals",
+    );
+  }
+});
 
 test("Source variant renders multiple scoped Files and excludes another section's attachment", () => {
   const data = {

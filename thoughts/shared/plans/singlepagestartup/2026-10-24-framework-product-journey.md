@@ -37,12 +37,12 @@
    и пакета, состояния локального checkout. Проверить реальные screenshots,
    console и целевые типы/тесты. Независимый reviewer проверяет критерии; при
    замечаниях выполнить доработку. Не запускать тяжёлые сборки параллельно.
-4. **Studio Modules / Host — следующий этап.** Перенести проверенный продуктовый
+4. **Studio Modules / Host — реализован и проверен.** Перенести проверенный продуктовый
    состав в публичные варианты модулей и Host stories. Сохранить модельные,
    Widget и relation границы, единичные model loading и grid Widget loading.
    Product не импортирует эти реализации. Проверить свойства и состояния через
    публичные entrypoints и отдельного reviewer.
-5. **Runtime — ожидает Modules.** Перенести композицию через Website Builder
+5. **Runtime — реализация и независимое ревью в работе.** Перенести композицию через Website Builder
    presentation Widgets, доменные Widgets и точные relation instances. Контент
    менять через явный SDK data-management flow, не repository snapshots.
    Сохранить регистрацию, социальные профили/авторов, корзину, валюты, checkout,
@@ -99,3 +99,21 @@ Pro, документа и пополнения AI Chat — PASS.
 
 Подробная проверка Product, закрытые замечания и ограничения:
 `thoughts/shared/research/singlepagestartup/ISSUE-376-framework-product-journey-review.md`.
+
+## Studio Modules checkpoint
+
+Перенесены presentation Widgets/Features, Framework с примерами, 15 справочных
+страниц модулей, Blog с категориями и авторами, публичные планы/токены, header
+и footer. Product остаётся независимым от Modules. Панель передачи документа
+принадлежит RBAC и использует имя Markdown-экспорта Thread; сохранённый текст,
+несохранённые правки и неподтверждённые предложения различаются явно.
+
+Коммиты: `cdbf69e26e` (изображения), `c87887444a` (presentation),
+`432e60a3c1` (Blog), `8b88388424` (Host, модули, токены, shell).
+Studio suite: 401 PASS / 0 FAIL, 29993 assertions, 43 файла, 8.96 s.
+Scoped TypeScript: PASS. Browser: desktop и 320 CSS px, фильтры, переходы,
+FAQ, копирование, валюта и выбор пакета; ошибок console в проверенных сценариях
+нет. Независимое source review закрыло шесть замечаний. Подробности:
+`thoughts/shared/research/singlepagestartup/ISSUE-376-framework-modules-journey-review.md`.
+
+Эти результаты не заменяют приёмку production-компонентов и CMS cutover.
