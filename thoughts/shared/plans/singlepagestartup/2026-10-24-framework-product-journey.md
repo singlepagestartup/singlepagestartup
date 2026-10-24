@@ -137,8 +137,12 @@ Slider, Blog/author/TOC, currency и выбор пакета. Guest private Widg
 (`53ca2a4098`). Server compiler завершается и освобождает память, но два полных
 прохода с heap 2304/2048 MiB остановлены общим 3 GiB RSS watchdog. Диагностический
 проход с module parallelism 1 удержался ниже RSS-порога (peak 2537.5 MiB), но
-остановлен по wall limit 720.2 s. Server и Edge завершены; client, type checking
-и static generation не приняты. Source review не подтверждает unsafe
+остановлен по wall limit 720.2 s. Следующий full build с теми же CPU/RSS settings
+и wall limit 1800 s завершил server/Edge, но client остановлен RSS watchdog:
+3173.5 MiB через 770.3 s. Диагностический `--no-mangling` также остановлен
+в client: 3086.3 MiB через 783.0 s. Он сохраняет compression/types/SSG, но ни
+client, ни последующие этапы не завершены. Новых тяжёлых запусков не планируется.
+Source review не подтверждает unsafe
 client-to-server import, но не заменяет успешную сборку.
 
 Панель передачи документа проверена 16 runtime-component regressions. Временный

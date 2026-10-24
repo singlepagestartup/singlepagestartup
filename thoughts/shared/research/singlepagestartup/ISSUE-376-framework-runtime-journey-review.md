@@ -173,14 +173,16 @@ Private fixture: Article `5ade2625-007e-4c90-86bd-989a33e534fa`, slug
 
 Production-проверка остаётся незавершённой. Выполнены следующие отдельные попытки:
 
-| Режим                                          |     Heap | Результат                                             |
-| ---------------------------------------------- | -------: | ----------------------------------------------------- |
-| Webpack compile-only                           | 1536 MiB | V8 heap OOM                                           |
-| Turbopack compile-only, native target 1024 MiB | 1536 MiB | RSS watchdog: 3364.2 MiB, 6.1 s                       |
-| Полный Webpack build без compiler workers      | 2304 MiB | Wall watchdog: 903.6 s, peak RSS 2879.3 MiB, exit -9  |
-| Полный Webpack build с compiler workers        | 2304 MiB | RSS watchdog: 3097.9 MiB, 750.0 s, exit 143           |
-| Полный Webpack build с compiler workers        | 2048 MiB | RSS watchdog: 3126.2 MiB, 514.4 s, exit 143           |
-| Полный Webpack build, module parallelism 1     | 2048 MiB | Wall watchdog: 720.2 s, peak RSS 2537.5 MiB, exit 143 |
+| Режим                                                     |     Heap | Результат                                             |
+| --------------------------------------------------------- | -------: | ----------------------------------------------------- |
+| Webpack compile-only                                      | 1536 MiB | V8 heap OOM                                           |
+| Turbopack compile-only, native target 1024 MiB            | 1536 MiB | RSS watchdog: 3364.2 MiB, 6.1 s                       |
+| Полный Webpack build без compiler workers                 | 2304 MiB | Wall watchdog: 903.6 s, peak RSS 2879.3 MiB, exit -9  |
+| Полный Webpack build с compiler workers                   | 2304 MiB | RSS watchdog: 3097.9 MiB, 750.0 s, exit 143           |
+| Полный Webpack build с compiler workers                   | 2048 MiB | RSS watchdog: 3126.2 MiB, 514.4 s, exit 143           |
+| Полный Webpack build, module parallelism 1                | 2048 MiB | Wall watchdog: 720.2 s, peak RSS 2537.5 MiB, exit 143 |
+| Полный Webpack build, parallelism 1, wall limit 1800 s    | 2048 MiB | RSS watchdog: 3173.5 MiB, 770.3 s, exit 143           |
+| Диагностический full build `--no-mangling`, parallelism 1 | 2048 MiB | RSS watchdog: 3086.3 MiB, 783.0 s, exit 143           |
 
 В Host custom webpack отключал worker по умолчанию. Коммит `53ca2a4098`
 явно включает `experimental.webpackBuildWorker`; независимый source review
@@ -197,12 +199,40 @@ Production-проверка остаётся незавершённой. Вып�
 150 ms работы / 300 ms паузы. Предыдущая полная попытка без workers использовала
 150/600 ms. Общий process-group RSS watchdog во всех этих проходах остаётся
 3 GiB; меньший heap не устранил превышение. Сборки выполнялись последовательно
-при остановленном dev Host. Последний диагностический проход дополнительно
+при остановленном dev Host. Первый диагностический проход дополнительно
 задаёт `NEXT_WEBPACK_PARALLELISM=1` и сохраняет compiler labels и числовые PID/RSS
 samples. Он завершён по 12-минутному wall limit, без наблюдаемого пересечения
 RSS-порога. Server завершился за 565.817 s, Edge за 1.435 s; client работал
 ещё не менее 144.021 s и не завершился до остановки. Общий production PASS
 по-прежнему отсутствует.
+
+Следующий full build на `7a117ea787` сохраняет эти CPU/RSS настройки и увеличивает
+только wall limit до 1800 s. Server завершился за 542.230 s, Edge за 1.421 s.
+Client compiler остановлен RSS watchdog через 770.3 s от старта: sampled peak
+группы 3173.5 MiB, отдельного client PID — 3027.39 MiB. Это устанавливает фазу
+наблюдаемого превышения, но не конкретную причину расхода памяти. Типы и static
+generation не достигнуты; V8 fatal OOM в логе нет. Exit 143, cleanupError и
+executionError — null; root подтвердил отсутствие PGID 77673. Receipts:
+`/tmp/sps-framework-runtime-memory-extended-result.json` и `-analysis.json`.
+Raw trace сохранён отдельно: 8947644 bytes, SHA-256
+`52836603c51db863d21a91ebfd21ab0ee052b1482aef8245b31e17fe980aba3e`.
+
+Последний диагностический full build на том же HEAD использует поддержанный
+`--no-mangling`. По installed Next source этот флаг отключает mangling, сохраняя
+JS compression, CSS minification, production/RSC transforms, type checking и
+static generation. Next предназначает флаг для debugging; обычной release-проверкой
+его считать нельзя. Временная config injection и правки приложения не требовались.
+
+Server завершился за 549.017 s, Edge за 1.453 s; client снова не завершён.
+RSS watchdog остановил группу при 3086.3 MiB через 783.0 s, exit 143. Types/SSG
+не достигнуты, V8 fatal OOM нет, cleanupError/executionError — null. Группа
+80530 отсутствует. Отключение mangling не позволило завершить сборку в том же
+RSS-бюджете; это не доказывает причину предыдущего пика. Receipts:
+`/tmp/sps-framework-runtime-no-mangling-result.json` и `-analysis.json`.
+Raw trace: 8947563 bytes, SHA-256
+`260ad79330e5c58654f42523c7d37ffe1b702e31f528c40f393979e109e71ba5`.
+Дальнейших тяжёлых запусков на этом компьютере не планируется. Production gate
+остаётся открытым; нужен успешный полный результат без ослабления проверок.
 
 Логи: `/tmp/sps-framework-runtime-compile.log`,
 `/tmp/sps-framework-runtime-turbo-compile.log`,
@@ -223,7 +253,7 @@ Webpack по умолчанию обрабатывает до 100 модулей
 assets в SWC через `p-limit(Infinity)`. `CIRCLE_NODE_TOTAL=2` задаёт Next `cpus=1`,
 но не ограничивает эти очереди. SWC wrapper создаёт входные Buffers вне V8 heap.
 Это возможные источники дополнительной памяти, не диагноз текущего RSS-пика.
-Последний фактический запуск использует process-only
+Первый 720-секундный диагностический запуск использует process-only
 `NEXT_WEBPACK_PARALLELISM=1`, compiler debug labels и числовые PID/heap/RSS
 samples. Внешние samples связывают server с PID 70979, Edge с 72926 и client
 с 72958. Наблюдаемый group peak — 2537.45 MiB; per-process peaks нельзя складывать,
@@ -309,19 +339,26 @@ Markdown → Framework остаётся непроверенным. Нужны �
 filename/двух прикреплённых Sources, исключение постороннего Source и body/proposal
 из инструкций, обычный logout и точный cleanup после успешного прохода.
 
-API остаётся на обычном `npm run api:dev`; Host после последней попытки возвращён
-к `npm run host:dev`, Storybook — на 4321. Host использует heap 1536 MiB,
-Turbopack target 1024 MiB, один Rayon/UV worker и nice 10. Тяжёлые production
-процессы остановлены. GitHub PR, push, merge, deploy и подтверждение владельческих
-Strategy/Brand/Design не выполнялись. Итоговые HTTP receipts и состояние рабочего
-дерева приведены в completion audit. Fresh receipt
-`/tmp/sps-framework-restored-current-readiness-receipt.json` подтверждает HTTP 200
-для API `/api/blog/articles`, Host `/en/framework` и Storybook на 4321 после
-последних трёх auth-попыток. Восемь закрытых production/auth process groups
-отсутствуют. Только автоматически добавленные Next includes удалены из Host
-tsconfig; остальной файл совпадает с HEAD. Вкладки Product Storybook и Framework
-сохранены для просмотра. Реальный Framework показывает h1
-«Turn your business brief into a product.», scrollWidth=clientWidth=1250,
-0 сломанных изображений и 0 captured console errors. Screenshot после возврата
-dev Host: `/tmp/sps-framework-runtime-restored-current.png`. Extended full build
-с теми же CPU/RSS settings и wall limit 30 минут подготовлен, но ещё не запускался.
+API работает через `npm run api:dev`; Host после обеих последних диагностик
+возвращён к `npm run host:dev`, Storybook — на 4321. Host использует heap
+1536 MiB, Turbopack target 1024 MiB, один Rayon/UV worker и nice 10. Тяжёлые
+production-процессы остановлены. GitHub PR, push, merge, deploy и подтверждение
+владельческих Strategy/Brand/Design не выполнялись.
+
+Итоговый `/tmp/sps-framework-final-diagnostics-readiness.json` подтверждает
+cookie-free HTTP 200 для API `/api/blog/articles`, Host `/en/framework` и
+Storybook на 4321. Все 12 перечисленных закрытых process groups отсутствуют.
+Только автоматически добавленные Next includes удалены из Host tsconfig;
+остальной файл совпадает с HEAD. После browser reload реальный Framework
+показывает один h1 «Turn your business brief into a product.»,
+scrollWidth=clientWidth=1250 и 0 сломанных изображений. Два изображения в viewport
+загружены; 12 изображений вне него ещё pending, их полную загрузку этот срез
+не доказывает. Captured console и serialization/hydration errors после reload — 0.
+Screenshot: `/tmp/sps-framework-runtime-final-diagnostics.png`. Вкладки Product
+Storybook и Framework сохранены для просмотра.
+
+Нужны успешная полная production-проверка и отдельная авторизованная сессия
+для document journey. Native CUA снова сообщает блокировку macOS; приватное
+окно недоступно. Три изолированных cold Host завершились до регистрации при
+сохранённых ограничениях ресурсов. Оба ограничения сохраняются; ещё один тяжёлый
+запуск без изменения окружения не запланирован.
