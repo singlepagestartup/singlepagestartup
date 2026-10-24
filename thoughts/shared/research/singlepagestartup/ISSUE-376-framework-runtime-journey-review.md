@@ -173,13 +173,14 @@ Private fixture: Article `5ade2625-007e-4c90-86bd-989a33e534fa`, slug
 
 Production-проверка остаётся незавершённой. Выполнены следующие отдельные попытки:
 
-| Режим                                          |     Heap | Результат                                            |
-| ---------------------------------------------- | -------: | ---------------------------------------------------- |
-| Webpack compile-only                           | 1536 MiB | V8 heap OOM                                          |
-| Turbopack compile-only, native target 1024 MiB | 1536 MiB | RSS watchdog: 3364.2 MiB, 6.1 s                      |
-| Полный Webpack build без compiler workers      | 2304 MiB | Wall watchdog: 903.6 s, peak RSS 2879.3 MiB, exit -9 |
-| Полный Webpack build с compiler workers        | 2304 MiB | RSS watchdog: 3097.9 MiB, 750.0 s, exit 143          |
-| Полный Webpack build с compiler workers        | 2048 MiB | RSS watchdog: 3126.2 MiB, 514.4 s, exit 143          |
+| Режим                                          |     Heap | Результат                                             |
+| ---------------------------------------------- | -------: | ----------------------------------------------------- |
+| Webpack compile-only                           | 1536 MiB | V8 heap OOM                                           |
+| Turbopack compile-only, native target 1024 MiB | 1536 MiB | RSS watchdog: 3364.2 MiB, 6.1 s                       |
+| Полный Webpack build без compiler workers      | 2304 MiB | Wall watchdog: 903.6 s, peak RSS 2879.3 MiB, exit -9  |
+| Полный Webpack build с compiler workers        | 2304 MiB | RSS watchdog: 3097.9 MiB, 750.0 s, exit 143           |
+| Полный Webpack build с compiler workers        | 2048 MiB | RSS watchdog: 3126.2 MiB, 514.4 s, exit 143           |
+| Полный Webpack build, module parallelism 1     | 2048 MiB | Wall watchdog: 720.2 s, peak RSS 2537.5 MiB, exit 143 |
 
 В Host custom webpack отключал worker по умолчанию. Коммит `53ca2a4098`
 явно включает `experimental.webpackBuildWorker`; независимый source review
@@ -196,7 +197,12 @@ Production-проверка остаётся незавершённой. Вып�
 150 ms работы / 300 ms паузы. Предыдущая полная попытка без workers использовала
 150/600 ms. Общий process-group RSS watchdog во всех этих проходах остаётся
 3 GiB; меньший heap не устранил превышение. Сборки выполнялись последовательно
-при остановленном dev Host. Новых production-попыток после последней нет.
+при остановленном dev Host. Последний диагностический проход дополнительно
+задаёт `NEXT_WEBPACK_PARALLELISM=1` и сохраняет compiler labels и числовые PID/RSS
+samples. Он завершён по 12-минутному wall limit, без наблюдаемого пересечения
+RSS-порога. Server завершился за 565.817 s, Edge за 1.435 s; client работал
+ещё не менее 144.021 s и не завершился до остановки. Общий production PASS
+по-прежнему отсутствует.
 
 Логи: `/tmp/sps-framework-runtime-compile.log`,
 `/tmp/sps-framework-runtime-turbo-compile.log`,
@@ -217,11 +223,22 @@ Webpack по умолчанию обрабатывает до 100 модулей
 assets в SWC через `p-limit(Infinity)`. `CIRCLE_NODE_TOTAL=2` задаёт Next `cpus=1`,
 но не ограничивает эти очереди. SWC wrapper создаёт входные Buffers вне V8 heap.
 Это возможные источники дополнительной памяти, не диагноз текущего RSS-пика.
-Для следующего ограниченного измерения подготовлены process-only
+Последний фактический запуск использует process-only
 `NEXT_WEBPACK_PARALLELISM=1`, compiler debug labels и числовые PID/heap/RSS
-samples. Скрипт и cleanup прошли source review; короткая проверка одного Node
-подтвердила запись только чисел в private-файлы. Production-запуск этого
-диагностического скрипта ещё не выполнялся. Общий лимит остаётся 3 GiB.
+samples. Внешние samples связывают server с PID 70979, Edge с 72926 и client
+с 72958. Наблюдаемый group peak — 2537.45 MiB; per-process peaks нельзя складывать,
+поскольку они получены в разные моменты. Предыдущий RSS stop и текущий wall stop
+не составляют контролируемое сравнение и не доказывают причину прежнего пика.
+
+Probe не различает Node threads: одинаковый PID содержит samples разных isolates.
+RSS относится ко всему процессу, heap-поля — к текущему thread; последнее малое
+значение heap не является heap всего compiler. По этим samples нельзя вычислить
+native memory как разность RSS и последнего heap. Это ограничение соответствует
+[Node process.memoryUsage](https://nodejs.org/download/release/v25.4.0/docs/api/process.html#processmemoryusage).
+Файлы: `/tmp/sps-framework-runtime-memory-diagnostic-result.json`,
+`-processes.jsonl`, `-trace.jsonl`, а также
+`/tmp/sps-framework-memory-diagnostic-analysis.json`. Watchdog cleanup завершился
+без ошибки; root подтвердил отсутствие PGID 70972. Общий порог остаётся 3 GiB.
 
 Source review не установило небезопасного импорта server implementation в
 проверенные клиентские entrypoints. Обычный HTTP SDK с каталогом `server`
@@ -236,47 +253,75 @@ Product/Modules copy и существующий Markdown download провер�
 Цепочка из авторизованного runtime-документа целиком ещё не выполнена.
 Исторический Blue Kiln/Products.md не доказывает текущего доступа.
 
-Для неё подготовлен отдельный disposable runner на обычных owning SDK, с новым
-аккаунтом, точным журналом human/Agent/project/document graph и hash/FK/CAS
-проверками cleanup. Независимый reviewer закрыл P2: preflight проверяет 54
-required capture topics, physical tables/column maps/UUID primary keys и реальные
-capture triggers до baseline, app import и listen. Это source review, не
-результат выполнения SQL или cleanup. Runner не запускался; credentials и данные не создавались;
-новый state directory `.git/sps-runtime/document-handoff-fixture` отсутствует.
+Для неё подготовлен disposable runner на обычных owning SDK с точным журналом
+human/Agent/project/document graph и hash/FK/CAS проверками. Независимое review
+принимает топологию с одним новым UUID-hostname для browser Host 3007 и API/WS
+4000, ранними Host/Origin guards, новым dist, blank analytics, проверкой ресурсов,
+обычным logout и точной очисткой. Изменение только frontend origin при прежнем
+API `localhost:4000` по-прежнему не изолирует API cookie jar.
 
-Обычный IAB с новым `127.0.0.1` или случайным `*.localhost` origin для этого теста
-отклонён: frontend storage изолируется, но API `localhost:4000` использует общий
-cookie jar и credentialed fetch. Атрибуты существующего вручную заданного operator
-cookie нельзя доказать по исходникам. Текущие Strict JWT имеют SameSite-защиту;
-это не доказывает изоляцию всего API cookie store и не означает подтверждённого
-перезаписывания пользовательской сессии. Пользовательские cookies/storage не читались.
+Реальный первый preflight остановился до baseline/app/listen: в Subject обнаружена
+единственная дополнительная `tokens_valid_after`, которой нет в текущей модели.
+Read-only проверка всех 158 ресурсов не нашла других отличий формы. Временный
+runner допускает только эту nullable `timestamp without time zone` без default,
+generated/identity и constraints; остальные неизвестные колонки запрещены.
+Whole-row hashes, actual UUID trigger coverage и FK/JSON проверки сохранены.
+Происхождение колонки неизвестно; схема и данные не менялись. Независимое review
+принимает точную коррекцию; harness SHA-256:
+`e80379040b63e1c1c87595a78383877222cf2478fdd128621b6e0960046f9eba`.
+Первое отклонённое состояние сохранено отдельно и не переиспользуется.
 
-Для обычного IAB подготовлена другая топология: один новый UUID-hostname для
-обоих browser endpoints, Host на 3007 и API/WS на 4000. Source assessment допускает
-такую изоляцию при ранних Host/Origin guards, проверке реальных resource URLs,
-отключённой аналитике, новом dev dist, обычном logout и точном cleanup. Временная
-реализация проходит отдельное review перед запуском. Это не выполненная
-авторизация: новый state и credentials по-прежнему не создавались. Изменение
-только frontend origin при прежнем API-origin остаётся неподходящим.
+Следующий свежий запуск прошёл реальный read-only preflight: 54 required topics,
+158 actual tables, их формы, primary keys и row/truncate capture triggers.
+API слушал только 127.0.0.1:4000 с точными временными bindings. Host начал работу
+на 127.0.0.1:3007, heap 1024 MiB, Turbopack target 768 MiB, один Rayon/UV worker,
+nice 10 и process-group RSS watchdog 3 GiB. На первом cookie-free прогреве
+`/en/ai-chat/sign-in` группа достигла 3169.6 MiB и была остановлена watchdog.
+Прогрев не завершён; register, seed, resource inventory и браузер не запускались.
+Подготовлены только private credentials: тестовых аккаунтов, Subject/Agent IDs,
+данных документа и query refs нет. Пользовательские cookies/storage не читались
+и не менялись. Native CUA всё ещё сообщает блокировку macOS; новая Safari Private
+Window не создана.
 
-Принята отдельная новая Safari Private Window с визуальным подтверждением private
-mode по [документации Apple](https://support.apple.com/en-gb/guide/safari/ibrw1069/mac).
-Native CUA возвращает блокировку macOS, поэтому это окно не создано. После
-доступности отдельного контекста остаётся пройти saved document → Copy instructions
-→ existing Download Markdown → Framework: одинаковый filename, два прикреплённых
-Source, исключение постороннего Source и body/proposal из инструкций, затем точный
-cleanup. Скачать нужно новый фактический файл; старые одноимённые файлы сохраняются.
+Два отдельных fresh Webpack Host используют module parallelism 1, CIRCLE=2,
+один Rayon/UV worker и тот же RSS watchdog. Heap 1536 MiB завершился V8 OOM
+при peak 2018.6 MiB; heap 2048 MiB — V8 OOM при peak 2577.8 MiB. В обоих случаях
+родительский Next CLI вернул 0, но обязательный прогрев не завершился. Это не
+readiness и не auth PASS. Регистрация, seed, inventory и браузер также не запускались.
+Санитизированные результаты: `/tmp/sps-framework-document-webpack-1536-receipt.json`
+и `/tmp/sps-framework-document-webpack-2048-receipt.json`.
+
+Временный API завершён через SIGUSR2 с дренированием запросов; его группа и группа
+Host отсутствуют. Общий cleanup-командный путь отказал до удаления из-за отсутствия
+final CAS audit: аккаунт, для которого он создаётся, не зарегистрирован. Это не
+cleanup PASS. Отдельный read-only readback подтверждает полное равенство current
+и baseline: 158 resource keys, все 9006 ID/whole-row hashes, 0 changed/missing/new
+rows, 0 owned IDs, 0 query refs и отсутствие seed receipt. Cleanup targets
+отсутствуют, SQL DELETE не выполнялся. Readback после каждого из двух Webpack
+OOM также подтверждает все 9006 исходных строк без changed/missing/new rows и
+нулевые аккаунты, Agent IDs и query refs. Дополнять CAS state или повторять DELETE
+cleanup не потребовалось. Private state и receipts сохранены.
+Санитизированный результат:
+`/tmp/sps-framework-document-resource-stop-receipt.json`.
+
+Авторизованный путь saved document → Copy instructions → existing Download
+Markdown → Framework остаётся непроверенным. Нужны фактические совпадение
+filename/двух прикреплённых Sources, исключение постороннего Source и body/proposal
+из инструкций, обычный logout и точный cleanup после успешного прохода.
 
 API остаётся на обычном `npm run api:dev`; Host после последней попытки возвращён
 к `npm run host:dev`, Storybook — на 4321. Host использует heap 1536 MiB,
 Turbopack target 1024 MiB, один Rayon/UV worker и nice 10. Тяжёлые production
 процессы остановлены. GitHub PR, push, merge, deploy и подтверждение владельческих
 Strategy/Brand/Design не выполнялись. Итоговые HTTP receipts и состояние рабочего
-дерева приведены в completion audit. После последнего возврата API
-`/api/blog/articles`, Host `/en/framework` и Storybook на 4321 вернули HTTP 200.
-Группы обоих последних production-процессов отсутствуют. Временный include dev
-output в Host tsconfig удалён из diff; вкладки Product Storybook и Framework
-сохранены для просмотра. После reload реальный Framework показывает h1
-«Turn your business brief into a product.», scrollWidth=clientWidth=1250 и
-0 сломанных изображений. Screenshot после возврата dev Host:
-`/tmp/sps-framework-runtime-landing-restored.png`.
+дерева приведены в completion audit. Fresh receipt
+`/tmp/sps-framework-restored-current-readiness-receipt.json` подтверждает HTTP 200
+для API `/api/blog/articles`, Host `/en/framework` и Storybook на 4321 после
+последних трёх auth-попыток. Восемь закрытых production/auth process groups
+отсутствуют. Только автоматически добавленные Next includes удалены из Host
+tsconfig; остальной файл совпадает с HEAD. Вкладки Product Storybook и Framework
+сохранены для просмотра. Реальный Framework показывает h1
+«Turn your business brief into a product.», scrollWidth=clientWidth=1250,
+0 сломанных изображений и 0 captured console errors. Screenshot после возврата
+dev Host: `/tmp/sps-framework-runtime-restored-current.png`. Extended full build
+с теми же CPU/RSS settings и wall limit 30 минут подготовлен, но ещё не запускался.

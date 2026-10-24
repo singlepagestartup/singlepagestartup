@@ -135,15 +135,22 @@ Slider, Blog/author/TOC, currency и выбор пакета. Guest private Widg
 Полная production-сборка не принята. После heap OOM и ограниченной Turbopack
 попытки проверены полный Webpack build и явные последовательные compiler workers
 (`53ca2a4098`). Server compiler завершается и освобождает память, но два полных
-прохода с heap 2304/2048 MiB остановлены общим 3 GiB RSS watchdog. Source review
-не подтверждает unsafe client-to-server import, но не заменяет успешную сборку.
+прохода с heap 2304/2048 MiB остановлены общим 3 GiB RSS watchdog. Диагностический
+проход с module parallelism 1 удержался ниже RSS-порога (peak 2537.5 MiB), но
+остановлен по wall limit 720.2 s. Server и Edge завершены; client, type checking
+и static generation не приняты. Source review не подтверждает unsafe
+client-to-server import, но не заменяет успешную сборку.
 
-Панель передачи документа проверена 16 runtime-component regressions. Disposable
-runner прошёл независимый source review после исправления capture preflight;
-данные и credentials не создавались. Обычный IAB с новым Host origin не изолирует
-API cookie jar, поэтому для live auth-прохода принят отдельный private context.
-Native CUA недоступен при блокировке macOS. Авторизованный browser-проход остаётся
-непроверенным. Эти два ограничения сохраняются для Code Review.
+Панель передачи документа проверена 16 runtime-component regressions. Временный
+runner с одним новым hostname для browser Host/API/WS прошёл независимое source
+review и реальный read-only capture preflight всех 158 таблиц. Свежий Host остановлен
+watchdog на первом прогреве sign-in при 3169.6 MiB RSS. Два fresh Webpack Host
+с heap 1536/2048 MiB завершились V8 OOM до регистрации, при peak 2018.6/2577.8 MiB.
+Регистрация, seed и браузер ещё не запускались. API корректно завершён; readback подтверждает
+все 9006 исходных ID/whole-row hashes без изменений и отсутствие cleanup targets.
+Подготовленные private credentials не использовались. Авторизованный browser-путь
+остаётся непроверенным; полная production-сборка также не принята. Эти два
+ограничения сохраняются для Code Review.
 
 Подробный runtime report, закрытые замечания и точные границы доказательств:
 `thoughts/shared/research/singlepagestartup/ISSUE-376-framework-runtime-journey-review.md`.
