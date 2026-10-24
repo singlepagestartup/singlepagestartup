@@ -171,13 +171,41 @@ Private fixture: Article `5ade2625-007e-4c90-86bd-989a33e534fa`, slug
 
 ## Непроверенные части и состояние запуска
 
-Текущая Webpack production compile завершилась V8 OOM при heap 1536 MiB.
-Отдельная Turbopack compile с тем же heap, native target 1024 MiB и одним
-потоком остановлена watchdog через 6.1 s: process-group RSS достиг 3364.2 MiB
-при пороге 3 GiB. Ни одна попытка не даёт production PASS; режим compile также
-не заменяет полный typecheck/static generation. Лимиты не повышались.
+Production-проверка остаётся незавершённой. Выполнены следующие отдельные попытки:
+
+| Режим                                          |     Heap | Результат                                            |
+| ---------------------------------------------- | -------: | ---------------------------------------------------- |
+| Webpack compile-only                           | 1536 MiB | V8 heap OOM                                          |
+| Turbopack compile-only, native target 1024 MiB | 1536 MiB | RSS watchdog: 3364.2 MiB, 6.1 s                      |
+| Полный Webpack build без compiler workers      | 2304 MiB | Wall watchdog: 903.6 s, peak RSS 2879.3 MiB, exit -9 |
+| Полный Webpack build с compiler workers        | 2304 MiB | RSS watchdog: 3097.9 MiB, 750.0 s, exit 143          |
+| Полный Webpack build с compiler workers        | 2048 MiB | RSS watchdog: 3126.2 MiB, 514.4 s, exit 143          |
+
+В Host custom webpack отключал worker по умолчанию. Коммит `53ca2a4098`
+явно включает `experimental.webpackBuildWorker`; независимый source review
+проверил повторную загрузку Nx, SVGR и externals в Next 15.4.8 и ожидаемое
+завершение каждого compiler worker. В обеих последующих попытках server compiler
+завершился и был заменён новым процессом с освобождением памяти. Сохранённый trace
+последней попытки содержит завершённый `webpack-compilation` для `server`
+длительностью 216623722 µs. Общая сборка остановлена позже на стадии compile.
+Это частичное доказательство, не client/typecheck/static-generation PASS.
+
+Последние полные попытки используют `node node_modules/next/dist/bin/next build apps/host`,
+отдельный dist, отключённый Webpack cache и один Next/Rayon/UV worker. Node запущен
+с `--single-threaded-gc --no-concurrent-marking`, nice 15; duty cycle составляет
+150 ms работы / 300 ms паузы. Предыдущая полная попытка без workers использовала
+150/600 ms. Общий process-group RSS watchdog во всех этих проходах остаётся
+3 GiB; меньший heap не устранил превышение. Сборки выполнялись последовательно
+при остановленном dev Host. Новых production-попыток после последней нет.
+
 Логи: `/tmp/sps-framework-runtime-compile.log`,
-`/tmp/sps-framework-runtime-turbo-compile.log` и соответствующий result JSON.
+`/tmp/sps-framework-runtime-turbo-compile.log`,
+`/tmp/sps-framework-runtime-throttled-build.log`,
+`/tmp/sps-framework-runtime-worker-build.log`,
+`/tmp/sps-framework-runtime-worker-2048-build.log` и соответствующие result JSON.
+Последний raw trace сохранён отдельно как
+`/tmp/sps-framework-runtime-worker-2048-build-trace.jsonl`;
+его summary — `/tmp/sps-framework-runtime-worker-2048-build-trace-summary.json`.
 
 Source review не установило небезопасного импорта server implementation в
 проверенные клиентские entrypoints. Обычный HTTP SDK с каталогом `server`
@@ -189,17 +217,42 @@ compiler graph; это не доказательство причины нагр
 
 Панель документа имеет source review и 16 passing runtime-component regressions.
 Product/Modules copy и существующий Markdown download проверялись в браузере.
-Цепочка из авторизованного runtime-документа целиком ещё не выполнена: текущая
-сессия гостевая, старые test accounts удалены. Исторический Blue Kiln/Products.md
-не доказывает текущего доступа. При готовой обычной сессии нужен read-only проход
-saved document → Copy instructions → existing Download Markdown → Framework,
-с проверкой одинакового filename и отсутствия body/proposal в инструкциях.
+Цепочка из авторизованного runtime-документа целиком ещё не выполнена.
+Исторический Blue Kiln/Products.md не доказывает текущего доступа.
 
-API и Host возвращены к `npm run api:dev` и `npm run host:dev`; Storybook остаётся
-на 4321. Host использует heap 1536 MiB, Turbopack target 1024 MiB и ограниченные
-worker pools. Тяжёлые production-процессы остановлены. GitHub PR, push, merge,
-deploy и подтверждение владельческих Strategy/Brand/Design не выполнялись.
-После возврата API `/api/blog/articles` и Host `/en/framework` вернули HTTP 200;
-Framework повторно открыт в браузере, изображения загружены. Storybook Product
-остаётся доступным в исходной вкладке. Временный include dev output в Host
-tsconfig удалён из diff.
+Для неё подготовлен отдельный disposable runner на обычных owning SDK, с новым
+аккаунтом, точным журналом human/Agent/project/document graph и hash/FK/CAS
+проверками cleanup. Независимый reviewer закрыл P2: preflight проверяет 54
+required capture topics, physical tables/column maps/UUID primary keys и реальные
+capture triggers до baseline, app import и listen. Это source review, не
+результат выполнения SQL или cleanup. Runner не запускался; credentials и данные не создавались;
+новый state directory `.git/sps-runtime/document-handoff-fixture` отсутствует.
+
+Обычный IAB с новым `127.0.0.1` или случайным `*.localhost` origin для этого теста
+отклонён: frontend storage изолируется, но API `localhost:4000` использует общий
+cookie jar и credentialed fetch. Атрибуты существующего вручную заданного operator
+cookie нельзя доказать по исходникам. Текущие Strict JWT имеют SameSite-защиту;
+это не доказывает изоляцию всего API cookie store и не означает подтверждённого
+перезаписывания пользовательской сессии. Пользовательские cookies/storage не читались.
+
+Принята отдельная новая Safari Private Window с визуальным подтверждением private
+mode по [документации Apple](https://support.apple.com/en-gb/guide/safari/ibrw1069/mac).
+Native CUA возвращает блокировку macOS, поэтому это окно не создано. После
+доступности отдельного контекста остаётся пройти saved document → Copy instructions
+→ existing Download Markdown → Framework: одинаковый filename, два прикреплённых
+Source, исключение постороннего Source и body/proposal из инструкций, затем точный
+cleanup. Скачать нужно новый фактический файл; старые одноимённые файлы сохраняются.
+
+API остаётся на обычном `npm run api:dev`; Host после последней попытки возвращён
+к `npm run host:dev`, Storybook — на 4321. Host использует heap 1536 MiB,
+Turbopack target 1024 MiB, один Rayon/UV worker и nice 10. Тяжёлые production
+процессы остановлены. GitHub PR, push, merge, deploy и подтверждение владельческих
+Strategy/Brand/Design не выполнялись. Итоговые HTTP receipts и состояние рабочего
+дерева приведены в completion audit. После последнего возврата API
+`/api/blog/articles`, Host `/en/framework` и Storybook на 4321 вернули HTTP 200.
+Группы обоих последних production-процессов отсутствуют. Временный include dev
+output в Host tsconfig удалён из diff; вкладки Product Storybook и Framework
+сохранены для просмотра. После reload реальный Framework показывает h1
+«Turn your business brief into a product.», scrollWidth=clientWidth=1250 и
+0 сломанных изображений. Screenshot после возврата dev Host:
+`/tmp/sps-framework-runtime-landing-restored.png`.
