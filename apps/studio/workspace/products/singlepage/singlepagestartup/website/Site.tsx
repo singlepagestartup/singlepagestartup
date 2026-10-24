@@ -51,6 +51,7 @@ interface ISiteShellProps {
   resolveLink?: IWorkspacePageProps["resolveLink"];
   active?: "framework" | "modules" | "blog" | "tokens";
   acquisition?: boolean;
+  lang?: "en" | "ru";
 }
 
 export function SiteShell({
@@ -58,6 +59,7 @@ export function SiteShell({
   resolveLink,
   active,
   acquisition = false,
+  lang,
   content: suppliedContent,
 }: ISiteShellProps) {
   const content = suppliedContent ?? parseCodeFrameworkWebsite(siteText);
@@ -112,6 +114,7 @@ export function SiteShell({
     <div
       data-workspace-projection="singlepage"
       data-framework-site
+      lang={lang}
       className="@container min-w-0 bg-[var(--workspace-brand-background)] text-[var(--workspace-brand-foreground)] antialiased [font-family:var(--workspace-brand-font-body)]"
     >
       <header className="border-b border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)]">
@@ -119,7 +122,7 @@ export function SiteShell({
           <PreviewLink
             href="/framework"
             resolveLink={resolveLink}
-            aria-label="SinglePageStartup — Code Framework"
+            aria-label={`SinglePageStartup — ${labels["navigation-framework"]}`}
             className={`inline-flex min-h-11 items-center ${siteStyles.focus}`}
           >
             <img
@@ -131,7 +134,7 @@ export function SiteShell({
             />
           </PreviewLink>
           <nav
-            aria-label="Main navigation"
+            aria-label={labels["navigation-label"]}
             className={`${acquisition ? "hidden @4xl:flex" : "flex"} flex-wrap items-center gap-x-5 gap-y-2 text-sm`}
           >
             {navigation.map((item) => (
@@ -164,7 +167,7 @@ export function SiteShell({
               >
                 <Icon name="github-logo" size={20} />
                 {labels["navigation-code"]}
-                <span className="sr-only"> (opens GitHub in a new tab)</span>
+                <span className="sr-only"> ({labels["github-hint"]})</span>
               </a>
             ) : null}
           </nav>
@@ -175,7 +178,7 @@ export function SiteShell({
                 resolveLink={resolveLink}
                 className={kit.button}
               >
-                {labels["navigation-start"]}
+                {labels["navigation-start-mobile"]}
                 <Icon name="arrow-right" size={20} />
               </PreviewLink>
               <details className="relative">
@@ -186,7 +189,7 @@ export function SiteShell({
                   <Icon name="list" />
                 </summary>
                 <nav
-                  aria-label="Mobile navigation"
+                  aria-label={labels["navigation-mobile-label"]}
                   className="absolute right-0 top-full z-20 mt-2 grid min-w-48 rounded-2xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-surface)] p-3 shadow-lg"
                 >
                   {navigation.map((item) => (
@@ -250,7 +253,10 @@ export function SiteShell({
                     >
                       {link.text}
                       {link.href.startsWith("https:") ? (
-                        <span className="sr-only"> (opens in a new tab)</span>
+                        <span className="sr-only">
+                          {" "}
+                          ({labels["external-link-hint"]})
+                        </span>
                       ) : null}
                     </PreviewLink>
                   </li>

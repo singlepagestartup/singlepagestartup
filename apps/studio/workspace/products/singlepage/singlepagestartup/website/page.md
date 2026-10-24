@@ -3,237 +3,246 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    product.singlepagestartup.website: 74dc80a053761d010344cffbf3e5ed4f4b5ce3701dce325bfed7d89d472ed894
+    product.singlepagestartup.website: c7a45fce2d369fdd3ccdaab3caaed68f80aafb2c99178aae3c68c1aebffda537
 ---
 
 <!-- section: hero -->
 
-# Build your idea. The essentials are ready.
+# Создайте свой продукт. Основа уже готова.
 
-Code Framework by SinglePageStartup
+Code Framework от SinglePageStartup
 
-Accounts, a blog, a shop — already in the code. Keep what your idea needs and use AI to make it yours.
+Аккаунты, блог и магазин уже есть в коде. Оставьте нужное и с помощью ИИ адаптируйте под свой продукт.
 
-[Describe my idea](/ai-chat/rbac/subjects/authentication/registration)
+[Описать идею](/ai-chat/rbac/subjects/authentication/registration)
 
-[How it works](#cf-start)
+[Как это работает](#cf-start)
 
-Start with a conversation in AI Chat. No code to download today.
+Начните с разговора в AI Chat. На этом этапе код скачивать не нужно.
 
 <!-- section: foundation -->
 
-## Keep what you need. Make it yours.
+## Возьмите нужное и адаптируйте под себя.
 
-A head start for your project
+Основа для вашего проекта
 
-Spend your tokens on your own idea. Reuse accounts, content and payments already in the code.
+Тратьте токены на свою идею. Аккаунты, контент и платежи уже есть в коде.
 
-| Project         | What you could build                               |
-| --------------- | -------------------------------------------------- |
-| Contact page    | A page that turns interest into enquiries.         |
-| Members space   | Accounts, profiles and content for your community. |
-| Online shop     | Your products, with a cart, orders and payments.   |
-| Content project | A home for your articles, categories and authors.  |
+| Проект            | Что можно собрать                                              |
+| ----------------- | -------------------------------------------------------------- |
+| Страница с формой | Собирайте заявки от тех, кого заинтересовало ваше предложение. |
+| Сообщество        | Аккаунты, профили и закрытые материалы для участников.         |
+| Интернет-магазин  | Ваши товары, корзина, заказы и оплата.                         |
+| Блог              | Статьи, категории и авторы в одном проекте.                    |
 
-[See the building blocks](/framework/modules)
+[Посмотреть готовые возможности](/framework/modules)
 
 <!-- section: journey -->
 
-## From a first conversation to your own product.
+## От первого разговора до своего продукта.
 
-How it works
+Как это работает
 
-| Step                    | What you do                                                                                                                    |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Describe your idea      | Talk to AI Chat about who it is for and what it should do.                                                                     |
-| Shape the plan          | Review your offer, content and product requirements. Keep the documents you need.                                              |
-| Build when you’re ready | Export your plan to a coding app on your computer, such as Claude Code or Codex. It adapts the free framework to your project. |
+| Шаг                     | Что вы делаете                                                                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Опишите идею            | Расскажите AI Chat, для кого ваш продукт и что он должен делать.                                                                                  |
+| Продумайте детали       | Проверьте предложение, материалы и требования к продукту. Сохраните нужные документы.                                                             |
+| Переходите к разработке | Передайте план в Claude Code, Codex или другое приложение для разработки на вашем компьютере. Оно адаптирует бесплатный фреймворк под ваш проект. |
 
 <!-- section: request -->
 
-### Already have a plan? Start from here.
+### План уже есть? Начните отсюда.
 
-> Use my attached, reviewed business and product documents to plan a first version of my product with SinglePageStartup Code Framework. Help me run it locally. Reuse the existing features that fit, remove what I do not need and adapt the rest to my requirements. Keep unanswered questions visible and show me what to review.
+> На основе приложенных и проверенных документов о бизнесе и продукте составь план первой версии моего продукта на SinglePageStartup Code Framework. Помоги запустить проект на моём компьютере. Используй подходящие готовые функции, убери ненужные и адаптируй остальные под мои требования. Отдельно укажи нерешённые вопросы и покажи, что мне нужно проверить.
 
 <!-- section: change -->
 
-## The next version starts with a request.
+## Следующая версия начинается с запроса.
 
-Room to grow
+Проект можно развивать дальше
 
-> Add workshop bookings and let people leave their email.
+> Добавь запись на мастер-классы и возможность оставить почту.
 
-Keep improving the same project. Add your own rules and design on a codebase maintained by SinglePageStartup.
+Продолжайте развивать тот же проект. Добавляйте свои правила и дизайн в кодовую базу, которую поддерживает SinglePageStartup.
 
 <!-- section: chat -->
 
-## You bring the idea. AI Chat helps you work it out.
+## Идея — ваша. AI Chat поможет её проработать.
 
-Start here
+Начните здесь
 
-Turn your notes into a clear plan for what to build. You can explore the idea before you touch the code.
+Превратите заметки в понятный план продукта. Сначала разберитесь с идеей, затем переходите к коду.
 
-[Try AI Chat](/ai-chat/rbac/subjects/authentication/registration)
+[Попробовать AI Chat](/ai-chat/rbac/subjects/authentication/registration)
 
-[Plans and tokens](/ecommerce)
+[Тарифы и токены](/ecommerce)
 
 <!-- section: modules -->
 
-## The familiar parts, already thought through.
+## Привычные функции уже продуманы.
 
-Included in the code
+Уже есть в коде
 
-Choose the features your project needs. Leave the rest out.
+Выберите функции для своего проекта. Остальное можно не использовать.
 
-| Module                   | What it gives your project                           |
-| ------------------------ | ---------------------------------------------------- |
-| Accounts & access        | Let people sign in and protect their personal space. |
-| Profiles & conversations | Give your community a face and a place to talk.      |
-| Articles & categories    | Publish your knowledge and help readers find it.     |
-| Project materials        | Keep documents together and find what matters.       |
-| Products & orders        | Show what you sell and manage the orders.            |
-| Payments & currencies    | Take payments in the currencies your customers use.  |
-| Pages & content          | Shape the pages around your offer.                   |
-| Forms & follow-up        | Collect enquiries and organise the next step.        |
+| Возможность              | Что она даёт вашему проекту                             |
+| ------------------------ | ------------------------------------------------------- |
+| Аккаунты и доступ        | Вход в аккаунт и доступ к личным данным.                |
+| Профили и общение        | Профили участников и пространство для общения.          |
+| Статьи и категории       | Публикуйте материалы и помогайте читателям их находить. |
+| Материалы проекта        | Храните документы вместе и находите нужное.             |
+| Товары и заказы          | Показывайте, что продаёте, и работайте с заказами.      |
+| Платежи и валюты         | Принимайте оплату в валютах ваших покупателей.          |
+| Страницы и контент       | Собирайте страницы под своё предложение.                |
+| Формы и обработка заявок | Собирайте заявки и организуйте работу с ними.           |
 
-[Explore all features](/framework/modules)
+[Все возможности](/framework/modules)
 
 <!-- section: articles -->
 
-## A little further, when you’re curious.
+## Больше о том, как всё устроено.
 
-Read at your own pace
+Читайте в своём темпе
 
-Short routes into the details behind your project.
+Материалы для тех, кто хочет разобраться в деталях проекта.
 
-| Article                       | What you will learn                       |
-| ----------------------------- | ----------------------------------------- |
-| How a page is put together    | See how content becomes a working page.   |
-| What happens behind a request | Follow the logic behind your product.     |
-| How development works         | Learn how to run and change your project. |
+| Статья                       | Что вы узнаете                               |
+| ---------------------------- | -------------------------------------------- |
+| Как устроена страница        | Как контент становится работающей страницей. |
+| Что происходит после запроса | Как работает логика вашего продукта.         |
+| Как начать разработку        | Как запустить и изменить свой проект.        |
 
-[How a page is put together](/blog/articles/nextjs-server-client-readers-and-widget-slots)
+[Как устроена страница](/blog/articles/nextjs-server-client-readers-and-widget-slots)
 
-[What happens behind a request](/blog/articles/hono-api-layers-di-and-owned-middleware)
+[Что происходит после запроса](/blog/articles/hono-api-layers-di-and-owned-middleware)
 
-[How development works](/blog/articles/nx-bun-docker-and-generated-migrations)
+[Как начать разработку](/blog/articles/nx-bun-docker-and-generated-migrations)
 
-[Visit the blog](/blog)
+[Перейти в блог](/blog)
 
 <!-- section: handoff -->
 
-## Start with the idea you keep coming back to.
+## Начните с идеи, к которой всё время возвращаетесь.
 
-Your first step
+Ваш первый шаг
 
-Tell AI Chat what you want to make. Work out the details now; build on the ready-made code when you’re ready.
+Расскажите AI Chat, что хотите создать. Проработайте детали сейчас, а когда будете готовы — соберите продукт на готовой кодовой базе.
 
-[Let’s work on my idea](/ai-chat/rbac/subjects/authentication/registration)
+[Проработать мою идею](/ai-chat/rbac/subjects/authentication/registration)
 
-[View the code](https://github.com/singlepagestartup/singlepagestartup)
+[Посмотреть код](https://github.com/singlepagestartup/singlepagestartup)
 
 <!-- section: price -->
 
-## Free code. Your own product.
+## Бесплатный код. Ваш собственный продукт.
 
-The foundation stays yours
+Кодовая база остаётся у вас
 
-Use and adapt Code Framework under MIT.
+Используйте и изменяйте Code Framework по лицензии MIT.
 
-AI Chat, coding tools and hosting have separate costs. The code is available independently.
+AI Chat, инструменты разработки и хостинг оплачиваются отдельно. Код доступен независимо от них.
 
 <!-- section: questions -->
 
-## A few things to know.
+## Что ещё стоит знать.
 
-| Question                                   | Answer                                                                                                                                                       |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Do I need to know how to code to start?    | No. Start by describing your idea in AI Chat. You can work on your offer, content and requirements before opening a coding app.                              |
-| Where does the coding happen?              | In a coding app on your computer, such as Claude Code or Codex. You give it your reviewed documents and Code Framework, then review the product it builds.   |
-| Does AI Chat build and publish my website? | AI Chat prepares the written material. Building the software and putting it online are separate steps with your coding app and hosting.                      |
-| Can I change the project later?            | Yes. Keep the same codebase and ask your coding app to change the features, design or business rules. You own the project and can work with a developer too. |
-| What is free?                              | Code Framework and its documentation are free under MIT. AI Chat usage, coding tools and hosting have separate costs.                                        |
-| Who maintains the framework?               | SinglePageStartup maintains the shared code. You can read the source, report issues and follow changes on GitHub.                                            |
+| Вопрос                                        | Ответ                                                                                                                                                                                          |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Нужно ли уметь программировать, чтобы начать? | Нет. Начните с описания идеи в AI Chat. Продумайте предложение, контент и требования до того, как откроете приложение для разработки.                                                          |
+| Где происходит работа с кодом?                | В приложении на вашем компьютере, например Claude Code или Codex. Вы передаёте ему проверенные документы и Code Framework, а затем проверяете собранный продукт.                               |
+| AI Chat сам создаст и опубликует сайт?        | AI Chat готовит документы. Разработка и публикация сайта — отдельные шаги, для которых нужны приложение для работы с кодом и хостинг.                                                          |
+| Можно ли дорабатывать проект потом?           | Да. Продолжайте работать с той же кодовой базой и просите приложение для разработки менять функции, дизайн или бизнес-правила. Проект принадлежит вам; к работе можно подключить разработчика. |
+| Что здесь бесплатно?                          | Code Framework и документация доступны бесплатно по лицензии MIT. AI Chat, инструменты разработки и хостинг оплачиваются отдельно.                                                             |
+| Кто поддерживает фреймворк?                   | SinglePageStartup поддерживает общую кодовую базу. Исходники, обсуждение ошибок и история изменений доступны на GitHub.                                                                        |
 
 <!-- section: footer -->
 
 ## SinglePageStartup · Code Framework
 
-Prepare your business in AI Chat. Build your product with Code Framework.
+Проработайте идею в AI Chat. Соберите свой продукт на Code Framework.
 
-Framework code: MIT license.
+Код фреймворка: лицензия MIT.
 
-[Framework](/framework)
+[Фреймворк](/framework)
 
-[Modules](/framework/modules)
+[Модули](/framework/modules)
 
-[Blog](/blog)
+[Блог](/blog)
 
-[Frontend articles](/blog/categories/frontend)
+[Статьи о фронтенде](/blog/categories/frontend)
 
-[Backend articles](/blog/categories/backend)
+[Статьи о бэкенде](/blog/categories/backend)
 
-[DevOps articles](/blog/categories/devops)
+[Статьи о DevOps](/blog/categories/devops)
 
 [AI Chat](/)
 
-[Tokens](/ecommerce)
+[Токены](/ecommerce)
 
-[Documentation](https://github.com/singlepagestartup/singlepagestartup#readme)
+[Документация](https://github.com/singlepagestartup/singlepagestartup#readme)
 
-[Source license](https://github.com/singlepagestartup/singlepagestartup/blob/main/LICENSE)
+[Лицензия](https://github.com/singlepagestartup/singlepagestartup/blob/main/LICENSE)
 
-[Issues and help](https://github.com/singlepagestartup/singlepagestartup/issues)
+[Вопросы и помощь](https://github.com/singlepagestartup/singlepagestartup/issues)
 
 <!-- section: controls -->
 
-## Page labels
+## Подписи элементов
 
-| Element               | Text                                                                 |
-| --------------------- | -------------------------------------------------------------------- |
-| navigation-framework  | Framework                                                            |
-| footer-build          | Build                                                                |
-| footer-prepare        | Prepare                                                              |
-| footer-learn          | Learn                                                                |
-| navigation-foundation | Modules                                                              |
-| navigation-local      | Start locally                                                        |
-| navigation-code       | Get the code                                                         |
-| navigation-included   | Explore the modules                                                  |
-| navigation-blog       | Blog                                                                 |
-| navigation-tokens     | Tokens                                                               |
-| navigation-chat       | AI Chat                                                              |
-| navigation-start      | Try AI Chat                                                          |
-| navigation-sign-in    | Sign in                                                              |
-| navigation-profile    | My profile                                                           |
-| navigation-menu       | Open navigation                                                      |
-| skip-link             | Skip to content                                                      |
-| copy-action           | Copy request                                                         |
-| copy-pending          | Copying…                                                             |
-| copy-success          | Request copied. Paste it into your coding app.                       |
-| copy-error            | Select the request above and copy it manually.                       |
-| copy-idle             | Edit the request to fit your project.                                |
-| github-hint           | Opens GitHub in a new tab                                            |
-| demo-label            | Explore an example                                                   |
-| demo-caption          | Example interfaces your coding app can adapt from the shared code.   |
-| demo-name             | Common Ground                                                        |
-| demo-subtitle         | Workshops, ideas and good company.                                   |
-| demo-form-title       | Be the first to hear.                                                |
-| demo-email            | Your email address                                                   |
-| demo-submit           | Keep me posted                                                       |
-| demo-members-title    | A space for your community.                                          |
-| demo-members-body     | Profiles, conversations and members-only content.                    |
-| demo-members-action   | Join the community                                                   |
-| demo-shop-title       | Made for everyday ideas.                                             |
-| demo-product-one      | Workshop resources                                                   |
-| demo-product-two      | Creative kit                                                         |
-| demo-shop-action      | Add to bag                                                           |
-| demo-blog-title       | Notes from the studio.                                               |
-| demo-article-one      | Make room for a new idea.                                            |
-| demo-article-two      | The things we learn together.                                        |
-| demo-ready            | Already in the foundation                                            |
-| hero-proof            | Free code · Yours to adapt · Maintained by SinglePageStartup         |
-| chat-example          | I want a website for my workshops. Where do I start?                 |
-| chat-reply            | Let’s work out who they’re for and what people should be able to do. |
-| document-one          | Your offer                                                           |
-| document-two          | Page content                                                         |
-| document-three        | Product plan                                                         |
+| Элемент                 | Текст                                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| navigation-framework    | Фреймворк                                                                                          |
+| footer-build            | Разработка                                                                                         |
+| footer-prepare          | Ваш проект                                                                                         |
+| footer-learn            | Материалы                                                                                          |
+| navigation-foundation   | Модули                                                                                             |
+| navigation-local        | Запустить на компьютере                                                                            |
+| navigation-code         | Получить код                                                                                       |
+| navigation-included     | Посмотреть модули                                                                                  |
+| navigation-blog         | Блог                                                                                               |
+| navigation-tokens       | Токены                                                                                             |
+| navigation-chat         | AI Chat                                                                                            |
+| navigation-start        | Попробовать AI Chat                                                                                |
+| navigation-start-mobile | Начать в AI Chat                                                                                   |
+| navigation-sign-in      | Войти                                                                                              |
+| navigation-profile      | Мой профиль                                                                                        |
+| navigation-menu         | Открыть меню                                                                                       |
+| navigation-label        | Основная навигация                                                                                 |
+| navigation-mobile-label | Мобильная навигация                                                                                |
+| external-link-hint      | Откроется в новой вкладке                                                                          |
+| skip-link               | Перейти к содержимому                                                                              |
+| copy-action             | Скопировать запрос                                                                                 |
+| copy-pending            | Копируем…                                                                                          |
+| copy-success            | Запрос скопирован. Вставьте его в приложение для разработки.                                       |
+| copy-error              | Выделите запрос выше и скопируйте вручную.                                                         |
+| copy-idle               | Отредактируйте запрос под свой проект.                                                             |
+| github-hint             | GitHub откроется в новой вкладке                                                                   |
+| demo-label              | Выберите пример                                                                                    |
+| demo-caption            | Примеры интерфейсов, которые приложение для разработки может адаптировать на готовой кодовой базе. |
+| demo-name               | Место встречи                                                                                      |
+| demo-subtitle           | Мастер-классы, идеи и общение                                                                      |
+| demo-form-title         | Узнавайте о новых встречах.                                                                        |
+| demo-email              | Ваша почта                                                                                         |
+| demo-submit             | Сообщать о новых встречах                                                                          |
+| demo-members-title      | Пространство для вашего сообщества.                                                                |
+| demo-members-body       | Профили, общение и материалы только для участников.                                                |
+| demo-members-action     | Присоединиться                                                                                     |
+| demo-shop-title         | Всё для новых идей.                                                                                |
+| demo-product-one        | Материалы мастер-класса                                                                            |
+| demo-product-two        | Набор для творчества                                                                               |
+| demo-shop-action        | В корзину                                                                                          |
+| demo-blog-title         | Заметки нашей студии.                                                                              |
+| demo-article-one        | Как найти место для новой идеи.                                                                    |
+| demo-article-two        | Чему мы учимся вместе.                                                                             |
+| demo-ready              | Уже есть в кодовой базе                                                                            |
+| hero-proof              | Бесплатный код · Можно адаптировать · Поддерживает SinglePageStartup                               |
+| hero-image-alt          | Сайт, собранный из готовых функций: аккаунтов, магазина и статей.                                  |
+| reading-time            | мин. чтения                                                                                        |
+| article-cover-1         | Обсуждение проекта за ноутбуком.                                                                   |
+| article-cover-2         | Коллеги вместе работают над идеей.                                                                 |
+| article-cover-3         | Команда готовит среду для разработки.                                                              |
+| chat-example            | Хочу сайт для своих мастер-классов. С чего начать?                                                 |
+| chat-reply              | Давайте разберёмся, для кого они и что смогут делать участники.                                    |
+| document-one            | Ваше предложение                                                                                   |
+| document-two            | Контент страниц                                                                                    |
+| document-three          | План продукта                                                                                      |

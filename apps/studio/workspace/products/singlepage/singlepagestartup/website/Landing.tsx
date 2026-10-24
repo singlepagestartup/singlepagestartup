@@ -240,6 +240,7 @@ export default function CodeFrameworkLanding({
       resolveLink={resolveLink}
       content={content}
       acquisition
+      lang="ru"
     >
       <SectionLink
         href="#cf-main"
@@ -293,7 +294,7 @@ export default function CodeFrameworkLanding({
             <figure className="min-w-0">
               <img
                 src={landingArtwork.hero.src}
-                alt={landingArtwork.hero.alt}
+                alt={label["hero-image-alt"]}
                 data-asset-id={landingArtwork.hero.id}
                 width={1254}
                 height={1254}
@@ -613,7 +614,7 @@ export default function CodeFrameworkLanding({
                 >
                   <img
                     src={blogCover(article.cover)}
-                    alt={article.coverAlt}
+                    alt={label[`article-cover-${index + 1}`]}
                     width={1024}
                     height={1024}
                     loading="lazy"
@@ -621,7 +622,7 @@ export default function CodeFrameworkLanding({
                   />
                   <div className="p-5">
                     <p className={`text-xs ${muted}`}>
-                      {article.minutes} min read
+                      {article.minutes} {label["reading-time"]}
                     </p>
                     <h3 className={`mt-3 text-xl leading-7 ${display}`}>
                       {link.text}

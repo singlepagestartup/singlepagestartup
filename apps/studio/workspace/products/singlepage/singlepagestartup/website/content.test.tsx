@@ -14,13 +14,20 @@ const modules = readFileSync(
 
 describe("editable Framework website copy", () => {
   test("renders authored navigation, footer prose and changed footer URLs", () => {
+    const authored = parseCodeFrameworkWebsite(landing);
+    const blogLink = authored.footer.links.find(
+      ({ href }) => href === "/blog",
+    )!;
     const edited = landing
       .replace(/(\| navigation-chat\s*\|)[^|]+/, "$1 Prepare the brief ")
       .replace(
-        "Prepare your business in AI Chat. Build your product with Code Framework.",
+        authored.footer.paragraphs[0],
         "Bring your reviewed project material.",
       )
-      .replace("[Blog](/blog)", "[Engineering journal](/journal)");
+      .replace(
+        `[${blogLink.text}](${blogLink.href})`,
+        "[Engineering journal](/journal)",
+      );
     const html = renderToStaticMarkup(
       <SiteShell content={parseCodeFrameworkWebsite(edited)}>
         <main>Example page</main>

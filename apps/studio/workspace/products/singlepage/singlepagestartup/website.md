@@ -27,6 +27,11 @@ sources:
     date: 2026-10-24
     supports: The landing introduces reusable features in consumer language and invites a new visitor to register and describe an idea in AI Chat. Detailed development instructions belong after that first step.
     limitation: Product Storybook scope. Runtime and Studio Modules transfer require a separate review.
+  review_language:
+    classification: constraint
+    source: operator instruction in the Product landing review
+    date: 2026-10-24
+    supports: The current landing copy is reviewed in Russian. The English version follows the Russian content review.
   account_offer:
     classification: client-claim
     sources:
@@ -102,13 +107,13 @@ Someone whose idea is still scattered across notes can prepare a business model,
 
 Visitors arrive through AI Chat, an architecture article, a demonstration, search or a shared link. The page answers what the framework contains, where business decisions come from, what the person and coding agent do next, and which costs belong to separate services. The `developer-agents` segment follows module documentation and source links to assess the fit for the person's task; the person owns the adoption decision.
 
-The primary action is **Describe my idea**, opening AI Chat registration. **How it works** opens the three-step explanation on this page. Visitors can understand the offer and try AI Chat before choosing a coding app or downloading code. The shared features let them spend development tokens on their own requirements; the page makes no numerical savings claim.
+The primary action is **Описать идею**, opening AI Chat registration. **Как это работает** opens the three-step explanation on this page. Visitors can understand the offer and try AI Chat before choosing a coding app or downloading code. The shared features let them spend development tokens on their own requirements; the page makes no numerical savings claim.
 
 ## Final page specification
 
 | Page                                    | Visitor question and required content                                                                                                                                                                      | Next action                                                                                      |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Framework `/framework`                  | What could I make, which features are ready and where do I start? Short hero, selectable project examples, illustrated capabilities, preparation and development steps, articles, free-code terms and FAQ. | **Describe my idea** → AI Chat registration; **How it works** → the page's development sequence. |
+| Framework `/framework`                  | What could I make, which features are ready and where do I start? Short hero, selectable project examples, illustrated capabilities, preparation and development steps, articles, free-code terms and FAQ. | **Описать идею** → AI Chat registration; **Как это работает** → the page's development sequence. |
 | Modules `/framework/modules`            | Which existing functions fit my product? Grouped responsibilities, concrete uses and source links.                                                                                                         | Open a module guide, documentation or a related article.                                         |
 | Blog `/blog`                            | How is a product on this framework assembled? Frontend, Backend and DevOps categories, article covers, titles, excerpts, dates and authors.                                                                | Open a category or article.                                                                      |
 | Blog category `/blog/categories/[slug]` | What can I learn about this part of the product? Category description, article count and its actual articles.                                                                                              | Open an article or return to all articles.                                                       |
@@ -116,7 +121,7 @@ The primary action is **Describe my idea**, opening AI Chat registration. **How 
 | Tokens `/ecommerce`                     | What pays for hosted AI Chat, and what does the free framework cost? Free allowance, monthly Pro and fixed-rate top-ups, with the same account balance and currency choices used in AI Chat.               | Choose an offer, then continue to AI Chat's account purchase flow.                               |
 | AI Chat `/`                             | How do I turn existing notes and decisions into development material? Upload, document review, saved text, continued discussion and export.                                                                | Prepare or continue a project; return with reviewed documents when ready to develop.             |
 
-The header uses the current SinglePageStartup lockup linked to `/framework`. On the landing, **Framework**, **Modules**, **Blog** and **Tokens** accompany one primary **Try AI Chat** action leading to registration. Modules opens `/framework/modules`. A compact mobile menu exposes the public destinations. Other Product pages retain their AI Chat and GitHub navigation. Personal chats belong in account actions, outside the public navigation.
+The header uses the current SinglePageStartup lockup linked to `/framework`. On the landing, **Фреймворк**, **Модули**, **Блог** and **Токены** accompany one primary **Попробовать AI Chat** action leading to registration. Modules opens `/framework/modules`. A compact mobile menu exposes the public destinations. Other Product pages retain their AI Chat and GitHub navigation. Personal chats belong in account actions, outside the public navigation.
 
 The footer groups **Build** (Framework, modules, source documentation, source licence), **Learn** (Blog, Frontend, Backend, DevOps) and **Your project** (AI Chat, tokens, account access). **Issues and help** opens GitHub and says that framework help is available as time permits. Existing Privacy and Terms links retain their real destinations. No invented contact details, support schedule or unavailable legal page appears.
 
@@ -124,7 +129,7 @@ The footer groups **Build** (Framework, modules, source documentation, source li
 
 The preparation panel names the material to bring: notes, customer and offer decisions, a business model or plan, existing documents and visual references. AI Chat helps the person examine gaps and review written Brief, Strategy, Brand, Design and Product documents. The person exports selected reviewed files and gives them to Claude Code, Codex Desktop or another chosen coding agent. The coding agent opens the repository, runs it locally and changes the product; the person reviews the interface and business behaviour.
 
-The visible sequence has three steps: describe the idea, review the plan and build when ready. It names the coding app as a separate application on the person's computer. A collapsed **Already have a plan?** disclosure contains a copyable request and the GitHub link. The request asks the coding app to use reviewed documents, reuse suitable features and show what needs review. The person attaches their own exports outside this public page.
+The visible sequence has three steps: describe the idea, review the plan and build when ready. It names the coding app as a separate application on the person's computer. A collapsed **План уже есть? Начните отсюда.** disclosure contains a copyable request and the GitHub link. The request asks the coding app to use reviewed documents, reuse suitable features and show what needs review. The person attaches their own exports outside this public page.
 
 The free-code block remains visible alongside this sequence. Code and documentation use the MIT licence. Coding tools, infrastructure and hosted AI Chat usage have separate costs. This manual development route is available independently of future AI Chat landing-page assembly and server deployment.
 
@@ -160,15 +165,15 @@ Vary the section structure: a short illustrated hero; a graphite panel with four
 
 ## Metadata and review
 
-**Title:** Code Framework — Build your idea. The essentials are ready. | SinglePageStartup
+**Title:** Code Framework — Создайте свой продукт. Основа уже готова. | SinglePageStartup
 
-**Description:** Describe your idea in AI Chat, then build on reusable accounts, articles, products and payments. Keep the features you need and adapt the free Code Framework.
+**Description:** Проработайте идею в AI Chat и соберите свой продукт на готовой кодовой базе. Аккаунты, статьи, товары и платежи уже есть в бесплатном Code Framework.
 
-**Open Graph title:** Build your idea. The essentials are ready.
+**Open Graph title:** Создайте свой продукт. Основа уже готова.
 
-**Open Graph description:** Work out your idea in AI Chat and build your own product on SinglePageStartup's reusable code.
+**Open Graph description:** Проработайте идею в AI Chat и создайте свой продукт на готовом коде SinglePageStartup.
 
-The website is planned in English (`en`) and Russian (`ru`), using the framework’s existing internationalization configuration. Each version includes its headings, body, navigation, actions, tooltips, messages, accessibility labels and metadata in that language. Use the same semantic content keys for both versions; keep names such as SinglePageStartup, Code Framework, AI Chat, Claude Code and Codex Desktop unchanged. The first action is **Describe my idea** in English and **Описать мою идею** in Russian. The current Product landing preview uses the authored English source.
+The current Product landing preview uses Russian for content review, including navigation, examples, instructions, image descriptions and accessibility labels. The English version follows that review. The planned website supports English (`en`) and Russian (`ru`) through the framework's internationalization configuration. Keep the same semantic content keys and product names in both versions: SinglePageStartup, Code Framework, AI Chat, Claude Code and Codex Desktop.
 
 The Framework route is `/framework`; AI Chat uses `/`. Canonical URLs include the selected public domain and locale when published. Blog and category titles name their subject and SinglePageStartup; each article supplies its own description and cover for Open Graph. Token metadata describes hosted AI Chat usage and never calls Code Framework a paid subscription.
 
