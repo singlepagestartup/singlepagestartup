@@ -7,6 +7,7 @@ interface IWebsiteAsset {
 interface ILandingArtwork {
   hero: IWebsiteAsset;
   modules: IWebsiteAsset[];
+  articles: Record<string, IWebsiteAsset>;
 }
 
 export interface IWebsiteItem {
@@ -75,6 +76,16 @@ export const landingArtwork: ILandingArtwork = {
         : `${acquisition}/${key}.png`,
     alt: "",
   })),
+  articles: Object.fromEntries(
+    ["social", "billing", "knowledge"].map((key) => [
+      key,
+      {
+        id: `singlepage-generated-framework-article-covers-dark-v1-${key}`,
+        src: `/workspace-assets/singlepage/generated/framework-article-covers-dark-v1/${key}.png`,
+        alt: "",
+      },
+    ]),
+  ),
 };
 
 /** Asset choices only. All visible page copy is authored in page.md. */

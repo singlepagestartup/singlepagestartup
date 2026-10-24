@@ -104,7 +104,7 @@ function RepositoryLink({
     >
       <Icon name="github-logo" size={20} />
       {content.labels["repository-action"]}
-      <Icon name="arrow-up-right" size={20} />
+      {!quiet && <Icon name="arrow-up-right" size={20} />}
       <span className="sr-only">({content.labels["external-link-hint"]})</span>
     </a>
   );
@@ -373,20 +373,9 @@ export default function CodeFrameworkLanding({
                   key={item.title}
                   className="min-w-0 border-t border-white/20 pt-5"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-4xl font-medium text-[var(--workspace-brand-accent)]">
-                      0{index + 1}
-                    </span>
-                    <Icon
-                      name={
-                        index === 0
-                          ? "chat-circle"
-                          : index === 1
-                            ? "file-text"
-                            : "code"
-                      }
-                    />
-                  </div>
+                  <span className="text-4xl font-medium text-[var(--workspace-brand-accent)]">
+                    0{index + 1}
+                  </span>
                   <h3 className="mt-5 text-lg font-semibold">{item.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)]">
                     {item.text}
@@ -564,20 +553,12 @@ export default function CodeFrameworkLanding({
                   className={`group flex min-w-0 flex-col rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-5 ${focus}`}
                 >
                   <img
-                    src={
-                      landingArtwork.modules[
-                        module.id === "social"
-                          ? 1
-                          : module.id === "billing"
-                            ? 5
-                            : 3
-                      ].src
-                    }
+                    src={landingArtwork.articles[module.id].src}
                     alt=""
                     width={1254}
                     height={1254}
                     loading="lazy"
-                    className="mb-4 aspect-[2/1] w-full object-contain"
+                    className="mb-4 aspect-[4/3] w-full rounded-xl bg-[var(--workspace-brand-primary)] object-contain"
                   />
                   <span className="text-xs text-[var(--workspace-brand-muted)]">
                     {String(index + 1).padStart(2, "0")} / {module.name}
@@ -642,19 +623,26 @@ export default function CodeFrameworkLanding({
               {content.questions.items.map((item) => (
                 <details
                   key={item.title}
-                  className="group border-b border-[var(--workspace-brand-line)] py-4"
+                  className="group mb-3 rounded-2xl border border-[var(--workspace-brand-line)] bg-white open:border-[#a4bd7c] open:bg-[#eff4e6]"
                 >
                   <summary
-                    className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 rounded-md text-sm font-medium ${focus}`}
+                    className={`flex min-h-[76px] cursor-pointer list-none items-center justify-between gap-4 rounded-2xl p-4 text-sm font-semibold leading-6 hover:bg-[#eff4e6] [&::-webkit-details-marker]:hidden ${focus}`}
                   >
-                    {item.title}
-                    <Icon
-                      name="caret-down"
-                      size={20}
-                      className="shrink-0 transition-transform group-open:rotate-180"
-                    />
+                    <span>{item.title}</span>
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-primary)] group-open:bg-[var(--workspace-brand-primary)] group-open:text-[var(--workspace-brand-accent)]">
+                      <Icon
+                        name="plus"
+                        size={20}
+                        className="group-open:hidden"
+                      />
+                      <Icon
+                        name="minus"
+                        size={20}
+                        className="hidden group-open:block"
+                      />
+                    </span>
                   </summary>
-                  <p className={`pb-2 pt-3 text-sm leading-7 ${muted}`}>
+                  <p className={`px-4 pb-5 text-sm leading-7 ${muted}`}>
                     {item.text}
                   </p>
                 </details>

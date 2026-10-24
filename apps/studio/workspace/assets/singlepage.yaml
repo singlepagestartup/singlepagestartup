@@ -6750,3 +6750,60 @@ assets:
     source_or_tool: "Built-in image_gen. Already-square original reused unchanged."
     reference_asset_ids:
       ["singlepage-generated-framework-acquisition-v2-knowledge"]
+
+  - id: "singlepage-generated-framework-article-covers-dark-v1-social"
+    path: "assets/singlepage/generated/framework-article-covers-dark-v1/social.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-article-covers-dark-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Dark module-guide cover: social"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      ["Do not present conceptual illustrations as real product evidence."]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "c802fbe951e75e9cd6b5338cc5d0b1c7e423301144837b9c5dde975c68128479"
+    prompt: "Use case: style-transfer. Asset type: SinglePageStartup article cover. Input image is the edit target. Change ONLY its color treatment into a clean high-contrast dark illustration: uniform deep graphite #18232a background and graphite object surfaces, crisp white and cool light gray linework, vivid lime #BFEF61 accents. Preserve all objects, their exact geometry, perspective, relationships, relative scale, placements, dotted connections and generous margins. Keep the existing square canvas and complete composition, without cropping or zooming. Background must be flat and consistent to the very edges, without gradients, vignette, texture or glow. Secondary construction lines may be muted gray. All green details stay lime, never invert to magenta. No text, no labels, no logos, no new objects. Minimal technical isometric line illustration, legible as a small editorial cover."
+    source_or_tool: "Built-in image_gen. Color edit of an existing square asset; original retained unchanged."
+    reference_asset_ids:
+      ["singlepage-generated-framework-acquisition-v2-social"]
+
+  - id: "singlepage-generated-framework-article-covers-dark-v1-billing"
+    path: "assets/singlepage/generated/framework-article-covers-dark-v1/billing.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-article-covers-dark-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Dark module-guide cover: billing"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      ["Do not present conceptual illustrations as real product evidence."]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "da200c05d607a260fd47168d70004bdf32890e09dab8c16b6a2ac8a95cb0aa7b"
+    prompt: "Use case: style-transfer. Asset type: SinglePageStartup article cover. Input image is the edit target. Change ONLY its color treatment into a clean high-contrast dark illustration: uniform deep graphite #18232a background and graphite object surfaces, crisp white and cool light gray linework, vivid lime #BFEF61 accents. Preserve all objects, their exact geometry, perspective, relationships, relative scale, placements, dotted connections and generous margins. Keep the existing square canvas and complete composition, without cropping or zooming. Background must be flat and consistent to the very edges, without gradients, vignette, texture or glow. Secondary construction lines may be muted gray. All green details stay lime, never invert to magenta. No text, no labels, no logos, no new objects. Minimal technical isometric line illustration, legible as a small editorial cover."
+    source_or_tool: "Built-in image_gen. Color edit of an existing square asset; original retained unchanged."
+    reference_asset_ids:
+      ["singlepage-generated-framework-acquisition-v2-billing"]
+
+  - id: "singlepage-generated-framework-article-covers-dark-v1-knowledge"
+    path: "assets/singlepage/generated/framework-article-covers-dark-v1/knowledge.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-article-covers-dark-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Dark module-guide cover: knowledge"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      ["Do not present conceptual illustrations as real product evidence."]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "8796b2c378f4a3b3347657f855ab3c03c03901e6cda0a061451d407e9c801c8b"
+    prompt: "Use case: style-transfer. Asset type: SinglePageStartup article cover. Input image is the edit target. Change ONLY its color treatment into a clean high-contrast dark illustration: uniform deep graphite #18232a background and graphite object surfaces, crisp white and cool light gray linework, vivid lime #BFEF61 accents. Preserve all objects, their exact geometry, perspective, relationships, relative scale, placements, dotted connections and generous margins. Keep the existing square canvas and complete composition, without cropping or zooming. Background must be flat and consistent to the very edges, without gradients, vignette, texture or glow. Secondary construction lines may be muted gray. All green details stay lime, never invert to magenta. No text, no labels, no logos, no new objects. Minimal technical isometric line illustration, legible as a small editorial cover."
+    source_or_tool: "Built-in image_gen. Color edit of an existing square asset; original retained unchanged."
+    reference_asset_ids:
+      ["singlepage-generated-framework-webinar-v1-knowledge-ai"]

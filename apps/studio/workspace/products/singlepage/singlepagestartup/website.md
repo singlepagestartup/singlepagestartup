@@ -172,7 +172,7 @@ Offer selection shows the chosen amount, currency, interval where applicable and
 
 Apply the Living Focus identity: Onest headings and body copy, white and cool gray surfaces, graphite text and panels, and lime actions. The hero illustration shows a website assembled from reusable account, shop and article features. Each capability has its own graphite-and-lime infographic. Article photography remains editorial.
 
-The nine acquisition illustrations are registered under `framework-acquisition-v2`. Their native square originals are also the square deliveries; preserve the files and show the full composition on white. Apply native bitmap colors without CSS recoloring or background masks. Article cards use landscape frames for their existing covers. Narrow screens stack content and allow buttons to wrap. Navigation, selectors, copy feedback and FAQ disclosures remain accessible by keyboard.
+The nine acquisition illustrations are registered under `framework-acquisition-v2`. Their native square originals are also the square deliveries; preserve the files and show the full composition on white. Apply native bitmap colors without CSS recoloring or background masks. The three module-guide cards use separate `framework-article-covers-dark-v1` edits: graphite backgrounds, white linework and lime accents in 4:3 frames. Their complete square compositions remain visible, and the capability grid keeps its light images. Narrow screens stack content and allow buttons to wrap. Navigation, selectors, copy feedback and FAQ disclosures remain accessible by keyboard.
 
 Vary the section structure: a short illustrated hero; a graphite panel with four selectable mobile apps; an illustrated capability grid; a dark three-step sequence; an asymmetric request example; compact article cards; and a centered lime registration panel. Keep detailed answers and the technical request in disclosures. Main actions lead to the AI Chat registration preview.
 
@@ -200,7 +200,7 @@ confirmation metadata is not renewed by this scoped revision. -->
 
 ### Registration and project preparation
 
-The Russian landing uses a consistent **Создать продукт** action to open registration. It explains the next steps: work with the AI assistant on Brief, Strategy, Brand, Design and Product documents, review them, then use a coding application to build, check and publish. “Три шага до запуска вашего проекта” describes the sequence; it does not promise a one-hour deployment. Saved knowledge is shown as documents attached to a new request through an explicit `@knowledge` mention, consistent with the Social and Knowledge README contracts. This is a proposed acquisition journey, not a claim that the landing itself deploys a project.
+The Russian landing uses **Создать продукт** in the hero and navigation, **Зарегистрироваться** in the first journey step and **Начать** in the final lime panel. Each opens the same registration destination. It explains the next steps: work with the AI assistant on Brief, Strategy, Brand, Design and Product documents, review them, then use a coding application to build, check and publish. “Три шага до запуска вашего проекта” describes the sequence; it does not promise a one-hour deployment. Saved knowledge is shown as documents attached to a new request through an explicit `@knowledge` mention, consistent with the Social and Knowledge README contracts. This is a proposed acquisition journey, not a claim that the landing itself deploys a project.
 
 ### Example identities and icons
 
@@ -210,9 +210,11 @@ The dark example block includes its introduction. Only the selected example reve
 
 ### Document explanations and next actions
 
-The five project documents have click-to-open explanations in both the preparation step and the saved-knowledge card. Each explanation names its purpose and gives a concrete example. Native disclosures work with touch and keyboard and expose their expanded state. Both groups use full-width rows before and after expansion. The first journey step has a full-width registration button; the third offers a quiet text link to the public repository. The section is titled **Три шага до запуска вашего проекта** and retains the stated review, coding and publication tasks.
+The five project documents have click-to-open explanations in both the preparation step and the saved-knowledge card. Each explanation names its purpose and gives a concrete example. Native disclosures work with touch and keyboard and expose their expanded state. Both groups use full-width rows before and after expansion. Journey numbers have no accompanying decorative icons. The first step has a full-width registration button; the third, **Опубликуйте**, offers a quiet GitHub text link with its logo and no trailing arrow. The section is titled **Три шага до запуска вашего проекта** and retains the stated review, coding and publication tasks.
 
 The open-code paragraph explains ownership, continued development and applying framework updates and bug fixes. The FAQ retains accurate cost information for visitors who ask what is free; no hosting price, free hosted service or automatic deployment is promised.
+
+FAQ questions appear in rounded white cards with a lime circular plus control. Opening a card reveals the answer, tints the card pale green and changes the Phosphor plus glyph to minus; the full summary is clickable and retains visible keyboard focus. The footer describes SPS as an AI assistant and open framework for entrepreneurs and small teams, helping them create and develop digital products.
 
 ### Webinar example and benefit-led section labels
 
