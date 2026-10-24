@@ -1,6 +1,17 @@
 import type { IExampleArticle, IExampleCourse } from "./interface";
 import { blogCover } from "../Blog/content";
 
+/** Generated concept assets for the fictional webinar example. */
+export const webinarArtwork = Object.fromEntries(
+  ["idea", "build", "launch", "mentor"].map((key) => [
+    key,
+    {
+      src: `/workspace-assets/singlepage/generated/framework-webinar-v1/${key}.png`,
+      id: `singlepage-generated-framework-webinar-v1-${key}`,
+    },
+  ]),
+);
+
 /** Illustrative course records, not the runtime catalogue or AI Chat tariffs. */
 export function exampleCourses(
   labels: Record<string, string>,

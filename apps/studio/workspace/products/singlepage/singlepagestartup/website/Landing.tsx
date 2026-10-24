@@ -64,7 +64,7 @@ function DocumentInfo({
   const label = content.labels;
   return (
     <details
-      className={`group min-w-0 rounded-xl ${compact ? "bg-[#eff4e6] open:w-full" : "bg-white/5"}`}
+      className={`group w-full min-w-0 rounded-xl ${compact ? "bg-[#eff4e6]" : "bg-white/5"}`}
     >
       <summary
         className={`flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 py-2 text-xs [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${compact ? "focus-visible:outline-[#18232a]" : "focus-visible:outline-[var(--workspace-brand-accent)]"}`}
@@ -93,13 +93,14 @@ function DocumentInfo({
 function RepositoryLink({
   content,
   className = "",
-}: IWebsiteCopyProps & { className?: string }) {
+  quiet = false,
+}: IWebsiteCopyProps & { className?: string; quiet?: boolean }) {
   return (
     <a
       href={content.handoff.links[1].href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`${kit.secondary} ${className}`}
+      className={`${quiet ? "inline-flex min-h-11 items-center gap-2 rounded-md text-sm underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-accent)]" : kit.secondary} ${className}`}
     >
       <Icon name="github-logo" size={20} />
       {content.labels["repository-action"]}
@@ -419,7 +420,7 @@ export default function CodeFrameworkLanding({
                     <PreviewLink
                       href={start.href}
                       resolveLink={resolveLink}
-                      className={`${kit.button} mt-5`}
+                      className={`${kit.button} mt-5 w-full`}
                     >
                       {label["journey-register"]}
                       <Icon name="arrow-right" size={20} />
@@ -428,7 +429,8 @@ export default function CodeFrameworkLanding({
                   {index === 2 && (
                     <RepositoryLink
                       content={content}
-                      className="mt-5 text-[var(--workspace-brand-primary)]"
+                      quiet
+                      className="mt-5 text-[var(--workspace-brand-muted-on-primary)] hover:text-white"
                     />
                   )}
                 </li>
@@ -439,15 +441,6 @@ export default function CodeFrameworkLanding({
                 {content.request.title}
               </summary>
               <CopySetupRequest content={content} />
-              <a
-                href={content.handoff.links[1].href}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--workspace-brand-accent)]"
-              >
-                {content.handoff.links[1].text}
-                <Icon name="arrow-up-right" size={20} />
-              </a>
             </details>
           </div>
         </section>
@@ -491,7 +484,7 @@ export default function CodeFrameworkLanding({
                 <h3 className="text-sm font-semibold">
                   {label["context-saved"]}
                 </h3>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 space-y-2">
                   {[
                     "document-one",
                     "document-two",

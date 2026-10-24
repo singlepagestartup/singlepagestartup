@@ -3,6 +3,7 @@ import {
   useRef,
   type ButtonHTMLAttributes,
   type ReactNode,
+  type SelectHTMLAttributes,
 } from "react";
 import { Icon } from "../../../../../design/singlepage/interface-kit/primitives";
 
@@ -24,6 +25,31 @@ interface ITabsProps {
 interface IScreenProps {
   screenKey: string;
   children: ReactNode;
+}
+
+interface ISelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  wrapperClassName?: string;
+}
+
+export function Select({
+  className = "",
+  wrapperClassName = "",
+  ...props
+}: ISelectProps) {
+  return (
+    <div className={`relative min-w-0 ${wrapperClassName}`}>
+      <select
+        {...props}
+        className={`${ui.input} appearance-none pr-10 ${className}`}
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#61717c]"
+      >
+        <Icon name="caret-down" size={20} />
+      </span>
+    </div>
+  );
 }
 
 export function Screen({ screenKey, children }: IScreenProps) {
@@ -162,27 +188,37 @@ export function Back({
 export function CourseArt({
   title,
   compact = false,
-  brand = "courses",
+  subject = "product",
 }: {
   title: string;
   compact?: boolean;
-  brand?: "start" | "courses";
+  subject?: "product" | "chat";
 }) {
   return (
     <div
-      className={`relative flex min-w-0 flex-col justify-between overflow-hidden rounded-2xl ${brand === "start" ? "bg-[#e9e2ff] text-[#39216b]" : "bg-[#ffeadb] text-[#723516]"} ${compact ? "min-h-24 p-4" : "min-h-36 p-5"}`}
+      className={`relative min-w-0 overflow-hidden rounded-2xl ${subject === "chat" ? "bg-[#723516] text-[#ffeadb]" : "bg-[#ffeadb] text-[#723516]"} ${compact ? "p-4" : "p-5"}`}
     >
-      <div className="max-w-28">
-        <BrandMark
-          brand={brand}
-          title={brand === "start" ? "Firstship" : "Lessonloop"}
-        />
-      </div>
-      <p
-        className={`mt-6 max-w-52 font-semibold leading-tight ${compact ? "text-base" : "text-2xl"}`}
+      <div
+        aria-hidden="true"
+        className="relative flex h-24 items-center justify-center"
       >
-        {title}
-      </p>
+        <div className="absolute inset-x-2 top-1/2 border-t border-dashed border-current opacity-25" />
+        <div className="absolute left-3 top-1 size-16 rounded-full border border-current opacity-20" />
+        <div className="relative -rotate-6 rounded-xl border border-current bg-[#fff8f0] p-4 text-[#723516] shadow-sm">
+          <Icon name={subject === "chat" ? "chat-circle" : "code"} size={24} />
+        </div>
+        <div className="relative -ml-2 mt-8 rotate-6 rounded-xl bg-[#cf6634] p-3 text-white">
+          <Icon
+            name={subject === "chat" ? "robot" : "check-circle"}
+            size={24}
+          />
+        </div>
+      </div>
+      {!compact && (
+        <p className="mt-5 max-w-52 text-xl font-semibold leading-tight">
+          {title}
+        </p>
+      )}
     </div>
   );
 }

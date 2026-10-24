@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Icon } from "../../../../../design/singlepage/interface-kit/primitives";
 import type { IExampleProps } from "./interface";
-import { Action, AppHeader, CourseArt, Screen, ui } from "./primitives";
+import { Action, AppHeader, Screen, Select, ui } from "./primitives";
+import { webinarArtwork } from "./content";
 
 export function Contact({ labels: l }: IExampleProps) {
   const [name, setName] = useState("");
@@ -16,14 +17,58 @@ export function Contact({ labels: l }: IExampleProps) {
     <>
       <AppHeader title={l["demo-academy"]} brand="start" />
       <Screen screenKey={submitted ? "complete" : "form"}>
-        <CourseArt title={l["demo-course-one"]} compact brand="start" />
-        <p className="text-[10px] font-medium uppercase tracking-wider text-[#61717c]">
-          {l["demo-course-meta"]}
-        </p>
-        <h3 className="sr-only">{l["demo-contact-title"]}</h3>
+        <div className="overflow-hidden rounded-2xl bg-[#30214d] text-white">
+          <img
+            src={webinarArtwork.launch.src}
+            data-asset-id={webinarArtwork.launch.id}
+            alt=""
+            className="aspect-square w-full object-contain"
+          />
+          <div className="p-4">
+            <p className="text-[9px] font-medium uppercase tracking-wider text-[#cebef2]">
+              {l["demo-course-meta"]}
+            </p>
+            <h3 className="mt-3 text-xl font-semibold leading-tight">
+              {l["demo-contact-title"]}
+            </h3>
+          </div>
+        </div>
         <p className="text-xs leading-5 text-[#61717c]">
           {l["demo-contact-description"]}
         </p>
+        <section
+          aria-label={l["demo-webinar-topics"]}
+          className="@container/topics space-y-2"
+        >
+          <h4 className="mb-3 text-sm font-semibold">
+            {l["demo-webinar-topics"]}
+          </h4>
+          {["idea", "build", "launch"].map((key, index) => (
+            <article
+              key={key}
+              className="flex min-w-0 flex-col items-start gap-3 rounded-2xl border border-[#e5def3] bg-white p-3 @[240px]/topics:flex-row"
+            >
+              <img
+                src={webinarArtwork[key].src}
+                data-asset-id={webinarArtwork[key].id}
+                alt=""
+                loading="lazy"
+                className="aspect-square w-16 shrink-0 rounded-xl object-contain"
+              />
+              <div className="min-w-0">
+                <p className="text-[9px] font-semibold text-[#8467b0]">
+                  0{index + 1}
+                </p>
+                <h5 className="mt-1 text-xs font-semibold leading-4">
+                  {l[`demo-topic-${key}-title`]}
+                </h5>
+                <p className="mt-1 text-[10px] leading-4 text-[#61717c]">
+                  {l[`demo-topic-${key}-text`]}
+                </p>
+              </div>
+            </article>
+          ))}
+        </section>
         {submitted ? (
           <div
             role="status"
@@ -76,15 +121,14 @@ export function Contact({ labels: l }: IExampleProps) {
               <label htmlFor="sps-demo-study-format" className="block">
                 {l["demo-format"]}
               </label>
-              <select
+              <Select
                 id="sps-demo-study-format"
                 value={format}
                 onChange={(e) => setFormat(e.target.value)}
-                className={ui.input}
               >
                 <option value="self">{l["demo-format-self"]}</option>
                 <option value="mentor">{l["demo-format-mentor"]}</option>
-              </select>
+              </Select>
             </div>
             <Action type="submit" className="w-full">
               {l["demo-contact-submit"]}
@@ -95,23 +139,33 @@ export function Contact({ labels: l }: IExampleProps) {
             </p>
           </form>
         )}
-        <details className={ui.card}>
-          <summary
-            className={`cursor-pointer text-xs font-semibold ${ui.focus}`}
-          >
-            {l["demo-program"]}
-          </summary>
-          <ol className="mt-3 space-y-3 text-xs leading-5 text-[#61717c]">
-            {["idea", "build", "launch"].map((key, index) => (
-              <li key={key}>
-                <span className="mr-2 font-semibold text-[#18232a]">
-                  0{index + 1}
-                </span>
-                {l[`demo-program-${key}`]}
-              </li>
-            ))}
-          </ol>
-        </details>
+        <section
+          aria-label={l["demo-mentor-heading"]}
+          className="overflow-hidden rounded-2xl border border-[#e5def3] bg-white"
+        >
+          <img
+            src={webinarArtwork.mentor.src}
+            data-asset-id={webinarArtwork.mentor.id}
+            alt={l["demo-mentor-alt"]}
+            loading="lazy"
+            className="aspect-square w-full object-contain"
+          />
+          <div className="space-y-2 p-4">
+            <p className="text-[9px] font-medium uppercase tracking-wider text-[#8467b0]">
+              {l["demo-mentor-heading"]}
+            </p>
+            <h4 className="text-base font-semibold">{l["demo-mentor-name"]}</h4>
+            <p className="text-xs font-medium text-[#5a3f83]">
+              {l["demo-mentor-role"]}
+            </p>
+            <p className="text-xs leading-5 text-[#61717c]">
+              {l["demo-mentor-description"]}
+            </p>
+            <p className="text-[9px] leading-4 text-[#61717c]">
+              {l["demo-mentor-note"]}
+            </p>
+          </div>
+        </section>
       </Screen>
     </>
   );

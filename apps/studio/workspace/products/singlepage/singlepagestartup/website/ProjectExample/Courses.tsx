@@ -2,7 +2,15 @@ import { memo, useCallback, useMemo, useState, type FormEvent } from "react";
 import { Icon } from "../../../../../design/singlepage/interface-kit/primitives";
 import type { IExampleProps, IExampleCourse } from "./interface";
 import { exampleCourses, examplePrice } from "./content";
-import { Action, AppHeader, Back, CourseArt, Screen, ui } from "./primitives";
+import {
+  Action,
+  AppHeader,
+  Back,
+  CourseArt,
+  Screen,
+  Select,
+  ui,
+} from "./primitives";
 
 interface IExampleReceipt {
   items: IExampleCourse[];
@@ -38,7 +46,11 @@ const CourseCard = memo(function CourseCard({
         onClick={() => onOpen(course.id)}
         className={`block w-full p-3 text-left ${ui.focus}`}
       >
-        <CourseArt title={course.title} compact />
+        <CourseArt
+          title={course.title}
+          compact
+          subject={course.id === "ai-chat" ? "chat" : "product"}
+        />
         <p className="mt-3 text-[10px] text-[#61717c]">{course.lessons}</p>
         <h4 className="mt-2 text-sm font-semibold leading-5">{course.title}</h4>
         <p className="mt-2 text-xs leading-5 text-[#61717c]">
@@ -111,18 +123,18 @@ export function Courses({ labels: l }: IExampleProps) {
         {view === "catalog" || view === "detail" || view === "cart" ? (
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#61717c]">
             <label htmlFor="sps-demo-currency">{l["demo-currency"]}</label>
-            <select
+            <Select
               id="sps-demo-currency"
               value={currency}
               onChange={(e) => {
                 setCurrency(e.target.value as "RUB" | "USD");
                 setPayment("card");
               }}
-              className="min-h-10 rounded-xl border border-[#dce3e6] bg-white px-3 text-xs text-[#18232a]"
+              wrapperClassName="w-28"
             >
               <option value="RUB">₽ RUB</option>
               <option value="USD">$ USD</option>
-            </select>
+            </Select>
           </div>
         ) : null}
         {view === "catalog" ? (
@@ -150,7 +162,11 @@ export function Courses({ labels: l }: IExampleProps) {
         {view === "detail" ? (
           <>
             <Back onClick={() => setView("catalog")}>{l["demo-catalog"]}</Back>
-            <CourseArt title={course.title} />
+            <CourseArt
+              title={course.title}
+              compact
+              subject={course.id === "ai-chat" ? "chat" : "product"}
+            />
             <h3 className="text-xl font-semibold leading-tight">
               {course.title}
             </h3>

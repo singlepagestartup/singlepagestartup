@@ -6569,3 +6569,184 @@ assets:
     content_sha256: "5753166c88287404da06d3a18483eccda781b5d4dbb8bf213d243c9615654495"
     prompt: 'Use case: logo-brand. Generate ONE polished horizontal wordmark logo for fictional concept brand "Signalnote": an editorial magazine about artificial intelligence. Elegant deep-blue custom serif/sans hybrid lettering, subtle annotation/signal stroke integrated into the word, sophisticated magazine masthead. Exact text only: "Signalnote". Transparent background with genuine alpha. Composition wide 5:1, lettering large, tightly framed with modest 5% clear margin. Logo must remain legible at 140 pixels wide. Bespoke professional typography and a distinctive detail within the lettering. No square badge, no separate icon tile on the left, no mockup, no paper texture, no gradients, no shadows, no tagline, no additional text. Flat sharp clean edges, dark lettering suitable on white. Final asset for a mobile website header.'
     source_or_tool: "Built-in image_gen; original transparent horizontal output copied unchanged. No external reference image supplied; separate new identity requested by operator."
+
+  - id: "singlepage-generated-framework-webinar-v1-idea-master"
+    path: "assets/singlepage/generated/framework-webinar-v1/idea-master.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Original free-aspect master: idea"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1536, "height": 1024 }
+    content_sha256: "f0cff10611ceee57153e46931e369d54ce06efb4389b4c0116c17e663a815b7c"
+    prompt: "Use case: infographic-diagram. Asset: illustrated lesson topic for fictional Firstship webinar. Create a refined tactile 3D editorial miniature, matte lavender and deep violet, warm white background, soft natural shadow, simple legible forms, restrained tiny lime accent. No readable text, no logo, no people, no watermark. Natural free composition and aspect ratio; keep the complete scene and generous breathing room. Subject: a single blank idea card with a violet lightbulb connected to two smaller audience and goal cards, like a tiny product-planning tabletop. Visually explain turning an idea into a clear brief."
+    source_or_tool: "Built-in image_gen. Original retained unchanged."
+
+  - id: "singlepage-generated-framework-webinar-v1-idea"
+    path: "assets/singlepage/generated/framework-webinar-v1/idea.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Square delivery: idea"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "9b14dbff5beb8550c3eab077bf551acfd32d101b344ec7345e56544c886917b4"
+    prompt: "Use case: precise-object-edit. Prepare a square delivery of the attached original by OUTPAINTING ONLY the shorter canvas dimension. Preserve the complete original composition, all subjects, their proportions, colors and details; do not crop, zoom or stretch. Expand above and below with the same warm white backdrop and continuation of the ground plane; keep all original objects unchanged and fully visible. Deliver a 1536 by 1536 pixel square image. No new objects, logos or text."
+    source_or_tool: "Built-in image_gen. Shorter canvas dimension expanded to square; complete source composition preserved. Delivered native 1254 x 1254 despite the requested 1536 x 1536."
+    reference_asset_ids:
+      ["singlepage-generated-framework-webinar-v1-idea-master"]
+
+  - id: "singlepage-generated-framework-webinar-v1-build-master"
+    path: "assets/singlepage/generated/framework-webinar-v1/build-master.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Original free-aspect master: build"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1536, "height": 1024 }
+    content_sha256: "948aff536a4211c27232fb9b2ddc33aa56f4130da6af04f4e3bef9844e0b8678"
+    prompt: "Use case: infographic-diagram. Asset: illustrated lesson topic for fictional Firstship webinar. Create a refined tactile 3D editorial miniature, matte lavender and deep violet, warm white background, soft natural shadow, simple legible forms, restrained tiny lime accent. No readable text, no logo, no people, no watermark. Natural free composition and aspect ratio; keep the complete scene and generous breathing room. Subject: a small browser window assembled from three plug-in blocks: user profile silhouette, chat bubble, payment card. Show the blocks fitting together into one coherent product. Precise and friendly, clearly visible at thumbnail size."
+    source_or_tool: "Built-in image_gen. Original retained unchanged."
+
+  - id: "singlepage-generated-framework-webinar-v1-build"
+    path: "assets/singlepage/generated/framework-webinar-v1/build.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Square delivery: build"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "7f45863f58daf6f24ef5788c69fe0f49c2b92810cb90acd7e41c9ad34212f6ae"
+    prompt: "Use case: precise-object-edit. Prepare a square delivery of the attached original by OUTPAINTING ONLY the shorter canvas dimension. Preserve the complete original composition, all subjects, their proportions, colors and details; do not crop, zoom or stretch. Expand above and below with the same warm white backdrop and continuation of the ground plane; keep all original objects unchanged and fully visible. Deliver a 1536 by 1536 pixel square image. No new objects, logos or text."
+    source_or_tool: "Built-in image_gen. Shorter canvas dimension expanded to square; complete source composition preserved. Delivered native 1254 x 1254 despite the requested 1536 x 1536."
+    reference_asset_ids:
+      ["singlepage-generated-framework-webinar-v1-build-master"]
+
+  - id: "singlepage-generated-framework-webinar-v1-launch-master"
+    path: "assets/singlepage/generated/framework-webinar-v1/launch-master.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Original free-aspect master: launch"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1536, "height": 1024 }
+    content_sha256: "4aa81214c34df69421207b2842f93864ad86b40ea56287617982ea05ae4d36ad"
+    prompt: "Use case: infographic-diagram. Asset: illustrated lesson topic for fictional Firstship webinar. Create a refined tactile 3D editorial miniature, matte lavender and deep violet, warm white background, soft natural shadow, simple legible forms, restrained tiny lime accent. No readable text, no logo, no people, no watermark. Natural free composition and aspect ratio; keep the complete scene and generous breathing room. Subject: a small website window sitting on a launch platform, a lavender paper rocket lifting off beside it, and one green checkmark. Explain checking and publishing a first product. Beautiful simple still-life."
+    source_or_tool: "Built-in image_gen. Original retained unchanged."
+
+  - id: "singlepage-generated-framework-webinar-v1-launch"
+    path: "assets/singlepage/generated/framework-webinar-v1/launch.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Square delivery: launch"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "cd8e45c955ebfcdfd54ffb1c0116b0af9153fa5caf43481493a4321e0f3abf85"
+    prompt: "Use case: precise-object-edit. Prepare a square delivery of the attached original by OUTPAINTING ONLY the shorter canvas dimension. Preserve the complete original composition, all subjects, their proportions, colors and details; do not crop, zoom or stretch. Expand above and below with the same warm white backdrop and continuation of the ground plane; keep all original objects unchanged and fully visible. Deliver a 1536 by 1536 pixel square image. No new objects, logos or text."
+    source_or_tool: "Built-in image_gen. Shorter canvas dimension expanded to square; complete source composition preserved. Delivered native 1254 x 1254 despite the requested 1536 x 1536."
+    reference_asset_ids:
+      ["singlepage-generated-framework-webinar-v1-launch-master"]
+
+  - id: "singlepage-generated-framework-webinar-v1-mentor-master"
+    path: "assets/singlepage/generated/framework-webinar-v1/mentor-master.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated fictional portrait; no real instructor reference or evidence of credentials."
+    purpose: "Original free-aspect master: mentor"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1145, "height": 1374 }
+    content_sha256: "e726a1a4fdc03da3dcd2dedb5097fa1c4d1bafdb543f973e601aa3db9699a1f8"
+    prompt: "Use case: photorealistic-natural. Asset: portrait of a fictional male programming webinar instructor for the fictional Firstship school. Invent a person, no real-person reference. An approachable experienced software developer around 38, short dark curly hair, neatly trimmed beard, casual dark-violet overshirt over white T-shirt, seated at a tidy desk with a laptop in a daylight studio, pale lavender background. Candid editorial portrait, natural skin texture and realistic anatomy, relaxed slight smile, eye contact with camera. Head and torso fully framed, natural free aspect ratio, no text, logos or watermark."
+    source_or_tool: "Built-in image_gen. Original retained unchanged."
+
+  - id: "singlepage-generated-framework-webinar-v1-mentor"
+    path: "assets/singlepage/generated/framework-webinar-v1/mentor.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated fictional portrait; no real instructor reference or evidence of credentials."
+    purpose: "Square delivery: mentor"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "db87a1f32623634fd8dfeb840682c2807b312a17f34acd7221319b56282a5459"
+    prompt: "Use case: precise-object-edit. Prepare a square delivery of the attached original by OUTPAINTING ONLY the shorter canvas dimension. Preserve the complete original composition, all subjects, their proportions, colors and details; do not crop, zoom or stretch. Extend the studio background horizontally on both sides; keep the entire head, torso, hands, laptop and existing desk. Preserve this exact fictional person's face and natural anatomy. Deliver a 1536 by 1536 pixel square image. No new objects, logos or text."
+    source_or_tool: "Built-in image_gen. Shorter canvas dimension expanded to square; complete source composition preserved. Delivered native 1254 x 1254 despite the requested 1536 x 1536."
+    reference_asset_ids:
+      ["singlepage-generated-framework-webinar-v1-mentor-master"]
+
+  - id: "singlepage-generated-framework-webinar-v1-knowledge-ai"
+    path: "assets/singlepage/generated/framework-webinar-v1/knowledge-ai.png"
+    source_type: "generated"
+    lifecycle: "proposed"
+    proposal_id: "framework-webinar-v1"
+    evidence: false
+    rights_status: "AI-generated conceptual illustration for Product Storybook."
+    purpose: "Square delivery: knowledge-ai"
+    related_artifacts: ["singlepage.products"]
+    allowed_use: ["Storybook Product landing review."]
+    prohibited_use:
+      [
+        "Do not present fictional people, course offers or interface concepts as verified real-world evidence.",
+      ]
+    dimensions: { "width": 1254, "height": 1254 }
+    content_sha256: "98d6c09bea8430acd2ee9b60a7be67316210086bb7c5d38e6855b51ec9bc259d"
+    prompt: "Use case: infographic-diagram. Asset: Code Framework capability illustration, knowledge base FOR an AI assistant. Use the attached image only as line-art STYLE reference. Replace the subject with a small friendly robot head / AI processing chip connected by fine dotted lines to three source documents in an open archive; one document excerpt travels into a small answer bubble beside the robot. This must clearly show an AI finding information in documents, no human and no handheld magnifying glass. Airy isometric line art, fine graphite contours, cool light-gray construction lines, pure white background and object faces, a few lime #BFEF61 accents. Flat unshaded open forms, compact coherent scene, entire objects visible, no readable text or watermark. Free natural proportions."
+    source_or_tool: "Built-in image_gen. Already-square original reused unchanged."
+    reference_asset_ids:
+      ["singlepage-generated-framework-acquisition-v2-knowledge"]

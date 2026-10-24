@@ -259,6 +259,14 @@ export function Journal({ labels: l }: IExampleProps) {
               <p className="mt-3 text-[10px] leading-4 text-[#b8d3fb]">
                 {l["demo-journal-feature"]}
               </p>
+              <div className="mt-4 flex flex-wrap gap-2 border-t border-white/20 pt-3 text-[9px] uppercase tracking-wider text-[#d7e7ff]">
+                <span className="rounded-full border border-white/25 px-2 py-1">
+                  {l["demo-category-agents"]}
+                </span>
+                <span className="rounded-full border border-white/25 px-2 py-1">
+                  {l["demo-category-practice"]}
+                </span>
+              </div>
             </div>
             <label className="block">
               <span className="sr-only">{l["demo-search"]}</span>

@@ -65,8 +65,14 @@ export const landingArtwork: ILandingArtwork = {
     "pages",
     "forms",
   ].map((key) => ({
-    id: `singlepage-generated-framework-acquisition-v2-${key}`,
-    src: `${acquisition}/${key}.png`,
+    id:
+      key === "knowledge"
+        ? "singlepage-generated-framework-webinar-v1-knowledge-ai"
+        : `singlepage-generated-framework-acquisition-v2-${key}`,
+    src:
+      key === "knowledge"
+        ? "/workspace-assets/singlepage/generated/framework-webinar-v1/knowledge-ai.png"
+        : `${acquisition}/${key}.png`,
     alt: "",
   })),
 };

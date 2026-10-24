@@ -247,10 +247,24 @@ export function Community({ labels: l }: IExampleProps) {
           </form>
         ) : (
           <>
-            <div className="rounded-2xl bg-[#18232a] p-4 text-white">
-              <span className="text-[10px] text-[#bfef61]">
+            <div className="overflow-hidden rounded-2xl bg-[#163f34] p-4 text-white">
+              <span className="text-[9px] uppercase tracking-wider text-[#a8e6c4]">
                 {l["demo-community-kicker"]}
               </span>
+              <div
+                aria-hidden="true"
+                className="relative my-5 flex min-h-24 items-center justify-center border-y border-white/15 py-4"
+              >
+                <div className="-rotate-12 rounded-xl border border-[#a8e6c4] bg-[#235d4b] p-3 text-[#b4f0d2]">
+                  <Icon name="code" size={24} />
+                </div>
+                <div className="z-10 -mx-2 -mt-3 rounded-xl bg-[#d5f58c] p-4 text-[#163f34]">
+                  <Icon name="users" size={24} />
+                </div>
+                <div className="rotate-12 rounded-xl border border-[#a8e6c4] bg-[#235d4b] p-3 text-[#b4f0d2]">
+                  <Icon name="chat-circle" size={24} />
+                </div>
+              </div>
               <h3 className="mt-3 text-xl font-semibold leading-tight">
                 {l["demo-community-title"]}
               </h3>
