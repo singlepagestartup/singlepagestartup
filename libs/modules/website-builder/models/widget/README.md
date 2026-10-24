@@ -87,8 +87,10 @@ Supplementary Feature records render only when linked. Notes belong in the
 saved rich description. These presentation variants read their saved record
 through the standard Widget SDK template; associations are scoped by Widget ID,
 sorted by order and association ID, and rendered through their default renderer.
-They contain no Framework route dispatch or domain operations. Domain consumers
-can supply rendered `children` without adding another entity read.
+They contain no Framework route dispatch or domain operations. Saved Feature
+associations render independently of the `children` slot. Domain consumers can
+append rendered content without replacing the Widget's own Features, including
+when an opaque child component eventually renders nothing.
 
 ### Icons
 

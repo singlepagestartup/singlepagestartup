@@ -29,6 +29,7 @@ export function Component(props: IExternalWidgetProps) {
               isServer={props.isServer}
               data={entity}
               variant={entity.variant as any}
+              dataSource="props"
               language={props.language}
               {...(entity.variant === "navbar-ai-chat"
                 ? { helpSelected: props.url === "/ai-chat/help" }

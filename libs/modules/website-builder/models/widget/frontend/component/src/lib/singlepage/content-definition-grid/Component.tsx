@@ -89,38 +89,37 @@ export function Presentation({
           data.className,
         )}
       >
-        {children ?? (
-          <WidgetsToFeatures
-            isServer={isServer}
-            variant="find"
-            apiProps={{
-              params: {
-                filters: {
-                  and: [{ column: "widgetId", method: "eq", value: data.id }],
-                },
+        <WidgetsToFeatures
+          isServer={isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [{ column: "widgetId", method: "eq", value: data.id }],
               },
-            }}
-          >
-            {({ data: links }) =>
-              links
-                ?.toSorted(
-                  (a, b) =>
-                    a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
-                )
-                .map((link) => (
-                  <WidgetsToFeatures
-                    key={link.id}
-                    isServer={isServer}
-                    variant="default"
-                    dataSource="props"
-                    data={link}
-                    language={language}
-                    className="h-full min-w-0"
-                  />
-                ))
-            }
-          </WidgetsToFeatures>
-        )}
+            },
+          }}
+        >
+          {({ data: links }) =>
+            links
+              ?.toSorted(
+                (a, b) =>
+                  a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
+              )
+              .map((link) => (
+                <WidgetsToFeatures
+                  key={link.id}
+                  isServer={isServer}
+                  variant="default"
+                  dataSource="props"
+                  data={link}
+                  language={language}
+                  className="h-full min-w-0"
+                />
+              ))
+          }
+        </WidgetsToFeatures>
+        {children}
       </div>
     </section>
   );

@@ -80,43 +80,42 @@ export function Component(props: IComponentPropsExtended) {
             {questionsTitle}
           </h2>
           <div className="min-w-0 rounded-2xl border border-border bg-card p-2">
-            {props.children ?? (
-              <WidgetsToFeatures
-                isServer={props.isServer}
-                variant="find"
-                apiProps={{
-                  params: {
-                    filters: {
-                      and: [
-                        {
-                          column: "widgetId",
-                          method: "eq",
-                          value: props.data.id,
-                        },
-                      ],
-                    },
+            <WidgetsToFeatures
+              isServer={props.isServer}
+              variant="find"
+              apiProps={{
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "widgetId",
+                        method: "eq",
+                        value: props.data.id,
+                      },
+                    ],
                   },
-                }}
-              >
-                {({ data: links }) =>
-                  links
-                    ?.toSorted(
-                      (a, b) =>
-                        a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
-                    )
-                    .map((link) => (
-                      <WidgetsToFeatures
-                        key={link.id}
-                        isServer={props.isServer}
-                        variant="default"
-                        dataSource="props"
-                        data={link}
-                        language={props.language}
-                      />
-                    ))
-                }
-              </WidgetsToFeatures>
-            )}
+                },
+              }}
+            >
+              {({ data: links }) =>
+                links
+                  ?.toSorted(
+                    (a, b) =>
+                      a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
+                  )
+                  .map((link) => (
+                    <WidgetsToFeatures
+                      key={link.id}
+                      isServer={props.isServer}
+                      variant="default"
+                      dataSource="props"
+                      data={link}
+                      language={props.language}
+                    />
+                  ))
+              }
+            </WidgetsToFeatures>
+            {props.children}
           </div>
         </div>
       </div>

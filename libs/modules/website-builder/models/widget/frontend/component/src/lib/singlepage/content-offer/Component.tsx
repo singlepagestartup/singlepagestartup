@@ -67,41 +67,41 @@ export function Presentation({
             <TipTap value={description} />
           </div>
         ) : null}
-        {children ?? (
-          <WidgetsToFeatures
-            isServer={isServer}
-            variant="find"
-            apiProps={{
-              params: {
-                filters: {
-                  and: [{ column: "widgetId", method: "eq", value: data.id }],
-                },
+
+        <WidgetsToFeatures
+          isServer={isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [{ column: "widgetId", method: "eq", value: data.id }],
               },
-            }}
-          >
-            {({ data: links }) =>
-              links?.length ? (
-                <div className="mt-6">
-                  {links
-                    .toSorted(
-                      (a, b) =>
-                        a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
-                    )
-                    .map((link) => (
-                      <WidgetsToFeatures
-                        key={link.id}
-                        isServer={isServer}
-                        variant="default"
-                        dataSource="props"
-                        data={link}
-                        language={language}
-                      />
-                    ))}
-                </div>
-              ) : null
-            }
-          </WidgetsToFeatures>
-        )}
+            },
+          }}
+        >
+          {({ data: links }) =>
+            links?.length ? (
+              <div className="mt-6">
+                {links
+                  .toSorted(
+                    (a, b) =>
+                      a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
+                  )
+                  .map((link) => (
+                    <WidgetsToFeatures
+                      key={link.id}
+                      isServer={isServer}
+                      variant="default"
+                      dataSource="props"
+                      data={link}
+                      language={language}
+                    />
+                  ))}
+              </div>
+            ) : null
+          }
+        </WidgetsToFeatures>
+        {children}
         <WidgetsToButtonsArrays
           isServer={isServer}
           variant="find"
