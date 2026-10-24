@@ -1,0 +1,30 @@
+{
+  "id": "ecommerce-module-token-find",
+  "title": "Host Page / ecommerce-module-token-find",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Public AI Chat plans and token catalog with one-time registration allowance, monthly Pro and separate token top-ups.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.content-page-header",
+      "path": "../../../../website-builder/widget/singlepage/content-page-header"
+    },
+    {
+      "id": "ecommerce.widget.token-find",
+      "path": "../../../../ecommerce/widget/singlepage/token-find"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "ecommerce-module-token-find",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

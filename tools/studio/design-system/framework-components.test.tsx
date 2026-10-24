@@ -11,6 +11,61 @@ import { Component as BlogCategory } from "../../../apps/studio/modules/blog/cat
 import { Component as Article } from "../../../apps/studio/modules/blog/article";
 import { Skeleton as ProductGridSkeleton } from "../../../apps/studio/modules/ecommerce/widget/singlepage/product-find-card/Skeleton";
 import { Skeleton as CategoryGridSkeleton } from "../../../apps/studio/modules/blog/widget/singlepage/category-find-card/Skeleton";
+import { Component as WebsiteBuilderWidget } from "../../../apps/studio/modules/website-builder/widget";
+import { Component as WebsiteBuilderButtonsArray } from "../../../apps/studio/modules/website-builder/buttons-array";
+import { Component as WebsiteBuilderLogotype } from "../../../apps/studio/modules/website-builder/logotype";
+
+test("site navigation connects Framework and AI Chat through public entries", () => {
+  const nav = renderToStaticMarkup(
+    <WebsiteBuilderButtonsArray
+      variant="navbar-default"
+      activeHref="/framework"
+    />,
+  );
+  expect(nav).toContain("singlepage-framework--default");
+  expect(nav).toContain("singlepage-framework-module-find--default");
+  expect(nav).toContain("singlepage-ai-chat--default");
+  expect(nav).not.toContain('aria-disabled="true"');
+  expect(nav).toContain('aria-current="page"');
+  const logo = renderToStaticMarkup(
+    <WebsiteBuilderLogotype variant="default" />,
+  );
+  expect(logo).toContain("singlepage-framework--default");
+});
+
+test("footer exposes real destinations and preserves supplied link records", () => {
+  const html = renderToStaticMarkup(
+    <WebsiteBuilderWidget variant="footer-default" />,
+  );
+  expect(html).not.toContain('href="#"');
+  for (const label of [
+    "Build",
+    "Prepare",
+    "Learn",
+    "AI Chat",
+    "Modules",
+    "Blog",
+    "MIT License",
+  ])
+    expect(html).toContain(label);
+  const custom = renderToStaticMarkup(
+    <WebsiteBuilderWidget
+      variant="footer-default"
+      columns={[
+        {
+          title: "Owned links",
+          links: [
+            { label: "Owned guide", href: "/owned/guide", target: "_top" },
+          ],
+        },
+      ]}
+      legalLinks={[{ label: "Owned terms", href: "/owned/terms" }]}
+    />,
+  );
+  expect(custom).toContain('href="/owned/guide"');
+  expect(custom).toContain('href="/owned/terms"');
+  expect(custom).not.toContain('href="#"');
+});
 
 test("generic collection projections belong to widgets, not single-record models", () => {
   const lists = globSync(

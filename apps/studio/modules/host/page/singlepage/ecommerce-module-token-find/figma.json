@@ -1,0 +1,27 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "variantName": "ecommerce-module-token-find",
+  "nodeId": null,
+  "variantNodeId": null,
+  "syncStatus": "not-created",
+  "metadataFile": "figma.json",
+  "metadata": {
+    "singlepagestartup.studio.blockId": "host.page.ecommerce-module-token-find",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "host/page/singlepage/ecommerce-module-token-find",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "ecommerce-module-token-find",
+    "sps.code.component": "apps/studio/modules/host/page/singlepage/ecommerce-module-token-find/Component.tsx",
+    "sps.code.story": "apps/studio/modules/host/page/singlepage/ecommerce-module-token-find/Component.stories.tsx",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "ecommerce-module-token-find",
+    "sps.contractVersion": "0.1.0"
+  },
+  "imports": [
+    "website-builder.widget.content-page-header",
+    "ecommerce.widget.token-find"
+  ]
+}

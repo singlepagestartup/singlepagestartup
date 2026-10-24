@@ -1,0 +1,42 @@
+{
+  "id": "framework-module-slug",
+  "title": "Host Page / framework-module-slug",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Module overview or selected guide with README links, composition and AI Chat preparation.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.content-definition-grid-page",
+      "path": "../../../../website-builder/widget/singlepage/content-definition-grid-page"
+    },
+    {
+      "id": "website-builder.widget.content-feature-split",
+      "path": "../../../../website-builder/widget/singlepage/content-feature-split"
+    },
+    {
+      "id": "website-builder.widget.content-offer",
+      "path": "../../../../website-builder/widget/singlepage/content-offer"
+    },
+    {
+      "id": "website-builder.feature.definition-card",
+      "path": "../../../../website-builder/feature/singlepage/definition-card"
+    },
+    {
+      "id": "website-builder.widget.content-offer-card",
+      "path": "../../../../website-builder/widget/singlepage/content-offer-card"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "framework-module-slug",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

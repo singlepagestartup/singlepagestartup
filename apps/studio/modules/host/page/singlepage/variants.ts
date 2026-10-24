@@ -20,8 +20,11 @@ import { Component as Composition } from "./composition/index";
 import { Component as Default } from "./default/index";
 import { Component as EcommerceModuleCategorySlug } from "./ecommerce-module-category-slug/index";
 import { Component as EcommerceModuleProductFind } from "./ecommerce-module-product-find/index";
+import { Component as EcommerceModuleTokenFind } from "./ecommerce-module-token-find/index";
 import { Component as EcommerceModuleProductSlug } from "./ecommerce-module-product-slug/index";
 import { Component as Framework } from "./framework/index";
+import { Component as FrameworkModuleFind } from "./framework-module-find";
+import { Component as FrameworkModuleSlug } from "./framework-module-slug";
 import { Component as Privacy } from "./privacy/index";
 import { Component as RbacModuleSubjectMeAuthenticationRegistrationAiChat } from "./rbac-module-subject-me-authentication-registration-ai-chat/index";
 import { Component as RbacModuleSubjectMeAuthenticationResetPassword } from "./rbac-module-subject-me-authentication-reset-password/index";
@@ -66,8 +69,11 @@ export const variants = {
   default: Default,
   "ecommerce-module-category-slug": EcommerceModuleCategorySlug,
   "ecommerce-module-product-find": EcommerceModuleProductFind,
+  "ecommerce-module-token-find": EcommerceModuleTokenFind,
   "ecommerce-module-product-slug": EcommerceModuleProductSlug,
   framework: Framework,
+  "framework-module-find": FrameworkModuleFind,
+  "framework-module-slug": FrameworkModuleSlug,
   privacy: Privacy,
   "rbac-module-subject-me-authentication-registration-ai-chat":
     RbacModuleSubjectMeAuthenticationRegistrationAiChat,

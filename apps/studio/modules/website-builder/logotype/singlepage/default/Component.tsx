@@ -23,9 +23,9 @@ export function Component({
   return (
     <a
       data-ds-block="website-builder.logotype.default"
-      href="/?path=/story/modules-host-models-page-singlepage-root--default"
+      href="/?path=/story/modules-host-models-page-singlepage-framework--default"
       target="_top"
-      aria-label={`${brand} home`}
+      aria-label={`${brand} Framework`}
       className="inline-flex min-h-11 items-center gap-3 rounded-xl text-base font-semibold text-foreground no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       data-module="website-builder"
       data-model="logotype"
