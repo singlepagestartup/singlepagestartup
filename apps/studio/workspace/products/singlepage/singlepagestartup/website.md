@@ -32,6 +32,19 @@ sources:
     source: operator instruction in the Product landing review
     date: 2026-10-24
     supports: The current landing copy is reviewed in Russian. The English version follows the Russian content review.
+  framework_reuse:
+    classification: client-claim
+    source: operator instruction in the Product landing review
+    date: 2026-10-24
+    supports: SinglePageStartup is a framework with a ready codebase tested across dozens of projects.
+    limitation: Operator-supplied internal-use statement. No independent project inventory or measured time saving is asserted.
+  mobile_examples:
+    classification: assumption
+    resolution: professional-choice
+    source: operator instruction in the Product landing review
+    date: 2026-10-24
+    supports: Four interactive mobile examples cover SPS course enrolment, a vibe-coder community, a course shop and an AI blog. Example people, programmes and course prices are illustrative fixtures.
+    limitation: Product-only local state. Forms, chat, course checkout and subscriber access do not create runtime records, make payments or grant real entitlements. Existing AI Chat pricing and token accounting remain outside this revision.
   account_offer:
     classification: client-claim
     sources:
@@ -107,21 +120,21 @@ Someone whose idea is still scattered across notes can prepare a business model,
 
 Visitors arrive through AI Chat, an architecture article, a demonstration, search or a shared link. The page answers what the framework contains, where business decisions come from, what the person and coding agent do next, and which costs belong to separate services. The `developer-agents` segment follows module documentation and source links to assess the fit for the person's task; the person owns the adoption decision.
 
-The primary action is **Описать идею**, opening AI Chat registration. **Как это работает** opens the three-step explanation on this page. Visitors can understand the offer and try AI Chat before choosing a coding app or downloading code. The shared features let them spend development tokens on their own requirements; the page makes no numerical savings claim.
+The primary action is **Создать продукт**, opening AI Chat registration with a sign-in alternative. The hero leads with time saved when creating an AI product and names ready payments, chat and token accounting. It contains one action. Visitors can understand the offer and try AI Chat before choosing a coding app or downloading code. The framework introduction states its ready codebase and use across dozens of projects; the page makes no numerical savings claim.
 
 ## Final page specification
 
-| Page                                    | Visitor question and required content                                                                                                                                                                      | Next action                                                                                      |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Framework `/framework`                  | What could I make, which features are ready and where do I start? Short hero, selectable project examples, illustrated capabilities, preparation and development steps, articles, free-code terms and FAQ. | **Описать идею** → AI Chat registration; **Как это работает** → the page's development sequence. |
-| Modules `/framework/modules`            | Which existing functions fit my product? Grouped responsibilities, concrete uses and source links.                                                                                                         | Open a module guide, documentation or a related article.                                         |
-| Blog `/blog`                            | How is a product on this framework assembled? Frontend, Backend and DevOps categories, article covers, titles, excerpts, dates and authors.                                                                | Open a category or article.                                                                      |
-| Blog category `/blog/categories/[slug]` | What can I learn about this part of the product? Category description, article count and its actual articles.                                                                                              | Open an article or return to all articles.                                                       |
-| Article `/blog/articles/[slug]`         | Why does this SPS pattern work this way? Cover, title, category, author, date, full explanation, code, linked GitHub sources and related reading.                                                          | Read source, prepare the business brief or return to Framework.                                  |
-| Tokens `/ecommerce`                     | What pays for hosted AI Chat, and what does the free framework cost? Free allowance, monthly Pro and fixed-rate top-ups, with the same account balance and currency choices used in AI Chat.               | Choose an offer, then continue to AI Chat's account purchase flow.                               |
-| AI Chat `/`                             | How do I turn existing notes and decisions into development material? Upload, document review, saved text, continued discussion and export.                                                                | Prepare or continue a project; return with reviewed documents when ready to develop.             |
+| Page                                    | Visitor question and required content                                                                                                                                                                              | Next action                                                                          |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Framework `/framework`                  | What could I make, which features are ready and where do I start? Short hero, interactive mobile product examples, illustrated capabilities, preparation and development steps, articles, free-code terms and FAQ. | **Создать продукт** → AI Chat registration with a sign-in alternative.               |
+| Modules `/framework/modules`            | Which existing functions fit my product? Grouped responsibilities, concrete uses and source links.                                                                                                                 | Open a module guide, documentation or a related article.                             |
+| Blog `/blog`                            | How is a product on this framework assembled? Frontend, Backend and DevOps categories, article covers, titles, excerpts, dates and authors.                                                                        | Open a category or article.                                                          |
+| Blog category `/blog/categories/[slug]` | What can I learn about this part of the product? Category description, article count and its actual articles.                                                                                                      | Open an article or return to all articles.                                           |
+| Article `/blog/articles/[slug]`         | Why does this SPS pattern work this way? Cover, title, category, author, date, full explanation, code, linked GitHub sources and related reading.                                                                  | Read source, prepare the business brief or return to Framework.                      |
+| Tokens `/ecommerce`                     | What pays for hosted AI Chat, and what does the free framework cost? Free allowance, monthly Pro and fixed-rate top-ups, with the same account balance and currency choices used in AI Chat.                       | Choose an offer, then continue to AI Chat's account purchase flow.                   |
+| AI Chat `/`                             | How do I turn existing notes and decisions into development material? Upload, document review, saved text, continued discussion and export.                                                                        | Prepare or continue a project; return with reviewed documents when ready to develop. |
 
-The header uses the current SinglePageStartup lockup linked to `/framework`. On the landing, **Фреймворк**, **Модули**, **Блог** and **Токены** accompany one primary **Попробовать AI Chat** action leading to registration. Modules opens `/framework/modules`. A compact mobile menu exposes the public destinations. Other Product pages retain their AI Chat and GitHub navigation. Personal chats belong in account actions, outside the public navigation.
+The header uses the current SinglePageStartup lockup linked to `/framework`. On the landing, **Фреймворк**, **Модули**, **Блог** and **Токены** accompany one primary **Создать продукт** action leading to registration. Modules opens `/framework/modules`. A compact mobile menu exposes the public destinations. Other Product pages retain their AI Chat and GitHub navigation. Personal chats belong in account actions, outside the public navigation.
 
 The footer groups **Build** (Framework, modules, source documentation, source licence), **Learn** (Blog, Frontend, Backend, DevOps) and **Your project** (AI Chat, tokens, account access). **Issues and help** opens GitHub and says that framework help is available as time permits. Existing Privacy and Terms links retain their real destinations. No invented contact details, support schedule or unavailable legal page appears.
 
@@ -161,15 +174,17 @@ Apply the Living Focus identity: Onest headings and body copy, white and cool gr
 
 The nine acquisition illustrations are registered under `framework-acquisition-v2`. Their native square originals are also the square deliveries; preserve the files and show the full composition on white. Apply native bitmap colors without CSS recoloring or background masks. Article cards use landscape frames for their existing covers. Narrow screens stack content and allow buttons to wrap. Navigation, selectors, copy feedback and FAQ disclosures remain accessible by keyboard.
 
-Vary the section structure: a short illustrated hero; a graphite panel with four selectable project previews; an illustrated capability grid; a dark three-step sequence; an asymmetric request example; compact article cards; and a centered lime registration panel. Keep detailed answers and the technical request in disclosures. The four previews cover a contact page, community, shop and content project, using local presentation state without submitting forms. Main actions lead to the AI Chat registration preview.
+Vary the section structure: a short illustrated hero; a graphite panel with four selectable mobile apps; an illustrated capability grid; a dark three-step sequence; an asymmetric request example; compact article cards; and a centered lime registration panel. Keep detailed answers and the technical request in disclosures. Main actions lead to the AI Chat registration preview.
+
+The mobile examples share a phone frame and use the existing Phosphor icons. Their forms and controls are real local interactions. Course enrolment includes a programme, required name and email fields, study format, confirmation and editing. The community includes project reactions, member profiles, local joining, publishing a project and a members' chat. The shop includes course details, RUB/USD selection, cart additions and removals, a checkout with currency-compatible payment methods and an explicitly simulated order. The blog includes search, categories, article bodies, author pages, bookmarks and a subscriber block with explicit demo access. The demo label and caption explain that data stays in the preview; no payment or server request runs.
 
 ## Metadata and review
 
-**Title:** Code Framework — Создайте свой продукт. Основа уже готова. | SinglePageStartup
+**Title:** Code Framework — Сэкономьте время при создании своего ИИ-продукта | SinglePageStartup
 
-**Description:** Проработайте идею в AI Chat и соберите свой продукт на готовой кодовой базе. Аккаунты, статьи, товары и платежи уже есть в бесплатном Code Framework.
+**Description:** Создайте свой ИИ-продукт на SinglePageStartup. Платежи, чат и учёт токенов уже собраны в одной кодовой базе.
 
-**Open Graph title:** Создайте свой продукт. Основа уже готова.
+**Open Graph title:** Сэкономьте время при создании своего ИИ-продукта
 
 **Open Graph description:** Проработайте идею в AI Chat и создайте свой продукт на готовом коде SinglePageStartup.
 

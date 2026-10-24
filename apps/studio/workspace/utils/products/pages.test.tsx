@@ -212,7 +212,9 @@ describe("product pages", () => {
     expect(content.questions.items[0].title).toBe("How do I direct my agent?");
     expect(content.journey.items).toHaveLength(3);
     expect(content.footer.links).toEqual(original.footer.links);
-    expect(content.labels["copy-success"]).toContain("Request copied");
+    expect(content.labels["copy-success"]).toBe(
+      original.labels["copy-success"],
+    );
     expect(content.hero.paragraphs.join(" ")).not.toContain("confirmed:");
   });
   const pairedProduct = (

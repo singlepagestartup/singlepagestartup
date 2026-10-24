@@ -8,6 +8,7 @@ import sourceText from "./page.md?raw";
 import type { IWorkspacePageProps } from "../../../../utils/pages";
 import { SiteShell, PreviewLink, siteStyles } from "./Site";
 import { articles, blogCover } from "./Blog/content";
+import ProjectExample from "./ProjectExample";
 import {
   parseCodeFrameworkWebsite,
   landingArtwork,
@@ -21,9 +22,6 @@ interface ISectionLinkProps {
   href: string;
   children: ReactNode;
   className?: string;
-}
-interface IProjectExampleProps extends IWebsiteCopyProps {
-  selected: number;
 }
 const { focus, display, muted } = siteStyles;
 const section = "mx-auto max-w-7xl px-5 py-14 @3xl:px-8 @3xl:py-20";
@@ -105,126 +103,6 @@ function CopySetupRequest({ content }: IWebsiteCopyProps) {
   );
 }
 
-/** An illustrative project preview, with actual local selection controls outside it. */
-function ProjectExample({ content, selected }: IProjectExampleProps) {
-  const label = content.labels;
-  return (
-    <div
-      className="overflow-hidden rounded-2xl border border-[var(--workspace-brand-line)] bg-white text-[#18252b] shadow-xl"
-      aria-hidden="true"
-    >
-      <div className="flex items-center gap-1.5 border-b border-[#e8ecee] bg-[#f7f9fa] px-4 py-3">
-        <span className="size-2 rounded-full bg-[#c9d1d6]" />
-        <span className="size-2 rounded-full bg-[#c9d1d6]" />
-        <span className="size-2 rounded-full bg-[#c9d1d6]" />
-        <span className="ml-3 text-[10px] text-[#66757e]">
-          {label["demo-name"]}
-        </span>
-      </div>
-      <div className="flex items-center justify-between border-b border-[#e8ecee] px-5 py-4">
-        <span className={`text-sm ${display}`}>{label["demo-name"]}</span>
-        <Icon
-          name={
-            selected === 2
-              ? "shopping-cart"
-              : selected === 1
-                ? "user-circle"
-                : "list"
-          }
-          size={20}
-        />
-      </div>
-      <div className="p-5 @3xl:p-8">
-        <p className="text-[10px] uppercase tracking-widest text-[#66757e]">
-          {label["demo-subtitle"]}
-        </p>
-        <p
-          className={`mt-4 max-w-xs text-2xl leading-tight @3xl:text-3xl ${display}`}
-        >
-          {
-            label[
-              selected === 0
-                ? "demo-form-title"
-                : selected === 1
-                  ? "demo-members-title"
-                  : selected === 2
-                    ? "demo-shop-title"
-                    : "demo-blog-title"
-            ]
-          }
-        </p>
-        {selected === 0 ? (
-          <div className="mt-7 space-y-3">
-            <div className="rounded-lg border border-[#dce3e6] px-4 py-3 text-xs text-[#66757e]">
-              {label["demo-email"]}
-            </div>
-            <div className="rounded-lg bg-[#bfef61] px-4 py-3 text-center text-xs font-semibold">
-              {label["demo-submit"]}
-            </div>
-          </div>
-        ) : null}
-        {selected === 1 ? (
-          <div className="mt-6">
-            <div className="flex -space-x-2">
-              {["user", "users", "smiley"].map((icon) => (
-                <span
-                  key={icon}
-                  className="flex size-10 items-center justify-center rounded-full border-2 border-white bg-[#edf2e6]"
-                >
-                  <Icon name={icon as "user" | "users" | "smiley"} size={20} />
-                </span>
-              ))}
-            </div>
-            <p className="mt-4 text-sm leading-6 text-[#66757e]">
-              {label["demo-members-body"]}
-            </p>
-            <div className="mt-4 inline-flex rounded-lg bg-[#bfef61] px-4 py-3 text-xs font-semibold">
-              {label["demo-members-action"]}
-            </div>
-          </div>
-        ) : null}
-        {selected === 2 ? (
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            {["demo-product-one", "demo-product-two"].map((key, index) => (
-              <div key={key}>
-                <div className="flex aspect-square items-center justify-center rounded-xl bg-[#f1f4ed]">
-                  <img
-                    src={landingArtwork.modules[index ? 4 : 3].src}
-                    alt=""
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-                <p className="mt-2 text-xs font-medium">{label[key]}</p>
-                <p className="mt-2 flex items-center gap-1 text-[10px]">
-                  {label["demo-shop-action"]}
-                  <Icon name="plus" size={20} />
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : null}
-        {selected === 3 ? (
-          <div className="mt-6 grid gap-3">
-            {["demo-article-one", "demo-article-two"].map((key, index) => (
-              <div
-                key={key}
-                className="flex items-center gap-3 rounded-xl border border-[#e8ecee] p-3"
-              >
-                <img
-                  src={landingArtwork.modules[index ? 6 : 2].src}
-                  alt=""
-                  className="size-16 object-contain"
-                />
-                <p className="text-sm font-medium">{label[key]}</p>
-              </div>
-            ))}
-          </div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
 /** Independent Product-only acquisition prototype: no Modules, SDKs or runtime mutations. */
 export default function CodeFrameworkLanding({
   text,
@@ -279,17 +157,7 @@ export default function CodeFrameworkLanding({
                   {start.text}
                   <Icon name="arrow-right" size={20} />
                 </PreviewLink>
-                <SectionLink
-                  href={content.hero.links[1].href}
-                  className={`inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-medium ${focus}`}
-                >
-                  <Icon name="arrow-down" size={20} />
-                  {content.hero.links[1].text}
-                </SectionLink>
               </div>
-              <p className={`mt-4 max-w-sm text-xs leading-5 ${muted}`}>
-                {content.hero.paragraphs[2]}
-              </p>
             </div>
             <figure className="min-w-0">
               <img
@@ -301,9 +169,6 @@ export default function CodeFrameworkLanding({
                 className="aspect-square w-full object-contain"
               />
             </figure>
-          </div>
-          <div className="border-y border-[var(--workspace-brand-line)] px-5 py-4 text-center text-xs font-medium leading-6">
-            {label["hero-proof"]}
           </div>
         </section>
 
@@ -331,12 +196,9 @@ export default function CodeFrameworkLanding({
           </div>
           <div className="mt-8 grid gap-7 rounded-3xl bg-[var(--workspace-brand-primary)] p-5 text-[var(--workspace-brand-on-primary)] @3xl:grid-cols-[0.8fr_1.2fr] @3xl:p-8 @3xl:gap-10">
             <div className="flex min-w-0 flex-col justify-center">
-              <p className="mb-4 text-xs text-[var(--workspace-brand-muted-on-primary)]">
-                {label["demo-label"]}
-              </p>
               <div
                 role="group"
-                aria-label={label["demo-label"]}
+                aria-label={label["demo-selector-label"]}
                 className="space-y-2"
               >
                 {content.foundation.items.map((item, index) => (
@@ -360,10 +222,6 @@ export default function CodeFrameworkLanding({
                 aria-live="polite"
               >
                 {content.foundation.items[selected]?.text}
-              </p>
-              <p className="mt-6 flex items-center gap-2 text-xs">
-                <Icon name="check-circle" size={20} />
-                {label["demo-ready"]}
               </p>
             </div>
             <figure className="min-w-0">
