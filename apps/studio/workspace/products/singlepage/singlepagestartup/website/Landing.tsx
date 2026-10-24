@@ -51,6 +51,64 @@ function SectionLink({ href, children, className }: ISectionLinkProps) {
   );
 }
 
+interface IDocumentInfoProps extends IWebsiteCopyProps {
+  documentKey: string;
+  compact?: boolean;
+}
+
+function DocumentInfo({
+  content,
+  documentKey,
+  compact = false,
+}: IDocumentInfoProps) {
+  const label = content.labels;
+  return (
+    <details
+      className={`group min-w-0 rounded-xl ${compact ? "bg-[#eff4e6] open:w-full" : "bg-white/5"}`}
+    >
+      <summary
+        className={`flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 py-2 text-xs [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${compact ? "focus-visible:outline-[#18232a]" : "focus-visible:outline-[var(--workspace-brand-accent)]"}`}
+      >
+        <Icon name="file-text" size={20} />
+        <span className="flex-1">{label[documentKey]}</span>
+        <Icon name="question" size={20} />
+      </summary>
+      <div
+        className={`border-t px-3 pb-4 pt-3 text-xs leading-6 ${compact ? "border-[#cad7b7] text-[#42555e]" : "border-white/10 text-[var(--workspace-brand-muted-on-primary)]"}`}
+      >
+        <p>{label[`${documentKey}-description`]}</p>
+        <p
+          className={`mt-3 rounded-lg p-3 ${compact ? "bg-white/70" : "bg-white/5"}`}
+        >
+          <span className="block text-[10px] font-semibold uppercase tracking-wider">
+            {label["document-example"]}
+          </span>
+          {label[`${documentKey}-example`]}
+        </p>
+      </div>
+    </details>
+  );
+}
+
+function RepositoryLink({
+  content,
+  className = "",
+}: IWebsiteCopyProps & { className?: string }) {
+  return (
+    <a
+      href={content.handoff.links[1].href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`${kit.secondary} ${className}`}
+    >
+      <Icon name="github-logo" size={20} />
+      {content.labels["repository-action"]}
+      <Icon name="arrow-up-right" size={20} />
+      <span className="sr-only">({content.labels["external-link-hint"]})</span>
+    </a>
+  );
+}
+
 function CopySetupRequest({ content }: IWebsiteCopyProps) {
   const [status, setStatus] = useState<
     "idle" | "pending" | "success" | "error"
@@ -157,6 +215,7 @@ export default function CodeFrameworkLanding({
                   {start.text}
                   <Icon name="arrow-right" size={20} />
                 </PreviewLink>
+                <RepositoryLink content={content} />
               </div>
             </div>
             <figure className="min-w-0">
@@ -205,14 +264,17 @@ export default function CodeFrameworkLanding({
                   className="mt-7 space-y-2"
                 >
                   {content.foundation.items.map((item, index) => (
-                    <div key={item.title}>
+                    <div
+                      key={item.title}
+                      className={`overflow-hidden rounded-xl border ${selected === index ? "border-[var(--workspace-brand-accent)]" : "border-white/15"}`}
+                    >
                       <button
                         aria-expanded={selected === index}
                         aria-controls={`example-description-${index}`}
                         type="button"
                         aria-pressed={selected === index}
                         onClick={() => setSelected(index)}
-                        className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--workspace-brand-accent)] ${selected === index ? "border-[var(--workspace-brand-accent)] bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-primary)]" : "border-white/15 text-[var(--workspace-brand-on-primary)] hover:bg-white/5"}`}
+                        className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-t-[11px] px-4 py-3 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--workspace-brand-accent)] ${selected === index ? "bg-[var(--workspace-brand-accent)] text-[var(--workspace-brand-primary)]" : "text-[var(--workspace-brand-on-primary)] hover:bg-white/5"}`}
                       >
                         <span>{item.title}</span>
                         <Icon
@@ -261,20 +323,14 @@ export default function CodeFrameworkLanding({
                 {content.modules.paragraphs[1]}
               </p>
             </div>
-            <PreviewLink
-              href={content.modules.links[0].href}
-              resolveLink={resolveLink}
-              className={`inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-medium ${focus}`}
-            >
-              {content.modules.links[0].text}
-              <Icon name="arrow-up-right" size={20} />
-            </PreviewLink>
           </div>
-          <dl className="mt-8 grid gap-4 @xl:grid-cols-2 @4xl:grid-cols-4">
+          <div className="mt-8 grid gap-4 @xl:grid-cols-2 @4xl:grid-cols-4">
             {content.modules.items.map((item, index) => (
-              <div
+              <PreviewLink
+                href={`/framework/modules/${["rbac", "social", "blog", "knowledge", "ecommerce", "billing", "website-builder", "crm"][index]}`}
+                resolveLink={resolveLink}
                 key={item.title}
-                className="min-w-0 overflow-hidden rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-4"
+                className={`min-w-0 overflow-hidden rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-4 hover:border-[var(--workspace-brand-primary)] ${focus}`}
               >
                 <img
                   src={landingArtwork.modules[index]?.src}
@@ -285,15 +341,13 @@ export default function CodeFrameworkLanding({
                   loading="lazy"
                   className="aspect-square w-full object-contain"
                 />
-                <dt className={`mt-2 text-base leading-6 ${display}`}>
+                <h3 className={`mt-2 text-base leading-6 ${display}`}>
                   {item.title}
-                </dt>
-                <dd className={`mt-2 text-xs leading-5 ${muted}`}>
-                  {item.text}
-                </dd>
-              </div>
+                </h3>
+                <p className={`mt-2 text-xs leading-5 ${muted}`}>{item.text}</p>
+              </PreviewLink>
             ))}
-          </dl>
+          </div>
         </section>
 
         <section
@@ -349,19 +403,33 @@ export default function CodeFrameworkLanding({
                         "document-four",
                         "document-five",
                       ].map((key) => (
-                        <p
+                        <DocumentInfo
                           key={key}
-                          className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs"
-                        >
-                          <Icon name="check" size={20} />
-                          {label[key]}
-                        </p>
+                          documentKey={key}
+                          content={content}
+                        />
                       ))}
                     </div>
                   ) : (
                     <p className="mt-5 rounded-xl border border-white/20 p-4 text-xs leading-6">
                       {content.price.paragraphs[1]}
                     </p>
+                  )}
+                  {index === 0 && (
+                    <PreviewLink
+                      href={start.href}
+                      resolveLink={resolveLink}
+                      className={`${kit.button} mt-5`}
+                    >
+                      {label["journey-register"]}
+                      <Icon name="arrow-right" size={20} />
+                    </PreviewLink>
+                  )}
+                  {index === 2 && (
+                    <RepositoryLink
+                      content={content}
+                      className="mt-5 text-[var(--workspace-brand-primary)]"
+                    />
                   )}
                 </li>
               ))}
@@ -431,13 +499,12 @@ export default function CodeFrameworkLanding({
                     "document-four",
                     "document-five",
                   ].map((key) => (
-                    <span
+                    <DocumentInfo
                       key={key}
-                      className="inline-flex items-center gap-2 rounded-lg bg-[#eff4e6] px-3 py-2 text-xs"
-                    >
-                      <Icon name="file-text" size={20} />
-                      {label[key]}
-                    </span>
+                      documentKey={key}
+                      content={content}
+                      compact
+                    />
                   ))}
                 </div>
                 <div className="my-5 flex justify-center">

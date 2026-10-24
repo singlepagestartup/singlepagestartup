@@ -239,13 +239,26 @@ export function Journal({ labels: l }: IExampleProps) {
           )
         ) : (
           <>
-            <div className="rounded-2xl bg-[#e6f1d4] p-4">
-              <p className="text-[10px] font-medium uppercase tracking-wider">
+            <div className="relative overflow-hidden rounded-2xl bg-[#183665] p-4 text-white">
+              <p className="relative z-10 max-w-40 text-[9px] font-medium uppercase tracking-[0.15em] text-[#b8d3fb]">
                 {l["demo-journal-kicker"]}
               </p>
-              <h3 className="mt-3 text-2xl font-semibold leading-tight">
+              <div
+                aria-hidden="true"
+                className="relative mt-5 flex h-20 items-center justify-end gap-1 border-y border-white/20"
+              >
+                <span className="absolute left-0 top-3 h-12 w-12 rounded-full border border-[#a3c7fb]" />
+                <span className="absolute left-5 top-3 h-12 w-12 rounded-full border border-[#a3c7fb]" />
+                <span className="text-[72px] font-black leading-none tracking-tighter text-[#d7e7ff]">
+                  AI<span className="text-[#c2ed87]">*</span>
+                </span>
+              </div>
+              <h3 className="relative mt-4 text-xl font-semibold leading-tight">
                 {l["demo-journal-title"]}
               </h3>
+              <p className="mt-3 text-[10px] leading-4 text-[#b8d3fb]">
+                {l["demo-journal-feature"]}
+              </p>
             </div>
             <label className="block">
               <span className="sr-only">{l["demo-search"]}</span>

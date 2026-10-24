@@ -120,7 +120,7 @@ Someone whose idea is still scattered across notes can prepare a business model,
 
 Visitors arrive through AI Chat, an architecture article, a demonstration, search or a shared link. The page answers what the framework contains, where business decisions come from, what the person and coding agent do next, and which costs belong to separate services. The `developer-agents` segment follows module documentation and source links to assess the fit for the person's task; the person owns the adoption decision.
 
-The primary action is **Создать продукт**, opening AI Chat registration with a sign-in alternative. The hero leads with time saved when creating an AI product and names ready payments, chat and token accounting. It contains one action. Visitors can understand the offer and try AI Chat before choosing a coding app or downloading code. The framework introduction states its ready codebase and use across dozens of projects; the page makes no numerical savings claim.
+The primary action is **Создать продукт**, opening AI Chat registration with a sign-in alternative. The hero leads with time saved when creating an AI product and names ready payments, chat and token accounting. Registration is the primary action; a secondary GitHub button opens the public repository in a new tab. Visitors can understand the offer and try AI Chat before choosing a coding app or downloading code. The framework introduction states its ready codebase and use across dozens of projects; the page makes no numerical savings claim.
 
 ## Final page specification
 
@@ -150,7 +150,7 @@ The free-code block remains visible alongside this sequence. Code and documentat
 
 Capabilities use the responsibility of each module, not an unexplained inventory count. Accounts and permissions point to RBAC; profiles and conversations to Social; articles and categories to Blog; source material and retrieval to Knowledge; products, carts and orders to Ecommerce; invoices and currencies to Billing; reusable page content to Website Builder; pages and metadata to Host; contact requests to CRM; scheduled work to Agent. The text distinguishes the Agent module's background jobs from the person's external coding agent.
 
-The landing gives each of eight capability groups a distinct illustration, a consumer-facing label and one short description. **Explore all features** opens the module guides, where the technical responsibilities and repository documentation belong. Supporting articles explain individual modules, their associations and concrete use cases. Example interfaces illustrate possible projects; they do not claim that every integration is already configured for the visitor.
+The landing gives each of eight capability groups a distinct illustration, a consumer-facing label and one short description. Each illustrated capability card opens its relevant module guide, where the technical responsibilities and repository documentation belong. Supporting articles explain individual modules, their associations and concrete use cases. Example interfaces illustrate possible projects; they do not claim that every integration is already configured for the visitor.
 
 ### Blog and articles
 
@@ -204,6 +204,12 @@ The Russian landing uses a consistent **Создать продукт** action t
 
 ### Example identities and icons
 
-Four fictional example brands have independent geometric SVG marks: **Точка старта** uses a starting dot and ascending corner, **Собрано** uses connected rounded units, **Практикум ИИ** uses a spine with lesson/play shapes, and **Контекст** uses a margin and text lines. The glyphs are displayed in each example header; lavender, green, terracotta and blue distinguish the identities. These are custom vector interface drawings in `website/ProjectExample/primitives.tsx`, not photographic assets or SPS logo variants. Existing Phosphor icons remain for actions. Course descriptions, names, programmes and prices are illustrative and do not establish a real course offer.
+Four fictional example brands use independently generated horizontal wordmarks: **Firstship** for course enquiries, **Buildfolk** for the vibe-coder community, **Lessonloop** for the course shop and **Signalnote** for the AI journal. The purple launch stroke, green connecting letters, terracotta learning loop and blue editorial lettering belong to `framework-example-brands-v1`. Originals, exact prompts, dimensions and hashes are recorded in Assets under `singlepage-generated-framework-example-*`. No external logo reference was supplied; these are new concept identities for review, not real customer brands or trademark-cleared names. Existing Phosphor icons remain for actions and question controls. Course descriptions, programmes and prices are illustrative. The blog lead card uses native type and line shapes in its blue editorial palette.
 
-The dark example block includes its introduction. Only the selected example reveals its short explanation, directly below its control. The removed footer identity caption and licence sentence are omitted; documentation and licence destinations remain available in navigation.
+The dark example block includes its introduction. Only the selected example reveals its short explanation, directly below its control. One lime outline encloses both the active button and its expanded text. The removed footer identity caption and licence sentence are omitted; documentation and licence destinations remain available in navigation.
+
+### Document explanations and next actions
+
+The five project documents have click-to-open explanations in both the preparation step and the saved-knowledge card. Each explanation names its purpose and gives a concrete example. Native disclosures work with touch and keyboard and expose their expanded state. The first journey step links to registration; the third links to the public repository. The section is titled **Три шага до запуска вашего проекта** and retains the stated review, coding and publication tasks.
+
+The open-code paragraph explains ownership and future changes. The FAQ retains accurate cost information for visitors who ask what is free; no hosting price, free hosted service or automatic deployment is promised.
