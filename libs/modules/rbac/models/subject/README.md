@@ -391,6 +391,17 @@ presentation variant or title cannot mark a conversation as a document. Each
 document displays only its listed Sources from the selected project Profile.
 Source attachment preserves the document key and other Thread metadata.
 
+The document Source list includes one development handoff for the whole saved
+document. It uses the same scoped, linked Sources and Thread filename as the
+Markdown export. Copying places instructions on the clipboard; the user reviews
+the text, saves any notes to include, exports the document and attaches it to a
+coding agent separately. Unsaved editor notes and unconfirmed chat proposals
+are excluded from the saved export. The action is disabled when the saved
+document has no effective text or its read is unavailable. Saved-record changes
+reset copy feedback and discard stale clipboard completions. The Framework
+link retains the current locale. Source editing, proposal confirmation and the
+download flow retain their existing owners and behavior.
+
 Ordinary Threads show messages and the composer across the workspace width.
 They have no Knowledge editor, export action or document context selector. The
 assistant can still retrieve saved Knowledge from the project Profile. Sidebar

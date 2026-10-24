@@ -42,3 +42,17 @@ export interface IDraftSourceProps {
     files: File[],
   ) => Promise<string>;
 }
+
+export interface IDevelopmentHandoffProps {
+  fileName: string;
+  revision: string;
+  hasContent: boolean;
+  hasPendingProposal: boolean;
+  unavailable: boolean;
+  frameworkHref: string;
+}
+
+export interface IDevelopmentCopyFeedback {
+  state: "idle" | "pending" | "success" | "error";
+  text: string;
+}
