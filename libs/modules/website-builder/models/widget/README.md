@@ -34,9 +34,17 @@ Widgets store reusable content blocks (text, media, structured sections) for bui
 - `default`: sample component, for debugging.
 - `content-default`: saved hero copy, ordered media, sliders, features and CTA groups.
 - `content-hero`: saved localized hero heading, subtitle and description with ordered media and CTA groups.
+- `content-feature-split`: a two-column h2 section. Saved subtitle, title and rich description supply its copy; exact media, Feature and action associations supply its content. Without linked media, the heading and body occupy separate columns.
+- `content-feature-split-reverse`: the same section with a left illustration using `object-contain`.
+- `content-definition-grid`: an h2 capability collection with ordered saved Features and action groups. The Widget's `className` controls its grid.
+- `content-definition-grid-page`: an h1 page-level collection using the same saved fields and associations.
+- `content-steps`: a numbered process. Ordered `step` Features and a `copy-request` Feature share the grid; the copy request spans all columns through presentation CSS.
+- `content-offer`: a dark h2 panel with saved subtitle, title, description, Feature content and actions.
+- `content-offer-card`: a light offer panel over the same persisted fields.
+- `content-faq`: saved introduction and actions on the left, ordered `dropdown` Features on the right. The generic questions heading is localized for English and Russian.
 - `content-feature-find-card`: saved section heading and description with ordered Feature cards and CTA groups.
 - `content-form`: saved heading and description around a rendered domain form slot.
-- `content-collection`: saved heading and description around rendered collection rows and an optional footer slot. The saved `className` controls the content grid; a detail frame may leave its heading empty when the model supplies one.
+- `content-collection`: saved h2 heading, subtitle, description, exact action groups and ordered linked Sliders around rendered collection rows and an optional footer slot. The saved `className` controls the content grid; a detail frame may leave its heading empty when the model supplies one.
 - `content-feature-find-row`: two-column saved contact introduction and features with a rendered form slot. The owning domain Widget supplies its form as children or contactForm.
 - `footer-default`: saved brand description, Logotype, ordered navigation groups and copyright. A `footer-column` ButtonsArray supplies each group's heading; other arrays retain their existing presentations.
 - `navbar-default`: site header/navigation bar (menus, branding).
@@ -74,7 +82,20 @@ The navbar uses the standard record reader; its client boundary receives only
 loaded display data and rendered logo/navigation slots. Mobile navigation closes
 after following a saved link or pressing Escape.
 
+`content-hero` uses a light split layout with an h1 and square cover media.
+Supplementary Feature records render only when linked. Notes belong in the
+saved rich description. These presentation variants read their saved record
+through the standard Widget SDK template; associations are scoped by Widget ID,
+sorted by order and association ID, and rendered through their default renderer.
+They contain no Framework route dispatch or domain operations. Domain consumers
+can supply rendered `children` without adding another entity read.
+
 ### Icons
+
+Content Features use the shared Phosphor Icon adapter: `file-text` ▤,
+`check` ✓, `check-circle` ✓ and `plus` +. Clipboard controls keep their browser
+interaction inside `ClientComponent.tsx`; the saved-record reader stays outside
+that client boundary.
 
 Lucide React supplies the navigation glyphs: Menu ☰ and X ×. They are decorative
 inside buttons with localized accessible names. Slider arrows use the same

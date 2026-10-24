@@ -1,3 +1,11 @@
+import { Component as ContentFeatureSplit } from "./content-feature-split";
+import { Component as ContentFeatureSplitReverse } from "./content-feature-split-reverse";
+import { Component as ContentDefinitionGrid } from "./content-definition-grid";
+import { Component as ContentDefinitionGridPage } from "./content-definition-grid-page";
+import { Component as ContentSteps } from "./content-steps";
+import { Component as ContentOffer } from "./content-offer";
+import { Component as ContentOfferCard } from "./content-offer-card";
+import { Component as ContentFaq } from "./content-faq";
 import { Component as ContentCollection } from "./content-collection";
 import { Component as ContentForm } from "./content-form";
 import { Component as ContentHero } from "./content-hero";
@@ -31,6 +39,15 @@ import { Component as FooterDefaultComponent } from "./footer-default";
 import { Component as NavbarDefaultComponent } from "./navbar-default";
 import { Component as ContentFeatureFindRow } from "./content-feature-find-row";
 export const variants = {
+  "content-feature-split": ContentFeatureSplit,
+  "content-feature-split-reverse": ContentFeatureSplitReverse,
+  "content-definition-grid": ContentDefinitionGrid,
+  "content-definition-grid-page": ContentDefinitionGridPage,
+  "content-steps": ContentSteps,
+  "content-offer": ContentOffer,
+  "content-offer-card": ContentOfferCard,
+  "content-faq": ContentFaq,
+
   "content-collection": ContentCollection,
   "content-form": ContentForm,
   "content-hero": ContentHero,

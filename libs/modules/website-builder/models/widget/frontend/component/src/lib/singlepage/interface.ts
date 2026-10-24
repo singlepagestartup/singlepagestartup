@@ -1,3 +1,11 @@
+import type { IComponentProps as IContentFeatureSplitProps } from "./content-feature-split/interface";
+import type { IComponentProps as IContentFeatureSplitReverseProps } from "./content-feature-split-reverse/interface";
+import type { IComponentProps as IContentDefinitionGridProps } from "./content-definition-grid/interface";
+import type { IComponentProps as IContentDefinitionGridPageProps } from "./content-definition-grid-page/interface";
+import type { IComponentProps as IContentStepsProps } from "./content-steps/interface";
+import type { IComponentProps as IContentOfferProps } from "./content-offer/interface";
+import type { IComponentProps as IContentOfferCardProps } from "./content-offer-card/interface";
+import type { IComponentProps as IContentFaqProps } from "./content-faq/interface";
 import type { IComponentProps as IContentCollectionProps } from "./content-collection/interface";
 import type { IComponentProps as IContentFormProps } from "./content-form/interface";
 import type { IComponentProps as IContentHero } from "./content-hero/interface";
@@ -31,6 +39,14 @@ import { IComponentProps as IFooterDefaultComponentProps } from "./footer-defaul
 import { IComponentProps as INavbarDefaultComponentProps } from "./navbar-default/interface";
 import type { IComponentProps as IContentFeatureFindRow } from "./content-feature-find-row/interface";
 export type IComponentProps =
+  | IContentFeatureSplitProps
+  | IContentFeatureSplitReverseProps
+  | IContentDefinitionGridProps
+  | IContentDefinitionGridPageProps
+  | IContentStepsProps
+  | IContentOfferProps
+  | IContentOfferCardProps
+  | IContentFaqProps
   | IContentCollectionProps
   | IContentFormProps
   | IContentHero
