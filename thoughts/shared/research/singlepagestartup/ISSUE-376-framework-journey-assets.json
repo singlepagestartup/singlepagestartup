@@ -1,0 +1,33 @@
+{
+  "schema": "sps.framework-managed-assets.v1",
+  "apiOrigin": "http://localhost:4000",
+  "assets": [
+    {
+      "key": "photograph",
+      "name": "singlepagestartup-photography-business-conversation-square.png",
+      "sha256": "669fa985bf9e6774bb277205912ca90ff8f7e86cb9cc3329f2827a4f21f137a3",
+      "id": "2e670925-bec9-4514-8330-b66d42f015cb",
+      "source": "apps/studio/runtime/assets/images/singlepage/generated/living-focus/singlepagestartup-photography-business-conversation-square.png",
+      "delivery": "apps/api/public/file-storage/static/75ea39ccc2665611.png",
+      "byteVerifiedFromApi": true
+    },
+    {
+      "key": "modules",
+      "name": "singlepagestartup-illustration-module-hierarchy-cool-square.png",
+      "sha256": "ee79d6d7137e84ee998eaf16f9698a9fec1ca8472d53d1ad5ffe392b7229d398",
+      "id": "68956dac-b929-4e7f-8856-bf3493ea779d",
+      "source": "apps/studio/runtime/assets/images/singlepage/generated/living-focus/singlepagestartup-illustration-module-hierarchy-cool-square.png",
+      "delivery": "apps/api/public/file-storage/static/e3ba4486ae4af135.png",
+      "byteVerifiedFromApi": true
+    },
+    {
+      "key": "change",
+      "name": "singlepagestartup-illustration-coordinated-agents-cool-square.png",
+      "sha256": "0bc5637e18ccb7be26cf5f3f5e203ac7d07c943776418d1f15c3dccf24825fee",
+      "id": "d2db47e9-50c5-401a-a84d-c36694c664a6",
+      "source": "apps/studio/runtime/assets/images/singlepage/generated/living-focus/singlepagestartup-illustration-coordinated-agents-cool-square.png",
+      "delivery": "apps/api/public/file-storage/static/c091518e8192ed58.png",
+      "byteVerifiedFromApi": true
+    }
+  ]
+}
