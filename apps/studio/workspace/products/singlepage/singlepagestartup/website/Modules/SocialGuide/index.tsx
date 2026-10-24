@@ -8,6 +8,7 @@ import { SiteShell, PreviewLink, siteStyles } from "../../Site";
 import { landingArtwork } from "../../content";
 import type { IModuleCopySection } from "../content";
 import SocialDemo from "./Demo";
+import SocialComponents from "./Components";
 
 interface ISocialGuideProps {
   copy: Record<string, IModuleCopySection>;
@@ -240,19 +241,7 @@ export default function SocialGuide({ copy, resolveLink }: ISocialGuideProps) {
             <p className="mt-5 max-w-3xl text-sm leading-7 text-[#52636d]">
               {copy.components.paragraphs[0]}
             </p>
-            <div className="mt-8 grid gap-4 @2xl:grid-cols-2 @5xl:grid-cols-4">
-              {copy.components.items.map((item, index) => (
-                <div key={item.title} className="rounded-2xl bg-white p-5">
-                  <span className="text-xs font-medium text-[#52636d]">
-                    0{index + 1}
-                  </span>
-                  <h3 className="mt-3 text-lg font-semibold">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-[#52636d]">
-                    {item.text}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <SocialComponents copy={copy} labels={labels} />
             <Jump
               id="social-cases"
               className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-semibold"

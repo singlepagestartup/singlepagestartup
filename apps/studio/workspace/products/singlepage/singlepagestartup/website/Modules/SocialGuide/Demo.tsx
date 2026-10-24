@@ -13,6 +13,8 @@ interface ISocialDemoProps {
 
 interface IScenarioProps {
   scenario: IModuleCopySection;
+  resources: IModuleCopySection;
+  skills?: IModuleCopySection;
   labels: Record<string, string>;
   initialProfile: boolean;
 }
@@ -23,7 +25,13 @@ interface IDemoExchange {
   answer: string;
 }
 
-function Scenario({ scenario, labels, initialProfile }: IScenarioProps) {
+function Scenario({
+  scenario,
+  resources,
+  skills,
+  labels,
+  initialProfile,
+}: IScenarioProps) {
   const fields = Object.fromEntries(
     scenario.items.map(({ title, text }) => [title, text]),
   );
@@ -103,14 +111,52 @@ function Scenario({ scenario, labels, initialProfile }: IScenarioProps) {
               {fields["profile-bio"]}
             </p>
             <p className="mt-6 text-xs font-medium uppercase tracking-wider text-[#52636d]">
-              {labels.materials}
+              {resources.title}
             </p>
-            <div className="mt-3 rounded-xl border border-[var(--workspace-brand-line)] p-4">
-              <p className="text-sm font-semibold">{fields["context-text"]}</p>
-              <p className="mt-2 text-xs leading-6 text-[#52636d]">
-                {fields["context-detail"]}
-              </p>
+            <div className="mt-3 space-y-2">
+              {resources.items.map((item) => (
+                <details
+                  key={item.title}
+                  className="group rounded-xl border border-[var(--workspace-brand-line)]"
+                >
+                  <summary
+                    className={`flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-xl p-4 text-sm font-semibold [&::-webkit-details-marker]:hidden ${siteStyles.focus}`}
+                  >
+                    {item.title}
+                    <Icon
+                      name="caret-down"
+                      size={20}
+                      className="shrink-0 group-open:rotate-180"
+                    />
+                  </summary>
+                  <p className="px-4 pb-4 text-xs leading-6 text-[#52636d]">
+                    {item.text}
+                  </p>
+                </details>
+              ))}
             </div>
+            {skills && (
+              <div className="mt-6">
+                <p className="text-xs font-medium uppercase tracking-wider text-[#52636d]">
+                  {skills.title}
+                </p>
+                <dl className="mt-3 space-y-2">
+                  {skills.items.map((item) => (
+                    <div
+                      key={item.title}
+                      className="rounded-xl bg-[#eff4e6] p-4"
+                    >
+                      <dt className="break-words font-mono text-xs font-semibold">
+                        {item.title}
+                      </dt>
+                      <dd className="mt-2 text-xs leading-6 text-[#52636d]">
+                        {item.text}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
             {fields["offer-title"] && (
               <div className="mt-3 rounded-xl bg-[#eff4e6] p-4">
                 <p className="text-sm font-semibold">{fields["offer-title"]}</p>
@@ -142,19 +188,14 @@ function Scenario({ scenario, labels, initialProfile }: IScenarioProps) {
               aria-relevant="additions"
               className="h-72 space-y-4 overflow-y-auto overscroll-contain p-5 @3xl:h-80"
             >
-              <div className="max-w-[95%] rounded-2xl rounded-tl-sm bg-[#f2f4f6] p-4">
-                <p className="text-xs font-semibold">
-                  {fields["first-author"]}
-                </p>
-                <p className="mt-2 text-sm leading-6">
-                  {fields["first-message"]}
-                </p>
+              <div className="ml-auto max-w-[85%] break-words rounded-2xl rounded-tr-sm bg-[#eff4e6] p-4">
+                <p className="text-sm leading-6">{fields["first-message"]}</p>
                 <span className="mt-3 inline-flex items-center gap-2 text-xs text-[#52636d]">
                   <Icon name="paperclip" size={20} />
                   {fields.attachment}
                 </span>
               </div>
-              <div className="ml-auto max-w-[95%] rounded-2xl rounded-tr-sm bg-[#eff4e6] p-4">
+              <div className="mr-auto max-w-[85%] break-words rounded-2xl rounded-tl-sm bg-[#f2f4f6] p-4">
                 <p className="text-xs font-semibold">
                   {fields["second-author"]}
                 </p>
@@ -164,17 +205,14 @@ function Scenario({ scenario, labels, initialProfile }: IScenarioProps) {
               </div>
               {exchanges.map((exchange) => (
                 <div key={exchange.id} className="space-y-4">
-                  <div className="max-w-[95%] break-words rounded-2xl rounded-tl-sm bg-[#f2f4f6] p-4">
-                    <p className="text-xs font-semibold">
-                      {labels["sent-author"]}
-                    </p>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
+                  <div className="ml-auto max-w-[85%] break-words rounded-2xl rounded-tr-sm bg-[#eff4e6] p-4">
+                    <p className="whitespace-pre-wrap text-sm leading-6">
                       {exchange.question}
                     </p>
                   </div>
-                  <div className="ml-auto max-w-[95%] rounded-2xl rounded-tr-sm bg-[#eff4e6] p-4">
+                  <div className="mr-auto max-w-[85%] break-words rounded-2xl rounded-tl-sm bg-[#f2f4f6] p-4">
                     <p className="text-xs font-semibold">
-                      {labels["sent-reply-author"]}
+                      {fields["second-author"]}
                     </p>
                     <p className="mt-2 text-sm leading-6">{exchange.answer}</p>
                   </div>
@@ -185,16 +223,6 @@ function Scenario({ scenario, labels, initialProfile }: IScenarioProps) {
               onSubmit={send}
               className="border-t border-[var(--workspace-brand-line)] p-4 @3xl:p-5"
             >
-              <button
-                type="button"
-                onClick={() => {
-                  setDraft(fields.prompt);
-                  composer.current?.focus();
-                }}
-                className={`mb-3 rounded-lg text-left text-xs leading-5 text-[#52636d] underline decoration-[#a4bd7c] underline-offset-4 ${siteStyles.focus}`}
-              >
-                {labels["try-prompt"]}: {fields.prompt}
-              </button>
               <label className="sr-only" htmlFor="social-demo-message">
                 {labels["message-label"]}
               </label>
@@ -300,6 +328,14 @@ export default function SocialDemo({ copy, labels }: ISocialDemoProps) {
         <Scenario
           key={selected}
           scenario={copy[`demo-${selected}`]}
+          resources={
+            copy[
+              selected === "assistant"
+                ? "profile-knowledge"
+                : "profile-articles"
+            ]
+          }
+          skills={selected === "assistant" ? copy["profile-skills"] : undefined}
           labels={labels}
           initialProfile={selected === "experts"}
         />

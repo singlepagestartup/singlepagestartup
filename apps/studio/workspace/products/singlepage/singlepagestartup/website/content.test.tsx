@@ -80,9 +80,11 @@ describe("editable Framework website copy", () => {
         "Social для моей школы",
       )
       .replace("Клуб создателей", "Сообщество выпускников")
+      .replaceAll("Как проверить первый экран", "Как проверить страницу школы")
+      .replace("Школа мастер-классов", "Школа выпускников")
       .replace(
-        "Как собрать обратную связь от первых участников?",
-        "Как начать обсуждение?",
+        "Готовлю страницу мастер-классов. Что показать посетителю в первую очередь?",
+        "Что показать на странице школы?",
       );
     const html = renderToStaticMarkup(
       <ModulesPage
@@ -97,7 +99,10 @@ describe("editable Framework website copy", () => {
     );
     expect(html).toContain("Social для моей школы");
     expect(html).toContain("Сообщество выпускников");
-    expect(html).toContain("Как начать обсуждение?");
+    expect(html).toContain("Что показать на странице школы?");
+    expect(html).toContain("Как проверить страницу школы");
+    expect(html).toContain("Школа выпускников");
+    expect(html).not.toContain("Попробуйте спросить");
     expect(html).toContain('href="/preview/register"');
     expect(html).toContain("Сообщения остаются в этом макете");
   });
