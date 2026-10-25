@@ -194,8 +194,8 @@ export default function CodeFrameworkLanding({
             className={`${section} grid items-center gap-6 py-10 @3xl:grid-cols-[1.05fr_1fr] @3xl:gap-6 @3xl:py-12`}
           >
             <div className="min-w-0">
-              <p className="inline-flex items-center gap-2 text-xs font-medium">
-                <span className="size-2 rounded-full bg-[var(--workspace-brand-accent)]" />
+              <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest">
+                <span className="size-2 shrink-0 rounded-full bg-[var(--workspace-brand-accent)]" />
                 {content.hero.paragraphs[0]}
               </p>
               <h1
@@ -598,7 +598,9 @@ export default function CodeFrameworkLanding({
         <section aria-labelledby="cf-questions-title" className={section}>
           <div className="grid items-start gap-8 @3xl:grid-cols-[0.8fr_1.2fr] @3xl:gap-12">
             <div>
-              <p className={`text-xs ${muted}`}>
+              <p
+                className={`text-xs font-medium uppercase tracking-widest ${muted}`}
+              >
                 {content.price.paragraphs[0]}
               </p>
               <h2 className={`mt-4 text-3xl leading-tight ${display}`}>

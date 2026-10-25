@@ -9,12 +9,11 @@ sources:
     supports: Free reusable framework, coding-agent workflow, separate hosted costs and help as time permits.
   visitor_path:
     classification: promise
-    resolution: professional-choice
-    sources:
-      - ../../../strategy/singlepage.md
-      - ../../../brand/singlepage.md
-      - sales.yaml
-    supports: Makers can prepare and review business and product documents in AI Chat, export them and brief a coding agent to build with the free Code Framework. People with an existing brief can go directly to the code.
+    resolution: operator-fact
+    source: operator instruction in the Product landing review
+    date: 2026-10-25
+    supports: Novice makers describe their business in ordinary language, develop pages and functions with the AI assistant, publish a first version through the same chat and continue improving it there. The result is a working project with a client-facing URL and access to its code.
+    limitation: Proposed Product journey. GitHub and hosting integrations are not implemented by the landing preview; existing Product and Sales documents describe the self-directed coding route.
   preparation_handoff:
     classification: client-claim
     source: apps/studio/workspace/brief/singlepage.md#intake.framework_preparation_journey
@@ -31,8 +30,8 @@ sources:
     classification: client-claim
     source: operator instruction in the Product landing review
     date: 2026-10-25
-    supports: After approval of the Brief, Strategy, Brand, Design and Product materials, the proposed service creates the client repository, deploys the framework with default component variants and populates it through MCP. Client-specific visuals are photography and infographics; the person receives the project URL and repository access.
-    limitation: Planned Product experience. Repository and server integrations require implementation; delivery pricing and token consumption are unspecified.
+    supports: The proposed service uses business and product documents to assemble pages from default framework components. The person reviews the first version, connects GitHub and a hosting account, and requests publication in the same AI Chat. The service creates their repository, deploys the project and populates it through MCP. Client-specific visuals are photography and infographics. Saved project knowledge supports subsequent changes and new chats.
+    limitation: Planned Product experience. Repository and server integrations require implementation; delivery pricing and token consumption are unspecified. The requested today wording is the operator's launch target, not a measured completion time or a one-day service guarantee.
   review_language:
     classification: constraint
     source: operator instruction in the Product landing review
@@ -42,7 +41,7 @@ sources:
     classification: client-claim
     source: operator instruction in the Product landing review
     date: 2026-10-24
-    supports: SinglePageStartup is an open-source framework with a ready codebase tested across dozens of projects; its modules originate in client requests and are tested and maintained by the SPS team.
+    supports: SinglePageStartup is an open-source framework with a modular, extensible codebase tested across dozens of projects; its modules originate in client requests and are tested and maintained by the SPS team.
     limitation: Operator-supplied internal-use statement. No independent project inventory or measured time saving is asserted.
   mobile_examples:
     classification: assumption
@@ -78,6 +77,12 @@ sources:
       - libs/modules/agent/README.md
     supports: Module responsibilities shown in the page's capability groups and linked source documentation.
     limitation: Documented source responsibilities do not establish a finished product for every use case.
+  module_count:
+    classification: verified-fact
+    source: libs/modules/*/README.md
+    inspected_at: 2026-10-25
+    supports: 15 module directories have a root README; the landing separately illustrates eight capability groups.
+    limitation: Repository inventory establishes the count, not runtime readiness or completed integration setup for every module.
   example_change:
     classification: assumption
     resolution: professional-choice
@@ -120,41 +125,41 @@ review:
 
 ## Objective and visitor paths
 
-The Code Framework website helps a person with a business idea prepare a development brief and build a web product with a coding agent. It serves the `makers` Sales segment: creators who need accounts, content, orders or payments and want to describe their own product's rules instead of defining those common functions again.
+The Code Framework landing describes a path from a business idea to a published website or web service. Its primary audience is the `makers` segment in Product and Sales: novice creators who describe what customers should be able to do and assess the result through the interface. Copy names pages, functions, text, images and a link to the working project. Programming knowledge is not a prerequisite for understanding the offer.
 
-Someone whose idea is still scattered across notes can prepare a business model, concept, plan and product documents in AI Chat. They review the drafts, keep unanswered questions visible and export the accepted text. A coding agent then uses that material to develop a landing page or product on Code Framework. Someone with a usable brief can go directly to GitHub. Access to the framework requires no AI Chat purchase.
+The person describes their business in AI Chat, works with the assistant on functions, pages and content, views a first version built from existing components, and requests publication from that chat. They connect GitHub for code storage and register with a hosting service for the live project. A published URL lets them show the result to clients. They can continue requesting changes in the same chat and reuse saved project knowledge. This is the proposed Product experience; the free code remains available independently for people who develop and host it themselves.
 
-Visitors arrive through AI Chat, an architecture article, a demonstration, search or a shared link. The page answers what the framework contains, where business decisions come from, what the person and coding agent do next, and which costs belong to separate services. The `developer-agents` segment follows module documentation and source links to assess the fit for the person's task; the person owns the adoption decision.
+Visitors arrive through AI Chat, an architecture article, a demonstration, search or a shared link. The page answers what they can create, which functions the framework supplies, how to publish a first version and how to develop it further. The `developer-agents` segment follows module documentation and source links to assess the fit for the person's task; the person owns the adoption decision.
 
-The primary action is **Создать продукт**, opening AI Chat registration with a sign-in alternative. The hero leads with time saved when creating an AI product and names ready payments, chat and token accounting. Registration is the primary action; a secondary GitHub button opens the public repository in a new tab. Visitors can understand the offer and try AI Chat before choosing a coding app or downloading code. The framework introduction states its ready codebase and use across dozens of projects; the page makes no numerical savings claim.
+The primary action is **Создать продукт**, opening AI Chat registration with a sign-in alternative. The hero says **Создайте свой продукт уже сегодня** and describes functions, pages, content and publication through the chat. The framework introduction explains its modular, extensible codebase through functions that can be added as the business develops. GitHub remains a secondary text link in the journey. The today wording expresses the intended launch experience; integration readiness and achievable delivery time remain unverified.
 
 ## Final page specification
 
-| Page                                    | Visitor question and required content                                                                                                                                                                              | Next action                                                                          |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| Framework `/framework`                  | What could I make, which features are ready and where do I start? Short hero, interactive mobile product examples, illustrated capabilities, preparation and development steps, articles, free-code terms and FAQ. | **Создать продукт** → AI Chat registration with a sign-in alternative.               |
-| Modules `/framework/modules`            | Which existing functions fit my product? Grouped responsibilities, concrete uses and source links.                                                                                                                 | Open a module guide, documentation or a related article.                             |
-| Blog `/blog`                            | How is a product on this framework assembled? Frontend, Backend and DevOps categories, article covers, titles, excerpts, dates and authors.                                                                        | Open a category or article.                                                          |
-| Blog category `/blog/categories/[slug]` | What can I learn about this part of the product? Category description, article count and its actual articles.                                                                                                      | Open an article or return to all articles.                                           |
-| Article `/blog/articles/[slug]`         | Why does this SPS pattern work this way? Cover, title, category, author, date, full explanation, code, linked GitHub sources and related reading.                                                                  | Read source, prepare the business brief or return to Framework.                      |
-| Tokens `/ecommerce`                     | What pays for hosted AI Chat, and what does the free framework cost? Free allowance, monthly Pro and fixed-rate top-ups, with the same account balance and currency choices used in AI Chat.                       | Choose an offer, then continue to AI Chat's account purchase flow.                   |
-| AI Chat `/`                             | How do I turn existing notes and decisions into development material? Upload, document review, saved text, continued discussion and export.                                                                        | Prepare or continue a project; return with reviewed documents when ready to develop. |
+| Page                                    | Visitor question and required content                                                                                                                                                                                              | Next action                                                                                                |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Framework `/framework`                  | What could I make, which features are ready and where do I start? Short hero, interactive mobile examples, illustrated capabilities, creation and publication steps, reusable project knowledge, articles, code ownership and FAQ. | **Создать продукт** → AI Chat registration with a sign-in alternative.                                     |
+| Modules `/framework/modules`            | Which existing functions fit my product? Grouped responsibilities, concrete uses and source links.                                                                                                                                 | Open a module guide, documentation or a related article.                                                   |
+| Blog `/blog`                            | How is a product on this framework assembled? Frontend, Backend and DevOps categories, article covers, titles, excerpts, dates and authors.                                                                                        | Open a category or article.                                                                                |
+| Blog category `/blog/categories/[slug]` | What can I learn about this part of the product? Category description, article count and its actual articles.                                                                                                                      | Open an article or return to all articles.                                                                 |
+| Article `/blog/articles/[slug]`         | Why does this SPS pattern work this way? Cover, title, category, author, date, full explanation, code, linked GitHub sources and related reading.                                                                                  | Read source, prepare the business brief or return to Framework.                                            |
+| Tokens `/ecommerce`                     | What pays for hosted AI Chat, and what does the free framework cost? Free allowance, monthly Pro and fixed-rate top-ups, with the same account balance and currency choices used in AI Chat.                                       | Choose an offer, then continue to AI Chat's account purchase flow.                                         |
+| AI Chat `/`                             | How do I create, publish and continue developing my project? Proposed page assembly, publication through the chat and reusable project knowledge.                                                                                  | Create a first version, connect code storage and hosting, request publication and continue making changes. |
 
 The header uses the current SinglePageStartup lockup linked to `/framework`. On the landing, **Фреймворк**, **Модули**, **Блог** and **Токены** accompany one primary **Создать продукт** action leading to registration. Modules opens `/framework/modules`. A compact mobile menu exposes the public destinations. Other Product pages retain their AI Chat and GitHub navigation. Personal chats belong in account actions, outside the public navigation.
 
 The footer groups **Build** (Framework, modules, source documentation, source licence), **Learn** (Blog, Frontend, Backend, DevOps) and **Your project** (AI Chat, tokens, account access). **Issues and help** opens GitHub and says that framework help is available as time permits. Existing Privacy and Terms links retain their real destinations. No invented contact details, support schedule or unavailable legal page appears.
 
-### Preparation and development
+### Creation, publication and continued work
 
-The preparation panel names the material to bring: notes, customer and offer decisions, a business model or plan, existing documents and visual references. AI Chat helps the person review Brief, Strategy, Brand, Design and Product documents, including the intended structure and data models. The primary journey has three steps: create an account, prepare the project with the AI assistant, and receive a first version after approving the materials.
+The three steps are **Создайте аккаунт**, **Создайте проект с ИИ** and **Опубликуйте проект**. The person describes their business, chooses functions and pages with the assistant, supplies or prepares text and images, views the first version and asks for changes. Publication is requested through the same chat after connecting the required accounts. Hosting is explained as the service where the website runs; GitHub is explained in the FAQ as the place where the code is stored. Brief, Strategy, Brand, Design and Product are saved descriptions with expandable explanations and examples, not prerequisites the visitor must already understand.
 
-The proposed first-version service creates the client's repository from Code Framework, deploys it to hosting and populates the deployed project through MCP. It uses the framework's existing default component variants. Client-specific visual work supplies photography and infographics; generating custom component variants is outside this initial version. The person receives a working project URL and access to their repository for further development. Repository and server integrations still require implementation. This Product preview specifies the intended experience and does not establish that those integrations are operational. Token consumption, delivery pricing and hosting terms remain unspecified.
+The proposed first-version service creates the client's repository through a GitHub integration, deploys Code Framework to the person's hosting account and populates the deployed project through MCP. It uses the framework's existing default component variants. Client-specific visual work supplies photography and infographics; generating custom component variants is outside this initial version. The person receives a working project URL and access to their repository. They can request changes through the same chat or extend a module themselves with an AI coding assistant or a developer. Repository and server integrations still require implementation. This Product preview specifies the intended experience and does not establish that those integrations are operational. Token consumption, delivery pricing and hosting terms remain unspecified.
 
 A collapsed **Хотите работать с кодом самостоятельно?** disclosure contains a copyable request for people using a coding application on their own computer. They can download their repository, attach reviewed project documents in Claude Code or Codex and adapt the code themselves. The FAQ distinguishes this self-directed development route from the proposed first-version service. Source ownership, documentation and licence links remain available; the journey contains neither a sample chat bubble nor a licence card. Framework code and documentation use the MIT licence; no free hosting or delivery price is promised.
 
 ### Module explanations
 
-Capabilities use the responsibility of each module, not an unexplained inventory count. Accounts and permissions point to RBAC; profiles and conversations to Social; articles and categories to Blog; source material and retrieval to Knowledge; products, carts and orders to Ecommerce; invoices and currencies to Billing; reusable page content to Website Builder; pages and metadata to Host; contact requests to CRM; scheduled work to Agent. The text distinguishes the Agent module's background jobs from the person's external coding agent.
+The headline states **15 модулей уже готовы к подключению**. The count comes from the 15 module directories with root READMEs under `libs/modules`: agent, analytic, billing, blog, broadcast, crm, ecommerce, file-storage, host, knowledge, notification, rbac, social, startup and website-builder. The number describes source modules, not the eight illustrated capability groups or a claim that all integrations are configured. The introduction explains modules as functions the person can add to a project. Accounts and permissions point to RBAC; profiles and conversations to Social; articles and categories to Blog; source material and retrieval to Knowledge; products, carts and orders to Ecommerce; invoices and currencies to Billing; reusable page content to Website Builder; pages and metadata to Host; contact requests to CRM; scheduled work to Agent. The text distinguishes the Agent module's background jobs from the person's external coding agent.
 
 The landing gives each of eight capability groups a distinct illustration, a consumer-facing label and one short description. Each illustrated capability card opens its relevant module guide, where the technical responsibilities and repository documentation belong. Supporting articles explain individual modules, their associations and concrete use cases. Example interfaces illustrate possible projects; they do not claim that every integration is already configured for the visitor.
 
@@ -192,13 +197,13 @@ The mobile examples share a phone frame and use the existing Phosphor icons. The
 
 ## Metadata and review
 
-**Title:** Code Framework — Сэкономьте время при создании своего ИИ-продукта | SinglePageStartup
+**Title:** Создайте свой продукт уже сегодня | SinglePageStartup
 
-**Description:** Создайте свой ИИ-продукт на SinglePageStartup. Платежи, чат и учёт токенов уже собраны в одной кодовой базе.
+**Description:** Опишите идею ИИ-помощнику, создайте страницы из готовых блоков и опубликуйте первую версию через чат SinglePageStartup.
 
-**Open Graph title:** Сэкономьте время при создании своего ИИ-продукта
+**Open Graph title:** Создайте свой продукт уже сегодня
 
-**Open Graph description:** Проработайте идею в AI Chat и создайте свой продукт на готовом коде SinglePageStartup.
+**Open Graph description:** От описания бизнеса до ссылки для клиентов: выберите функции, подготовьте страницы и опубликуйте проект через тот же чат.
 
 The current Product landing preview uses Russian for content review, including navigation, examples, instructions, image descriptions and accessibility labels. The English version follows that review. The planned website supports English (`en`) and Russian (`ru`) through the framework's internationalization configuration. Keep the same semantic content keys and product names in both versions: SinglePageStartup, Code Framework, AI Chat, Claude Code and Codex Desktop.
 
@@ -210,9 +215,11 @@ or runtime business logic. The first implementation boundary is the complete
 Product journey; Modules/Host and runtime transfer follow separately. Historical
 confirmation metadata is not renewed by this scoped revision. -->
 
-### Registration and project preparation
+### Registration and publication
 
-The Russian landing uses **Создать продукт** in the hero and navigation, **Зарегистрироваться** in the first journey step and **Начать** in the final lime panel. Each opens the same registration destination. It explains the next steps: work with the AI assistant on Brief, Strategy, Brand, Design and Product documents, approve them and receive a hosted first version using existing framework components and their own content. “Три шага до запуска вашего проекта” describes the sequence; it does not promise a one-hour deployment. Saved knowledge is shown as documents attached to a new request through an explicit `@knowledge` mention, consistent with the Social and Knowledge README contracts. This is a proposed acquisition journey, not a claim that the landing itself deploys a project.
+The Russian landing uses **Создать продукт** in the hero and navigation, **Зарегистрироваться** in the first journey step and **Начать** in the final lime panel. Each opens the same registration destination. The final panel says **Запустите проект уже сегодня и начните показывать его клиентам**. It asks the person to describe the business, view the first version and publish it through the chat. GitHub and hosting accounts are prerequisites in the expanded publication answer. The Product preview does not create repositories or deploy projects.
+
+The knowledge section explains that the person's understanding of the business becomes editable documents: the idea, customers, functions and visual choices. They can return to these documents, add new information and use them in subsequent tasks. The example asks to add a new course page using the school's saved description and appearance. An explicit `@knowledge` mention connects a new chat to saved knowledge, consistent with the Social and Knowledge README contracts. The copy does not imply that every chat automatically receives every document.
 
 ### Example identities and icons
 
@@ -222,11 +229,11 @@ The dark example block includes its introduction. Only the selected example reve
 
 ### Document explanations and next actions
 
-The five project documents have click-to-open explanations in both the preparation step and the saved-knowledge card. Each explanation names its purpose and gives a concrete example. Native disclosures work with touch and keyboard and expose their expanded state. Both groups use full-width rows before and after expansion. Journey numbers have no accompanying decorative icons. The first step has a full-width registration button; the third, **Получите первую версию**, describes the hosted result and repository access, followed by a quiet GitHub text link with its logo and no trailing arrow. The section is titled **Три шага до запуска вашего проекта** and describes preparation, approval and delivery of the first version.
+The five project documents have click-to-open explanations in both the preparation step and the saved-knowledge card. Each explanation names its purpose and gives a concrete example. Native disclosures work with touch and keyboard and expose their expanded state. Both groups use full-width rows before and after expansion. Journey numbers have no accompanying decorative icons. The first step has a full-width registration button; the third, **Опубликуйте проект**, describes hosting registration, publication through the chat and access to the result, followed by a quiet GitHub text link with its logo and no trailing arrow. The section is titled **Три шага до запуска вашего проекта** and describes creating an account, making the project with the assistant and publishing it.
 
-The open-code paragraph explains ownership, continued development and applying framework updates and bug fixes. The FAQ retains accurate cost information for visitors who ask what is free; no hosting price or free hosted service is promised. First-version delivery follows the proposed service described above; integration work remains a runtime implementation dependency.
+The open-code paragraph explains that the project uses the SPS framework, that SPS maintains the shared modules and fixes bugs, and that the person can extend a module or create a custom one with an AI assistant or developer. Access to their project code remains with them. Its **Код остаётся у вас** label has the same uppercase styling as the other section labels. The FAQ retains accurate cost information for visitors who ask what is free; no hosting price or free hosted service is promised. First-version delivery follows the proposed service described above; integration work remains a runtime implementation dependency.
 
-FAQ questions appear in rounded white cards with a lime circular plus control. Opening a card reveals the answer, tints the card pale green and changes the Phosphor plus glyph to minus; the full summary is clickable and retains visible keyboard focus. The footer describes SPS as an AI assistant and open framework for entrepreneurs and small teams, helping them create and develop digital products.
+FAQ questions appear in rounded white cards with a lime circular plus control. Opening a card reveals the answer, tints the card pale green and changes the Phosphor plus glyph to minus; the full summary is clickable and retains visible keyboard focus. The footer describes the purpose of the open framework: helping people create and develop websites, shops and web services.
 
 ### Webinar example and benefit-led section labels
 
@@ -234,4 +241,4 @@ Firstship presents a fictional free webinar about a first AI product. Three illu
 
 The Firstship header is the only place its wordmark appears. The lead uses launch artwork; Lessonloop course covers use connected interface glyphs, Buildfolk uses a green composition about building together, and Signalnote keeps its blue editorial lead with subject tags. Native selects retain keyboard behavior and have inset custom chevrons with reserved space for text. All icons are from Phosphor; example cover compositions use the existing code, users, chat-circle, robot and check-circle glyphs.
 
-The three lavender topic illustrations and portrait are registered under `singlepage-generated-framework-webinar-v1-*`, with original masters and square deliveries linked in Assets. The knowledge capability is named **База знаний** and shows an AI assistant retrieving document excerpts; **Конструктор сайтов** describes the page-building capability. Short section labels state a useful outcome, including **Запустите проект быстрее**, without inventing a time or price guarantee. The knowledge illustration preserves the graphite and lime line-art family and has no human searching the files.
+The three lavender topic illustrations and portrait are registered under `singlepage-generated-framework-webinar-v1-*`, with original masters and square deliveries linked in Assets. The knowledge capability is named **База знаний** and shows an AI assistant retrieving document excerpts; **Конструктор сайтов** describes the page-building capability. Short section labels name the intended outcome, including the operator-requested **Запустите проект уже сегодня**. This is a proposed launch target with no measured completion time or delivery guarantee; publication depends on the integrations and account setup described above. The knowledge illustration preserves the graphite and lime line-art family and has no human searching the files.
