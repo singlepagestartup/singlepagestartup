@@ -27,6 +27,12 @@ sources:
     date: 2026-10-24
     supports: The landing introduces reusable features in consumer language and invites a new visitor to register and describe an idea in AI Chat. Detailed development instructions belong after that first step.
     limitation: Product Storybook scope. Runtime and Studio Modules transfer require a separate review.
+  first_version_delivery:
+    classification: client-claim
+    source: operator instruction in the Product landing review
+    date: 2026-10-25
+    supports: After approval of the Brief, Strategy, Brand, Design and Product materials, the proposed service creates the client repository, deploys the framework with default component variants and populates it through MCP. Client-specific visuals are photography and infographics; the person receives the project URL and repository access.
+    limitation: Planned Product experience. Repository and server integrations require implementation; delivery pricing and token consumption are unspecified.
   review_language:
     classification: constraint
     source: operator instruction in the Product landing review
@@ -140,11 +146,11 @@ The footer groups **Build** (Framework, modules, source documentation, source li
 
 ### Preparation and development
 
-The preparation panel names the material to bring: notes, customer and offer decisions, a business model or plan, existing documents and visual references. AI Chat helps the person examine gaps and review written Brief, Strategy, Brand, Design and Product documents. The person exports selected reviewed files and gives them to Claude Code, Codex Desktop or another chosen coding agent. The coding agent opens the repository, runs it locally and changes the product; the person reviews the interface and business behaviour.
+The preparation panel names the material to bring: notes, customer and offer decisions, a business model or plan, existing documents and visual references. AI Chat helps the person review Brief, Strategy, Brand, Design and Product documents, including the intended structure and data models. The primary journey has three steps: create an account, prepare the project with the AI assistant, and receive a first version after approving the materials.
 
-The visible sequence has three steps: describe the idea, review the plan and build when ready. It names the coding app as a separate application on the person's computer. A collapsed **План уже есть? Начните отсюда.** disclosure contains a copyable request. The request asks the coding app to use reviewed documents, reuse suitable features and show what needs review. The person attaches their own exports outside this public page.
+The proposed first-version service creates the client's repository from Code Framework, deploys it to hosting and populates the deployed project through MCP. It uses the framework's existing default component variants. Client-specific visual work supplies photography and infographics; generating custom component variants is outside this initial version. The person receives a working project URL and access to their repository for further development. Repository and server integrations still require implementation. This Product preview specifies the intended experience and does not establish that those integrations are operational. Token consumption, delivery pricing and hosting terms remain unspecified.
 
-The free-code block remains visible alongside this sequence. Code and documentation use the MIT licence. Coding tools, infrastructure and hosted AI Chat usage have separate costs. This manual development route is available independently of future AI Chat landing-page assembly and server deployment.
+A collapsed **Хотите работать с кодом самостоятельно?** disclosure contains a copyable request for people using a coding application on their own computer. They can download their repository, attach reviewed project documents in Claude Code or Codex and adapt the code themselves. The FAQ distinguishes this self-directed development route from the proposed first-version service. Source ownership, documentation and licence links remain available; the journey contains neither a sample chat bubble nor a licence card. Framework code and documentation use the MIT licence; no free hosting or delivery price is promised.
 
 ### Module explanations
 
@@ -206,7 +212,7 @@ confirmation metadata is not renewed by this scoped revision. -->
 
 ### Registration and project preparation
 
-The Russian landing uses **Создать продукт** in the hero and navigation, **Зарегистрироваться** in the first journey step and **Начать** in the final lime panel. Each opens the same registration destination. It explains the next steps: work with the AI assistant on Brief, Strategy, Brand, Design and Product documents, review them, then use a coding application to build, check and publish. “Три шага до запуска вашего проекта” describes the sequence; it does not promise a one-hour deployment. Saved knowledge is shown as documents attached to a new request through an explicit `@knowledge` mention, consistent with the Social and Knowledge README contracts. This is a proposed acquisition journey, not a claim that the landing itself deploys a project.
+The Russian landing uses **Создать продукт** in the hero and navigation, **Зарегистрироваться** in the first journey step and **Начать** in the final lime panel. Each opens the same registration destination. It explains the next steps: work with the AI assistant on Brief, Strategy, Brand, Design and Product documents, approve them and receive a hosted first version using existing framework components and their own content. “Три шага до запуска вашего проекта” describes the sequence; it does not promise a one-hour deployment. Saved knowledge is shown as documents attached to a new request through an explicit `@knowledge` mention, consistent with the Social and Knowledge README contracts. This is a proposed acquisition journey, not a claim that the landing itself deploys a project.
 
 ### Example identities and icons
 
@@ -216,9 +222,9 @@ The dark example block includes its introduction. Only the selected example reve
 
 ### Document explanations and next actions
 
-The five project documents have click-to-open explanations in both the preparation step and the saved-knowledge card. Each explanation names its purpose and gives a concrete example. Native disclosures work with touch and keyboard and expose their expanded state. Both groups use full-width rows before and after expansion. Journey numbers have no accompanying decorative icons. The first step has a full-width registration button; the third, **Опубликуйте**, offers a quiet GitHub text link with its logo and no trailing arrow. The section is titled **Три шага до запуска вашего проекта** and retains the stated review, coding and publication tasks.
+The five project documents have click-to-open explanations in both the preparation step and the saved-knowledge card. Each explanation names its purpose and gives a concrete example. Native disclosures work with touch and keyboard and expose their expanded state. Both groups use full-width rows before and after expansion. Journey numbers have no accompanying decorative icons. The first step has a full-width registration button; the third, **Получите первую версию**, describes the hosted result and repository access, followed by a quiet GitHub text link with its logo and no trailing arrow. The section is titled **Три шага до запуска вашего проекта** and describes preparation, approval and delivery of the first version.
 
-The open-code paragraph explains ownership, continued development and applying framework updates and bug fixes. The FAQ retains accurate cost information for visitors who ask what is free; no hosting price, free hosted service or automatic deployment is promised.
+The open-code paragraph explains ownership, continued development and applying framework updates and bug fixes. The FAQ retains accurate cost information for visitors who ask what is free; no hosting price or free hosted service is promised. First-version delivery follows the proposed service described above; integration work remains a runtime implementation dependency.
 
 FAQ questions appear in rounded white cards with a lime circular plus control. Opening a card reveals the answer, tints the card pale green and changes the Phosphor plus glyph to minus; the full summary is clickable and retains visible keyboard focus. The footer describes SPS as an AI assistant and open framework for entrepreneurs and small teams, helping them create and develop digital products.
 

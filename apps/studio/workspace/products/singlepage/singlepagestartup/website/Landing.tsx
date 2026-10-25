@@ -380,11 +380,7 @@ export default function CodeFrameworkLanding({
                   <p className="mt-3 text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)]">
                     {item.text}
                   </p>
-                  {index === 0 ? (
-                    <div className="mt-5 rounded-2xl rounded-bl-sm bg-white/5 p-4 text-xs leading-6">
-                      {label["chat-example"]}
-                    </div>
-                  ) : index === 1 ? (
+                  {index === 1 && (
                     <div className="mt-5 space-y-2">
                       {[
                         "document-one",
@@ -400,10 +396,6 @@ export default function CodeFrameworkLanding({
                         />
                       ))}
                     </div>
-                  ) : (
-                    <p className="mt-5 rounded-xl border border-white/20 p-4 text-xs leading-6">
-                      {content.price.paragraphs[1]}
-                    </p>
                   )}
                   {index === 0 && (
                     <PreviewLink
@@ -613,7 +605,7 @@ export default function CodeFrameworkLanding({
                 {content.price.title}
               </h2>
               <p className={`mt-4 max-w-sm text-sm leading-6 ${muted}`}>
-                {content.price.paragraphs[2]}
+                {content.price.paragraphs[1]}
               </p>
             </div>
             <div>
