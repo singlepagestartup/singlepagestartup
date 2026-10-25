@@ -115,6 +115,21 @@ export const websiteAssets: Record<
   },
 };
 
+/** Reuse the registered acquisition masters in the Product module catalogue. */
+export const moduleArtwork: Record<string, IWebsiteAsset> = {
+  host: landingArtwork.hero,
+  "website-builder": landingArtwork.modules[6],
+  blog: landingArtwork.modules[2],
+  social: landingArtwork.modules[1],
+  crm: landingArtwork.modules[7],
+  rbac: landingArtwork.modules[0],
+  ecommerce: landingArtwork.modules[4],
+  billing: landingArtwork.modules[5],
+  knowledge: landingArtwork.modules[3],
+  agent: websiteAssets.agents,
+  startup: websiteAssets.modules,
+};
+
 function parseSection(markdown: string): IWebsiteSection {
   const title = markdown.match(/^#{1,6}\s+(.+)$/m)?.[1] ?? "";
   const paragraphs = markdown

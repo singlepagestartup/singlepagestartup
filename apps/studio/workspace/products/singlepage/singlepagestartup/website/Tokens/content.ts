@@ -85,5 +85,5 @@ export function parseTokenPage(text: string): ITokenPageContent {
 }
 
 export function tokenCredit({ amount, rate }: ITokenPackage): number {
-  return Math.floor((amount / rate) * 1_000_000) / 1_000_000;
+  return Math.round(amount / rate);
 }

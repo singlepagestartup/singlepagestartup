@@ -5,6 +5,24 @@ export interface IFrameworkModule {
   name: string;
   responsibility: string;
   group: string;
+  description: string;
+  keywords: string;
+}
+
+export interface IModuleScene {
+  label: string;
+  title: string;
+  description: string;
+  rows: string[];
+}
+
+export interface IBusinessModuleGuide {
+  article: IModuleCopySection;
+  example: IModuleCopySection;
+  scenes: IModuleScene[];
+  related: IModuleCopySection;
+  technical: IModuleCopySection;
+  task: IModuleCopySection;
 }
 
 export interface IModuleCopySection {
@@ -21,6 +39,20 @@ export interface IModulesPageContent {
   labels: Record<string, string>;
   articles: Record<string, IModuleCopySection>;
   social: Record<string, IModuleCopySection>;
+  guides: Record<string, IBusinessModuleGuide>;
+}
+
+function readRows(text: string): string[][] {
+  return text
+    .split("\n")
+    .filter((line) => line.startsWith("|"))
+    .slice(2)
+    .map((line) =>
+      line
+        .split("|")
+        .slice(1, -1)
+        .map((cell) => cell.trim()),
+    );
 }
 
 function readCopy(text: string): IModuleCopySection {
@@ -48,13 +80,40 @@ export function parseModulesPage(text = sourceText): IModulesPageContent {
   const section: Record<string, IModuleCopySection> = {
     introduction: readCopy(parts[0]),
   };
-  for (let index = 1; index < parts.length; index += 2)
+  const raw: Record<string, string> = {};
+  for (let index = 1; index < parts.length; index += 2) {
+    raw[parts[index]] = parts[index + 1] ?? "";
     section[parts[index]] = readCopy(parts[index + 1] ?? "");
+  }
+  const empty = readCopy("");
   return {
     introduction: section.introduction,
     composition: section.composition,
     preparation: section.preparation,
     guide: section.guide,
+    guides: Object.fromEntries(
+      parseModules(text).map(({ id }) => [
+        id,
+        {
+          article: section[`article-${id}`] ?? empty,
+          example: section[`example-${id}`] ?? empty,
+          scenes: readRows(raw[`scenes-${id}`] ?? "").map(
+            ([label, title, description, rows]) => ({
+              label,
+              title,
+              description,
+              rows: (rows ?? "")
+                .split(";")
+                .map((row) => row.trim())
+                .filter(Boolean),
+            }),
+          ),
+          related: section[`related-${id}`] ?? empty,
+          technical: section[`technical-${id}`] ?? empty,
+          task: section[`task-${id}`] ?? empty,
+        },
+      ]),
+    ),
     social: Object.fromEntries(
       Object.entries(section)
         .filter(([key]) => key.startsWith("social-"))
@@ -78,17 +137,47 @@ export function parseModules(text = sourceText): IFrameworkModule[] {
     .filter((line) => line.startsWith("|"))
     .slice(2)
     .map((line) => {
-      const [id, name, responsibility, group] = line
-        .split("|")
-        .slice(1, -1)
-        .map((cell) => cell.trim());
-      return { id, name, responsibility, group };
+      const [id, name, responsibility, group, description = "", keywords = ""] =
+        line
+          .split("|")
+          .slice(1, -1)
+          .map((cell) => cell.trim());
+      return { id, name, responsibility, group, description, keywords };
     })
     .filter(
       (item) =>
         /^[a-z][a-z-]*$/.test(item.id) &&
         Boolean(item.name && item.responsibility && item.group),
     );
+}
+
+export function filterModules(
+  modules: IFrameworkModule[],
+  group: string,
+  query: string,
+): IFrameworkModule[] {
+  const terms = query
+    .toLocaleLowerCase("ru")
+    .replaceAll("ё", "е")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  return modules.filter((item) => {
+    const searchable = [
+      item.id,
+      item.name,
+      item.responsibility,
+      item.description,
+      item.keywords,
+    ]
+      .join(" ")
+      .toLocaleLowerCase("ru")
+      .replaceAll("ё", "е");
+    return (
+      (!group || item.group === group) &&
+      terms.every((term) => searchable.includes(term))
+    );
+  });
 }
 
 export const frameworkModules = parseModules();

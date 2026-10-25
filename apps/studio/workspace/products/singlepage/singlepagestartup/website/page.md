@@ -3,7 +3,7 @@ confirmation:
   confirmed: false
 review:
   dependencies:
-    product.singlepagestartup.website: 2abc4300d9d0c6b2f8213188db921645ab23d1e3c23df80ec65e222a0bb5c24f
+    product.singlepagestartup.website: 485484b47895d8777fc5a02c2c74d2c694e13ba70860d3f7754963376900cfd6
 ---
 
 <!-- section: hero -->

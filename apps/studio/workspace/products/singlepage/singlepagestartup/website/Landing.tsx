@@ -546,6 +546,15 @@ export default function CodeFrameworkLanding({
                   (link) => link.href === `/framework/modules/${module.id}`,
                 ),
               )
+              .sort(
+                (a, b) =>
+                  content.articles.links.findIndex(
+                    (link) => link.href === `/framework/modules/${a.id}`,
+                  ) -
+                  content.articles.links.findIndex(
+                    (link) => link.href === `/framework/modules/${b.id}`,
+                  ),
+              )
               .map((module, index) => (
                 <PreviewLink
                   key={module.id}

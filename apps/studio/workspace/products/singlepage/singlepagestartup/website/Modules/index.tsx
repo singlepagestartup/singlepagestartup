@@ -5,9 +5,16 @@ import {
   kit,
 } from "../../../../../design/singlepage/interface-kit/primitives";
 import { SiteShell, PreviewLink, siteStyles as styles } from "../Site";
-import { parseModules, parseModulesPage, readModuleSlug } from "./content";
+import {
+  filterModules,
+  parseModules,
+  parseModulesPage,
+  readModuleSlug,
+} from "./content";
 import sourceText from "./page.md?raw";
 import SocialGuide from "./SocialGuide";
+import BusinessGuide from "./BusinessGuide";
+import ModuleVisual from "./ModuleVisual";
 
 interface IModulesPageProps extends IWorkspacePageProps {
   defaultSlug?: string;
@@ -20,191 +27,205 @@ export default function ModulesPage({
   defaultSlug,
 }: IModulesPageProps = {}) {
   const [group, setGroup] = useState("");
+  const [query, setQuery] = useState("");
   const copy = parseModulesPage(text ?? sourceText);
   const labels = copy.labels;
   const modules = parseModules(text ?? sourceText);
   const slug = readModuleSlug(navigationHref) ?? defaultSlug;
   const selected = modules.find((item) => item.id === slug);
-  if (selected?.id === "social") {
+  const visible = filterModules(modules, group, query);
+  if (selected?.id === "social")
     return <SocialGuide copy={copy.social} resolveLink={resolveLink} />;
-  }
   return (
     <SiteShell active="modules" resolveLink={resolveLink} lang="ru" acquisition>
-      <main className="mx-auto max-w-7xl px-5 py-10 @3xl:px-8 @3xl:py-14">
-        <PreviewLink
-          href="/framework"
-          resolveLink={resolveLink}
-          className={`inline-flex min-h-11 items-center gap-2 rounded-md text-sm ${styles.focus}`}
-        >
-          <Icon name="arrow-left" size={20} />
-          {labels["back-framework"]}
-        </PreviewLink>
-        {slug ? (
-          selected ? (
-            <article className="mt-8 max-w-4xl">
-              <p className={`text-sm ${styles.muted}`}>
-                {selected.group} / {selected.name}
+      {slug ? (
+        selected ? (
+          <BusinessGuide
+            key={selected.id}
+            module={selected}
+            guide={copy.guides[selected.id]}
+            modules={modules}
+            labels={labels}
+            resolveLink={resolveLink}
+          />
+        ) : (
+          <main className="mx-auto max-w-7xl px-5 py-16 @3xl:px-8">
+            <h1 className={`text-3xl ${styles.display}`}>
+              {labels["missing-title"]}
+            </h1>
+            <p className={`mt-4 ${styles.muted}`}>
+              {labels["missing-description"]}
+            </p>
+            <PreviewLink
+              href="/framework/modules"
+              resolveLink={resolveLink}
+              className={`${kit.button} mt-6`}
+            >
+              {labels["all-modules"]}
+            </PreviewLink>
+          </main>
+        )
+      ) : (
+        <main id="framework-modules">
+          <section className="border-b border-[var(--workspace-brand-line)] bg-white">
+            <div className="mx-auto max-w-7xl px-5 py-12 @3xl:px-8 @3xl:py-16">
+              <p
+                className={`text-xs font-medium uppercase tracking-widest ${styles.muted}`}
+              >
+                {copy.introduction.paragraphs[0]}
               </p>
-              <h1 className={`mt-4 text-4xl @3xl:text-5xl ${styles.display}`}>
-                {copy.guide.title.replaceAll("{module}", selected.name)}
+              <h1
+                className={`mt-4 max-w-4xl text-balance text-4xl leading-tight @3xl:text-5xl ${styles.display}`}
+              >
+                {copy.introduction.title}
               </h1>
-              <p className={`mt-6 max-w-2xl text-lg leading-8 ${styles.muted}`}>
-                {selected.responsibility}
+              <p
+                className={`mt-5 max-w-3xl text-base leading-8 ${styles.muted}`}
+              >
+                {copy.introduction.paragraphs[1]}
               </p>
-              <div className="mt-8 space-y-6">
-                {(copy.articles[selected.id]?.items ?? copy.guide.items).map(
-                  (item) => (
-                    <section
-                      key={item.title}
-                      className="rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-6"
+              <div className="mt-8 max-w-2xl">
+                <label
+                  htmlFor="module-search"
+                  className="mb-3 block text-sm font-semibold"
+                >
+                  {labels.search}
+                </label>
+                <div className="flex items-center gap-3 rounded-xl border border-[var(--workspace-brand-line)] bg-[var(--workspace-brand-background)] px-4 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--workspace-brand-foreground)]">
+                  <Icon name="magnifying-glass" size={20} />
+                  <input
+                    id="module-search"
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder={labels["search-placeholder"]}
+                    className="min-h-12 w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-[var(--workspace-brand-muted)]"
+                  />
+                </div>
+              </div>
+              <div
+                role="group"
+                aria-label={labels.groups}
+                className="mt-5 flex flex-wrap gap-2"
+              >
+                {["", ...new Set(modules.map((item) => item.group))].map(
+                  (name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      aria-pressed={name === group}
+                      onClick={() => setGroup(name)}
+                      className={name === group ? kit.button : kit.secondary}
                     >
-                      <h2 className="text-xl font-semibold">
-                        {item.title.replaceAll("{module}", selected.name)}
-                      </h2>
-                      <p className={`mt-3 text-sm leading-7 ${styles.muted}`}>
-                        {item.text.replaceAll("{module}", selected.name)}
-                      </p>
-                    </section>
+                      {name || labels["all-modules"]}
+                    </button>
                   ),
                 )}
               </div>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <a
-                  href={`https://github.com/singlepagestartup/singlepagestartup/blob/main/libs/modules/${selected.id}/README.md`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={kit.button}
-                >
-                  {labels["source-guide"].replaceAll("{module}", selected.name)}
-                  <Icon name="arrow-up-right" size={20} />
-                  <span className="sr-only">
-                    {" "}
-                    (открыть GitHub в новой вкладке)
-                  </span>
-                </a>
-                <PreviewLink
-                  href="/framework/modules"
-                  resolveLink={resolveLink}
-                  className={kit.secondary}
-                >
-                  {labels["all-modules"]}
-                </PreviewLink>
-              </div>
-            </article>
-          ) : (
-            <section className="py-16">
-              <h1 className={`text-3xl ${styles.display}`}>
-                {labels["missing-title"]}
-              </h1>
-              <p className={`mt-4 ${styles.muted}`}>
-                {labels["missing-description"]}
-              </p>
-              <PreviewLink
-                href="/framework/modules"
-                resolveLink={resolveLink}
-                className={`${kit.button} mt-6`}
-              >
-                {labels["all-modules"]}
-              </PreviewLink>
-            </section>
-          )
-        ) : (
-          <>
-            <p className={`mt-8 text-sm ${styles.muted}`}>
-              {copy.introduction.paragraphs[0]}
-            </p>
-            <h1
-              className={`mt-4 max-w-3xl text-balance text-4xl leading-tight @3xl:text-5xl ${styles.display}`}
-            >
-              {copy.introduction.title}
-            </h1>
-            <p className={`mt-6 max-w-2xl text-lg leading-8 ${styles.muted}`}>
-              {copy.introduction.paragraphs[1]}
-            </p>
-            <div
-              role="group"
-              aria-label="Module groups"
-              className="mt-8 flex flex-wrap gap-2"
-            >
-              {["", ...new Set(modules.map((item) => item.group))].map(
-                (name) => (
-                  <button
-                    key={name}
-                    type="button"
-                    aria-pressed={name === group}
-                    onClick={() => setGroup(name)}
-                    className={`${name === group ? kit.button : kit.secondary}`}
-                  >
-                    {name || labels["all-modules"]}
-                  </button>
-                ),
-              )}
             </div>
-            <div className="mt-6 grid gap-4 @2xl:grid-cols-2 @5xl:grid-cols-3">
-              {modules
-                .filter((item) => group === "" || item.group === group)
-                .map((item) => (
-                  <PreviewLink
-                    key={item.id}
-                    href={`/framework/modules/${item.id}`}
-                    resolveLink={resolveLink}
-                    className={`group flex min-w-0 flex-col rounded-2xl border border-[var(--workspace-brand-line)] bg-white p-6 hover:border-[var(--workspace-brand-foreground)] ${styles.focus}`}
-                  >
-                    <p className={`text-xs ${styles.muted}`}>{item.group}</p>
-                    <h2 className={`mt-3 text-xl ${styles.display}`}>
-                      {item.name}
+          </section>
+          <section
+            className="mx-auto max-w-7xl px-5 py-8 @3xl:px-8 @3xl:py-10"
+            aria-label={labels["all-modules"]}
+          >
+            <p
+              role="status"
+              aria-live="polite"
+              className={`mb-5 text-sm ${styles.muted}`}
+            >
+              {labels.results} {visible.length}
+            </p>
+            <div className="grid gap-5 @5xl:grid-cols-2">
+              {visible.map((item) => (
+                <PreviewLink
+                  key={item.id}
+                  href={`/framework/modules/${item.id}`}
+                  resolveLink={resolveLink}
+                  className={`group grid min-w-0 overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-white transition-colors hover:border-[var(--workspace-brand-foreground)] @xl:grid-cols-[0.75fr_1.25fr] ${styles.focus}`}
+                >
+                  <div className="min-h-40 border-b border-[var(--workspace-brand-line)] @xl:border-b-0 @xl:border-r">
+                    <ModuleVisual
+                      moduleId={item.id}
+                      scene={copy.guides[item.id]?.scenes[0]}
+                      compact
+                    />
+                  </div>
+                  <div className="flex min-w-0 flex-col p-5 @3xl:p-6">
+                    <p className={`text-xs ${styles.muted}`}>{item.name}</p>
+                    <h2
+                      className={`mt-2 text-xl leading-snug ${styles.display}`}
+                    >
+                      {item.responsibility}
                     </h2>
                     <p
                       className={`mt-3 flex-1 text-sm leading-7 ${styles.muted}`}
                     >
-                      {item.responsibility}
+                      {item.description}
                     </p>
-                    <span className="mt-5 flex min-h-11 items-center gap-2 text-sm font-medium">
+                    <span className="mt-5 flex items-center justify-between gap-3 text-sm font-semibold">
                       {labels["explore-module"]}
-                      <Icon name="arrow-right" size={20} />
+                      <span className="rounded-full bg-[var(--workspace-brand-accent)] p-2 transition-colors group-hover:bg-[var(--workspace-brand-foreground)] group-hover:text-white">
+                        <Icon name="arrow-right" size={20} />
+                      </span>
                     </span>
-                  </PreviewLink>
-                ))}
+                  </div>
+                </PreviewLink>
+              ))}
             </div>
-            <section className="mt-10 rounded-3xl bg-[var(--workspace-brand-foreground)] p-6 text-[var(--workspace-brand-on-primary)] @3xl:p-8">
-              <p className="text-sm text-[var(--workspace-brand-muted-on-primary)]">
-                {labels["composition-eyebrow"]}
-              </p>
-              <h2 className={`mt-3 text-2xl ${styles.display}`}>
-                {copy.composition.title}
-              </h2>
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--workspace-brand-muted-on-primary)]">
-                {copy.composition.paragraphs[0]}
-              </p>
-              <div className="mt-6 border-t border-white/20 pt-6">
-                <h3 className="text-xl font-semibold">
-                  {copy.preparation.title}
-                </h3>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--workspace-brand-muted-on-primary)]">
-                  {copy.preparation.paragraphs[0]}
+            {!visible.length && (
+              <div className="rounded-3xl border border-[var(--workspace-brand-line)] bg-white p-8">
+                <h2 className="text-xl font-semibold">{labels.empty}</h2>
+                <p
+                  className={`mt-3 max-w-xl text-sm leading-7 ${styles.muted}`}
+                >
+                  {labels["empty-help"]}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setGroup("");
+                  }}
+                  className={`${kit.button} mt-5`}
+                >
+                  {labels.reset}
+                </button>
+              </div>
+            )}
+          </section>
+          <section className="bg-[var(--workspace-brand-foreground)] text-white">
+            <div className="mx-auto grid max-w-7xl gap-8 px-5 py-12 @3xl:px-8 @3xl:py-16 @4xl:grid-cols-2">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-widest text-[var(--workspace-brand-accent)]">
+                  {labels["composition-eyebrow"]}
+                </p>
+                <h2 className={`mt-4 text-3xl leading-tight ${styles.display}`}>
+                  {copy.composition.title}
+                </h2>
+                <p className="mt-5 text-base leading-8 text-[var(--workspace-brand-muted-on-primary)]">
+                  {copy.composition.paragraphs[0]}
                 </p>
               </div>
-              <div className="mt-6 flex flex-wrap gap-4">
+              <div className="rounded-2xl border border-white/20 p-6">
+                <h3 className="text-xl font-semibold leading-snug">
+                  {copy.preparation.title}
+                </h3>
+                <p className="mt-4 text-sm leading-7 text-[var(--workspace-brand-muted-on-primary)]">
+                  {copy.preparation.paragraphs[0]}
+                </p>
                 <PreviewLink
-                  href="/blog"
+                  href={labels["register-href"]}
                   resolveLink={resolveLink}
-                  className={kit.button}
-                >
-                  {labels["articles-action"]}
-                  <Icon name="arrow-right" size={20} />
-                </PreviewLink>
-                <PreviewLink
-                  href="/"
-                  resolveLink={resolveLink}
-                  className={`${kit.secondary} text-[var(--workspace-brand-foreground)]`}
+                  className={`${kit.button} mt-6`}
                 >
                   {labels["prepare-action"]}
+                  <Icon name="arrow-right" size={20} />
                 </PreviewLink>
               </div>
-            </section>
-          </>
-        )}
-      </main>
+            </div>
+          </section>
+        </main>
+      )}
     </SiteShell>
   );
 }

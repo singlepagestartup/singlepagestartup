@@ -9,7 +9,7 @@ import sourceText from "./page.md?raw";
 import { parseTokenPage, tokenCredit } from "./content";
 
 const integer = new Intl.NumberFormat("en-US");
-const credit = new Intl.NumberFormat("en-US", { maximumFractionDigits: 6 });
+const credit = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
 export default function Tokens({
   text,

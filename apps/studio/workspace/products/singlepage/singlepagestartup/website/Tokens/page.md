@@ -77,28 +77,28 @@ When your business description and product requirements are ready, use them to b
 
 ## Interface labels
 
-| Control         | Text                                                                                                                        |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| register        | Create an AI Chat account                                                                                                   |
-| register-href   | /ai-chat/rbac/subjects/authentication/registration                                                                          |
-| pro-eyebrow     | Monthly plan                                                                                                                |
-| currency        | Billing currency                                                                                                            |
-| per-month       | per month                                                                                                                   |
-| continue        | Continue in AI Chat                                                                                                         |
-| pro-review      | Review monthly Pro                                                                                                          |
-| pro-review-href | /ai-chat/rbac/subjects/subscriptions/pro                                                                                    |
-| checkout-href   | /ai-chat/rbac/subjects/tokens                                                                                               |
-| package-label   | Choose a top-up amount                                                                                                      |
-| amount-unit     | RUB                                                                                                                         |
-| token-unit      | internal tokens                                                                                                             |
-| estimate        | Estimated token credit                                                                                                      |
-| selected        | Selected top-up                                                                                                             |
-| one-off         | one-off payment                                                                                                             |
-| estimate-note   | Token credit is shown to six decimal places at the stated rate. Review the final credited amount in AI Chat before payment. |
-| rate            | 0.13 RUB per internal token                                                                                                 |
-| terms           | Token and payment terms in AI Chat                                                                                          |
-| terms-href      | /ai-chat/rbac/subjects/tokens                                                                                               |
-| framework       | Explore Code Framework                                                                                                      |
-| framework-href  | /framework                                                                                                                  |
-| chat            | Open AI Chat                                                                                                                |
-| chat-href       | /                                                                                                                           |
+| Control         | Text                                                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| register        | Create an AI Chat account                                                                                                 |
+| register-href   | /ai-chat/rbac/subjects/authentication/registration                                                                        |
+| pro-eyebrow     | Monthly plan                                                                                                              |
+| currency        | Billing currency                                                                                                          |
+| per-month       | per month                                                                                                                 |
+| continue        | Continue in AI Chat                                                                                                       |
+| pro-review      | Review monthly Pro                                                                                                        |
+| pro-review-href | /ai-chat/rbac/subjects/subscriptions/pro                                                                                  |
+| checkout-href   | /ai-chat/rbac/subjects/tokens                                                                                             |
+| package-label   | Choose a top-up amount                                                                                                    |
+| amount-unit     | RUB                                                                                                                       |
+| token-unit      | internal tokens                                                                                                           |
+| estimate        | Estimated token credit                                                                                                    |
+| selected        | Selected top-up                                                                                                           |
+| one-off         | one-off payment                                                                                                           |
+| estimate-note   | Estimated token credit is rounded to the nearest whole token. Review the final credited amount in AI Chat before payment. |
+| rate            | 0.13 RUB per internal token                                                                                               |
+| terms           | Token and payment terms in AI Chat                                                                                        |
+| terms-href      | /ai-chat/rbac/subjects/tokens                                                                                             |
+| framework       | Explore Code Framework                                                                                                    |
+| framework-href  | /framework                                                                                                                |
+| chat            | Open AI Chat                                                                                                              |
+| chat-href       | /                                                                                                                         |
