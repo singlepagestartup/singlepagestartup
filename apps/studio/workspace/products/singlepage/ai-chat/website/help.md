@@ -13,71 +13,71 @@ review:
     product.ai-chat.website: 01b952c5fa54af025f65408e64fd34bb8ab17b40c54ccecbf01604312b1abdc2
 ---
 
-# Get help
+# Помощь
 
 <!-- section: hero -->
 
-## What stopped you?
+## С чем нужна помощь?
 
-Tell us what you were trying to do, what happened and the result you need. Name the project or payment when it matters to the question.
+Расскажите, что вы хотели сделать, что произошло и какой результат нужен. Укажите проект или платёж, если вопрос связан с ним.
 
 <!-- section: request -->
 
-## Support request
+## Обращение в поддержку
 
-| Field                    | What to include                                          |
-| ------------------------ | -------------------------------------------------------- |
-| Topic                    | Choose the part of AI Chat your question concerns.       |
-| What happened?           | Describe the action, the result and any message you saw. |
-| What result do you need? | Explain what you want to continue or correct.            |
+| Field                  | What to include                                              |
+| ---------------------- | ------------------------------------------------------------ |
+| Тема                   | Выберите, с какой частью AI Chat связан вопрос.              |
+| Что произошло?         | Опишите действие, результат и сообщение, которое вы увидели. |
+| Какой результат нужен? | Расскажите, что хотите продолжить или исправить.             |
 
 <!-- section: topics -->
 
-## Choose a topic
+## Выберите тему
 
-| Topic                   | Scope                                              |
-| ----------------------- | -------------------------------------------------- |
-| Account access          | Registration, sign-in or password help.            |
-| Project documents       | Drafts, identified shortcomings, edits and review. |
-| Files and images        | Adding material or working with supplied files.    |
-| Chat threads and topics | Document discussions and project conversations.    |
-| Export                  | Downloading and using your documents.              |
-| Tokens and payment      | Balance, top-ups, receipts or a payment result.    |
-| Other                   | Another question about AI Chat.                    |
+| Тема                  | Scope                                            |
+| --------------------- | ------------------------------------------------ |
+| Доступ к аккаунту     | Регистрация, вход и восстановление доступа.      |
+| Документы проекта     | Черновики, вопросы, изменения и проверка текста. |
+| Файлы и изображения   | Загрузка материалов и работа с файлами.          |
+| Обсуждения и темы     | Обсуждение документов и разговоры о проекте.     |
+| Скачивание документов | Скачивание и использование документов.           |
+| Токены и оплата       | Баланс, пополнение, чеки и результат оплаты.     |
+| Другое                | Другой вопрос об AI Chat.                        |
 
 <!-- section: response -->
 
-## What happens next
+## Что будет дальше
 
-Support requests are processed within 24 hours. This is the initial response expectation, not a promise to resolve every request within that time. Continuous live support is outside the current service.
+На первое обращение отвечаем в течение 24 часов. Срок решения зависит от вопроса. Круглосуточного чата поддержки сейчас нет.
 
-Keep your saved documents and task in place while you wait. [Return to the workspace](/ai-chat/social/profiles/example).
+Сохранённые документы и задачи остаются доступны, пока вы ждёте ответа. [Вернуться к проекту](/ai-chat/social/profiles/example).
 
 <!-- section: success -->
 
-## Request saved
+## Обращение сохранено
 
-Your support request is saved. You can keep working in your workspace while it is reviewed. A saved request does not confirm that an email notification was delivered.
+Обращение сохранено. Пока его рассматривают, вы можете продолжать работу. Сохранение обращения не подтверждает доставку уведомления по электронной почте.
 
 <!-- section: controls -->
 
-## Interface labels
+## Подписи интерфейса
 
-| Control             | Text                                          |
-| ------------------- | --------------------------------------------- |
-| back-label          | Back to workspace                             |
-| back-href           | /ai-chat/social/profiles/example              |
-| topic-label         | Topic                                         |
-| topic-placeholder   | Select a topic                                |
-| details-label       | What happened?                                |
-| details-placeholder | Describe what you tried and what happened.    |
-| result-label        | What result do you need?                      |
-| result-placeholder  | Tell us what you want to continue or correct. |
-| submit              | Send request                                  |
-| edit-request        | Edit request                                  |
-| return-label        | Return to workspace                           |
-| return-href         | /ai-chat/social/profiles/example              |
-| topic-error         | Choose a topic.                               |
-| details-error       | Describe what happened.                       |
-| result-error        | Tell us what result you need.                 |
-| success-message     | Support request saved.                        |
+| Control             | Text                                             |
+| ------------------- | ------------------------------------------------ |
+| back-label          | К проекту                                        |
+| back-href           | /ai-chat/social/profiles/example                 |
+| topic-label         | Тема                                             |
+| topic-placeholder   | Выберите тему                                    |
+| details-label       | Что произошло?                                   |
+| details-placeholder | Опишите, что вы сделали и что произошло.         |
+| result-label        | Какой результат нужен?                           |
+| result-placeholder  | Расскажите, что хотите продолжить или исправить. |
+| submit              | Отправить обращение                              |
+| edit-request        | Изменить обращение                               |
+| return-label        | Вернуться к проекту                              |
+| return-href         | /ai-chat/social/profiles/example                 |
+| topic-error         | Выберите тему обращения.                         |
+| details-error       | Опишите, что произошло.                          |
+| result-error        | Укажите, какой результат нужен.                  |
+| success-message     | Обращение в поддержку сохранено.                 |

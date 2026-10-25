@@ -226,7 +226,9 @@ describe("token credit display", () => {
   });
   test("package cards and selected summary show integer credits", () => {
     const html = renderToStaticMarkup(<Tokens text={tokens} />);
-    for (const value of ["769", "2,308", "3,846", "7,692", "23,077"])
+    for (const value of [769, 2308, 3846, 7692, 23077].map((value) =>
+      new Intl.NumberFormat("ru-RU").format(value),
+    ))
       expect(html).toContain(value);
     expect(html).not.toContain("769.230");
     expect(html).not.toContain("six decimal places");

@@ -1,6 +1,6 @@
 ---
 confirmation:
-  confirmed: true
+  confirmed: false
   by: operator
   at: 2026-09-17
   source: "Operator confirmed the complete current AI Chat landing page in chat: «Да, пойдет. подтверждаем эту страницу и идем дальше»."
@@ -12,227 +12,227 @@ review:
 
 <!-- section: hero -->
 
-# Your notes, photos and plans. One project chat.
+# Ваши заметки, фотографии и планы — в чате проекта
 
-AI Chat for your business idea.
+ИИ-помощник для вашей бизнес-идеи
 
-Upload what you have. AI checks for gaps and helps you edit each document in its own thread. Attach saved documents to new conversations about your project.
+Загрузите свои материалы или опишите идею. ИИ-помощник задаст вопросы и поможет подготовить описание бизнеса, стратегию, бренд, дизайн и продукты. Открывайте документы, обсуждайте изменения и используйте сохранённые знания в новых задачах.
 
-[Start with my files](/ai-chat/rbac/subjects/authentication/registration)
+[Начать со своих материалов](/ai-chat/rbac/subjects/authentication/registration)
 
-[Sign in](/ai-chat/rbac/subjects/authentication/select-method)
+[Войти](/ai-chat/rbac/subjects/authentication/select-method)
 
-Your documents stay editable. Export them and use them freely outside AI Chat.
+Документы можно редактировать, скачивать и использовать за пределами AI Chat.
 
 <!-- section: foundation -->
 
-## Your project, ready to work on.
+## Знания о проекте — для дальнейшей работы
 
-Your files become working documents you can open, edit and use in chat.
+Ваши материалы становятся документами, которые можно открыть, изменить и обсудить в чате.
 
-| Working area | What it gives you                                    |
-| ------------ | ---------------------------------------------------- |
-| Brief        | What you want to make and the material you have.     |
-| Strategy     | Who you want to reach and what you will offer them.  |
-| Brand        | How you describe the project and speak to customers. |
-| Design       | The intended appearance and the images you can use.  |
-| Products     | Each product's customer, offer and working sections. |
+| Направление | Что в нём                                                    |
+| ----------- | ------------------------------------------------------------ |
+| Бриф        | Что вы хотите создать и что уже подготовили.                 |
+| Стратегия   | Кому нужен продукт и что вы предложите этим людям.           |
+| Бренд       | Как описывать проект и общаться с клиентами.                 |
+| Дизайн      | Как будет выглядеть проект и какие изображения использовать. |
+| Продукты    | Клиенты, предложения и рабочие разделы каждого продукта.     |
 
 <!-- section: workflow -->
 
-## Try the chat.
+## Попробуйте чат
 
-Check the workshop files and send an answer. Review Products.md, work on another file, then open a topic with the documents you saved.
+Откройте пример проекта мастерской. Обсудите его с помощником, добавьте сообщение или файл, переключитесь на документ и отредактируйте текст. Так же устроено рабочее пространство вашего проекта.
 
-| Step          | What happens                                                            |
-| ------------- | ----------------------------------------------------------------------- |
-| Add materials | Bring notes, photos, plans or describe the idea in chat.                |
-| Review        | AI checks the material and asks about what is missing.                  |
-| Edit together | Discuss and edit each document in its own thread. Review it when ready. |
-| Keep working  | Open a topic and attach the saved documents you want to use.            |
+| Шаг                   | Что происходит                                                 |
+| --------------------- | -------------------------------------------------------------- |
+| Добавьте материалы    | Загрузите заметки, фотографии и планы или опишите идею в чате. |
+| Ответьте на вопросы   | Помощник изучит материалы и уточнит недостающие сведения.      |
+| Доработайте документы | Обсудите каждый документ и проверьте подготовленный текст.     |
+| Продолжайте работу    | Создайте новую тему и используйте знания о проекте.            |
 
 <!-- section: demo-files -->
 
-## Your files
+## Ваши файлы
 
-| File           | Content                                       |
-| -------------- | --------------------------------------------- |
-| Notes.md       | I want to run weekend pottery workshops.      |
-| Plan.md        | Make a cup by hand in a small group.          |
-| References.jpg | Photos of the studio, clay and handmade cups. |
+| Файл          | Содержимое                                            |
+| ------------- | ----------------------------------------------------- |
+| Заметки.md    | Хочу проводить мастер-классы по керамике по выходным. |
+| План.md       | Участники небольшой группы лепят чашку вручную.       |
+| Референсы.jpg | Фотографии мастерской, глины и готовых чашек.         |
 
 <!-- section: demo-draft -->
 
-## Pottery workshops
+## Мастерская керамики
 
-Weekend pottery workshops where people make a cup by hand in a small group. Who the workshop is for is still open.
+Мастер-классы по выходным: участники небольшой группы лепят чашку вручную. Аудиторию ещё нужно уточнить.
 
-Weekend pottery workshops for {audience} Make a cup by hand in a small group.
+Мастер-классы по керамике по выходным для {audience} Участники небольшой группы лепят чашку вручную.
 
-| Section  | Draft                                  |
-| -------- | -------------------------------------- |
-| Customer | Who the workshop is for is still open. |
-| Offer    | Make a cup by hand in a small group.   |
-| Missing  | Who is this workshop for?              |
+| Раздел          | Черновик                                  |
+| --------------- | ----------------------------------------- |
+| Клиент          | Аудиторию ещё нужно уточнить.             |
+| Предложение     | Слепить чашку вручную в небольшой группе. |
+| Открытый вопрос | Для кого этот мастер-класс?               |
 
 <!-- section: demo-documents -->
 
-## Project documents
+## Документы проекта
 
-| Section  | Draft                                                                                                              |
-| -------- | ------------------------------------------------------------------------------------------------------------------ |
-| Brief    | Run weekend pottery workshops in a local studio. Start with a small group making cups by hand.                     |
-| Strategy | Reach people looking for a hands-on weekend activity. The intended audience still needs to be specified.           |
-| Brand    | Use warm, direct language. Show the clay, tools and process without promising results.                             |
-| Design   | Use photographs of the studio and materials. Keep workshop information clear and readable.                         |
-| Products | Weekend pottery workshops where people make a cup by hand in a small group. Who the workshop is for is still open. |
+| Раздел    | Черновик                                                                                                                      |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Бриф      | Проводить мастер-классы по керамике в местной мастерской по выходным. Начать с небольшой группы, которая лепит чашки вручную. |
+| Стратегия | Найти людей, которым нужно практическое занятие на выходных. Аудиторию ещё нужно уточнить.                                    |
+| Бренд     | Говорить прямо и доброжелательно. Показывать глину, инструменты и процесс работы.                                             |
+| Дизайн    | Использовать фотографии мастерской и материалов. Показывать программу, дату и условия участия.                                |
+| Продукты  | Мастер-классы по выходным: участники небольшой группы лепят чашку вручную. Аудиторию ещё нужно уточнить.                      |
 
 <!-- section: demo-conversation -->
 
-## Project chat
+## Чат проекта
 
-| Step          | AI Chat                                                                                                        |
-| ------------- | -------------------------------------------------------------------------------------------------------------- |
-| Add materials | I can work with these three files. Check them to start.                                                        |
-| Review        | The workshop plan is clear. Who is it for: adults trying pottery, people with experience, or someone else?     |
-| Edit together | I added the audience, offer and format to Products.md. Review the draft and change anything that does not fit. |
-| Keep working  | Open a topic in the project workspace and choose the saved documents for that conversation.                    |
+| Шаг                   | ИИ-помощник                                                                                                     |
+| --------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Добавьте материалы    | Могу работать с этими тремя файлами. Давайте изучим их.                                                         |
+| Ответьте на вопросы   | Кто придёт на мастер-класс: взрослые без опыта, люди, которые уже занимаются керамикой, или другая аудитория?   |
+| Доработайте документы | Добавил аудиторию, предложение и формат в документ «Продукты». Проверьте текст и исправьте то, что не подходит. |
+| Продолжайте работу    | Откройте новую тему и используйте сохранённые знания о проекте.                                                 |
 
 <!-- section: demo-ready-document -->
 
-## Products.md
+## Продукты.md
 
-| Section  | Draft                            |
-| -------- | -------------------------------- |
-| Customer | {audience}                       |
-| Offer    | Make a cup by hand.              |
-| Format   | A small group in a local studio. |
+| Раздел      | Черновик                               |
+| ----------- | -------------------------------------- |
+| Клиент      | {audience}                             |
+| Предложение | Слепить чашку вручную.                 |
+| Формат      | Небольшая группа в местной мастерской. |
 
 <!-- section: demo-thread-prompts -->
 
-## Document threads
+## Обсуждения документов
 
-| Document | AI Chat                                                                                                    |
-| -------- | ---------------------------------------------------------------------------------------------------------- |
-| Brief    | We have a studio workshop idea and three source files. What should the first session focus on?             |
-| Strategy | Who should this workshop reach first?                                                                      |
-| Brand    | How should you invite people to the workshop?                                                              |
-| Design   | Which studio image should lead the page?                                                                   |
-| Products | The workshop plan is clear. Who is it for: adults trying pottery, people with experience, or someone else? |
+| Документ  | ИИ-помощник                                                                         |
+| --------- | ----------------------------------------------------------------------------------- |
+| Бриф      | Есть идея мастерской и три исходных файла. Чему посвятим первое занятие?            |
+| Стратегия | Кого пригласим на первый мастер-класс?                                              |
+| Бренд     | Как пригласить людей на занятие?                                                    |
+| Дизайн    | Какую фотографию мастерской поставим на первый экран?                               |
+| Продукты  | Кто придёт на мастер-класс: взрослые без опыта, люди с опытом или другая аудитория? |
 
 <!-- section: demo-thread-inputs -->
 
-## Your next message
+## Ваше следующее сообщение
 
-| Document | Message                                            |
-| -------- | -------------------------------------------------- |
-| Brief    | Keep the first session focused on making a cup.    |
-| Strategy | Focus on adults trying pottery for the first time. |
-| Brand    | Use “Make your first cup” as the invitation.       |
-| Design   | Lead with a close-up of hands working with clay.   |
-| Products | Make the small group format clear.                 |
+| Документ  | Сообщение                                             |
+| --------- | ----------------------------------------------------- |
+| Бриф      | Посвятим первое занятие лепке чашки.                  |
+| Стратегия | Пригласим взрослых, которые впервые пробуют керамику. |
+| Бренд     | Используй приглашение «Слепите свою первую чашку».    |
+| Дизайн    | Начни с крупного плана рук, работающих с глиной.      |
+| Продукты  | Укажи, что занятие проходит в небольшой группе.       |
 
 <!-- section: publish -->
 
-## Edit the document.
+## Доработайте документ
 
-Read the draft, change the wording and save the section when it is ready.
+Прочитайте черновик, измените формулировки и сохраните проверенный текст.
 
 <!-- section: continue -->
 
-## Keep working in chat.
+## Продолжайте работу в чате
 
-Open a topic for your next task. Choose which saved documents to attach, then discuss the project with AI Chat.
+Создайте тему для следующей задачи. ИИ-помощник сможет использовать знания о проекте в новом разговоре.
 
 <!-- section: terms -->
 
-## Access, tokens and your materials
+## Доступ, токены и ваши материалы
 
-Registration shows the current free token allowance. Paid AI work uses the token balance.
+При регистрации вы увидите доступное количество бесплатных токенов. Платная работа ИИ расходует токены на вашем балансе.
 
-| Topic                           | Terms                                                                                                                                                                                              |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Token cost                      | 0.13 roubles per internal token. One token is charged when input is sent; a successful request settles at actual provider cost, rounded up to a whole internal token, with a minimum of one token. |
-| Top-ups                         | 100, 300, 500, 1,000 or 3,000 roubles, at the same rate without package discounts. Tokens do not expire. Cash refunds for purchases are decided case by case.                                      |
-| Balance limit                   | The balance can go below zero. At −2,000 internal tokens or lower, new paid AI requests are restricted. Top up above the threshold to return to your saved task.                                   |
-| Failed or cancelled AI requests | All token deductions are restored, including the initial token and any settlement. The net charge is zero; the service pays the provider expense.                                                  |
-| Support                         | Initial support requests are processed within 24 hours, without continuous live coverage or a promised resolution time.                                                                            |
-| Materials                       | Review how your materials are processed and stored before uploading. Account deletion removes active data; infrastructure backups may retain copies for up to six months.                          |
+| Тема                      | Условия                                                                                                                                                                                                                      |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Стоимость токенов         | 0,13 рубля за внутренний токен. При отправке запроса списывается один токен. После успешного ответа расход рассчитывается по фактической стоимости ИИ и округляется вверх до целого токена. Минимальный расход — один токен. |
+| Пополнение                | 100, 300, 500, 1 000 или 3 000 рублей по одной ставке, без скидок за размер пакета. Купленные токены не сгорают. Возврат денег рассматривается индивидуально.                                                                |
+| Ограничение баланса       | Баланс может быть отрицательным. При −2 000 внутренних токенов или ниже новые платные запросы недоступны. Пополните баланс выше этого уровня, чтобы продолжить сохранённую задачу.                                           |
+| Ошибка или отмена запроса | Все списанные за запрос токены возвращаются, включая первоначальный токен и итоговое списание. Расход для вас равен нулю; затраты провайдера оплачивает сервис.                                                              |
+| Поддержка                 | Первое обращение обрабатывается в течение 24 часов. Это срок первого ответа; срок решения зависит от вопроса. Круглосуточного чата поддержки сейчас нет.                                                                     |
+| Материалы                 | Перед загрузкой прочитайте, как обрабатываются и хранятся ваши материалы. При удалении аккаунта активные данные удаляются. Резервные копии инфраструктуры могут храниться до шести месяцев.                                  |
 
-[Buy tokens](/ai-chat/rbac/subjects/tokens) · [How your materials are processed and stored](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored) · [Get help](/ai-chat/help)
+[Купить токены](/ai-chat/rbac/subjects/tokens) · [Обработка и хранение материалов](/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored) · [Помощь](/ai-chat/help)
 
 <!-- section: footer -->
 
 ## SinglePageStartup
 
-[Start with my files](/ai-chat/rbac/subjects/authentication/registration) · [Sign in](/ai-chat/rbac/subjects/authentication/select-method) · [Code Framework](/framework)
+[Начать со своих материалов](/ai-chat/rbac/subjects/authentication/registration) · [Войти](/ai-chat/rbac/subjects/authentication/select-method) · [Code Framework](/framework)
 
 <!-- section: controls -->
 
-| Control                  | Label                                                                    |
-| ------------------------ | ------------------------------------------------------------------------ |
-| navigation-foundation    | Try the chat                                                             |
-| navigation-workflow      | How it works                                                             |
-| navigation-start         | Start with my files                                                      |
-| skip-link                | Skip to page content                                                     |
-| hero-photo-alt           | A solo founder pauses over notes for her new business.                   |
-| final-title              | Bring your own project into the chat.                                    |
-| demo-project             | Pottery workshops                                                        |
-| demo-chat                | Project chat                                                             |
-| demo-files               | Your files                                                               |
-| demo-sections            | Project documents                                                        |
-| demo-progress            | Sections reviewed                                                        |
-| demo-progress-note       | Unanswered questions stay visible. Review each section when it is ready. |
-| demo-check               | Check materials                                                          |
-| demo-answer              | Send answer                                                              |
-| demo-answer-label        | Who is the workshop for?                                                 |
-| demo-answer-placeholder  | Adults trying pottery for the first time.                                |
-| demo-save                | Save Product description                                                 |
-| demo-edit-label          | Product description                                                      |
-| demo-continue            | Continue in chat                                                         |
-| demo-message-label       | Message                                                                  |
-| demo-message-placeholder | Ask about the project...                                                 |
-| demo-send                | Send message                                                             |
-| demo-reset               | Restart walkthrough                                                      |
-| demo-ready               | Ready to review                                                          |
-| demo-needs-input         | Needs an answer                                                          |
-| demo-review              | Review draft                                                             |
-| demo-accepted            | Reviewed                                                                 |
-| demo-add                 | Add files                                                                |
-| demo-upload-note         | Interactive walkthrough; changes stay in this page.                      |
-| demo-you                 | You                                                                      |
-| demo-agent               | AI Chat                                                                  |
-| demo-chat-saved          | Your saved documents are ready for the next conversation.                |
-| demo-followup            | How should I explain the workshop to a new customer?                     |
-| demo-followup-reply      | Start with the offer in your saved Product description: {draft}          |
-| demo-editor              | Edit document                                                            |
-| demo-save-section        | Save and review section                                                  |
-| demo-saved-section       | Section saved and reviewed.                                              |
-| demo-attach              | Attach files                                                             |
-| demo-files-added         | Files added to the chat.                                                 |
-| demo-review-materials    | Check materials                                                          |
-| demo-show-document       | Open document                                                            |
-| demo-count-unit          | sections reviewed                                                        |
-| demo-refine              | Refine this section                                                      |
-| demo-answer-value        | Adults trying pottery for the first time.                                |
-| demo-materials-thread    | Materials review                                                         |
-| demo-document-threads    | Document threads                                                         |
-| demo-document-thread     | Document thread                                                          |
-| demo-workspace           | Project workspace                                                        |
-| demo-new-topic           | New topic                                                                |
-| demo-topic-hint          | Review a document, then attach its saved version to a new topic.         |
-| demo-thread-intro        | Discuss this file with AI Chat and edit its draft here.                  |
-| demo-thread-message      | Message in this thread                                                   |
-| demo-thread-reply        | I added your note to {document}. Review the updated draft below.         |
-| demo-working-note        | Working note                                                             |
-| demo-open-workspace      | Open project workspace                                                   |
-| demo-back-to-work        | Back to work                                                             |
-| demo-workspace-intro     | Create a topic and choose the saved documents for this conversation.     |
-| demo-topic-title-label   | Topic name                                                               |
-| demo-topic-title         | How should I explain the workshop to a new customer?                     |
-| demo-topic-documents     | Attach saved documents                                                   |
-| demo-saved-version       | Saved version                                                            |
-| demo-create-topic        | Create topic                                                             |
-| demo-topic-reply         | Here are the saved documents attached to this topic:                     |
-| demo-topic-message       | What should I keep clear in this invitation?                             |
-| demo-topic-message-label | Message in this topic                                                    |
+| Control                  | Label                                                                |
+| ------------------------ | -------------------------------------------------------------------- |
+| navigation-foundation    | Попробовать чат                                                      |
+| navigation-workflow      | Как это работает                                                     |
+| navigation-start         | Начать со своих материалов                                           |
+| skip-link                | Перейти к содержимому                                                |
+| hero-photo-alt           | Основательница проекта работает с заметками о своём бизнесе.         |
+| final-title              | Начните работу над своим проектом                                    |
+| demo-project             | Мастерская керамики                                                  |
+| demo-chat                | Чат проекта                                                          |
+| demo-files               | Ваши файлы                                                           |
+| demo-sections            | Документы проекта                                                    |
+| demo-progress            | Проверено разделов                                                   |
+| demo-progress-note       | Открытые вопросы остаются видны. Проверьте каждый раздел.            |
+| demo-check               | Изучить материалы                                                    |
+| demo-answer              | Отправить ответ                                                      |
+| demo-answer-label        | Для кого этот мастер-класс?                                          |
+| demo-answer-placeholder  | Для взрослых, которые впервые пробуют керамику.                      |
+| demo-save                | Сохранить описание продукта                                          |
+| demo-edit-label          | Описание продукта                                                    |
+| demo-continue            | Продолжить в чате                                                    |
+| demo-message-label       | Сообщение                                                            |
+| demo-message-placeholder | Спросите о проекте…                                                  |
+| demo-send                | Отправить                                                            |
+| demo-reset               | Начать пример заново                                                 |
+| demo-ready               | Можно проверить                                                      |
+| demo-needs-input         | Нужен ответ                                                          |
+| demo-review              | Проверить черновик                                                   |
+| demo-accepted            | Проверено                                                            |
+| demo-add                 | Добавить файлы                                                       |
+| demo-upload-note         | Интерактивный пример. Изменения сохраняются только на этой странице. |
+| demo-you                 | Вы                                                                   |
+| demo-agent               | ИИ-помощник                                                          |
+| demo-chat-saved          | Сохранённые документы можно использовать в следующем разговоре.      |
+| demo-followup            | Как рассказать о мастерской новому клиенту?                          |
+| demo-followup-reply      | Начните с предложения из описания продукта: {draft}                  |
+| demo-editor              | Редактировать документ                                               |
+| demo-save-section        | Сохранить и отметить проверенным                                     |
+| demo-saved-section       | Раздел сохранён и отмечен проверенным.                               |
+| demo-attach              | Прикрепить файлы                                                     |
+| demo-files-added         | Файлы добавлены в чат.                                               |
+| demo-review-materials    | Изучить материалы                                                    |
+| demo-show-document       | Открыть документ                                                     |
+| demo-count-unit          | проверенных разделов                                                 |
+| demo-refine              | Доработать раздел                                                    |
+| demo-answer-value        | Для взрослых, которые впервые пробуют керамику.                      |
+| demo-materials-thread    | Изучение материалов                                                  |
+| demo-document-threads    | Обсуждения документов                                                |
+| demo-document-thread     | Обсуждение документа                                                 |
+| demo-workspace           | Проект                                                               |
+| demo-new-topic           | Новая тема                                                           |
+| demo-topic-hint          | Проверьте документ и используйте его в новой теме.                   |
+| demo-thread-intro        | Обсудите документ с помощником и отредактируйте текст.               |
+| demo-thread-message      | Сообщение в обсуждении                                               |
+| demo-thread-reply        | Добавил ваше замечание в {document}. Проверьте обновлённый текст.    |
+| demo-working-note        | Рабочая заметка                                                      |
+| demo-open-workspace      | Открыть проект                                                       |
+| demo-back-to-work        | Вернуться к работе                                                   |
+| demo-workspace-intro     | Создайте тему для следующего разговора о проекте.                    |
+| demo-topic-title-label   | Название темы                                                        |
+| demo-topic-title         | Как рассказать о мастерской новому клиенту?                          |
+| demo-topic-documents     | Документы для этой темы                                              |
+| demo-saved-version       | Сохранённая версия                                                   |
+| demo-create-topic        | Создать тему                                                         |
+| demo-topic-reply         | Сохранённые документы этой темы:                                     |
+| demo-topic-message       | Что нужно указать в приглашении?                                     |
+| demo-topic-message-label | Сообщение в теме                                                     |

@@ -262,7 +262,7 @@ export function Component({
   const amount = price ? Number(price.title) : 0;
   const rate = price ? Number(price.text) : 0;
   const number = (value: number) =>
-    value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+    value.toLocaleString("ru-RU", { maximumFractionDigits: 0 });
   return (
     <ServicePage copy={copy} projectHref={projectHref} variant={variant}>
       <div className="grid min-w-0 items-start gap-6 @[900px]:grid-cols-[minmax(0,1fr)_320px]">
@@ -351,7 +351,7 @@ export function Component({
             <div className="flex items-center justify-between gap-3">
               <dt className={kit.muted}>{labels["token-amount-label"]}</dt>
               <dd className="text-right font-semibold">
-                {selected ? `≈ ${number(amount / rate)}` : "—"}
+                {selected ? `≈ ${number(Math.round(amount / rate))}` : "—"}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-3">

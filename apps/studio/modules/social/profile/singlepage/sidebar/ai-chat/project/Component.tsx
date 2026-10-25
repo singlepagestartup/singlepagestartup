@@ -37,15 +37,15 @@ export function Component({
       <h1 className="mb-3 break-words pr-10 text-lg font-semibold @[760px]/workspace:pr-0">
         {name}
       </h1>
-      <nav aria-label="Project navigation" className="space-y-1">
+      <nav aria-label="Навигация по проекту" className="space-y-1">
         <a
           href={`${href}/settings`}
-          aria-label="Project settings"
+          aria-label="Настройки проекта"
           aria-current={settingsSelected ? "page" : undefined}
           className={`flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-card/10 ${kit.focus} ${settingsSelected ? "bg-card/15" : "text-default-foreground/80"}`}
         >
           <Icon name="gear-six" className="size-4" />
-          Settings
+          Настройки
         </a>
         <ProfileSourceSidebarList
           href={href}
@@ -53,11 +53,11 @@ export function Component({
         />
       </nav>
       <section
-        aria-label="Project threads"
+        aria-label="Обсуждения проекта"
         className="mt-5 border-t border-default-foreground/10 pt-4"
       >
         <h2 className="mb-3 text-xs font-semibold text-default-foreground/60">
-          Threads
+          Обсуждения
         </h2>
         <a
           href={aiChatThreadCreateHref(profileId, chatId)}
@@ -65,7 +65,7 @@ export function Component({
           className={`flex min-h-11 w-full items-center gap-2 rounded-xl border border-default-foreground/15 px-3 py-2 text-left text-sm text-default-foreground/80 hover:bg-card/10 ${creatingThread ? "bg-card/15" : ""} ${kit.focus}`}
         >
           <Icon name="plus" className="size-4" />
-          New thread
+          Новое обсуждение
         </a>
       </section>
     </div>

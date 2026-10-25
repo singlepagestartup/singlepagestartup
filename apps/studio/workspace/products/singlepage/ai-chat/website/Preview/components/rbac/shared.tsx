@@ -203,7 +203,7 @@ export function formatRbacDateTime(value: string | undefined | null): string {
   if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleString("en-US", {
+  return date.toLocaleString("ru-RU", {
     year: "numeric",
     month: "short",
     day: "2-digit",
@@ -221,8 +221,8 @@ export function getIdentityProviderMeta(
       key,
       title: key.replace(/_/g, " "),
       kind: "external",
-      kindLabel: "Connected",
-      description: "Manage this connected sign-in method.",
+      kindLabel: "Подключено",
+      description: "Управляйте подключённым способом входа.",
       icon: KeyRound,
     }
   );
@@ -231,25 +231,25 @@ export function getIdentityActions(identity: RbacIdentity): IdentityAction[] {
   const providerMeta = getIdentityProviderMeta(identity.provider);
   if (providerMeta.kind === "credentials") {
     return [
-      { key: "change-email", label: "Change email", tone: "neutral" },
-      { key: "change-password", label: "Change password", tone: "neutral" },
-      { key: "delete", label: "Remove identity", tone: "danger" },
+      { key: "change-email", label: "Изменить почту", tone: "neutral" },
+      { key: "change-password", label: "Изменить пароль", tone: "neutral" },
+      { key: "delete", label: "Отключить способ входа", tone: "danger" },
     ];
   }
   return [
-    { key: "reconnect", label: "Reconnect", tone: "neutral" },
-    { key: "delete", label: "Remove identity", tone: "danger" },
+    { key: "reconnect", label: "Подключить заново", tone: "neutral" },
+    { key: "delete", label: "Отключить способ входа", tone: "danger" },
   ];
 }
 export function getIdentityPrimaryLogin(identity: RbacIdentity): string {
   return identity.email || identity.account || "No public account/email stored";
 }
 export function getIdentityOperationLabel(operationKey: string): string {
-  if (operationKey === "change-email") return "Email change flow opened";
-  if (operationKey === "change-password") return "Password change flow opened";
-  if (operationKey === "reconnect") return "Reconnect flow started";
-  if (operationKey === "delete") return "Identity removal requested";
-  return "Identity action selected";
+  if (operationKey === "change-email") return "Открыта смена почты";
+  if (operationKey === "change-password") return "Открыта смена пароля";
+  if (operationKey === "reconnect") return "Открыто повторное подключение";
+  if (operationKey === "delete") return "Запрошено отключение способа входа";
+  return "Действие со способом входа выбрано";
 }
 const User = createIcon("user");
 const Globe = createIcon("globe");
@@ -356,25 +356,25 @@ export const defaultSettingsIdentities: RbacIdentity[] =
 export const defaultAccountMenuActions: AccountMenuAction[] = [
   {
     key: "profile",
-    label: "My Profile",
+    label: "Мой профиль",
     href: "/rbac/subject/settings",
     icon: User,
   },
   {
     key: "chat",
-    label: "Team Chat",
+    label: "Чат команды",
     href: "/chat",
     icon: MessageSquare,
   },
   {
     key: "settings",
-    label: "Account Settings",
+    label: "Настройки аккаунта",
     href: "/rbac/subject/settings",
     icon: Shield,
   },
   {
     key: "logout",
-    label: "Sign Out",
+    label: "Выйти",
     href: "/",
     icon: KeyRound,
     tone: "danger",
@@ -383,34 +383,35 @@ export const defaultAccountMenuActions: AccountMenuAction[] = [
 export const identityProviders: IdentityProviderMeta[] = [
   {
     key: "email_and_password",
-    title: "Email & password",
+    title: "Почта и пароль",
     kind: "credentials",
-    kindLabel: "Password",
-    description: "Sign in with your email and password.",
+    kindLabel: "Пароль",
+    description: "Войдите с помощью почты и пароля.",
     icon: Mail,
   },
   {
     key: "oauth_google",
     title: "Google",
     kind: "oauth",
-    kindLabel: "Connected",
-    description: "Use your Google account to sign in.",
+    kindLabel: "Подключено",
+    description: "Войдите с аккаунтом Google.",
     icon: Globe,
   },
   {
     key: "telegram",
     title: "Telegram",
     kind: "oauth",
-    kindLabel: "Connected",
-    description: "Use your Telegram account to sign in.",
+    kindLabel: "Подключено",
+    description: "Войдите с аккаунтом Telegram.",
     icon: Send,
   },
   {
     key: "ethereum_virtual_machine",
-    title: "Crypto wallet",
+    title: "Криптокошелёк",
     kind: "external",
     kindLabel: "Wallet",
-    description: "Connect a wallet and verify ownership with a signature.",
+    description:
+      "Подключите кошелёк и подтвердите, что он ваш, с помощью подписи.",
     icon: Wallet,
   },
 ];

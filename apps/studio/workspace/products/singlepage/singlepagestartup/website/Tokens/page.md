@@ -3,33 +3,33 @@ confirmation:
   confirmed: false
 ---
 
-# AI Chat plans and tokens
+# Тарифы и токены AI Chat
 
 <!-- section: hero -->
 
-## Prepare your business before you build.
+## Токены для работы над вашим проектом
 
-AI Chat plans and tokens
+Тарифы и токены AI Chat
 
-Work through your business model, product concept and project documents in AI Chat. Use the prepared material to brief the coding agents that develop your product with Code Framework.
+Обсуждайте бизнес-модель и идею продукта, готовьте документы в AI Chat. Используйте эти материалы при создании проекта на Code Framework.
 
-Code Framework is free under the MIT licence. AI Chat plans and tokens pay for AI work on your project materials.
+Code Framework доступен бесплатно по лицензии MIT. Тарифы и токены AI Chat оплачивают работу ИИ с материалами вашего проекта.
 
 <!-- section: allowance -->
 
-## Start with 3,000 tokens.
+## Начните с 3 000 токенов
 
-Registration includes 3,000 internal tokens once per account. Your account receives the allowance automatically.
+После регистрации аккаунт автоматически получает 3 000 внутренних токенов. Этот пакет выдаётся один раз.
 
 <!-- section: pro -->
 
 ## Pro
 
-A monthly allowance for continued work on your business and project documents.
+Ежемесячный пакет для работы над бизнесом и документами проекта.
 
-Monthly billing
+Ежемесячная оплата
 
-Choose the currency for your monthly price.
+Выберите валюту ежемесячной оплаты.
 
 | Term           | Value |
 | -------------- | ----- |
@@ -39,11 +39,11 @@ Choose the currency for your monthly price.
 
 <!-- section: topups -->
 
-## Add tokens when you need them.
+## Пополните баланс, когда понадобится
 
-Choose a one-off top-up. Every package has the same rate of 0.13 RUB per internal token; larger packages have no discount.
+Выберите сумму разового пополнения. Во всех пакетах внутренний токен стоит 0,13 рубля. Скидки за размер пакета нет.
 
-Purchased tokens do not expire. A top-up is separate from the monthly Pro allowance.
+Купленные токены не сгорают. Разовое пополнение учитывается отдельно от ежемесячного пакета Pro.
 
 | Amount, RUB | Rate, RUB per internal token |
 | ----------- | ---------------------------- |
@@ -55,50 +55,50 @@ Purchased tokens do not expire. A top-up is separate from the monthly Pro allowa
 
 <!-- section: handoff -->
 
-## Review your purchase in AI Chat.
+## Проверьте условия покупки в AI Chat
 
-Review monthly Pro opens its AI Chat review page with your selected currency. Continue in AI Chat opens the account token page for a separate top-up selection. These previews create no order and take no payment.
+Кнопка тарифа Pro открывает его условия с выбранной валютой. Кнопка пополнения ведёт к выбору суммы в аккаунте AI Chat. Предварительный просмотр не создаёт заказ и не принимает оплату.
 
 <!-- section: terms -->
 
-## How your balance is used
+## Как расходуется баланс
 
-AI Chat charges usage at provider cost. Your balance uses internal tokens, separate from the input and output tokens counted by an AI model. Failed or cancelled AI requests return all token deductions.
+Работа ИИ учитывается по стоимости провайдера. Баланс измеряется внутренними токенами — они отличаются от входных и выходных токенов модели. При ошибке или отмене запроса все списанные за него токены возвращаются.
 
-Purchased tokens do not expire. Cash refunds are considered case by case. Review the token and payment terms in AI Chat before paying.
+Купленные токены не сгорают. Возврат денег рассматривается индивидуально. Перед оплатой прочитайте условия использования токенов и оплаты в AI Chat.
 
 <!-- section: framework -->
 
-## Take your documents into development.
+## Используйте документы при создании проекта
 
-When your business description and product requirements are ready, use them to brief your coding agent. Code Framework supplies the application foundation; you and your agent develop the product’s own rules.
+Передайте описание бизнеса и требования к продукту ИИ-помощнику по разработке. Code Framework предоставляет модули приложения; правила работы вашего продукта можно доработать под свою задачу.
 
 <!-- section: controls -->
 
-## Interface labels
+## Подписи интерфейса
 
-| Control         | Text                                                                                                                      |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| register        | Create an AI Chat account                                                                                                 |
-| register-href   | /ai-chat/rbac/subjects/authentication/registration                                                                        |
-| pro-eyebrow     | Monthly plan                                                                                                              |
-| currency        | Billing currency                                                                                                          |
-| per-month       | per month                                                                                                                 |
-| continue        | Continue in AI Chat                                                                                                       |
-| pro-review      | Review monthly Pro                                                                                                        |
-| pro-review-href | /ai-chat/rbac/subjects/subscriptions/pro                                                                                  |
-| checkout-href   | /ai-chat/rbac/subjects/tokens                                                                                             |
-| package-label   | Choose a top-up amount                                                                                                    |
-| amount-unit     | RUB                                                                                                                       |
-| token-unit      | internal tokens                                                                                                           |
-| estimate        | Estimated token credit                                                                                                    |
-| selected        | Selected top-up                                                                                                           |
-| one-off         | one-off payment                                                                                                           |
-| estimate-note   | Estimated token credit is rounded to the nearest whole token. Review the final credited amount in AI Chat before payment. |
-| rate            | 0.13 RUB per internal token                                                                                               |
-| terms           | Token and payment terms in AI Chat                                                                                        |
-| terms-href      | /ai-chat/rbac/subjects/tokens                                                                                             |
-| framework       | Explore Code Framework                                                                                                    |
-| framework-href  | /framework                                                                                                                |
-| chat            | Open AI Chat                                                                                                              |
-| chat-href       | /                                                                                                                         |
+| Control         | Text                                                                                                      |
+| --------------- | --------------------------------------------------------------------------------------------------------- |
+| register        | Создать аккаунт AI Chat                                                                                   |
+| register-href   | /ai-chat/rbac/subjects/authentication/registration                                                        |
+| pro-eyebrow     | Ежемесячный тариф                                                                                         |
+| currency        | Валюта оплаты                                                                                             |
+| per-month       | в месяц                                                                                                   |
+| continue        | Продолжить в AI Chat                                                                                      |
+| pro-review      | Посмотреть тариф Pro                                                                                      |
+| pro-review-href | /ai-chat/rbac/subjects/subscriptions/pro                                                                  |
+| checkout-href   | /ai-chat/rbac/subjects/tokens                                                                             |
+| package-label   | Выберите сумму пополнения                                                                                 |
+| amount-unit     | RUB                                                                                                       |
+| token-unit      | внутренних токенов                                                                                        |
+| estimate        | Примерное количество токенов                                                                              |
+| selected        | Выбранное пополнение                                                                                      |
+| one-off         | разовый платёж                                                                                            |
+| estimate-note   | Количество токенов округлено до ближайшего целого. Перед оплатой проверьте итоговое количество в AI Chat. |
+| rate            | 0,13 рубля за внутренний токен                                                                            |
+| terms           | Token and payment terms in AI Chat                                                                        |
+| terms-href      | /ai-chat/rbac/subjects/tokens                                                                             |
+| framework       | Посмотреть Code Framework                                                                                 |
+| framework-href  | /framework                                                                                                |
+| chat            | Открыть AI Chat                                                                                           |
+| chat-href       | /                                                                                                         |

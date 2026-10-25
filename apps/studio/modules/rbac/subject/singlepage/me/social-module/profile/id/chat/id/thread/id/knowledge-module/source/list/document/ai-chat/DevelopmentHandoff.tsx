@@ -39,30 +39,30 @@ export function DevelopmentHandoff({
   async function copyRequest() {
     if (!hasContent || feedback.state === "pending") return;
     const currentGeneration = generation.current;
-    setFeedback({ state: "pending", text: "Copying development request…" });
+    setFeedback({ state: "pending", text: "Копируем запрос для разработки…" });
     const request = [
-      "Use SinglePageStartup Code Framework to plan a first landing page or web product.",
-      `Read the attached ${fileName} document. I must review its saved text, save any notes I want included, then export and attach the file separately. Unsaved edits and unconfirmed proposals are not part of the saved export.`,
-      "Treat unanswered facts and assumptions as open questions. Ask me before filling them in.",
-      "My first customer action: [describe the one action a visitor should be able to complete].",
-      "Inspect the existing modules, identify the smallest useful first change and show me the plan before changing code.",
-      "Use the framework's existing account, content, order or payment flows where the task needs them. Preserve their current behavior.",
-      "Show the result and the checks I should review before the next change.",
+      "Помоги спланировать первую версию сайта или веб-сервиса на SinglePageStartup Code Framework.",
+      `Прочитай приложенный документ ${fileName}. Перед этим я проверю сохранённый текст, добавлю нужные заметки, затем скачаю и приложу файл отдельно. Несохранённые правки и неподтверждённые предложения не входят в скачанный файл.`,
+      "Уточняй недостающие сведения и предположения у меня, прежде чем заполнять их.",
+      "Первое действие клиента: [опишите одно действие, которое должен выполнить посетитель].",
+      "Изучи существующие модули, предложи первое изменение для моей задачи и покажи план до работы с кодом.",
+      "Используй существующие возможности фреймворка для аккаунтов, контента, заказов и оплаты, если они нужны для задачи. Сохрани их текущее поведение.",
+      "Покажи результат и объясни, что проверить перед следующим изменением.",
     ].join("\n\n");
     try {
       if (!navigator.clipboard?.writeText)
-        throw new Error("Clipboard unavailable");
+        throw new Error("Не удалось скопировать");
       await navigator.clipboard.writeText(request);
       if (generation.current !== currentGeneration) return;
       setFeedback({
         state: "success",
-        text: `Request copied. Review and save the text you want, export ${fileName}, then attach that file in your coding agent.`,
+        text: `Запрос скопирован. Проверьте и сохраните нужный текст, скачайте ${fileName}, затем приложите файл в чате с ИИ-помощником по разработке.`,
       });
     } catch {
       if (generation.current !== currentGeneration) return;
       setFeedback({
         state: "error",
-        text: "The request could not be copied. Allow clipboard access and try again. The document’s export action is still available.",
+        text: "Не удалось скопировать запрос. Разрешите доступ к буферу обмена и попробуйте ещё раз. Документ по-прежнему можно скачать.",
       });
     }
   }
@@ -75,29 +75,29 @@ export function DevelopmentHandoff({
     >
       <p className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <SharedIcon variant="phosphor" name="code" />
-        From documents to development
+        От документов к разработке
       </p>
       <h4 id={`${id}-title`} className="mt-3 text-xl font-semibold leading-7">
-        Ready to turn this document into a product?
+        Используйте этот документ для создания продукта
       </h4>
       <p
         id={`${id}-description`}
         className="mt-3 text-sm leading-6 text-muted-foreground"
       >
-        Review the facts and open questions, save any notes you want to include,
-        then export {fileName} with the document’s download action. Give the
-        file to your coding agent and use Code Framework for the accounts,
-        content, orders or payments your product needs.
+        Проверьте сведения и открытые вопросы, сохраните нужные заметки, затем
+        скачайте {fileName} кнопкой скачивания документа. Передайте файл
+        ИИ-помощнику по разработке и используйте нужные модули Code Framework:
+        аккаунты, контент, заказы и оплату.
       </p>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        Editable text is not automatically reviewed. The saved export excludes
-        unsaved notes and unconfirmed proposals. Copying adds instructions to
-        your clipboard; attach the exported file separately.
+        Проверьте текст перед использованием. Скачивается сохранённый документ
+        без несохранённых заметок и неподтверждённых предложений. Кнопка
+        копирует инструкции; файл нужно приложить отдельно.
       </p>
       {hasPendingProposal ? (
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          An unconfirmed proposal is waiting in chat. Review it before choosing
-          which saved text to export.
+          В чате есть неподтверждённое предложение. Проверьте его перед
+          скачиванием сохранённого текста.
         </p>
       ) : null}
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -114,15 +114,15 @@ export function DevelopmentHandoff({
             name={feedback.state === "success" ? "check" : "file-text"}
           />
           {feedback.state === "pending"
-            ? "Copying request…"
-            : "Copy development request"}
+            ? "Копируем запрос…"
+            : "Скопировать запрос для разработки"}
         </button>
         <a
           href="/?path=/story/modules-host-models-page-singlepage-framework--default"
           target="_top"
           className={`inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-4 py-2 text-center text-sm font-semibold text-foreground hover:underline ${focus}`}
         >
-          Explore Code Framework
+          Посмотреть Code Framework
           <SharedIcon variant="phosphor" name="arrow-up-right" />
         </a>
       </div>
@@ -134,7 +134,7 @@ export function DevelopmentHandoff({
       >
         {hasContent
           ? feedback.text
-          : "Save document text before copying a development request."}
+          : "Сохраните текст документа перед копированием запроса для разработки."}
       </p>
     </section>
   );

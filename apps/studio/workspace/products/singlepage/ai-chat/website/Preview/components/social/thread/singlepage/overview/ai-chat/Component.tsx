@@ -19,7 +19,7 @@ interface IPanelHeaderProps {
 }
 function PanelHeader({ title, label, navigation, actions }: IPanelHeaderProps) {
   return (
-    <header className="sticky top-18 z-10 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] p-4 @[760px]/workspace:top-0">
+    <header className="sticky top-0 z-10 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[color:var(--workspace-brand-line)] bg-white p-4 @[760px]/workspace:top-0">
       <div className="flex min-w-0 items-center gap-3">
         {navigation}
         <div className="min-w-0">
@@ -106,10 +106,10 @@ function ThreadOverview({ navigation, messageCreate }: IThreadOverviewProps) {
     >
       <PanelHeader
         title={thread.title}
-        label="Document thread"
+        label="Обсуждение документа"
         navigation={navigation}
         actions={
-          <div className="flex rounded-lg bg-[color:var(--workspace-brand-background)] p-1 @[900px]/chat:hidden">
+          <div className="flex rounded-lg bg-[color:var(--workspace-brand-background)] p-1 @[800px]/chat:hidden">
             {(["chat", "document"] as const).map((item) => (
               <button
                 key={item}
@@ -118,25 +118,25 @@ function ThreadOverview({ navigation, messageCreate }: IThreadOverviewProps) {
                 onClick={() => setPane(item)}
                 className={`min-h-9 rounded-md px-3 text-xs font-semibold ${kit.focus} ${pane === item ? "bg-[color:var(--workspace-brand-surface)]" : kit.muted}`}
               >
-                {item === "chat" ? "Chat" : "Document"}
+                {item === "chat" ? "Чат" : "Документ"}
               </button>
             ))}
           </div>
         }
       />
-      <div className="grid min-h-0 min-w-0 flex-1 @[900px]/chat:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid min-h-0 min-w-0 flex-1 @[800px]/chat:grid-cols-[minmax(0,1fr)_360px]">
         <div
-          className={`${pane === "chat" ? "flex" : "hidden"} min-h-0 min-w-0 flex-col overflow-y-auto @[900px]/chat:flex`}
+          className={`${pane === "chat" ? "flex" : "hidden"} min-h-0 min-w-0 flex-col overflow-y-auto @[800px]/chat:flex`}
         >
           <div data-ai-chat-messages className="min-h-0 flex-1 overflow-y-auto">
-            <ThreadMessageList className="min-h-[50dvh] @[760px]/workspace:min-h-0" />
+            <ThreadMessageList className="min-h-48" />
             {proposal && (
               <div
                 ref={proposalView}
                 className="mx-4 mb-4 rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-background)] p-4"
               >
                 <p className="text-xs font-semibold">
-                  Proposed update · {source.title}
+                  Предложенное изменение · {source.title}
                 </p>
                 <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6">
                   {proposal.text}
@@ -144,10 +144,10 @@ function ThreadOverview({ navigation, messageCreate }: IThreadOverviewProps) {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button onClick={apply}>
                     <Icon name="pencil-simple" className="size-4" />
-                    Apply to knowledge
+                    Применить к документу
                   </Button>
                   <Button variant="plain" onClick={dismiss}>
-                    Dismiss
+                    Отклонить
                   </Button>
                 </div>
                 {error && (
@@ -161,7 +161,7 @@ function ThreadOverview({ navigation, messageCreate }: IThreadOverviewProps) {
           {messageCreate}
         </div>
         <div
-          className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-[color:var(--workspace-brand-line)] @[900px]/chat:block @[900px]/chat:border-l`}
+          className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-[color:var(--workspace-brand-line)] @[800px]/chat:block @[800px]/chat:border-l`}
         >
           <KnowledgeModuleSource
             variant="overview-document-ai-chat"

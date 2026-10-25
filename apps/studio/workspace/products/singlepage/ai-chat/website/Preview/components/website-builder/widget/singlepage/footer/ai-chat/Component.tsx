@@ -18,7 +18,7 @@ export function Component({
         <WebsiteBuilderModuleLogotype variant="brand-ai-chat" />
         <WebsiteBuilderModuleButtonsArray
           variant="default"
-          ariaLabel="AI Chat footer"
+          ariaLabel="Ссылки AI Chat"
           buttons={content.links.map((link) => ({
             label: link.text,
             href: link.href,

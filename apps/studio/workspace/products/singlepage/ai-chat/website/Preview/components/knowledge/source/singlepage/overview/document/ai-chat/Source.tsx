@@ -35,10 +35,10 @@ export function SourceProvider({
         id: `${profileId}:products:products`,
         slug: `${encodeURIComponent(profileId)}:products:products`,
         variant: "overview-ai-chat",
-        title: "Products",
+        title: "Продукты",
         content: "",
         description:
-          "Describe the products, their customers, value and current availability.",
+          "Опишите продукты, их клиентов, предложение и текущую доступность.",
       },
   );
   const [fileIds, setFileIds] = useState(initialFileIds);

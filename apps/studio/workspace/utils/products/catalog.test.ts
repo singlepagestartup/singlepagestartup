@@ -101,7 +101,7 @@ describe("product catalog", () => {
     ]);
     expect(
       pages?.children.find(({ id }) => id === "project-workspace")?.title,
-    ).toBe("Project chat");
+    ).toBe("Чат проекта");
     expect(
       pages?.children.find(({ id }) => id === "project-workspace")?.uses,
     ).toEqual([

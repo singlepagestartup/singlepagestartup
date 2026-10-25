@@ -62,27 +62,29 @@ export function Component({
       <h1 className="mb-3 break-words pr-10 text-lg font-semibold @[760px]/workspace:pr-0">
         {name}
       </h1>
-      <nav aria-label="Project navigation" className="space-y-1">
+      <nav aria-label="Навигация по проекту" className="space-y-1">
         <a
           href={`${href}/settings`}
-          aria-label="Project settings"
+          aria-label="Настройки проекта"
           aria-current={settingsSelected ? "page" : undefined}
           className={`flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-white/10 ${kit.focus} ${settingsSelected ? "bg-white/15" : "text-white/80"}`}
         >
           <Icon name="gear-six" className="size-4" />
-          Settings
+          Настройки
         </a>
         <div className="rounded-xl bg-black/20 p-1.5">
           <button
             type="button"
-            aria-label={open ? "Hide document list" : "Show document list"}
+            aria-label={
+              open ? "Скрыть список документов" : "Показать список документов"
+            }
             aria-expanded={open}
             aria-controls={`${id}-document-list`}
             onClick={() => setOpen((current) => !current)}
             className={`flex min-h-11 w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-left text-sm font-semibold ${kit.focus}`}
           >
             <Icon name="folder-open" className="size-4" />
-            <span className="flex-1">Documents</span>
+            <span className="flex-1">Документы</span>
             <span className="text-xs text-white/60">1</span>
             <Icon
               name="caret-down"
@@ -99,17 +101,17 @@ export function Component({
         </div>
       </nav>
       <section
-        aria-label="Project threads"
+        aria-label="Обсуждения проекта"
         className="mt-5 border-t border-white/10 pt-4"
       >
-        <h2 className="mb-3 text-xs font-semibold text-white/60">Threads</h2>
+        <h2 className="mb-3 text-xs font-semibold text-white/60">Обсуждения</h2>
         <a
           href={aiChatThreadCreateHref(profileId, chatId)}
           aria-current={creatingThread ? "page" : undefined}
           className={`flex min-h-11 w-full items-center gap-2 rounded-xl border border-white/15 px-3 py-2 text-left text-sm text-white/80 hover:bg-white/10 ${creatingThread ? "bg-white/15" : ""} ${kit.focus}`}
         >
           <Icon name="plus" className="size-4" />
-          New thread
+          Новое обсуждение
         </a>
       </section>
     </>

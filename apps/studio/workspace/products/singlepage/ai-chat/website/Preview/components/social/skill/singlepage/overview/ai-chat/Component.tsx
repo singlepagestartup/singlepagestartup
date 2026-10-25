@@ -105,9 +105,9 @@ export function Component() {
 export const knowledgeSkill: IKnowledgeSkill = {
   id: "knowledge-editing",
   slug: "knowledge-editing",
-  title: "Knowledge editing",
-  adminTitle: "Knowledge editing",
+  title: "Работа с документами",
+  adminTitle: "Работа с документами",
   variant: "overview-ai-chat",
   description:
-    "Work with the knowledge linked to this thread and its files. Ask for missing facts. Keep supplied facts separate from assumptions. Propose changes to the knowledge for the user to apply.",
+    "Работай со знаниями и файлами этого обсуждения. Уточняй недостающие сведения. Отличай факты от предположений. Предлагай изменения документа для проверки пользователем.",
 };

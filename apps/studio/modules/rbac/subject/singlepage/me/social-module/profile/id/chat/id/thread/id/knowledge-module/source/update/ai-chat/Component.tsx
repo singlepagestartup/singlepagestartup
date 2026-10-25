@@ -36,15 +36,15 @@ export function Component({
       {thread.id === threadId && proposal && (
         <div className="mx-4 mb-4 rounded-xl border border-border bg-muted p-4">
           <p className="text-xs font-semibold">
-            Proposed update · {source.title}
+            Предложенное изменение · {source.title}
           </p>
           <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6">
             {proposal.text}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button onClick={apply}>Apply to knowledge</Button>
+            <Button onClick={apply}>Применить к документу</Button>
             <Button appearance="plain" onClick={dismiss}>
-              Dismiss
+              Отклонить
             </Button>
           </div>
           {error && (

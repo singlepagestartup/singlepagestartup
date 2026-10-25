@@ -1,6 +1,6 @@
 ---
 confirmation:
-  confirmed: true
+  confirmed: false
   by: operator
   at: 2026-09-17
   source: "Operator confirmed the complete current AI Chat sign-in page in chat:
@@ -11,54 +11,54 @@ review:
     product.ai-chat.website: db31acbb2f6bff59d196207b3f6245f4fc7674dbe685f71a18c890fef7e2d2cf
 ---
 
-# Continue working on your business
+# Продолжайте работу над своим бизнесом
 
 <!-- section: hero -->
 
-## Your files and conversations are waiting.
+## Ваши файлы и обсуждения сохранены
 
-Sign in to return to your last active project or the task you paused. Each document's thread keeps its discussion and draft; project topics keep their attached documents.
+Войдите, чтобы вернуться к проекту или задаче, на которой остановились. В каждом обсуждении сохраняются сообщения, черновик и связанные документы.
 
 <!-- section: account -->
 
-## Sign in
+## Войти
 
 <!-- section: recovery -->
 
-## Trouble signing in?
+## Не получается войти?
 
-Forgot your password? [Contact support](/ai-chat/help). If sign-in fails, check your details and try again.
+Забыли пароль? [Напишите в поддержку](/ai-chat/help). Если войти не удалось, проверьте почту и пароль, затем попробуйте ещё раз.
 
-No account yet? [Create one](/ai-chat/rbac/subjects/authentication/registration).
+Ещё нет аккаунта? [Зарегистрируйтесь](/ai-chat/rbac/subjects/authentication/registration).
 
 <!-- section: success -->
 
-## Return to your project
+## Вернитесь к проекту
 
-Open your workspace to return to your documents and conversations.
+Откройте проект, чтобы продолжить работу с документами и обсуждениями.
 
 <!-- section: controls -->
 
-## Interface labels
+## Подписи интерфейса
 
 | Control           | Text                                                                                                        |
 | ----------------- | ----------------------------------------------------------------------------------------------------------- |
-| back-label        | Back to AI Chat                                                                                             |
+| back-label        | К AI Chat                                                                                                   |
 | back-href         | /ai-chat/                                                                                                   |
-| email-label       | Email                                                                                                       |
+| email-label       | Электронная почта                                                                                           |
 | email-placeholder | you@example.com                                                                                             |
-| password-label    | Password                                                                                                    |
-| submit            | Sign in                                                                                                     |
-| forgot-label      | Forgot password?                                                                                            |
-| forgot-href       | /help                                                                                                       |
-| register-label    | Create an account                                                                                           |
+| password-label    | Пароль                                                                                                      |
+| submit            | Войти                                                                                                       |
+| forgot-label      | Забыли пароль?                                                                                              |
+| forgot-href       | /ai-chat/help                                                                                               |
+| register-label    | Создать аккаунт                                                                                             |
 | register-href     | /ai-chat/rbac/subjects/authentication/registration                                                          |
-| no-account        | No account yet?                                                                                             |
-| continue-label    | Open workspace                                                                                              |
+| no-account        | Ещё нет аккаунта?                                                                                           |
+| continue-label    | Открыть проект                                                                                              |
 | continue-href     | /ai-chat/social/profiles/example                                                                            |
-| email-error       | Enter a valid email address.                                                                                |
-| password-error    | Enter your password.                                                                                        |
-| success-message   | Welcome back.                                                                                               |
+| email-error       | Укажите адрес электронной почты.                                                                            |
+| password-error    | Введите пароль.                                                                                             |
+| success-message   | Вы вошли в аккаунт.                                                                                         |
 | photo-src         | /workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-work-in-motion-square.png |
 | photo-asset-id    | singlepage-generated-living-focus-photography-work-in-motion-square                                         |
-| photo-alt         | A smiling maker in a pottery studio.                                                                        |
+| photo-alt         | Мастер в гончарной мастерской.                                                                              |

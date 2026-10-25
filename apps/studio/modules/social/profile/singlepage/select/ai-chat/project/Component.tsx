@@ -35,11 +35,11 @@ export function Component({
             data-model="profile"
             data-variant={variant}
             type="button"
-            aria-label="Projects unavailable"
+            aria-label="Проекты недоступны"
             className={buttonClassName}
           >
             <Icon name="folder-open" />
-            <span>Projects unavailable</span>
+            <span>Проекты недоступны</span>
             <span
               aria-hidden="true"
               className="size-1.5 shrink-0 rounded-full bg-destructive"
@@ -65,9 +65,9 @@ export function Component({
               data-variant={variant}
               className="space-y-2 p-1 text-sm"
             >
-              <p className="font-semibold">Couldn't load your projects.</p>
+              <p className="font-semibold">Не удалось загрузить проекты.</p>
               <p className="text-muted-foreground">
-                Try again to reconnect to your workspace.
+                Попробуйте снова подключиться к проекту.
               </p>
             </div>
             <DropdownMenu.Item asChild>
@@ -76,7 +76,7 @@ export function Component({
                 onClick={retry}
                 className="mt-3 min-h-11 w-full rounded-lg border border-border px-3 text-sm font-semibold outline-none hover:bg-muted data-highlighted:bg-muted"
               >
-                Try again
+                Попробовать ещё раз
               </button>
             </DropdownMenu.Item>
           </DropdownMenu.Content>
@@ -90,7 +90,7 @@ export function Component({
         data-model="profile"
         data-variant={variant}
         role="status"
-        aria-label="Loading projects"
+        aria-label="Загружаем проекты"
         aria-busy="true"
         className={buttonClassName}
       >
@@ -99,7 +99,7 @@ export function Component({
           aria-hidden="true"
           className="h-4 w-24 rounded bg-border motion-safe:animate-pulse"
         />
-        <span className="sr-only">Loading projects…</span>
+        <span className="sr-only">Загружаем проекты…</span>
       </div>
     );
   if (!projects.length)
@@ -113,7 +113,7 @@ export function Component({
         className={buttonClassName}
       >
         <Icon name="plus" />
-        Create project
+        Создать проект
       </a>
     );
   return (
@@ -131,7 +131,7 @@ export function Component({
           <Icon name="folder-open" />
           <span className="min-w-0 truncate">
             {projects.find((profile) => profile.id === profileId)?.name ??
-              "Select project"}
+              "Выберите проект"}
           </span>
           <Icon name="caret-down" className="size-4" />
         </button>
@@ -148,7 +148,7 @@ export function Component({
           data-variant={variant}
         >
           <DropdownMenu.Label className="px-3 py-2 text-xs font-semibold text-muted-foreground">
-            Projects
+            Проекты
           </DropdownMenu.Label>
           {projects.map((profile) => (
             <ProjectSelectItem
@@ -166,7 +166,7 @@ export function Component({
               className={itemClass}
             >
               <Icon name="plus" />
-              New project
+              Новый проект
             </a>
           </DropdownMenu.Item>
         </DropdownMenu.Content>

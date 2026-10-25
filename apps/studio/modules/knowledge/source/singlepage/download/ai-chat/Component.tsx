@@ -42,7 +42,7 @@ export function Component({
       <button
         type="button"
         data-ds-block="knowledge.source.download-ai-chat"
-        aria-label={`Download ${source.title}.md`}
+        aria-label={`Скачать ${source.title}.md`}
         onClick={download}
         className="inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-2 text-sm font-semibold text-foreground transition motion-reduce:transition-none enabled:cursor-pointer enabled:hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       >

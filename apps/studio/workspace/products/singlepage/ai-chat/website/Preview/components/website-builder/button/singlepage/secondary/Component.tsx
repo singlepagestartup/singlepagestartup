@@ -191,7 +191,7 @@ const kit = {
   focus: focus,
 };
 export const defaultButtonSecondaryProps: ButtonSecondaryProps = {
-  label: "Learn more",
+  label: "Подробнее",
   href: "#features",
   icon: Play,
 };

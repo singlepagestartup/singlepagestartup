@@ -147,3 +147,23 @@ test("route IDs select profiles from the supplied examples", () => {
   expect(ownHtml).toContain('data-profile-id="pottery"');
   expect(ownHtml).not.toContain("Project profile unavailable");
 });
+
+test("landing demo uses the project workspace controls without duplicated site navigation", () => {
+  const html = renderToStaticMarkup(
+    <AIChatPreview embedded initialHref="/ai-chat/social/profiles/pottery" />,
+  );
+  expect(html).toContain(
+    'data-ds-block="social.profile.overview-ai-chat-project"',
+  );
+  expect(html).toContain('aria-label="Рабочий контекст"');
+  expect(html).toContain('aria-label="Сообщение"');
+  expect(html).toContain("Продукты.md");
+  expect(html).toContain("Мастерская керамики");
+  expect(html).not.toContain(
+    'data-ds-block="website-builder.widget.navbar-ai-chat"',
+  );
+  expect(html).not.toContain(
+    'data-ds-block="website-builder.widget.footer-ai-chat"',
+  );
+  expect(html).not.toContain("Restart walkthrough");
+});

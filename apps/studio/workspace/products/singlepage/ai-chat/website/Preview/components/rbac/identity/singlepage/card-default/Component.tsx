@@ -179,7 +179,7 @@ function ConfirmationDialog({
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <AlertDialog.Cancel asChild>
                 <Button ref={cancel} variant="secondary">
-                  Cancel
+                  Отмена
                 </Button>
               </AlertDialog.Cancel>
               <AlertDialog.Action asChild>
@@ -332,7 +332,7 @@ export const IdentityCardDefault = memo(function IdentityCardDefault(
         </div>
         <span className="hidden shrink-0 items-center gap-1 text-xs text-[color:var(--workspace-brand-muted)] sm:inline-flex">
           <Check className="size-3" />
-          Connected
+          Подключено
         </span>
       </div>
       <p className="mt-3 text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
@@ -384,19 +384,19 @@ export const IdentityCardDefault = memo(function IdentityCardDefault(
       )}
       <details className="group mt-4 border-t border-[color:var(--workspace-brand-line)] pt-2">
         <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg text-xs font-medium text-[color:var(--workspace-brand-muted)] focus-visible:outline-2 [&::-webkit-details-marker]:hidden">
-          <span>Connection details</span>
+          <span>Данные подключения</span>
           <ChevronDown className="size-4 shrink-0 transition group-open:rotate-180" />
         </summary>
         <dl className="grid min-w-0 gap-3 text-xs sm:grid-cols-2">
           <div>
             <dt className="text-[color:var(--workspace-brand-muted)]">
-              Connected
+              Подключено
             </dt>
             <dd className="mt-1">{formatRbacDateTime(identity.createdAt)}</dd>
           </div>
           <div>
             <dt className="text-[color:var(--workspace-brand-muted)]">
-              Last updated
+              Последнее обновление
             </dt>
             <dd className="mt-1">{formatRbacDateTime(identity.updatedAt)}</dd>
           </div>
@@ -407,13 +407,16 @@ export const IdentityCardDefault = memo(function IdentityCardDefault(
         onOpenChange={(open) => {
           if (!open) setPendingAction(null);
         }}
-        title={`Remove ${meta.title}?`}
-        description={`Remove ${getIdentityPrimaryLogin(identity)} from the sign-in methods in this preview? No external account is deleted.`}
-        confirmLabel="Remove identity"
+        title={`Удалить ${meta.title}?`}
+        description={`Удалить ${getIdentityPrimaryLogin(identity)} from the sign-in methods in this preview? No external account is deleted.`}
+        confirmLabel="Отключить способ входа"
         onConfirm={() => {
           if (!pendingAction) return;
           if (onAction) onAction(identity, pendingAction);
-          else setLocalResult("Identity removal requested in this preview.");
+          else
+            setLocalResult(
+              "В этом примере отправлен запрос на отключение способа входа.",
+            );
           setPendingAction(null);
         }}
         portalContainer={portalContainer}

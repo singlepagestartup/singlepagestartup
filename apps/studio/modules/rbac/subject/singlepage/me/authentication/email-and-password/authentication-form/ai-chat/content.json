@@ -1,23 +1,23 @@
 {
-  "title": "Sign in",
+  "title": "Войти",
   "description": [],
   "successDescription": [
-    "Open your workspace to return to your documents and conversations."
+    "Откройте проект, чтобы продолжить работу с документами и обсуждениями."
   ],
   "labels": {
-    "email-label": "Email",
+    "email-label": "Электронная почта",
     "email-placeholder": "you@example.com",
-    "password-label": "Password",
-    "submit": "Sign in",
-    "forgot-label": "Forgot password?",
+    "password-label": "Пароль",
+    "submit": "Войти",
+    "forgot-label": "Забыли пароль?",
     "forgot-href": "/ai-chat/help",
-    "register-label": "Create an account",
+    "register-label": "Создать аккаунт",
     "register-href": "/ai-chat/rbac/subjects/authentication/registration",
-    "no-account": "No account yet?",
-    "continue-label": "Open workspace",
+    "no-account": "Ещё нет аккаунта?",
+    "continue-label": "Открыть проект",
     "continue-href": "/ai-chat/social/profiles/example",
-    "email-error": "Enter a valid email address.",
-    "password-error": "Enter your password.",
-    "success-message": "Welcome back."
+    "email-error": "Укажите адрес электронной почты.",
+    "password-error": "Введите пароль.",
+    "success-message": "Вы вошли в аккаунт."
   }
 }

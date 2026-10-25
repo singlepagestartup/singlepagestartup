@@ -8,8 +8,8 @@ import { PreviewLink, SiteShell, siteStyles } from "../Site";
 import sourceText from "./page.md?raw";
 import { parseTokenPage, tokenCredit } from "./content";
 
-const integer = new Intl.NumberFormat("en-US");
-const credit = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+const integer = new Intl.NumberFormat("ru-RU");
+const credit = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 });
 
 export default function Tokens({
   text,

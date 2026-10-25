@@ -126,7 +126,7 @@ export function Component({ profileId }: IProfileSettingsProps) {
   const profile = projects.find((record) => record.id === profileId);
   const [name, setName] = useState(profile?.name ?? "");
   const [saved, setSaved] = useState(false);
-  if (!profile) return <p role="status">Project profile unavailable.</p>;
+  if (!profile) return <p role="status">Проект недоступен.</p>;
   return (
     <div
       data-ds-block="social.profile.settings-ai-chat-project"
@@ -143,7 +143,7 @@ export function Component({ profileId }: IProfileSettingsProps) {
       >
         <div className="min-w-0 flex-1">
           <TextField
-            label="Project name"
+            label="Название проекта"
             value={name}
             className="mt-2"
             onChange={(event) => {
@@ -156,14 +156,14 @@ export function Component({ profileId }: IProfileSettingsProps) {
           type="submit"
           disabled={!name.trim() || name.trim() === profile.name}
         >
-          Save name
+          Сохранить название
         </Button>
       </form>
-      {saved && <Feedback>Project name saved.</Feedback>}
+      {saved && <Feedback>Название проекта сохранено.</Feedback>}
       <div className="border-t border-[color:var(--workspace-brand-line)] pt-5">
         <KnowledgeModuleSource
           variant="download-ai-chat"
-          label="Export Products.md"
+          label="Скачать Продукты.md"
         />
       </div>
     </div>

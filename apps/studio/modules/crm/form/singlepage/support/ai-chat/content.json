@@ -1,26 +1,26 @@
 {
-  "title": "Support request",
+  "title": "Обращение в поддержку",
   "fields": {
     "topic": {
-      "label": "Topic",
-      "placeholder": "Select a topic"
+      "label": "Тема",
+      "placeholder": "Выберите тему"
     },
     "details": {
-      "label": "What happened?",
-      "placeholder": "Describe what you tried and what happened."
+      "label": "Что произошло?",
+      "placeholder": "Опишите, что вы сделали и что произошло."
     },
     "result": {
-      "label": "What result do you need?",
-      "placeholder": "Tell us what you want to continue or correct."
+      "label": "Какой результат нужен?",
+      "placeholder": "Расскажите, что хотите продолжить или исправить."
     }
   },
   "topics": [
-    "Account access",
-    "Project documents",
-    "Files and images",
-    "Chat threads and topics",
-    "Export",
-    "Tokens and payment",
-    "Other"
+    "Доступ к аккаунту",
+    "Документы проекта",
+    "Файлы и изображения",
+    "Обсуждения и темы",
+    "Скачивание документов",
+    "Токены и оплата",
+    "Другое"
   ]
 }

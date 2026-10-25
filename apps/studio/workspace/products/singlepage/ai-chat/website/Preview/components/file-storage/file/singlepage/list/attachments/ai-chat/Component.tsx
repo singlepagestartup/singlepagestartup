@@ -144,7 +144,7 @@ export function Component({
   const remove = useCallback(
     async (fileId: string) => {
       if (removal.current || pendingFileId) {
-        setError("Wait for the current file operation to finish.");
+        setError("Дождитесь завершения операции с файлом.");
         return;
       }
       removal.current = true;
@@ -154,7 +154,7 @@ export function Component({
         await onRemove(fileId);
       } catch (cause) {
         setError(
-          cause instanceof Error ? cause.message : "File could not be removed.",
+          cause instanceof Error ? cause.message : "Не удалось удалить файл.",
         );
       } finally {
         removal.current = false;
@@ -179,7 +179,7 @@ export function Component({
     } catch (cause) {
       if (mounted.current)
         setError(
-          cause instanceof Error ? cause.message : "Could not add these files.",
+          cause instanceof Error ? cause.message : "Не удалось добавить файлы.",
         );
     } finally {
       if (mounted.current) setReading(false);
@@ -187,13 +187,13 @@ export function Component({
   }
   return (
     <section
-      aria-label={`${section} files`}
+      aria-label={`${section} — файлы`}
       className="mt-3 space-y-3 border-t border-border pt-3"
       data-module="file-storage"
       data-model="file"
       data-variant={variant}
     >
-      <p className={`text-xs ${kit.muted}`}>Files · {linked.length}</p>
+      <p className={`text-xs ${kit.muted}`}>Файлы · {linked.length}</p>
       {errorMessage && (
         <p role="alert" className="text-xs text-destructive">
           {errorMessage}
@@ -205,7 +205,7 @@ export function Component({
         </p>
       )}
       <ul
-        aria-label="Knowledge attachments"
+        aria-label="Файлы базы знаний"
         className="grid min-w-0 grid-cols-2 gap-2"
       >
         {(expanded ? linked : linked.slice(0, 2)).map((id) => (
@@ -224,7 +224,7 @@ export function Component({
           className="min-h-9 w-full rounded-lg border border-border px-3 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground"
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? "Show less" : "Show more"}
+          {expanded ? "Свернуть" : "Показать ещё"}
         </button>
       )}
       <div className="flex flex-wrap gap-2">
@@ -235,11 +235,11 @@ export function Component({
           onClick={() => input.current?.click()}
         >
           <Icon name="upload-simple" className="size-4" />
-          {reading ? "Adding files…" : "Upload files"}
+          {reading ? "Добавляем файлы…" : "Загрузить файлы"}
         </Button>
         <input
           ref={input}
-          aria-label={`Upload files for ${section}`}
+          aria-label={`Загрузить файлы для раздела ${section}`}
           className="sr-only"
           type="file"
           accept={AI_CHAT_ATTACHMENT_ACCEPT}
@@ -256,14 +256,14 @@ export function Component({
               className={`inline-flex min-h-9 cursor-pointer items-center gap-2 ${kit.focus}`}
             >
               <Icon name="paperclip" className="size-4" />
-              Add a file
+              Добавить файл
             </summary>
             <div className="mt-2 grid gap-2">
               <Select
-                aria-label={`Project file for ${section}`}
+                aria-label={`Файл проекта для раздела ${section}`}
                 value={selected}
                 onValueChange={setSelected}
-                placeholder="Choose a project file"
+                placeholder="Выберите файл проекта"
                 options={available.map((file) => ({
                   value: file.id,
                   label: file.name,
@@ -280,7 +280,7 @@ export function Component({
                   setSelected("");
                 }}
               >
-                Attach to section
+                Прикрепить к разделу
               </Button>
             </div>
           </details>
@@ -406,20 +406,20 @@ const FileAttachment = memo(function FileAttachment({
   const remove = useCallback(() => onRemove(id), [onRemove, id]);
   if (!file) return null;
   return (
-    <li className="relative min-w-0" aria-label={`${file.name} attachment`}>
+    <li className="relative min-w-0" aria-label={`Вложение ${file.name}`}>
       <AttachmentFile variant="attachment-ai-chat" file={file} />
       <button
         type="button"
         onClick={remove}
         disabled={pending}
-        aria-label={`Remove ${file.name} from knowledge`}
+        aria-label={`Удалить ${file.name} из знаний`}
         className="absolute right-1 top-1 z-10 grid size-7 place-items-center rounded-full bg-foreground text-background hover:opacity-80 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       >
         <Icon name="x" className="size-4" />
       </button>
       {pending && (
         <p className="mt-1 text-xs text-muted-foreground" role="status">
-          Removing…
+          Удаляем…
         </p>
       )}
     </li>

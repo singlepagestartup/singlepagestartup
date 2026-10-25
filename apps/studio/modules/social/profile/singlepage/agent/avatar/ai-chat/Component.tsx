@@ -26,8 +26,8 @@ export function Component({
       data-ds-block="social.profile.agent-avatar-ai-chat"
       data-id={agent.id}
       onClick={() => onSelect(agent)}
-      aria-label={`About ${agent.name}`}
-      title={`About ${agent.name}`}
+      aria-label={`О помощнике ${agent.name}`}
+      title={`О помощнике ${agent.name}`}
       className={`grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground transition hover:bg-primary/80 ${kit.focus}`}
       data-module="social"
       data-model="profile"

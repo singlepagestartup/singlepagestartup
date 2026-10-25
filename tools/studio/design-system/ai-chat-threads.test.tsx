@@ -61,9 +61,9 @@ test("knowledge titles define the overview and message context instead of Produc
       </SourceProvider>
     </FilesProvider>,
   );
-  expect(html).toContain("Strategy.md is ready to work on.");
-  expect(html).toContain('aria-label="Strategy.md editor"');
-  expect(html).toContain('aria-label="Download Strategy.md"');
+  expect(html).toContain("Strategy.md готов к работе.");
+  expect(html).toContain('aria-label="Strategy.md — редактор"');
+  expect(html).toContain('aria-label="Скачать Strategy.md"');
   expect(html).not.toContain("Products.md");
   const messages = appendThreadExchange([], {
     ids: { user: "question", assistant: "answer" },
@@ -76,7 +76,7 @@ test("knowledge titles define the overview and message context instead of Produc
   });
   expect(messages[0].workingOn?.documentName).toBe("Strategy.md");
   expect(messages[1].context![0].name).toBe("Strategy.md · Strategy");
-  expect(messages[1].text).toContain("Strategy knowledge");
+  expect(messages[1].text).toContain("документу «Strategy»");
 });
 
 test("a nested identified Thread reuses the existing Thread and message history", () => {
@@ -161,7 +161,7 @@ test("the identified Chat composes Thread messages, one Source and a Subject cre
     'data-knowledge-source-ids="pottery:products:products"',
   );
   expect(html).not.toContain('aria-label="Working on"');
-  expect(html).toContain("Knowledge assistant");
+  expect(html).toContain("Помощник по документам");
   for (const obsolete of [
     "Brief.md",
     "Strategy.md",
@@ -195,7 +195,7 @@ test("sending snapshots one knowledge and linked files; later edits and detach p
   files[0].text = "Changed file";
   expect(history[1].context![0].text).toBe(original);
   expect(history[1].filesUsed![0].text).toBe(
-    "Six places per weekend workshop.",
+    "На каждом мастер-классе в выходные — шесть мест.",
   );
   const next = appendThreadExchange(history, {
     ids: { user: "user-2", assistant: "assistant-2" },

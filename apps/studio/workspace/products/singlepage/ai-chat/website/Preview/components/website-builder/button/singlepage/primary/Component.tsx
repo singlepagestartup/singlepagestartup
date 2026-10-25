@@ -186,7 +186,7 @@ const kit = {
   focus: focus,
 };
 export const defaultButtonPrimaryProps: ButtonPrimaryProps = {
-  label: "Open admin panel",
+  label: "Открыть панель управления",
   href: "/admin",
   icon: ArrowRight,
 };

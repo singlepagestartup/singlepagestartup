@@ -60,7 +60,7 @@ function ThreadId({
     >
       <PanelHeader
         title={thread.title}
-        label="Document thread"
+        label="Обсуждение документа"
         navigation={navigation}
         actions={
           <div className="flex rounded-lg bg-muted p-1 @[900px]/chat:hidden">
@@ -72,7 +72,7 @@ function ThreadId({
                 onClick={() => setPane(item)}
                 className={`min-h-9 rounded-md px-3 text-xs font-semibold ${kit.focus} ${pane === item ? "bg-card" : kit.muted}`}
               >
-                {item === "chat" ? "Chat" : "Document"}
+                {item === "chat" ? "Чат" : "Документ"}
               </button>
             ))}
           </div>
@@ -92,7 +92,7 @@ function ThreadId({
           className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-border @[900px]/chat:block @[900px]/chat:border-l`}
         >
           <section
-            aria-label={`${thread.title} editor`}
+            aria-label={`${thread.title} — редактор`}
             data-thread-id={thread.id}
             className="min-w-0 bg-muted p-4"
           >

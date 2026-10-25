@@ -53,30 +53,30 @@ function DevelopmentHandoff({ title, content }: IDevelopmentHandoffProps) {
   async function copyRequest() {
     if (empty || feedback.state === "pending") return;
     const currentRevision = revision.current;
-    setFeedback({ state: "pending", text: "Copying development request…" });
+    setFeedback({ state: "pending", text: "Копируем запрос для разработки…" });
     const request = [
-      "Use SinglePageStartup Code Framework to plan a first landing page or web product.",
-      `Read the attached ${title}.md document, which I will review and export from AI Chat before attaching it here.`,
-      "Treat its unanswered facts and assumptions as open questions. Ask me before filling them in.",
-      "My first customer action: [describe the one action a visitor should be able to complete].",
-      "Inspect the existing modules, identify the smallest useful first change and show me the plan before changing code.",
-      "Use the framework's existing account, content, order or payment flows where the task needs them. Preserve their current behavior.",
-      "Show the result and the checks I should review before the next change.",
+      "Помоги спланировать первую версию сайта или веб-сервиса на SinglePageStartup Code Framework.",
+      `Прочитай приложенный документ ${title}.md. Перед этим я проверю его и скачаю из AI Chat.`,
+      "Уточняй недостающие сведения и предположения у меня, прежде чем заполнять их.",
+      "Первое действие клиента: [опишите одно действие, которое должен выполнить посетитель].",
+      "Изучи существующие модули, предложи первое изменение для моей задачи и покажи план до работы с кодом.",
+      "Используй существующие возможности фреймворка для аккаунтов, контента, заказов и оплаты, если они нужны для задачи. Сохрани их текущее поведение.",
+      "Покажи результат и объясни, что проверить перед следующим изменением.",
     ].join("\n\n");
     try {
       if (!navigator.clipboard?.writeText)
-        throw new Error("Clipboard unavailable");
+        throw new Error("Не удалось скопировать");
       await navigator.clipboard.writeText(request);
       if (revision.current !== currentRevision) return;
       setFeedback({
         state: "success",
-        text: `Development request copied. Review and export ${title}.md, then attach it in your coding agent.`,
+        text: `Запрос для разработки скопирован. Проверьте и скачайте ${title}.md, затем приложите файл в чате с ИИ-помощником по разработке.`,
       });
     } catch {
       if (revision.current !== currentRevision) return;
       setFeedback({
         state: "error",
-        text: "The request could not be copied. Allow clipboard access and try again. You can still export the document above.",
+        text: "Не удалось скопировать запрос. Разрешите доступ к буферу обмена и попробуйте ещё раз. Документ можно скачать выше.",
       });
     }
   }
@@ -88,24 +88,23 @@ function DevelopmentHandoff({ title, content }: IDevelopmentHandoffProps) {
     >
       <p className="inline-flex items-center gap-2 text-xs font-medium text-[color:var(--workspace-brand-muted)]">
         <Icon name="code" />
-        From documents to development
+        От документов к разработке
       </p>
       <h4 id={headingId} className="mt-3 text-xl font-semibold leading-7">
-        Ready to turn this document into a product?
+        Используйте этот документ для создания продукта
       </h4>
       <p
         id={descriptionId}
         className="mt-3 text-sm leading-6 text-[color:var(--workspace-brand-muted)]"
       >
-        Review the facts and open questions in this document, then export its
-        current text using the download button above. Give the file to your
-        coding agent and use Code Framework for the accounts, content, orders or
-        payments your product needs.
+        Проверьте сведения и открытые вопросы, затем скачайте текущий текст
+        кнопкой выше. Передайте файл ИИ-помощнику по разработке. Используйте
+        модули Code Framework для нужных вашему продукту аккаунтов, контента,
+        заказов и оплаты.
       </p>
       <p className="mt-3 text-sm leading-6 text-[color:var(--workspace-brand-muted)]">
-        The editable text is not automatically reviewed. Copying the request
-        leaves the document unchanged and copies instructions only; attach the
-        exported file separately.
+        Проверьте текст перед использованием. Кнопка копирует инструкции;
+        скачанный документ нужно приложить отдельно.
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button
@@ -119,14 +118,14 @@ function DevelopmentHandoff({ title, content }: IDevelopmentHandoffProps) {
         >
           <Icon name={feedback.state === "success" ? "check" : "file-text"} />
           {feedback.state === "pending"
-            ? "Copying request…"
-            : "Copy development request"}
+            ? "Копируем запрос…"
+            : "Скопировать запрос для разработки"}
         </Button>
         <a
           href="/framework"
           className={`inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl px-4 py-2 text-center text-sm font-semibold text-[color:var(--workspace-brand-foreground)] hover:underline ${focus}`}
         >
-          Explore Code Framework
+          Посмотреть Code Framework
           <Icon name="arrow-up-right" />
         </a>
       </div>
@@ -137,7 +136,7 @@ function DevelopmentHandoff({ title, content }: IDevelopmentHandoffProps) {
         className={`mt-3 min-h-6 text-sm leading-6 ${feedback.state === "error" ? "text-[color:var(--workspace-brand-danger)]" : "text-[color:var(--workspace-brand-muted)]"}`}
       >
         {empty
-          ? "Add document text before copying a development request."
+          ? "Добавьте текст документа, чтобы скопировать запрос для разработки."
           : feedback.text}
       </p>
     </section>
@@ -182,7 +181,7 @@ export function Component(props: ISourceDocumentProps) {
   const documentName = `${source.title}.md`;
   return (
     <section
-      aria-label={`${documentName} editor`}
+      aria-label={`${documentName} — редактор`}
       className="min-w-0 bg-[color:var(--workspace-brand-background)] p-4"
     >
       <div className="mb-4 flex items-center justify-between gap-2">

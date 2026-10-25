@@ -44,7 +44,7 @@ export function Component({
         data-model="subject"
         data-variant={variant}
       >
-        Thread knowledge unavailable.
+        Знания обсуждения недоступны.
       </div>
     );
   return (

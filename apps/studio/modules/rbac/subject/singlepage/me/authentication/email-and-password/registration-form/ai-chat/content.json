@@ -1,25 +1,27 @@
 {
-  "title": "Create an account",
-  "description": ["Your free token balance appears in the workspace."],
+  "title": "Создать аккаунт",
+  "description": [
+    "После регистрации в аккаунте появятся бесплатные токены для работы с ИИ."
+  ],
   "successDescription": [
-    "Continue to your project chat and add your notes, files and images."
+    "Перейдите к проекту и добавьте заметки, файлы и изображения."
   ],
   "labels": {
-    "email-label": "Email",
+    "email-label": "Электронная почта",
     "email-placeholder": "you@example.com",
-    "password-label": "Password",
-    "repeat-password-label": "Repeat password",
-    "terms-label": "How your materials are processed and stored",
+    "password-label": "Пароль",
+    "repeat-password-label": "Повторите пароль",
+    "terms-label": "Обработка и хранение материалов",
     "terms-href": "/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored",
-    "submit": "Create account",
-    "sign-in-label": "Sign in",
+    "submit": "Создать аккаунт",
+    "sign-in-label": "Войти",
     "sign-in-href": "/ai-chat/rbac/subjects/authentication/select-method",
-    "existing-account": "Already have an account?",
-    "continue-label": "Open project chat",
+    "existing-account": "Уже есть аккаунт?",
+    "continue-label": "Открыть чат проекта",
     "continue-href": "/ai-chat/social/profiles/create",
-    "email-error": "Enter a valid email address.",
-    "password-error": "Enter a password.",
-    "repeat-password-error": "Enter the same password in both fields.",
-    "success-message": "Your account is ready."
+    "email-error": "Укажите адрес электронной почты.",
+    "password-error": "Придумайте пароль.",
+    "repeat-password-error": "Пароли в обоих полях должны совпадать.",
+    "success-message": "Аккаунт создан."
   }
 }

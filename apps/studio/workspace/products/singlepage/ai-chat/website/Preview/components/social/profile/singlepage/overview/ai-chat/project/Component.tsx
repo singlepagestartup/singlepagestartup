@@ -1,4 +1,6 @@
 "use client";
+
+import { usePreviewLayout } from "../../../../../../host/layout/singlepage/ai-chat-landing/Navigation";
 import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
 import {
   forwardRef as forwardRefControl,
@@ -73,6 +75,8 @@ function OverviewAiChatProject({
   selected,
   children,
 }: IOverviewAiChatProjectProps) {
+  const embedded = usePreviewLayout();
+  const Container = embedded ? "div" : "main";
   const id = useId();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -91,7 +95,7 @@ function OverviewAiChatProject({
         ref={drawerTrigger}
         variant="plain"
         className="min-h-9 shrink-0 px-2 @[760px]/workspace:hidden"
-        aria-label="Show sidebar"
+        aria-label="Показать меню проекта"
         aria-expanded={drawerOpen}
         aria-controls={`${id}-sidebar`}
         onClick={() => setDrawerOpen((current) => !current)}
@@ -101,7 +105,9 @@ function OverviewAiChatProject({
       <Button
         variant="plain"
         className="hidden min-h-9 shrink-0 px-2 @[760px]/workspace:inline-flex"
-        aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+        aria-label={
+          sidebarOpen ? "Скрыть меню проекта" : "Показать меню проекта"
+        }
         aria-expanded={sidebarOpen}
         aria-controls={`${id}-sidebar`}
         onClick={() => setSidebarOpen((current) => !current)}
@@ -111,7 +117,9 @@ function OverviewAiChatProject({
     </>
   );
   return (
-    <main className="@container/workspace mx-auto max-w-[1440px] px-4 py-6 @[640px]:px-5">
+    <Container
+      className={`@container/workspace mx-auto max-w-[1440px] ${embedded ? "" : "px-4 py-6 @[640px]:px-5"}`}
+    >
       <div
         id="documents"
         data-ds-block="social.profile.overview-ai-chat-project"
@@ -131,7 +139,7 @@ function OverviewAiChatProject({
       >
         <button
           type="button"
-          aria-label="Close project sidebar"
+          aria-label="Закрыть меню проекта"
           tabIndex={-1}
           onMouseDown={(event) => event.preventDefault()}
           onClick={closeDrawer}
@@ -139,7 +147,7 @@ function OverviewAiChatProject({
         />
         <aside
           id={`${id}-sidebar`}
-          aria-label="Project conversations"
+          aria-label="Обсуждения проекта"
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget)) {
               setDrawerOpen(false);
@@ -155,7 +163,7 @@ function OverviewAiChatProject({
           <button
             ref={drawerClose}
             type="button"
-            aria-label="Close sidebar"
+            aria-label="Закрыть меню"
             onClick={closeDrawer}
             className={`absolute right-3 top-3 inline-flex size-9 items-center justify-center rounded-lg hover:bg-white/10 @[760px]/workspace:hidden ${kit.focus}`}
           >
@@ -169,7 +177,7 @@ function OverviewAiChatProject({
         </aside>
         <div className="flex min-h-0 min-w-0 flex-col">{children(toggle)}</div>
       </div>
-    </main>
+    </Container>
   );
 }
 const focus =

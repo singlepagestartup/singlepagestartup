@@ -179,11 +179,11 @@ describe("product pages", () => {
     expect(content.workflow.items[0].title).toBe("Bring existing material");
     expect(content.publish.title).toBe("Review the written descriptions.");
     expect(content.foundation.items.map(({ title }) => title)).toEqual([
-      "Brief",
-      "Strategy",
-      "Brand",
-      "Design",
-      "Products",
+      "Бриф",
+      "Стратегия",
+      "Бренд",
+      "Дизайн",
+      "Продукты",
     ]);
     expect(content.labels["navigation-foundation"]).toBeTruthy();
   });

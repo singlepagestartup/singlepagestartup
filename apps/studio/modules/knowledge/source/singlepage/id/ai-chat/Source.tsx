@@ -42,7 +42,7 @@ export function SourceProvider({
         title: "Products",
         content: "",
         description:
-          "Describe the products, their customers, value and current availability.",
+          "Опишите продукты, их клиентов, предложение и текущую доступность.",
       },
   );
   const [fileIds, setFileIds] = useState(initialFileIds);

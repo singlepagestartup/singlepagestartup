@@ -305,9 +305,7 @@ const materials = readFileSync(path.join(source, "new-project.md"), "utf8");
 publish(
   "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/materials-processing/disclosure.json",
   JSON.stringify(
-    materials.slice(
-      materials.indexOf("## How your materials are processed and stored"),
-    ),
+    materials.slice(materials.indexOf("## Обработка и хранение материалов")),
     null,
     2,
   ) + "\n",

@@ -123,29 +123,29 @@ export function Component({ onCreate, onCancel }: IProfileCreateProps) {
         <section className="flex flex-col justify-center p-6 @[640px]:p-10">
           <span className="mb-5 h-1 w-10 rounded-full bg-[color:var(--workspace-brand-accent)]" />
           <h1 className="text-3xl font-semibold leading-tight">
-            Start with a name.
+            Начните с названия
           </h1>
           <p className={`mt-4 text-sm leading-6 ${kit.muted}`}>
-            Create a project and start working in its Products thread. Add
-            knowledge and files whenever you need them.
+            Создайте проект и начните работу в обсуждении продуктов. Добавляйте
+            знания и файлы по мере работы.
           </p>
           <form onSubmit={submit} className="mt-8 grid gap-4">
             <TextField
-              label="Project name"
+              label="Название проекта"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="What are you working on?"
+              placeholder="Над чем вы работаете?"
               required
               autoComplete="off"
               maxLength={100}
             />
             <Button type="submit" disabled={!name.trim()}>
               <Icon name="plus" />
-              Create project
+              Создать проект
             </Button>
             {onCancel && (
               <Button variant="plain" onClick={onCancel}>
-                Back to my project
+                К моему проекту
               </Button>
             )}
           </form>
@@ -153,14 +153,13 @@ export function Component({ onCreate, onCancel }: IProfileCreateProps) {
         <div className="relative hidden min-w-0 @[760px]:block">
           <SquareImage
             src="/workspace-assets/singlepage/generated/living-focus/singlepagestartup-photography-project-start-v1-square.png"
-            alt="A person working on their project at a desk"
+            alt="Человек работает над своим проектом за столом"
             className="h-full min-h-96 w-full rounded-none object-cover"
           />
           <div className="absolute inset-x-5 bottom-5 rounded-xl bg-[color:var(--workspace-brand-foreground)] p-5 text-white">
-            <p className="font-semibold">Your files. Your project.</p>
+            <p className="font-semibold">Ваши файлы и ваш проект</p>
             <p className="mt-2 text-sm leading-6 text-white/70">
-              Describe your products, attach useful files and work with the
-              product assistant in one conversation.
+              Опишите продукты, приложите файлы и обсудите проект с помощником.
             </p>
           </div>
         </div>

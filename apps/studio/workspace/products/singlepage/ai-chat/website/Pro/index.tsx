@@ -32,7 +32,7 @@ const display =
   "[font-family:var(--workspace-brand-font-display)] font-semibold";
 const focus =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--workspace-brand-foreground)]";
-const number = new Intl.NumberFormat("en-US");
+const number = new Intl.NumberFormat("ru-RU");
 
 function ProLink({ href, resolveLink, children, ...props }: IProLinkProps) {
   const destination = resolveLink?.(href) ?? href;

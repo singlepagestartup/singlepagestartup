@@ -225,13 +225,13 @@ const ArrowRight = createIcon("arrow-right");
 export const defaultButtonsArrayProps: ButtonsArrayDefaultProps = {
   buttons: [
     {
-      label: "Open admin panel",
+      label: "Открыть панель управления",
       href: "/admin",
       variant: "primary",
       icon: ArrowRight,
     },
     {
-      label: "Learn more",
+      label: "Подробнее",
       href: "#features",
       variant: "secondary",
       icon: Play,

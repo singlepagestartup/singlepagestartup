@@ -244,7 +244,7 @@ export function SubjectMeIdentityFindInformation(
       setIdentities((current) =>
         current.filter((item) => item.id !== identity.id),
       );
-      setResult("Sign-in method removed in this preview.");
+      setResult("Способ входа отключён в этом примере.");
     },
     [],
   );
@@ -263,7 +263,7 @@ export function SubjectMeIdentityFindInformation(
           </p>
         </div>
         <span className="rounded-full bg-[color:var(--workspace-brand-background)] px-3 py-1.5 text-xs text-[color:var(--workspace-brand-muted)]">
-          {identities.length} connected
+          Подключено: {identities.length}
         </span>
       </div>
       <div className="mt-6 space-y-4">
@@ -299,11 +299,11 @@ export function SubjectMeIdentityFindInformation(
           aria-expanded={adding}
         >
           <Plus className="size-4" />
-          Add sign-in method
+          Добавить способ входа
         </Button>
         {adding && (
           <div className="mt-5">
-            <h3 className="text-sm font-semibold">Choose a method</h3>
+            <h3 className="text-sm font-semibold">Выберите способ</h3>
             <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-2">
               {identityProviders.map((item) => {
                 const Glyph = item.icon;
@@ -320,7 +320,7 @@ export function SubjectMeIdentityFindInformation(
                   >
                     <Glyph className="size-5 shrink-0" />
                     <span className="min-w-0 flex-1">{item.title}</span>
-                    {connected && <span className="text-xs">Connected</span>}
+                    {connected && <span className="text-xs">Подключено</span>}
                   </button>
                 );
               })}
@@ -352,7 +352,7 @@ export function SubjectMeIdentityFindInformation(
                   ]);
                   setAdding(false);
                   setProvider(undefined);
-                  setResult("Sign-in method connected in this preview.");
+                  setResult("Способ входа подключён в этом примере.");
                 }}
               />
             )}
@@ -380,8 +380,8 @@ const Button = forwardRefControl<
 });
 export const defaultSubjectMeIdentityFindInformationProps: SubjectMeIdentityFindInformationProps =
   {
-    title: "Sign-in methods",
+    title: "Способы входа",
     description:
-      "Choose how you sign in. Manage each connected account separately.",
-    emptyLabel: "No sign-in methods connected to this account.",
+      "Выберите, как входить в аккаунт. Каждое подключение можно настроить отдельно.",
+    emptyLabel: "К этому аккаунту пока не подключены способы входа.",
   };

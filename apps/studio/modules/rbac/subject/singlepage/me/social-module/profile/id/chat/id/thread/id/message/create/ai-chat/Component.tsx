@@ -71,7 +71,7 @@ export function Component({
     setReading(true);
     setError(
       rejected.length
-        ? `Unsupported files: ${rejected.map((file) => file.name).join(", ")}. Allowed formats: ${AI_CHAT_ATTACHMENT_FORMAT_LABEL}.`
+        ? `Неподдерживаемые файлы: ${rejected.map((file) => file.name).join(", ")}. Допустимые форматы: ${AI_CHAT_ATTACHMENT_FORMAT_LABEL}.`
         : "",
     );
     try {
@@ -88,7 +88,7 @@ export function Component({
         setError(
           cause instanceof Error
             ? cause.message
-            : "Could not attach these files. Try again.",
+            : "Не удалось прикрепить файлы. Попробуйте ещё раз.",
         );
     } finally {
       if (mounted.current) setReading(false);
@@ -115,17 +115,16 @@ export function Component({
       data-variant={variant}
     >
       <label htmlFor={id} className="sr-only">
-        Message
+        Сообщение
       </label>
       <div className="rounded-2xl border border-border p-3 focus-within:border-foreground">
         {files.length > 0 && (
           <>
             <p className="mb-2 text-xs text-muted-foreground">
-              {files.length} {files.length === 1 ? "file" : "files"} · Drag to
-              reorder
+              Файлов: {files.length} · Перетащите, чтобы изменить порядок
             </p>
             <ul
-              aria-label="Message attachments"
+              aria-label="Вложения сообщения"
               className="mb-3 flex min-w-0 gap-2 overflow-x-auto pb-2"
             >
               {files.map((file, index) => (
@@ -146,7 +145,7 @@ export function Component({
         )}
         <textarea
           id={id}
-          aria-label="Message"
+          aria-label="Сообщение"
           value={value}
           required={!files.length}
           disabled={busy}
@@ -161,7 +160,7 @@ export function Component({
               if (!event.repeat) event.currentTarget.form?.requestSubmit();
             }
           }}
-          placeholder="Discuss this knowledge or request a change."
+          placeholder="Обсудите документ или попросите внести изменения."
           className="h-32 min-h-24 max-h-[min(50dvh,480px)] w-full min-w-0 resize-y bg-transparent text-sm leading-6 outline-none"
         />
         <input
@@ -169,7 +168,7 @@ export function Component({
           type="file"
           multiple
           accept={AI_CHAT_ATTACHMENT_ACCEPT}
-          aria-label="Attach files to message"
+          aria-label="Прикрепить файлы к сообщению"
           className="hidden"
           disabled={busy}
           onChange={(event) => {
@@ -190,11 +189,11 @@ export function Component({
               name="paperclip"
               className="size-4"
             />
-            {reading ? "Adding files…" : "Attach files"}
+            {reading ? "Добавляем файлы…" : "Прикрепить файлы"}
           </button>
           <button
             type="submit"
-            title="Send (⌘ Enter / Ctrl Enter)"
+            title="Отправить (⌘ Enter / Ctrl Enter)"
             aria-keyshortcuts="Meta+Enter Control+Enter"
             disabled={busy || (!value.trim() && !files.length)}
             className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground hover:brightness-95 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
@@ -204,11 +203,11 @@ export function Component({
               name="paper-plane-tilt"
               className="size-4"
             />
-            {sending ? "Sending…" : "Send"}
+            {sending ? "Отправляем…" : "Отправить"}
           </button>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          ⌘ Enter / Ctrl Enter to send. Enter adds a new line.
+          ⌘ Enter / Ctrl Enter — отправить. Enter — новая строка.
         </p>
       </div>
       {error && (

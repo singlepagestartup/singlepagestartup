@@ -70,7 +70,7 @@ export const Component = memo(function Component({
       className={`flex min-h-10 w-full min-w-0 items-center gap-2 rounded-lg px-2 py-2 text-left text-sm ${kit.focus} ${selected ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`}
     >
       <Icon name="file-text" className="size-4 shrink-0 text-white/50" />
-      Products.md
+      Продукты.md
     </a>
   );
 });

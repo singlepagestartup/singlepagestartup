@@ -3,19 +3,19 @@ confirmation:
   confirmed: false
 ---
 
-# Monthly Pro review
+# Тариф Pro на месяц
 
 <!-- section: hero -->
 
-## Review monthly Pro.
+## Тариф Pro на месяц
 
-Continue preparing your business model, product concept and project documents in AI Chat with a monthly token allowance.
+Продолжайте работу над бизнес-моделью, идеей продукта и документами проекта с ежемесячным пакетом токенов.
 
 <!-- section: plan -->
 
 ## Pro
 
-Monthly billing
+Ежемесячная оплата
 
 | Term           | Value |
 | -------------- | ----- |
@@ -25,53 +25,53 @@ Monthly billing
 
 <!-- section: includes -->
 
-## What the plan includes
+## Что входит в тариф
 
-An allowance of internal tokens for your work in AI Chat each month.
+Каждый месяц — пакет внутренних токенов для работы в AI Chat.
 
-Use your prepared documents to brief coding agents when you start development with the free MIT Code Framework.
+Используйте подготовленные документы в работе с ИИ-помощником по разработке на бесплатном Code Framework с лицензией MIT.
 
-One-off token top-ups remain available separately from the monthly plan.
+Баланс можно пополнять отдельно от ежемесячного тарифа.
 
 <!-- section: terms -->
 
-## Token usage
+## Расход токенов
 
-AI Chat charges usage at provider cost. Internal tokens are the account’s usage unit, separate from a model’s input and output tokens. Failed or cancelled AI requests return all token deductions.
+AI Chat учитывает работу ИИ по стоимости провайдера. Внутренние токены служат единицей баланса аккаунта и отличаются от входных и выходных токенов модели. При ошибке или отмене запроса все списанные за него токены возвращаются.
 
 <!-- section: preview -->
 
-## Subscription preview
+## Предварительный просмотр тарифа
 
-Choosing a currency or previewing this plan creates no order, charges no money and does not activate a subscription.
+Выбор валюты и просмотр тарифа не создают заказ, не списывают деньги и не подключают подписку.
 
 <!-- section: review -->
 
-## Your selected monthly plan
+## Выбранный тариф на месяц
 
-This summary shows the plan, allowance and currency you selected. You can change the currency or return to plans and tokens.
+Здесь показаны выбранный тариф, количество токенов и валюта. Можно изменить валюту или вернуться к тарифам и пополнению.
 
 <!-- section: controls -->
 
-## Interface labels
+## Подписи интерфейса
 
-| Control          | Text                                   |
-| ---------------- | -------------------------------------- |
-| back             | Back to plans and tokens               |
-| back-href        | /ecommerce                             |
-| currency         | Billing currency                       |
-| usd              | US dollars                             |
-| rub              | Russian roubles                        |
-| per-month        | per month                              |
-| allowance        | Monthly allowance                      |
-| tokens-per-month | internal tokens per month              |
-| plan             | Plan                                   |
-| price            | Monthly price                          |
-| period           | Billing period                         |
-| month            | Month                                  |
-| preview          | Preview subscription                   |
-| review-state     | Pro selection ready to review.         |
-| chat             | Return to AI Chat                      |
-| chat-href        | /                                      |
-| topups           | Review one-off top-ups and token terms |
-| topups-href      | /ai-chat/rbac/subjects/tokens          |
+| Control          | Text                                       |
+| ---------------- | ------------------------------------------ |
+| back             | К тарифам и токенам                        |
+| back-href        | /ecommerce                                 |
+| currency         | Валюта оплаты                              |
+| usd              | Доллары США                                |
+| rub              | Российские рубли                           |
+| per-month        | в месяц                                    |
+| allowance        | Ежемесячный пакет                          |
+| tokens-per-month | внутренних токенов в месяц                 |
+| plan             | Тариф                                      |
+| price            | Стоимость за месяц                         |
+| period           | Период оплаты                              |
+| month            | Месяц                                      |
+| preview          | Посмотреть тариф                           |
+| review-state     | Тариф Pro выбран. Проверьте условия.       |
+| chat             | Вернуться в AI Chat                        |
+| chat-href        | /                                          |
+| topups           | Пополнение и условия использования токенов |
+| topups-href      | /ai-chat/rbac/subjects/tokens              |

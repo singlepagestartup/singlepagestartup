@@ -41,7 +41,7 @@ export function Component() {
       data-id="ai-chat-logotype"
       data-variant="brand-ai-chat"
       className={`group relative isolate inline-flex shrink-0 items-center gap-3 rounded-xl ${kit.focus}`}
-      aria-label="SPS AI Chat home"
+      aria-label="Главная AI Chat"
     >
       <span
         aria-hidden="true"

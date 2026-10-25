@@ -14,6 +14,7 @@ export function Component({
   return (
     <div
       data-workspace-projection="singlepage"
+      lang="ru"
       data-ds-block="host.layout.ai-chat-landing"
       className="@container min-h-screen min-w-0 flex flex-col bg-[color:var(--workspace-brand-background)] font-[family-name:var(--workspace-brand-font-body)] text-[color:var(--workspace-brand-foreground)]"
     >
@@ -22,7 +23,7 @@ export function Component({
         target="_self"
         className="sr-only focus:not-sr-only focus:block focus:px-6 focus:py-4 focus-visible:outline-2 focus-visible:outline-[color:var(--workspace-brand-accent)]"
       >
-        Skip to page content
+        Перейти к содержимому
       </a>
       <WebsiteBuilderModuleWidget
         variant="navbar-ai-chat-landing"

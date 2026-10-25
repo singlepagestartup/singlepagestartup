@@ -20,7 +20,7 @@ export function Component({ variant = "brand-ai-chat" }: IComponentProps = {}) {
       data-ds-block="website-builder.logotype.brand-ai-chat"
       data-id="ai-chat-logotype"
       className={`group relative isolate inline-flex shrink-0 items-center gap-3 rounded-xl ${kit.focus}`}
-      aria-label="SPS AI Chat home"
+      aria-label="Главная AI Chat"
       data-module="website-builder"
       data-model="logotype"
       data-variant={variant}

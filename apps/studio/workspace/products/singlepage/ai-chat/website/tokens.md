@@ -13,25 +13,25 @@ review:
     product.ai-chat.website: 01b952c5fa54af025f65408e64fd34bb8ab17b40c54ccecbf01604312b1abdc2
 ---
 
-# Add tokens and return to your work
+# Пополните баланс и продолжайте работу
 
 <!-- section: hero -->
 
-## Keep working on your project.
+## Продолжайте работу над проектом
 
-Your uploaded material, saved documents and current task remain in place while you choose a top-up.
+Загруженные материалы, сохранённые документы и текущая задача остаются на месте, пока вы выбираете пополнение.
 
 <!-- section: balance -->
 
-## Current balance
+## Текущий баланс
 
-See the token amount available in your account and the task you will return to after payment. Granted and purchased credits share one balance. The balance may be negative.
+Посмотрите, сколько токенов доступно в аккаунте и к какой задаче вы вернётесь после оплаты. Бесплатные и купленные токены учитываются на одном балансе. Он может быть отрицательным.
 
 <!-- section: packages -->
 
-## Choose a top-up
+## Выберите сумму пополнения
 
-Every package uses the same price of 0.13 roubles per internal token. Larger packages have no discount.
+Во всех пакетах один внутренний токен стоит 0,13 рубля. Скидки за размер пакета нет.
 
 | Amount, roubles | Price per internal token, roubles |
 | --------------- | --------------------------------- |
@@ -43,77 +43,77 @@ Every package uses the same price of 0.13 roubles per internal token. Larger pac
 
 <!-- section: purchase -->
 
-## Before payment
+## Перед оплатой
 
-Purchased tokens do not expire. After a successful payment, return to your saved upload, document or chat task.
+Купленные токены не сгорают. После успешной оплаты вернитесь к загрузке материалов, документу или задаче в чате.
 
 <!-- section: debt -->
 
-## When the balance limits new requests
+## Когда новые запросы недоступны
 
-New paid AI requests are restricted at **−2,000 internal tokens or lower**, equivalent to **−USD 2 of provider cost**. A request already in progress settles at its final cost and may take the balance below that threshold.
+При балансе **−2 000 внутренних токенов или ниже** новые платные запросы недоступны. Это соответствует **−2 долларам США по стоимости провайдера**. Уже запущенный запрос рассчитывается по итоговой стоимости и может опустить баланс ниже этого уровня.
 
-Top up to bring the balance above −2,000 tokens and continue the saved task.
+Пополните баланс выше −2 000 токенов, чтобы продолжить сохранённую задачу.
 
 <!-- section: scope -->
 
-## Future services
+## Будущие возможности
 
-Landing-page creation and paid server deployment are future capabilities with prices and availability not yet set.
+Создание посадочных страниц и платный запуск на сервере запланированы на будущее. Стоимость и доступность пока не определены.
 
 <!-- section: charging -->
 
-## How AI requests are charged
+## Как рассчитывается расход токенов
 
-One internal token represents USD 0.001 of provider cost. The purchase price includes a thirty per cent margin at a fixed conversion of 100 roubles per dollar. The margin is charged at top-up; model use consumes the balance at provider cost.
+Один внутренний токен соответствует 0,001 доллара США по стоимости провайдера. В цену покупки включена наценка 30% при фиксированном расчёте 100 рублей за доллар. Наценка учитывается при пополнении; работа модели расходует баланс по стоимости провайдера.
 
-One token is charged when your input is sent. A successful answer settles at its actual cost, rounded up to a whole internal token, with a minimum charge of one token, or 0.13 roubles at the purchase price.
+При отправке запроса списывается один токен. После успешного ответа расход пересчитывается по фактической стоимости и округляется вверх до целого внутреннего токена. Минимальное списание — один токен, или 0,13 рубля по цене покупки.
 
 <!-- section: refunds -->
 
-## Failed requests and refunds
+## Ошибки запросов и возвраты
 
-If an AI request fails or is cancelled, every deduction for it is restored, including the initial token and any settlement charge. Its net charge is zero. The service bears any provider expense.
+Если запрос завершился ошибкой или был отменён, все списанные за него токены возвращаются, включая первоначальный токен и итоговое списание. Расход для вас равен нулю. Затраты провайдера оплачивает сервис.
 
-This token reversal is separate from a cash refund for a top-up. Purchases are normally final; cash refunds are decided case by case and are not a published entitlement.
+Возврат токенов за запрос и возврат денег за пополнение — разные операции. Обычно покупка окончательна; денежный возврат рассматривается индивидуально и не гарантируется условиями сервиса.
 
 <!-- section: recovery -->
 
-## If payment does not complete
+## Если оплата не прошла
 
-A failed or cancelled payment leaves your saved work and token balance unchanged. Check the payment result, try again or ask for support. You can also return to the workspace without buying.
+Если оплата завершилась ошибкой или была отменена, сохранённая работа и баланс остаются на месте. Проверьте результат платежа, попробуйте ещё раз или обратитесь за помощью. Можно вернуться к проекту без покупки.
 
 <!-- section: success -->
 
-## Top-up quote
+## Расчёт пополнения
 
-Review the selected amount and token total. This preview creates no order or payment. You can choose a different package or return to your workspace.
+Проверьте сумму и количество токенов. Это предварительный расчёт: заказ и платёж не создаются. Можно выбрать другую сумму или вернуться к проекту.
 
 <!-- section: controls -->
 
-## Interface labels
+## Подписи интерфейса
 
-| Control               | Text                                                                               |
-| --------------------- | ---------------------------------------------------------------------------------- |
-| back-label            | Back to workspace                                                                  |
-| back-href             | /ai-chat/social/profiles/example                                                   |
-| balance-label         | Current balance                                                                    |
-| balance-unit          | tokens remaining                                                                   |
-| package-label         | Choose a top-up                                                                    |
-| selected-label        | Selected package                                                                   |
-| select-prompt         | Choose an amount                                                                   |
-| token-amount-label    | Estimated tokens                                                                   |
-| total-label           | Total                                                                              |
-| terms-label           | Token and payment terms                                                            |
-| credit-note           | Amount at the stated rate. The final credited amount will be shown before payment. |
-| balance-source        | Token balance for this account                                                     |
-| balance-scope-note    | Granted and purchased credits share one balance.                                   |
-| currency              | RUB                                                                                |
-| rate-label            | 0.13 roubles per internal token                                                    |
-| continue-payment      | Preview top-up                                                                     |
-| retry                 | Try again                                                                          |
-| return-without-buying | Return without buying                                                              |
-| return-href           | /ai-chat/social/profiles/example                                                   |
-| help-label            | Ask for help                                                                       |
-| help-href             | /ai-chat/help                                                                      |
-| success-message       | Top-up quote ready.                                                                |
+| Control               | Text                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| back-label            | К проекту                                                                             |
+| back-href             | /ai-chat/social/profiles/example                                                      |
+| balance-label         | Текущий баланс                                                                        |
+| balance-unit          | доступных токенов                                                                     |
+| package-label         | Выберите сумму пополнения                                                             |
+| selected-label        | Выбранный пакет                                                                       |
+| select-prompt         | Выберите сумму                                                                        |
+| token-amount-label    | Примерное количество токенов                                                          |
+| total-label           | Итого                                                                                 |
+| terms-label           | Условия использования токенов и оплаты                                                |
+| credit-note           | Расчёт по указанной ставке. Итоговое количество токенов будет показано перед оплатой. |
+| balance-source        | Баланс токенов этого аккаунта                                                         |
+| balance-scope-note    | Бесплатные и купленные токены учитываются на одном балансе.                           |
+| currency              | RUB                                                                                   |
+| rate-label            | 0,13 рубля за внутренний токен                                                        |
+| continue-payment      | Посмотреть расчёт                                                                     |
+| retry                 | Попробовать ещё раз                                                                   |
+| return-without-buying | Вернуться без покупки                                                                 |
+| return-href           | /ai-chat/social/profiles/example                                                      |
+| help-label            | Обратиться за помощью                                                                 |
+| help-href             | /ai-chat/help                                                                         |
+| success-message       | Расчёт пополнения готов.                                                              |

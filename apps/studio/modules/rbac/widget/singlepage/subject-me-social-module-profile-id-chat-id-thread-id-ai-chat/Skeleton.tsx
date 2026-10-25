@@ -8,10 +8,10 @@ export function Component({
 }: IWorkspaceSkeletonProps) {
   const label =
     stage === "checking-session"
-      ? "Checking your session…"
+      ? "Проверяем вход…"
       : stage === "loading-projects"
-        ? "Loading your projects…"
-        : "Loading your chat…";
+        ? "Загружаем ваши проекты…"
+        : "Загружаем чат…";
   const content = (
     <section
       role="status"

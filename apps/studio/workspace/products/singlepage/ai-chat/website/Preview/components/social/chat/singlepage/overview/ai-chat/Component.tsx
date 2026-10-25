@@ -21,7 +21,7 @@ export function Component({
       data-chat-id={chatId}
       data-variant="overview-ai-chat"
       className="@container/chat flex min-h-0 min-w-0 flex-1 flex-col"
-      aria-label="Active chat"
+      aria-label="Текущий чат"
     >
       <SocialModuleThread
         variant="overview-ai-chat"

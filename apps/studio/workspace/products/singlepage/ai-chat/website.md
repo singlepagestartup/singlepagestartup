@@ -1,6 +1,6 @@
 ---
 confirmation:
-  confirmed: true
+  confirmed: false
   by: operator
   at: 2026-09-17
   source: "Operator confirmed the complete current AI Chat Website Overview in
@@ -194,3 +194,30 @@ After saving a document, the visitor opens the general project workspace and nam
 The page uses the chat, file rows, document editor and review indicator to explain the product. A short four-step strip supplies the sequence without a long document catalogue. The complete project and per-product structure belongs to the overview and Presentation. Future development and deployment do not occupy the public landing.
 
 Access, token charging, refunds, the debt threshold, support and material processing sit in one labelled expandable area. The page ends with the same registration action and a short export statement. Narrow layouts keep the current action, chat and document controls readable without placing a wide workspace beyond the canvas.
+
+## Русская версия для проверки с клиентами
+
+Публичные страницы AI Chat, регистрация, вход, настройки аккаунта, помощь,
+пополнение и тариф Pro используют русский текст. Страница тарифов и токенов
+Code Framework также переведена. Названия AI Chat, Pro, Code Framework,
+провайдеров, URL и идентификаторы моделей сохранены. Суммы показываются
+по правилам ru-RU; предварительный расчёт пополнения округляется до целых
+токенов. Денежные условия и правила списания не меняются.
+
+Текст страниц хранится в соответствующих Markdown-файлах Website.
+Команда публикации Studio обновляет производные JSON в Modules; снимок
+Product Preview содержит соответствующую русскую копию. Инструкции
+метода и машинные ключи разделов остаются в своих исходных контрактах.
+Новый перевод требует проверки; исторические подтверждения не заменяют
+подтверждение русского текста.
+
+Демонстрация на лендинге использует ту же локальную композицию рабочего
+пространства, что и страница чата Product: меню проекта, обсуждение,
+переключение «Чат / Документ», редактор и форму сообщения. Встроенный режим
+скрывает повторную навигацию и подвал. Источник визуальной структуры —
+текущие компоненты Subject `me-social-module-profile-id-chat-id-thread-id-ai-chat`,
+его форма `message-create-ai-chat` и Social Thread `id-ai-chat` в libs/modules.
+Сообщения используют строки с аватаром автора, форма содержит выбор контекста,
+вложения и отправку сочетанием клавиш. Узкая версия переключает панели.
+Пример работает на вымышленных данных мастерской; отправка, редактирование и
+переходы изменяют только локальное состояние и не обращаются к Production API.
