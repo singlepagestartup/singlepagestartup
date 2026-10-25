@@ -498,6 +498,15 @@ export default function CodeFrameworkLanding({
                 <p className={`mt-4 text-sm leading-6 ${muted}`}>
                   {content.change.paragraphs[1]}
                 </p>
+                <div className="my-5 flex justify-center">
+                  <Icon name="arrow-down" />
+                </div>
+                <h3 className="text-sm font-semibold">
+                  {label["context-publish"]}
+                </h3>
+                <p className="mt-3 rounded-2xl bg-[#eff4e6] p-4 text-sm leading-6">
+                  {label["context-publish-description"]}
+                </p>
               </div>
             </div>
           </div>
@@ -577,11 +586,11 @@ export default function CodeFrameworkLanding({
             </p>
             <h2
               id="cf-handoff-title"
-              className={`mx-auto mt-4 max-w-2xl text-balance text-3xl leading-tight @3xl:text-5xl ${display}`}
+              className={`mx-auto mt-4 max-w-5xl text-balance text-3xl leading-tight @3xl:text-5xl ${display}`}
             >
               {content.handoff.title}
             </h2>
-            <p className="mx-auto mt-5 max-w-lg text-sm leading-6">
+            <p className="mx-auto mt-5 max-w-3xl text-sm leading-6">
               {content.handoff.paragraphs[1]}
             </p>
             <PreviewLink
