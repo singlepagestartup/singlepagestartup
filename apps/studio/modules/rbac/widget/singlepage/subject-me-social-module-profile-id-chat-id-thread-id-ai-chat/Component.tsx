@@ -100,6 +100,7 @@ function SubjectThreadWorkspace({
   chatId,
   threadId,
   state,
+  embedded,
 }: ISubjectThreadWorkspaceProps) {
   const { account } = useStudioAccount();
   const actor = subjectId ?? account.subject?.id;
@@ -121,6 +122,7 @@ function SubjectThreadWorkspace({
         profileId={profileId}
         chatId={chatId}
         selected="products"
+        embedded={embedded}
       >
         {(navigation) => (
           <ThreadWorkspaceContent

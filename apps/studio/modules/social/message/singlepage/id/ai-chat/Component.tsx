@@ -87,7 +87,7 @@ export const Component = memo(function Component({
     <article
       data-ds-block="social.message.id-ai-chat"
       data-id={message.id}
-      className={`flex min-w-0 gap-3 ${message.role === "user" ? "ml-6" : ""}`}
+      className={`flex min-w-0 gap-3 p-5 ${message.role === "user" ? "bg-muted/50" : "bg-card"}`}
       data-module="social"
       data-model="message"
       data-variant={variant}
@@ -107,9 +107,7 @@ export const Component = memo(function Component({
             <Icon name="robot" className="size-4" />
           </span>
         ))}
-      <div
-        className={`min-w-0 flex-1 ${message.role === "user" ? "rounded-2xl bg-muted p-4" : ""}`}
-      >
+      <div className="min-w-0 flex-1">
         <p className={`text-xs font-semibold ${kit.muted}`}>
           {message.role === "user"
             ? "Вы"

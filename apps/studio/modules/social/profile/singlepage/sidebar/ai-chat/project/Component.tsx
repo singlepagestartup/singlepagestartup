@@ -28,7 +28,7 @@ export function Component({
 }: IComponentProps) {
   const { projects } = useProfiles();
   const name =
-    projects.find((profile) => profile.id === profileId)?.name ?? "Project";
+    projects.find((profile) => profile.id === profileId)?.name ?? "Проект";
   const href = aiChatProfileHref(profileId);
   const settingsSelected = selected === "settings";
   const creatingThread = selected === "thread-create";

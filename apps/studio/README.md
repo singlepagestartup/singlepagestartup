@@ -149,10 +149,20 @@ providers or an API.
 
 ## Framework examples
 
-`Host/Page/Singlepage/framework` combines the description, slider, full product
-cards, contact form and product categories. Category models in Ecommerce and Blog
-provide `card` and `overview-default`; their Widgets own `category-find-card` and
-`category-overview-default`. The Host category pages compose those Widgets.
+`Host/Page/Singlepage/framework` presents the current Russian acquisition page:
+product scenarios, fifteen modules, launch steps, project knowledge, module
+articles and questions. Its Page-owned `Sections.tsx` composes these blocks;
+`ProjectExample` supplies the four interactive product examples. Catalogue and
+guide Pages, Blog list/category/article Pages and the token Page use the same
+local Site frame and Storybook link resolver. `Blog/FeaturedCategories.tsx`
+renders the selected category cards; its links open their category Page.
+
+This transfer keeps presentation components and copy inside Host Page for review.
+It does not decompose the new blocks into domain models or Website Builder records.
+The owned Markdown and delivery assets were copied from the Workspace product;
+Modules imports neither Workspace components nor Workspace assets. Further edits
+in either presentation remain independent. Production `libs/modules` and runtime
+records are outside this transfer.
 
 Product cards accept multiple linked categories and attached images. The product
 catalog passes attributes, configuration, currencies and payment choices into
@@ -167,11 +177,9 @@ locked, expired, granted, checking and error states. The owning production Widge
 must resolve access and supply protected data only when allowed; these stories
 preview the presentation and do not enforce API access.
 
-The CRM Form `Framework` story contains Name, Email and the interest select.
-The Framework page uses the existing `content-feature-find-row` contact section
-with `Subject/me-crm-module-form-default` in its form slot, matching the homepage
-composition. Both category pages use embedded collections so the page header,
-description and collection share one container and one horizontal gutter.
+The generic CRM Form `Framework`, Ecommerce category and Slider examples remain
+available in their own model stories. They are independent of the Framework
+acquisition page.
 
 The Website Builder Slide `default` shows one slide. Slider `default` exposes
 Arrows, Numbers and Dots stories through its `navigation` prop. Each mode shows
@@ -436,8 +444,11 @@ Layout `ai-chat-landing` composes Website Builder `navbar-ai-chat-landing` and
 the same `brand-ai-chat` Logotype as the service screens. Try the chat is a Button
 record displayed through Buttons Array. Page places `content-ai-chat-hero`, `content-ai-chat-try`
 and `content-ai-chat-continue` inside the Layout, and supplies Social Chat as the `children`
-of `content-ai-chat-try`. Each Widget has its own generated content fixture. The Social
-preview reads the Widget-owned `singlepage/content/ai-chat/website.json` fixture.
+of `content-ai-chat-try`. Each Widget has its own generated content fixture. The
+landing demonstration composes the public RBAC chat workspace with local Account,
+Profile, Source and File providers in its Page-owned `LandingDemo.tsx`. It shares
+the project screen's controls and responsive document view. The retired Social
+walkthrough remains an independent model example.
 Workspace website documents pass overrides to their own prototype.
 
 Layout `ai-chat-dashboard` owns its themed container, Website Builder navbar and footer.

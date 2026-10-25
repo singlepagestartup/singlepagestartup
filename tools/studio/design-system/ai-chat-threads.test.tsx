@@ -184,7 +184,7 @@ test("sending snapshots one knowledge and linked files; later edits and detach p
     workingOn: "source",
     agent: knowledgeAgent,
   });
-  expect(history[0].workingOn?.sections).toEqual(["Products"]);
+  expect(history[0].workingOn?.sections).toEqual(["Продукты"]);
   expect(history[1].filesUsed?.map((file) => file.id)).toEqual([
     "workshop-notes",
     "audience-notes",

@@ -1,6 +1,6 @@
 import type { IComponentProps } from "./interface";
-import { FrameworkModulePage } from "../shared/FrameworkModulePage";
-
+import ModulesPage from "../framework/Modules";
+import { resolveFrameworkLink } from "../framework/navigation";
 export function Component(_props: IComponentProps = {}) {
   return (
     <div
@@ -8,7 +8,7 @@ export function Component(_props: IComponentProps = {}) {
       data-model="page"
       data-variant="framework-module-find"
     >
-      <FrameworkModulePage />
+      <ModulesPage resolveLink={resolveFrameworkLink} />
     </div>
   );
 }

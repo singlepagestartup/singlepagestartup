@@ -31,7 +31,7 @@ export function Component({
     >
       <AlertDialog.Root>
         <AlertDialog.Trigger asChild>
-          <Button appearance="plain">Remove identity</Button>
+          <Button appearance="plain">Отключить способ входа</Button>
         </AlertDialog.Trigger>
         <AlertDialog.Portal container={portal}>
           <AlertDialog.Overlay className="fixed inset-0 z-[200] bg-black/40" />
@@ -43,19 +43,19 @@ export function Component({
             }}
           >
             <AlertDialog.Title className="text-xl font-semibold">
-              Remove {getIdentityProviderMeta(identity.provider).title}?
+              Отключить {getIdentityProviderMeta(identity.provider).title}?
             </AlertDialog.Title>
             <AlertDialog.Description className="mt-3 text-sm leading-6 text-muted-foreground">
-              Remove {getIdentityPrimaryLogin(identity)} from the sign-in
-              methods in this preview? No external account is deleted.
+              Отключить {getIdentityPrimaryLogin(identity)} от способов входа в
+              этом примере? Внешний аккаунт не удаляется.
             </AlertDialog.Description>
             <div className="mt-6 flex justify-end gap-2">
               <AlertDialog.Cancel asChild>
-                <Button ref={cancel}>Cancel</Button>
+                <Button ref={cancel}>Отмена</Button>
               </AlertDialog.Cancel>
               <AlertDialog.Action asChild>
                 <Button appearance="danger" onClick={() => onDelete(identity)}>
-                  Remove identity
+                  Отключить способ входа
                 </Button>
               </AlertDialog.Action>
             </div>

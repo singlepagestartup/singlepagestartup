@@ -54,26 +54,26 @@ export const WithReplies: Story = {
     comments: [
       {
         id: "guide-preview-comment",
-        author: "Framework reader",
+        author: "Читатель блога",
         avatar: "",
-        date: "Oct 23, 2026",
-        text: "Can a loaded Article keep its parent query when its presentation changes?",
+        date: "23 окт. 2026 г.",
+        text: "Можно ли изменить представление Article и сохранить запрос в родительском компоненте?",
         likes: 2,
         replies: [
           {
             id: "guide-preview-reply",
             author: frameworkArticlePreviews[0].authorName,
             avatar: frameworkArticlePreviews[0].authorAvatar,
-            date: "Oct 23, 2026",
-            text: "Use dataSource props and keep the query subscription in the owning reader.",
+            date: "23 окт. 2026 г.",
+            text: "Используйте dataSource props и оставьте подписку на запрос у владеющего reader.",
             likes: 1,
             replies: [
               {
                 id: "guide-preview-follow-up",
-                author: "Framework reader",
+                author: "Читатель блога",
                 avatar: "",
-                date: "Oct 23, 2026",
-                text: "That makes the ownership clear. Thank you.",
+                date: "23 окт. 2026 г.",
+                text: "Теперь вижу, кто отвечает за загрузку. Спасибо.",
                 likes: 0,
               },
             ],

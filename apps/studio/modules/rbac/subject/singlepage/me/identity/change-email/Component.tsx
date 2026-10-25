@@ -33,7 +33,7 @@ export function Component({
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
-        Change email
+        Изменить почту
       </Button>
       {open && (
         <AccountChange

@@ -58,7 +58,7 @@ export function aiChatProjectSourceFixture(): IProjectProfile {
     document,
   );
   project.documents[0].values[section] =
-    "## Контекст пользователя\n<!-- knowledge:user -->\nPottery workshops\n<!-- /knowledge:user -->\n\n## Сведения из материалов\nSix places per weekend workshop.\n\n## Общее описание\nSmall-group workshops for first-time potters.";
+    "## Контекст пользователя\n<!-- knowledge:user -->\nМастер-классы по керамике\n<!-- /knowledge:user -->\n\n## Сведения из материалов\nНа каждом мастер-классе в выходные — шесть мест.\n\n## Общее описание\nМастер-классы для начинающих в небольшой группе.";
   return project;
 }
 
@@ -67,7 +67,7 @@ export function aiChatSourceFixture() {
     id: "pottery:products:products",
     slug: "pottery:products:products",
     variant: "id-ai-chat",
-    title: "Products",
+    title: "Продукты",
     content: "Мастер-классы по керамике для начинающих по выходным.",
     description:
       "Опишите продукты, их клиентов, предложение и текущую доступность.",
@@ -135,7 +135,7 @@ export function aiChatAttachmentWorkspaceFixture() {
     source: {
       ...aiChatSourceFixture().source,
       content:
-        "# Pottery workshops\n\nWeekend workshops for adults trying pottery for the first time. Six places per class. Materials are included.",
+        "# Мастер-классы по керамике\n\nWeekend workshops for adults trying pottery for the first time. Six places per class. Materials are included.",
     },
     files: [...sourceFiles, ...draftFiles],
     sourceFileIds: sourceFiles.map((file) => file.id),

@@ -34,6 +34,7 @@ export function Component({
   profileId,
   chatId,
   selected,
+  embedded = false,
   children,
 }: IComponentProps) {
   return (
@@ -48,6 +49,7 @@ export function Component({
           profileId={profileId}
           chatId={chatId}
           selected={selected}
+          embedded={embedded}
         >
           {children}
         </IdAiChatProject>
@@ -59,8 +61,10 @@ function IdAiChatProject({
   profileId,
   chatId,
   selected,
+  embedded = false,
   children,
 }: IIdAiChatProjectProps) {
+  const Container = embedded ? "div" : "main";
   const id = useId();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -101,7 +105,9 @@ function IdAiChatProject({
     </>
   );
   return (
-    <main className="@container/workspace w-full px-4 py-6 @[800px]:px-8">
+    <Container
+      className={`@container/workspace w-full ${embedded ? "" : "px-4 py-6 @[800px]:px-8"}`}
+    >
       <div
         id="documents"
         data-ds-block="social.profile.id-ai-chat-project"
@@ -156,7 +162,7 @@ function IdAiChatProject({
         </aside>
         <div className="flex min-h-0 min-w-0 flex-col">{children(toggle)}</div>
       </div>
-    </main>
+    </Container>
   );
 }
 const focus =

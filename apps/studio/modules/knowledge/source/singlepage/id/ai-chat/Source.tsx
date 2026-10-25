@@ -39,7 +39,7 @@ export function SourceProvider({
         id: `${profileId}:products:products`,
         slug: `${encodeURIComponent(profileId)}:products:products`,
         variant: "id-ai-chat",
-        title: "Products",
+        title: "Продукты",
         content: "",
         description:
           "Опишите продукты, их клиентов, предложение и текущую доступность.",

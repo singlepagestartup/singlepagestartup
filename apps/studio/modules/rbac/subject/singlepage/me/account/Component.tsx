@@ -60,8 +60,8 @@ export function Component({
         <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-muted">
           <Icon name="user-circle" className="size-6" />
         </span>
-        <span className="hidden text-sm font-semibold sm:inline">Sign in</span>
-        <span className="sr-only sm:hidden">Sign in</span>
+        <span className="hidden text-sm font-semibold sm:inline">Войти</span>
+        <span className="sr-only sm:hidden">Войти</span>
       </a>
     );
   return (

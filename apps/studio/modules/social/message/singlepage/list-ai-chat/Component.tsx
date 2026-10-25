@@ -35,9 +35,9 @@ export function Component({
         data-ds-block="social.message.list-ai-chat"
         data-thread-id={threadId}
         role="log"
-        aria-label="Messages"
+        aria-label="Сообщения"
         aria-live="polite"
-        className={`${className} space-y-6 p-4 @[640px]:p-6`}
+        className={`${className} min-w-0`}
         data-module="social"
         data-model="message"
         data-variant={variant}

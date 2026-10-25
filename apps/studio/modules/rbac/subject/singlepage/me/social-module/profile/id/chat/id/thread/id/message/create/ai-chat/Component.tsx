@@ -1,4 +1,5 @@
 "use client";
+import { useSource } from "../../../../../../../../../../../../../../knowledge/source/singlepage/id/ai-chat/Source";
 import type { IComponentProps, IComponentVariantProps } from "./interface";
 export type { IComponentVariantProps } from "./interface";
 
@@ -26,8 +27,11 @@ export function Component({
   initialError = "",
 }: IComponentProps = {}) {
   const { account } = useStudioAccount();
+  const { source } = useSource();
   const {
     thread,
+    workingOn,
+    setWorkingOn,
     draft: value,
     setDraft: onChange,
     send: onSend,
@@ -116,6 +120,27 @@ export function Component({
     >
       <label htmlFor={id} className="sr-only">
         Сообщение
+      </label>
+      <label className="mb-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+        Рабочий контекст
+        <span className="relative min-w-0">
+          <select
+            aria-label="Рабочий контекст"
+            value={workingOn}
+            onChange={(event) =>
+              setWorkingOn(event.target.value as "whole" | "source")
+            }
+            className="min-h-9 max-w-full appearance-none rounded-lg border border-border bg-card py-2 pl-3 pr-9 text-xs font-semibold text-foreground"
+          >
+            <option value="whole">Весь документ</option>
+            <option value="source">{source.title}</option>
+          </select>
+          <SharedIcon
+            variant="phosphor"
+            name="caret-down"
+            className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2"
+          />
+        </span>
       </label>
       <div className="rounded-2xl border border-border p-3 focus-within:border-foreground">
         {files.length > 0 && (

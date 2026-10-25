@@ -51,7 +51,7 @@ export function Component({
       data-model="profile"
       data-variant={variant}
     >
-      <legend className={kit.label}>Agent</legend>
+      <legend className={kit.label}>Помощник</legend>
       <div className="flex items-center gap-2">
         <div className="min-w-0 flex-1">
           <Select
