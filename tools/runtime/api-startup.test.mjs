@@ -67,7 +67,7 @@ test("API starts only after infrastructure, model migrations and seed complete",
   assert.ok(result.commands.includes("nx run @sps/social:repository-migrate"));
   assert.deepEqual(result.commands.slice(-2), [
     "nx run api:db:seed",
-    "npm run api:start -- --excludeTaskDependencies",
+    "npm run api:start",
   ]);
 });
 
@@ -165,26 +165,16 @@ async function runNxStartup(mode, failingTarget = "") {
 }
 
 for (const mode of ["dev", "start"]) {
-  test(`direct api:${mode} prepares the database before launching Bun without seeding`, async () => {
+  test(`direct api:${mode} launches Bun without migrations or seeding`, async () => {
     const result = await runNxStartup(mode);
     assert.equal(result.status, 0, result.stderr + result.stdout);
-    assert.equal(
-      result.commands[0],
-      "npx nx run @sps/providers-db:repository-migrate",
-    );
-    assert.ok(
-      result.commands.includes("npx nx run @sps/social:repository-migrate"),
-    );
-    assert.equal(result.commands.at(-1), `bun run ${mode}`);
-    assert.ok(
-      !result.commands.some((command) => command.includes("api:db:seed")),
-    );
+    assert.deepEqual(result.commands, [`bun run ${mode}`]);
   });
 }
 
-test("direct API startup never opens the listener after a failed migration", async () => {
+test("explicit database migration stops when infrastructure migration fails", async () => {
   const result = await runNxStartup(
-    "dev",
+    "db:migrate",
     "nx run @sps/providers-db:repository-migrate",
   );
   assert.notEqual(result.status, 0);

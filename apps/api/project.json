@@ -10,16 +10,14 @@
       "options": {
         "cwd": "apps/api",
         "command": "bun run dev"
-      },
-      "dependsOn": ["db:migrate"]
+      }
     },
     "start": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/api",
         "command": "bun run start"
-      },
-      "dependsOn": ["db:migrate"]
+      }
     },
     "db:generate": {
       "executor": "nx:run-commands",

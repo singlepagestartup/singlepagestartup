@@ -10,7 +10,7 @@ if [ "${1:-}" = "host" ]; then
 elif [ "${1:-}" = "api" ]; then
   ./create_env.sh api deployment
   ./migrate.sh seed
-  npm run api:start -- --excludeTaskDependencies
+  npm run api:start
   exit 0
 elif [ "${1:-}" = "telegram" ]; then
   ./create_env.sh telegram deployment
