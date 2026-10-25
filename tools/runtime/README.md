@@ -1,6 +1,12 @@
 # Runtime maintenance
 
+Direct `npm run api:dev`, `npm run api:start` and their Nx targets run
+`migrate.sh` before opening the HTTP listener. They apply migrations without
+seeding application data. A migration failure keeps the listener closed.
+
 API release startup runs `migrate.sh seed` before opening its HTTP listener.
+Its final Nx invocation skips task dependencies because the same migration
+phase has already completed before seeding.
 Consistency infrastructure migrates first, followed by the module migrations
 and seed. The deployment health check keeps a new API task in startup while
 this work runs; a failed command prevents the API from starting.

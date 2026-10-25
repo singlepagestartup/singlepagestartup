@@ -41,11 +41,7 @@
       "cache": false,
       "options": {
         "cwd": ".",
-        "parallel": false,
-        "commands": [
-          "bun tools/plugins/sps-generator-plugin/src/utils/consistency-migrations/generate.ts --check",
-          "bun --env-file=apps/api/.env tools/plugins/sps-generator-plugin/src/utils/consistency-migrations/check.ts"
-        ]
+        "command": "bun --env-file=apps/api/.env tools/plugins/sps-generator-plugin/src/utils/consistency-migrations/check.ts"
       }
     },
     "consistency-status": {
