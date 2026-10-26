@@ -10,6 +10,11 @@ services:
       - traefik_overlay
     command:
       - --log.level={{ TRAEFIK_LOG_LEVEL | default('INFO', true) }}
+      # One JSON line per request on stdout, beside the Traefik log. Header
+      # values are dropped because requests carry credentials in headers.
+      - --accesslog=true
+      - --accesslog.format=json
+      - --accesslog.fields.headers.defaultmode=drop
       - --api
       - --providers.swarm=true
       - --providers.swarm.endpoint=unix:///var/run/docker.sock
@@ -23,6 +28,11 @@ services:
       - ./certs/:/certs/:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik.yml:/etc/traefik/dynamic_conf/conf.yml:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     deploy:
       update_config:
         order: start-first

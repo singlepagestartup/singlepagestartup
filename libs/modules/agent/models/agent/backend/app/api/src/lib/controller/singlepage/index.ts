@@ -4,6 +4,7 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/agent/models/agent/backend/repository/database";
 import { Service } from "../../service";
 import { Context } from "hono";
+import { RequestCanRunCron } from "../../../../../middlewares";
 import { Handler as Dummy } from "./dummy";
 import { Handler as Cron } from "./cron";
 import { Handler as HostModulePageCache } from "./page/cache";
@@ -36,6 +37,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/cron",
         handler: this.cron,
+        middlewares: [new RequestCanRunCron().init()],
       },
       {
         method: "GET",

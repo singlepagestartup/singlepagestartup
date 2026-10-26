@@ -122,6 +122,23 @@ describe("is-authorized allowed routes", () => {
   });
 
   /**
+   * BDD Scenario: the agent cron trigger reaches its own route guard.
+   *
+   * Given: the composed allow-list matcher.
+   * When: the cron path, its other methods and its neighbours are tested.
+   * Then: only POST on the exact cron path is allowed, because the agent
+   *       controller guards that route itself; every other agent route still
+   *       goes through authorization.
+   */
+  it("allows only the guarded agent cron trigger", () => {
+    expect(matcher.matches("/api/agent/agents/cron", "POST")).toBe(true);
+    expect(matcher.matches("/api/agent/agents/cron", "GET")).toBe(false);
+    expect(matcher.matches("/api/agent/agents/cron/extra", "POST")).toBe(false);
+    expect(matcher.matches("/api/agent/agents", "POST")).toBe(false);
+    expect(matcher.matches("/api/agent/agents/dummy", "POST")).toBe(false);
+  });
+
+  /**
    * BDD Scenario: Project/option extensions are honored.
    */
   it("honors project/option allowed-route extensions", () => {

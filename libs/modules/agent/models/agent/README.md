@@ -39,6 +39,25 @@ them and the cron dispatcher runs each one on its interval.
   size belong to the rbac module; see
   `libs/modules/rbac/models/subject/README.md`.
 
+## Cron Dispatcher Access
+
+`POST /api/agent/agents/cron` runs every agent whose `interval` is due. The
+server crontab that `tools/deployer/api/set_cron_jobs.yaml` installs calls it
+every minute. The route admits two credentials, compares both in constant time
+and answers any other request with `401`:
+
+- `AGENT_CRON_SECRET` in the `X-AGENT-CRON-SECRET` header. It opens this route
+  and no other, and it is the value the crontab holds.
+- The operator credential in `X-RBAC-SECRET-KEY` or the `rbac.secret-key`
+  cookie.
+
+The route is on the is-authorized allow-list, so its guard,
+`RequestCanRunCron` in `backend/app/middlewares`, is the whole access check and
+a JWT does not open it. Without `AGENT_CRON_SECRET`, only the operator
+credential opens the route. The dispatcher calls each due agent's route with
+the operator secret from the API's own environment, whichever credential
+opened the cron route.
+
 ## Telegram Thread Commands
 
 The singlepage agent service owns Telegram thread commands:

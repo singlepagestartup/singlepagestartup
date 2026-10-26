@@ -162,7 +162,22 @@ paths:
       tags:
         - "agent-agent"
       summary: Run cron
-      description: Execute agent cron tasks
+      description: >-
+        Execute agent cron tasks. Requires the agent cron secret or the operator
+        credential; the server crontab sends the cron secret.
+      parameters:
+        - name: X-AGENT-CRON-SECRET
+          in: header
+          required: false
+          schema:
+            type: string
+          description: AGENT_CRON_SECRET, which opens this route and no other
+        - name: X-RBAC-SECRET-KEY
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Operator credential
       requestBody:
         required: false
         content:
@@ -188,6 +203,8 @@ paths:
                       $ref: "agent-agent.yaml"
                 required:
                   - data
+        "401":
+          description: Neither the cron secret nor the operator credential matches
 
   /agent/agents/dummy:
     post:

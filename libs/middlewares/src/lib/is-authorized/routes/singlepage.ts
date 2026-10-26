@@ -73,4 +73,14 @@ export const allowedRoutes: IRouteRule[] = [
     regexPath: /\/api\/rbac\/permissions\/.*/,
     methods: ["GET"],
   },
+  /**
+   * The agent cron trigger. The route carries its own guard in the agent
+   * controller, which admits the operator secret or `AGENT_CRON_SECRET`; this
+   * rule lets the second one reach it, so the server crontab does not have to
+   * hold the operator secret (issue #319).
+   */
+  {
+    regexPath: /\/api\/agent\/agents\/cron$/,
+    methods: ["POST"],
+  },
 ];
